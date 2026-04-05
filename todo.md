@@ -1,0 +1,22 @@
+# Project TODO
+
+- [x] Definir y mantener arquitectura multi-tenant con control estricto por tenant y por caso
+- [x] Implementar autenticación con Manus OAuth y control de acceso contextual por tenant/caso
+- [x] Diseñar modelo de datos canónico con tenant_id, case_id y trace_id consistentes en todo el sistema
+- [x] Implementar gestión de casos laborales con estados, timelines y metadatos trazables
+- [x] Implementar intake documental con carga a S3, registro de metadatos y hash SHA-256
+- [x] Implementar clasificación básica de documentos laborales mexicanos (recibos de nómina, CFDI, IMSS)
+- [x] Construir vista de casos activos con filtros por estado, tenant y fecha
+- [x] Construir dashboard ejecutivo con KPIs de casos, documentos procesados y alertas operativas
+- [x] Implementar sistema de consentimiento y políticas de visibilidad por documento y caso
+- [x] Implementar registro de auditoría con trace_id para trazabilidad de punta a punta
+- [x] Preparar contratos canónicos para futura integración con Shared Engine
+- [x] Diseñar experiencia responsive con identidad visual profesional para entorno corporativo mexicano
+- [x] Cubrir backend y lógica crítica con pruebas Vitest
+- [x] Verificar funcionamiento técnico y estado general del proyecto antes de la primera entrega
+- [x] Reemplazar la pantalla placeholder del template por la interfaz operativa real de CompliLink con dashboard, casos, intake documental y trazabilidad visible
+- [x] Implementar acceso seguro de descarga/visualización documental con autorización por tenant, caso y política de visibilidad
+- [ ] Reforzar el registro de auditoría con hash chain para trazabilidad inmutable
+- [ ] Incorporar gestión operativa de alertas con estados accionables
+- [ ] Incorporar administración de membresías y accesos por tenant/caso para administradores
+- [ ] Evaluar versionado o supersedencia de documentos sin sobrescritura accidental
