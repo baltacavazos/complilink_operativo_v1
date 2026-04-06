@@ -20,3 +20,19 @@
 - [ ] Incorporar gestión operativa de alertas con estados accionables
 - [ ] Incorporar administración de membresías y accesos por tenant/caso para administradores
 - [ ] Evaluar versionado o supersedencia de documentos sin sobrescritura accidental
+- [x] Ejecutar validación multi-IA final de la build actual y aplicar ajustes previos al checkpoint
+- [ ] Endurecer RBAC granular inicial por tenant y caso para el piloto interno controlado
+- [ ] Reforzar validaciones de entrada y reglas de negocio en workflows críticos de casos y documentos
+- [ ] Incorporar bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico
+- [ ] Documentar estrategia inicial de backup y recuperación para el piloto controlado
+- [x] Añadir cobertura de pruebas para restricciones críticas de acceso y reglas de workflow
+- [ ] Reorientar CompliLink como hub personal de control operativo para uso del propietario
+- [ ] Preparar ruta de contratación mínima de servicios para lanzar hoy mismo la plataforma
+- [x] Ajustar la plataforma actual para un lanzamiento inmediato con intervención mínima del usuario
+- [ ] Auditar cada bloque crítico de implementación y cada decisión previa al lanzamiento con ChatGPT, Grok y Gemini antes del checkpoint
+- [x] Dejar el command center fuera del alcance del lanzamiento inmediato de CompliLink
+- [x] Priorizar exclusivamente los flujos esenciales publicables de CompliLink: casos, documentos, consentimientos, auditoría y publicación
+- [x] Dejar CompliLink funcional hoy mismo con el MVP mínimo publicable
+- [x] Reducir el alcance del lanzamiento a expedientes, documentos, consentimientos, auditoría y acceso mínimo viable
+- [ ] Preparar solo los servicios mínimos contratables y configuraciones indispensables para operar hoy
+- [x] Posponer la integración con AuditaPatron y demás módulos para una segunda etapa, solo después de que CompliLink quede completamente funcional y estable

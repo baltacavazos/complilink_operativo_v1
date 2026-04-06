@@ -450,8 +450,7 @@ export default function Home() {
                 ))}
               </div>
               <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5 text-sm leading-7 text-emerald-100">
-                Accede para inicializar tu tenant, generar un caso piloto, revisar KPIs,
-                abrir expedientes y dejar lista la base contractual para Shared Engine.
+                Accede para inicializar tu operación, generar un caso piloto, cargar documentos y dejar CompliLink listo para trabajar hoy mismo con expedientes trazables.
               </div>
             </section>
           </main>
@@ -472,7 +471,7 @@ export default function Home() {
               Operativo Laboral
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              Centro de mando multi-tenant para expedientes laborales en contexto corporativo mexicano.
+              Plataforma operativa para expedientes laborales con trazabilidad, documentos, consentimientos y auditoría en contexto corporativo mexicano.
             </p>
           </div>
 
@@ -513,16 +512,13 @@ export default function Home() {
             <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-4xl">
                 <p className="text-xs uppercase tracking-[0.35em] text-emerald-300">
-                  Centro de control
+                  CompliLink operativo
                 </p>
                 <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
                   Operación trazable de casos laborales con gobernanza documental y base canónica.
                 </h2>
                 <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                  Esta vista concentra expedientes activos, intake documental, consentimiento,
-                  políticas y auditoría. Cada operación preserva <strong>tenant_id</strong>,
-                  <strong>case_id</strong> y <strong>trace_id</strong> para trazabilidad integral
-                  y preparación futura hacia Shared Engine.
+                  Esta vista concentra expedientes activos, intake documental, consentimiento, políticas y auditoría. Cada operación preserva <strong>tenant_id</strong>, <strong>case_id</strong> y <strong>trace_id</strong> para trazabilidad integral y control operativo real desde el primer día.
                 </p>
               </div>
 
