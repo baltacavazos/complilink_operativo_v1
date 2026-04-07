@@ -47,7 +47,7 @@
 - [ ] Integrar la base visual y narrativa de AuditaPatron dentro del proyecto actual reutilizando lo ya importado
 - [ ] Simplificar la navegación principal de AuditaPatron para priorizar inicio, auditoría e historial
 - [x] Recuperar y adaptar la home de AuditaPatron como landing principal del producto
-- [ ] Recuperar y adaptar el flujo principal de /auditar como núcleo funcional visible
+- [x] Recuperar y adaptar el flujo principal de /auditar como núcleo funcional visible
 - [ ] Reposicionar comparación y documentos como funciones secundarias dentro de la experiencia
 - [x] Validar la implementación recuperada con pruebas y revisión del estado del proyecto
 - [x] Evaluar si el motor inteligente ya existente en otro chat de Manus puede conectarse o integrarse al proyecto actual de AuditaPatron
@@ -69,3 +69,12 @@
 - [x] Deliberar con ChatGPT, Grok y Gemini la mejor estructura, mensaje y experiencia para la nueva home de AuditaPatron antes de implementarla
 - [x] Redefinir la home de AuditaPatron para que sea lo más llamativa, fácil e intuitiva posible para trabajadores masivos
 - [x] Reposicionar AuditaPatron como herramienta constructiva, protectora y accesible dentro de la nueva narrativa del home
+- [x] Deliberar con ChatGPT, Grok y Gemini si conviene reforzar en AuditaPatron la idea de que, entre más documentos suba el trabajador, más crece su expediente y sus beneficios
+- [x] Definir la forma más ética, intuitiva y persuasiva de presentar el crecimiento del expediente sin que se sienta manipulador ni confuso
+- [x] Proponer la mejor implementación del concepto de expediente creciente y beneficios acumulados antes de hacer cambios en el producto
+- [x] Implementar en la home de AuditaPatron el concepto de expediente creciente como fortalecimiento probatorio, con lenguaje protector y no gamificado
+- [x] Conectar el CTA principal de la home de AuditaPatron al flujo real /auditar
+- [x] Añadir indicadores visuales discretos de fortaleza o completitud del expediente y sugerencias de siguientes documentos útiles
+- [x] Reforzar el flujo de carga para explicar cómo cada documento fortalece el expediente y sugerir el siguiente documento recomendado
+- [x] Incorporar una sección de ejemplos reales de hallazgos que se vuelven más claros al acumular documentos
+- [x] Validar los cambios de AuditaPatron con pruebas, revisión técnica y checkpoint listo para revisión
