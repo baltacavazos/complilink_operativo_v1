@@ -9,20 +9,21 @@ import requests
 PROJECT_PROMPT = r'''Actúa como arquitecto/a senior de producto, UX y sistemas para AuditaPatron, una plataforma de auditoría documental laboral en México.
 
 Contexto actual:
-- Existe una página /auditar donde la persona usuaria sube documentos laborales.
-- Helios ya muestra lectura preliminar, siguiente documento recomendado, timeline del expediente, comparación manual de documentos y alertas priorizadas.
-- Ya existe integración bidireccional básica con CompliLink MX: AuditaPatron envía documentos y CompliLink puede devolver eventos, clasificación, extracción y advertencias.
-- El objetivo estratégico aprobado es un ciclo virtuoso: AuditaPatron capta documentos, Helios los interpreta, CompliLink los enriquece, y la persona usuaria recibe una explicación simple y cada vez más útil.
+- Existe una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
+- La interfaz actual necesita verse más centrada, más estética y más sólida visualmente.
+- En móvil no debe existir riesgo de scroll lateral, desbordes horizontales ni bloques que se sientan anchos o incómodos.
+- La experiencia debe sentirse extremadamente fácil, confiable, amigable y casi mágica: la persona sube documentos y recibe una respuesta útil sin entender motores internos, integraciones ni complejidad técnica.
+- Todo lo que sube la persona usuaria sí alimenta un motor central e integra enriquecimiento desde otras plataformas, pero ESO NO DEBE MENCIONARSE en la experiencia visible. El usuario solo debe ver beneficios claros, calma y utilidad.
 - Prioridad UX: español simple, cero jerga técnica, mucha claridad, mucha confianza, mobile-first, privacidad y consentimiento visibles sin fricción.
-- Restricciones: no exponer credenciales, no pedir pasos técnicos a la persona usuaria, mantener lenguaje humano y no legalista.
+- Restricciones: no exponer credenciales, no pedir pasos técnicos a la persona usuaria, no mencionar Helios ni el motor interno, mantener lenguaje humano y no legalista.
 
 Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de /auditar, enfocadas solo en mejoras visibles y de alto impacto que puedan implementarse sin rehacer toda la arquitectura.
 
 Quiero que propongas específicamente:
-1. El mejor bloque o sección nueva para hacer visible el ciclo AuditaPatron → Helios → CompliLink.
-2. Cómo mostrar alertas priorizadas con fecha/hora y motivo sin asustar ni saturar.
-3. Cómo mejorar la comparación de documentos con una vista lado a lado clara y humana.
-4. Qué copy exacto sugerirías en español para títulos, subtítulos y microcopy.
+1. Cómo recentrar visualmente la interfaz y hacerla más estética y equilibrada.
+2. Cómo eliminar cualquier riesgo de scroll lateral móvil o sensación de layout ancho/confuso.
+3. Cómo reescribir la experiencia para que se sienta mágica y útil, ocultando por completo el motor interno.
+4. Qué copy exacto sugerirías en español para títulos, subtítulos y microcopy de una experiencia simple y confiable.
 5. Qué NO implementar todavía para evitar complejidad innecesaria.
 
 Devuelve SOLO JSON válido con esta forma exacta:
@@ -36,21 +37,16 @@ Devuelve SOLO JSON válido con esta forma exacta:
       "implementation_effort": "high|medium|low"
     }
   ],
-  "proposed_cycle_block": {
-    "title": "string",
-    "subtitle": "string",
-    "items": [
-      {
-        "step": "string",
-        "label": "string",
-        "description": "string"
-      }
-    ]
+  "layout_guidance": {
+    "headline": "string",
+    "principles": ["string"],
+    "mobile_risks_to_remove": ["string"],
+    "wow_moments": ["string"]
   },
-  "alert_design": {
+  "trust_experience": {
     "title": "string",
     "subtitle": "string",
-    "fields_to_show": ["string"],
+    "visible_promises": ["string"],
     "tone_guidance": "string"
   },
   "comparison_design": {
@@ -62,10 +58,10 @@ Devuelve SOLO JSON válido con esta forma exacta:
     "cta_label": "string"
   },
   "exact_copy": {
-    "cycle_headline": "string",
-    "cycle_supporting": "string",
-    "alert_timestamp_label": "string",
-    "alert_reason_label": "string",
+    "hero_headline": "string",
+    "hero_supporting": "string",
+    "trust_block_title": "string",
+    "trust_block_supporting": "string",
     "comparison_headline": "string",
     "comparison_supporting": "string"
   },

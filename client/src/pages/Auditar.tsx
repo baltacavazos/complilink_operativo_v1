@@ -306,13 +306,13 @@ function getHeliosRiskCopy(value?: string | null) {
 }
 
 function getHeliosModeLabel(value?: string | null) {
-  return value === "remote" ? "Helios remoto" : "Helios inicial";
+  return value === "remote" ? "Revisión ampliada" : "Revisión inicial";
 }
 
 function getHeliosActivationCopy(value?: string | null) {
   return value === "remote"
-    ? "La lectura ya viene desde la integración remota de Helios y la interfaz conserva la misma experiencia para la persona usuaria."
-    : "La experiencia ya está lista para mostrar una respuesta remota de Helios en cuanto se encienda ese modo, sin cambiar la forma de uso.";
+    ? "La revisión ya volvió con más contexto y la experiencia sigue viéndose igual de simple para ti."
+    : "La experiencia está lista para darte una primera lectura ahora y una revisión más completa después, sin cambiar la forma de uso.";
 }
 
 function getHeliosStageCopy(params: {
@@ -324,13 +324,13 @@ function getHeliosStageCopy(params: {
   if (params.opinion && params.opinion.status !== "processing" && params.opinion.status !== "sent") {
     return {
       badge: "Lectura visible",
-      title: "Helios ya está construyendo criterio dentro del expediente",
+      title: "Tu expediente ya empezó a devolverte respuestas útiles",
       description:
         params.documentsWithOpinion > 1
-          ? `Ya dejó una lectura preliminar visible en ${params.documentsWithOpinion} documentos y puede seguir conectando señales entre ellos.`
-          : "Ya dejó una lectura preliminar visible y puede seguir conectando este documento con el resto del expediente.",
+          ? `Ya hay una lectura preliminar visible en ${params.documentsWithOpinion} documentos y eso ayuda a darte más contexto entre ellos.`
+          : "Ya hay una lectura preliminar visible y puede seguir conectándose con el resto de tu expediente.",
       detail:
-        "Ahora Helios no solo recibe archivos: interpreta contexto, separa lo claro de lo preliminar y orienta el siguiente paso útil dentro del caso.",
+        "La revisión ya separa lo claro de lo preliminar y te orienta sobre el siguiente paso útil dentro del caso.",
       tone: "success" as const,
     };
   }
@@ -338,11 +338,11 @@ function getHeliosStageCopy(params: {
   if (params.engineStatus === "sent" || params.opinion?.status === "processing" || params.opinion?.status === "sent") {
     return {
       badge: "Interpretando",
-      title: "Helios ya recibió material y está listo para devolver lectura visible",
+      title: "Tu documento ya está siendo revisado",
       description:
-        "El documento ya quedó protegido y la interfaz está preparada para mostrar la lectura apenas la integración devuelva más detalle.",
+        "El documento ya quedó protegido y la interfaz mostrará la lectura apenas regrese más detalle.",
       detail:
-        "Mientras tanto, la persona puede seguir reuniendo documentos sin perder trazabilidad ni contexto del expediente.",
+        "Mientras tanto, puedes seguir reuniendo documentos sin perder trazabilidad ni contexto del expediente.",
       tone: "processing" as const,
     };
   }
@@ -350,24 +350,24 @@ function getHeliosStageCopy(params: {
   if (params.engineStatus === "failed") {
     return {
       badge: "Revisión pendiente",
-      title: "Helios necesita un nuevo intento, pero el expediente sigue intacto",
+      title: "Hace falta reintentar una parte de la revisión, pero tu expediente sigue intacto",
       description:
         params.engineReason === "webhook_rejected"
           ? "La etapa automática necesita revisión, aunque el documento sí quedó guardado y protegido dentro del expediente."
-          : "Hubo una pausa temporal en la etapa automática, pero el documento quedó resguardado y listo para retomar la interpretación.",
+          : "Hubo una pausa temporal en la etapa automática, pero el documento quedó resguardado y listo para retomar la lectura.",
       detail:
-        "La experiencia mantiene el archivo disponible y deja lista la base para reanudar la lectura sin rehacer pasos del usuario.",
+        "La experiencia mantiene el archivo disponible y deja lista la base para reanudar la revisión sin rehacer pasos.",
       tone: "warning" as const,
     };
   }
 
   return {
     badge: "Listo para empezar",
-    title: "Helios está listo para convertirse en el cerebro activo de este expediente",
+    title: "Tu expediente está listo para empezar a darte claridad",
     description:
-      "En cuanto subas un documento útil, Helios empezará a interpretarlo, ordenar señales y sugerir el siguiente paso más útil.",
+      "En cuanto subas un documento útil, la revisión empezará a ordenar señales y a sugerir el siguiente paso más útil.",
     detail:
-      "La interfaz ya está preparada para mostrar una lectura inicial ahora y una respuesta remota más adelante, sin cambiar la forma de usar AuditaPatron.",
+      "La interfaz ya está preparada para mostrar una lectura inicial ahora y una revisión más completa después, sin cambiar la forma de usar AuditaPatron.",
     tone: "neutral" as const,
   };
 }
@@ -432,17 +432,17 @@ function getHeliosTimelineRole(documentType: string, opinion?: HeliosOpinionView
 
   switch (documentType) {
     case "payroll_receipt":
-      return "Helios compara montos, fechas y deducciones con otros periodos para detectar cambios útiles dentro del expediente.";
+      return "Este documento ayuda a comparar montos, fechas y deducciones con otros periodos para detectar cambios útiles dentro del expediente.";
     case "cfdi":
-      return "Helios contrasta lo timbrado fiscalmente con otros comprobantes para entender mejor pagos y diferencias.";
+      return "Este documento ayuda a contrastar lo timbrado fiscalmente con otros comprobantes para entender mejor pagos y diferencias.";
     case "contract":
-      return "Helios usa este documento como base para comparar lo pactado con lo que realmente ocurrió durante la relación laboral.";
+      return "Este documento sirve como base para comparar lo pactado con lo que realmente ocurrió durante la relación laboral.";
     case "imss":
-      return "Helios conecta este soporte con altas, bajas y continuidad laboral para reforzar el contexto del caso.";
+      return "Este soporte ayuda a conectar altas, bajas y continuidad laboral para reforzar el contexto del caso.";
     case "evidence":
-      return "Helios suma este archivo como contexto de hechos, instrucciones o fechas para entender mejor la historia completa.";
+      return "Este archivo suma contexto de hechos, instrucciones o fechas para entender mejor la historia completa.";
     default:
-      return "Helios agrega este archivo al expediente para conectarlo con los demás documentos y reducir partes todavía preliminares.";
+      return "Este archivo se agrega al expediente para conectarlo con los demás documentos y reducir partes todavía preliminares.";
   }
 }
 
@@ -482,7 +482,7 @@ function getMonitoringStatusCopy(status?: string | null) {
       return {
         label: "Respuesta recibida",
         classes: "bg-emerald-100 text-emerald-800",
-        description: "CompliLink ya devolvió información para este documento.",
+        description: "La revisión automática ya devolvió información para este documento.",
       } as const;
     case "attention":
       return {
@@ -583,40 +583,44 @@ function getMonitoringOverviewCopy(params: {
   receivedCount: number;
 }) {
   if (params.monitoringDocumentsCount === 0) {
-    return {
-      title: "Helios está listo para el seguimiento automático",
-      body: "En cuanto subas un documento, Helios lo moverá por su seguimiento automático y te mostrará aquí cómo va avanzando. Tu expediente seguirá protegido en todo momento.",
-      classes: "border-slate-200 bg-slate-50 text-slate-700",
-    } as const;
+      return {
+        title: "El seguimiento automático está listo",
+        body: "En cuanto subas un documento, su revisión avanzará aquí paso a paso. Tu expediente seguirá protegido en todo momento.",
+        classes: "border-slate-200 bg-slate-50 text-slate-700",
+      } as const;
+
   }
 
   if (params.attentionCount > 0) {
-    return {
-      title: "Conviene darle un vistazo con calma",
-      body: `Hay ${params.attentionCount} documento${params.attentionCount === 1 ? "" : "s"} cuya respuesta está tardando un poco más de lo normal. No se perdió nada: Helios lo tiene resguardado y puedes seguir subiendo documentos mientras tanto.`,
-      classes: "border-amber-200 bg-amber-50 text-amber-950",
-    } as const;
+      return {
+        title: "Conviene darle un vistazo con calma",
+        body: `Hay ${params.attentionCount} documento${params.attentionCount === 1 ? "" : "s"} cuya respuesta está tardando un poco más de lo normal. No se perdió nada: tu expediente sigue resguardado y puedes seguir subiendo documentos mientras tanto.`,
+        classes: "border-amber-200 bg-amber-50 text-amber-950",
+      } as const;
+
   }
 
   if (params.waitingCount > 0) {
-    return {
-      title: "En espera, pero avanzando",
-      body: `Helios ya está esperando respuesta automática para ${params.waitingCount} documento${params.waitingCount === 1 ? "" : "s"}. Tu expediente sigue avanzando y te avisaremos cuando haya novedades visibles aquí.`,
-      classes: "border-sky-200 bg-sky-50 text-sky-950",
-    } as const;
+      return {
+        title: "En espera, pero avanzando",
+        body: `La revisión automática está esperando respuesta para ${params.waitingCount} documento${params.waitingCount === 1 ? "" : "s"}. Tu expediente sigue avanzando y te avisaremos cuando haya novedades visibles aquí.`,
+        classes: "border-sky-200 bg-sky-50 text-sky-950",
+      } as const;
+
   }
 
   if (params.receivedCount > 0) {
-    return {
-      title: "Todo al día por ahora",
-      body: `Helios ya recibió respuesta automática para ${params.receivedCount} documento${params.receivedCount === 1 ? "" : "s"} y esa información ya forma parte del expediente. Si subes más archivos, el seguimiento continuará en este espacio.`,
-      classes: "border-emerald-100 bg-emerald-50 text-emerald-950",
-    } as const;
+      return {
+        title: "Todo al día por ahora",
+        body: `Ya llegó información automática para ${params.receivedCount} documento${params.receivedCount === 1 ? "" : "s"} y esa información ya forma parte del expediente. Si subes más archivos, el seguimiento continuará en este espacio.`,
+        classes: "border-emerald-100 bg-emerald-50 text-emerald-950",
+      } as const;
+
   }
 
   return {
     title: "Seguimiento disponible",
-    body: "Helios seguirá mostrándote aquí cualquier avance automático importante del expediente.",
+    body: "Aquí seguirás viendo cualquier avance automático importante del expediente.",
     classes: "border-slate-200 bg-slate-50 text-slate-700",
   } as const;
 }
@@ -631,7 +635,7 @@ function getPersonalizedNextDocumentCopy(params: {
 
   if (params.nextTarget) {
     return {
-      headline: `Helios recomienda: ${params.nextTarget.label}`,
+      headline: `Documento sugerido: ${params.nextTarget.label}`,
       intro: presentSummary
         ? `Con lo que ya subiste, como ${presentSummary}, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`
         : `Con tu expediente actual, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`,
@@ -641,10 +645,10 @@ function getPersonalizedNextDocumentCopy(params: {
         : `${params.nextTarget.description} ${params.nextTarget.benefit}`,
       followUp:
         params.opinion?.recommendedNextStep ??
-        "Helios usa cada documento para reducir estimaciones y dejar más partes del expediente en terreno claro.",
+        "Cada documento ayuda a reducir estimaciones y a dejar más partes del expediente en terreno claro.",
       coverage: presentSummary
-        ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional le da a Helios más contexto para conectar señales con menos partes preliminares.`
-        : "Tu expediente apenas está empezando. Cada documento útil que subas le da a Helios más contexto para orientarte mejor.",
+        ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional da más contexto para conectar señales con menos partes preliminares.`
+        : "Tu expediente apenas está empezando. Cada documento útil que subas da más contexto para orientarte mejor.",
       cta: "Subir este documento ahora",
     } as const;
   }
@@ -652,17 +656,18 @@ function getPersonalizedNextDocumentCopy(params: {
   return {
     headline: "Tu expediente ya cubre varias piezas clave",
     intro: presentSummary
-      ? `Ya subiste ${presentSummary}. Helios ya tiene una base amplia para seguir ordenando tu caso con más contexto.`
-      : "Helios ya tiene una base amplia de documentos para seguir ordenando tu caso con más contexto.",
+      ? `Ya subiste ${presentSummary}. Tu expediente ya tiene una base amplia para seguir ordenando tu caso con más contexto.`
+      : "Tu expediente ya tiene una base amplia de documentos para seguir ordenando tu caso con más contexto.",
     reasonTitle: "Qué puede sumar si tienes otro archivo",
     reasonBody: firstUncertainty
       ? `Si cuentas con otro archivo específico de tu caso, puede ayudar a aclarar mejor esto: ${firstUncertainty}`
       : "Si tienes otro archivo específico de tu caso, también puede ayudar a confirmar o contrastar mejor tu historia laboral.",
     followUp:
       params.opinion?.recommendedNextStep ??
-      "Helios sigue usando cada documento para separar lo claro de lo que todavía conviene confirmar.",
+        "La revisión sigue usando cada documento para separar lo claro de lo que todavía conviene confirmar.",
+
     coverage:
-      "Mientras más documentos útiles incorpores, más crece tu expediente y más contexto tiene Helios para orientarte mejor.",
+      "Mientras más documentos útiles incorpores, más crece tu expediente y más contexto tendrás para orientarte mejor.",
     cta: "Subir otro documento útil",
   } as const;
 }
@@ -749,28 +754,28 @@ function buildHeliosComparisonCopy(params: {
   if (sortedDocuments.length === 0) {
     return {
       badge: "Comparación en espera",
-      headline: "Helios comparará tus documentos cuando tengas dos piezas útiles",
+      headline: "La comparación se activará cuando tengas dos piezas útiles",
       supportingText:
-        "En cuanto subas documentos relacionados, Helios podrá ponerlos lado a lado y ayudarte a detectar cambios con más claridad.",
+        "En cuanto subas documentos relacionados, podrás verlos lado a lado y detectar cambios con más claridad.",
       cards: [
         {
           title: "Documentos comparados",
           body: "Todavía no hay archivos suficientes para una comparación guiada dentro del expediente.",
         },
         {
-          title: "Lo que Helios está contrastando",
-          body: "Cuando tengas dos documentos útiles, Helios podrá revisar fechas, montos, condiciones y señales que hoy aún no se pueden cruzar.",
+          title: "Lo que se está contrastando",
+          body: "Cuando tengas dos documentos útiles, podrás revisar fechas, montos, condiciones y señales que hoy aún no se pueden cruzar.",
         },
         {
           title: "Qué puede ayudarte a aclararlo más",
           body: params.nextTarget
-            ? `Puedes empezar con ${params.nextTarget.label.toLowerCase()} para darle a Helios una primera base útil.`
+            ? `Puedes empezar con ${params.nextTarget.label.toLowerCase()} para darle una primera base útil a tu expediente.`
             : "Puedes empezar con el documento que tengas más a la mano para abrir la comparación después.",
         },
       ],
-      guardrail: "Helios te mostrará señales y diferencias útiles, pero siempre como una lectura preliminar y entendible.",
+      guardrail: "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
-        "Mientras más documentos útiles subas, más contexto tendrá Helios para distinguir cambios reales de simples huecos de información.",
+        "Mientras más documentos útiles subas, más contexto habrá para distinguir cambios reales de simples huecos de información.",
       cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir mi primer documento",
     } as const;
   }
@@ -779,27 +784,27 @@ function buildHeliosComparisonCopy(params: {
     const onlyDocument = sortedDocuments[0];
     return {
       badge: "Falta una segunda pieza",
-      headline: "Helios ya tiene una base, pero necesita otro documento para comparar mejor",
-      supportingText: `Por ahora Helios solo tiene ${onlyDocument.originalName}. Si subes otro archivo relacionado, podrá señalar cambios con más claridad y menos partes preliminares.`,
+      headline: "Ya tienes una base, pero hace falta otro documento para comparar mejor",
+      supportingText: `Por ahora solo está ${onlyDocument.originalName}. Si subes otro archivo relacionado, será más fácil señalar cambios con claridad y menos partes preliminares.`,
       cards: [
         {
           title: "Documentos comparados",
           body: `${onlyDocument.originalName} ya forma parte del expediente, pero todavía no hay un segundo documento con el cual contrastarlo.`,
         },
         {
-          title: "Lo que Helios está contrastando",
-          body: `En cuanto haya otro ${getSimpleDocumentTypeLabel(onlyDocument.documentType).toLowerCase()} o un archivo relacionado, Helios podrá revisar fechas, montos o condiciones entre ambos.`,
+          title: "Lo que se está contrastando",
+          body: `En cuanto haya otro ${getSimpleDocumentTypeLabel(onlyDocument.documentType).toLowerCase()} o un archivo relacionado, será posible revisar fechas, montos o condiciones entre ambos.`,
         },
         {
           title: "Qué puede ayudarte a aclararlo más",
           body: params.nextTarget
-            ? `Si puedes, sube ${params.nextTarget.label.toLowerCase()} para que Helios empiece a conectar mejor esta historia.`
+            ? `Si puedes, sube ${params.nextTarget.label.toLowerCase()} para conectar mejor esta historia.`
             : "Si tienes otro documento del mismo periodo o del mismo caso, subirlo puede ayudar mucho a la comparación.",
         },
       ],
-      guardrail: "Helios te mostrará señales y diferencias útiles, pero siempre como una lectura preliminar y entendible.",
+      guardrail: "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
-        "Dos documentos bien conectados suelen darle a Helios una base mucho más útil que un archivo aislado.",
+        "Dos documentos bien conectados suelen darle a tu expediente una base mucho más útil que un archivo aislado.",
       cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar",
     } as const;
   }
@@ -809,7 +814,7 @@ function buildHeliosComparisonCopy(params: {
   if (!selectedPair) {
     return {
       badge: "Comparación en preparación",
-      headline: "Helios sigue reuniendo contexto para comparar mejor",
+      headline: "La comparación sigue reuniendo contexto para ayudarte mejor",
       supportingText:
         "Todavía no hay una pareja de documentos suficiente para contrastar cambios con claridad, pero el expediente ya quedó listo para ello en cuanto subas otra pieza útil.",
       cards: [
@@ -818,8 +823,8 @@ function buildHeliosComparisonCopy(params: {
           body: "Todavía no hay una pareja lista para contraste manual o sugerido dentro del expediente.",
         },
         {
-          title: "Lo que Helios está contrastando",
-          body: "En cuanto exista una segunda pieza útil, Helios podrá revisar fechas, montos y condiciones lado a lado.",
+          title: "Lo que se está contrastando",
+          body: "En cuanto exista una segunda pieza útil, podrás revisar fechas, montos y condiciones lado a lado.",
         },
         {
           title: "Qué puede ayudarte a aclararlo más",
@@ -828,9 +833,9 @@ function buildHeliosComparisonCopy(params: {
             : "Si tienes un segundo documento relacionado, subirlo permitirá activar la comparación guiada.",
         },
       ],
-      guardrail: "Helios te muestra diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+      guardrail: "Verás diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
       coverage:
-        "Mientras más documentos conectados tenga Helios, más fácil le resulta separar cambios reales de simples huecos de información.",
+        "Mientras más documentos conectados tenga tu expediente, más fácil será separar cambios reales de simples huecos de información.",
       cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
     } as const;
   }
@@ -855,18 +860,20 @@ function buildHeliosComparisonCopy(params: {
   return {
     badge: sameType ? "Comparación lista" : "Cruce útil disponible",
     headline: sameType
-      ? `Helios ya puede revisar dos ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()} para buscar cambios útiles`
-      : `Helios ya puede cruzar ${getSimpleDocumentTypeLabel(leftDocument.documentType).toLowerCase()} y ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()}`,
-    supportingText: `Tomó ${leftDocument.originalName} y ${rightDocument.originalName} para revisar ${focus}. Así te da una lectura más clara sin obligarte a comparar todo manualmente.`,
+      ? `Ya se pueden revisar dos ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()} para buscar cambios útiles`
+      : `Ya se pueden cruzar ${getSimpleDocumentTypeLabel(leftDocument.documentType).toLowerCase()} y ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()}`,
+      supportingText: `Tomamos ${leftDocument.originalName} y ${rightDocument.originalName} para revisar ${focus}. Así recibes una lectura más clara sin tener que compararlo todo manualmente.`,
+
     cards: [
       {
         title: "Documentos comparados",
         body: `${leftDocument.originalName} (${formatDate(leftDocument.createdAt)}) y ${rightDocument.originalName} (${formatDate(rightDocument.createdAt)}).`,
       },
-      {
-        title: "Lo que Helios está contrastando",
+        {
+          title: "Lo que se está contrastando",
+
         body: sameType
-          ? `Está buscando cambios en ${focus} para que sea más fácil notar qué se movió entre ambos documentos.`
+          ? `Estamos buscando cambios en ${focus} para que sea más fácil notar qué se movió entre ambos documentos.`
           : `Está revisando ${focus} para ayudarte a conectar dos piezas distintas del expediente con menos fricción.`,
       },
       {
@@ -874,9 +881,9 @@ function buildHeliosComparisonCopy(params: {
         body: firstUncertainty ? `Por ahora todavía conviene revisar esto con calma: ${firstUncertainty}` : suggestedStep,
       },
     ],
-    guardrail: "Helios te muestra diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+    guardrail: "Te mostramos diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
     coverage:
-      "Mientras más documentos conectados tenga Helios, más fácil le resulta distinguir cambios reales de partes que todavía necesitan contexto.",
+      "Mientras más documentos conectados tenga tu expediente, más fácil será distinguir cambios reales de partes que todavía necesitan contexto.",
     cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
   } as const;
 }
@@ -899,8 +906,8 @@ export function buildHeliosPriorityAlerts(params: {
       title: "Hay movimientos del seguimiento que conviene revisar pronto",
       body:
         params.attentionCount === 1
-          ? "Helios detectó un documento en seguimiento con una señal que merece atención para que el expediente no pierda ritmo."
-          : `Helios detectó ${params.attentionCount} documentos en seguimiento con señales que conviene revisar pronto para no dejar cabos sueltos.`,
+          ? "Se detectó un documento en seguimiento con una señal que merece atención para que el expediente no pierda ritmo."
+          : `Se detectaron ${params.attentionCount} documentos en seguimiento con señales que conviene revisar pronto para no dejar cabos sueltos.`,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       icon: "alert",
       timestampLabel: latestAttentionDocument
@@ -934,7 +941,7 @@ export function buildHeliosPriorityAlerts(params: {
       id: "repeated-patterns",
       eyebrow: "Prioridad media",
       title: `Ya hay base para detectar cambios repetidos en ${label}`,
-      body: `Tienes ${repeatedGroup.length} ${label} dentro del expediente. Eso le da a Helios una mejor base para revisar ${focus} con más contexto y menos partes preliminares.`,
+      body: `Tienes ${repeatedGroup.length} ${label} dentro del expediente. Eso da una mejor base para revisar ${focus} con más contexto y menos partes preliminares.`,
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
       timestampLabel: formatDate(repeatedGroup[repeatedGroup.length - 1]?.createdAt),
@@ -965,10 +972,10 @@ export function buildHeliosPriorityAlerts(params: {
       eyebrow: "Prioridad útil",
       title: sameType
         ? "Ya tienes dos documentos listos para una comparación más fina"
-        : "Ya tienes dos piezas que Helios puede cruzar con poco esfuerzo",
+        : "Ya tienes dos piezas listas para contrastarse con claridad",
       body: sameType
-        ? "Helios ya puede revisar cambios del mismo tipo de documento y ayudarte a distinguir mejor qué se movió entre periodos."
-        : "Helios ya puede contrastar dos piezas distintas del expediente para conectar mejor la historia del caso.",
+        ? "Ya se pueden revisar cambios del mismo tipo de documento para ayudarte a distinguir mejor qué se movió entre periodos."
+        : "Ya se pueden contrastar dos piezas distintas del expediente para conectar mejor la historia del caso.",
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
       timestampLabel: formatDate(params.selectedPair[1].createdAt),
@@ -985,7 +992,7 @@ export function buildHeliosPriorityAlerts(params: {
       body: `${params.nextTarget.description} ${params.nextTarget.benefit}`,
       toneClasses: "border-emerald-100 bg-emerald-50 text-emerald-950",
       icon: "sparkles",
-      reasonLabel: "Helios detectó que todavía falta una pieza útil para aclarar mejor el expediente",
+      reasonLabel: "Todavía falta una pieza útil para aclarar mejor el expediente",
       actionLabel: `Siguiente documento sugerido: ${params.nextTarget.label}`,
     });
   }
@@ -994,8 +1001,8 @@ export function buildHeliosPriorityAlerts(params: {
     alerts.push({
       id: "foundation",
       eyebrow: "Base activa",
-      title: "Helios ya tiene una base útil para seguir ordenando el expediente",
-      body: "Cada documento adicional le da más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
+      title: "Tu expediente ya tiene una base útil para seguir ordenándose",
+      body: "Cada documento adicional aporta más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
       reasonLabel: "Tu expediente ya tiene contexto inicial suficiente para seguir creciendo",
@@ -1276,7 +1283,7 @@ export default function Auditar() {
   if (auth.loading) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-950">
-        <div className="container max-w-5xl">
+        <div className="container mx-auto max-w-6xl">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
             <p className="text-sm font-semibold text-teal-700">AuditaPatron</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu espacio de revisión...</h1>
@@ -1289,14 +1296,14 @@ export default function Auditar() {
   if (!auth.isAuthenticated) {
     return (
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-10 text-slate-950">
-        <div className="container max-w-5xl">
+        <div className="container mx-auto max-w-6xl">
           <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950">
             <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
             Volver al inicio
           </a>
 
           <div className="mt-5 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] lg:grid-cols-[1fr_0.9fr] lg:p-8">
-            <div>
+            <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Para trabajadores, sin lenguaje complicado
@@ -1308,7 +1315,7 @@ export default function Auditar() {
                 Entiende lo importante y avanza con pasos simples.
               </p>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
                   onClick={() => {
@@ -1330,7 +1337,7 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
+            <div className="mx-auto w-full max-w-xl rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué verás aquí</p>
               <div className="mt-4 space-y-3">
                 {[
@@ -1353,19 +1360,19 @@ export default function Auditar() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
-      <div className="container max-w-6xl">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
               Volver al inicio
             </a>
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">/auditar</p>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">Tu revisión</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Tus derechos laborales, claros y protegidos
             </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-              Sube documentos y deja que Helios, el cerebro central del expediente, conecte señales, interprete contexto y te muestre una lectura preliminar en lenguaje claro.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+              Sube tus documentos y recibe una explicación clara, tranquila y útil para saber si todo está en orden con tu patrón, sin tecnicismos ni pasos confusos.
             </p>
           </div>
 
@@ -1419,7 +1426,7 @@ export default function Auditar() {
                   </p>
                 </div>
 
-                <div className="min-w-[240px] rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4">
+                <div className="w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
                   <p className="text-sm font-semibold text-teal-900">Próximo paso que más puede ayudarte</p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
                     {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Ya tienes una base documental muy completa"}
@@ -1495,7 +1502,7 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de Helios</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu revisión</p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">{heliosStage.title}</h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosStage.description}</p>
                     </div>
@@ -1517,13 +1524,13 @@ export default function Auditar() {
 
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué hace ahora</p>
-                    <p className="mt-2 font-semibold text-slate-950">Interpreta y ordena</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué está pasando ahora</p>
+                    <p className="mt-2 font-semibold text-slate-950">Ordena y revisa por ti</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">{heliosStage.detail}</p>
                   </div>
 
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Modo actual</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tipo de revisión</p>
                     <p className="mt-2 font-semibold text-slate-950">
                       {visibleHeliosOpinion ? getHeliosModeLabel(visibleHeliosOpinion.mode) : "Modo inicial preparado"}
                     </p>
@@ -1531,12 +1538,12 @@ export default function Auditar() {
                   </div>
 
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cómo interactúas</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué tienes que hacer</p>
                     <p className="mt-2 font-semibold text-slate-950">Subes, revisas y avanzas</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       {visibleHeliosOpinion
-                        ? "La persona usuaria ve lo que Helios entendió, lo que sigue siendo preliminar y el siguiente documento más útil sin entrar a una interfaz técnica."
-                        : "La persona usuaria solo necesita subir un archivo útil. Helios se encarga de interpretarlo y devolver una guía simple dentro del expediente."}
+                        ? "Aquí ves lo que ya quedó claro, lo que sigue en revisión y el siguiente documento que más puede ayudarte, sin pasos técnicos ni menús complicados."
+                        : "Solo necesitas subir un archivo útil. La plataforma lo revisa y te devuelve una guía simple dentro del expediente."}
                     </p>
                   </div>
                 </div>
@@ -1552,13 +1559,13 @@ export default function Auditar() {
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de subirlo, Helios te mostrará qué entendió, qué conviene revisar y cuál es el siguiente paso más útil.
+                  Después de subirlo, verás qué ya se entendió, qué conviene revisar y cuál puede ser el siguiente paso más útil.
                 </p>
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Espacio de trabajo</span>
+                  <span className="text-sm font-medium text-slate-700">Tu espacio</span>
                   <select
                     value={selectedTenantId}
                     onChange={(event) => {
@@ -1577,7 +1584,7 @@ export default function Auditar() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Elige el expediente correcto</span>
+                  <span className="text-sm font-medium text-slate-700">Elige tu caso</span>
                   <select
                     value={selectedCaseId}
                     onChange={(event) => {
@@ -1808,10 +1815,10 @@ export default function Auditar() {
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar de Helios</p>
-                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Helios ya interpretó este documento dentro del expediente</h3>
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya tiene una primera lectura útil dentro de tu expediente</h3>
                           <p className="mt-3 text-sm leading-7 text-slate-700">
-                            {lastHeliosOpinion.summary ?? "Helios ya generó una lectura preliminar útil para seguir armando tu expediente."}
+                            {lastHeliosOpinion.summary ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -1833,7 +1840,7 @@ export default function Auditar() {
 
                       <div className="mt-4 grid gap-4 lg:grid-cols-2">
                         <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
-                          <p className="font-semibold text-teal-950">Qué haría Helios después</p>
+                          <p className="font-semibold text-teal-950">Qué conviene hacer después</p>
                           <p className="mt-2 text-sm leading-7 text-teal-900">
                             {lastHeliosOpinion.recommendedNextStep ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura."}
                           </p>
@@ -1878,7 +1885,7 @@ export default function Auditar() {
                         <div>
                           <p className="font-semibold">Seguimos esperando la respuesta automática</p>
                           <p className="mt-1">
-                            Este documento ya se envió a CompliLink. En la columna lateral verás si la respuesta ya llegó o si conviene darle seguimiento con calma.
+                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó o si conviene darle seguimiento con calma.
                           </p>
                         </div>
                       </div>
@@ -1983,10 +1990,10 @@ export default function Auditar() {
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Línea de tiempo del expediente</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Cómo Helios fue fortaleciendo tu expediente
+                    Cómo se fue fortaleciendo tu expediente
                   </h2>
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-                    Documento por documento, aquí ves cómo Helios fue conectando señales para darle más claridad a tu caso.
+                    Documento por documento, aquí ves cómo tu expediente fue conectando señales para darte más claridad sobre tu caso.
                   </p>
                   {timelineEntries.length > timelinePreviewLimit ? (
                     <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
@@ -2001,7 +2008,7 @@ export default function Auditar() {
 
               {timelineEntries.length === 0 ? (
                 <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo Helios empieza a construir tu expediente paso a paso.
+                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente paso a paso.
                 </div>
               ) : (
                 <div className="mt-6 space-y-4">
@@ -2037,7 +2044,7 @@ export default function Auditar() {
                             <p className="mt-2 text-sm leading-7 text-slate-700">{entry.contribution}</p>
                           </div>
                           <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Cómo lo aprovechó Helios</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Cómo aportó al expediente</p>
                             <p className="mt-2 text-sm leading-7 text-teal-950">{entry.heliosRole}</p>
                           </div>
                         </div>
@@ -2131,7 +2138,7 @@ export default function Auditar() {
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
                             <span className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}>
-                              {heliosOpinion ? "Helios con lectura preliminar" : "Helios pendiente"}
+                              {heliosOpinion ? "Lectura preliminar lista" : "Lectura pendiente"}
                             </span>
                           </div>
                         </div>
@@ -2144,9 +2151,9 @@ export default function Auditar() {
                           <details className="mt-4 rounded-[1rem] border border-teal-100 bg-white p-4">
                             <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
                               <div>
-                                <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar de Helios</p>
+                                <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                                  {heliosOpinion.summary ?? "Helios ya dejó una lectura inicial guardada dentro del expediente."}
+                                  {heliosOpinion.summary ?? "Ya hay una lectura inicial guardada dentro del expediente."}
                                 </p>
                               </div>
                               <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -2205,7 +2212,7 @@ export default function Auditar() {
                           </details>
                         ) : (
                           <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
-                            Helios todavía no tiene una lectura visible guardada para este documento dentro del expediente.
+                            Todavía no hay una lectura visible guardada para este documento dentro del expediente.
                           </div>
                         )}
                       </article>
@@ -2241,11 +2248,11 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <div>
-                    <p className="font-semibold text-teal-950">Helios es el cerebro central de este expediente</p>
+                    <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
                     <p className="mt-2 text-sm leading-7 text-teal-900">
                       {heliosDocumentsCount === 0
-                        ? "Todavía no hay una lectura jurídica visible de Helios. En cuanto interprete documentos, aquí verás cómo va armando el criterio del expediente."
-                        : `Helios ya dejó una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y va conectando esa información para construir una lectura cada vez más útil del caso.`}
+                        ? "Todavía no hay una lectura visible del expediente. En cuanto se interpreten documentos, aquí verás cómo se va armando una explicación más útil para tu caso."
+                        : `Ya hay una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y esa información se va conectando para construir una explicación cada vez más útil del caso.`}
                     </p>
                     {latestPersistedHeliosOpinion ? (
                       <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
@@ -2268,7 +2275,7 @@ export default function Auditar() {
                 <div>
                   <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Así se fortalece tu expediente</h2>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    AuditaPatron recibe tus documentos, Helios los interpreta y CompliLink ayuda a enriquecer la lectura para devolverte una explicación cada vez más clara.
+                    AuditaPatron recibe tus documentos, los organiza, los contrasta y te devuelve una explicación cada vez más clara y útil.
                   </p>
                 </div>
               </div>
@@ -2283,20 +2290,20 @@ export default function Auditar() {
                 </article>
                 <article className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Paso 2</p>
-                  <p className="mt-2 font-semibold text-slate-950">Helios interpreta el contexto</p>
+                  <p className="mt-2 font-semibold text-slate-950">La revisión encuentra contexto útil</p>
                   <p className="mt-2 text-sm leading-6 text-teal-950">
                     {heliosDocumentsCount === 0
-                      ? "En cuanto haya lectura visible, Helios empezará a decirte qué ya se entendió y qué conviene reforzar."
-                      : `Helios ya conectó ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
+                      ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar."
+                      : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">Paso 3</p>
-                  <p className="mt-2 font-semibold text-slate-950">CompliLink devuelve más verificación</p>
+                  <p className="mt-2 font-semibold text-slate-950">La respuesta vuelve más completa</p>
                   <p className="mt-2 text-sm leading-6 text-sky-950">
                     {monitoringDocuments.length === 0
                       ? "Cuando haya seguimiento activo, aquí verás cómo la revisión automática vuelve con más detalle para fortalecer el expediente."
-                      : `Hoy hay ${monitoringDocuments.length} documento${monitoringDocuments.length === 1 ? "" : "s"} dentro del ciclo automático entre Helios y CompliLink.`}
+                      : `Hoy hay ${monitoringDocuments.length} documento${monitoringDocuments.length === 1 ? "" : "s"} dentro del ciclo automático de revisión.`}
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4">
@@ -2311,7 +2318,7 @@ export default function Auditar() {
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-950">Por qué esto te aporta más valor con el tiempo</p>
                 <p className="mt-2 text-sm leading-7 text-slate-700">
-                  Cada documento nuevo alimenta a Helios, y cada retorno útil de CompliLink ayuda a afinar la lectura del expediente. Así el sistema aprende del caso y puede darte resultados más consistentes sin pedirte complejidad adicional.
+                  Cada documento nuevo fortalece tu expediente, y cada retorno útil de la revisión automática ayuda a afinar la lectura del caso. Así recibes resultados más consistentes sin sumar complejidad.
                 </p>
               </div>
             </div>
@@ -2343,8 +2350,8 @@ export default function Auditar() {
               {pendingMonitoringDocuments.length === 0 ? (
                 <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
                   {monitoringDocuments.length === 0
-                    ? "Todavía no hay documentos en seguimiento automático visible. En cuanto subas archivos, Helios te mostrará aquí cómo van avanzando."
-                    : "Por ahora no hay respuestas pendientes fuera del tiempo normal. Si subes más archivos, Helios seguirá mostrándote el avance en este mismo espacio."}
+                    ? "Todavía no hay documentos en seguimiento automático visible. En cuanto subas archivos, aquí verás cómo van avanzando."
+                    : "Por ahora no hay respuestas pendientes fuera del tiempo normal. Si subes más archivos, seguirás viendo el avance en este mismo espacio."}
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
@@ -2352,8 +2359,8 @@ export default function Auditar() {
                     const state = getMonitoringStatusCopy(item.status);
                     const friendlyMessage =
                       item.status === "attention"
-                        ? "La respuesta está tardando un poco más de lo normal, pero Helios sigue resguardando este documento dentro de tu expediente."
-                        : "Helios ya envió este documento y está esperando la respuesta automática. Mientras llega, puedes seguir fortaleciendo tu expediente con otros archivos.";
+                        ? "La respuesta está tardando un poco más de lo normal, pero tu documento sigue resguardado dentro del expediente."
+                        : "Este documento ya entró a revisión automática y está esperando respuesta. Mientras llega, puedes seguir fortaleciendo tu expediente con otros archivos.";
                     return (
                       <div key={item.documentId} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
                         <div className="flex items-start justify-between gap-4">
@@ -2379,16 +2386,17 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Comparación guiada de Helios</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Comparación guiada</p>
               <div className="mt-2 flex items-start gap-3">
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-2">
                   <FileSearch className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Helios: ¿Qué cambió aquí?</h2>
-                  <p className="mt-2 text-sm leading-7 text-slate-600">
-                    Helios compara documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después.
-                  </p>
+                    <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">¿Qué cambió aquí?</h2>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">
+                      Comparamos documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después.
+                    </p>
+
                 </div>
               </div>
 
@@ -2397,7 +2405,7 @@ export default function Auditar() {
                   <div>
                     <p className="text-sm font-semibold text-slate-950">Compara tú mismo dos documentos del expediente</p>
                     <p className="mt-1 text-sm leading-7 text-slate-600">
-                      Si quieres, puedes cambiar la pareja sugerida por Helios para revisar otro contraste sin salir del expediente.
+                      Si quieres, puedes cambiar la pareja sugerida para revisar otro contraste sin salir del expediente.
                     </p>
                   </div>
                   {automaticComparisonPair ? (
@@ -2458,10 +2466,10 @@ export default function Auditar() {
 
                 {comparisonSelectionLocked ? (
                   <p className="mt-3 text-xs leading-6 text-slate-500">
-                    Sube al menos dos documentos para activar la comparación manual de Helios.
+                    Sube al menos dos documentos para activar la comparación manual.
                   </p>
                 ) : comparisonSuggestedLabel ? (
-                  <p className="mt-3 text-xs leading-6 text-slate-500">Sugerencia actual de Helios: {comparisonSuggestedLabel}.</p>
+                  <p className="mt-3 text-xs leading-6 text-slate-500">Sugerencia actual: {comparisonSuggestedLabel}.</p>
                 ) : null}
               </div>
 
@@ -2499,7 +2507,7 @@ export default function Auditar() {
 
                   <article className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Resumen de diferencias</p>
-                    <p className="mt-2 font-semibold text-slate-950">Lo que Helios quiere que revises primero</p>
+                    <p className="mt-2 font-semibold text-slate-950">Lo primero que conviene revisar</p>
                     <p className="mt-3 text-sm leading-7 text-emerald-950">{comparisonCopy.cards[1]?.body}</p>
                     <p className="mt-3 text-xs leading-6 text-emerald-900">Último punto comparado: {formatDate(comparisonRightDocument.createdAt)}</p>
                   </article>
@@ -2509,10 +2517,11 @@ export default function Auditar() {
               <div className="mt-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-teal-700" strokeWidth={1.8} />
-                  <p className="text-sm font-semibold text-slate-950">Alertas priorizadas por Helios</p>
+                  <p className="text-sm font-semibold text-slate-950">Alertas priorizadas</p>
                 </div>
                 <p className="mt-1 text-sm leading-7 text-slate-600">
-                  Helios convierte señales repetidas y puntos sensibles en alertas más fáciles de priorizar.
+                    Convertimos señales repetidas y puntos sensibles en alertas más fáciles de priorizar.
+
                 </p>
                 <div className="mt-3 grid gap-3">
                   {comparisonAlerts.map((alert) => (
@@ -2536,7 +2545,7 @@ export default function Auditar() {
                             </div>
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
                               <p className="font-semibold">Motivo</p>
-                              <p>{alert.reasonLabel ?? "Señal útil detectada por Helios"}</p>
+                              <p>{alert.reasonLabel ?? "Señal útil detectada en tu expediente"}</p>
                             </div>
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
                               <p className="font-semibold">Qué puedes hacer</p>
@@ -2563,7 +2572,7 @@ export default function Auditar() {
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
-                <p className="text-sm font-semibold text-emerald-900">Cómo Helios mejora esta comparación</p>
+                <p className="text-sm font-semibold text-emerald-900">Cómo esta comparación gana claridad</p>
                 <p className="mt-2 text-sm leading-7 text-emerald-950">{comparisonCopy.coverage}</p>
                 <p className="mt-2 text-xs leading-6 text-emerald-900">{comparisonCopy.guardrail}</p>
               </div>
@@ -2579,7 +2588,7 @@ export default function Auditar() {
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Siguiente documento recomendado</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Siguiente documento recomendado por Helios</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Siguiente documento recomendado</h2>
 
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
                 <p className="text-sm font-semibold text-teal-900">Lo que más puede ayudarte ahora</p>

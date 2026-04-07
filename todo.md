@@ -218,3 +218,9 @@
 - [x] Hacer más visible en /auditar el ciclo de valor entre carga documental, lectura de Helios y enriquecimiento desde CompliLink.
 - [x] Añadir contexto de fecha y hora a las alertas priorizadas visibles para la persona usuaria.
 - [x] Mejorar la comparación documental con una vista lado a lado más clara dentro de /auditar.
+- [x] Consultar Grok, ChatGPT y Gemini sobre cómo recentrar la interfaz, eliminar scroll lateral móvil y elevar la sensación de confianza y simplicidad antes de implementar.
+- [x] Recentrar visualmente la interfaz para que se perciba más equilibrada, limpia y estética en desktop y móvil.
+- [x] Eliminar cualquier riesgo de scroll lateral o desbordes confusos en pantallas móviles.
+- [x] Ocultar por completo en la interfaz cualquier mención al motor interno o a Helios, mostrando solo beneficios claros para la persona usuaria.
+- [x] Reescribir la experiencia de AuditaPatron para que se sienta más amigable, confiable, muy fácil de usar y con efecto de magia útil.
+- [x] Validar con pruebas y revisión técnica la nueva ronda de refinamiento centrada en UX mobile-first y confianza.

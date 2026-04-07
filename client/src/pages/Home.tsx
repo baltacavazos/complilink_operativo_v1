@@ -166,7 +166,8 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between gap-4">
+        <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between gap-4">
+
         <a href="#top" className="flex items-center gap-3 text-slate-950">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-[0_14px_30px_-18px_rgba(13,148,136,0.9)]">
             <Shield className="h-5 w-5" strokeWidth={1.8} />
@@ -226,7 +227,7 @@ function SiteHeader() {
 
       {open ? (
         <div className="border-t border-slate-200 bg-white md:hidden">
-          <div className="container space-y-1 py-4">
+          <div className="container mx-auto max-w-6xl space-y-1 py-4">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -273,8 +274,8 @@ function HeroSection() {
       id="top"
       className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.16),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] pb-14 pt-10 sm:pb-16 sm:pt-14"
     >
-      <div className="container grid items-center gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
-        <div className="max-w-2xl">
+      <div className="container mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
+        <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
             className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-2 text-sm font-medium text-teal-800 sm:px-4"
             style={{ ["--motion-delay" as string]: "40ms" }}
@@ -299,11 +300,11 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Helios es el cerebro central de AuditaPatron: recopila señales de tus documentos, las interpreta con lenguaje claro y te orienta sobre qué sigue sin complicarte.
+            Sube tus documentos laborales y recibe una respuesta clara, tranquila y útil para saber si todo está en orden con tu patrón, sin palabras difíciles ni pasos confusos.
           </p>
 
           <div
-            className="motion-enter-soft mt-6 flex flex-col gap-3 sm:flex-row"
+            className="motion-enter-soft mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -323,7 +324,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-6 flex flex-wrap gap-3 text-sm text-slate-600"
+            className="motion-enter-soft mt-6 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
             style={{ ["--motion-delay" as string]: "380ms" }}
           >
             {["100% confidencial", "Sin jerga legal", "Separa hechos de suposiciones"].map((item) => (
@@ -350,7 +351,7 @@ function HeroSection() {
                   Fortaleza inicial del expediente
                 </p>
                 <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                  Helios ordena tu expediente y fortalece tu respaldo
+                  Tu revisión se organiza sola y te devuelve claridad útil
                 </p>
               </div>
               <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -370,15 +371,15 @@ function HeroSection() {
                 />
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-900">
-                Helios detecta lo útil, conecta tus documentos y te da más claridad para comparar cambios y cuidar tu respaldo.
+                Cada documento suma contexto, mejora la revisión y te ayuda a entender con más claridad qué está bien y qué conviene revisar.
               </p>
             </div>
 
             <div className="mt-5 space-y-3">
               {[
                 "Sube recibo, contrato o CFDI.",
-                "Helios te muestra lo importante con palabras simples.",
-                "Helios te indica qué documento puede ayudarte después.",
+                "Te mostramos lo importante con palabras simples.",
+                "Te sugerimos qué documento puede ayudarte después.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -400,7 +401,7 @@ function HeroSection() {
 function QuickTrustSection() {
   return (
     <section className="border-y border-slate-200 bg-white py-3.5">
-      <div className="container flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
+      <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
           "Sube recibo, CFDI o contrato.",
           "Ve qué ya está claro.",
@@ -408,7 +409,7 @@ function QuickTrustSection() {
         ].map((item) => (
           <div
             key={item}
-            className="min-w-[220px] rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 sm:min-w-0 sm:rounded-[1.3rem] sm:px-4 sm:py-3"
+            className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
           >
             {item}
           </div>
@@ -418,43 +419,43 @@ function QuickTrustSection() {
   );
 }
 
-function HeliosCentralBrainSection() {
+function ConfidenceMagicSection() {
   return (
     <section className="bg-white py-12 sm:py-14">
-      <div className="container">
+      <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
-          <div className="max-w-3xl">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-              Qué hace Helios por ti
+              Una experiencia simple y confiable
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Helios convierte documentos sueltos en claridad accionable.
+              Tus documentos entran como archivos sueltos y regresan como respuestas útiles.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              No necesitas aprender leyes ni entender tablas complejas. Tú subes documentos y Helios los usa para ordenar contexto, interpretar señales y decirte qué conviene revisar o reunir después.
+              Tú solo subes lo que ya tienes. AuditaPatron organiza la información, detecta señales relevantes y te devuelve una explicación fácil de entender para que sepas qué revisar con calma.
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {[
               {
-                title: "Recopila contexto útil",
+                title: "Ordena lo importante por ti",
                 description:
-                  "Helios toma recibos, CFDI, contratos y evidencia para que tu expediente deje de sentirse fragmentado.",
+                  "Recibos, CFDI, contratos y evidencia se convierten en una revisión más clara y menos fragmentada.",
                 detail: "Cada archivo suma una pieza más para entender mejor tu caso.",
                 icon: Upload,
               },
               {
-                title: "Interpreta en lenguaje humano",
+                title: "Te habla en lenguaje simple",
                 description:
-                  "Helios te muestra qué ya está claro, qué sigue siendo preliminar y cómo se va formando el criterio del expediente.",
+                  "Te mostramos qué ya está claro, qué sigue en revisión y dónde conviene poner atención primero.",
                 detail: "La interfaz prioriza claridad antes que tecnicismos.",
                 icon: FileSearch,
               },
               {
-                title: "Te guía sin cambiar tu forma de uso",
+                title: "Te guía con el siguiente mejor paso",
                 description:
-                  "Helios te sugiere el siguiente documento más útil y la experiencia ya está lista para seguir igual cuando activemos el modo remoto.",
+                  "Después de cada revisión, sabes qué documento puede ayudarte más sin aprender procesos técnicos ni cambiar tu forma de uso.",
                 detail: "La persona usuaria solo sube, revisa y avanza.",
                 icon: ShieldCheck,
               },
@@ -539,8 +540,8 @@ function HowItWorksSection() {
 function DossierSection() {
   return (
     <section id="expediente" className="bg-white py-14 sm:py-16">
-      <div className="container grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div>
+      <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
             Tu expediente en crecimiento
           </p>
@@ -573,7 +574,7 @@ function DossierSection() {
           </Button>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_40px_100px_-70px_rgba(15,23,42,0.55)] sm:p-7">
+        <div className="mx-auto w-full max-w-xl rounded-[2rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_40px_100px_-70px_rgba(15,23,42,0.55)] sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -622,7 +623,7 @@ function GuidedTourSection() {
 
   return (
     <section id="recorrido" className="bg-slate-950 py-14 text-white sm:py-16">
-      <div className="container grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+      <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-300">
             Recorrido guiado
@@ -904,7 +905,7 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
-      <HeliosCentralBrainSection />
+      <ConfidenceMagicSection />
       <HowItWorksSection />
       <DossierSection />
       <GuidedTourSection />
