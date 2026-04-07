@@ -51,6 +51,7 @@ type HeliosOpinionView = {
   generatedAt?: string | null;
   disclaimer?: string | null;
   mode?: string | null;
+  status?: string | null;
 };
 
 const dossierTargets: DossierTarget[] = [
@@ -268,6 +269,69 @@ function getHeliosRiskCopy(value?: string | null) {
 
 function getHeliosModeLabel(value?: string | null) {
   return value === "remote" ? "Helios remoto" : "Helios inicial";
+}
+
+function getHeliosActivationCopy(value?: string | null) {
+  return value === "remote"
+    ? "La lectura ya viene desde la integración remota de Helios y la interfaz conserva la misma experiencia para la persona usuaria."
+    : "La experiencia ya está lista para mostrar una respuesta remota de Helios en cuanto se encienda ese modo, sin cambiar la forma de uso.";
+}
+
+function getHeliosStageCopy(params: {
+  opinion?: HeliosOpinionView | null;
+  engineStatus?: string;
+  engineReason?: string | null;
+  documentsWithOpinion: number;
+}) {
+  if (params.opinion && params.opinion.status !== "processing" && params.opinion.status !== "sent") {
+    return {
+      badge: "Lectura visible",
+      title: "Helios ya está construyendo criterio dentro del expediente",
+      description:
+        params.documentsWithOpinion > 1
+          ? `Ya dejó una lectura preliminar visible en ${params.documentsWithOpinion} documentos y puede seguir conectando señales entre ellos.`
+          : "Ya dejó una lectura preliminar visible y puede seguir conectando este documento con el resto del expediente.",
+      detail:
+        "Ahora Helios no solo recibe archivos: interpreta contexto, separa lo claro de lo preliminar y orienta el siguiente paso útil dentro del caso.",
+      tone: "success" as const,
+    };
+  }
+
+  if (params.engineStatus === "sent" || params.opinion?.status === "processing" || params.opinion?.status === "sent") {
+    return {
+      badge: "Interpretando",
+      title: "Helios ya recibió material y está listo para devolver lectura visible",
+      description:
+        "El documento ya quedó protegido y la interfaz está preparada para mostrar la lectura apenas la integración devuelva más detalle.",
+      detail:
+        "Mientras tanto, la persona puede seguir reuniendo documentos sin perder trazabilidad ni contexto del expediente.",
+      tone: "processing" as const,
+    };
+  }
+
+  if (params.engineStatus === "failed") {
+    return {
+      badge: "Revisión pendiente",
+      title: "Helios necesita un nuevo intento, pero el expediente sigue intacto",
+      description:
+        params.engineReason === "webhook_rejected"
+          ? "La etapa automática necesita revisión, aunque el documento sí quedó guardado y protegido dentro del expediente."
+          : "Hubo una pausa temporal en la etapa automática, pero el documento quedó resguardado y listo para retomar la interpretación.",
+      detail:
+        "La experiencia mantiene el archivo disponible y deja lista la base para reanudar la lectura sin rehacer pasos del usuario.",
+      tone: "warning" as const,
+    };
+  }
+
+  return {
+    badge: "Listo para empezar",
+    title: "Helios está listo para convertirse en el cerebro activo de este expediente",
+    description:
+      "En cuanto subas un documento útil, Helios empezará a interpretarlo, ordenar señales y sugerir el siguiente paso más útil.",
+    detail:
+      "La interfaz ya está preparada para mostrar una lectura inicial ahora y una respuesta remota más adelante, sin cambiar la forma de usar AuditaPatron.",
+    tone: "neutral" as const,
+  };
 }
 
 function getUploadInsight(documentType: string): UploadInsight {
@@ -506,6 +570,13 @@ export default function Auditar() {
     [documents],
   );
   const latestPersistedHeliosOpinion = asHeliosOpinion(latestHeliosDocument?.heliosOpinion);
+  const visibleHeliosOpinion = lastHeliosOpinion ?? latestPersistedHeliosOpinion;
+  const heliosStage = getHeliosStageCopy({
+    opinion: visibleHeliosOpinion,
+    engineStatus: lastUpload?.engineDispatch?.status,
+    engineReason: lastUpload?.engineDispatch?.reason,
+    documentsWithOpinion: heliosDocumentsCount,
+  });
   const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
 
   const dossierStatus = useMemo(() => {
@@ -789,6 +860,88 @@ export default function Auditar() {
                     </article>
                   );
                 })}
+              </div>
+
+              <div
+                className={`mt-5 rounded-[1.45rem] border p-4 sm:p-5 ${
+                  heliosStage.tone === "success"
+                    ? "border-emerald-100 bg-emerald-50"
+                    : heliosStage.tone === "processing"
+                      ? "border-sky-200 bg-sky-50"
+                      : heliosStage.tone === "warning"
+                        ? "border-amber-200 bg-amber-50"
+                        : "border-teal-100 bg-teal-50"
+                }`}
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                        heliosStage.tone === "success"
+                          ? "bg-white text-emerald-700"
+                          : heliosStage.tone === "processing"
+                            ? "bg-white text-sky-700"
+                            : heliosStage.tone === "warning"
+                              ? "bg-white text-amber-700"
+                              : "bg-white text-teal-700"
+                      }`}
+                    >
+                      {heliosStage.tone === "success" ? (
+                        <Sparkles className="h-5 w-5" strokeWidth={1.8} />
+                      ) : heliosStage.tone === "processing" ? (
+                        <RefreshCw className="h-5 w-5" strokeWidth={1.8} />
+                      ) : heliosStage.tone === "warning" ? (
+                        <AlertCircle className="h-5 w-5" strokeWidth={1.8} />
+                      ) : (
+                        <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Microestado de Helios</p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-950">{heliosStage.title}</h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosStage.description}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      heliosStage.tone === "success"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : heliosStage.tone === "processing"
+                          ? "bg-sky-100 text-sky-800"
+                          : heliosStage.tone === "warning"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-white text-teal-800"
+                    }`}
+                  >
+                    {heliosStage.badge}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué hace ahora</p>
+                    <p className="mt-2 font-semibold text-slate-950">Interpreta y ordena</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">{heliosStage.detail}</p>
+                  </div>
+
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Modo actual</p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {visibleHeliosOpinion ? getHeliosModeLabel(visibleHeliosOpinion.mode) : "Base lista para modo remoto"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">{getHeliosActivationCopy(visibleHeliosOpinion?.mode)}</p>
+                  </div>
+
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cómo interactúas</p>
+                    <p className="mt-2 font-semibold text-slate-950">Subes, revisas y avanzas</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {visibleHeliosOpinion
+                        ? "La persona usuaria ve lo que Helios entendió, lo que sigue siendo preliminar y el siguiente documento más útil sin entrar a una interfaz técnica."
+                        : "La persona usuaria solo necesita subir un archivo útil. Helios se encarga de interpretarlo y devolver una guía simple dentro del expediente."}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

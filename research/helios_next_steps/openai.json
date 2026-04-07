@@ -1,0 +1,140 @@
+{
+  "provider": "openai",
+  "ok": true,
+  "model": "gpt-4.1-mini",
+  "result": {
+    "design_direction": "Integrar a Helios como guía activa y confiable con microestados claros y explicación breve, manteniendo simplicidad y foco móvil.",
+    "home_explainer": {
+      "section_title": "¿Qué hace Helios por ti?",
+      "section_intro": "Helios es el cerebro que lee y entiende tus documentos para proteger tus derechos con claridad y confianza.",
+      "cards": [
+        {
+          "title": "Lee tus documentos",
+          "body": "Helios interpreta cada archivo para identificar lo que está claro y lo que necesita atención."
+        },
+        {
+          "title": "Fortalece tu expediente",
+          "body": "Organiza y conecta la información para que tu respaldo sea sólido y fácil de entender."
+        },
+        {
+          "title": "Te guía al siguiente paso",
+          "body": "Sugiere acciones simples y claras para proteger mejor tus derechos laborales."
+        }
+      ]
+    },
+    "auditar_microstate": {
+      "placement": "Encima de la opinión preliminar del documento, visible en móvil sin scroll",
+      "title": "Estado de Helios",
+      "body": "Helios está trabajando para interpretar y fortalecer tu expediente. Aquí te contamos cómo va.",
+      "status_mapping": [
+        {
+          "status": "pending_dispatch",
+          "label": "Preparando análisis",
+          "description": "Helios está por comenzar a revisar tu documento."
+        },
+        {
+          "status": "sent",
+          "label": "Análisis enviado",
+          "description": "Tu documento está en camino para ser interpretado."
+        },
+        {
+          "status": "processing",
+          "label": "Interpretando documento",
+          "description": "Helios está leyendo y entendiendo la información."
+        },
+        {
+          "status": "completed",
+          "label": "Análisis listo",
+          "description": "Helios terminó y tu expediente está más fuerte."
+        },
+        {
+          "status": "partial",
+          "label": "Análisis parcial",
+          "description": "Helios encontró información clara pero aún faltan detalles."
+        },
+        {
+          "status": "error",
+          "label": "Error en análisis",
+          "description": "Hubo un problema interpretando el documento. Intenta de nuevo."
+        },
+        {
+          "status": "timeout",
+          "label": "Tiempo agotado",
+          "description": "Helios tardó demasiado. Reintentaremos pronto."
+        },
+        {
+          "status": "not_configured",
+          "label": "No disponible",
+          "description": "Helios no está activo para este documento aún."
+        }
+      ]
+    },
+    "remote_ready_contract": {
+      "ui_rule": "Mostrar microestado y opinión basada en 'mode' sin cambios en estructura visual, solo etiquetas y estados.",
+      "backend_rule": "Soportar modo 'mock' y 'remote' con mismo contrato de opinión para no romper la UI.",
+      "mode_strategy": "Detectar modo por campo 'mode' y adaptar llamadas sin alterar interfaz ni flujos visibles.",
+      "minimum_fields": [
+        "engine",
+        "mode",
+        "status"
+      ],
+      "future_events": [
+        "opinion_requested",
+        "opinion_updated",
+        "opinion_error"
+      ]
+    },
+    "copy_principles": [
+      "Lenguaje simple, humano y cercano, sin jerga técnica.",
+      "Comunicar progreso y resultados con frases cortas y positivas.",
+      "Centrar al usuario como protagonista, Helios como apoyo confiable."
+    ],
+    "implementation_priority": [
+      "Agregar microestado visible en /auditar para todos los estados Helios.",
+      "Incluir sección explicativa breve en home sin alterar diseño actual.",
+      "Preparar backend y UI para modo remoto manteniendo contrato actual."
+    ],
+    "risks_to_avoid": [
+      "No sobrecargar la interfaz con mensajes técnicos o demasiada información.",
+      "Evitar que Helios parezca un chatbot o elemento separado del flujo.",
+      "No cambiar estructura visual actual para no confundir usuarios existentes."
+    ]
+  },
+  "raw": {
+    "id": "chatcmpl-DS2rHScEbzDQExwGd9M9MJCuwNMrt",
+    "object": "chat.completion",
+    "created": 1775576543,
+    "model": "gpt-4.1-mini-2025-04-14",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"design_direction\": \"Integrar a Helios como guía activa y confiable con microestados claros y explicación breve, manteniendo simplicidad y foco móvil.\",\n  \"home_explainer\": {\n    \"section_title\": \"¿Qué hace Helios por ti?\",\n    \"section_intro\": \"Helios es el cerebro que lee y entiende tus documentos para proteger tus derechos con claridad y confianza.\",\n    \"cards\": [\n      {\n        \"title\": \"Lee tus documentos\",\n        \"body\": \"Helios interpreta cada archivo para identificar lo que está claro y lo que necesita atención.\"\n      },\n      {\n        \"title\": \"Fortalece tu expediente\",\n        \"body\": \"Organiza y conecta la información para que tu respaldo sea sólido y fácil de entender.\"\n      },\n      {\n        \"title\": \"Te guía al siguiente paso\",\n        \"body\": \"Sugiere acciones simples y claras para proteger mejor tus derechos laborales.\"\n      }\n    ]\n  },\n  \"auditar_microstate\": {\n    \"placement\": \"Encima de la opinión preliminar del documento, visible en móvil sin scroll\",\n    \"title\": \"Estado de Helios\",\n    \"body\": \"Helios está trabajando para interpretar y fortalecer tu expediente. Aquí te contamos cómo va.\",\n    \"status_mapping\": [\n      {\n        \"status\": \"pending_dispatch\",\n        \"label\": \"Preparando análisis\",\n        \"description\": \"Helios está por comenzar a revisar tu documento.\"\n      },\n      {\n        \"status\": \"sent\",\n        \"label\": \"Análisis enviado\",\n        \"description\": \"Tu documento está en camino para ser interpretado.\"\n      },\n      {\n        \"status\": \"processing\",\n        \"label\": \"Interpretando documento\",\n        \"description\": \"Helios está leyendo y entendiendo la información.\"\n      },\n      {\n        \"status\": \"completed\",\n        \"label\": \"Análisis listo\",\n        \"description\": \"Helios terminó y tu expediente está más fuerte.\"\n      },\n      {\n        \"status\": \"partial\",\n        \"label\": \"Análisis parcial\",\n        \"description\": \"Helios encontró información clara pero aún faltan detalles.\"\n      },\n      {\n        \"status\": \"error\",\n        \"label\": \"Error en análisis\",\n        \"description\": \"Hubo un problema interpretando el documento. Intenta de nuevo.\"\n      },\n      {\n        \"status\": \"timeout\",\n        \"label\": \"Tiempo agotado\",\n        \"description\": \"Helios tardó demasiado. Reintentaremos pronto.\"\n      },\n      {\n        \"status\": \"not_configured\",\n        \"label\": \"No disponible\",\n        \"description\": \"Helios no está activo para este documento aún.\"\n      }\n    ]\n  },\n  \"remote_ready_contract\": {\n    \"ui_rule\": \"Mostrar microestado y opinión basada en 'mode' sin cambios en estructura visual, solo etiquetas y estados.\",\n    \"backend_rule\": \"Soportar modo 'mock' y 'remote' con mismo contrato de opinión para no romper la UI.\",\n    \"mode_strategy\": \"Detectar modo por campo 'mode' y adaptar llamadas sin alterar interfaz ni flujos visibles.\",\n    \"minimum_fields\": [\"engine\", \"mode\", \"status\"],\n    \"future_events\": [\"opinion_requested\", \"opinion_updated\", \"opinion_error\"]\n  },\n  \"copy_principles\": [\n    \"Lenguaje simple, humano y cercano, sin jerga técnica.\",\n    \"Comunicar progreso y resultados con frases cortas y positivas.\",\n    \"Centrar al usuario como protagonista, Helios como apoyo confiable.\"\n  ],\n  \"implementation_priority\": [\n    \"Agregar microestado visible en /auditar para todos los estados Helios.\",\n    \"Incluir sección explicativa breve en home sin alterar diseño actual.\",\n    \"Preparar backend y UI para modo remoto manteniendo contrato actual.\"\n  ],\n  \"risks_to_avoid\": [\n    \"No sobrecargar la interfaz con mensajes técnicos o demasiada información.\",\n    \"Evitar que Helios parezca un chatbot o elemento separado del flujo.\",\n    \"No cambiar estructura visual actual para no confundir usuarios existentes.\"\n  ]\n}",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 878,
+      "completion_tokens": 849,
+      "total_tokens": 1727,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_a71fcbb46e"
+  },
+  "elapsed_seconds": 13.46
+}

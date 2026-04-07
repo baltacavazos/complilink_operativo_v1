@@ -1,0 +1,142 @@
+{
+  "provider": "grok",
+  "ok": true,
+  "model": "grok-4-0709",
+  "result": {
+    "design_direction": "Integración mínima de Helios como cerebro central, priorizando mobile con simplicidad y claridad humana.",
+    "home_explainer": {
+      "section_title": "Helios, tu aliado en el expediente",
+      "section_intro": "Helios analiza tus documentos laborales para darte claridad, separar lo seguro de lo estimado y sugerir pasos simples para fortalecer tu respaldo.",
+      "cards": [
+        {
+          "title": "Interpreta documentos",
+          "body": "Lee y explica en palabras sencillas lo que dicen tus papeles laborales."
+        },
+        {
+          "title": "Separa claro de estimado",
+          "body": "Distingue hechos confirmados de cálculos aproximados para que sepas dónde enfocarte."
+        },
+        {
+          "title": "Fortalece tu expediente",
+          "body": "Ordena todo y te guía en el siguiente paso para un respaldo más sólido."
+        }
+      ]
+    },
+    "auditar_microstate": {
+      "placement": "Encima de la lista de documentos en /auditar, como un banner sutil mobile-friendly",
+      "title": "Helios está trabajando",
+      "body": "Mira el estado actual mientras Helios analiza y fortalece tu expediente.",
+      "status_mapping": [
+        {
+          "status": "pending_dispatch",
+          "label": "Preparando",
+          "description": "Helios se alista para revisar tu documento."
+        },
+        {
+          "status": "sent",
+          "label": "Enviado",
+          "description": "Tu documento ya está en camino a Helios."
+        },
+        {
+          "status": "processing",
+          "label": "Analizando",
+          "description": "Helios está interpretando y separando lo claro de lo estimado."
+        },
+        {
+          "status": "completed",
+          "label": "Listo",
+          "description": "Helios ha terminado y fortalecido tu expediente."
+        },
+        {
+          "status": "partial",
+          "label": "Parcial",
+          "description": "Helios ha completado parte del análisis; revisa lo disponible."
+        },
+        {
+          "status": "error",
+          "label": "Problema",
+          "description": "Algo salió mal; intenta subir de nuevo o contacta soporte."
+        },
+        {
+          "status": "timeout",
+          "label": "Tiempo excedido",
+          "description": "El análisis tardó mucho; prueba otra vez."
+        },
+        {
+          "status": "not_configured",
+          "label": "No disponible",
+          "description": "Helios no está listo para este tipo de documento aún."
+        }
+      ]
+    },
+    "remote_ready_contract": {
+      "ui_rule": "Mantener UI idéntica para mock y remote, solo cambiar modo en config sin impacto visual.",
+      "backend_rule": "Usar modo como flag para enrutar requests, reutilizando status y opinion existentes.",
+      "mode_strategy": "Switch backend por entorno (dev/mock, prod/remote) con fallback a mock si remote falla.",
+      "minimum_fields": [
+        "engine",
+        "mode",
+        "status",
+        "opinion"
+      ],
+      "future_events": [
+        "remote_success",
+        "mode_switch",
+        "fallback_trigger"
+      ]
+    },
+    "copy_principles": [
+      "Usar lenguaje simple y humano",
+      "Enfocarse en beneficios claros",
+      "Evitar términos técnicos"
+    ],
+    "implementation_priority": [
+      "Agregar microestado en /auditar",
+      "Implementar sección explicativa en home",
+      "Preparar contrato para remote"
+    ],
+    "risks_to_avoid": [
+      "Sobrecargar la UI con elementos innecesarios",
+      "Exponer jerga técnica en mensajes visibles",
+      "Alterar el flujo simple existente"
+    ]
+  },
+  "raw": {
+    "id": "d12c0d34-dcfb-9156-8959-ebb666fd424f",
+    "object": "chat.completion",
+    "created": 1775576556,
+    "model": "grok-4-0709",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"design_direction\": \"Integración mínima de Helios como cerebro central, priorizando mobile con simplicidad y claridad humana.\",\n  \"home_explainer\": {\n    \"section_title\": \"Helios, tu aliado en el expediente\",\n    \"section_intro\": \"Helios analiza tus documentos laborales para darte claridad, separar lo seguro de lo estimado y sugerir pasos simples para fortalecer tu respaldo.\",\n    \"cards\": [\n      {\"title\": \"Interpreta documentos\", \"body\": \"Lee y explica en palabras sencillas lo que dicen tus papeles laborales.\"},\n      {\"title\": \"Separa claro de estimado\", \"body\": \"Distingue hechos confirmados de cálculos aproximados para que sepas dónde enfocarte.\"},\n      {\"title\": \"Fortalece tu expediente\", \"body\": \"Ordena todo y te guía en el siguiente paso para un respaldo más sólido.\"}\n    ]\n  },\n  \"auditar_microstate\": {\n    \"placement\": \"Encima de la lista de documentos en /auditar, como un banner sutil mobile-friendly\",\n    \"title\": \"Helios está trabajando\",\n    \"body\": \"Mira el estado actual mientras Helios analiza y fortalece tu expediente.\",\n    \"status_mapping\": [\n      {\"status\": \"pending_dispatch\", \"label\": \"Preparando\", \"description\": \"Helios se alista para revisar tu documento.\"},\n      {\"status\": \"sent\", \"label\": \"Enviado\", \"description\": \"Tu documento ya está en camino a Helios.\"},\n      {\"status\": \"processing\", \"label\": \"Analizando\", \"description\": \"Helios está interpretando y separando lo claro de lo estimado.\"},\n      {\"status\": \"completed\", \"label\": \"Listo\", \"description\": \"Helios ha terminado y fortalecido tu expediente.\"},\n      {\"status\": \"partial\", \"label\": \"Parcial\", \"description\": \"Helios ha completado parte del análisis; revisa lo disponible.\"},\n      {\"status\": \"error\", \"label\": \"Problema\", \"description\": \"Algo salió mal; intenta subir de nuevo o contacta soporte.\"},\n      {\"status\": \"timeout\", \"label\": \"Tiempo excedido\", \"description\": \"El análisis tardó mucho; prueba otra vez.\"},\n      {\"status\": \"not_configured\", \"label\": \"No disponible\", \"description\": \"Helios no está listo para este tipo de documento aún.\"}\n    ]\n  },\n  \"remote_ready_contract\": {\n    \"ui_rule\": \"Mantener UI idéntica para mock y remote, solo cambiar modo en config sin impacto visual.\",\n    \"backend_rule\": \"Usar modo como flag para enrutar requests, reutilizando status y opinion existentes.\",\n    \"mode_strategy\": \"Switch backend por entorno (dev/mock, prod/remote) con fallback a mock si remote falla.\",\n    \"minimum_fields\": [\"engine\", \"mode\", \"status\", \"opinion\"],\n    \"future_events\": [\"remote_success\", \"mode_switch\", \"fallback_trigger\"]\n  },\n  \"copy_principles\": [\"Usar lenguaje simple y humano\", \"Enfocarse en beneficios claros\", \"Evitar términos técnicos\"],\n  \"implementation_priority\": [\"Agregar microestado en /auditar\", \"Implementar sección explicativa en home\", \"Preparar contrato para remote\"],\n  \"risks_to_avoid\": [\"Sobrecargar la UI con elementos innecesarios\", \"Exponer jerga técnica en mensajes visibles\", \"Alterar el flujo simple existente\"]\n}",
+          "refusal": null
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1567,
+      "completion_tokens": 730,
+      "total_tokens": 2881,
+      "prompt_tokens_details": {
+        "text_tokens": 1567,
+        "audio_tokens": 0,
+        "image_tokens": 0,
+        "cached_tokens": 676
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 584,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "num_sources_used": 0,
+      "cost_in_usd_ticks": 228900000
+    },
+    "system_fingerprint": "fp_74614d6fcc"
+  },
+  "elapsed_seconds": 24.78
+}

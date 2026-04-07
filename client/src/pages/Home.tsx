@@ -299,7 +299,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Helios interpreta tus documentos, separa lo claro de lo estimado y fortalece tu expediente sin complicaciones.
+            Helios es el cerebro central de AuditaPatron: recopila señales de tus documentos, las interpreta con lenguaje claro y te orienta sobre qué sigue sin complicarte.
           </p>
 
           <div
@@ -413,6 +413,71 @@ function QuickTrustSection() {
             {item}
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function HeliosCentralBrainSection() {
+  return (
+    <section className="bg-white py-12 sm:py-14">
+      <div className="container">
+        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+              Qué hace Helios por ti
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+              Helios convierte documentos sueltos en claridad accionable.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              No necesitas aprender leyes ni entender tablas complejas. Tú subes documentos y Helios los usa para ordenar contexto, interpretar señales y decirte qué conviene revisar o reunir después.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {[
+              {
+                title: "Recopila contexto útil",
+                description:
+                  "Helios toma recibos, CFDI, contratos y evidencia para que tu expediente deje de sentirse fragmentado.",
+                detail: "Cada archivo suma una pieza más para entender mejor tu caso.",
+                icon: Upload,
+              },
+              {
+                title: "Interpreta en lenguaje humano",
+                description:
+                  "Helios te muestra qué ya está claro, qué sigue siendo preliminar y cómo se va formando el criterio del expediente.",
+                detail: "La interfaz prioriza claridad antes que tecnicismos.",
+                icon: FileSearch,
+              },
+              {
+                title: "Te guía sin cambiar tu forma de uso",
+                description:
+                  "Helios te sugiere el siguiente documento más útil y la experiencia ya está lista para seguir igual cuando activemos el modo remoto.",
+                detail: "La persona usuaria solo sube, revisa y avanza.",
+                icon: ShieldCheck,
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <article
+                  key={item.title}
+                  className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)]"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{item.description}</p>
+                  <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                    {item.detail}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -839,6 +904,7 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
+      <HeliosCentralBrainSection />
       <HowItWorksSection />
       <DossierSection />
       <GuidedTourSection />

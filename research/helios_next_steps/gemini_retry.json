@@ -1,0 +1,135 @@
+{
+  "provider": "gemini",
+  "ok": true,
+  "model": "gemini-2.5-flash",
+  "attempt": 4,
+  "elapsed_seconds": 16.44,
+  "result": {
+    "design_direction": "Claridad Activa y Confianza Guiada por Helios",
+    "home_explainer": {
+      "section_title": "Así te ayuda Helios a fortalecer tu expediente",
+      "section_intro": "Helios es el cerebro detrás de AuditaPatron, trabajando para que tus derechos estén siempre claros y protegidos.",
+      "cards": [
+        {
+          "title": "Interpreta tus documentos",
+          "body": "Lee y entiende cada detalle de tus pruebas laborales, sin que tengas que ser un experto."
+        },
+        {
+          "title": "Separa lo claro de lo estimado",
+          "body": "Identifica la información sólida de aquella que necesita más respaldo, dándote una visión honesta."
+        },
+        {
+          "title": "Fortalece tu respaldo",
+          "body": "Te guía para completar tu expediente y sugiere los próximos pasos para proteger mejor tus derechos."
+        }
+      ]
+    },
+    "auditar_microstate": {
+      "placement": "Debajo del título de cada documento en la vista de expediente y junto a la opinión preliminar general.",
+      "title": "Helios está analizando",
+      "body": "Estamos interpretando tu documento para fortalecer tu expediente.",
+      "status_mapping": [
+        {
+          "status": "pending_dispatch",
+          "label": "Preparando análisis",
+          "description": "Tu documento está listo para ser revisado por Helios."
+        },
+        {
+          "status": "sent",
+          "label": "Enviado a Helios",
+          "description": "Tu documento ha sido enviado para su interpretación."
+        },
+        {
+          "status": "processing",
+          "label": "Helios analizando",
+          "description": "Helios está leyendo y entendiendo tu documento."
+        },
+        {
+          "status": "completed",
+          "label": "Análisis completado",
+          "description": "Helios ha terminado de interpretar tu documento."
+        },
+        {
+          "status": "partial",
+          "label": "Análisis parcial",
+          "description": "Helios ha interpretado parte de tu documento. Revisa los detalles."
+        },
+        {
+          "status": "error",
+          "label": "Error en análisis",
+          "description": "Hubo un problema al interpretar tu documento. Intenta de nuevo o contacta soporte."
+        },
+        {
+          "status": "timeout",
+          "label": "Análisis tardío",
+          "description": "Helios está tardando más de lo esperado. Estamos revisando."
+        },
+        {
+          "status": "not_configured",
+          "label": "Helios no disponible",
+          "description": "La interpretación de Helios no está configurada para este documento."
+        }
+      ]
+    },
+    "remote_ready_contract": {
+      "ui_rule": "La interfaz de usuario debe renderizar los estados de Helios y la opinión independientemente del `mode` (mock/remote), priorizando la disponibilidad de `opinion` y `status`.",
+      "backend_rule": "El backend debe garantizar que el campo `status` se actualice de forma asíncrona y que `opinion` se envíe solo cuando esté disponible, sin bloquear el flujo principal.",
+      "mode_strategy": "El `mode` (mock/remote) debe ser una configuración a nivel de entorno o usuario, no una variable que altere la estructura de la UI. La UI solo debe reaccionar a la presencia/ausencia y contenido de `opinion` y `status`.",
+      "minimum_fields": [
+        "status",
+        "opinion",
+        "traceId"
+      ],
+      "future_events": [
+        "helios_opinion_updated",
+        "helios_progress_update",
+        "helios_suggestion_available"
+      ]
+    },
+    "copy_principles": [
+      "Lenguaje claro y directo, evitando tecnicismos.",
+      "Tono empático y de apoyo, centrado en el beneficio del usuario.",
+      "Mensajes concisos y accionables, sin ambigüedad."
+    ],
+    "implementation_priority": [
+      "Microestado de Helios en /auditar (visible al subir/procesar documento).",
+      "Sección explicativa de Helios en la Home.",
+      "Ajustes técnicos para la preparación a modo remoto (validación de campos y manejo de estados asíncronos)."
+    ],
+    "risks_to_avoid": [
+      "Crear una experiencia tipo 'chatbot' que rompa el flujo natural.",
+      "Introducir jerga técnica que confunda al usuario.",
+      "Sobrecargar la UI con demasiada información o animaciones innecesarias."
+    ]
+  },
+  "raw": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"design_direction\": \"Claridad Activa y Confianza Guiada por Helios\",\n  \"home_explainer\": {\n    \"section_title\": \"Así te ayuda Helios a fortalecer tu expediente\",\n    \"section_intro\": \"Helios es el cerebro detrás de AuditaPatron, trabajando para que tus derechos estén siempre claros y protegidos.\",\n    \"cards\": [\n      {\n        \"title\": \"Interpreta tus documentos\",\n        \"body\": \"Lee y entiende cada detalle de tus pruebas laborales, sin que tengas que ser un experto.\"\n      },\n      {\n        \"title\": \"Separa lo claro de lo estimado\",\n        \"body\": \"Identifica la información sólida de aquella que necesita más respaldo, dándote una visión honesta.\"\n      },\n      {\n        \"title\": \"Fortalece tu respaldo\",\n        \"body\": \"Te guía para completar tu expediente y sugiere los próximos pasos para proteger mejor tus derechos.\"\n      }\n    ]\n  },\n  \"auditar_microstate\": {\n    \"placement\": \"Debajo del título de cada documento en la vista de expediente y junto a la opinión preliminar general.\",\n    \"title\": \"Helios está analizando\",\n    \"body\": \"Estamos interpretando tu documento para fortalecer tu expediente.\",\n    \"status_mapping\": [\n      {\n        \"status\": \"pending_dispatch\",\n        \"label\": \"Preparando análisis\",\n        \"description\": \"Tu documento está listo para ser revisado por Helios.\"\n      },\n      {\n        \"status\": \"sent\",\n        \"label\": \"Enviado a Helios\",\n        \"description\": \"Tu documento ha sido enviado para su interpretación.\"\n      },\n      {\n        \"status\": \"processing\",\n        \"label\": \"Helios analizando\",\n        \"description\": \"Helios está leyendo y entendiendo tu documento.\"\n      },\n      {\n        \"status\": \"completed\",\n        \"label\": \"Análisis completado\",\n        \"description\": \"Helios ha terminado de interpretar tu documento.\"\n      },\n      {\n        \"status\": \"partial\",\n        \"label\": \"Análisis parcial\",\n        \"description\": \"Helios ha interpretado parte de tu documento. Revisa los detalles.\"\n      },\n      {\n        \"status\": \"error\",\n        \"label\": \"Error en análisis\",\n        \"description\": \"Hubo un problema al interpretar tu documento. Intenta de nuevo o contacta soporte.\"\n      },\n      {\n        \"status\": \"timeout\",\n        \"label\": \"Análisis tardío\",\n        \"description\": \"Helios está tardando más de lo esperado. Estamos revisando.\"\n      },\n      {\n        \"status\": \"not_configured\",\n        \"label\": \"Helios no disponible\",\n        \"description\": \"La interpretación de Helios no está configurada para este documento.\"\n      }\n    ]\n  },\n  \"remote_ready_contract\": {\n    \"ui_rule\": \"La interfaz de usuario debe renderizar los estados de Helios y la opinión independientemente del `mode` (mock/remote), priorizando la disponibilidad de `opinion` y `status`.\",\n    \"backend_rule\": \"El backend debe garantizar que el campo `status` se actualice de forma asíncrona y que `opinion` se envíe solo cuando esté disponible, sin bloquear el flujo principal.\",\n    \"mode_strategy\": \"El `mode` (mock/remote) debe ser una configuración a nivel de entorno o usuario, no una variable que altere la estructura de la UI. La UI solo debe reaccionar a la presencia/ausencia y contenido de `opinion` y `status`.\",\n    \"minimum_fields\": [\n      \"status\",\n      \"opinion\",\n      \"traceId\"\n    ],\n    \"future_events\": [\n      \"helios_opinion_updated\",\n      \"helios_progress_update\",\n      \"helios_suggestion_available\"\n    ]\n  },\n  \"copy_principles\": [\n    \"Lenguaje claro y directo, evitando tecnicismos.\",\n    \"Tono empático y de apoyo, centrado en el beneficio del usuario.\",\n    \"Mensajes concisos y accionables, sin ambigüedad.\"\n  ],\n  \"implementation_priority\": [\n    \"Microestado de Helios en /auditar (visible al subir/procesar documento).\",\n    \"Sección explicativa de Helios en la Home.\",\n    \"Ajustes técnicos para la preparación a modo remoto (validación de campos y manejo de estados asíncronos).\"\n  ],\n  \"risks_to_avoid\": [\n    \"Crear una experiencia tipo 'chatbot' que rompa el flujo natural.\",\n    \"Introducir jerga técnica que confunda al usuario.\",\n    \"Sobrecargar la UI con demasiada información o animaciones innecesarias.\"\n  ]\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 928,
+      "candidatesTokenCount": 1083,
+      "totalTokenCount": 4245,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 928
+        }
+      ],
+      "thoughtsTokenCount": 2234
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "XybVaarjB_ni_uMPhYfGoQ4"
+  }
+}

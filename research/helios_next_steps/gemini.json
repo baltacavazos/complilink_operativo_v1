@@ -1,0 +1,6 @@
+{
+  "provider": "gemini",
+  "ok": false,
+  "error": "HTTPError: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBs8nIoJNq0BJxByiA_iPInvnwafnxpq9E",
+  "elapsed_seconds": 15.61
+}

@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-04-07T15:43:16Z",
+  "providers": {
+    "openai": {
+      "ok": true,
+      "elapsed_seconds": 13.46
+    },
+    "grok": {
+      "ok": true,
+      "elapsed_seconds": 24.78
+    },
+    "gemini": {
+      "ok": false,
+      "elapsed_seconds": 15.61
+    }
+  }
+}

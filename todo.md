@@ -166,3 +166,8 @@
 - [x] Ajustar la tarjeta principal del hero para que explique con más claridad cómo Helios convierte documentos en claridad accionable.
 - [x] Revisar CTAs, etiquetas y microcopy de la vista principal para mantener simplicidad, confianza y utilidad inmediata.
 - [x] Actualizar y ejecutar pruebas tras el pulido visible de la vista principal centrada en Helios.
+- [x] Consensuar con Grok, Gemini y ChatGPT la mejor forma de introducir un microestado visible de interpretación de Helios sin romper la simplicidad de /auditar.
+- [x] Añadir en la home o en el flujo principal una sección breve que explique de forma muy simple qué hace Helios por el usuario.
+- [x] Diseñar e implementar un microestado visible que indique cuándo Helios está interpretando un documento o fortaleciendo el expediente.
+- [x] Preparar el contrato técnico inicial y la capa base para la futura evolución de Helios a modo remoto sin rehacer la interfaz.
+- [x] Actualizar y ejecutar pruebas Vitest tras la nueva ronda centrada en Helios.
