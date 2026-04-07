@@ -1,0 +1,153 @@
+{
+  "prompt_version": "hero_pills_audit_v1",
+  "source": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
+  "models": {
+    "chatgpt": {
+      "overall_verdict": "Las píldoras deben comunicar beneficios claros y concretos; 'Hecho para celular' es vago y no aporta valor visible.",
+      "pills_assessment": [
+        {
+          "pill": "Entiende tus documentos fácilmente.",
+          "value_score": 4,
+          "verdict": "keep",
+          "why": "Comunica un beneficio claro y relevante para el usuario trabajador.",
+          "better_option": ""
+        },
+        {
+          "pill": "Distingue lo confirmado de lo estimado.",
+          "value_score": 3,
+          "verdict": "keep",
+          "why": "Ayuda a entender la diferencia entre información segura y aproximada, aporta claridad.",
+          "better_option": ""
+        },
+        {
+          "pill": "Fortalece tu expediente con cada archivo.",
+          "value_score": 4,
+          "verdict": "keep",
+          "why": "Incentiva a mejorar el expediente laboral, beneficio concreto y motivador.",
+          "better_option": ""
+        },
+        {
+          "pill": "Hecho para celular",
+          "value_score": 1,
+          "verdict": "remove",
+          "why": "Es un dato técnico poco relevante para el usuario, no comunica un beneficio claro ni diferencial.",
+          "better_option": ""
+        }
+      ],
+      "group_decision": {
+        "recommended_count": 3,
+        "why": "Tres píldoras claras y enfocadas en beneficios reales para el trabajador son suficientes para no saturar ni generar ruido visual.",
+        "best_strategy": "Mantener solo las píldoras que explican beneficios concretos y eliminar las que no aportan valor visible."
+      },
+      "recommended_pills": [
+        "Entiende tus documentos fácilmente.",
+        "Distingue lo confirmado de lo estimado.",
+        "Fortalece tu expediente con cada archivo."
+      ],
+      "hero_cleanup": [
+        "Eliminar la píldora 'Hecho para celular' para reducir ruido visual.",
+        "Mantener solo las píldoras que comunican beneficios claros y verificables.",
+        "Asegurar que las píldoras sean visibles y legibles en mobile y desktop, priorizando espacio y claridad."
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "overall_verdict": "Las píldoras actuales tienen potencial, pero su redacción es mejorable. 'Hecho para celular' es ruido innecesario que resta valor.",
+      "pills_assessment": [
+        {
+          "pill": "Entiende tus documentos fácilmente.",
+          "value_score": 1,
+          "verdict": "rewrite",
+          "why": "Comunica un beneficio clave (claridad), pero la redacción es pasiva y puede ser más concisa y directa. No destaca la eliminación de complejidad legal.",
+          "better_option": "Documentos claros, sin jerga legal."
+        },
+        {
+          "pill": "Distingue lo confirmado de lo estimado.",
+          "value_score": 1,
+          "verdict": "rewrite",
+          "why": "Es un beneficio crucial para la confianza y la toma de decisiones informadas del trabajador, pero la frase puede ser más activa y menos formal.",
+          "better_option": "Separa hechos de suposiciones."
+        },
+        {
+          "pill": "Fortalece tu expediente con cada archivo.",
+          "value_score": 1,
+          "verdict": "rewrite",
+          "why": "Beneficio directo de empoderamiento y preparación, pero la redacción es un poco larga. Se puede hacer más impactante y concisa.",
+          "better_option": "Expediente sólido, documento a documento."
+        },
+        {
+          "pill": "Hecho para celular",
+          "value_score": 0,
+          "verdict": "remove",
+          "why": "En 2024, la adaptabilidad móvil es una expectativa básica para cualquier servicio web, no un valor añadido diferenciador. Ocupa espacio visual sin comunicar un beneficio único o relevante para el usuario mexicano. Es como decir 'Hecho para internet'.",
+          "better_option": ""
+        }
+      ],
+      "group_decision": {
+        "recommended_count": 3,
+        "why": "Un grupo de tres beneficios clave es ideal para la primera impresión, tanto en móvil como en escritorio: es fácil de escanear, memorable y suficiente para comunicar el valor central sin abrumar. Más de tres diluye el mensaje y añade ruido visual.",
+        "best_strategy": "Enfocarse en los tres beneficios más impactantes y únicos que resuelven problemas directos del trabajador, con redacción activa, concisa y orientada al resultado."
+      },
+      "recommended_pills": [
+        "Documentos claros, sin jerga legal.",
+        "Separa hechos de suposiciones.",
+        "Expediente sólido, documento a documento."
+      ],
+      "hero_cleanup": [
+        "Eliminar cualquier píldora que comunique 'Hecho para celular' o similar, ya que es un estándar esperado y no un diferenciador de valor.",
+        "Asegurar que las píldoras no repitan el mensaje del titular principal, sino que lo complementen con beneficios específicos y tangibles.",
+        "Mantener el formato de píldoras visualmente ligeras y fáciles de escanear, sin sobrecargar con texto, especialmente en móvil donde el espacio es limitado."
+      ],
+      "confidence": "high"
+    },
+    "grok": {
+      "overall_verdict": "Aportan valor pero con ruido; eliminar la menos útil",
+      "pills_assessment": [
+        {
+          "pill": "Entiende tus documentos fácilmente.",
+          "value_score": 4,
+          "verdict": "keep",
+          "why": "Beneficio claro y directo para usuarios",
+          "better_option": ""
+        },
+        {
+          "pill": "Distingue lo confirmado de lo estimado.",
+          "value_score": 4,
+          "verdict": "keep",
+          "why": "Ayuda a evitar confusiones prácticas",
+          "better_option": ""
+        },
+        {
+          "pill": "Fortalece tu expediente con cada archivo.",
+          "value_score": 3,
+          "verdict": "rewrite",
+          "why": "Beneficio útil pero algo vago",
+          "better_option": "Construye un expediente más fuerte por archivo"
+        },
+        {
+          "pill": "Hecho para celular",
+          "value_score": 2,
+          "verdict": "remove",
+          "why": "Es una característica básica, no un beneficio único; ocupa espacio sin valor visible",
+          "better_option": ""
+        }
+      ],
+      "group_decision": {
+        "recommended_count": 3,
+        "why": "Mantiene claridad y reduce ruido visual en mobile y desktop",
+        "best_strategy": "Enfocarse en beneficios reales y verificables para primera impresión"
+      },
+      "recommended_pills": [
+        "Entiende tus documentos fácilmente.",
+        "Distingue lo confirmado de lo estimado.",
+        "Construye un expediente más fuerte por archivo"
+      ],
+      "hero_cleanup": [
+        "Eliminar píldora de celular para limpiar espacio",
+        "Asegurar píldoras en fila horizontal en mobile sin scroll excesivo",
+        "Usar íconos simples para reforzar beneficios en desktop"
+      ],
+      "confidence": "high"
+    }
+  }
+}

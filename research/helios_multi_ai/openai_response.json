@@ -1,0 +1,111 @@
+{
+  "provider": "openai",
+  "model": "gpt-4.1-mini",
+  "parsed": {
+    "model_position": "Integración visible y escalable de Helios como opinión jurídica asistida preliminar",
+    "recommended_mvp": {
+      "summary": "Exponer la opinión Helios persistida en el detalle del caso y lista de documentos, con UI clara que la diferencie como opinión asistida preliminar, manteniendo arquitectura preparada para futura integración remota.",
+      "backend_shape": [
+        "Extender query de detalle de caso para incluir opiniones Helios por documento, uniendo con documentos ya existentes sin duplicar datos.",
+        "Crear endpoint o extender esquema tRPC para obtener opiniones Helios con metadata clara y estado, soportando mock local y futura llamada remota."
+      ],
+      "frontend_shape": [
+        "En /auditar, añadir componente persistente de opinión Helios debajo del documento, con lenguaje humano, etiquetas claras y microanimaciones sutiles.",
+        "En lista de documentos, mostrar indicador visual simple si existe opinión Helios asociada, con acceso rápido a detalle de opinión."
+      ],
+      "data_contract": [
+        "Opinión Helios debe incluir campos: tipo de opinión, estado (preliminar, validada), fecha, texto humano, disclaimers legales.",
+        "Contrato API debe distinguir claramente opinión asistida preliminar de consejo legal final, con flags para UI y validación."
+      ]
+    },
+    "preferred_ui_pattern": {
+      "name": "Ficha de opinión jurídica asistida integrada y contextual",
+      "why": "Permite mostrar la opinión Helios como un bloque informativo persistente y no intrusivo, alineado con UX mobile-first y simplicidad, facilitando transición a modo remoto.",
+      "sections": [
+        "Resumen breve y claro con disclaimer visible",
+        "Texto de opinión asistida con microanimaciones y soporte para modo reducido de movimiento",
+        "Acciones sugeridas y enlaces a documentos relacionados o siguientes pasos"
+      ]
+    },
+    "error_handling": [
+      "Mostrar fallback UI amigable si la opinión Helios no está disponible o falla la carga, con mensaje claro en español.",
+      "Registrar errores backend con contexto para análisis y alertas, sin exponer detalles técnicos al usuario.",
+      "Permitir reintento manual de carga o actualización de opinión Helios desde UI sin bloquear flujo principal."
+    ],
+    "trust_and_legal_safeguards": [
+      "Etiquetar claramente toda opinión Helios como 'Opinión jurídica asistida preliminar, no consejo legal final'.",
+      "Incluir disclaimers visibles y accesibles en UI, reforzando que es soporte asistido y no sustituto de asesoría profesional.",
+      "Auditar y versionar opiniones Helios persistidas para trazabilidad y revisión futura."
+    ],
+    "future_remote_mode": [
+      "Diseñar API y UI para que la fuente de opinión Helios pueda cambiar entre mock local y servicio remoto sin impacto visible al usuario.",
+      "Implementar capa de abstracción en backend para encapsular llamadas a Helios remoto, con cache y fallback a local si falla.",
+      "Preparar esquema de validación multi-AI para comparar opiniones y mejorar robustez antes de mostrar al usuario."
+    ],
+    "top_risks": [
+      {
+        "risk": "Confusión del usuario entre opinión asistida y consejo legal final",
+        "impact": "Pérdida de confianza y posibles problemas legales",
+        "mitigation": "Etiquetado claro, disclaimers visibles y lenguaje humano sencillo"
+      },
+      {
+        "risk": "Duplicación o inconsistencia de datos Helios entre backend y frontend",
+        "impact": "Errores en UI, datos desactualizados o contradictorios",
+        "mitigation": "Unificar fuente de datos en backend, exponer API consistente y evitar duplicados"
+      },
+      {
+        "risk": "Fallas en integración futura con Helios remoto afectando experiencia actual",
+        "impact": "Interrupciones o degradación de servicio",
+        "mitigation": "Diseño modular con fallback a mock local y monitoreo robusto"
+      }
+    ],
+    "recommended_next_step_order": [
+      "Extender backend para exponer opiniones Helios en detalle de caso y lista de documentos",
+      "Diseñar y desarrollar componente UI de ficha de opinión jurídica asistida en /auditar",
+      "Implementar etiquetado y disclaimers legales claros en UI",
+      "Crear capa de abstracción backend para futura integración remota de Helios",
+      "Definir y validar esquema de datos y contratos API con equipo legal y UX"
+    ],
+    "what_not_to_do": [
+      "No mostrar opinión Helios sin disclaimers claros ni etiquetado adecuado",
+      "No duplicar datos Helios en frontend sin fuente única y sincronizada",
+      "No integrar Helios remoto sin fallback local ni pruebas robustas previas"
+    ]
+  },
+  "raw": {
+    "id": "chatcmpl-DRvHqmArFtc1sZ1ZSlukFNvFJuCOg",
+    "object": "chat.completion",
+    "created": 1775547438,
+    "model": "gpt-4.1-mini-2025-04-14",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"model_position\": \"Integración visible y escalable de Helios como opinión jurídica asistida preliminar\",\n  \"recommended_mvp\": {\n    \"summary\": \"Exponer la opinión Helios persistida en el detalle del caso y lista de documentos, con UI clara que la diferencie como opinión asistida preliminar, manteniendo arquitectura preparada para futura integración remota.\",\n    \"backend_shape\": [\n      \"Extender query de detalle de caso para incluir opiniones Helios por documento, uniendo con documentos ya existentes sin duplicar datos.\",\n      \"Crear endpoint o extender esquema tRPC para obtener opiniones Helios con metadata clara y estado, soportando mock local y futura llamada remota.\"\n    ],\n    \"frontend_shape\": [\n      \"En /auditar, añadir componente persistente de opinión Helios debajo del documento, con lenguaje humano, etiquetas claras y microanimaciones sutiles.\",\n      \"En lista de documentos, mostrar indicador visual simple si existe opinión Helios asociada, con acceso rápido a detalle de opinión.\"\n    ],\n    \"data_contract\": [\n      \"Opinión Helios debe incluir campos: tipo de opinión, estado (preliminar, validada), fecha, texto humano, disclaimers legales.\",\n      \"Contrato API debe distinguir claramente opinión asistida preliminar de consejo legal final, con flags para UI y validación.\"\n    ]\n  },\n  \"preferred_ui_pattern\": {\n    \"name\": \"Ficha de opinión jurídica asistida integrada y contextual\",\n    \"why\": \"Permite mostrar la opinión Helios como un bloque informativo persistente y no intrusivo, alineado con UX mobile-first y simplicidad, facilitando transición a modo remoto.\",\n    \"sections\": [\n      \"Resumen breve y claro con disclaimer visible\",\n      \"Texto de opinión asistida con microanimaciones y soporte para modo reducido de movimiento\",\n      \"Acciones sugeridas y enlaces a documentos relacionados o siguientes pasos\"\n    ]\n  },\n  \"error_handling\": [\n    \"Mostrar fallback UI amigable si la opinión Helios no está disponible o falla la carga, con mensaje claro en español.\",\n    \"Registrar errores backend con contexto para análisis y alertas, sin exponer detalles técnicos al usuario.\",\n    \"Permitir reintento manual de carga o actualización de opinión Helios desde UI sin bloquear flujo principal.\"\n  ],\n  \"trust_and_legal_safeguards\": [\n    \"Etiquetar claramente toda opinión Helios como 'Opinión jurídica asistida preliminar, no consejo legal final'.\",\n    \"Incluir disclaimers visibles y accesibles en UI, reforzando que es soporte asistido y no sustituto de asesoría profesional.\",\n    \"Auditar y versionar opiniones Helios persistidas para trazabilidad y revisión futura.\"\n  ],\n  \"future_remote_mode\": [\n    \"Diseñar API y UI para que la fuente de opinión Helios pueda cambiar entre mock local y servicio remoto sin impacto visible al usuario.\",\n    \"Implementar capa de abstracción en backend para encapsular llamadas a Helios remoto, con cache y fallback a local si falla.\",\n    \"Preparar esquema de validación multi-AI para comparar opiniones y mejorar robustez antes de mostrar al usuario.\"\n  ],\n  \"top_risks\": [\n    {\n      \"risk\": \"Confusión del usuario entre opinión asistida y consejo legal final\",\n      \"impact\": \"Pérdida de confianza y posibles problemas legales\",\n      \"mitigation\": \"Etiquetado claro, disclaimers visibles y lenguaje humano sencillo\"\n    },\n    {\n      \"risk\": \"Duplicación o inconsistencia de datos Helios entre backend y frontend\",\n      \"impact\": \"Errores en UI, datos desactualizados o contradictorios\",\n      \"mitigation\": \"Unificar fuente de datos en backend, exponer API consistente y evitar duplicados\"\n    },\n    {\n      \"risk\": \"Fallas en integración futura con Helios remoto afectando experiencia actual\",\n      \"impact\": \"Interrupciones o degradación de servicio\",\n      \"mitigation\": \"Diseño modular con fallback a mock local y monitoreo robusto\"\n    }\n  ],\n  \"recommended_next_step_order\": [\n    \"Extender backend para exponer opiniones Helios en detalle de caso y lista de documentos\",\n    \"Diseñar y desarrollar componente UI de ficha de opinión jurídica asistida en /auditar\",\n    \"Implementar etiquetado y disclaimers legales claros en UI\",\n    \"Crear capa de abstracción backend para futura integración remota de Helios\",\n    \"Definir y validar esquema de datos y contratos API con equipo legal y UX\"\n  ],\n  \"what_not_to_do\": [\n    \"No mostrar opinión Helios sin disclaimers claros ni etiquetado adecuado\",\n    \"No duplicar datos Helios en frontend sin fuente única y sincronizada\",\n    \"No integrar Helios remoto sin fallback local ni pruebas robustas previas\"\n  ]\n}",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 849,
+      "completion_tokens": 1005,
+      "total_tokens": 1854,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_6b33d1816a"
+  }
+}

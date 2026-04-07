@@ -1,0 +1,49 @@
+{
+  "prompt_context": {
+    "brand": "AuditaPatron",
+    "goal": "Reforzar a Helios como cerebro central que interpreta el expediente, sin perder sencillez, confianza y lenguaje humano.",
+    "current_header_nav": [
+      "Cómo funciona",
+      "Tu expediente",
+      "Hallazgos",
+      "Privacidad",
+      "Preguntas"
+    ],
+    "current_hero_badge": "Diseñado para trabajadores, no para expertos",
+    "current_hero_title_mobile": "Derechos claros y protegidos",
+    "current_hero_title_desktop": "Tus derechos laborales, claros, protegidos y mejor respaldados.",
+    "current_hero_subtitle": "Entiende tus documentos, separa lo claro de lo estimado y fortalece tu expediente sin complicaciones.",
+    "current_ctas": [
+      "Auditar mis documentos",
+      "Ver cómo funciona"
+    ],
+    "current_trust_chips": [
+      "100% confidencial",
+      "Sin jerga legal",
+      "Separa hechos de suposiciones"
+    ],
+    "current_card_eyebrow": "Fortaleza inicial del expediente",
+    "current_card_title": "Tu expediente empieza a fortalecerse",
+    "current_card_status": "Protegido",
+    "current_card_metric_label": "Claridad acumulada",
+    "current_card_metric_value": "58%",
+    "current_card_metric_caption": "Más documentos útiles te dan más claridad para comparar cambios y cuidar tu respaldo.",
+    "current_card_steps": [
+      "Sube recibo, contrato o CFDI.",
+      "Ve lo importante con palabras simples.",
+      "Sabe qué documento puede ayudarte después."
+    ],
+    "constraints": [
+      "No sonar técnico ni grandilocuente.",
+      "Helios debe sentirse como motor central, no como gadget separado.",
+      "La experiencia debe seguir siendo mobile-first y autoexplicativa.",
+      "Evitar promesas legales absolutas o lenguaje que parezca asesoría definitiva.",
+      "Mantener una estética sobria, clara y moderna."
+    ]
+  },
+  "outputs": {
+    "openai": "ok",
+    "gemini": "error",
+    "grok": "ok"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "provider": "gemini",
+  "model": "gemini-2.5-flash",
+  "parsed": {
+    "model_position": "Arquitecto Principal de Producto Legal y Software, con enfoque Mobile-First",
+    "recommended_mvp": {
+      "summary": "Integrar la opinión legal preliminar de Helios de forma visible y contextual en la página /auditar y en el detalle de cada documento, enfatizando la simplicidad y la naturaleza asistida de la opinión.",
+      "backend_shape": [
+        "Modificar la query de detalle de caso para incluir el objeto completo de la opinión 'helios_v1' persistida para cada documento.",
+        "Extender la query de la lista de documentos para incluir un resumen conciso (estado, conclusión breve) de la opinión 'helios_v1' asociada a cada documento."
+      ],
+      "frontend_shape": [
+        "En la página '/auditar', después de la carga, mostrar un bloque expandible/colapsable con el 'Resumen de la Opinión Preliminar' de Helios, justo debajo de la información del documento cargado.",
+        "En la lista de documentos, añadir un ícono o un pequeño texto que indique la presencia y el estado de la opinión de Helios, y al hacer clic, navegar a una vista de detalle de la opinión o expandirla in-line."
+      ],
+      "data_contract": [
+        "HeliosOpinionSummary: {documentId: string, status: 'Generada' | 'EnProceso' | 'Error', briefConclusion: string, generatedAt: string}",
+        "HeliosOpinionDetail: {documentId: string, fullOpinionText: string, disclaimerText: string, modelVersion: string, generatedAt: string}"
+      ]
+    },
+    "preferred_ui_pattern": {
+      "name": "Dossier Legal Contextual y Expandible",
+      "why": "Este patrón integra la opinión directamente en el flujo de trabajo del usuario, haciéndola accesible donde es más relevante (junto al documento). Es mobile-first, reduce el scroll innecesario y permite al usuario profundizar solo si lo desea, manteniendo la interfaz limpia y no intimidante.",
+      "sections": [
+        "Bloque 'Resumen de la Opinión Preliminar' en la página /auditar, con un título claro, el disclaimer visible y un extracto de la conclusión, con opción de 'Ver más'.",
+        "Vista de 'Detalle Completo de la Opinión' (modal o sección expandida) que muestra el texto completo de la opinión, el disclaimer prominente y la etiqueta de IA.",
+        "Indicador de 'Estado del Análisis' en la lista de documentos, mostrando si la opinión está disponible, en proceso o si hubo un error."
+      ]
+    },
+    "error_handling": [
+      "Mostrar mensajes de error claros y en lenguaje humano si la opinión de Helios no puede generarse (ej. 'No pudimos generar la opinión preliminar. Intenta de nuevo o contacta a soporte.').",
+      "Implementar un estado de carga visual (spinner o mensaje 'Analizando documento...') mientras la opinión de Helios está en proceso de generación.",
+      "Ofrecer una opción de 'Reintentar' la generación de la opinión si falla, con un mecanismo de backoff o límite para evitar sobrecargas."
+    ],
+    "trust_and_legal_safeguards": [
+      "Disclaimer legal prominente y repetido: 'Esta es una opinión legal preliminar asistida por IA, no constituye asesoramiento legal definitivo. Consulta a un abogado para decisiones finales.' Debe ser visible en el resumen y en el detalle completo de la opinión.",
+      "Etiquetado claro de la fuente: 'Generado con Helios (IA de opinión jurídica asistida)' junto a cada opinión.",
+      "Registro de trazabilidad: Persistir la versión del modelo de Helios utilizada para cada opinión generada, permitiendo auditorías y validaciones futuras."
+    ],
+    "future_remote_mode": [
+      "Diseñar el contrato de datos 'helios_v1' de forma agnóstica a la fuente, para que el frontend consuma la opinión sin importar si proviene de un mock local o de un servicio remoto.",
+      "El backend debe tener una configuración clara y conmutable para dirigir las solicitudes de generación de opinión al mock local o al endpoint remoto de Helios.",
+      "Anticipar y diseñar la UI para manejar posibles latencias adicionales en el modo remoto, con estados de carga más explícitos y mensajes de progreso."
+    ],
+    "top_risks": [
+      {
+        "risk": "Interpretación errónea de la opinión por parte del usuario final.",
+        "impact": "Decisiones legales incorrectas, pérdida de confianza en la plataforma y posibles responsabilidades legales.",
+        "mitigation": "Reforzar el disclaimer legal en cada punto de contacto con la opinión, usar lenguaje no prescriptivo, y educar al usuario sobre la naturaleza preliminar y asistida de la opinión."
+      },
+      {
+        "risk": "Escalabilidad y rendimiento del backend al integrar Helios remoto.",
+        "impact": "Cuellos de botella, tiempos de respuesta lentos, altos costos operativos y degradación de la experiencia del usuario.",
+        "mitigation": "Diseñar la integración con Helios remoto de forma asíncrona, implementar caching estratégico para opiniones ya generadas, monitorear el rendimiento y planificar la escalabilidad del servicio de Helios."
+      },
+      {
+        "risk": "Calidad inconsistente o incorrecta de las opiniones generadas por Helios.",
+        "impact": "Opiniones irrelevantes o erróneas, frustración del usuario, pérdida de credibilidad y valor del producto.",
+        "mitigation": "Establecer un ciclo de feedback continuo con expertos legales para la validación de las opiniones, implementar un sistema de 'multi-AI validation' como se menciona, y realizar pruebas de regresión con casos de uso críticos."
+      }
+    ],
+    "recommended_next_step_order": [
+      "Refinar y finalizar el contrato de datos 'helios_v1' para la opinión legal preliminar, incluyendo todos los campos necesarios para el display y la trazabilidad.",
+      "Modificar el backend para que las queries de detalle de caso y lista de documentos expongan la opinión 'helios_v1' persistida, utilizando el mock local para desarrollo.",
+      "Diseñar y prototipar la interfaz de usuario (UI/UX) para la integración de la opinión en la página /auditar y en el detalle del documento, priorizando la experiencia mobile-first.",
+      "Implementar la UI/UX en el frontend, consumiendo los datos de opinión del backend y asegurando que el disclaimer y el etiquetado de IA sean prominentes.",
+      "Establecer un proceso de validación continua de la calidad de las opiniones de Helios con expertos legales y un mecanismo de feedback de usuario."
+    ],
+    "what_not_to_do": [
+      "Presentar la opinión de Helios como asesoramiento legal definitivo o infalible; siempre debe ser 'preliminar' y 'asistida por IA'.",
+      "Ocultar o minimizar el disclaimer legal; debe ser prominente, fácil de leer y entender en todos los puntos de visualización de la opinión.",
+      "Duplicar la lógica de generación o procesamiento de la opinión de Helios en el frontend; el frontend debe ser un consumidor pasivo de la opinión ya generada y persistida por el backend."
+    ]
+  },
+  "raw": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"model_position\": \"Arquitecto Principal de Producto Legal y Software, con enfoque Mobile-First\",\n  \"recommended_mvp\": {\n    \"summary\": \"Integrar la opinión legal preliminar de Helios de forma visible y contextual en la página /auditar y en el detalle de cada documento, enfatizando la simplicidad y la naturaleza asistida de la opinión.\",\n    \"backend_shape\": [\n      \"Modificar la query de detalle de caso para incluir el objeto completo de la opinión 'helios_v1' persistida para cada documento.\",\n      \"Extender la query de la lista de documentos para incluir un resumen conciso (estado, conclusión breve) de la opinión 'helios_v1' asociada a cada documento.\"\n    ],\n    \"frontend_shape\": [\n      \"En la página '/auditar', después de la carga, mostrar un bloque expandible/colapsable con el 'Resumen de la Opinión Preliminar' de Helios, justo debajo de la información del documento cargado.\",\n      \"En la lista de documentos, añadir un ícono o un pequeño texto que indique la presencia y el estado de la opinión de Helios, y al hacer clic, navegar a una vista de detalle de la opinión o expandirla in-line.\"\n    ],\n    \"data_contract\": [\n      \"HeliosOpinionSummary: {documentId: string, status: 'Generada' | 'EnProceso' | 'Error', briefConclusion: string, generatedAt: string}\",\n      \"HeliosOpinionDetail: {documentId: string, fullOpinionText: string, disclaimerText: string, modelVersion: string, generatedAt: string}\"\n    ]\n  },\n  \"preferred_ui_pattern\": {\n    \"name\": \"Dossier Legal Contextual y Expandible\",\n    \"why\": \"Este patrón integra la opinión directamente en el flujo de trabajo del usuario, haciéndola accesible donde es más relevante (junto al documento). Es mobile-first, reduce el scroll innecesario y permite al usuario profundizar solo si lo desea, manteniendo la interfaz limpia y no intimidante.\",\n    \"sections\": [\n      \"Bloque 'Resumen de la Opinión Preliminar' en la página /auditar, con un título claro, el disclaimer visible y un extracto de la conclusión, con opción de 'Ver más'.\",\n      \"Vista de 'Detalle Completo de la Opinión' (modal o sección expandida) que muestra el texto completo de la opinión, el disclaimer prominente y la etiqueta de IA.\",\n      \"Indicador de 'Estado del Análisis' en la lista de documentos, mostrando si la opinión está disponible, en proceso o si hubo un error.\"\n    ]\n  },\n  \"error_handling\": [\n    \"Mostrar mensajes de error claros y en lenguaje humano si la opinión de Helios no puede generarse (ej. 'No pudimos generar la opinión preliminar. Intenta de nuevo o contacta a soporte.').\",\n    \"Implementar un estado de carga visual (spinner o mensaje 'Analizando documento...') mientras la opinión de Helios está en proceso de generación.\",\n    \"Ofrecer una opción de 'Reintentar' la generación de la opinión si falla, con un mecanismo de backoff o límite para evitar sobrecargas.\"\n  ],\n  \"trust_and_legal_safeguards\": [\n    \"Disclaimer legal prominente y repetido: 'Esta es una opinión legal preliminar asistida por IA, no constituye asesoramiento legal definitivo. Consulta a un abogado para decisiones finales.' Debe ser visible en el resumen y en el detalle completo de la opinión.\",\n    \"Etiquetado claro de la fuente: 'Generado con Helios (IA de opinión jurídica asistida)' junto a cada opinión.\",\n    \"Registro de trazabilidad: Persistir la versión del modelo de Helios utilizada para cada opinión generada, permitiendo auditorías y validaciones futuras.\"\n  ],\n  \"future_remote_mode\": [\n    \"Diseñar el contrato de datos 'helios_v1' de forma agnóstica a la fuente, para que el frontend consuma la opinión sin importar si proviene de un mock local o de un servicio remoto.\",\n    \"El backend debe tener una configuración clara y conmutable para dirigir las solicitudes de generación de opinión al mock local o al endpoint remoto de Helios.\",\n    \"Anticipar y diseñar la UI para manejar posibles latencias adicionales en el modo remoto, con estados de carga más explícitos y mensajes de progreso.\"\n  ],\n  \"top_risks\": [\n    {\n      \"risk\": \"Interpretación errónea de la opinión por parte del usuario final.\",\n      \"impact\": \"Decisiones legales incorrectas, pérdida de confianza en la plataforma y posibles responsabilidades legales.\",\n      \"mitigation\": \"Reforzar el disclaimer legal en cada punto de contacto con la opinión, usar lenguaje no prescriptivo, y educar al usuario sobre la naturaleza preliminar y asistida de la opinión.\"\n    },\n    {\n      \"risk\": \"Escalabilidad y rendimiento del backend al integrar Helios remoto.\",\n      \"impact\": \"Cuellos de botella, tiempos de respuesta lentos, altos costos operativos y degradación de la experiencia del usuario.\",\n      \"mitigation\": \"Diseñar la integración con Helios remoto de forma asíncrona, implementar caching estratégico para opiniones ya generadas, monitorear el rendimiento y planificar la escalabilidad del servicio de Helios.\"\n    },\n    {\n      \"risk\": \"Calidad inconsistente o incorrecta de las opiniones generadas por Helios.\",\n      \"impact\": \"Opiniones irrelevantes o erróneas, frustración del usuario, pérdida de credibilidad y valor del producto.\",\n      \"mitigation\": \"Establecer un ciclo de feedback continuo con expertos legales para la validación de las opiniones, implementar un sistema de 'multi-AI validation' como se menciona, y realizar pruebas de regresión con casos de uso críticos.\"\n    }\n  ],\n  \"recommended_next_step_order\": [\n    \"Refinar y finalizar el contrato de datos 'helios_v1' para la opinión legal preliminar, incluyendo todos los campos necesarios para el display y la trazabilidad.\",\n    \"Modificar el backend para que las queries de detalle de caso y lista de documentos expongan la opinión 'helios_v1' persistida, utilizando el mock local para desarrollo.\",\n    \"Diseñar y prototipar la interfaz de usuario (UI/UX) para la integración de la opinión en la página /auditar y en el detalle del documento, priorizando la experiencia mobile-first.\",\n    \"Implementar la UI/UX en el frontend, consumiendo los datos de opinión del backend y asegurando que el disclaimer y el etiquetado de IA sean prominentes.\",\n    \"Establecer un proceso de validación continua de la calidad de las opiniones de Helios con expertos legales y un mecanismo de feedback de usuario.\"\n  ],\n  \"what_not_to_do\": [\n    \"Presentar la opinión de Helios como asesoramiento legal definitivo o infalible; siempre debe ser 'preliminar' y 'asistida por IA'.\",\n    \"Ocultar o minimizar el disclaimer legal; debe ser prominente, fácil de leer y entender en todos los puntos de visualización de la opinión.\",\n    \"Duplicar la lógica de generación o procesamiento de la opinión de Helios en el frontend; el frontend debe ser un consumidor pasivo de la opinión ya generada y persistida por el backend.\"\n  ]\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 922,
+      "candidatesTokenCount": 1618,
+      "totalTokenCount": 4512,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 922
+        }
+      ],
+      "thoughtsTokenCount": 1972
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "VrTUabfUNNeI-sAPz5j8yA8"
+  }
+}

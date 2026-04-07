@@ -139,3 +139,30 @@
 - [x] Compactar la pantalla /auditar para reducir scroll excesivo en móvil sin perder claridad.
 - [x] Identificar y eliminar cualquier texto interno o de instrucción filtrado en contenido visible para personas usuarias.
 - [x] Proponer una versión inicial más breve y más clara de la experiencia móvil con consenso entre Grok, ChatGPT y Gemini antes de implementar.
+- [x] Consensuar con Grok, Gemini y ChatGPT la mejor versión de un header móvil todavía más corto para Auditapatron antes de implementarlo.
+- [x] Simplificar el bloque de beneficios de la home para que en celular se recorra más rápido sin perder claridad.
+- [x] Simplificar el módulo de resultados en /auditar para que el siguiente paso destaque antes y con menos carga visual.
+- [x] Validar con pruebas la nueva ronda de ajustes mobile-first antes del siguiente checkpoint.
+- [x] Evaluar con Grok, Gemini y ChatGPT si la píldora “Hecho para celular” debe eliminarse o reemplazarse por un beneficio más concreto.
+- [x] Reducir ruido visual en el hero de la home eliminando o reescribiendo elementos que no aportan valor claro a primera vista.
+- [x] Pulir una ronda adicional la primera impresión de Auditapatron para que cada elemento visible tenga una utilidad o promesa verificable.
+- [ ] Consensuar con Grok, ChatGPT y Gemini un sistema de microanimaciones moderno que aumente engagement sin distraer ni degradar rendimiento.
+- [ ] Diseñar microinteracciones que premien la atención en el hero, CTAs, panel derecho y flujo de /auditar con enfoque mobile-first.
+- [ ] Validar que cualquier animación propuesta aporte claridad, sensación de respuesta y una percepción más moderna de la interfaz.
+- [x] Revisar la arquitectura actual de Auditapatron para identificar dónde conectar el motor Helios en backend y frontend.
+- [x] Consensuar con Grok, ChatGPT y Gemini la mejor arquitectura, experiencia de uso y guardrails para opiniones legales asistidas por Helios.
+- [ ] Confirmar el contrato técnico de Helios, incluyendo endpoint, autenticación, formato de entrada, formato de respuesta y límites operativos.
+- [ ] Diseñar un adaptador servidor para consultar Helios desde Auditapatron sin exponer credenciales en el cliente.
+- [x] Diseñar la experiencia de producto para mostrar interpretaciones, opiniones legales y siguientes pasos de forma clara, responsable y útil.
+- [x] Implementar la integración aprobada con Helios y validar técnicamente el flujo completo antes del siguiente checkpoint.
+- [x] Exponer en backend las opiniones persistidas de Helios por documento dentro de cases.detail, manteniendo contrato listo para evolución a modo remoto.
+- [x] Integrar en /auditar un bloque visible de opinión jurídica preliminar de Helios para el último documento cargado.
+- [x] Mostrar en la lista del expediente el estado y acceso expandible a la opinión de Helios por documento.
+- [x] Reforzar el lenguaje visible para presentar a Helios como cerebro central de interpretación, con disclaimer claro de opinión asistida preliminar.
+- [x] Dejar preparada una capa de backend para que Helios evolucione al cerebro central de recopilación e interpretación de datos sin rehacer la UI.
+- [x] Actualizar y ejecutar pruebas Vitest para backend y frontend del flujo visible de Helios.
+- [x] Consensuar con Grok, Gemini y ChatGPT los ajustes más convenientes para reforzar a Helios en la vista principal sin perder claridad.
+- [x] Pulir la narrativa del hero para presentar a Helios como cerebro central que interpreta y ordena el expediente.
+- [x] Ajustar la tarjeta principal del hero para que explique con más claridad cómo Helios convierte documentos en claridad accionable.
+- [x] Revisar CTAs, etiquetas y microcopy de la vista principal para mantener simplicidad, confianza y utilidad inmediata.
+- [x] Actualizar y ejecutar pruebas tras el pulido visible de la vista principal centrada en Helios.

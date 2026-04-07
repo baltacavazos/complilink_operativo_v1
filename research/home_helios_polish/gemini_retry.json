@@ -1,0 +1,82 @@
+{
+  "raw": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"overall_verdict\": \"Excelente base. Integrar a Helios como el cerebro central es clave para diferenciar, manteniendo la simplicidad y el enfoque en el trabajador.\",\n  \"what_to_keep\": [\n    \"La insignia actual del hero ('Diseñado para trabajadores, no para expertos') es muy efectiva y debe mantenerse.\",\n    \"La estructura de los CTAs y los 'trust chips' actuales, ya que construyen confianza de forma concisa.\",\n    \"El tono general de sencillez, claridad y enfoque en el beneficio directo para el trabajador.\",\n    \"La tarjeta del hero y sus métricas, ya que visualizan el progreso y el valor de forma tangible.\"\n  ],\n  \"what_to_change\": [\n    \"Reforzar el rol de Helios en el subtítulo del hero, posicionándolo como el motor de la interpretación y el fortalecimiento.\",\n    \"Ajustar la descripción de los pasos de la tarjeta para atribuir explícitamente a Helios la inteligencia detrás de la interpretación.\",\n    \"Considerar una sutil mención o asociación visual de Helios en el hero para anclar su presencia sin ser intrusivo.\"\n  ],\n  \"hero_copy\": {\n    \"badge\": \"Diseñado para trabajadores, no para expertos\",\n    \"headline\": \"Tus derechos laborales, claros, protegidos y mejor respaldados.\",\n    \"subheadline\": \"Helios interpreta tus documentos, separa lo claro de lo estimado y fortalece tu expediente sin complicaciones.\",\n    \"primary_cta\": \"Auditar mis documentos\",\n    \"secondary_cta\": \"Ver cómo funciona\",\n    \"trust_chips\": [\n      \"100% confidencial\",\n      \"Sin jerga legal\",\n      \"Separa hechos de suposiciones\"\n    ]\n  },\n  \"hero_card\": {\n    \"eyebrow\": \"Fortaleza inicial del expediente\",\n    \"title\": \"Tu expediente empieza a fortalecerse\",\n    \"status_label\": \"Protegido\",\n    \"metric_label\": \"Claridad acumulada\",\n    \"metric_caption\": \"Helios identifica documentos útiles para darte más claridad y cuidar tu respaldo.\",\n    \"steps\": [\n      \"Sube recibo, contrato o CFDI.\",\n      \"Helios te muestra lo importante con palabras simples.\",\n      \"Helios te indica qué documento puede ayudarte después.\"\n    ]\n  },\n  \"layout_guidance\": [\n    \"Mantener la tarjeta del hero visualmente prominente, quizás con una sutil animación que sugiera 'procesamiento' o 'crecimiento' al cargar.\",\n    \"Si hay un elemento visual para Helios, que sea abstracto y moderno (e.g., una forma geométrica, un patrón de luz) y se integre en el fondo o como un detalle sutil en la tarjeta, no como un personaje.\",\n    \"Asegurar que el texto del subtítulo y los pasos de la tarjeta sean fácilmente escaneables en móvil, manteniendo la jerarquía visual clara.\"\n  ],\n  \"risks_to_avoid\": [\n    \"Hacer que Helios suene como una entidad separada del servicio, en lugar de la inteligencia que lo impulsa.\",\n    \"Utilizar lenguaje que sugiera que Helios es un 'robot' o una 'IA' genérica, perdiendo la conexión humana y de confianza.\",\n    \"Sobrecargar el hero con demasiada información o elementos visuales que distraigan del mensaje principal y los CTAs.\"\n  ],\n  \"confidence\": \"high\"\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 843,
+      "candidatesTokenCount": 766,
+      "totalTokenCount": 4996,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 843
+        }
+      ],
+      "thoughtsTokenCount": 3387
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "0R_VaffmIevU_uMPhKfamAg"
+  },
+  "parsed": {
+    "overall_verdict": "Excelente base. Integrar a Helios como el cerebro central es clave para diferenciar, manteniendo la simplicidad y el enfoque en el trabajador.",
+    "what_to_keep": [
+      "La insignia actual del hero ('Diseñado para trabajadores, no para expertos') es muy efectiva y debe mantenerse.",
+      "La estructura de los CTAs y los 'trust chips' actuales, ya que construyen confianza de forma concisa.",
+      "El tono general de sencillez, claridad y enfoque en el beneficio directo para el trabajador.",
+      "La tarjeta del hero y sus métricas, ya que visualizan el progreso y el valor de forma tangible."
+    ],
+    "what_to_change": [
+      "Reforzar el rol de Helios en el subtítulo del hero, posicionándolo como el motor de la interpretación y el fortalecimiento.",
+      "Ajustar la descripción de los pasos de la tarjeta para atribuir explícitamente a Helios la inteligencia detrás de la interpretación.",
+      "Considerar una sutil mención o asociación visual de Helios en el hero para anclar su presencia sin ser intrusivo."
+    ],
+    "hero_copy": {
+      "badge": "Diseñado para trabajadores, no para expertos",
+      "headline": "Tus derechos laborales, claros, protegidos y mejor respaldados.",
+      "subheadline": "Helios interpreta tus documentos, separa lo claro de lo estimado y fortalece tu expediente sin complicaciones.",
+      "primary_cta": "Auditar mis documentos",
+      "secondary_cta": "Ver cómo funciona",
+      "trust_chips": [
+        "100% confidencial",
+        "Sin jerga legal",
+        "Separa hechos de suposiciones"
+      ]
+    },
+    "hero_card": {
+      "eyebrow": "Fortaleza inicial del expediente",
+      "title": "Tu expediente empieza a fortalecerse",
+      "status_label": "Protegido",
+      "metric_label": "Claridad acumulada",
+      "metric_caption": "Helios identifica documentos útiles para darte más claridad y cuidar tu respaldo.",
+      "steps": [
+        "Sube recibo, contrato o CFDI.",
+        "Helios te muestra lo importante con palabras simples.",
+        "Helios te indica qué documento puede ayudarte después."
+      ]
+    },
+    "layout_guidance": [
+      "Mantener la tarjeta del hero visualmente prominente, quizás con una sutil animación que sugiera 'procesamiento' o 'crecimiento' al cargar.",
+      "Si hay un elemento visual para Helios, que sea abstracto y moderno (e.g., una forma geométrica, un patrón de luz) y se integre en el fondo o como un detalle sutil en la tarjeta, no como un personaje.",
+      "Asegurar que el texto del subtítulo y los pasos de la tarjeta sean fácilmente escaneables en móvil, manteniendo la jerarquía visual clara."
+    ],
+    "risks_to_avoid": [
+      "Hacer que Helios suene como una entidad separada del servicio, en lugar de la inteligencia que lo impulsa.",
+      "Utilizar lenguaje que sugiera que Helios es un 'robot' o una 'IA' genérica, perdiendo la conexión humana y de confianza.",
+      "Sobrecargar el hero con demasiada información o elementos visuales que distraigan del mensaje principal y los CTAs."
+    ],
+    "confidence": "high"
+  },
+  "attempts": 1
+}

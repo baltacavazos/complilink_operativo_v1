@@ -173,7 +173,7 @@ function SiteHeader() {
           </div>
           <div>
             <p className="text-sm font-semibold tracking-[-0.02em]">AuditaPatron</p>
-            <p className="text-xs text-slate-500">Claridad laboral para trabajadores</p>
+            <p className="hidden text-xs text-slate-500 sm:block">Claridad laboral para trabajadores</p>
           </div>
         </a>
 
@@ -206,14 +206,22 @@ function SiteHeader() {
           </Button>
         </div>
 
-        <button
-          type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 md:hidden"
-          onClick={() => setOpen((value) => !value)}
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <Button
+            className="h-10 rounded-full bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700 sm:px-4 sm:text-sm"
+            onClick={goToAuditFlow}
+          >
+            Auditar ahora
+          </Button>
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:bg-slate-50"
+            onClick={() => setOpen((value) => !value)}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open ? (
@@ -267,42 +275,61 @@ function HeroSection() {
     >
       <div className="container grid items-center gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
         <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-800">
+          <div
+            className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-2 text-sm font-medium text-teal-800 sm:px-4"
+            style={{ ["--motion-delay" as string]: "40ms" }}
+          >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            Diseñado para trabajadores, no para expertos
+            <span className="sm:hidden">Para trabajadores</span>
+            <span className="hidden sm:inline">Diseñado para trabajadores, no para expertos</span>
           </div>
 
-          <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.02] tracking-[-0.05em] text-slate-950 sm:text-5xl lg:text-[3.8rem]">
-            Tus derechos laborales,
-            <span className="block text-teal-700">claros, protegidos y mejor respaldados.</span>
+          <h1
+            className="motion-enter-soft mt-5 text-balance text-3xl font-semibold leading-[1.02] tracking-[-0.05em] text-slate-950 sm:mt-6 sm:text-5xl lg:text-[3.8rem]"
+            style={{ ["--motion-delay" as string]: "120ms" }}
+          >
+            <span className="block sm:hidden">Derechos claros y protegidos</span>
+            <span className="hidden sm:block">
+              Tus derechos laborales,
+              <span className="block text-teal-700">claros, protegidos y mejor respaldados.</span>
+            </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Entiende tus documentos, distingue qué ya está claro y fortalece tu expediente sin lenguaje complicado.
+          <p
+            className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
+            style={{ ["--motion-delay" as string]: "210ms" }}
+          >
+            Helios interpreta tus documentos, separa lo claro de lo estimado y fortalece tu expediente sin complicaciones.
           </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div
+            className="motion-enter-soft mt-6 flex flex-col gap-3 sm:flex-row"
+            style={{ ["--motion-delay" as string]: "300ms" }}
+          >
             <Button
-              className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
+              className="motion-hover-lift h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
               onClick={goToAuditFlow}
             >
               Auditar mis documentos
-              <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
               variant="outline"
-              className="h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
+              className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
               onClick={() => scrollToId("como-funciona")}
             >
               Ver cómo funciona
             </Button>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-600">
-            {["100% confidencial", "Hecho para celular", "Lenguaje simple"].map((item) => (
+          <div
+            className="motion-enter-soft mt-6 flex flex-wrap gap-3 text-sm text-slate-600"
+            style={{ ["--motion-delay" as string]: "380ms" }}
+          >
+            {["100% confidencial", "Sin jerga legal", "Separa hechos de suposiciones"].map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-slate-200 bg-white/85 px-4 py-2 shadow-sm"
+                className="motion-hover-lift rounded-full border border-slate-200 bg-white/85 px-4 py-2 shadow-sm"
               >
                 {item}
               </span>
@@ -313,14 +340,17 @@ function HeroSection() {
         <div className="relative">
           <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-teal-200/50 blur-3xl" />
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
-          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_40px_120px_-55px_rgba(15,23,42,0.4)] sm:p-6">
+          <div
+            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_40px_120px_-55px_rgba(15,23,42,0.4)] sm:p-6"
+            style={{ ["--motion-delay" as string]: "220ms" }}
+          >
             <div className="flex items-center justify-between gap-4 rounded-[1.4rem] bg-slate-50 px-4 py-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Fortaleza inicial del expediente
                 </p>
                 <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                  En crecimiento, con valor real
+                  Helios ordena tu expediente y fortalece tu respaldo
                 </p>
               </div>
               <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -335,24 +365,25 @@ function HeroSection() {
               </div>
               <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
-                  style={{ width: `${dossierReadiness}%` }}
+                  className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                  style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
                 />
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-900">
-                Entre más documentos útiles agregas, más fácil es entender cambios, comparar información y cuidar tu respaldo.
+                Helios detecta lo útil, conecta tus documentos y te da más claridad para comparar cambios y cuidar tu respaldo.
               </p>
             </div>
 
             <div className="mt-5 space-y-3">
               {[
-                "Subes tu documento desde el celular o tus archivos.",
-                "Te mostramos lo importante con palabras simples.",
-                "Tu expediente gana contexto y respaldo.",
-              ].map((item) => (
+                "Sube recibo, contrato o CFDI.",
+                "Helios te muestra lo importante con palabras simples.",
+                "Helios te indica qué documento puede ayudarte después.",
+              ].map((item, index) => (
                 <div
                   key={item}
-                  className="flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.5)]"
+                  className="motion-enter-soft flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.5)]"
+                  style={{ ["--motion-delay" as string]: `${420 + index * 80}ms` }}
                 >
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p className="text-sm leading-6 text-slate-700">{item}</p>
@@ -368,14 +399,17 @@ function HeroSection() {
 
 function QuickTrustSection() {
   return (
-    <section className="border-y border-slate-200 bg-white py-4">
-      <div className="container grid gap-3 sm:grid-cols-3">
+    <section className="border-y border-slate-200 bg-white py-3.5">
+      <div className="container flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
         {[
-          "Entiende qué dice tu documentación.",
-          "Distingue lo confirmado de lo estimado.",
-          "Fortalece tu expediente con cada archivo útil.",
+          "Sube recibo, CFDI o contrato.",
+          "Ve qué ya está claro.",
+          "Sabe qué conviene reunir después.",
         ].map((item) => (
-          <div key={item} className="rounded-[1.3rem] bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+          <div
+            key={item}
+            className="min-w-[220px] rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 sm:min-w-0 sm:rounded-[1.3rem] sm:px-4 sm:py-3"
+          >
             {item}
           </div>
         ))}

@@ -40,6 +40,19 @@ type UploadInsight = {
   nextSuggestion: string;
 };
 
+type HeliosOpinionView = {
+  summary?: string | null;
+  legalOpinion?: string | null;
+  recommendedNextStep?: string | null;
+  recommendedActions?: string[];
+  uncertainties?: string[];
+  riskLevel?: string | null;
+  confidenceScore?: number | null;
+  generatedAt?: string | null;
+  disclaimer?: string | null;
+  mode?: string | null;
+};
+
 const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
@@ -231,6 +244,30 @@ function getDocumentReadiness(confidence?: number | null) {
     classes: "bg-amber-100 text-amber-800",
     description: "El sistema encontró valor en este archivo, pero conviene revisar con más cuidado algunos detalles.",
   } as const;
+}
+
+function asHeliosOpinion(value: unknown): HeliosOpinionView | null {
+  if (!value || typeof value !== "object") return null;
+  return value as HeliosOpinionView;
+}
+
+function getHeliosRiskCopy(value?: string | null) {
+  switch (value) {
+    case "critical":
+      return { label: "Riesgo crítico", classes: "bg-rose-100 text-rose-800" } as const;
+    case "high":
+      return { label: "Riesgo alto", classes: "bg-red-100 text-red-800" } as const;
+    case "medium":
+      return { label: "Riesgo medio", classes: "bg-amber-100 text-amber-800" } as const;
+    case "low":
+      return { label: "Riesgo bajo", classes: "bg-emerald-100 text-emerald-800" } as const;
+    default:
+      return { label: "Riesgo preliminar", classes: "bg-slate-100 text-slate-700" } as const;
+  }
+}
+
+function getHeliosModeLabel(value?: string | null) {
+  return value === "remote" ? "Helios remoto" : "Helios inicial";
 }
 
 function getUploadInsight(documentType: string): UploadInsight {
@@ -459,6 +496,16 @@ export default function Auditar() {
   }, [casesQuery.data, selectedCaseId]);
 
   const documents = caseDetailQuery.data?.documents ?? [];
+  const lastHeliosOpinion = asHeliosOpinion(lastUpload?.heliosOpinion);
+  const heliosDocumentsCount = useMemo(
+    () => documents.filter((item) => Boolean(asHeliosOpinion(item.heliosOpinion))).length,
+    [documents],
+  );
+  const latestHeliosDocument = useMemo(
+    () => documents.find((item) => Boolean(asHeliosOpinion(item.heliosOpinion))) ?? null,
+    [documents],
+  );
+  const latestPersistedHeliosOpinion = asHeliosOpinion(latestHeliosDocument?.heliosOpinion);
   const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
 
   const dossierStatus = useMemo(() => {
@@ -636,9 +683,9 @@ export default function Auditar() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 pb-32 text-slate-950 sm:pb-10">
+    <main className="min-h-screen bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
       <div className="container max-w-6xl">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
@@ -649,7 +696,7 @@ export default function Auditar() {
               Tus derechos laborales, claros y protegidos
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-              Sube documentos, entiende qué ya está claro y fortalece tu expediente.
+              Sube documentos y deja que Helios, el cerebro central del expediente, conecte señales, interprete contexto y te muestre una lectura preliminar en lenguaje claro.
             </p>
           </div>
 
@@ -754,7 +801,7 @@ export default function Auditar() {
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de subirlo, verás qué detectamos y qué conviene revisar después.
+                  Después de subirlo, Helios te mostrará qué entendió, qué conviene revisar y cuál es el siguiente paso más útil.
                 </p>
               </div>
 
@@ -887,7 +934,7 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p>
-                    Tu documento se guarda con trazabilidad y entra a revisión. Lo que sí se vea con claridad aparecerá como dato confirmado. Lo que todavía sea solo una pista útil aparecerá como estimación para revisarlo con calma.
+                    Tu documento queda protegido. Lo que ya se vea con claridad aparecerá como dato confirmado; lo demás se mostrará como estimación para revisarlo con calma.
                   </p>
                 </div>
               </div>
@@ -931,65 +978,25 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Resultado del último documento</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tu último documento</p>
 
               {!lastUpload ? (
                 <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Cuando subas un documento, aquí verás qué aportó, qué datos sí quedaron claros y qué parte todavía necesita revisión.
+                  Sube un documento para ver qué aportó y cuál es el siguiente paso.
                 </div>
               ) : (
                 <div className="mt-4 space-y-4">
-                  <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
+                  <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                      <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                       <div>
-                        <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
-                        <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                        <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
+                        <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div
-                    className={`rounded-[1.3rem] border p-4 ${
-                      engineStatus.tone === "success"
-                        ? "border-emerald-100 bg-emerald-50"
-                        : engineStatus.tone === "warning"
-                          ? "border-amber-200 bg-amber-50"
-                          : "border-slate-200 bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      {engineStatus.tone === "warning" ? (
-                        <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
-                      ) : (
-                        <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                      )}
-                      <div>
-                        <p className="font-semibold text-slate-950">{engineStatus.title}</p>
-                        <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
-                    <p className="font-semibold text-slate-950">Cómo leer este resultado</p>
-                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                      <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4 text-sm leading-7 text-emerald-950">
-                        <p className="font-semibold">Dato confirmado</p>
-                        <p className="mt-1">
-                          Es algo que sí se alcanza a ver con claridad en este documento y ya puede ayudarte a entender mejor el expediente.
-                        </p>
-                      </div>
-                      <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
-                        <p className="font-semibold">Dato estimado</p>
-                        <p className="mt-1">
-                          Es una señal útil, pero todavía conviene confirmarla con más documentos o con una revisión más cuidadosa antes de tomar decisiones.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
                       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">Resumen sencillo</p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -1007,16 +1014,111 @@ export default function Auditar() {
                       </div>
                     </div>
 
-                    <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                        <div>
-                          <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
-                          <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
+                    <div className="space-y-4">
+                      <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                          <div>
+                            <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
+                            <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`rounded-[1.3rem] border p-4 ${
+                          engineStatus.tone === "success"
+                            ? "border-emerald-100 bg-emerald-50"
+                            : engineStatus.tone === "warning"
+                              ? "border-amber-200 bg-amber-50"
+                              : "border-slate-200 bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {engineStatus.tone === "warning" ? (
+                            <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
+                          ) : (
+                            <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                          )}
+                          <div>
+                            <p className="font-semibold text-slate-950">{engineStatus.title}</p>
+                            <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
+                    Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro y qué todavía conviene revisar con calma.
+                  </div>
+
+                  {lastHeliosOpinion ? (
+                    <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar de Helios</p>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Helios ya interpretó este documento dentro del expediente</h3>
+                          <p className="mt-3 text-sm leading-7 text-slate-700">
+                            {lastHeliosOpinion.summary ?? "Helios ya generó una lectura preliminar útil para seguir armando tu expediente."}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                          <span className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}>
+                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
+                          </span>
+                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Confianza {lastHeliosOpinion.confidenceScore}%</span>
+                          ) : null}
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{getHeliosModeLabel(lastHeliosOpinion.mode)}</span>
+                        </div>
+                      </div>
+
+                      {lastHeliosOpinion.legalOpinion ? (
+                        <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                          {lastHeliosOpinion.legalOpinion}
+                        </div>
+                      ) : null}
+
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
+                          <p className="font-semibold text-teal-950">Qué haría Helios después</p>
+                          <p className="mt-2 text-sm leading-7 text-teal-900">
+                            {lastHeliosOpinion.recommendedNextStep ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura."}
+                          </p>
+                          {lastHeliosOpinion.recommendedActions?.length ? (
+                            <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
+                              {lastHeliosOpinion.recommendedActions.map((item) => (
+                                <p key={item}>• {item}</p>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                          <p className="font-semibold text-amber-950">Qué sigue siendo preliminar</p>
+                          {lastHeliosOpinion.uncertainties?.length ? (
+                            <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
+                              {lastHeliosOpinion.uncertainties.map((item) => (
+                                <p key={item}>• {item}</p>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-2 text-sm leading-7 text-amber-900">
+                              Esta lectura todavía conviene contrastarla con más hechos y documentos antes de cerrar conclusiones.
+                            </p>
+                          )}
+                          <p className="mt-3 text-xs font-medium uppercase tracking-[0.12em] text-amber-800">
+                            Generado: {formatDate(lastHeliosOpinion.generatedAt)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {lastHeliosOpinion.disclaimer ? (
+                        <p className="mt-4 text-xs leading-6 text-slate-500">{lastHeliosOpinion.disclaimer}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   {lastUpload?.engineDispatch?.status === "sent" ? (
                     <div className="rounded-[1.3rem] border border-sky-200 bg-sky-50 p-4 text-sm leading-7 text-sky-950">
@@ -1035,7 +1137,7 @@ export default function Auditar() {
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-emerald-950">Datos confirmados</p>
+                        <p className="font-semibold text-emerald-950">Datos claros</p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
                           {confirmedEntries.length} dato{confirmedEntries.length === 1 ? "" : "s"}
                         </span>
@@ -1043,7 +1145,7 @@ export default function Auditar() {
 
                       {confirmedEntries.length === 0 ? (
                         <p className="mt-3 text-sm leading-7 text-emerald-900">
-                          Todavía no hay datos claros que mostrar en esta parte.
+                          Aquí aparecerá lo que ya se ve con claridad en este documento.
                         </p>
                       ) : (
                         <div className="mt-4 space-y-3">
@@ -1061,14 +1163,14 @@ export default function Auditar() {
 
                     <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 p-4">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-amber-950">Datos estimados (en revisión)</p>
+                        <p className="font-semibold text-amber-950">Datos a revisar</p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
                           {estimatedEntries.length} dato{estimatedEntries.length === 1 ? "" : "s"}
                         </span>
                       </div>
 
                       <p className="mt-3 text-sm leading-7 text-amber-900">
-                        Tómalos como orientación inicial. Pueden ayudarte, pero todavía conviene confirmarlos con más contexto antes de darlos por cerrados.
+                        Tómalos como orientación inicial. Pueden ayudar, pero todavía conviene confirmarlos con más contexto.
                       </p>
 
                       <div className="mt-4 rounded-[1rem] border border-amber-200 bg-white p-3">
@@ -1082,11 +1184,11 @@ export default function Auditar() {
                             strokeWidth={1.8}
                           />
                           <div>
-                            <p className="text-sm font-semibold text-slate-950">Entiendo que esto todavía necesita confirmarse</p>
+                            <p className="text-sm font-semibold text-slate-950">Entiendo que esto sigue en revisión</p>
                             <p className="mt-1 text-xs leading-6 text-slate-600">
                               {estimatedAcknowledged
-                                ? "Perfecto. Estos datos se quedan como orientación útil, no como cierre definitivo."
-                                : "Márcalo cuando tengas claro que esta parte sigue siendo una orientación inicial."}
+                                ? "Perfecto. Esto queda como orientación útil, no como cierre definitivo."
+                                : "Márcalo cuando tengas claro que esta parte sigue siendo orientación inicial."}
                             </p>
                           </div>
                         </button>
@@ -1179,6 +1281,8 @@ export default function Auditar() {
                 ) : (
                   documents.map((document) => {
                     const readiness = getDocumentReadiness(document.classificationConfidence);
+                    const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
+                    const heliosRisk = getHeliosRiskCopy(heliosOpinion?.riskLevel);
                     return (
                       <article key={document.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -1194,12 +1298,84 @@ export default function Auditar() {
                             <span className={`rounded-full px-3 py-1 ${readiness.classes}`}>{readiness.label}</span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
+                            <span className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}>
+                              {heliosOpinion ? "Helios ya lo interpretó" : "Helios pendiente"}
+                            </span>
                           </div>
                         </div>
 
                         <div className="mt-4 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
                           {readiness.description}
                         </div>
+
+                        {heliosOpinion ? (
+                          <details className="mt-4 rounded-[1rem] border border-teal-100 bg-white p-4">
+                            <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar de Helios</p>
+                                <p className="mt-1 text-sm leading-6 text-slate-600">
+                                  {heliosOpinion.summary ?? "Helios ya dejó una lectura inicial guardada dentro del expediente."}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                                <span className={`rounded-full px-3 py-1 ${heliosRisk.classes}`}>{heliosRisk.label}</span>
+                                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{getHeliosModeLabel(heliosOpinion.mode)}</span>
+                              </div>
+                            </summary>
+
+                            <div className="mt-4 space-y-4 border-t border-slate-200 pt-4">
+                              {heliosOpinion.legalOpinion ? (
+                                <div className="rounded-[1rem] bg-slate-50 p-3 text-sm leading-7 text-slate-700">{heliosOpinion.legalOpinion}</div>
+                              ) : null}
+
+                              <div className="grid gap-4 lg:grid-cols-2">
+                                <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
+                                  <p className="font-semibold text-teal-950">Siguiente paso sugerido</p>
+                                  <p className="mt-2 text-sm leading-7 text-teal-900">
+                                    {heliosOpinion.recommendedNextStep ?? "Conectar este archivo con más evidencia del expediente."}
+                                  </p>
+                                  {heliosOpinion.recommendedActions?.length ? (
+                                    <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
+                                      {heliosOpinion.recommendedActions.map((item) => (
+                                        <p key={item}>• {item}</p>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+
+                                <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
+                                  <p className="font-semibold text-amber-950">Puntos que todavía conviene confirmar</p>
+                                  {heliosOpinion.uncertainties?.length ? (
+                                    <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
+                                      {heliosOpinion.uncertainties.map((item) => (
+                                        <p key={item}>• {item}</p>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="mt-2 text-sm leading-7 text-amber-900">
+                                      Por ahora no hay observaciones adicionales visibles, pero sigue siendo una lectura preliminar.
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                                {typeof heliosOpinion.confidenceScore === "number" ? (
+                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Confianza {heliosOpinion.confidenceScore}%</span>
+                                ) : null}
+                                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Generado {formatDate(heliosOpinion.generatedAt)}</span>
+                              </div>
+
+                              {heliosOpinion.disclaimer ? (
+                                <p className="text-xs leading-6 text-slate-500">{heliosOpinion.disclaimer}</p>
+                              ) : null}
+                            </div>
+                          </details>
+                        ) : (
+                          <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
+                            Helios todavía no tiene una lectura visible guardada para este documento dentro del expediente.
+                          </div>
+                        )}
                       </article>
                     );
                   })
@@ -1227,6 +1403,27 @@ export default function Auditar() {
                   <span className="font-semibold text-slate-900">Estado del caso:</span>{" "}
                   {getCaseStatusLabel(caseDetailQuery.data?.case.status)}
                 </p>
+              </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                  <div>
+                    <p className="font-semibold text-teal-950">Helios es el cerebro central de este expediente</p>
+                    <p className="mt-2 text-sm leading-7 text-teal-900">
+                      {heliosDocumentsCount === 0
+                        ? "Todavía no hay una lectura jurídica visible de Helios. En cuanto interprete documentos, aquí verás cómo va armando el criterio del expediente."
+                        : `Helios ya interpretó ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y va conectando esa información para construir una lectura cada vez más útil del caso.`}
+                    </p>
+                    {latestPersistedHeliosOpinion ? (
+                      <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
+                        <p className="font-semibold text-slate-950">Última lectura guardada</p>
+                        <p className="mt-1">{latestPersistedHeliosOpinion.summary}</p>
+                        <p className="mt-2 text-xs text-slate-500">Documento: {latestHeliosDocument?.originalName ?? "Sin detalle visible"}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
 

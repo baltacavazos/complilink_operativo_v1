@@ -1,0 +1,87 @@
+{
+  "raw": {
+    "id": "530922b1-3577-9d5f-b7d6-4015e16d56ed",
+    "object": "chat.completion",
+    "created": 1775574848,
+    "model": "grok-4-0709",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"overall_verdict\": \"Buena base, reforzar Helios como núcleo sin complejizar\",\n  \"what_to_keep\": [\n    \"Enfoque en simplicidad y lenguaje humano\",\n    \"Diseño mobile-first y autoexplicativo\",\n    \"Estética sobria y moderna\"\n  ],\n  \"what_to_change\": [\n    \"Integrar Helios sutilmente en el copy como cerebro central\",\n    \"Ajustar subtítulo para enfatizar recopilación e interpretación\",\n    \"Mejorar tarjeta para mostrar ordenamiento de información\"\n  ],\n  \"hero_copy\": {\n    \"badge\": \"Diseñado para trabajadores, con Helios como guía central\",\n    \"headline\": \"Tus derechos laborales, claros y bien organizados con Helios\",\n    \"subheadline\": \"Helios recopila, interpreta y ordena tus documentos para que entiendas lo esencial sin complicaciones ni jerga.\",\n    \"primary_cta\": \"Auditar mis documentos\",\n    \"secondary_cta\": \"Ver cómo funciona\",\n    \"trust_chips\": [\n      \"100% confidencial\",\n      \"Lenguaje simple y humano\",\n      \"Separa hechos de estimaciones\"\n    ]\n  },\n  \"hero_card\": {\n    \"eyebrow\": \"Fortaleza de tu expediente con Helios\",\n    \"title\": \"Helios organiza y fortalece tu respaldo paso a paso\",\n    \"status_label\": \"Protegido\",\n    \"metric_label\": \"Claridad acumulada\",\n    \"metric_caption\": \"Sube más documentos para que Helios los interprete y mejore tu visión general.\",\n    \"steps\": [\n      \"Sube recibo, contrato o CFDI\",\n      \"Helios interpreta y ordena lo clave en palabras simples\",\n      \"Descubre qué más necesitas para fortalecer tu expediente\"\n    ]\n  },\n  \"layout_guidance\": [\n    \"Mantener hero compacto para mobile, con tarjeta visible en scroll inicial\",\n    \"Usar tipografía clara y espaciado amplio para legibilidad\",\n    \"Integrar chips de confianza cerca de CTAs para reforzar credibilidad\"\n  ],\n  \"risks_to_avoid\": [\n    \"Evitar promesas de resultados legales definitivos\",\n    \"No sobrecargar con términos técnicos sobre Helios\",\n    \"Prevenir que la interfaz parezca compleja o intimidante\"\n  ],\n  \"confidence\": \"high\"\n}",
+          "refusal": null
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1456,
+      "completion_tokens": 500,
+      "total_tokens": 2616,
+      "prompt_tokens_details": {
+        "text_tokens": 1456,
+        "audio_tokens": 0,
+        "image_tokens": 0,
+        "cached_tokens": 676
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 660,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "num_sources_used": 0,
+      "cost_in_usd_ticks": 202470000
+    },
+    "system_fingerprint": "fp_74614d6fcc"
+  },
+  "parsed": {
+    "overall_verdict": "Buena base, reforzar Helios como núcleo sin complejizar",
+    "what_to_keep": [
+      "Enfoque en simplicidad y lenguaje humano",
+      "Diseño mobile-first y autoexplicativo",
+      "Estética sobria y moderna"
+    ],
+    "what_to_change": [
+      "Integrar Helios sutilmente en el copy como cerebro central",
+      "Ajustar subtítulo para enfatizar recopilación e interpretación",
+      "Mejorar tarjeta para mostrar ordenamiento de información"
+    ],
+    "hero_copy": {
+      "badge": "Diseñado para trabajadores, con Helios como guía central",
+      "headline": "Tus derechos laborales, claros y bien organizados con Helios",
+      "subheadline": "Helios recopila, interpreta y ordena tus documentos para que entiendas lo esencial sin complicaciones ni jerga.",
+      "primary_cta": "Auditar mis documentos",
+      "secondary_cta": "Ver cómo funciona",
+      "trust_chips": [
+        "100% confidencial",
+        "Lenguaje simple y humano",
+        "Separa hechos de estimaciones"
+      ]
+    },
+    "hero_card": {
+      "eyebrow": "Fortaleza de tu expediente con Helios",
+      "title": "Helios organiza y fortalece tu respaldo paso a paso",
+      "status_label": "Protegido",
+      "metric_label": "Claridad acumulada",
+      "metric_caption": "Sube más documentos para que Helios los interprete y mejore tu visión general.",
+      "steps": [
+        "Sube recibo, contrato o CFDI",
+        "Helios interpreta y ordena lo clave en palabras simples",
+        "Descubre qué más necesitas para fortalecer tu expediente"
+      ]
+    },
+    "layout_guidance": [
+      "Mantener hero compacto para mobile, con tarjeta visible en scroll inicial",
+      "Usar tipografía clara y espaciado amplio para legibilidad",
+      "Integrar chips de confianza cerca de CTAs para reforzar credibilidad"
+    ],
+    "risks_to_avoid": [
+      "Evitar promesas de resultados legales definitivos",
+      "No sobrecargar con términos técnicos sobre Helios",
+      "Prevenir que la interfaz parezca compleja o intimidante"
+    ],
+    "confidence": "high"
+  }
+}

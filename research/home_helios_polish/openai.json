@@ -1,0 +1,86 @@
+{
+  "raw": {
+    "id": "chatcmpl-DS2PmfXqwX9iNJR2bAjBW6wTtLYSk",
+    "object": "chat.completion",
+    "created": 1775574838,
+    "model": "gpt-4.1-mini-2025-04-14",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"overall_verdict\": \"Integrar a Helios como el motor que simplifica y ordena tu expediente, manteniendo la claridad y confianza sin tecnicismos.\",\n  \"what_to_keep\": [\n    \"Lenguaje humano y sencillo que conecta con trabajadores.\",\n    \"La estructura mobile-first y autoexplicativa.\",\n    \"Los trust chips que transmiten confianza y claridad.\"\n  ],\n  \"what_to_change\": [\n    \"Incluir a Helios explícitamente como el 'cerebro' que interpreta y organiza sin complicar.\",\n    \"Simplificar el headline para hacerlo más directo y emocional.\",\n    \"Hacer el subheadline más enfocado en el valor que Helios aporta sin sonar técnico.\"\n  ],\n  \"hero_copy\": {\n    \"badge\": \"Impulsado por Helios, tu cerebro laboral\",\n    \"headline\": \"Tus derechos laborales, claros y protegidos con inteligencia sencilla\",\n    \"subheadline\": \"Helios recopila y ordena tu expediente para que entiendas tus documentos sin complicaciones ni jerga legal.\",\n    \"primary_cta\": \"Auditar mis documentos\",\n    \"secondary_cta\": \"Ver cómo funciona\",\n    \"trust_chips\": [\n      \"100% confidencial\",\n      \"Sin jerga legal\",\n      \"Hechos claros, sin suposiciones\"\n    ]\n  },\n  \"hero_card\": {\n    \"eyebrow\": \"Fortaleza inicial del expediente\",\n    \"title\": \"Tu expediente comienza a fortalecerse con Helios\",\n    \"status_label\": \"Protegido\",\n    \"metric_label\": \"Claridad acumulada\",\n    \"metric_caption\": \"Más documentos útiles te dan más claridad para comparar cambios y cuidar tu respaldo.\",\n    \"steps\": [\n      \"Sube recibo, contrato o CFDI.\",\n      \"Helios resalta lo importante con palabras simples.\",\n      \"Descubre qué documento puede ayudarte después.\"\n    ]\n  },\n  \"layout_guidance\": [\n    \"Mantener jerarquía visual clara para que Helios destaque sin saturar.\",\n    \"Usar iconografía simple que represente inteligencia y organización sin ser técnica.\",\n    \"Garantizar que el texto sea legible en móvil y que los CTAs estén siempre visibles.\"\n  ],\n  \"risks_to_avoid\": [\n    \"No usar lenguaje técnico o legal que intimide al usuario.\",\n    \"Evitar presentar a Helios como un gadget separado o complejo.\",\n    \"No prometer asesoría legal definitiva ni resultados absolutos.\"\n  ],\n  \"confidence\": \"high\"\n}",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 770,
+      "completion_tokens": 521,
+      "total_tokens": 1291,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_c5385b4086"
+  },
+  "parsed": {
+    "overall_verdict": "Integrar a Helios como el motor que simplifica y ordena tu expediente, manteniendo la claridad y confianza sin tecnicismos.",
+    "what_to_keep": [
+      "Lenguaje humano y sencillo que conecta con trabajadores.",
+      "La estructura mobile-first y autoexplicativa.",
+      "Los trust chips que transmiten confianza y claridad."
+    ],
+    "what_to_change": [
+      "Incluir a Helios explícitamente como el 'cerebro' que interpreta y organiza sin complicar.",
+      "Simplificar el headline para hacerlo más directo y emocional.",
+      "Hacer el subheadline más enfocado en el valor que Helios aporta sin sonar técnico."
+    ],
+    "hero_copy": {
+      "badge": "Impulsado por Helios, tu cerebro laboral",
+      "headline": "Tus derechos laborales, claros y protegidos con inteligencia sencilla",
+      "subheadline": "Helios recopila y ordena tu expediente para que entiendas tus documentos sin complicaciones ni jerga legal.",
+      "primary_cta": "Auditar mis documentos",
+      "secondary_cta": "Ver cómo funciona",
+      "trust_chips": [
+        "100% confidencial",
+        "Sin jerga legal",
+        "Hechos claros, sin suposiciones"
+      ]
+    },
+    "hero_card": {
+      "eyebrow": "Fortaleza inicial del expediente",
+      "title": "Tu expediente comienza a fortalecerse con Helios",
+      "status_label": "Protegido",
+      "metric_label": "Claridad acumulada",
+      "metric_caption": "Más documentos útiles te dan más claridad para comparar cambios y cuidar tu respaldo.",
+      "steps": [
+        "Sube recibo, contrato o CFDI.",
+        "Helios resalta lo importante con palabras simples.",
+        "Descubre qué documento puede ayudarte después."
+      ]
+    },
+    "layout_guidance": [
+      "Mantener jerarquía visual clara para que Helios destaque sin saturar.",
+      "Usar iconografía simple que represente inteligencia y organización sin ser técnica.",
+      "Garantizar que el texto sea legible en móvil y que los CTAs estén siempre visibles."
+    ],
+    "risks_to_avoid": [
+      "No usar lenguaje técnico o legal que intimide al usuario.",
+      "Evitar presentar a Helios como un gadget separado o complejo.",
+      "No prometer asesoría legal definitiva ni resultados absolutos."
+    ],
+    "confidence": "high"
+  }
+}

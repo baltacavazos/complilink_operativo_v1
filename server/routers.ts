@@ -51,6 +51,7 @@ import {
   sanitizeFileName,
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
+import { buildHeliosOpinionContract } from "./heliosIntegrationService";
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
 const casePrioritySchema = z.enum(CASE_PRIORITIES);
@@ -621,6 +622,50 @@ export const appRouter = router({
           status: "ready",
         });
 
+        const heliosOpinionContract = buildHeliosOpinionContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          documentType: classification.documentType,
+          documentName: safeFileName,
+          jurisdiction: detail.case.jurisdiction,
+          caseTitle: detail.case.title,
+          preliminaryAnalysis: {
+            confirmedData: preliminaryAnalysis.confirmedData,
+            estimatedData: preliminaryAnalysis.estimatedData,
+            guardrails: preliminaryAnalysis.guardrails,
+          },
+        });
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_v1",
+          payload: JSON.stringify(heliosOpinionContract),
+          status: "ready",
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Helios preparó una opinión inicial",
+          description: heliosOpinionContract.opinion.summary,
+          metadata: JSON.stringify({
+            engine: "helios",
+            document_id: documentId,
+            risk_level: heliosOpinionContract.opinion.riskLevel,
+            confidence_score: heliosOpinionContract.opinion.confidenceScore,
+            generated_at: heliosOpinionContract.opinion.generatedAt,
+          }),
+          eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
+        });
+
         const engineDispatch = await sendDocumentToAuditaPatronEngine({
           caseContract,
           documentContract,
@@ -695,12 +740,26 @@ export const appRouter = router({
           afterState: engineDispatch,
         });
 
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.helios_opinion",
+          afterState: heliosOpinionContract,
+        });
+
         return {
           document: documentRecord,
           classification,
           preliminaryAnalysis,
           documentContract,
           sharedEngineEnvelope,
+          heliosOpinion: heliosOpinionContract.opinion,
+          heliosOpinionContract,
           engineDispatch,
         };
       }),

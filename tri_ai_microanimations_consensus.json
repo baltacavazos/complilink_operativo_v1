@@ -1,0 +1,404 @@
+{
+  "prompt_version": "microanimations_v1",
+  "source_files": [
+    "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
+    "/home/ubuntu/complilink_operativo_v1/client/src/pages/Auditar.tsx"
+  ],
+  "models": {
+    "chatgpt": {
+      "design_principle": "Microinteracciones sutiles y funcionales que recompensan la atención sin afectar rendimiento ni accesibilidad.",
+      "recommended_animations": [
+        {
+          "name": "hero_text_fade_in",
+          "target": "home_hero",
+          "trigger": "on_load",
+          "effect": "Fade in secuencial de bloques de texto principales con ligera traslación vertical",
+          "duration_ms": 600,
+          "priority": "high",
+          "engagement_value": "Atrae la atención inicial y mejora la lectura progresiva del mensaje clave",
+          "implementation_note": "Usar CSS opacity y transform con prefers-reduced-motion para desactivar"
+        },
+        {
+          "name": "hero_cta_scale_on_hover",
+          "target": "cta",
+          "trigger": "on_hover",
+          "effect": "Escalado suave y cambio de sombra para botones CTA principales",
+          "duration_ms": 200,
+          "priority": "high",
+          "engagement_value": "Refuerza la interactividad y guía al usuario a la acción principal",
+          "implementation_note": "Animar solo en dispositivos no táctiles, respetar prefers-reduced-motion"
+        },
+        {
+          "name": "hero_panel_progress_bar_animate",
+          "target": "hero_panel",
+          "trigger": "on_load",
+          "effect": "Animación de barra de progreso desde 0 hasta el porcentaje actual con easing suave",
+          "duration_ms": 800,
+          "priority": "high",
+          "engagement_value": "Visualiza el progreso del expediente, reforzando claridad y motivación",
+          "implementation_note": "Animar solo si prefers-reduced-motion no está activo"
+        },
+        {
+          "name": "benefits_item_fade_stagger",
+          "target": "benefits",
+          "trigger": "on_scroll_into_view",
+          "effect": "Aparición con fade y ligera traslación hacia arriba en cascada con delay escalonado",
+          "duration_ms": 400,
+          "priority": "medium",
+          "engagement_value": "Destaca beneficios clave sin saturar, premiando la exploración",
+          "implementation_note": "Usar IntersectionObserver para disparar animación, respetar prefers-reduced-motion"
+        },
+        {
+          "name": "auditar_upload_button_feedback",
+          "target": "auditar_upload",
+          "trigger": "on_tap",
+          "effect": "Feedback táctil con breve escalado y cambio de color para botón de subir archivo",
+          "duration_ms": 150,
+          "priority": "high",
+          "engagement_value": "Confirma la acción del usuario y mejora la experiencia de carga",
+          "implementation_note": "Animación ligera, compatible con dispositivos móviles y accesible"
+        },
+        {
+          "name": "auditar_loading_spinner_fade",
+          "target": "auditar_upload",
+          "trigger": "on_state_change",
+          "effect": "Aparición y desaparición suave del spinner de carga con fade",
+          "duration_ms": 300,
+          "priority": "high",
+          "engagement_value": "Indica claramente el estado de carga sin distracciones",
+          "implementation_note": "Spinner SVG animado con CSS, respetar prefers-reduced-motion"
+        },
+        {
+          "name": "auditar_results_highlight",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "Resalte breve con cambio de fondo y sombra para nuevos resultados o insights",
+          "duration_ms": 500,
+          "priority": "high",
+          "engagement_value": "Premia la atención al mostrar resultados nuevos o importantes",
+          "implementation_note": "Animar solo al actualizar resultados, evitar animaciones repetitivas"
+        },
+        {
+          "name": "header_menu_button_tap_feedback",
+          "target": "header",
+          "trigger": "on_tap",
+          "effect": "Escalado rápido y cambio de color para botón menú móvil",
+          "duration_ms": 150,
+          "priority": "medium",
+          "engagement_value": "Confirma la interacción en dispositivos táctiles",
+          "implementation_note": "Animación ligera y rápida, desactivable con prefers-reduced-motion"
+        }
+      ],
+      "avoid": [
+        "Animaciones decorativas sin función clara",
+        "Parallax excesivo o pesado en móvil",
+        "Animaciones largas o repetitivas que distraigan"
+      ],
+      "motion_system": {
+        "style": "minimalista y fluido con transiciones suaves",
+        "easing": "cubic-bezier(0.4, 0, 0.2, 1) para naturalidad",
+        "stagger_strategy": "delays cortos escalonados para elementos en lista o grupo",
+        "reduced_motion_strategy": "desactivar animaciones no esenciales y usar transiciones estáticas"
+      },
+      "ideal_first_batch": [
+        "hero_text_fade_in",
+        "hero_cta_scale_on_hover",
+        "hero_panel_progress_bar_animate",
+        "auditar_upload_button_feedback"
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "design_principle": "Fluidez propositiva y feedback táctil. Cada microanimación debe reforzar la claridad, guiar la atención y recompensar la interacción del usuario, sin añadir ruido visual ni comprometer el rendimiento móvil.",
+      "recommended_animations": [
+        {
+          "name": "Hero Text Entrance",
+          "target": "home_hero",
+          "trigger": "on_load",
+          "effect": "El título (h1) y la descripción (p) aparecen con un fade-in y un sutil slide-up (translateY de 10px a 0), escalonado para el título y luego la descripción.",
+          "duration_ms": 400,
+          "priority": "high",
+          "engagement_value": "Establece la presencia del contenido principal de forma elegante, guiando la mirada del usuario.",
+          "implementation_note": "Usar CSS `transform` y `opacity`. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Hero CTA Button Entrance",
+          "target": "cta",
+          "trigger": "on_load",
+          "effect": "Los botones principales del hero aparecen con un fade-in y un sutil slide-up, escalonado entre ellos.",
+          "duration_ms": 250,
+          "priority": "high",
+          "engagement_value": "Dirige la atención a las acciones clave de forma dinámica y atractiva.",
+          "implementation_note": "Aplicar `transform` y `opacity` con un pequeño `delay` entre botones. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Button Hover/Tap Feedback",
+          "target": "cta",
+          "trigger": "on_hover|on_tap",
+          "effect": "Al pasar el cursor (desktop) o tocar (móvil), el botón experimenta un ligero cambio de color de fondo (ya existente) y una sutil escala descendente (scale de 1 a 0.99) para un feedback táctil. Los iconos dentro de los botones (ej. ArrowRight) se trasladan ligeramente (translateX de 0 a 2px) en hover.",
+          "duration_ms": 150,
+          "priority": "high",
+          "engagement_value": "Confirma la interacción del usuario, haciendo que los elementos sean más responsivos y agradables al tacto.",
+          "implementation_note": "Transiciones CSS en `transform` y `background-color`. Desactivar `transform` para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Hero Panel Progress Bar Fill",
+          "target": "hero_panel",
+          "trigger": "on_load|on_scroll_into_view",
+          "effect": "La barra de progreso dentro del panel derecho del hero anima su `width` de 0% al valor actual (`dossierReadiness%`).",
+          "duration_ms": 800,
+          "priority": "high",
+          "engagement_value": "Visualiza el progreso de forma atractiva, haciendo que el número se sienta 'ganado' y comprensible.",
+          "implementation_note": "Transición CSS en la propiedad `width`. Desactivar para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Hero Panel Checklist Item Entrance",
+          "target": "hero_panel",
+          "trigger": "on_load",
+          "effect": "Los ítems de la lista en el panel derecho aparecen con un fade-in y un sutil slide-up, escalonado. El icono `CheckCircle2` puede tener un micro-rebote al aparecer.",
+          "duration_ms": 250,
+          "priority": "medium",
+          "engagement_value": "Guía al usuario a través de los beneficios clave, haciendo la información más digerible y dinámica.",
+          "implementation_note": "Usar CSS `transform` y `opacity`. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Quick Trust Item Entrance",
+          "target": "benefits",
+          "trigger": "on_scroll_into_view",
+          "effect": "Los ítems de la sección 'Quick Trust' aparecen con un fade-in y un sutil slide-up, escalonado.",
+          "duration_ms": 250,
+          "priority": "medium",
+          "engagement_value": "Introduce los beneficios clave de forma suave y organizada a medida que el usuario navega.",
+          "implementation_note": "Implementar con Intersection Observer. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "How It Works Article Entrance",
+          "target": "benefits",
+          "trigger": "on_scroll_into_view",
+          "effect": "Las tarjetas de 'Cómo funciona' aparecen con un fade-in y un sutil slide-up, escalonado. El badge numérico puede tener una micro-escala inicial.",
+          "duration_ms": 300,
+          "priority": "medium",
+          "engagement_value": "Hace que el proceso de uso sea más atractivo y fácil de entender, reforzando la simplicidad.",
+          "implementation_note": "Implementar con Intersection Observer. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Bootstrap Loading Indicator",
+          "target": "auditar_upload",
+          "trigger": "on_state_change",
+          "effect": "El contenedor del mensaje de carga (`bootstrapMutation.isPending`) muestra un sutil efecto de 'shimmer' o un pulso de fondo, indicando actividad.",
+          "duration_ms": 1200,
+          "priority": "high",
+          "engagement_value": "Comunica claramente que el sistema está trabajando, reduciendo la percepción de espera y la frustración.",
+          "implementation_note": "Usar CSS `keyframes` para animar `background-position` o `opacity`. Desactivar para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Auditar Dossier Progress Bar Fill",
+          "target": "auditar_results",
+          "trigger": "on_load|on_state_change",
+          "effect": "La barra de progreso del expediente en la pantalla /auditar anima su `width` de 0% al valor actual (`dossierStatus.percent%`).",
+          "duration_ms": 800,
+          "priority": "high",
+          "engagement_value": "Proporciona una visualización clara y gratificante del progreso general del expediente del usuario.",
+          "implementation_note": "Transición CSS en la propiedad `width`. Desactivar para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Upload Button State Change",
+          "target": "cta",
+          "trigger": "on_state_change",
+          "effect": "El texto del botón de subida cambia con un crossfade suave. El icono `ArrowRight` se transforma en un `Loader2` (girando) durante el estado `isPending`.",
+          "duration_ms": 200,
+          "priority": "high",
+          "engagement_value": "Ofrece feedback instantáneo y claro sobre el estado de la acción del usuario (listo para subir, subiendo, etc.).",
+          "implementation_note": "Transiciones CSS para `opacity` y `transform` (rotación del icono). Desactivar rotación para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Last Upload Section Entrance",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "Cuando `lastUpload` está disponible, toda la sección de resultados aparece con un fade-in y un sutil slide-up.",
+          "duration_ms": 400,
+          "priority": "high",
+          "engagement_value": "Señaliza la aparición de nuevo contenido de forma gratificante, indicando que el análisis ha finalizado.",
+          "implementation_note": "Usar CSS `transform` y `opacity`. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Next Step Sparkles Highlight",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "El icono `Sparkles` en la sugerencia del siguiente paso realiza una micro-animación de escala y rotación, o un breve 'destello' de opacidad.",
+          "duration_ms": 300,
+          "priority": "high",
+          "engagement_value": "Atrae la atención al siguiente paso más relevante, haciendo que la guía sea más efectiva y atractiva.",
+          "implementation_note": "Usar CSS `keyframes` para `transform` y `opacity`. Desactivar para `prefers-reduced-motion`."
+        },
+        {
+          "name": "Confirmed/Estimated Entry Entrance",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "Los ítems de datos confirmados y estimados aparecen con un fade-in y un sutil slide-up, escalonado dentro de sus respectivas listas.",
+          "duration_ms": 200,
+          "priority": "medium",
+          "engagement_value": "Presenta los resultados del análisis de forma organizada y dinámica, mejorando la legibilidad.",
+          "implementation_note": "Usar CSS `transform` y `opacity`. Para `prefers-reduced-motion`, solo fade-in."
+        },
+        {
+          "name": "Estimated Acknowledged Checkbox Toggle",
+          "target": "auditar_results",
+          "trigger": "on_tap",
+          "effect": "Al tocar el checkbox, el icono `CheckCircle2` cambia de color (ámbar a esmeralda) con una escala/rebote rápida y satisfactoria.",
+          "duration_ms": 150,
+          "priority": "high",
+          "engagement_value": "Proporciona feedback táctil y visual claro, confirmando la acción del usuario y el cambio de estado.",
+          "implementation_note": "Transiciones CSS en `color` y `transform`. Desactivar `transform` para `prefers-reduced-motion`."
+        }
+      ],
+      "avoid": [
+        "Parallax excesivo o scroll-jacking que dificulte la navegación o el rendimiento.",
+        "Animaciones que bloqueen el hilo principal (main thread) o causen reflows/repaints costosos, especialmente en móvil.",
+        "Animaciones de fondo complejas, videos autoplay o GIFs pesados que distraigan o ralenticen la carga.",
+        "Efectos 3D innecesarios o rotaciones que no aporten información funcional o claridad.",
+        "Animaciones con duraciones superiores a 800ms para interacciones directas, ya que pueden sentirse lentas."
+      ],
+      "motion_system": {
+        "style": "Fluido y propositivo. Animaciones sutiles que guían la atención y confirman interacciones, sin ser intrusivas. Prioridad a la claridad y la respuesta táctil.",
+        "easing": "Principalmente `cubic-bezier(0.2, 0.8, 0.2, 1)` para entradas y salidas suaves (similar a `ease-out-expo` o `ease-out-quad`). Para bucles o transiciones de estado, `cubic-bezier(0.4, 0, 0.2, 1)` (similar a `ease-in-out`).",
+        "stagger_strategy": "Aplicar stagger sutil (20-50ms) en listas de elementos que aparecen secuencialmente (ej. ítems de checklist, tarjetas de beneficios) para crear un efecto de 'cascada' que mejora la legibilidad y el ritmo. Nunca para elementos críticos o que requieran atención inmediata.",
+        "reduced_motion_strategy": "Para `prefers-reduced-motion: reduce`, deshabilitar todas las animaciones de `transform` (slide, scale, rotate) y `opacity` que no sean estrictamente necesarias para la claridad del estado. Mantener solo cambios instantáneos o transiciones de `opacity` muy rápidas (100ms) para feedback esencial. Eliminar staggers y bucles."
+      },
+      "ideal_first_batch": [
+        "Hero Text Entrance",
+        "Hero CTA Button Entrance",
+        "Button Hover/Tap Feedback",
+        "Hero Panel Progress Bar Fill",
+        "Bootstrap Loading Indicator",
+        "Upload Button State Change",
+        "Next Step Sparkles Highlight",
+        "Estimated Acknowledged Checkbox Toggle"
+      ],
+      "confidence": "high"
+    },
+    "grok": {
+      "design_principle": "Subtle, functional motion that rewards interaction with clear feedback, prioritizing mobile performance and accessibility.",
+      "recommended_animations": [
+        {
+          "name": "Hero Fade-In",
+          "target": "home_hero",
+          "trigger": "on_load",
+          "effect": "Gentle opacity fade from 0 to 1 for title and subtitle, staggered by 100ms.",
+          "duration_ms": 400,
+          "priority": "high",
+          "engagement_value": "Draws attention to core message without delay, rewarding page load with smooth reveal.",
+          "implementation_note": "Use CSS transitions; stagger h1 and p elements."
+        },
+        {
+          "name": "CTA Pulse",
+          "target": "cta",
+          "trigger": "on_hover",
+          "effect": "Subtle scale up by 1.05 and shadow lift on buttons like 'Auditar mis documentos'.",
+          "duration_ms": 200,
+          "priority": "high",
+          "engagement_value": "Provides tactile feedback, encouraging clicks by making CTAs feel responsive.",
+          "implementation_note": "CSS hover with transform; fallback to on_tap for mobile."
+        },
+        {
+          "name": "Panel Progress Fill",
+          "target": "hero_panel",
+          "trigger": "on_load",
+          "effect": "Smooth width animation of progress bar from 0% to dossierReadiness value.",
+          "duration_ms": 600,
+          "priority": "medium",
+          "engagement_value": "Visualizes progress, rewarding user with sense of achievement on first view.",
+          "implementation_note": "Animate CSS width property; ensure no reflow on mobile."
+        },
+        {
+          "name": "Benefits Check Reveal",
+          "target": "benefits",
+          "trigger": "on_scroll_into_view",
+          "effect": "Fade-in and slight upward slide for checkmark icons in benefit lists.",
+          "duration_ms": 300,
+          "priority": "medium",
+          "engagement_value": "Highlights key benefits as user scrolls, rewarding exploration with affirmative visuals.",
+          "implementation_note": "Intersection Observer for trigger; stagger per item."
+        },
+        {
+          "name": "Upload File Highlight",
+          "target": "auditar_upload",
+          "trigger": "on_state_change",
+          "effect": "Border color transition to teal on file selection, with subtle glow.",
+          "duration_ms": 250,
+          "priority": "high",
+          "engagement_value": "Confirms file choice instantly, reducing uncertainty and rewarding action.",
+          "implementation_note": "React to state change; use CSS transition for border and box-shadow."
+        },
+        {
+          "name": "Results Expand",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "Smooth height expansion for result sections like confirmed/estimated data.",
+          "duration_ms": 350,
+          "priority": "high",
+          "engagement_value": "Reveals insights progressively, rewarding upload with clear, unfolding information.",
+          "implementation_note": "Animate max-height; ensure content clips properly on mobile."
+        },
+        {
+          "name": "Header Menu Open",
+          "target": "header",
+          "trigger": "on_tap",
+          "effect": "Slide down animation for mobile menu with fade-in links.",
+          "duration_ms": 300,
+          "priority": "low",
+          "engagement_value": "Smooth navigation access, rewarding tap with fluid reveal without jank.",
+          "implementation_note": "CSS transform translateY; respect reduced motion by skipping slide."
+        },
+        {
+          "name": "Progress Bar Update",
+          "target": "auditar_results",
+          "trigger": "on_state_change",
+          "effect": "Animated width change for dossier progress bar on update.",
+          "duration_ms": 500,
+          "priority": "medium",
+          "engagement_value": "Visualizes improvement, motivating further uploads with progress feedback.",
+          "implementation_note": "Transition width; debounce for performance."
+        },
+        {
+          "name": "Trust Badge Fade",
+          "target": "benefits",
+          "trigger": "on_scroll_into_view",
+          "effect": "Sequential opacity fade for trust badges in QuickTrustSection.",
+          "duration_ms": 400,
+          "priority": "low",
+          "engagement_value": "Builds credibility subtly as section enters view, rewarding scroll attention.",
+          "implementation_note": "Stagger with 150ms delay per badge; mobile-optimized observer."
+        },
+        {
+          "name": "CTA Arrow Nudge",
+          "target": "cta",
+          "trigger": "on_hover",
+          "effect": "Slight rightward translation of arrow icon in buttons.",
+          "duration_ms": 150,
+          "priority": "low",
+          "engagement_value": "Adds directional cue, enhancing call-to-action without distraction.",
+          "implementation_note": "Animate transform on ArrowRight; on_tap for touch devices."
+        }
+      ],
+      "avoid": [
+        "Excessive parallax scrolling",
+        "High-duration loops over 1s",
+        "Decorative particles or confetti"
+      ],
+      "motion_system": {
+        "style": "Fluid and minimalist, emphasizing clarity over spectacle",
+        "easing": "cubic-bezier(0.4, 0, 0.2, 1) for smooth in-out",
+        "stagger_strategy": "100-200ms delays for sequential elements in lists or groups",
+        "reduced_motion_strategy": "Fallback to instant changes or static states, no transitions"
+      },
+      "ideal_first_batch": [
+        "Hero Fade-In",
+        "CTA Pulse",
+        "Upload File Highlight",
+        "Results Expand"
+      ],
+      "confidence": "high"
+    }
+  }
+}

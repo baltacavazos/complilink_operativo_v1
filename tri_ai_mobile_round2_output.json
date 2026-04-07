@@ -1,0 +1,190 @@
+{
+  "prompt_version": "round2_mobile_refinement_v1",
+  "sources": {
+    "home": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
+    "auditar": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Auditar.tsx"
+  },
+  "models": {
+    "chatgpt": {
+      "overall_verdict": "Reducir texto y elementos para una experiencia móvil más rápida y clara, destacando acciones clave.",
+      "header_mobile": {
+        "decision": "Simplificar el header móvil eliminando subtítulo y dejando solo el nombre y dos botones clave.",
+        "why": "El header móvil debe ser compacto y funcional, evitando textos adicionales que no aportan acción inmediata, para mejorar velocidad y claridad en pantallas pequeñas.",
+        "changes": [
+          "Eliminar el subtítulo 'Claridad laboral para trabajadores'.",
+          "Mantener solo el nombre de la marca y dos botones principales: 'Ver expediente' y 'Auditar ahora'.",
+          "Reducir el tamaño del logo o icono si es necesario para ahorrar espacio."
+        ],
+        "suggested_copy": {
+          "brand_subtitle": "AuditaPatron",
+          "primary_cta": "Auditar ahora",
+          "secondary_cta": "Ver expediente"
+        }
+      },
+      "home_benefits": {
+        "decision": "Reducir y condensar el bloque hero y beneficios para que el primer scroll en móvil sea rápido y claro.",
+        "why": "El primer scroll debe mostrar el mensaje principal y beneficios clave sin saturar, para captar atención y facilitar acción rápida.",
+        "changes": [
+          "Acortar el headline para hacerlo más directo y fácil de leer rápido.",
+          "Reducir el texto de apoyo a una frase muy clara y breve.",
+          "Mostrar solo tres beneficios clave en formato texto simple sin cajas o sombras pesadas."
+        ],
+        "suggested_copy": {
+          "eyebrow": "Para trabajadores",
+          "headline": "Tus derechos laborales claros y protegidos",
+          "supporting_text": "Entiende y fortalece tu expediente sin complicaciones.",
+          "benefit_items": [
+            "100% confidencial",
+            "Hecho para celular",
+            "Lenguaje simple y claro"
+          ]
+        }
+      },
+      "auditar_results": {
+        "decision": "Simplificar el módulo de resultado para destacar el siguiente paso y reducir carga visual.",
+        "why": "El usuario debe entender rápidamente el estado del último documento y cuál es la acción recomendada sin distracciones ni textos largos.",
+        "changes": [
+          "Reducir texto explicativo y eliminar detalles técnicos visibles en primera vista.",
+          "Mostrar solo resumen sencillo y siguiente paso sugerido en primer plano.",
+          "Colapsar o esconder detalles de datos confirmados y estimados tras interacción o en segundo plano.",
+          "Usar colores suaves y menos elementos visuales para no saturar."
+        ],
+        "suggested_copy": {
+          "section_title": "Resultado del último documento",
+          "empty_state": "Sube un documento para ver qué aporta y qué falta revisar.",
+          "confirmed_title": "Datos confirmados",
+          "estimated_title": "Datos estimados",
+          "next_step_title": "Siguiente paso sugerido",
+          "next_step_text": "Agrega documentos clave para fortalecer tu expediente."
+        }
+      },
+      "priority_order": [
+        "1",
+        "2",
+        "3"
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "overall_verdict": "Las propuestas se centran en la concisión y la priorización de la información clave para mejorar la experiencia móvil, reduciendo la carga cognitiva y acelerando el acceso a la acción.",
+      "header_mobile": {
+        "decision": "Simplificar el header eliminando el subtítulo para una mayor concisión y enfoque en la marca.",
+        "why": "En móvil, cada pixel cuenta. Eliminar el subtítulo 'Claridad laboral para trabajadores' hace el header más corto y limpio, manteniendo la identificación de la marca. La utilidad se mantiene a través del menú desplegable, que es el lugar adecuado para las acciones principales.",
+        "changes": [
+          "Eliminar el subtítulo 'Claridad laboral para trabajadores' del header principal.",
+          "Mantener el logo y el nombre de la marca 'AuditaPatron' como elementos principales.",
+          "Acortar el texto de los CTAs principales para mayor brevedad."
+        ],
+        "suggested_copy": {
+          "brand_subtitle": "",
+          "primary_cta": "Auditar ahora",
+          "secondary_cta": "Mi expediente"
+        }
+      },
+      "home_benefits": {
+        "decision": "Consolidar y simplificar los mensajes de beneficios en el hero para reducir la carga visual y acelerar el primer scroll.",
+        "why": "El hero actual tiene múltiples listas de beneficios y explicaciones que se solapan y alargan el contenido inicial. Consolidar estos mensajes en una lista concisa y eliminar redundancias mejora la claridad y la velocidad de comprensión en móvil, permitiendo que el usuario capte el valor rápidamente.",
+        "changes": [
+          "Acortar el 'eyebrow' del hero.",
+          "Condensar el texto de apoyo principal.",
+          "Consolidar las listas de beneficios dispersas (del mockup y QuickTrustSection) en una única lista de 3 puntos clave bajo el hero principal.",
+          "Reubicar o simplificar la información detallada del mockup (ej. 'Claridad acumulada') para que no compita con el mensaje principal en el primer scroll."
+        ],
+        "suggested_copy": {
+          "eyebrow": "Para trabajadores",
+          "headline": "Tus derechos laborales, claros, protegidos y mejor respaldados.",
+          "supporting_text": "Entiende tus documentos, distingue lo importante y fortalece tu respaldo sin complicaciones.",
+          "benefit_items": [
+            "Entiende tus documentos fácilmente.",
+            "Distingue lo confirmado de lo estimado.",
+            "Fortalece tu expediente con cada archivo."
+          ]
+        }
+      },
+      "auditar_results": {
+        "decision": "Reestructurar el módulo de resultados para destacar el siguiente paso y reducir la sobrecarga de información inicial.",
+        "why": "El módulo actual es muy denso, con muchas cajas y explicaciones que compiten por la atención. Priorizar el 'siguiente paso sugerido' y simplificar la presentación de los resultados iniciales ayuda al usuario a entender rápidamente qué hacer a continuación, reduciendo la fricción y la carga cognitiva.",
+        "changes": [
+          "Mover el bloque 'Siguiente paso sugerido para ti' a una posición más prominente, justo después del resumen inicial del documento.",
+          "Simplificar la presentación de los resultados iniciales, combinando el 'uploadInsight' y 'engineStatus' en un mensaje más directo.",
+          "Eliminar el bloque explícito 'Cómo leer este resultado' de la vista inicial, o convertirlo en un elemento interactivo (ej. tooltip) para reducir la carga visual.",
+          "Acortar los títulos de las secciones de datos confirmados y estimados para mayor concisión."
+        ],
+        "suggested_copy": {
+          "section_title": "Tu último documento",
+          "empty_state": "Cuando subas un documento, aquí verás qué aportó y cuál es el siguiente paso.",
+          "confirmed_title": "Datos claros",
+          "estimated_title": "Datos a revisar",
+          "next_step_title": "Tu siguiente paso",
+          "next_step_text": "{uploadInsight?.nextSuggestion}"
+        }
+      },
+      "priority_order": [
+        "1",
+        "2",
+        "3"
+      ],
+      "confidence": "high"
+    },
+    "grok": {
+      "overall_verdict": "Mejoras clave para mobile, enfocadas en rapidez y claridad",
+      "header_mobile": {
+        "decision": "Acortar subtítulo y CTAs para acceso rápido",
+        "why": "Reduce altura en mobile, prioriza acciones útiles sin abrir menú",
+        "changes": [
+          "Eliminar nav links del menú inicial para enfocar en CTAs",
+          "Hacer subtítulo más corto y protector",
+          "Mostrar primary CTA siempre visible en header mobile"
+        ],
+        "suggested_copy": {
+          "brand_subtitle": "Protege tus derechos laborales",
+          "primary_cta": "Auditar ahora",
+          "secondary_cta": "Ver expediente"
+        }
+      },
+      "home_benefits": {
+        "decision": "Simplificar hero combinando con beneficios",
+        "why": "Menos texto y elementos para scroll inicial más rápido en mobile",
+        "changes": [
+          "Reducir headline y supporting text a lo esencial",
+          "Integrar pills y quick trust en 3 beneficios clave",
+          "Eliminar visual compleja para carga ligera"
+        ],
+        "suggested_copy": {
+          "eyebrow": "Para trabajadores como tú",
+          "headline": "Derechos claros y protegidos",
+          "supporting_text": "Sube documentos y fortalece tu respaldo fácilmente",
+          "benefit_items": [
+            "Entiende lo importante en palabras simples",
+            "Distingue lo confirmado de lo estimado",
+            "Gana claridad con cada archivo útil"
+          ]
+        }
+      },
+      "auditar_results": {
+        "decision": "Resaltar next step primero y reducir secciones",
+        "why": "Menos carga visual, next step visible antes para guiar al usuario rápido",
+        "changes": [
+          "Mover next step al inicio del módulo",
+          "Simplificar explicaciones de confirmado/estimado",
+          "Reducir resumen a puntos clave",
+          "Eliminar secciones redundantes como 'cómo leer'"
+        ],
+        "suggested_copy": {
+          "section_title": "Último resultado",
+          "empty_state": "Sube un documento para ver qué aporta aquí",
+          "confirmed_title": "Confirmado",
+          "estimated_title": "Estimado (revisa)",
+          "next_step_title": "Qué hacer ahora",
+          "next_step_text": "Agrega más para confirmar esto y fortalecer tu expediente"
+        }
+      },
+      "priority_order": [
+        "1",
+        "2",
+        "3"
+      ],
+      "confidence": "high"
+    }
+  }
+}

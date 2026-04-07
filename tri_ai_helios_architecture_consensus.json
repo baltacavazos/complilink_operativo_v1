@@ -1,0 +1,431 @@
+{
+  "context": {
+    "product_goal": "Integrar Auditapatron con el motor Helios de CompliLink para emitir opiniones legales y asesoría laboral asistida dentro del portal o app, aprovechando la información documental y la interpretación jurídica del motor.",
+    "current_architecture": {
+      "frontend": "React + Wouter con rutas principales '/' y '/auditar'.",
+      "backend": "Express + tRPC. La mutación cases.uploadDocument clasifica documentos, genera análisis preliminar, crea contratos canónicos y despacha documentos al motor actual mediante sendDocumentToAuditaPatronEngine().",
+      "existing_engine_pattern": "Existe un adaptador de salida por webhook firmado con HMAC en server/auditaPatronIntegrationService.ts, con reintentos y eventos de retorno soportados.",
+      "data_flow": "El expediente ya guarda documentos, eventos, alertas, contratos y resultados preliminares por documento. La UI de /auditar ya muestra estado del expediente, siguiente paso sugerido y análisis preliminar."
+    },
+    "constraints": [
+      "No exponer credenciales de Helios en el frontend.",
+      "Mantener enfoque mobile-first, claridad y lenguaje sencillo.",
+      "Permitir orientación jurídica útil sin presentar la interfaz como sustituto absoluto de asesoría profesional humana.",
+      "Diseñar para operar incluso si todavía no están cerrados endpoint, auth y formato final de Helios.",
+      "Aprovechar la arquitectura existente de despacho a motor y resultados por documento para no duplicar lógica."
+    ],
+    "questions": [
+      "¿Cuál es la mejor arquitectura incremental para integrar Helios en Auditapatron?",
+      "¿Qué contrato interno conviene definir desde ahora entre Auditapatron y Helios aunque luego cambie el endpoint externo?",
+      "¿Qué experiencia de usuario conviene añadir en /auditar o en nuevas vistas para mostrar interpretación jurídica, opinión preliminar, fundamentos y siguientes pasos?",
+      "¿Qué guardrails de producto, legales y UX conviene aplicar para respuestas jurídicas asistidas?",
+      "¿Qué debe implementarse primero si aún faltan detalles técnicos del servicio externo?"
+    ],
+    "desired_output_schema": {
+      "recommended_architecture": "string",
+      "incremental_plan": [
+        "string"
+      ],
+      "internal_contract": {
+        "request_fields": [
+          "string"
+        ],
+        "response_fields": [
+          "string"
+        ],
+        "status_model": [
+          "string"
+        ]
+      },
+      "ux_recommendations": [
+        "string"
+      ],
+      "guardrails": [
+        "string"
+      ],
+      "first_implementation_slice": [
+        "string"
+      ],
+      "risks": [
+        "string"
+      ]
+    }
+  },
+  "results": {
+    "chatgpt": {
+      "recommended_architecture": "Extender el backend actual para incluir un nuevo adaptador Helios que funcione en paralelo al adaptador existente de AuditaPatron, reutilizando el flujo de despacho y almacenamiento de documentos y resultados. Este adaptador gestionará la comunicación con Helios mediante un contrato interno estable, desacoplado del endpoint externo final, y expondrá resultados jurídicos enriquecidos a la UI mediante tRPC, manteniendo la seguridad y sin exponer credenciales en frontend.",
+      "incremental_plan": [
+        "Definir y acordar un contrato interno estable para la comunicación con Helios, incluyendo formatos de solicitud y respuesta, y modelo de estados.",
+        "Implementar el adaptador backend para Helios con lógica de envío de documentos y recepción de respuestas, integrando con el almacenamiento de expediente existente.",
+        "Extender la UI en /auditar para mostrar la opinión legal preliminar, fundamentos y siguientes pasos, con lenguaje sencillo y disclaimers claros.",
+        "Incorporar mecanismos de reintentos y manejo de errores en el adaptador Helios, alineados con el patrón existente de AuditaPatron.",
+        "Realizar pruebas end-to-end con datos simulados para validar la integración y experiencia antes de conectar con el endpoint final de Helios."
+      ],
+      "internal_contract": {
+        "request_fields": [
+          "documentId",
+          "documentType",
+          "documentContent (base64 o referencia segura)",
+          "expedientId",
+          "metadata (fecha, parte involucrada, tipo de análisis solicitado)",
+          "timestamp"
+        ],
+        "response_fields": [
+          "documentId",
+          "expedientId",
+          "legalOpinion (texto claro y estructurado)",
+          "legalFoundations (lista de referencias normativas y jurisprudenciales)",
+          "recommendedNextSteps (lista de acciones sugeridas)",
+          "confidenceScore (opcional)",
+          "status (pendiente, en_proceso, completado, error)",
+          "errorDetails (en caso de fallo)"
+        ],
+        "status_model": [
+          "pendiente",
+          "en_proceso",
+          "completado",
+          "error"
+        ]
+      },
+      "ux_recommendations": [
+        "Mostrar en /auditar un panel adicional con la opinión legal preliminar y fundamentos, usando lenguaje claro y accesible.",
+        "Incluir disclaimers visibles que aclaren que la asesoría asistida no sustituye asesoría profesional humana.",
+        "Ofrecer botones o enlaces para solicitar asesoría humana basada en la opinión generada.",
+        "Presentar el estado de análisis Helios junto con el estado general del expediente para transparencia.",
+        "Diseñar la experiencia mobile-first con jerarquía visual clara y navegación sencilla para acceder a resultados y siguientes pasos."
+      ],
+      "guardrails": [
+        "No exponer nunca credenciales o tokens de Helios en frontend o logs accesibles.",
+        "Limitar la presentación de opiniones a un nivel preliminar y asistido, evitando afirmaciones categóricas.",
+        "Incluir disclaimers legales y de producto que expliquen el alcance y limitaciones de la asesoría automatizada.",
+        "Implementar controles de calidad y monitoreo para detectar respuestas erróneas o inconsistentes.",
+        "Garantizar la privacidad y seguridad de los datos conforme a normativas aplicables."
+      ],
+      "first_implementation_slice": [
+        "Definir y documentar el contrato interno mínimo viable para solicitud y respuesta con Helios.",
+        "Implementar el adaptador backend para enviar documentos y recibir respuestas simuladas.",
+        "Extender la UI en /auditar para mostrar resultados simulados con disclaimers.",
+        "Validar flujo end-to-end con datos de prueba sin depender del endpoint final."
+      ],
+      "risks": [
+        "Retrasos o cambios en el endpoint, autenticación o formato final de Helios que requieran ajustes posteriores.",
+        "Expectativas de usuarios sobre la precisión y alcance de la asesoría automatizada.",
+        "Posibles problemas de seguridad si credenciales se exponen accidentalmente.",
+        "Complejidad en mantener sincronizados estados y resultados entre motores múltiples.",
+        "Dificultad para comunicar claramente limitaciones legales y evitar malentendidos."
+      ]
+    },
+    "gemini": {
+      "recommended_architecture": "Se recomienda una arquitectura incremental que extienda el patrón existente de integración con motores externos. El backend de Auditapatron actuará como un 'Backend-for-Frontend' (BFF) para la integración con Helios, gestionando las credenciales, la orquestación de llamadas y el mapeo de datos. Se creará un nuevo adaptador de salida específico para Helios, similar al existente en 'server/auditaPatronIntegrationService.ts', que encapsule la lógica de comunicación (envío de datos, manejo de webhooks de retorno, reintentos y seguridad HMAC). El frontend consumirá los resultados de Helios una vez que el backend los haya procesado y almacenado en el expediente, asegurando que las credenciales de Helios nunca se expongan al cliente.",
+      "incremental_plan": [
+        "**Fase 1: Definición y Mocking (Backend)**",
+        "1. Definir el contrato interno inicial (request/response/status) entre Auditapatron y Helios.",
+        "2. Crear un adaptador 'mock' para Helios en el backend (`server/heliosIntegrationService.ts`) que simule el envío de datos y la recepción de un webhook con respuestas predefinidas o generadas aleatoriamente.",
+        "3. Modificar la mutación `cases.uploadDocument` para que, además de despachar al motor actual, también envíe el documento y contexto relevante al adaptador 'mock' de Helios.",
+        "4. Extender el modelo de datos del expediente para almacenar los resultados simulados de Helios (opinión legal, fundamentos, riesgo, etc.) por documento.",
+        "**Fase 2: Integración Backend Real**",
+        "1. Implementar la lógica real del adaptador de Helios, incluyendo autenticación (ej. OAuth, API Key), manejo de errores, reintentos y el formato de datos de envío/recepción.",
+        "2. Configurar la URL del webhook de retorno de Helios para que apunte a un endpoint seguro en Auditapatron, que procesará los resultados asíncronos.",
+        "3. Implementar la lógica de mapeo de datos entre el formato interno de Auditapatron y el formato de Helios, tanto para el envío como para la recepción.",
+        "4. Realizar pruebas de integración exhaustivas con el entorno de desarrollo/staging de Helios.",
+        "**Fase 3: Experiencia de Usuario y Visualización (Frontend)**",
+        "1. Actualizar la UI de `/auditar` para mostrar los nuevos campos de 'Opinión Legal Asistida' de Helios, utilizando los datos almacenados en el expediente.",
+        "2. Diseñar y desarrollar componentes de UI para presentar la interpretación jurídica, opinión preliminar, fundamentos y siguientes pasos de manera clara y mobile-first.",
+        "3. Implementar los 'guardrails' de UX, incluyendo disclaimers, indicadores de riesgo y opciones de escalada a asesoría humana.",
+        "4. Realizar pruebas de usabilidad y A/B testing para optimizar la presentación de la información.",
+        "**Fase 4: Refinamiento y Monitoreo**",
+        "1. Implementar métricas de uso y rendimiento de la integración con Helios.",
+        "2. Establecer un proceso de monitoreo de la calidad de las respuestas de Helios y un mecanismo de feedback para los usuarios.",
+        "3. Refinar la lógica de negocio y la UI basándose en el feedback de usuarios y el monitoreo."
+      ],
+      "internal_contract": {
+        "request_fields": [
+          "caseId: string (ID único del expediente)",
+          "documentId: string (ID único del documento dentro del expediente)",
+          "documentContent: string (Contenido textual del documento)",
+          "documentType: string (Tipo clasificado del documento, ej. 'contrato', 'finiquito')",
+          "jurisdiction: string (Jurisdicción legal aplicable, ej. 'México')",
+          "contextData: object (Datos adicionales del expediente/empresa/empleado relevantes para el análisis)",
+          "callbackUrl: string (URL de webhook de Auditapatron para recibir los resultados asíncronos)",
+          "correlationId: string (ID para correlacionar la solicitud y la respuesta)"
+        ],
+        "response_fields": [
+          "caseId: string",
+          "documentId: string",
+          "correlationId: string",
+          "status: string ('procesado', 'error', 'pendiente')",
+          "legalOpinion: string (Resumen de la interpretación jurídica)",
+          "preliminaryAdvice: string (Asesoría y siguientes pasos sugeridos)",
+          "legalFoundations: array<object> (Fundamentos legales: artículos, leyes, jurisprudencia)",
+          "riskLevel: string ('bajo', 'medio', 'alto', 'crítico')",
+          "extractedEntities: object (Entidades clave extraídas del documento, ej. fechas, partes, montos)",
+          "suggestedCanonicalContract: string (Referencia a un contrato canónico si aplica)",
+          "errors: array<object> (Detalles de errores si el status es 'error')"
+        ],
+        "status_model": [
+          "PENDIENTE_ENVIO_HELIOS: El documento está en cola para ser enviado a Helios.",
+          "ENVIADO_A_HELIOS: El documento ha sido enviado exitosamente a Helios.",
+          "PROCESANDO_HELIOS: Helios está procesando el documento (estado intermedio si es asíncrono).",
+          "RESULTADO_HELIOS_RECIBIDO: El webhook de Helios ha sido recibido y los resultados están siendo procesados.",
+          "OPINION_GENERADA: La opinión legal de Helios ha sido procesada y almacenada en el expediente.",
+          "ERROR_HELIOS: Ocurrió un error durante el envío o procesamiento por parte de Helios."
+        ]
+      },
+      "ux_recommendations": [
+        "**En la vista /auditar:**",
+        "1.  **Sección Dedicada:** Crear una sección claramente diferenciada y etiquetada como 'Opinión Legal Asistida por IA' o 'Análisis Jurídico Helios' dentro del flujo existente del expediente.",
+        "2.  **Resumen Primero:** Mostrar un resumen conciso de la opinión legal y el nivel de riesgo (ej. 'Riesgo Laboral: Medio') en la parte superior de la sección, con indicadores visuales (colores, iconos).",
+        "3.  **Siguientes Pasos Claros:** Presentar los 'Siguientes Pasos Sugeridos' de forma prominente y accionable, con lenguaje sencillo y directo.",
+        "4.  **Detalles Expandibles:** Permitir a los usuarios expandir secciones para ver los 'Fundamentos Legales' (artículos, leyes, jurisprudencia) y la 'Interpretación Detallada', evitando sobrecargar la vista inicial.",
+        "5.  **Disclaimer Persistente:** Incluir un disclaimer visible y persistente: 'Esta es una opinión asistida por IA y no sustituye la asesoría legal profesional humana.'",
+        "6.  **Estados de Carga:** Mostrar estados de carga claros ('Analizando con Helios...', 'Generando opinión...') mientras se espera la respuesta del motor.",
+        "7.  **Feedback y Escalada:** Incluir un botón o enlace '¿Necesitas más ayuda? Solicita asesoría humana' o 'Reportar un problema con esta opinión' para feedback y escalada.",
+        "8.  **Mobile-First:** Asegurar que la presentación de la información sea óptima y legible en dispositivos móviles, con interacciones táctiles intuitivas.",
+        "9.  **Glosario/Tooltips:** Ofrecer tooltips o un glosario para términos jurídicos complejos que puedan aparecer en la opinión."
+      ],
+      "guardrails": [
+        "**Producto:**",
+        "1.  **Claridad y Sencillez:** El lenguaje utilizado en las opiniones debe ser claro, conciso y evitar la jerga legal excesiva, priorizando la comprensión del usuario.",
+        "2.  **Transparencia:** Siempre indicar explícitamente que la opinión es 'asistida por IA' o 'generada por un motor de IA', evitando la personificación del sistema.",
+        "3.  **Contextualización:** Asegurar que la opinión se presente siempre en el contexto del documento y expediente específico, evitando respuestas genéricas.",
+        "4.  **Accionabilidad:** Las recomendaciones deben ser prácticas y orientar al usuario hacia los siguientes pasos lógicos o acciones concretas.",
+        "5.  **Mecanismo de Feedback:** Implementar un sistema para que los usuarios puedan calificar la utilidad o precisión de la opinión, permitiendo la mejora continua.",
+        "6.  **Límite de Alcance:** Definir claramente qué tipo de preguntas o documentos puede procesar Helios y cuáles están fuera de su alcance, comunicándolo al usuario.",
+        "**Legales:**",
+        "1.  **Disclaimers Robustos:** Los disclaimers legales deben ser prominentes, inequívocos y legalmente sólidos, eximiendo de responsabilidad a la plataforma por errores del motor de IA.",
+        "2.  **Privacidad de Datos:** Garantizar que el envío de documentos y datos a Helios cumpla con la normativa de protección de datos (ej. LOPD, GDPR), incluyendo acuerdos de procesamiento de datos con CompliLink.",
+        "3.  **Jurisdicción:** Asegurar que la interpretación jurídica de Helios sea consistente con la jurisdicción laboral aplicable al caso (ej. México).",
+        "4.  **Revisión Humana:** Establecer un proceso interno de revisión periódica de la calidad y precisión de las opiniones generadas por Helios, especialmente en casos de alto riesgo.",
+        "5.  **Responsabilidad:** Clarificar en los términos y condiciones la responsabilidad de Auditapatron y del usuario respecto a las decisiones tomadas con base en la asesoría asistida por IA.",
+        "**UX:**",
+        "1.  **Evitar la Sobrecarga:** Presentar la información de forma gradual, con resúmenes y opciones para profundizar, para no abrumar al usuario.",
+        "2.  **Consistencia:** Mantener una terminología y un estilo visual consistentes en toda la plataforma para la presentación de la asesoría asistida.",
+        "3.  **Manejo de Errores:** Diseñar una experiencia de usuario clara y empática para cuando Helios no pueda generar una opinión o encuentre un error, sugiriendo alternativas.",
+        "4.  **No Sustitución:** La interfaz debe reforzar constantemente la idea de que la herramienta es un 'asistente' y no un 'sustituto' del abogado."
+      ],
+      "first_implementation_slice": [
+        "1.  **Definición del Contrato Interno:** Formalizar el esquema de request/response/status entre Auditapatron y Helios.",
+        "2.  **Adaptador Mock de Helios:** Crear un servicio `server/heliosIntegrationService.ts` que implemente el contrato interno pero que, en lugar de llamar a Helios, devuelva respuestas mockeadas (ej. un JSON predefinido o generado aleatoriamente) a través de un webhook simulado.",
+        "3.  **Integración en `cases.uploadDocument`:** Modificar la mutación `cases.uploadDocument` para que, después de su lógica actual, envíe el documento y contexto relevante al adaptador mock de Helios.",
+        "4.  **Extensión del Modelo de Datos:** Añadir los campos necesarios en el modelo de datos del expediente/documento para almacenar la 'Opinión Legal', 'Fundamentos', 'Riesgo', 'Siguientes Pasos' provenientes del mock de Helios.",
+        "5.  **UI Básica en `/auditar`:** Implementar una sección básica en la UI de `/auditar` para mostrar los datos mockeados de Helios, incluyendo un disclaimer claro de 'Opinión Asistida por IA (Mock)'.",
+        "6.  **Manejo de Estados:** Implementar los estados `PENDIENTE_ENVIO_HELIOS`, `ENVIADO_A_HELIOS`, `RESULTADO_HELIOS_RECIBIDO` y `OPINION_GENERADA` en el backend para el flujo con el mock."
+      ],
+      "risks": [
+        "**Técnicos:**",
+        "1.  **Inestabilidad/Cambios en API de Helios:** El endpoint, autenticación o formato de Helios podría cambiar significativamente, requiriendo refactorización del adaptador.",
+        "2.  **Latencia y Rendimiento:** El tiempo de respuesta de Helios podría impactar la experiencia de usuario si no se gestiona asíncronamente o si es excesivamente lento.",
+        "3.  **Escalabilidad:** La capacidad de Helios para manejar el volumen de documentos de Auditapatron podría ser un cuello de botella.",
+        "4.  **Seguridad:** Riesgos asociados a la transmisión de datos sensibles a un tercero y la seguridad del webhook de retorno (ej. ataques de replay, falsificación de HMAC).",
+        "5.  **Complejidad del Mapeo de Datos:** La traducción entre el modelo de datos interno de Auditapatron y el de Helios puede ser compleja y propensa a errores.",
+        "**Producto/Legales:**",
+        "1.  **Precisión de la Opinión:** La calidad y precisión de las opiniones legales de Helios pueden variar, llevando a consejos incorrectos o incompletos.",
+        "2.  **Sobre-confianza del Usuario:** Los usuarios podrían confiar ciegamente en la opinión de la IA sin buscar validación profesional, lo que podría tener consecuencias legales negativas.",
+        "3.  **Responsabilidad Legal:** Determinar la responsabilidad en caso de que una opinión generada por Helios cause un perjuicio legal al usuario o a la empresa.",
+        "4.  **Aceptación del Usuario:** Resistencia por parte de los usuarios a confiar en la asesoría legal generada por IA.",
+        "5.  **Costo de Helios:** El modelo de precios de CompliLink/Helios podría ser un riesgo financiero si el volumen de uso es alto o si los costos son impredecibles.",
+        "6.  **Sesgos en la IA:** La IA podría tener sesgos inherentes en su entrenamiento que lleven a opiniones discriminatorias o injustas."
+      ]
+    },
+    "grok": {
+      "recommended_architecture": "Arquitectura incremental basada en el patrón existente de adaptadores de salida y webhooks firmados con HMAC. Extender el servicio de integración en server/auditaPatronIntegrationService.ts para despachar solicitudes a Helios de manera similar al motor actual, utilizando tRPC para el backend y React para el frontend. Incluir un proxy o adaptador interno que maneje la comunicación asíncrona, reintentos y eventos de retorno, manteniendo la separación de concerns y aprovechando el flujo de datos del expediente existente.",
+      "incremental_plan": [
+        "Definir y documentar el contrato interno entre Auditapatron y Helios, incluyendo mocks para simular respuestas.",
+        "Extender el backend: Agregar un nuevo adaptador de salida para Helios en el servicio de integración, reutilizando lógica de despacho y reintentos.",
+        "Implementar manejo de respuestas: Actualizar el modelo de datos del expediente para almacenar opiniones legales, fundamentos y estados de Helios.",
+        "Integrar en el frontend: Añadir componentes en /auditar para mostrar interpretaciones jurídicas y siguientes pasos, con carga asíncrona.",
+        "Pruebas y despliegue: Realizar pruebas end-to-end con mocks, luego integración real una vez disponibles endpoints de Helios, incluyendo manejo de errores y fallback al motor actual.",
+        "Monitoreo y optimización: Agregar logs y métricas para el flujo Helios, y refinar UX basado en feedback."
+      ],
+      "internal_contract": {
+        "request_fields": [
+          "documento_id: Identificador único del documento en el expediente.",
+          "tipo_documento: Clasificación del documento (ej. contrato, nómina).",
+          "contenido_documento: Contenido textual o binario del documento procesado.",
+          "contexto_expediente: Resumen del expediente relevante (alertas, eventos previos).",
+          "timestamp: Fecha y hora de la solicitud."
+        ],
+        "response_fields": [
+          "opinion_legal: Resumen de la interpretación jurídica principal.",
+          "fundamentos: Lista de bases legales y razonamientos citados.",
+          "riesgos_identificados: Alertas o riesgos laborales detectados.",
+          "siguientes_pasos: Recomendaciones accionables con prioridades.",
+          "confianza: Nivel de certeza en la respuesta (porcentaje o escala)."
+        ],
+        "status_model": [
+          "pending: Solicitud enviada, esperando procesamiento.",
+          "processing: Helios está analizando el documento.",
+          "completed: Respuesta recibida y procesada exitosamente.",
+          "error: Fallo en el procesamiento, con detalles de error.",
+          "timeout: Excedido tiempo de espera, fallback a análisis preliminar."
+        ]
+      },
+      "ux_recommendations": [
+        "En /auditar, agregar una sección 'Opinión Jurídica Asistida' con cards expandibles que muestren opinión preliminar, fundamentos y siguientes pasos, usando iconos claros para estados (ej. reloj para processing).",
+        "Incluir un disclaimer visible en cada vista: 'Esta es una herramienta asistida; consulte a un profesional para asesoría vinculante'.",
+        "Diseñar flujo mobile-first: Botones de acción para 'Generar Opinión' que activen el despacho a Helios, con loaders y notificaciones push para resultados asíncronos.",
+        "Añadir vista modal o subpágina para detalles profundos, con lenguaje sencillo, evitando jerga legal excesiva y traduciendo términos clave.",
+        "Sugerir siguientes pasos como lista interactiva con checkboxes, integrando con el estado del expediente para tracking."
+      ],
+      "guardrails": [
+        "Legales: Incluir disclaimers obligatorios en UI y términos de uso aclarando que no sustituye asesoría humana; registrar todas las interacciones para auditoría y cumplimiento GDPR.",
+        "Producto: Limitar respuestas a contextos laborales específicos, con validación de inputs para evitar solicitudes inválidas; fallback automático al análisis preliminar si Helios falla.",
+        "UX: Usar tonos neutrales y no alarmistas en alertas de riesgos; requerir confirmación del usuario antes de despachar datos sensibles a Helios.",
+        "Técnicos: No exponer credenciales en frontend; implementar rate limiting y anonimización de datos PII antes de enviar a Helios.",
+        "Éticos: Monitorear sesgos en respuestas de Helios y capacitar usuarios sobre limitaciones de IA en derecho laboral."
+      ],
+      "first_implementation_slice": [
+        "Implementar el contrato interno con mocks en el backend: Crear endpoints tRPC de prueba para despachar y recibir respuestas simuladas de Helios.",
+        "Actualizar el modelo de datos del expediente para incluir campos de opinión_legal y status_helios, sin tocar integración real.",
+        "Añadir UI placeholder en /auditar: Componentes estáticos para mostrar opiniones mockeadas y disclaimers, probando el flujo de usuario.",
+        "Configurar logging y reintentos básicos en el adaptador de salida, reutilizando código existente."
+      ],
+      "risks": [
+        "Cambios en la API de Helios: El contrato interno podría requerir ajustes si el endpoint final difiere, mitigado con diseño flexible y mocks.",
+        "Privacidad y seguridad: Envío de documentos sensibles a un servicio externo; asegurar encriptación y cumplimiento de normativas laborales.",
+        "Dependencia externa: Si Helios no está listo, retrasos en features; usar fallbacks para no bloquear el producto.",
+        "Precisión jurídica: Respuestas inexactas podrían generar liability; mitigar con disclaimers y validación humana opcional.",
+        "Escalabilidad: Aumento en latencia por procesamiento asíncrono; monitorear y optimizar reintentos para UX fluida."
+      ]
+    }
+  },
+  "consensus": {
+    "shared_patterns": [
+      "Crear un adaptador servidor específico para Helios y no llamar el motor desde el cliente.",
+      "Definir un contrato interno estable para request/response aunque el API externo todavía cambie.",
+      "Mostrar una respuesta jurídica en capas: resumen, riesgos, fundamentos y siguiente paso accionable.",
+      "Introducir estados claros de disponibilidad, revisión, respuesta recibida y fallback cuando Helios no responda.",
+      "Aplicar guardrails que distingan hechos confirmados, inferencias y opinión asistida."
+    ],
+    "notable_differences": [
+      [
+        {
+          "model": "chatgpt",
+          "value": "Extender el backend actual para incluir un nuevo adaptador Helios que funcione en paralelo al adaptador existente de AuditaPatron, reutilizando el flujo de despacho y almacenamiento de documentos y resultados. Este adaptador gestionará la comunicación con Helios mediante un contrato interno estable, desacoplado del endpoint externo final, y expondrá resultados jurídicos enriquecidos a la UI mediante tRPC, manteniendo la seguridad y sin exponer credenciales en frontend."
+        },
+        {
+          "model": "gemini",
+          "value": "Se recomienda una arquitectura incremental que extienda el patrón existente de integración con motores externos. El backend de Auditapatron actuará como un 'Backend-for-Frontend' (BFF) para la integración con Helios, gestionando las credenciales, la orquestación de llamadas y el mapeo de datos. Se creará un nuevo adaptador de salida específico para Helios, similar al existente en 'server/auditaPatronIntegrationService.ts', que encapsule la lógica de comunicación (envío de datos, manejo de webhooks de retorno, reintentos y seguridad HMAC). El frontend consumirá los resultados de Helios una vez que el backend los haya procesado y almacenado en el expediente, asegurando que las credenciales de Helios nunca se expongan al cliente."
+        },
+        {
+          "model": "grok",
+          "value": "Arquitectura incremental basada en el patrón existente de adaptadores de salida y webhooks firmados con HMAC. Extender el servicio de integración en server/auditaPatronIntegrationService.ts para despachar solicitudes a Helios de manera similar al motor actual, utilizando tRPC para el backend y React para el frontend. Incluir un proxy o adaptador interno que maneje la comunicación asíncrona, reintentos y eventos de retorno, manteniendo la separación de concerns y aprovechando el flujo de datos del expediente existente."
+        }
+      ],
+      [
+        {
+          "model": "chatgpt",
+          "value": [
+            "Definir y documentar el contrato interno mínimo viable para solicitud y respuesta con Helios.",
+            "Implementar el adaptador backend para enviar documentos y recibir respuestas simuladas.",
+            "Extender la UI en /auditar para mostrar resultados simulados con disclaimers.",
+            "Validar flujo end-to-end con datos de prueba sin depender del endpoint final."
+          ]
+        },
+        {
+          "model": "gemini",
+          "value": [
+            "1.  **Definición del Contrato Interno:** Formalizar el esquema de request/response/status entre Auditapatron y Helios.",
+            "2.  **Adaptador Mock de Helios:** Crear un servicio `server/heliosIntegrationService.ts` que implemente el contrato interno pero que, en lugar de llamar a Helios, devuelva respuestas mockeadas (ej. un JSON predefinido o generado aleatoriamente) a través de un webhook simulado.",
+            "3.  **Integración en `cases.uploadDocument`:** Modificar la mutación `cases.uploadDocument` para que, después de su lógica actual, envíe el documento y contexto relevante al adaptador mock de Helios.",
+            "4.  **Extensión del Modelo de Datos:** Añadir los campos necesarios en el modelo de datos del expediente/documento para almacenar la 'Opinión Legal', 'Fundamentos', 'Riesgo', 'Siguientes Pasos' provenientes del mock de Helios.",
+            "5.  **UI Básica en `/auditar`:** Implementar una sección básica en la UI de `/auditar` para mostrar los datos mockeados de Helios, incluyendo un disclaimer claro de 'Opinión Asistida por IA (Mock)'.",
+            "6.  **Manejo de Estados:** Implementar los estados `PENDIENTE_ENVIO_HELIOS`, `ENVIADO_A_HELIOS`, `RESULTADO_HELIOS_RECIBIDO` y `OPINION_GENERADA` en el backend para el flujo con el mock."
+          ]
+        },
+        {
+          "model": "grok",
+          "value": [
+            "Implementar el contrato interno con mocks en el backend: Crear endpoints tRPC de prueba para despachar y recibir respuestas simuladas de Helios.",
+            "Actualizar el modelo de datos del expediente para incluir campos de opinión_legal y status_helios, sin tocar integración real.",
+            "Añadir UI placeholder en /auditar: Componentes estáticos para mostrar opiniones mockeadas y disclaimers, probando el flujo de usuario.",
+            "Configurar logging y reintentos básicos en el adaptador de salida, reutilizando código existente."
+          ]
+        }
+      ],
+      [
+        {
+          "model": "chatgpt",
+          "value": [
+            "No exponer nunca credenciales o tokens de Helios en frontend o logs accesibles.",
+            "Limitar la presentación de opiniones a un nivel preliminar y asistido, evitando afirmaciones categóricas.",
+            "Incluir disclaimers legales y de producto que expliquen el alcance y limitaciones de la asesoría automatizada.",
+            "Implementar controles de calidad y monitoreo para detectar respuestas erróneas o inconsistentes.",
+            "Garantizar la privacidad y seguridad de los datos conforme a normativas aplicables."
+          ]
+        },
+        {
+          "model": "gemini",
+          "value": [
+            "**Producto:**",
+            "1.  **Claridad y Sencillez:** El lenguaje utilizado en las opiniones debe ser claro, conciso y evitar la jerga legal excesiva, priorizando la comprensión del usuario.",
+            "2.  **Transparencia:** Siempre indicar explícitamente que la opinión es 'asistida por IA' o 'generada por un motor de IA', evitando la personificación del sistema.",
+            "3.  **Contextualización:** Asegurar que la opinión se presente siempre en el contexto del documento y expediente específico, evitando respuestas genéricas.",
+            "4.  **Accionabilidad:** Las recomendaciones deben ser prácticas y orientar al usuario hacia los siguientes pasos lógicos o acciones concretas.",
+            "5.  **Mecanismo de Feedback:** Implementar un sistema para que los usuarios puedan calificar la utilidad o precisión de la opinión, permitiendo la mejora continua.",
+            "6.  **Límite de Alcance:** Definir claramente qué tipo de preguntas o documentos puede procesar Helios y cuáles están fuera de su alcance, comunicándolo al usuario.",
+            "**Legales:**",
+            "1.  **Disclaimers Robustos:** Los disclaimers legales deben ser prominentes, inequívocos y legalmente sólidos, eximiendo de responsabilidad a la plataforma por errores del motor de IA.",
+            "2.  **Privacidad de Datos:** Garantizar que el envío de documentos y datos a Helios cumpla con la normativa de protección de datos (ej. LOPD, GDPR), incluyendo acuerdos de procesamiento de datos con CompliLink.",
+            "3.  **Jurisdicción:** Asegurar que la interpretación jurídica de Helios sea consistente con la jurisdicción laboral aplicable al caso (ej. México).",
+            "4.  **Revisión Humana:** Establecer un proceso interno de revisión periódica de la calidad y precisión de las opiniones generadas por Helios, especialmente en casos de alto riesgo.",
+            "5.  **Responsabilidad:** Clarificar en los términos y condiciones la responsabilidad de Auditapatron y del usuario respecto a las decisiones tomadas con base en la asesoría asistida por IA.",
+            "**UX:**",
+            "1.  **Evitar la Sobrecarga:** Presentar la información de forma gradual, con resúmenes y opciones para profundizar, para no abrumar al usuario.",
+            "2.  **Consistencia:** Mantener una terminología y un estilo visual consistentes en toda la plataforma para la presentación de la asesoría asistida.",
+            "3.  **Manejo de Errores:** Diseñar una experiencia de usuario clara y empática para cuando Helios no pueda generar una opinión o encuentre un error, sugiriendo alternativas.",
+            "4.  **No Sustitución:** La interfaz debe reforzar constantemente la idea de que la herramienta es un 'asistente' y no un 'sustituto' del abogado."
+          ]
+        },
+        {
+          "model": "grok",
+          "value": [
+            "Legales: Incluir disclaimers obligatorios en UI y términos de uso aclarando que no sustituye asesoría humana; registrar todas las interacciones para auditoría y cumplimiento GDPR.",
+            "Producto: Limitar respuestas a contextos laborales específicos, con validación de inputs para evitar solicitudes inválidas; fallback automático al análisis preliminar si Helios falla.",
+            "UX: Usar tonos neutrales y no alarmistas en alertas de riesgos; requerir confirmación del usuario antes de despachar datos sensibles a Helios.",
+            "Técnicos: No exponer credenciales en frontend; implementar rate limiting y anonimización de datos PII antes de enviar a Helios.",
+            "Éticos: Monitorear sesgos en respuestas de Helios y capacitar usuarios sobre limitaciones de IA en derecho laboral."
+          ]
+        }
+      ],
+      [
+        {
+          "model": "chatgpt",
+          "value": [
+            "Mostrar en /auditar un panel adicional con la opinión legal preliminar y fundamentos, usando lenguaje claro y accesible.",
+            "Incluir disclaimers visibles que aclaren que la asesoría asistida no sustituye asesoría profesional humana.",
+            "Ofrecer botones o enlaces para solicitar asesoría humana basada en la opinión generada.",
+            "Presentar el estado de análisis Helios junto con el estado general del expediente para transparencia.",
+            "Diseñar la experiencia mobile-first con jerarquía visual clara y navegación sencilla para acceder a resultados y siguientes pasos."
+          ]
+        },
+        {
+          "model": "gemini",
+          "value": [
+            "**En la vista /auditar:**",
+            "1.  **Sección Dedicada:** Crear una sección claramente diferenciada y etiquetada como 'Opinión Legal Asistida por IA' o 'Análisis Jurídico Helios' dentro del flujo existente del expediente.",
+            "2.  **Resumen Primero:** Mostrar un resumen conciso de la opinión legal y el nivel de riesgo (ej. 'Riesgo Laboral: Medio') en la parte superior de la sección, con indicadores visuales (colores, iconos).",
+            "3.  **Siguientes Pasos Claros:** Presentar los 'Siguientes Pasos Sugeridos' de forma prominente y accionable, con lenguaje sencillo y directo.",
+            "4.  **Detalles Expandibles:** Permitir a los usuarios expandir secciones para ver los 'Fundamentos Legales' (artículos, leyes, jurisprudencia) y la 'Interpretación Detallada', evitando sobrecargar la vista inicial.",
+            "5.  **Disclaimer Persistente:** Incluir un disclaimer visible y persistente: 'Esta es una opinión asistida por IA y no sustituye la asesoría legal profesional humana.'",
+            "6.  **Estados de Carga:** Mostrar estados de carga claros ('Analizando con Helios...', 'Generando opinión...') mientras se espera la respuesta del motor.",
+            "7.  **Feedback y Escalada:** Incluir un botón o enlace '¿Necesitas más ayuda? Solicita asesoría humana' o 'Reportar un problema con esta opinión' para feedback y escalada.",
+            "8.  **Mobile-First:** Asegurar que la presentación de la información sea óptima y legible en dispositivos móviles, con interacciones táctiles intuitivas.",
+            "9.  **Glosario/Tooltips:** Ofrecer tooltips o un glosario para términos jurídicos complejos que puedan aparecer en la opinión."
+          ]
+        },
+        {
+          "model": "grok",
+          "value": [
+            "En /auditar, agregar una sección 'Opinión Jurídica Asistida' con cards expandibles que muestren opinión preliminar, fundamentos y siguientes pasos, usando iconos claros para estados (ej. reloj para processing).",
+            "Incluir un disclaimer visible en cada vista: 'Esta es una herramienta asistida; consulte a un profesional para asesoría vinculante'.",
+            "Diseñar flujo mobile-first: Botones de acción para 'Generar Opinión' que activen el despacho a Helios, con loaders y notificaciones push para resultados asíncronos.",
+            "Añadir vista modal o subpágina para detalles profundos, con lenguaje sencillo, evitando jerga legal excesiva y traduciendo términos clave.",
+            "Sugerir siguientes pasos como lista interactiva con checkboxes, integrando con el estado del expediente para tracking."
+          ]
+        }
+      ]
+    ],
+    "recommended_next_step": "Diseñar e implementar primero un contrato interno y un servicio adaptador de Helios con respuesta mockeable, junto con una UI inicial de opinión jurídica asistida sobre /auditar."
+  }
+}

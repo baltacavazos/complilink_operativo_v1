@@ -168,6 +168,60 @@ describe("appRouter case workflows", () => {
     });
   });
 
+  it("returns case detail with persisted Helios opinions attached to visible documents", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-HEL-001",
+        originalName: "contrato_demo.pdf",
+        documentType: "contract",
+        classificationConfidence: 88,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-HEL-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Helios generó una lectura preliminar útil del contrato.",
+          legalOpinion: "La lectura asistida sugiere usar este contrato como base de comparación.",
+          riskLevel: "medium",
+          recommendedNextStep: "Comparar contra recibos de nómina y CFDI.",
+          recommendedActions: ["Subir recibos recientes", "Contrastar salario pactado"],
+          legalFoundations: [],
+          keyFactsUsed: ["Contrato visible"],
+          uncertainties: ["Faltan soportes de pago"],
+          confidenceScore: 74,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.detail({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(db.getCaseDetailForUser).toHaveBeenCalledWith({
+      userId: 7,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+    expect(result.documents).toHaveLength(1);
+    expect(result.documents[0]).toMatchObject({
+      documentId: "DOC-HEL-001",
+      originalName: "contrato_demo.pdf",
+      heliosOpinion: expect.objectContaining({
+        mode: "mock",
+        riskLevel: "medium",
+        recommendedNextStep: "Comparar contra recibos de nómina y CFDI.",
+      }),
+    });
+  });
+
   it("creates a case with canonical contracts, access grants and audit trail", async () => {
     const caller = appRouter.createCaller(createProtectedContext());
 
@@ -295,15 +349,31 @@ describe("appRouter case workflows", () => {
       }),
     );
 
-    const uploadContractTypes = vi
-      .mocked(db.upsertCanonicalContract)
-      .mock.calls.map((call) => call[0]?.contractType);
-    expect(uploadContractTypes).toEqual(["document", "classification", "shared_engine"]);
-    expect(db.createAuditLog).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "document.upload",
-        entityType: "document",
-      }),
+    const uploadContracts = vi.mocked(db.upsertCanonicalContract).mock.calls.map((call) => call[0]);
+    expect(uploadContracts.map((contract) => contract?.contractType)).toEqual([
+      "document",
+      "classification",
+      "shared_engine",
+      "audit",
+    ]);
+    expect(uploadContracts[3]).toMatchObject({
+      contractType: "audit",
+      schemaVersion: "helios_v1",
+      status: "ready",
+    });
+    expect(result.heliosOpinion).toMatchObject({
+      mode: "mock",
+      status: "completed",
+    });
+    expect(result.heliosOpinionContract).toMatchObject({
+      engine: "helios",
+      mode: "mock",
+      status: "completed",
+    });
+
+    const auditActions = vi.mocked(db.createAuditLog).mock.calls.map((call) => call[0]?.action);
+    expect(auditActions).toEqual(
+      expect.arrayContaining(["document.upload", "document.engine_dispatch", "document.helios_opinion"]),
     );
   });
 

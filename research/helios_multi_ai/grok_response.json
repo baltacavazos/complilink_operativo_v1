@@ -1,0 +1,112 @@
+{
+  "provider": "grok",
+  "model": "grok-4",
+  "parsed": {
+    "model_position": "Revisor Senior de Arquitectura Legal Mobile-First",
+    "recommended_mvp": {
+      "summary": "Integrar Helios como bloque persistente en la página /auditar, visible tras upload, con opinión mock local para MVP y escalabilidad a remoto.",
+      "backend_shape": [
+        "Extender consulta de caso para unir opiniones Helios persistidas por documento.",
+        "Añadir endpoint para refrescar opinión Helios sin re-upload."
+      ],
+      "frontend_shape": [
+        "Mostrar bloque de opinión Helios en lista de documentos con expansión mobile-friendly.",
+        "Incluir microanimación sutil para cargar opinión post-upload."
+      ],
+      "data_contract": [
+        "Definir schema HeliosOpinion con campos: type, content, timestamp, status.",
+        "Asegurar compatibilidad con mock local y futuro remoto mediante abstracción en tRPC."
+      ]
+    },
+    "preferred_ui_pattern": {
+      "name": "Acordeón Expandible con Etiqueta Clara",
+      "why": "Permite simplicidad mobile-first, bajo scroll y visibilidad no intrusiva, con énfasis en explicaciones humanas y disclaimer legal.",
+      "sections": [
+        "Encabezado con tipo de opinión y disclaimer 'Opinión preliminar asistida, no consejo legal final'.",
+        "Contenido expandible con análisis laboral simple en español.",
+        "Botón de acción para refrescar o ver detalles relacionados."
+      ]
+    },
+    "error_handling": [
+      "Manejar fallos de carga con mensaje humano: 'No pudimos generar la opinión ahora, intenta refrescar'.",
+      "Registrar errores en backend sin exponer detalles técnicos al usuario.",
+      "Fallback a opinión mock si Helios falla, con notificación sutil."
+    ],
+    "trust_and_legal_safeguards": [
+      "Etiquetar siempre como 'Opinión preliminar asistida por IA, consulta a un abogado'.",
+      "Requerir consentimiento explícito para procesar datos sensibles en upload.",
+      "Auditar opiniones persistidas para multi-AI validación antes de mostrar."
+    ],
+    "future_remote_mode": [
+      "Diseñar API con abstracción para switch a Helios remoto sin cambios en frontend.",
+      "Incluir campo 'source' en schema para diferenciar mock vs remoto.",
+      "Planear webhook para actualizaciones asíncronas en modo remoto."
+    ],
+    "top_risks": [
+      {
+        "risk": "Sobrecarga de backend en uploads masivos",
+        "impact": "Retrasos en opiniones, frustración usuario",
+        "mitigation": "Implementar colas asíncronas con Drizzle para procesar en background."
+      },
+      {
+        "risk": "Inconsistencias entre mock y remoto",
+        "impact": "Confusión en transiciones futuras",
+        "mitigation": "Validar schema idéntico y pruebas unitarias comparativas."
+      },
+      {
+        "risk": "Malentendidos legales por opiniones preliminares",
+        "impact": "Riesgo de mal uso por usuarios no expertos",
+        "mitigation": "Reforzar disclaimers y educación en UI con tooltips humanos."
+      }
+    ],
+    "recommended_next_step_order": [
+      "Definir y validar schema de data_contract en backend.",
+      "Implementar backend_shape con pruebas unitarias.",
+      "Diseñar y prototipar frontend_shape en mobile.",
+      "Integrar error_handling y safeguards.",
+      "Probar end-to-end con mock y planear remote switch."
+    ],
+    "what_not_to_do": [
+      "No sobrecargar la UI con detalles técnicos o scrolls innecesarios.",
+      "No asumir opiniones como finales sin disclaimers repetidos.",
+      "No implementar sin validación multi-AI para robustez."
+    ]
+  },
+  "raw": {
+    "id": "83e0d606-161b-9c14-9284-de649149c8a5",
+    "object": "chat.completion",
+    "created": 1775547450,
+    "model": "grok-4-0709",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"model_position\": \"Revisor Senior de Arquitectura Legal Mobile-First\",\n  \"recommended_mvp\": {\n    \"summary\": \"Integrar Helios como bloque persistente en la página /auditar, visible tras upload, con opinión mock local para MVP y escalabilidad a remoto.\",\n    \"backend_shape\": [\"Extender consulta de caso para unir opiniones Helios persistidas por documento.\", \"Añadir endpoint para refrescar opinión Helios sin re-upload.\"],\n    \"frontend_shape\": [\"Mostrar bloque de opinión Helios en lista de documentos con expansión mobile-friendly.\", \"Incluir microanimación sutil para cargar opinión post-upload.\"],\n    \"data_contract\": [\"Definir schema HeliosOpinion con campos: type, content, timestamp, status.\", \"Asegurar compatibilidad con mock local y futuro remoto mediante abstracción en tRPC.\"]\n  },\n  \"preferred_ui_pattern\": {\n    \"name\": \"Acordeón Expandible con Etiqueta Clara\",\n    \"why\": \"Permite simplicidad mobile-first, bajo scroll y visibilidad no intrusiva, con énfasis en explicaciones humanas y disclaimer legal.\",\n    \"sections\": [\"Encabezado con tipo de opinión y disclaimer 'Opinión preliminar asistida, no consejo legal final'.\", \"Contenido expandible con análisis laboral simple en español.\", \"Botón de acción para refrescar o ver detalles relacionados.\"]\n  },\n  \"error_handling\": [\"Manejar fallos de carga con mensaje humano: 'No pudimos generar la opinión ahora, intenta refrescar'.\", \"Registrar errores en backend sin exponer detalles técnicos al usuario.\", \"Fallback a opinión mock si Helios falla, con notificación sutil.\"],\n  \"trust_and_legal_safeguards\": [\"Etiquetar siempre como 'Opinión preliminar asistida por IA, consulta a un abogado'.\", \"Requerir consentimiento explícito para procesar datos sensibles en upload.\", \"Auditar opiniones persistidas para multi-AI validación antes de mostrar.\"],\n  \"future_remote_mode\": [\"Diseñar API con abstracción para switch a Helios remoto sin cambios en frontend.\", \"Incluir campo 'source' en schema para diferenciar mock vs remoto.\", \"Planear webhook para actualizaciones asíncronas en modo remoto.\"],\n  \"top_risks\": [\n    {\"risk\": \"Sobrecarga de backend en uploads masivos\", \"impact\": \"Retrasos en opiniones, frustración usuario\", \"mitigation\": \"Implementar colas asíncronas con Drizzle para procesar en background.\"},\n    {\"risk\": \"Inconsistencias entre mock y remoto\", \"impact\": \"Confusión en transiciones futuras\", \"mitigation\": \"Validar schema idéntico y pruebas unitarias comparativas.\"},\n    {\"risk\": \"Malentendidos legales por opiniones preliminares\", \"impact\": \"Riesgo de mal uso por usuarios no expertos\", \"mitigation\": \"Reforzar disclaimers y educación en UI con tooltips humanos.\"}\n  ],\n  \"recommended_next_step_order\": [\"Definir y validar schema de data_contract en backend.\", \"Implementar backend_shape con pruebas unitarias.\", \"Diseñar y prototipar frontend_shape en mobile.\", \"Integrar error_handling y safeguards.\", \"Probar end-to-end con mock y planear remote switch.\"],\n  \"what_not_to_do\": [\"No sobrecargar la UI con detalles técnicos o scrolls innecesarios.\", \"No asumir opiniones como finales sin disclaimers repetidos.\", \"No implementar sin validación multi-AI para robustez.\"]\n}",
+          "refusal": null
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1531,
+      "completion_tokens": 738,
+      "total_tokens": 2908,
+      "prompt_tokens_details": {
+        "text_tokens": 1531,
+        "audio_tokens": 0,
+        "image_tokens": 0,
+        "cached_tokens": 676
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 639,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "num_sources_used": 0,
+      "cost_in_usd_ticks": 237270000
+    },
+    "system_fingerprint": "fp_74614d6fcc"
+  }
+}

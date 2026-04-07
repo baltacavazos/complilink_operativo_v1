@@ -27,6 +27,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -114,6 +115,58 @@ export async function getUserByOpenId(openId: string) {
 
 function toJson<T>(value: T) {
   return JSON.stringify(value ?? null);
+}
+
+function parseJsonSafely<T>(value: string): T | null {
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
+function isHeliosOpinionContract(value: unknown): value is HeliosOpinionContract {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<HeliosOpinionContract>;
+  return (
+    candidate.engine === "helios" &&
+    typeof candidate.documentId === "string" &&
+    Boolean(candidate.opinion) &&
+    typeof candidate.opinion === "object"
+  );
+}
+
+async function getPersistedHeliosOpinionsByDocument(params: { tenantId: string; caseId: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select({
+      payload: canonicalContracts.payload,
+      createdAt: canonicalContracts.createdAt,
+    })
+    .from(canonicalContracts)
+    .where(
+      and(
+        eq(canonicalContracts.tenantId, params.tenantId),
+        eq(canonicalContracts.caseId, params.caseId),
+        eq(canonicalContracts.contractType, "audit"),
+        eq(canonicalContracts.schemaVersion, "helios_v1"),
+      ),
+    )
+    .orderBy(desc(canonicalContracts.createdAt));
+
+  const opinionsByDocument = new Map<string, HeliosOpinion>();
+
+  for (const row of rows) {
+    const parsed = parseJsonSafely<HeliosOpinionContract>(row.payload);
+    if (!isHeliosOpinionContract(parsed)) continue;
+    if (opinionsByDocument.has(parsed.documentId)) continue;
+    opinionsByDocument.set(parsed.documentId, parsed.opinion);
+  }
+
+  return opinionsByDocument;
 }
 
 export function slugifyName(value: string) {
@@ -683,11 +736,19 @@ export async function listVisibleDocuments(params: { userId: number; tenantId: s
     ("accessLevel" in membership && (membership.accessLevel === "owner" || membership.accessLevel === "editor")) ||
     ("role" in membership && (membership.role === "tenant_admin" || membership.role === "manager"));
 
-  if (hasElevatedAccess) {
-    return docs;
-  }
+  const visibleDocuments = hasElevatedAccess
+    ? docs
+    : docs.filter((doc) => doc.visibility === "case_team" || doc.visibility === "restricted");
 
-  return docs.filter((doc) => doc.visibility === "case_team" || doc.visibility === "restricted");
+  const heliosOpinionsByDocument = await getPersistedHeliosOpinionsByDocument({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+  });
+
+  return visibleDocuments.map((document) => ({
+    ...document,
+    heliosOpinion: heliosOpinionsByDocument.get(document.documentId) ?? null,
+  }));
 }
 
 export async function getVisibleDocumentForUser(params: {
