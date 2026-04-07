@@ -1,0 +1,82 @@
+{
+  "architectural_principle": "Ciclo Virtuoso de Valor y Confianza: Empoderar al usuario a través de la inteligencia artificial, garantizando trazabilidad, claridad y acción.",
+  "visible_features": [
+    {
+      "name": "Carga Inteligente de Documentos (Mobile-First)",
+      "purpose": "Permitir a los usuarios subir documentos de forma sencilla (fotos o PDFs) con guía visual y validación inicial para asegurar la calidad de la entrada.",
+      "why_it_matters": "Reduce la fricción del usuario, optimiza la calidad de los datos para Helios y establece la base del ciclo virtuoso. Prioriza la facilidad de uso en dispositivos móviles."
+    },
+    {
+      "name": "Mi Auditoría en Progreso",
+      "purpose": "Mostrar el estado actual del procesamiento de los documentos subidos, desde la carga hasta la generación de hallazgos.",
+      "why_it_matters": "Genera transparencia, gestiona las expectativas del usuario y le da visibilidad sobre el trabajo que Helios está realizando en segundo plano, construyendo confianza."
+    },
+    {
+      "name": "Hallazgos Claves y Siguientes Pasos (Lenguaje Simple)",
+      "purpose": "Presentar los resultados del análisis de Helios de manera comprensible, destacando puntos importantes y sugiriendo acciones concretas.",
+      "why_it_matters": "Es la entrega de valor principal al usuario. Transforma la complejidad de Helios en información útil y accionable, sin prometer conclusiones jurídicas definitivas."
+    },
+    {
+      "name": "Historial de Auditorías",
+      "purpose": "Permitir al usuario revisar auditorías anteriores, sus hallazgos y los pasos sugeridos, creando un registro de su interacción con la plataforma.",
+      "why_it_matters": "Fomenta la recurrencia, permite al usuario ver su progreso y refuerza la idea de un servicio continuo y de valor acumulado."
+    }
+  ],
+  "background_integrations": [
+    {
+      "name": "AuditaPatron -> Helios: Ingesta de Documentos con Trazabilidad y Consentimiento",
+      "role": "AuditaPatron envía los documentos cargados por el usuario a Helios, incluyendo metadatos de origen, identificadores de usuario (pseudonimizados) y el estado de consentimiento explícito.",
+      "guardrail": "Cifrado de extremo a extremo, validación de formato, registro de consentimiento y trazabilidad de cada documento. Helios solo procesa lo que tiene consentimiento explícito."
+    },
+    {
+      "name": "Helios <-> CompliLink: Procesamiento, Contexto Operativo y Aprendizaje",
+      "role": "Helios envía datos interpretados (no crudos) a CompliLink para enriquecer el contexto operativo y el aprendizaje acumulado. CompliLink devuelve a Helios reglas de cumplimiento actualizadas y patrones de riesgo basados en su conocimiento.",
+      "guardrail": "Anonimización/pseudonimización de datos personales antes del intercambio, APIs versionadas, monitoreo de rendimiento y seguridad, y un contrato de datos claro entre ambos sistemas."
+    },
+    {
+      "name": "Helios -> AuditaPatron: Resultados Interpretados y Recomendaciones",
+      "role": "Helios devuelve a AuditaPatron los hallazgos procesados y las recomendaciones de siguientes pasos, ya transformados en un formato legible y simple para el usuario.",
+      "guardrail": "Esquema de datos de salida predefinido, capa de simplificación de lenguaje en Helios, cumplimiento estricto de la política de 'no conclusiones jurídicas definitivas', y tiempos de respuesta optimizados."
+    }
+  ],
+  "user_copy_guidelines": [
+    "Lenguaje claro, directo y empático, evitando jerga legal o técnica innecesaria.",
+    "Enfoque en 'tus derechos', 'tu situación' y 'tus opciones', empoderando al usuario.",
+    "Siempre presentar 'hallazgos', 'posibles situaciones' y 'sugerencias de siguientes pasos', nunca 'conclusiones jurídicas definitivas' o 'sentencias'.",
+    "Tono de apoyo y guía, no alarmista ni prescriptivo.",
+    "Confirmar la privacidad y el consentimiento en puntos clave del flujo de usuario, reforzando la confianza.",
+    "Utilizar analogías o ejemplos sencillos cuando sea posible para explicar conceptos complejos."
+  ],
+  "next_best_iteration": [
+    "Implementar el flujo completo de carga de documentos (foto/PDF) con una interfaz guiada y confirmación de consentimiento explícito para el procesamiento.",
+    "Desarrollar la vista 'Mi Auditoría en Progreso' con estados visuales claros (ej. 'Cargando', 'Analizando', 'Listo para revisar').",
+    "Diseñar y prototipar la interfaz de 'Hallazgos Claves y Siguientes Pasos' con ejemplos de lenguaje simple y botones de acción claros.",
+    "Establecer los contratos de API iniciales y la integración básica entre AuditaPatron y Helios para la ingesta de documentos y el retorno de resultados.",
+    "Integrar un módulo de feedback simple en la sección de hallazgos para que los usuarios puedan valorar la utilidad y claridad de la información."
+  ],
+  "risks": [
+    {
+      "risk": "Expectativas del usuario de obtener asesoramiento legal definitivo.",
+      "mitigation": "Comunicación constante y clara en la UI, términos de servicio y en cada hallazgo de que la herramienta ofrece orientación y análisis, no asesoramiento legal vinculante. Uso de lenguaje como 'posibles hallazgos', 'sugerencias', 'considera'."
+    },
+    {
+      "risk": "Baja calidad o ilegibilidad de los documentos subidos por los usuarios.",
+      "mitigation": "Guía visual interactiva durante la carga (ej. 'asegúrate de que el texto sea legible', 'evita sombras'), validación de formato en el cliente, y capacidad de Helios para identificar y reportar documentos de baja calidad, solicitando una nueva carga si es necesario."
+    },
+    {
+      "risk": "Latencia o sobrecarga de Helios/CompliLink, afectando la experiencia del usuario.",
+      "mitigation": "Implementar colas de procesamiento, indicadores de progreso en la UI, y monitoreo de rendimiento robusto. Escalar la infraestructura de Helios y CompliLink según la demanda y establecer SLAs claros para los tiempos de respuesta."
+    },
+    {
+      "risk": "Percepción de falta de privacidad o uso indebido de datos personales.",
+      "mitigation": "Transparencia total sobre el uso de datos (qué se usa, para qué, cómo se protege), cifrado de extremo a extremo, cumplimiento estricto de normativas de privacidad (GDPR, LFPDPPP, etc.), y un 'Centro de Privacidad' accesible para el usuario."
+    }
+  ],
+  "consent_and_trust": [
+    "Solicitar consentimiento explícito y granular para el procesamiento de cada documento, explicando claramente para qué se usará la información (ej. 'para analizar tus derechos laborales y mejorar el servicio').",
+    "Garantizar la anonimización o pseudonimización de datos personales cuando sea posible y necesario para el aprendizaje de Helios y CompliLink, sin comprometer la utilidad para el usuario individual.",
+    "Ofrecer un 'Centro de Privacidad' donde el usuario pueda ver y gestionar sus consentimientos, el historial de sus datos procesados y solicitar la eliminación de los mismos.",
+    "Comunicar de forma transparente cómo la información compartida contribuye a mejorar el servicio para todos los trabajadores, reforzando el ciclo virtuoso y el beneficio colectivo.",
+    "Asegurar la seguridad de los datos mediante cifrado robusto, auditorías de seguridad regulares y cumplimiento de las mejores prácticas de protección de datos."
+  ]
+}

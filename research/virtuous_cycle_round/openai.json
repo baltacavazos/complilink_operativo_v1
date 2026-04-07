@@ -1,0 +1,70 @@
+{
+  "architectural_principle": "Crear una experiencia móvil intuitiva y transparente que fomente la confianza y el aprendizaje continuo, asegurando que cada documento subido en AuditaPatron enriquezca a Helios y CompliLink para ofrecer hallazgos claros y recomendaciones prácticas sin prometer certezas legales.",
+  "visible_features": [
+    {
+      "name": "Carga guiada de documentos",
+      "purpose": "Facilitar a los usuarios la subida de documentos con pasos claros y mensajes que expliquen cómo su información alimenta el sistema.",
+      "why_it_matters": "Genera confianza y asegura que el usuario entienda el valor de compartir sus documentos, fomentando mayor participación."
+    },
+    {
+      "name": "Panel de hallazgos simplificados",
+      "purpose": "Mostrar resultados clave extraídos por Helios en lenguaje sencillo, con alertas visuales y ejemplos concretos.",
+      "why_it_matters": "Permite al usuario comprender rápidamente el estado de sus documentos sin abrumarse con jerga técnica."
+    },
+    {
+      "name": "Sugerencias de siguientes pasos personalizadas",
+      "purpose": "Ofrecer recomendaciones prácticas basadas en los hallazgos, orientando al usuario sobre acciones a tomar o revisar.",
+      "why_it_matters": "Convierte la información en valor accionable, cerrando el ciclo virtuoso de aprendizaje y mejora continua."
+    },
+    {
+      "name": "Indicador de progreso y mejora continua",
+      "purpose": "Visualizar cómo la calidad y cantidad de documentos subidos mejora la precisión y utilidad de los hallazgos con el tiempo.",
+      "why_it_matters": "Motiva al usuario a seguir aportando documentos y confiar en el sistema, reforzando el ciclo virtuoso."
+    }
+  ],
+  "background_integrations": [
+    {
+      "name": "Helios",
+      "role": "Interpretar documentos y contexto para generar hallazgos y recomendaciones.",
+      "guardrail": "Garantizar trazabilidad completa y consentimiento explícito antes de procesar cualquier documento."
+    },
+    {
+      "name": "CompliLink",
+      "role": "Proveer conectores operativos y aprendizaje acumulado que retroalimentan a Helios para mejorar resultados.",
+      "guardrail": "Mantener sincronización segura y respetar límites de privacidad y uso de datos."
+    }
+  ],
+  "user_copy_guidelines": [
+    "Usar lenguaje claro, cercano y sin jerga técnica.",
+    "Evitar promesas legales definitivas; enfatizar que los hallazgos son orientativos.",
+    "Destacar el valor del aporte del usuario para mejorar el sistema.",
+    "Guiar al usuario con pasos concretos y fáciles de entender.",
+    "Ser transparente sobre el uso y protección de sus datos."
+  ],
+  "next_best_iteration": [
+    "Implementar un flujo móvil optimizado para carga de documentos con mensajes de consentimiento claros.",
+    "Desarrollar un panel de resultados que resuma hallazgos clave en lenguaje simple y visualmente accesible.",
+    "Incluir recomendaciones personalizadas basadas en análisis de Helios y aprendizaje de CompliLink.",
+    "Agregar un indicador visual de progreso que muestre la mejora continua gracias a la participación del usuario."
+  ],
+  "risks": [
+    {
+      "risk": "El usuario puede sentirse inseguro sobre cómo se usan sus documentos.",
+      "mitigation": "Incluir mensajes claros de consentimiento y trazabilidad en cada paso de la carga."
+    },
+    {
+      "risk": "Los hallazgos pueden ser interpretados como asesoría legal definitiva.",
+      "mitigation": "Usar disclaimers visibles y lenguaje que enfatice el carácter orientativo de los resultados."
+    },
+    {
+      "risk": "Sobrecarga de información que confunda al usuario.",
+      "mitigation": "Priorizar simplicidad visual y textual, mostrando solo lo esencial y ofreciendo detalles bajo demanda."
+    }
+  ],
+  "consent_and_trust": [
+    "Solicitar consentimiento explícito antes de procesar documentos.",
+    "Mostrar en todo momento cómo se usa la información y qué beneficios aporta.",
+    "Garantizar transparencia en el ciclo de retroalimentación entre AuditaPatron, Helios y CompliLink.",
+    "Permitir al usuario revisar y gestionar sus documentos y datos compartidos."
+  ]
+}

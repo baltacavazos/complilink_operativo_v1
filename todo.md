@@ -209,3 +209,12 @@
 - [x] Convertir hallazgos repetidos o relevantes de Helios en alertas priorizadas con contexto útil y momento visible.
 - [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda de mejoras prioritarias de Helios en /auditar.
 - [ ] Guardar un checkpoint estable con esta nueva iteración de Helios centrada en comparación manual, microinteracciones y alertas.
+- [ ] Contrastar con Grok, Gemini y ChatGPT la mejor arquitectura para que AuditaPatron, Helios y CompliLink se comuniquen de forma continua y útil para la persona usuaria.
+- [ ] Garantizar que todo documento subido en AuditaPatron alimente a Helios con trazabilidad, consentimiento y reutilización útil para el expediente.
+- [ ] Reaprovechar en AuditaPatron los conectores, hallazgos y enriquecimientos disponibles en Helios y CompliLink para mostrar más contexto, claridad y siguientes pasos.
+- [ ] Diseñar un ciclo virtuoso visible donde mejores documentos generen mejores hallazgos y, a su vez, mejores recomendaciones para subir nuevos documentos.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la integración ampliada entre AuditaPatron, Helios y CompliLink antes del siguiente checkpoint.
+- [x] Consultar Grok, ChatGPT y Gemini para contrastar la mejor siguiente iteración de /auditar centrada en el ciclo AuditaPatron → Helios → CompliLink.
+- [x] Hacer más visible en /auditar el ciclo de valor entre carga documental, lectura de Helios y enriquecimiento desde CompliLink.
+- [x] Añadir contexto de fecha y hora a las alertas priorizadas visibles para la persona usuaria.
+- [x] Mejorar la comparación documental con una vista lado a lado más clara dentro de /auditar.

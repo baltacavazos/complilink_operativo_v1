@@ -77,6 +77,19 @@ type HeliosPriorityAlert = {
   body: string;
   toneClasses: string;
   icon: "alert" | "file" | "sparkles";
+  timestampLabel?: string;
+  reasonLabel?: string;
+  actionLabel?: string;
+};
+
+type MonitoringDocumentView = {
+  documentId: string;
+  documentName: string;
+  status?: string | null;
+  dispatchedAt?: Date | string | null;
+  respondedAt?: Date | string | null;
+  responseEvent?: string | null;
+  message?: string | null;
 };
 
 const dossierTargets: DossierTarget[] = [
@@ -868,14 +881,16 @@ function buildHeliosComparisonCopy(params: {
   } as const;
 }
 
-function buildHeliosPriorityAlerts(params: {
+export function buildHeliosPriorityAlerts(params: {
   documents: ComparisonDocument[];
   attentionCount: number;
+  monitoringDocuments: MonitoringDocumentView[];
   selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
   nextTarget?: DossierTarget | null;
   opinion?: HeliosOpinionView | null;
 }) {
   const alerts: HeliosPriorityAlert[] = [];
+  const latestAttentionDocument = params.monitoringDocuments.find((item) => item.status === "attention");
 
   if (params.attentionCount > 0) {
     alerts.push({
@@ -888,6 +903,15 @@ function buildHeliosPriorityAlerts(params: {
           : `Helios detectó ${params.attentionCount} documentos en seguimiento con señales que conviene revisar pronto para no dejar cabos sueltos.`,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       icon: "alert",
+      timestampLabel: latestAttentionDocument
+        ? formatDate(latestAttentionDocument.respondedAt ?? latestAttentionDocument.dispatchedAt)
+        : undefined,
+      reasonLabel: latestAttentionDocument?.responseEvent
+        ? getReturnEventLabel(latestAttentionDocument.responseEvent)
+        : "Seguimiento automático con demora visible",
+      actionLabel: latestAttentionDocument?.documentName
+        ? `Documento relacionado: ${latestAttentionDocument.documentName}`
+        : undefined,
     });
   }
 
@@ -913,6 +937,9 @@ function buildHeliosPriorityAlerts(params: {
       body: `Tienes ${repeatedGroup.length} ${label} dentro del expediente. Eso le da a Helios una mejor base para revisar ${focus} con más contexto y menos partes preliminares.`,
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
+      timestampLabel: formatDate(repeatedGroup[repeatedGroup.length - 1]?.createdAt),
+      reasonLabel: `Comparación útil sobre ${focus}`,
+      actionLabel: `Hay ${repeatedGroup.length} documentos del mismo tipo listos para contraste`,
     });
   }
 
@@ -925,10 +952,13 @@ function buildHeliosPriorityAlerts(params: {
       body: firstUncertainty,
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
+      timestampLabel: params.selectedPair ? formatDate(params.selectedPair[1].createdAt) : undefined,
+      reasonLabel: "Todavía hay una parte preliminar o pendiente de confirmar",
+      actionLabel: params.nextTarget ? `Puede ayudar subir ${params.nextTarget.label.toLowerCase()}` : undefined,
     });
   }
 
-  if (alerts.length === 0 && params.selectedPair) {
+  if (params.selectedPair) {
     const sameType = params.selectedPair[0].documentType === params.selectedPair[1].documentType;
     alerts.push({
       id: "comparison-ready",
@@ -941,6 +971,9 @@ function buildHeliosPriorityAlerts(params: {
         : "Helios ya puede contrastar dos piezas distintas del expediente para conectar mejor la historia del caso.",
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
+      timestampLabel: formatDate(params.selectedPair[1].createdAt),
+      reasonLabel: "Ya existe una pareja útil de documentos dentro del expediente",
+      actionLabel: "Puedes abrir la comparación lado a lado para revisar con más calma",
     });
   }
 
@@ -952,6 +985,8 @@ function buildHeliosPriorityAlerts(params: {
       body: `${params.nextTarget.description} ${params.nextTarget.benefit}`,
       toneClasses: "border-emerald-100 bg-emerald-50 text-emerald-950",
       icon: "sparkles",
+      reasonLabel: "Helios detectó que todavía falta una pieza útil para aclarar mejor el expediente",
+      actionLabel: `Siguiente documento sugerido: ${params.nextTarget.label}`,
     });
   }
 
@@ -963,6 +998,7 @@ function buildHeliosPriorityAlerts(params: {
       body: "Cada documento adicional le da más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
+      reasonLabel: "Tu expediente ya tiene contexto inicial suficiente para seguir creciendo",
     });
   }
 
@@ -1150,10 +1186,13 @@ export default function Auditar() {
   const comparisonAlerts = buildHeliosPriorityAlerts({
     documents,
     attentionCount: attentionMonitoringDocuments.length,
+    monitoringDocuments,
     selectedPair: activeComparisonPair,
     nextTarget: dossierStatus.nextTarget,
     opinion: visibleHeliosOpinion,
   });
+  const comparisonLeftDocument = activeComparisonPair?.[0] ?? null;
+  const comparisonRightDocument = activeComparisonPair?.[1] ?? null;
 
   useEffect(() => {
     const fallbackLeft = automaticComparisonPair?.[0]?.documentId ?? comparisonDocuments[0]?.documentId ?? "";
@@ -2221,6 +2260,63 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Ciclo de valor visible</p>
+              <div className="mt-2 flex items-start gap-3">
+                <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-2">
+                  <Sparkles className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Así se fortalece tu expediente</h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    AuditaPatron recibe tus documentos, Helios los interpreta y CompliLink ayuda a enriquecer la lectura para devolverte una explicación cada vez más clara.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 lg:grid-cols-4">
+                <article className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Paso 1</p>
+                  <p className="mt-2 font-semibold text-slate-950">AuditaPatron recibe y protege</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Tu archivo entra a un expediente seguro y queda listo para ordenarse sin que tengas que hacer pasos técnicos extra.
+                  </p>
+                </article>
+                <article className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Paso 2</p>
+                  <p className="mt-2 font-semibold text-slate-950">Helios interpreta el contexto</p>
+                  <p className="mt-2 text-sm leading-6 text-teal-950">
+                    {heliosDocumentsCount === 0
+                      ? "En cuanto haya lectura visible, Helios empezará a decirte qué ya se entendió y qué conviene reforzar."
+                      : `Helios ya conectó ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
+                  </p>
+                </article>
+                <article className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">Paso 3</p>
+                  <p className="mt-2 font-semibold text-slate-950">CompliLink devuelve más verificación</p>
+                  <p className="mt-2 text-sm leading-6 text-sky-950">
+                    {monitoringDocuments.length === 0
+                      ? "Cuando haya seguimiento activo, aquí verás cómo la revisión automática vuelve con más detalle para fortalecer el expediente."
+                      : `Hoy hay ${monitoringDocuments.length} documento${monitoringDocuments.length === 1 ? "" : "s"} dentro del ciclo automático entre Helios y CompliLink.`}
+                  </p>
+                </article>
+                <article className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Paso 4</p>
+                  <p className="mt-2 font-semibold text-slate-950">Tú recibes una guía más clara</p>
+                  <p className="mt-2 text-sm leading-6 text-emerald-950">
+                    Las alertas, comparaciones y siguientes documentos sugeridos aparecen en lenguaje simple para ayudarte a decidir con calma.
+                  </p>
+                </article>
+              </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-950">Por qué esto te aporta más valor con el tiempo</p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  Cada documento nuevo alimenta a Helios, y cada retorno útil de CompliLink ayuda a afinar la lectura del expediente. Así el sistema aprende del caso y puede darte resultados más consistentes sin pedirte complejidad adicional.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento automático</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
 
@@ -2375,6 +2471,41 @@ export default function Auditar() {
                 <p className="mt-2 text-sm leading-7 text-teal-950">{comparisonCopy.supportingText}</p>
               </div>
 
+              {comparisonLeftDocument && comparisonRightDocument ? (
+                <div className="mt-4 grid gap-3 xl:grid-cols-[1fr_1fr_0.9fr]">
+                  <article className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento original</p>
+                    <p className="mt-2 font-semibold text-slate-950">{comparisonLeftDocument.originalName}</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                      <span className="rounded-full bg-white px-3 py-1">{getSimpleDocumentTypeLabel(comparisonLeftDocument.documentType)}</span>
+                      <span className="rounded-full bg-white px-3 py-1">{formatDate(comparisonLeftDocument.createdAt)}</span>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-slate-700">
+                      {asHeliosOpinion(comparisonLeftDocument.heliosOpinion)?.summary ?? "Este documento ya forma parte del expediente y sirve como punto de partida para el contraste."}
+                    </p>
+                  </article>
+
+                  <article className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento comparado</p>
+                    <p className="mt-2 font-semibold text-slate-950">{comparisonRightDocument.originalName}</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                      <span className="rounded-full bg-white px-3 py-1">{getSimpleDocumentTypeLabel(comparisonRightDocument.documentType)}</span>
+                      <span className="rounded-full bg-white px-3 py-1">{formatDate(comparisonRightDocument.createdAt)}</span>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-slate-700">
+                      {asHeliosOpinion(comparisonRightDocument.heliosOpinion)?.summary ?? "Este documento añade una segunda referencia para entender mejor qué cambió o qué falta aclarar."}
+                    </p>
+                  </article>
+
+                  <article className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Resumen de diferencias</p>
+                    <p className="mt-2 font-semibold text-slate-950">Lo que Helios quiere que revises primero</p>
+                    <p className="mt-3 text-sm leading-7 text-emerald-950">{comparisonCopy.cards[1]?.body}</p>
+                    <p className="mt-3 text-xs leading-6 text-emerald-900">Último punto comparado: {formatDate(comparisonRightDocument.createdAt)}</p>
+                  </article>
+                </div>
+              ) : null}
+
               <div className="mt-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-teal-700" strokeWidth={1.8} />
@@ -2397,6 +2528,22 @@ export default function Auditar() {
                       <AlertDescription className="text-current">
                         <p className="font-semibold text-current">{alert.title}</p>
                         <p>{alert.body}</p>
+                        {alert.timestampLabel || alert.reasonLabel || alert.actionLabel ? (
+                          <div className="mt-3 grid gap-2 text-xs leading-6 text-current/80 sm:grid-cols-3">
+                            <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
+                              <p className="font-semibold">Fecha y hora</p>
+                              <p>{alert.timestampLabel ?? "Sin fecha visible"}</p>
+                            </div>
+                            <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
+                              <p className="font-semibold">Motivo</p>
+                              <p>{alert.reasonLabel ?? "Señal útil detectada por Helios"}</p>
+                            </div>
+                            <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
+                              <p className="font-semibold">Qué puedes hacer</p>
+                              <p>{alert.actionLabel ?? "Seguir fortaleciendo el expediente con calma."}</p>
+                            </div>
+                          </div>
+                        ) : null}
                       </AlertDescription>
                     </Alert>
                   ))}
