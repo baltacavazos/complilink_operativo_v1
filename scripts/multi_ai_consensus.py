@@ -11,28 +11,39 @@ PROJECT_PROMPT = r'''Actúa como arquitecto/a senior de producto, UX y sistemas 
 Contexto actual:
 - Existe una home y una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
 - La dirección UX actual busca una experiencia muy simple, confiable, mobile-first y casi mágica.
-- Ya se avanzó en centrar la interfaz y ocultar la complejidad interna; ahora se quiere reforzar mejor el valor del expediente digital.
-- Hipótesis a evaluar: conviene comunicar que entre más documentos suba la persona, más se ordena y fortalece su expediente digital, evitando tener archivos perdidos en carpetas distintas y dejando todo disponible 24/7 cuando lo necesite.
-- Ese beneficio debe comunicarse con empatía y utilidad práctica, no como táctica manipuladora ni con tono legalista o alarmista.
-- Se puede mencionar que tener documentos ordenados y disponibles ayuda si algún día necesita aclaraciones, trámites, reclamaciones o incluso una demanda, pero sin centrar toda la experiencia en el miedo.
-- Todo lo que sube la persona sí alimenta procesos internos y enriquecimiento de fondo, pero ESO NO DEBE MENCIONARSE en la experiencia visible. El usuario solo debe ver beneficios claros, orden, disponibilidad, confianza y facilidad.
-- También se quiere pulir navegación móvil y microinteracciones suaves en botones, tarjetas, cargas o confirmaciones, sin distraer ni degradar rendimiento.
-- Restricciones: no mencionar Helios, no mencionar motor interno, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
+- Ya se comunicó mejor el valor del expediente digital 24/7, pero ahora queremos ir un paso más allá.
+- Nueva prioridad: mostrar de forma muy útil qué documentos conviene subir primero para obtener más claridad, más contexto y mejores respuestas para la persona usuaria.
+- Además, esos documentos priorizados también deben ser los que más valor informativo aportan internamente al sistema, pero ESO NO DEBE EXPLICARSE al usuario final. En la interfaz visible solo deben mostrarse beneficios claros para la persona: más claridad, mejor respaldo, más contexto y mejor revisión.
+- La persona usuaria debe sentir que mientras más documentos importantes sube, más completo, útil y ordenado queda su expediente digital.
+- También queremos añadir dos mejoras visibles y simples: un historial ligero de consultas/accesos del expediente para reforzar la idea de disponibilidad y trazabilidad, y un onboarding móvil breve de 2 a 3 pantallas puramente informativas que explique el valor del producto en segundos.
+- Restricciones: no mencionar Helios, no mencionar motor interno, no mencionar enriquecimiento de backend, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
+- Hay que priorizar implementaciones de alto impacto y baja fricción, sin rehacer toda la arquitectura.
 
-Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de Home y /auditar, enfocadas solo en mejoras visibles y de alto impacto que puedan implementarse sin rehacer toda la arquitectura.
+Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de Home y /auditar.
 
 Quiero que propongas específicamente:
-1. Si es buena idea comunicar el valor del expediente digital acumulativo, ordenado y disponible 24/7.
-2. Cuál es la mejor forma de comunicarlo sin sonar manipulador, alarmista ni técnico.
-3. Qué copy exacto sugerirías en español para explicar: orden documental, disponibilidad permanente, respaldo útil y crecimiento del expediente con cada documento.
-4. Cómo implementarlo visualmente en la home y en /auditar con la menor fricción posible.
-5. Qué microinteracciones suaves y qué ajustes de navegación móvil agregarías en esta ronda.
-6. Qué NO implementar todavía para evitar complejidad innecesaria.
+1. Qué documentos laborales conviene priorizar como “los más útiles por subir” para dar mejores resultados a la persona usuaria.
+2. Cómo explicar esa priorización sin sonar técnica, manipuladora o invasiva.
+3. Qué copy exacto sugerirías en español para el módulo de documentos recomendados, para el historial simple del expediente y para el onboarding móvil breve.
+4. Cómo implementarlo visualmente en Home y /auditar con la menor fricción posible.
+5. Cómo diseñar el historial simple de consultas/accesos del expediente para reforzar disponibilidad 24/7 y confianza.
+6. Cómo diseñar un onboarding móvil breve de 2 o 3 pantallas, puramente informativo y muy claro.
+7. Qué NO implementar todavía para evitar complejidad innecesaria.
 
 Devuelve SOLO JSON válido con esta forma exacta:
 {
   "model_positioning": "string",
-  "is_24_7_dossier_message_a_good_idea": true,
+  "priority_documents_strategy": {
+    "is_good_idea": true,
+    "recommended_document_order": [
+      {
+        "document_name": "string",
+        "user_value": "string",
+        "why_it_is_high_signal": "string"
+      }
+    ],
+    "selection_principles": ["string"]
+  },
   "top_recommendations": [
     {
       "title": "string",
@@ -56,8 +67,31 @@ Devuelve SOLO JSON válido con esta forma exacta:
   "auditar_implementation": {
     "section_title": "string",
     "section_supporting": "string",
-    "microcopy": ["string"],
+    "recommended_documents_microcopy": ["string"],
+    "history_module_microcopy": ["string"],
     "empty_state_message": "string"
+  },
+  "mobile_onboarding": {
+    "screen_1": {
+      "title": "string",
+      "supporting": "string"
+    },
+    "screen_2": {
+      "title": "string",
+      "supporting": "string"
+    },
+    "screen_3": {
+      "title": "string",
+      "supporting": "string"
+    },
+    "entry_point": "string",
+    "replay_option": "string"
+  },
+  "history_experience": {
+    "module_title": "string",
+    "module_supporting": "string",
+    "events_to_show": ["string"],
+    "trust_signals": ["string"]
   },
   "microinteractions_and_mobile": {
     "microinteractions": ["string"],
@@ -65,12 +99,13 @@ Devuelve SOLO JSON válido con esta forma exacta:
     "wow_moments": ["string"]
   },
   "exact_copy": {
-    "hero_supporting": "string",
-    "digital_dossier_title": "string",
-    "digital_dossier_supporting": "string",
-    "availability_message": "string",
+    "recommended_documents_title": "string",
+    "recommended_documents_supporting": "string",
+    "history_title": "string",
+    "history_supporting": "string",
     "upload_reassurance": "string",
-    "documents_growth_message": "string"
+    "documents_growth_message": "string",
+    "onboarding_intro": "string"
   },
   "do_not_build_yet": ["string"],
   "final_verdict": "string"

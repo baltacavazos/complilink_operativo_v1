@@ -34,6 +34,18 @@ type DossierSignal = {
   status: "listo" | "faltante";
 };
 
+type PriorityDocument = {
+  title: string;
+  description: string;
+  value: string;
+};
+
+type MobileOnboardingCard = {
+  step: string;
+  title: string;
+  description: string;
+};
+
 const navLinks = [
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#expediente", label: "Tu expediente" },
@@ -122,6 +134,47 @@ const findingsExamples = [
     title: "Condiciones pactadas frente a la realidad",
     description:
       "Contrato, nómina y evidencia adicional permiten revisar si lo prometido coincide con lo vivido.",
+  },
+];
+
+const priorityDocuments: PriorityDocument[] = [
+  {
+    title: "Recibos de nómina de varios periodos",
+    description: "Son de los archivos más útiles para detectar cambios repetidos en pagos, deducciones y depósitos.",
+    value: "Ayudan a encontrar patrones mes con mes y a darle más contexto real a tu expediente.",
+  },
+  {
+    title: "CFDI timbrados",
+    description: "Permiten contrastar lo que fiscalmente aparece reportado contra lo que ves en tus recibos.",
+    value: "Aclaran diferencias que una sola pieza documental podría dejar ocultas.",
+  },
+  {
+    title: "Contrato, anexos o condiciones iniciales",
+    description: "Aterrizan sueldo pactado, jornada, prestaciones y promesas de arranque.",
+    value: "Sirven para comparar lo acordado frente a lo que realmente ocurrió después.",
+  },
+  {
+    title: "Alta, baja o semanas cotizadas del IMSS",
+    description: "Refuerzan la historia laboral con fechas y señales de seguridad social.",
+    value: "Suman evidencia útil cuando necesitas respaldarte mejor o entender huecos en tu expediente.",
+  },
+];
+
+const mobileOnboardingCards: MobileOnboardingCard[] = [
+  {
+    step: "01",
+    title: "Empieza con lo que ya tienes",
+    description: "Desde tu celular puedes abrir AuditaPatron y elegir el documento que tengas más a la mano, sin prepararlo antes.",
+  },
+  {
+    step: "02",
+    title: "Todo queda guardado en tu expediente",
+    description: "Después de subirlo, el archivo se ordena en un solo lugar para que no termine perdido entre folders o chats.",
+  },
+  {
+    step: "03",
+    title: "Recibes claridad útil y la conservas",
+    description: "Ves qué se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
   },
 ];
 
@@ -618,6 +671,84 @@ function DossierSection() {
   );
 }
 
+function PriorityDocumentsSection() {
+  return (
+    <section className="bg-slate-50 py-14 sm:py-16">
+      <div className="container mx-auto max-w-6xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Documentos que más pueden ayudarte
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            Si quieres darle más valor a tu expediente, empieza por los archivos con más contexto.
+          </h2>
+          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+            No todos los documentos aportan lo mismo. Estos suelen ser de los más útiles para darte claridad, ordenar mejor tu caso y hacer que el expediente te devuelva una lectura más completa.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 lg:grid-cols-2">
+          {priorityDocuments.map((item) => (
+            <article
+              key={item.title}
+              className="motion-hover-lift rounded-[1.8rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_-56px_rgba(15,23,42,0.55)] sm:p-6"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                  <FileSearch className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Alta utilidad para tu expediente</p>
+                  <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
+                </div>
+              </div>
+
+              <p className="mt-4 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{item.description}</p>
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                {item.value}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MobileOnboardingSection() {
+  return (
+    <section className="bg-white py-14 sm:py-16">
+      <div className="container mx-auto max-w-6xl">
+        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+              En tu celular se entiende en segundos
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+              Un onboarding breve para que sepas qué pasa desde el primer archivo.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              La idea es simple: subes, entiendes y conservas. Sin pasos técnicos, sin menús enredados y con tu expediente siempre disponible cuando lo necesites de nuevo.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {mobileOnboardingCards.map((item) => (
+              <article key={item.step} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)]">
+                <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
+                  {item.step}
+                </div>
+                <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function GuidedTourSection() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const activeStep = useMemo(() => tourSteps[activeStepIndex], [activeStepIndex]);
@@ -911,7 +1042,9 @@ export default function Home() {
       <ConfidenceMagicSection />
       <HowItWorksSection />
       <DossierSection />
+      <PriorityDocumentsSection />
       <GuidedTourSection />
+      <MobileOnboardingSection />
       <FindingsExamplesSection />
       <PrivacySection />
       <FAQSection />

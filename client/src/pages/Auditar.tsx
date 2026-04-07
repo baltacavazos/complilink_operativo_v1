@@ -92,6 +92,27 @@ type MonitoringDocumentView = {
   message?: string | null;
 };
 
+type PriorityUploadGuide = {
+  type: DossierTarget["type"];
+  title: string;
+  summary: string;
+  value: string;
+};
+
+type DossierHistoryEntry = {
+  id: string;
+  title: string;
+  description: string;
+  tag: string;
+  timestamp?: Date | string | null;
+};
+
+type MobileOnboardingStep = {
+  step: string;
+  title: string;
+  description: string;
+};
+
 const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
@@ -122,6 +143,51 @@ const dossierTargets: DossierTarget[] = [
     label: "Evidencia complementaria",
     description: "Correos, capturas o chats ayudan a explicar fechas, instrucciones y cambios.",
     benefit: "Da contexto adicional cuando un recibo o CFDI por sí solos no bastan.",
+  },
+];
+
+const priorityUploadGuides: PriorityUploadGuide[] = [
+  {
+    type: "payroll_receipt",
+    title: "Recibos de nómina de varios periodos",
+    summary: "Suelen ser de los archivos más útiles para detectar cambios repetidos en pagos, descuentos y depósitos.",
+    value: "Mientras más periodos tengas en tu expediente, más fácil es darte una lectura comparada y detectar patrones que un solo recibo no muestra.",
+  },
+  {
+    type: "cfdi",
+    title: "CFDI timbrados",
+    summary: "Sirven para contrastar lo que fiscalmente quedó reportado contra lo que aparece en otros documentos del caso.",
+    value: "Ayudan a aclarar diferencias que muchas veces pasan desapercibidas cuando solo existe una versión del pago o del periodo revisado.",
+  },
+  {
+    type: "contract",
+    title: "Contrato o condiciones de inicio",
+    summary: "Aterrizan sueldo pactado, jornada, prestaciones y acuerdos que luego conviene contrastar con la realidad.",
+    value: "Son clave para entender si lo prometido al inicio coincide con lo que después muestran nóminas, CFDI o evidencia adicional.",
+  },
+  {
+    type: "imss",
+    title: "Alta, baja o semanas cotizadas del IMSS",
+    summary: "Aportan fechas y señales de seguridad social que fortalecen la historia laboral del expediente.",
+    value: "Suman contexto útil cuando quieres respaldarte mejor, aclarar periodos o entender huecos importantes dentro del caso.",
+  },
+];
+
+const mobileOnboardingSteps: MobileOnboardingStep[] = [
+  {
+    step: "01",
+    title: "Elige el archivo más a la mano",
+    description: "Desde tu celular puedes tomar foto o subir un documento guardado sin preparar nada antes.",
+  },
+  {
+    step: "02",
+    title: "Todo se ordena en tu expediente",
+    description: "Ese archivo queda guardado en un solo lugar para que no termine perdido entre carpetas, correos o chats.",
+  },
+  {
+    step: "03",
+    title: "Recibes claridad y la conservas",
+    description: "Ves qué ya se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
   },
 ];
 
@@ -1172,6 +1238,56 @@ export default function Auditar() {
     presentTypes,
     opinion: visibleHeliosOpinion,
   });
+  const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
+    const documentEntries: DossierHistoryEntry[] = documents.map((document) => ({
+      id: `document-${document.documentId}`,
+      title: `Subiste ${getSimpleDocumentTypeLabel(document.documentType).toLowerCase()}`,
+      description: `${document.originalName} ya quedó ordenado dentro de tu expediente digital.`,
+      tag: "Documento agregado",
+      timestamp: document.createdAt,
+    }));
+
+    const monitoringEntries: DossierHistoryEntry[] = monitoringDocuments.map((item) => ({
+      id: `monitoring-${item.documentId}`,
+      title:
+        item.status === "received"
+          ? "Llegó una actualización automática"
+          : item.status === "attention"
+            ? "Conviene revisar un seguimiento"
+            : "Tu documento sigue avanzando",
+      description:
+        item.status === "received"
+          ? `${item.documentName} ya devolvió una respuesta útil para tu expediente.`
+          : item.status === "attention"
+            ? `${item.documentName} requiere una revisión con más calma para no perder contexto importante.`
+            : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu expediente.`,
+      tag:
+        item.status === "received"
+          ? "Respuesta recibida"
+          : item.status === "attention"
+            ? "Seguimiento sensible"
+            : "Seguimiento en curso",
+      timestamp: item.respondedAt ?? item.dispatchedAt,
+    }));
+
+    const summaryEntries: DossierHistoryEntry[] = visibleHeliosOpinion?.generatedAt
+      ? [
+          {
+            id: "visible-summary",
+            title: "Tu resumen del expediente se actualizó",
+            description:
+              visibleHeliosOpinion.summary ??
+              "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
+            tag: "Resumen actualizado",
+            timestamp: visibleHeliosOpinion.generatedAt,
+          },
+        ]
+      : [];
+
+    return [...documentEntries, ...monitoringEntries, ...summaryEntries]
+      .sort((left, right) => new Date(right.timestamp ?? 0).getTime() - new Date(left.timestamp ?? 0).getTime())
+      .slice(0, 5);
+  }, [documents, monitoringDocuments, visibleHeliosOpinion]);
   const selectedComparisonLeft = comparisonDocuments.find((item) => item.documentId === selectedComparisonLeftId);
   const selectedComparisonRight = comparisonDocuments.find((item) => item.documentId === selectedComparisonRightId);
   const activeComparisonPair =
@@ -1467,6 +1583,50 @@ export default function Auditar() {
                 })}
               </div>
 
+              <div className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu expediente</p>
+                    <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                      Si vas a subir algo más, empieza por los archivos con más contexto.
+                    </h3>
+                  </div>
+                  <p className="max-w-xl text-sm leading-6 text-slate-600">
+                    Estos suelen ser de los documentos más útiles para darte una lectura más completa y dejar tu expediente mejor respaldado con el tiempo.
+                  </p>
+                </div>
+
+                <div className="mt-4 grid gap-3 xl:grid-cols-2">
+                  {priorityUploadGuides.map((item) => {
+                    const isPresent = presentTypes.has(item.type);
+                    return (
+                      <article
+                        key={item.type}
+                        className="rounded-[1.2rem] border border-white bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Alta utilidad para tu expediente</p>
+                            <p className="mt-2 font-semibold text-slate-950">{item.title}</p>
+                          </div>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              isPresent ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {isPresent ? "Ya lo tienes" : "Conviene subirlo"}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">{item.summary}</p>
+                        <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                          {item.value}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div
                 className={`mt-5 rounded-[1.45rem] border p-4 sm:p-5 ${
                   heliosStage.tone === "success"
@@ -1561,6 +1721,22 @@ export default function Auditar() {
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
                   Después de subirlo, verás qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.
                 </p>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:hidden">
+                <p className="text-sm font-semibold text-slate-900">Si vienes desde tu celular, así se siente de simple</p>
+                {mobileOnboardingSteps.map((item) => (
+                  <div
+                    key={item.step}
+                    className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm"
+                  >
+                    <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-teal-700">
+                      Paso {item.step}
+                    </div>
+                    <p className="mt-3 font-semibold text-slate-950">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -2263,6 +2439,35 @@ export default function Auditar() {
                     ) : null}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Historial simple del expediente</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Lo último que se movió en tu caso</h2>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                Así puedes entender qué pasó recientemente sin buscar entre carpetas, mensajes o varios sistemas distintos.
+              </p>
+
+              <div className="mt-4 space-y-3">
+                {dossierHistoryEntries.length === 0 ? (
+                  <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                    En cuanto subas tu primer documento, aquí verás un historial simple con lo más reciente de tu expediente.
+                  </div>
+                ) : (
+                  dossierHistoryEntries.map((entry) => (
+                    <article key={entry.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-950">{entry.title}</p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">{entry.description}</p>
+                        </div>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{entry.tag}</span>
+                      </div>
+                      <p className="mt-3 text-xs leading-6 text-slate-500">{formatDate(entry.timestamp)}</p>
+                    </article>
+                  ))
+                )}
               </div>
             </div>
 

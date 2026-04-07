@@ -230,3 +230,9 @@
 - [x] Pulir microinteracciones suaves en botones, cargas y tarjetas sin distraer ni degradar rendimiento.
 - [x] Revisar y mejorar la navegación móvil para que se sienta más clara, compacta y confiable.
 - [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en expediente digital 24/7 y UX.
+- [x] Consultar a Grok, ChatGPT y Gemini la mejor forma de priorizar los documentos más útiles por subir según el mayor valor informativo para el expediente y el motor interno.
+- [x] Definir una jerarquía clara de documentos recomendados que maximice valor para la persona usuaria y enriquecimiento útil del expediente.
+- [x] Implementar en /auditar un módulo visible de documentos más útiles por subir con motivos claros y prioridad accionable.
+- [x] Añadir un historial simple de consultas o accesos del expediente para reforzar disponibilidad y trazabilidad percibida.
+- [x] Diseñar un onboarding móvil breve de 2 a 3 pantallas informativas para explicar el valor del expediente y la auditoría en segundos.
+- [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en priorización documental, historial y onboarding móvil.
