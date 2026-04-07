@@ -1,0 +1,235 @@
+{
+  "generated_at": "2026-04-07T05:17:51.886Z",
+  "screenshot_path": "/home/ubuntu/screenshots/webdev-preview-1775537898.png",
+  "results": [
+    {
+      "model": "chatgpt",
+      "raw": "{\n  \"current_headline_assessment\": {\n    \"score\": 7,\n    \"what_works\": \"Incluye explícitamente 'derechos laborales', transmite protección y respaldo, y usa lenguaje claro y humano. Se lee bien en móvil y es memorable.\",\n    \"what_fails\": \"Es un poco largo para un headline móvil, la frase 'mejor respaldados' puede ser vaga y menos directa. Podría ser más fuerte en llamada a la acción o sensación de empoderamiento.\"\n  },\n  \"candidates\": [\n    {\n      \"id\": \"a\",\n      \"headline\": \"Tus derechos laborales, claros y protegidos\",\n      \"subheadline\": \"Entiende y defiende lo que te corresponde sin complicaciones.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 9,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Muy claro, directo y humano. Incluye la idea de derechos y protección sin sonar técnico o legalista. Fácil de recordar y leer en móvil.\"\n    },\n    {\n      \"id\": \"b\",\n      \"headline\": \"Protege tus derechos laborales hoy\",\n      \"subheadline\": \"Audita tus documentos y toma el control de tu trabajo.\",\n      \"score_clarity\": 8,\n      \"score_trust\": 8,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Invita a la acción inmediata, usa lenguaje cercano y sencillo. La palabra 'protege' genera confianza y respaldo.\"\n    },\n    {\n      \"id\": \"c\",\n      \"headline\": \"Claridad y respaldo para tus derechos laborales\",\n      \"subheadline\": \"Sin tecnicismos, solo apoyo real para ti.\",\n      \"score_clarity\": 8,\n      \"score_trust\": 9,\n      \"score_memorability\": 7,\n      \"score_mobile\": 8,\n      \"why\": \"Incluye derechos y respaldo, transmite confianza y cercanía, pero un poco más largo para móvil.\"\n    },\n    {\n      \"id\": \"d\",\n      \"headline\": \"Entiende tu trabajo, defiende lo que es tuyo\",\n      \"subheadline\": \"Audita tus recibos y documentos sin complicaciones.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 8,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Muy humano y cercano, conecta emocionalmente con el usuario. La idea de defensa está implícita sin ser legalista.\"\n    },\n    {\n      \"id\": \"e\",\n      \"headline\": \"Documentos claros, protección real para ti\",\n      \"subheadline\": \"Tu expediente laboral fácil y seguro en un solo lugar.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 9,\n      \"score_memorability\": 7,\n      \"score_mobile\": 9,\n      \"why\": \"Enfocado en claridad y protección, sin mencionar derechos explícitamente pero con fuerte sentido de respaldo y confianza.\"\n    }\n  ],\n  \"recommended_candidate_id\": \"a\",\n  \"recommended_why\": \"Es el equilibrio ideal entre claridad, fuerza emocional, inclusión explícita de derechos laborales y tono humano. Se lee muy bien en móvil y genera confianza real sin tecnicismos ni exageraciones.\",\n  \"rights_language_assessment\": {\n    \"should_include_rights\": true,\n    \"why\": \"En México, hablar de derechos laborales genera empatía y sentido de protección. Incluir esta idea en el headline principal conecta emocionalmente con el público objetivo y refuerza la confianza sin sonar panfletario.\"\n  },\n  \"microcopy_adjustments\": {\n    \"header_primary_cta\": \"Auditar mis documentos\",\n    \"header_secondary_cta\": \"Ver tu expediente\",\n    \"hero_supporting_badge\": \"Diseñado para trabajadores, no para expertos\"\n  },\n  \"final_advice\": \"Mantener el lenguaje sencillo, cercano y humano. Evitar tecnicismos o frases legales. Priorizar siempre la claridad y la sensación de protección real. El headline debe invitar a la acción y a sentirse acompañado, no intimidado.\"\n}",
+      "parsed": {
+        "current_headline_assessment": {
+          "score": 7,
+          "what_works": "Incluye explícitamente 'derechos laborales', transmite protección y respaldo, y usa lenguaje claro y humano. Se lee bien en móvil y es memorable.",
+          "what_fails": "Es un poco largo para un headline móvil, la frase 'mejor respaldados' puede ser vaga y menos directa. Podría ser más fuerte en llamada a la acción o sensación de empoderamiento."
+        },
+        "candidates": [
+          {
+            "id": "a",
+            "headline": "Tus derechos laborales, claros y protegidos",
+            "subheadline": "Entiende y defiende lo que te corresponde sin complicaciones.",
+            "score_clarity": 9,
+            "score_trust": 9,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Muy claro, directo y humano. Incluye la idea de derechos y protección sin sonar técnico o legalista. Fácil de recordar y leer en móvil."
+          },
+          {
+            "id": "b",
+            "headline": "Protege tus derechos laborales hoy",
+            "subheadline": "Audita tus documentos y toma el control de tu trabajo.",
+            "score_clarity": 8,
+            "score_trust": 8,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Invita a la acción inmediata, usa lenguaje cercano y sencillo. La palabra 'protege' genera confianza y respaldo."
+          },
+          {
+            "id": "c",
+            "headline": "Claridad y respaldo para tus derechos laborales",
+            "subheadline": "Sin tecnicismos, solo apoyo real para ti.",
+            "score_clarity": 8,
+            "score_trust": 9,
+            "score_memorability": 7,
+            "score_mobile": 8,
+            "why": "Incluye derechos y respaldo, transmite confianza y cercanía, pero un poco más largo para móvil."
+          },
+          {
+            "id": "d",
+            "headline": "Entiende tu trabajo, defiende lo que es tuyo",
+            "subheadline": "Audita tus recibos y documentos sin complicaciones.",
+            "score_clarity": 9,
+            "score_trust": 8,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Muy humano y cercano, conecta emocionalmente con el usuario. La idea de defensa está implícita sin ser legalista."
+          },
+          {
+            "id": "e",
+            "headline": "Documentos claros, protección real para ti",
+            "subheadline": "Tu expediente laboral fácil y seguro en un solo lugar.",
+            "score_clarity": 9,
+            "score_trust": 9,
+            "score_memorability": 7,
+            "score_mobile": 9,
+            "why": "Enfocado en claridad y protección, sin mencionar derechos explícitamente pero con fuerte sentido de respaldo y confianza."
+          }
+        ],
+        "recommended_candidate_id": "a",
+        "recommended_why": "Es el equilibrio ideal entre claridad, fuerza emocional, inclusión explícita de derechos laborales y tono humano. Se lee muy bien en móvil y genera confianza real sin tecnicismos ni exageraciones.",
+        "rights_language_assessment": {
+          "should_include_rights": true,
+          "why": "En México, hablar de derechos laborales genera empatía y sentido de protección. Incluir esta idea en el headline principal conecta emocionalmente con el público objetivo y refuerza la confianza sin sonar panfletario."
+        },
+        "microcopy_adjustments": {
+          "header_primary_cta": "Auditar mis documentos",
+          "header_secondary_cta": "Ver tu expediente",
+          "hero_supporting_badge": "Diseñado para trabajadores, no para expertos"
+        },
+        "final_advice": "Mantener el lenguaje sencillo, cercano y humano. Evitar tecnicismos o frases legales. Priorizar siempre la claridad y la sensación de protección real. El headline debe invitar a la acción y a sentirse acompañado, no intimidado."
+      }
+    },
+    {
+      "model": "grok",
+      "raw": "{\n  \"current_headline_assessment\": {\n    \"score\": 7,\n    \"what_works\": \"Incorpora la idea de derechos laborales de manera directa, generando empatía y cercanía; transmite claridad y protección sin sonar técnico.\",\n    \"what_fails\": \"Se siente incompleto en el extracto, podría ser más impactante y memorable; en móvil podría extenderse a más de 3 líneas si no se ajusta bien.\"\n  },\n  \"candidates\": [\n    {\n      \"id\": \"a\",\n      \"headline\": \"Tus derechos laborales, claros y protegidos\",\n      \"subheadline\": \"Audita tus documentos y gana respaldo real\",\n      \"score_clarity\": 9,\n      \"score_trust\": 8,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Directo y humano, integra derechos para empatía sin exagerar; corto para móvil, genera confianza al prometer protección inmediata.\"\n    },\n    {\n      \"id\": \"b\",\n      \"headline\": \"Defiende tus derechos con documentos claros\",\n      \"subheadline\": \"Sube y entiende lo que realmente pasa\",\n      \"score_clarity\": 8,\n      \"score_trust\": 9,\n      \"score_memorability\": 7,\n      \"score_mobile\": 9,\n      \"why\": \"Enfatiza defensa de derechos de forma cercana y accionable; simple y recordable, pero podría sonar un poco confrontacional para algunos.\"\n    },\n    {\n      \"id\": \"c\",\n      \"headline\": \"Claridad para tus derechos laborales\",\n      \"subheadline\": \"Protege tu historia con un expediente fuerte\",\n      \"score_clarity\": 9,\n      \"score_trust\": 8,\n      \"score_memorability\": 8,\n      \"score_mobile\": 8,\n      \"why\": \"Pone derechos al frente con simplicidad y calidez; fácil de leer en móvil, construye confianza al enfocarse en protección personal.\"\n    },\n    {\n      \"id\": \"d\",\n      \"headline\": \"Entiende y respalda tus derechos ahora\",\n      \"subheadline\": \"Audita recibos y gana paz mental\",\n      \"score_clarity\": 8,\n      \"score_trust\": 9,\n      \"score_memorability\": 9,\n      \"score_mobile\": 9,\n      \"why\": \"Incluye derechos explícitamente con tono protector y urgente; memorable por su llamada a acción, fluye bien en pantallas pequeñas.\"\n    },\n    {\n      \"id\": \"e\",\n      \"headline\": \"Tu respaldo laboral, simple y seguro\",\n      \"subheadline\": \"Descubre señales claras en tus documentos\",\n      \"score_clarity\": 9,\n      \"score_trust\": 7,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Enfocado en simplicidad y seguridad sin mencionar derechos directamente; confiable pero menos empático, ideal para lecturas rápidas en móvil.\"\n    }\n  ],\n  \"recommended_candidate_id\": \"a\",\n  \"recommended_why\": \"Equilibra claridad, empatía con derechos y confianza; es corto, humano y optimizado para móvil, alineándose con la prioridad estratégica de generar cercanía en México.\",\n  \"rights_language_assessment\": {\n    \"should_include_rights\": true,\n    \"why\": \"En México, mencionar derechos laborales crea empatía y sentido de protección sin sonar legalista; ayuda a conectar emocionalmente con trabajadores no expertos, fomentando confianza inmediata.\"\n  },\n  \"microcopy_adjustments\": {\n    \"header_primary_cta\": \"Audita tus documentos ahora\",\n    \"header_secondary_cta\": \"Mira tu expediente\",\n    \"hero_supporting_badge\": \"Hecho para ti, trabajador real\"\n  },\n  \"final_advice\": \"Elige un headline que invite a la acción sin presión, manteniendo el tono protector; prueba en móvil para asegurar que quepa en 2-3 líneas y ajusta el subheadline para reforzar el respaldo humano.\"\n}",
+      "parsed": {
+        "current_headline_assessment": {
+          "score": 7,
+          "what_works": "Incorpora la idea de derechos laborales de manera directa, generando empatía y cercanía; transmite claridad y protección sin sonar técnico.",
+          "what_fails": "Se siente incompleto en el extracto, podría ser más impactante y memorable; en móvil podría extenderse a más de 3 líneas si no se ajusta bien."
+        },
+        "candidates": [
+          {
+            "id": "a",
+            "headline": "Tus derechos laborales, claros y protegidos",
+            "subheadline": "Audita tus documentos y gana respaldo real",
+            "score_clarity": 9,
+            "score_trust": 8,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Directo y humano, integra derechos para empatía sin exagerar; corto para móvil, genera confianza al prometer protección inmediata."
+          },
+          {
+            "id": "b",
+            "headline": "Defiende tus derechos con documentos claros",
+            "subheadline": "Sube y entiende lo que realmente pasa",
+            "score_clarity": 8,
+            "score_trust": 9,
+            "score_memorability": 7,
+            "score_mobile": 9,
+            "why": "Enfatiza defensa de derechos de forma cercana y accionable; simple y recordable, pero podría sonar un poco confrontacional para algunos."
+          },
+          {
+            "id": "c",
+            "headline": "Claridad para tus derechos laborales",
+            "subheadline": "Protege tu historia con un expediente fuerte",
+            "score_clarity": 9,
+            "score_trust": 8,
+            "score_memorability": 8,
+            "score_mobile": 8,
+            "why": "Pone derechos al frente con simplicidad y calidez; fácil de leer en móvil, construye confianza al enfocarse en protección personal."
+          },
+          {
+            "id": "d",
+            "headline": "Entiende y respalda tus derechos ahora",
+            "subheadline": "Audita recibos y gana paz mental",
+            "score_clarity": 8,
+            "score_trust": 9,
+            "score_memorability": 9,
+            "score_mobile": 9,
+            "why": "Incluye derechos explícitamente con tono protector y urgente; memorable por su llamada a acción, fluye bien en pantallas pequeñas."
+          },
+          {
+            "id": "e",
+            "headline": "Tu respaldo laboral, simple y seguro",
+            "subheadline": "Descubre señales claras en tus documentos",
+            "score_clarity": 9,
+            "score_trust": 7,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Enfocado en simplicidad y seguridad sin mencionar derechos directamente; confiable pero menos empático, ideal para lecturas rápidas en móvil."
+          }
+        ],
+        "recommended_candidate_id": "a",
+        "recommended_why": "Equilibra claridad, empatía con derechos y confianza; es corto, humano y optimizado para móvil, alineándose con la prioridad estratégica de generar cercanía en México.",
+        "rights_language_assessment": {
+          "should_include_rights": true,
+          "why": "En México, mencionar derechos laborales crea empatía y sentido de protección sin sonar legalista; ayuda a conectar emocionalmente con trabajadores no expertos, fomentando confianza inmediata."
+        },
+        "microcopy_adjustments": {
+          "header_primary_cta": "Audita tus documentos ahora",
+          "header_secondary_cta": "Mira tu expediente",
+          "hero_supporting_badge": "Hecho para ti, trabajador real"
+        },
+        "final_advice": "Elige un headline que invite a la acción sin presión, manteniendo el tono protector; prueba en móvil para asegurar que quepa en 2-3 líneas y ajusta el subheadline para reforzar el respaldo humano."
+      }
+    },
+    {
+      "model": "gemini",
+      "raw": "{\n  \"current_headline_assessment\": {\n    \"score\": 7,\n    \"what_works\": \"El headline actual comunica directamente la idea de 'derechos laborales' y los beneficios clave de 'claros, protegidos y mejor respaldados'. Utiliza un lenguaje positivo y enfocado en el usuario, lo cual genera confianza. La mención de 'derechos laborales' es estratégica para el público mexicano.\",\n    \"what_fails\": \"Aunque es bueno, la frase 'claros, protegidos y mejor respaldados' puede sentirse un poco larga y pasiva. 'Mejor respaldados' es un poco genérico. En móvil, podría extenderse a más de 2-3 líneas dependiendo del tamaño de fuente, perdiendo impacto inmediato. Podría ser más activo y empoderador.\"\n  },\n  \"candidates\": [\n    {\n      \"id\": \"a\",\n      \"headline\": \"Tus derechos laborales: claros, protegidos.\",\n      \"subheadline\": \"AuditaPatron te da la claridad y el respaldo que necesitas.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 9,\n      \"score_memorability\": 8,\n      \"score_mobile\": 9,\n      \"why\": \"Es una versión más concisa y directa del headline actual, manteniendo la idea central de derechos, claridad y protección en dos líneas impactantes. El subtítulo refuerza el valor de respaldo de forma sencilla y humana.\"\n    },\n    {\n      \"id\": \"b\",\n      \"headline\": \"Entiende y protege tus derechos laborales.\",\n      \"subheadline\": \"Con AuditaPatron, tus documentos hablan por ti.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 9,\n      \"score_memorability\": 9,\n      \"score_mobile\": 9,\n      \"why\": \"Este headline es activo y empoderador, invitando al trabajador a tomar el control. Conecta directamente la acción de entender y proteger con sus derechos, y el subtítulo humaniza la función de los documentos.\"\n    },\n    {\n      \"id\": \"c\",\n      \"headline\": \"Tu respaldo laboral, claro y seguro.\",\n      \"subheadline\": \"Revisa tus documentos y protege tu futuro.\",\n      \"score_clarity\": 8,\n      \"score_trust\": 8,\n      \"score_memorability\": 7,\n      \"score_mobile\": 9,\n      \"why\": \"Se enfoca en el beneficio de tener un respaldo sólido y la seguridad que esto conlleva, sin usar explícitamente la palabra 'derechos' en el título, pero implicándola fuertemente en el subtítulo con 'protege tu futuro'.\"\n    },\n    {\n      \"id\": \"d\",\n      \"headline\": \"Derechos laborales: tu claridad, tu fuerza.\",\n      \"subheadline\": \"AuditaPatron te ayuda a entender y defender lo tuyo.\",\n      \"score_clarity\": 9,\n      \"score_trust\": 9,\n      \"score_memorability\": 9,\n      \"score_mobile\": 9,\n      \"why\": \"Este headline es muy empático y empoderador, conectando los derechos laborales con la claridad y la fuerza personal del trabajador. El subtítulo refuerza la acción de entender y defender de manera cercana y protectora.\"\n    },\n    {\n      \"id\": \"e\",\n      \"headline\": \"Claridad en tus documentos laborales.\",\n      \"subheadline\": \"Empieza a proteger lo tuyo hoy mismo.\",\n      \"score_clarity\": 8,\n      \"score_trust\": 8,\n      \"score_memorability\": 7,\n      \"score_mobile\": 9,\n      \"why\": \"Es un headline muy directo sobre el beneficio principal de claridad en los documentos, con un subtítulo que invita a la acción inmediata y sugiere protección de intereses personales, implicando los derechos sin mencionarlos explícitamente.\"\n    }\n  ],\n  \"recommended_candidate_id\": \"d\",\n  \"recommended_why\": \"El candidato 'd' ('Derechos laborales: tu claridad, tu fuerza.') es el más potente porque no solo menciona los derechos, sino que los asocia directamente con resultados tangenciales y muy valorados por el público objetivo: 'claridad' (el objetivo principal del producto) y 'fuerza' (el empoderamiento y protección que busca el trabajador). Esta conexión es muy humana, memorable y resuena con la necesidad de empatía y protección en el contexto mexicano, sin sonar legalista. Es corto, impactante y se lee excelente en móvil.\",\n  \"rights_language_assessment\": {\n    \"should_include_rights\": true,\n    \"why\": \"Sí, es altamente conveniente incluir la idea de derechos laborales en el headline principal. En México, el lenguaje de defensa de derechos laborales genera una fuerte empatía, cercanía y sentido de protección en los trabajadores no expertos. Les indica de inmediato que la plataforma está de su lado, ayudándoles a entender y proteger algo que les pertenece y que a menudo sienten vulnerable. Esto construye confianza y relevancia desde la primera impresión.\"\n  },\n  \"microcopy_adjustments\": {\n    \"header_primary_cta\": \"Audita tus documentos\",\n    \"header_secondary_cta\": \"Revisa tu expediente\",\n    \"hero_supporting_badge\": \"Para trabajadores, sin lenguaje complicado\"\n  },\n  \"final_advice\": \"El nuevo headline debe ser la punta de lanza de la comunicación. Asegúrate de que el resto del microcopy y el tono de la interfaz refuercen este mensaje de claridad, protección y empoderamiento. La consistencia en el lenguaje humano y no técnico es clave para mantener la confianza del usuario en cada paso del proceso de auditoría.\"\n}",
+      "parsed": {
+        "current_headline_assessment": {
+          "score": 7,
+          "what_works": "El headline actual comunica directamente la idea de 'derechos laborales' y los beneficios clave de 'claros, protegidos y mejor respaldados'. Utiliza un lenguaje positivo y enfocado en el usuario, lo cual genera confianza. La mención de 'derechos laborales' es estratégica para el público mexicano.",
+          "what_fails": "Aunque es bueno, la frase 'claros, protegidos y mejor respaldados' puede sentirse un poco larga y pasiva. 'Mejor respaldados' es un poco genérico. En móvil, podría extenderse a más de 2-3 líneas dependiendo del tamaño de fuente, perdiendo impacto inmediato. Podría ser más activo y empoderador."
+        },
+        "candidates": [
+          {
+            "id": "a",
+            "headline": "Tus derechos laborales: claros, protegidos.",
+            "subheadline": "AuditaPatron te da la claridad y el respaldo que necesitas.",
+            "score_clarity": 9,
+            "score_trust": 9,
+            "score_memorability": 8,
+            "score_mobile": 9,
+            "why": "Es una versión más concisa y directa del headline actual, manteniendo la idea central de derechos, claridad y protección en dos líneas impactantes. El subtítulo refuerza el valor de respaldo de forma sencilla y humana."
+          },
+          {
+            "id": "b",
+            "headline": "Entiende y protege tus derechos laborales.",
+            "subheadline": "Con AuditaPatron, tus documentos hablan por ti.",
+            "score_clarity": 9,
+            "score_trust": 9,
+            "score_memorability": 9,
+            "score_mobile": 9,
+            "why": "Este headline es activo y empoderador, invitando al trabajador a tomar el control. Conecta directamente la acción de entender y proteger con sus derechos, y el subtítulo humaniza la función de los documentos."
+          },
+          {
+            "id": "c",
+            "headline": "Tu respaldo laboral, claro y seguro.",
+            "subheadline": "Revisa tus documentos y protege tu futuro.",
+            "score_clarity": 8,
+            "score_trust": 8,
+            "score_memorability": 7,
+            "score_mobile": 9,
+            "why": "Se enfoca en el beneficio de tener un respaldo sólido y la seguridad que esto conlleva, sin usar explícitamente la palabra 'derechos' en el título, pero implicándola fuertemente en el subtítulo con 'protege tu futuro'."
+          },
+          {
+            "id": "d",
+            "headline": "Derechos laborales: tu claridad, tu fuerza.",
+            "subheadline": "AuditaPatron te ayuda a entender y defender lo tuyo.",
+            "score_clarity": 9,
+            "score_trust": 9,
+            "score_memorability": 9,
+            "score_mobile": 9,
+            "why": "Este headline es muy empático y empoderador, conectando los derechos laborales con la claridad y la fuerza personal del trabajador. El subtítulo refuerza la acción de entender y defender de manera cercana y protectora."
+          },
+          {
+            "id": "e",
+            "headline": "Claridad en tus documentos laborales.",
+            "subheadline": "Empieza a proteger lo tuyo hoy mismo.",
+            "score_clarity": 8,
+            "score_trust": 8,
+            "score_memorability": 7,
+            "score_mobile": 9,
+            "why": "Es un headline muy directo sobre el beneficio principal de claridad en los documentos, con un subtítulo que invita a la acción inmediata y sugiere protección de intereses personales, implicando los derechos sin mencionarlos explícitamente."
+          }
+        ],
+        "recommended_candidate_id": "d",
+        "recommended_why": "El candidato 'd' ('Derechos laborales: tu claridad, tu fuerza.') es el más potente porque no solo menciona los derechos, sino que los asocia directamente con resultados tangenciales y muy valorados por el público objetivo: 'claridad' (el objetivo principal del producto) y 'fuerza' (el empoderamiento y protección que busca el trabajador). Esta conexión es muy humana, memorable y resuena con la necesidad de empatía y protección en el contexto mexicano, sin sonar legalista. Es corto, impactante y se lee excelente en móvil.",
+        "rights_language_assessment": {
+          "should_include_rights": true,
+          "why": "Sí, es altamente conveniente incluir la idea de derechos laborales en el headline principal. En México, el lenguaje de defensa de derechos laborales genera una fuerte empatía, cercanía y sentido de protección en los trabajadores no expertos. Les indica de inmediato que la plataforma está de su lado, ayudándoles a entender y proteger algo que les pertenece y que a menudo sienten vulnerable. Esto construye confianza y relevancia desde la primera impresión."
+        },
+        "microcopy_adjustments": {
+          "header_primary_cta": "Audita tus documentos",
+          "header_secondary_cta": "Revisa tu expediente",
+          "hero_supporting_badge": "Para trabajadores, sin lenguaje complicado"
+        },
+        "final_advice": "El nuevo headline debe ser la punta de lanza de la comunicación. Asegúrate de que el resto del microcopy y el tono de la interfaz refuercen este mensaje de claridad, protección y empoderamiento. La consistencia en el lenguaje humano y no técnico es clave para mantener la confianza del usuario en cada paso del proceso de auditoría."
+      }
+    }
+  ],
+  "recommended_candidate_vote_count": {
+    "a": 2,
+    "d": 1
+  }
+}

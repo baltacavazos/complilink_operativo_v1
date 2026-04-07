@@ -1,0 +1,453 @@
+{
+  "generated_at": "2026-04-07T05:05:42.513Z",
+  "screenshot_path": "/home/ubuntu/screenshots/webdev-preview-1775537898.png",
+  "canonical_strengths": [
+    "hero_claro",
+    "lenguaje_humano",
+    "cta_visible",
+    "confianza_visual",
+    "propuesta_facil",
+    "progreso_entendible",
+    "mobile_direction",
+    "identidad_amable"
+  ],
+  "canonical_issues": [
+    "header_saturado",
+    "hero_desbalanceado",
+    "cta_duplicado_o_confuso",
+    "progreso_compite_con_hero",
+    "tarjetas_densas",
+    "contraste_suave",
+    "scroll_extenso",
+    "prueba_social_ausente",
+    "jerarquia_irregular",
+    "microcopy_extenso",
+    "mobile_no_suficientemente_puro",
+    "falta_microinteracciones"
+  ],
+  "canonical_changes": [
+    "simplificar_header",
+    "reforzar_cta_principal",
+    "compactar_tarjetas_laterales",
+    "mejorar_ritmo_tipografico",
+    "suavizar_texto_secundario",
+    "dar_mas_aire_al_hero",
+    "fortalecer_prueba_social_o_confianza",
+    "hacer_mobile_mas_pulgar_amigable",
+    "reducir_ruido_visual",
+    "mejorar_estados_y_microfeedback"
+  ],
+  "results": [
+    {
+      "model": "chatgpt",
+      "raw": "{\n  \"overall_score\": 7,\n  \"strength_ids\": [\n    \"hero_claro\",\n    \"lenguaje_humano\",\n    \"cta_visible\",\n    \"confianza_visual\",\n    \"propuesta_facil\"\n  ],\n  \"strength_notes\": [\n    {\n      \"id\": \"hero_claro\",\n      \"why\": \"El encabezado principal comunica claramente la propuesta de valor con un mensaje directo y bien jerarquizado, usando un lenguaje sencillo y accesible.\"\n    },\n    {\n      \"id\": \"lenguaje_humano\",\n      \"why\": \"El copy evita tecnicismos, usa frases cotidianas y explicaciones amigables que facilitan la comprensión para usuarios no expertos.\"\n    },\n    {\n      \"id\": \"cta_visible\",\n      \"why\": \"Los botones principales para auditar y conocer la privacidad están bien destacados y accesibles, con buen contraste y texto claro.\"\n    },\n    {\n      \"id\": \"confianza_visual\",\n      \"why\": \"El diseño usa colores suaves, iconografía amigable y espacios que transmiten seguridad y profesionalismo sin intimidar.\"\n    },\n    {\n      \"id\": \"propuesta_facil\",\n      \"why\": \"La propuesta se presenta como fácil y sin complicaciones, con mensajes que invitan a la acción sin generar ansiedad.\"\n    }\n  ],\n  \"issue_ids\": [\n    \"header_saturado\",\n    \"hero_desbalanceado\",\n    \"progreso_compite_con_hero\",\n    \"tarjetas_densas\",\n    \"mobile_no_suficientemente_puro\"\n  ],\n  \"issue_notes\": [\n    {\n      \"id\": \"header_saturado\",\n      \"why\": \"El header tiene demasiados elementos y enlaces, lo que puede saturar la experiencia especialmente en móvil y distraer del CTA principal.\"\n    },\n    {\n      \"id\": \"hero_desbalanceado\",\n      \"why\": \"El hero está muy cargado a la izquierda con mucho texto y el panel de progreso a la derecha compite visualmente, generando desequilibrio.\"\n    },\n    {\n      \"id\": \"progreso_compite_con_hero\",\n      \"why\": \"El bloque de progreso y pasos en la derecha tiene peso visual similar al hero, lo que puede dispersar la atención y restar foco al mensaje principal.\"\n    },\n    {\n      \"id\": \"tarjetas_densas\",\n      \"why\": \"Los bloques informativos y pasos tienen texto muy condensado y poco espacio, lo que dificulta la lectura rápida y la experiencia amable.\"\n    },\n    {\n      \"id\": \"mobile_no_suficientemente_puro\",\n      \"why\": \"Aunque el diseño es responsive, la cantidad de elementos y la densidad de texto no favorecen una experiencia móvil realmente limpia y enfocada.\"\n    }\n  ],\n  \"priority_change_ids\": [\n    \"simplificar_header\",\n    \"dar_mas_aire_al_hero\",\n    \"compactar_tarjetas_laterales\",\n    \"mejorar_ritmo_tipografico\",\n    \"hacer_mobile_mas_pulgar_amigable\"\n  ],\n  \"priority_change_notes\": [\n    {\n      \"id\": \"simplificar_header\",\n      \"why\": \"Reducir la cantidad de enlaces visibles y opciones en el header para evitar saturación y mejorar foco en móvil y desktop.\",\n      \"implementation_hint\": \"Agrupar enlaces secundarios en menú hamburguesa o menú desplegable, priorizar solo 1-2 CTAs visibles.\"\n    },\n    {\n      \"id\": \"dar_mas_aire_al_hero\",\n      \"why\": \"Separar más el texto del hero y el bloque de progreso para evitar competencia visual y mejorar claridad.\",\n      \"implementation_hint\": \"Incrementar márgenes y usar un layout que permita que el hero respire sin elementos que compitan en la misma línea.\"\n    },\n    {\n      \"id\": \"compactar_tarjetas_laterales\",\n      \"why\": \"Reducir la densidad de texto en las tarjetas de progreso y pasos para facilitar lectura rápida y experiencia amable.\",\n      \"implementation_hint\": \"Usar bullets más cortos, aumentar espacios internos y considerar iconos o indicadores visuales para simplificar.\"\n    },\n    {\n      \"id\": \"mejorar_ritmo_tipografico\",\n      \"why\": \"El texto secundario en hero y tarjetas es muy denso y con poco interlineado, lo que dificulta la lectura fluida.\",\n      \"implementation_hint\": \"Aumentar line-height, usar párrafos más cortos y jerarquizar mejor con pesos y tamaños variables.\"\n    },\n    {\n      \"id\": \"hacer_mobile_mas_pulgar_amigable\",\n      \"why\": \"La experiencia móvil puede sentirse apretada y con demasiados elementos visibles simultáneamente, lo que complica la navegación con una mano.\",\n      \"implementation_hint\": \"Optimizar tamaños de botones, reducir elementos visibles y priorizar scroll vertical simple con menos distracciones.\"\n    }\n  ],\n  \"mobile_readiness_score\": 6,\n  \"app_readiness_score\": 7,\n  \"final_verdict\": \"La interfaz actual es sólida en claridad, lenguaje y confianza, pero requiere ajustes importantes en simplificación visual, ritmo tipográfico y experiencia móvil para ser realmente amable y enfocada. El diseño está bien encaminado para app futura, pero debe pulirse para evitar saturación y competencia visual.\",\n  \"one_sentence_consensus_proposal\": \"Simplificar el header, dar más espacio y ritmo al hero, compactar y aligerar las tarjetas laterales, y optimizar la experiencia móvil para lograr una interfaz clara, confiable y realmente amigable para usuarios laborales no técnicos.\"\n}",
+      "parsed": {
+        "overall_score": 7,
+        "strength_ids": [
+          "hero_claro",
+          "lenguaje_humano",
+          "cta_visible",
+          "confianza_visual",
+          "propuesta_facil"
+        ],
+        "strength_notes": [
+          {
+            "id": "hero_claro",
+            "why": "El encabezado principal comunica claramente la propuesta de valor con un mensaje directo y bien jerarquizado, usando un lenguaje sencillo y accesible."
+          },
+          {
+            "id": "lenguaje_humano",
+            "why": "El copy evita tecnicismos, usa frases cotidianas y explicaciones amigables que facilitan la comprensión para usuarios no expertos."
+          },
+          {
+            "id": "cta_visible",
+            "why": "Los botones principales para auditar y conocer la privacidad están bien destacados y accesibles, con buen contraste y texto claro."
+          },
+          {
+            "id": "confianza_visual",
+            "why": "El diseño usa colores suaves, iconografía amigable y espacios que transmiten seguridad y profesionalismo sin intimidar."
+          },
+          {
+            "id": "propuesta_facil",
+            "why": "La propuesta se presenta como fácil y sin complicaciones, con mensajes que invitan a la acción sin generar ansiedad."
+          }
+        ],
+        "issue_ids": [
+          "header_saturado",
+          "hero_desbalanceado",
+          "progreso_compite_con_hero",
+          "tarjetas_densas",
+          "mobile_no_suficientemente_puro"
+        ],
+        "issue_notes": [
+          {
+            "id": "header_saturado",
+            "why": "El header tiene demasiados elementos y enlaces, lo que puede saturar la experiencia especialmente en móvil y distraer del CTA principal."
+          },
+          {
+            "id": "hero_desbalanceado",
+            "why": "El hero está muy cargado a la izquierda con mucho texto y el panel de progreso a la derecha compite visualmente, generando desequilibrio."
+          },
+          {
+            "id": "progreso_compite_con_hero",
+            "why": "El bloque de progreso y pasos en la derecha tiene peso visual similar al hero, lo que puede dispersar la atención y restar foco al mensaje principal."
+          },
+          {
+            "id": "tarjetas_densas",
+            "why": "Los bloques informativos y pasos tienen texto muy condensado y poco espacio, lo que dificulta la lectura rápida y la experiencia amable."
+          },
+          {
+            "id": "mobile_no_suficientemente_puro",
+            "why": "Aunque el diseño es responsive, la cantidad de elementos y la densidad de texto no favorecen una experiencia móvil realmente limpia y enfocada."
+          }
+        ],
+        "priority_change_ids": [
+          "simplificar_header",
+          "dar_mas_aire_al_hero",
+          "compactar_tarjetas_laterales",
+          "mejorar_ritmo_tipografico",
+          "hacer_mobile_mas_pulgar_amigable"
+        ],
+        "priority_change_notes": [
+          {
+            "id": "simplificar_header",
+            "why": "Reducir la cantidad de enlaces visibles y opciones en el header para evitar saturación y mejorar foco en móvil y desktop.",
+            "implementation_hint": "Agrupar enlaces secundarios en menú hamburguesa o menú desplegable, priorizar solo 1-2 CTAs visibles."
+          },
+          {
+            "id": "dar_mas_aire_al_hero",
+            "why": "Separar más el texto del hero y el bloque de progreso para evitar competencia visual y mejorar claridad.",
+            "implementation_hint": "Incrementar márgenes y usar un layout que permita que el hero respire sin elementos que compitan en la misma línea."
+          },
+          {
+            "id": "compactar_tarjetas_laterales",
+            "why": "Reducir la densidad de texto en las tarjetas de progreso y pasos para facilitar lectura rápida y experiencia amable.",
+            "implementation_hint": "Usar bullets más cortos, aumentar espacios internos y considerar iconos o indicadores visuales para simplificar."
+          },
+          {
+            "id": "mejorar_ritmo_tipografico",
+            "why": "El texto secundario en hero y tarjetas es muy denso y con poco interlineado, lo que dificulta la lectura fluida.",
+            "implementation_hint": "Aumentar line-height, usar párrafos más cortos y jerarquizar mejor con pesos y tamaños variables."
+          },
+          {
+            "id": "hacer_mobile_mas_pulgar_amigable",
+            "why": "La experiencia móvil puede sentirse apretada y con demasiados elementos visibles simultáneamente, lo que complica la navegación con una mano.",
+            "implementation_hint": "Optimizar tamaños de botones, reducir elementos visibles y priorizar scroll vertical simple con menos distracciones."
+          }
+        ],
+        "mobile_readiness_score": 6,
+        "app_readiness_score": 7,
+        "final_verdict": "La interfaz actual es sólida en claridad, lenguaje y confianza, pero requiere ajustes importantes en simplificación visual, ritmo tipográfico y experiencia móvil para ser realmente amable y enfocada. El diseño está bien encaminado para app futura, pero debe pulirse para evitar saturación y competencia visual.",
+        "one_sentence_consensus_proposal": "Simplificar el header, dar más espacio y ritmo al hero, compactar y aligerar las tarjetas laterales, y optimizar la experiencia móvil para lograr una interfaz clara, confiable y realmente amigable para usuarios laborales no técnicos."
+      }
+    },
+    {
+      "model": "grok",
+      "raw": "{\n  \"overall_score\": 8,\n  \"strength_ids\": [\"hero_claro\", \"lenguaje_humano\", \"cta_visible\", \"confianza_visual\", \"identidad_amable\"],\n  \"strength_notes\": [\n    {\"id\": \"hero_claro\", \"why\": \"El hero comunica la propuesta de valor de forma directa y sin complicaciones, alineado con la meta de claridad laboral.\"},\n    {\"id\": \"lenguaje_humano\", \"why\": \"El copy usa palabras cotidianas y evita tecnicismos, haciendo que el contenido sea accesible para trabajadores no expertos.\"},\n    {\"id\": \"cta_visible\", \"why\": \"Los botones de acción como 'Auditar mis documentos' son prominentes y fáciles de encontrar, impulsando la conversión.\"},\n    {\"id\": \"confianza_visual\", \"why\": \"Elementos como el ícono de escudo y las etiquetas de confidencialidad transmiten seguridad y protección de manera efectiva.\"},\n    {\"id\": \"identidad_amable\", \"why\": \"El tono general es protector y amigable, con un diseño que invita a la interacción sin intimidar al usuario.\"}\n  ],\n  \"issue_ids\": [\"hero_desbalanceado\", \"progreso_compite_con_hero\", \"tarjetas_densas\", \"jerarquia_irregular\", \"mobile_no_suficientemente_puro\"],\n  \"issue_notes\": [\n    {\"id\": \"hero_desbalanceado\", \"why\": \"El lado derecho con el portafolio y progreso ocupa demasiado espacio, desequilibrando el hero y restando foco al mensaje principal.\"},\n    {\"id\": \"progreso_compite_con_hero\", \"why\": \"El indicador de progreso en el hero compite visualmente con el título y la descripción, diluyendo la atención inicial.\"},\n    {\"id\": \"tarjetas_densas\", \"why\": \"Las tarjetas o secciones como el portafolio tienen texto denso que podría abrumar en pantallas pequeñas.\"},\n    {\"id\": \"jerarquia_irregular\", \"why\": \"La jerarquía tipográfica no es consistente, con subtítulos que no destacan lo suficiente frente al texto secundario.\"},\n    {\"id\": \"mobile_no_suficientemente_puro\", \"why\": \"Aunque mobile-first, el layout no optimiza completamente el espacio vertical, con elementos que podrían requerir zoom o scroll innecesario.\"}\n  ],\n  \"priority_change_ids\": [\"simplificar_header\", \"reforzar_cta_principal\", \"dar_mas_aire_al_hero\", \"hacer_mobile_mas_pulgar_amigable\", \"reducir_ruido_visual\"],\n  \"priority_change_notes\": [\n    {\"id\": \"simplificar_header\", \"why\": \"El header tiene muchos enlaces y botones que saturan la vista inicial, especialmente en mobile.\", \"implementation_hint\": \"Reducir enlaces a un menú hamburguesa y priorizar solo el CTA principal en la barra superior.\"},\n    {\"id\": \"reforzar_cta_principal\", \"why\": \"Los CTAs son visibles pero podrían confundirse con otros elementos, diluyendo su impacto.\", \"implementation_hint\": \"Hacer el botón 'Auditar mis documentos' más grande y con mayor contraste, eliminando duplicados en el hero.\"},\n    {\"id\": \"dar_mas_aire_al_hero\", \"why\": \"El hero se siente apretado con el panel de progreso, reduciendo la claridad y el impacto visual.\", \"implementation_hint\": \"Aumentar padding y espacio blanco alrededor del título, moviendo el progreso a una sección inferior o modal.\"},\n    {\"id\": \"hacer_mobile_mas_pulgar_amigable\", \"why\": \"Elementos como botones y tarjetas no están optimizados para toques fáciles en mobile.\", \"implementation_hint\": \"Aumentar tamaños de touch targets a al menos 48px y asegurar que todo sea accesible sin pinchar.\"},\n    {\"id\": \"reducir_ruido_visual\", \"why\": \"Hay gradientes y elementos decorativos que distraen del contenido principal.\", \"implementation_hint\": \"Simplificar fondos y usar colores más neutros, reservando acentos solo para CTAs y alertas clave.\"}\n  ],\n  \"mobile_readiness_score\": 7,\n  \"app_readiness_score\": 6,\n  \"final_verdict\": \"La interfaz destaca en claridad y confianza, pero requiere pulido en balance visual y optimización mobile para una experiencia más fluida y lista para app.\",\n  \"one_sentence_consensus_proposal\": \"Balancear el hero reduciendo competencia visual y simplificando el header para una navegación mobile más intuitiva y preparada para apps nativas.\"\n}",
+      "parsed": {
+        "overall_score": 8,
+        "strength_ids": [
+          "hero_claro",
+          "lenguaje_humano",
+          "cta_visible",
+          "confianza_visual",
+          "identidad_amable"
+        ],
+        "strength_notes": [
+          {
+            "id": "hero_claro",
+            "why": "El hero comunica la propuesta de valor de forma directa y sin complicaciones, alineado con la meta de claridad laboral."
+          },
+          {
+            "id": "lenguaje_humano",
+            "why": "El copy usa palabras cotidianas y evita tecnicismos, haciendo que el contenido sea accesible para trabajadores no expertos."
+          },
+          {
+            "id": "cta_visible",
+            "why": "Los botones de acción como 'Auditar mis documentos' son prominentes y fáciles de encontrar, impulsando la conversión."
+          },
+          {
+            "id": "confianza_visual",
+            "why": "Elementos como el ícono de escudo y las etiquetas de confidencialidad transmiten seguridad y protección de manera efectiva."
+          },
+          {
+            "id": "identidad_amable",
+            "why": "El tono general es protector y amigable, con un diseño que invita a la interacción sin intimidar al usuario."
+          }
+        ],
+        "issue_ids": [
+          "hero_desbalanceado",
+          "progreso_compite_con_hero",
+          "tarjetas_densas",
+          "jerarquia_irregular",
+          "mobile_no_suficientemente_puro"
+        ],
+        "issue_notes": [
+          {
+            "id": "hero_desbalanceado",
+            "why": "El lado derecho con el portafolio y progreso ocupa demasiado espacio, desequilibrando el hero y restando foco al mensaje principal."
+          },
+          {
+            "id": "progreso_compite_con_hero",
+            "why": "El indicador de progreso en el hero compite visualmente con el título y la descripción, diluyendo la atención inicial."
+          },
+          {
+            "id": "tarjetas_densas",
+            "why": "Las tarjetas o secciones como el portafolio tienen texto denso que podría abrumar en pantallas pequeñas."
+          },
+          {
+            "id": "jerarquia_irregular",
+            "why": "La jerarquía tipográfica no es consistente, con subtítulos que no destacan lo suficiente frente al texto secundario."
+          },
+          {
+            "id": "mobile_no_suficientemente_puro",
+            "why": "Aunque mobile-first, el layout no optimiza completamente el espacio vertical, con elementos que podrían requerir zoom o scroll innecesario."
+          }
+        ],
+        "priority_change_ids": [
+          "simplificar_header",
+          "reforzar_cta_principal",
+          "dar_mas_aire_al_hero",
+          "hacer_mobile_mas_pulgar_amigable",
+          "reducir_ruido_visual"
+        ],
+        "priority_change_notes": [
+          {
+            "id": "simplificar_header",
+            "why": "El header tiene muchos enlaces y botones que saturan la vista inicial, especialmente en mobile.",
+            "implementation_hint": "Reducir enlaces a un menú hamburguesa y priorizar solo el CTA principal en la barra superior."
+          },
+          {
+            "id": "reforzar_cta_principal",
+            "why": "Los CTAs son visibles pero podrían confundirse con otros elementos, diluyendo su impacto.",
+            "implementation_hint": "Hacer el botón 'Auditar mis documentos' más grande y con mayor contraste, eliminando duplicados en el hero."
+          },
+          {
+            "id": "dar_mas_aire_al_hero",
+            "why": "El hero se siente apretado con el panel de progreso, reduciendo la claridad y el impacto visual.",
+            "implementation_hint": "Aumentar padding y espacio blanco alrededor del título, moviendo el progreso a una sección inferior o modal."
+          },
+          {
+            "id": "hacer_mobile_mas_pulgar_amigable",
+            "why": "Elementos como botones y tarjetas no están optimizados para toques fáciles en mobile.",
+            "implementation_hint": "Aumentar tamaños de touch targets a al menos 48px y asegurar que todo sea accesible sin pinchar."
+          },
+          {
+            "id": "reducir_ruido_visual",
+            "why": "Hay gradientes y elementos decorativos que distraen del contenido principal.",
+            "implementation_hint": "Simplificar fondos y usar colores más neutros, reservando acentos solo para CTAs y alertas clave."
+          }
+        ],
+        "mobile_readiness_score": 7,
+        "app_readiness_score": 6,
+        "final_verdict": "La interfaz destaca en claridad y confianza, pero requiere pulido en balance visual y optimización mobile para una experiencia más fluida y lista para app.",
+        "one_sentence_consensus_proposal": "Balancear el hero reduciendo competencia visual y simplificando el header para una navegación mobile más intuitiva y preparada para apps nativas."
+      }
+    },
+    {
+      "model": "gemini",
+      "raw": "{\n  \"overall_score\": 8,\n  \"strength_ids\": [\n    \"hero_claro\",\n    \"lenguaje_humano\",\n    \"identidad_amable\",\n    \"propuesta_facil\",\n    \"mobile_direction\"\n  ],\n  \"strength_notes\": [\n    {\n      \"id\": \"hero_claro\",\n      \"why\": \"El titular principal y el subtítulo del hero son extremadamente claros, concisos y potentes, comunicando de inmediato el valor central de Auditapatron.\"\n    },\n    {\n      \"id\": \"lenguaje_humano\",\n      \"why\": \"El copy en todos los extractos (Home.tsx y Auditar.tsx) es consistentemente no técnico, empático y fácil de entender, cumpliendo perfectamente con la meta de claridad laboral para trabajadores.\"\n    },\n    {\n      \"id\": \"identidad_amable\",\n      \"why\": \"El tono general es protector, constructivo y amigable, lo que genera confianza y hace que el usuario se sienta acompañado, no intimidado, un pilar clave de la meta.\"\n    },\n    {\n      \"id\": \"propuesta_facil\",\n      \"why\": \"La propuesta de valor de subir documentos para obtener claridad y fortalecer un expediente es muy fácil de comprender desde el primer vistazo y a lo largo de los pasos descritos.\"\n    },\n    {\n      \"id\": \"mobile_direction\",\n      \"why\": \"El código muestra una clara intención mobile-first con el uso de clases responsivas (md:hidden, sm:) y la mención explícita de 'Hecho para celular' en el hero, lo cual es fundamental para el objetivo.\"\n    }\n  ],\n  \"issue_ids\": [\n    \"hero_desbalanceado\",\n    \"cta_duplicado_o_confuso\",\n    \"progreso_compite_con_hero\",\n    \"microcopy_extenso\",\n    \"scroll_extenso\"\n  ],\n  \"issue_notes\": [\n    {\n      \"id\": \"hero_desbalanceado\",\n      \"why\": \"El panel lateral derecho en la sección hero, aunque informativo, introduce demasiada información visual y compite con el mensaje principal, desequilibrando la composición.\"\n    },\n    {\n      \"id\": \"cta_duplicado_o_confuso\",\n      \"why\": \"El CTA principal 'Auditar mis documentos' se repite en el header y en el hero. Además, 'Ver tu expediente' en el header y 'Entender mi expediente' en el menú móvil son similares pero no idénticos, lo que puede generar una ligera confusión.\"\n    },\n    {\n      \"id\": \"progreso_compite_con_hero\",\n      \"why\": \"La barra de 'Claridad acumulada' y los pasos numerados en el panel derecho del hero, aunque útiles, distraen la atención del mensaje central y la acción principal que se busca promover.\"\n    },\n    {\n      \"id\": \"microcopy_extenso\",\n      \"why\": \"Algunas descripciones, especialmente en el panel lateral del hero y en las tarjetas de información, son un poco extensas para una lectura rápida, lo que podría abrumar al usuario en un primer contacto.\"\n    },\n    {\n      \"id\": \"scroll_extenso\",\n      \"why\": \"La cantidad de secciones de contenido (tour, checks, benefits, dossier, findings, FAQs) sugiere una página de inicio muy larga, lo que podría resultar en un scroll excesivo y fatiga en dispositivos móviles.\"\n    }\n  ],\n  \"priority_change_ids\": [\n    \"dar_mas_aire_al_hero\",\n    \"reforzar_cta_principal\",\n    \"compactar_tarjetas_laterales\",\n    \"mejorar_ritmo_tipografico\",\n    \"hacer_mobile_mas_pulgar_amigable\"\n  ],\n  \"priority_change_notes\": [\n    {\n      \"id\": \"dar_mas_aire_al_hero\",\n      \"why\": \"El hero necesita más espacio para respirar. El panel lateral derecho debería simplificarse drásticamente o reubicarse debajo del fold para que el titular y los CTAs principales sean el foco indiscutible.\",\n      \"implementation_hint\": \"Considerar mover el panel derecho a una sección posterior o reducirlo a un solo elemento visual clave con un CTA secundario.\"\n    },\n    {\n      \"id\": \"reforzar_cta_principal\",\n      \"why\": \"Es crucial tener un único CTA principal que guíe al usuario. La duplicidad y la similitud de los CTAs secundarios pueden diluir la acción deseada.\",\n      \"implementation_hint\": \"Mantener 'Auditar mis documentos' como el CTA principal y único en el header y hero. Renombrar y diferenciar claramente los CTAs secundarios como 'Conoce más' o 'Ver detalles del expediente'.\"\n    },\n    {\n      \"id\": \"compactar_tarjetas_laterales\",\n      \"why\": \"La densidad de texto en las tarjetas y paneles laterales puede ser abrumadora. Se necesita una presentación más concisa y visualmente ligera.\",\n      \"implementation_hint\": \"Utilizar más iconos, menos texto en viñetas o resúmenes muy breves, y quizás un diseño de carrusel o acordeón para la información secundaria en móvil.\"\n    },\n    {\n      \"id\": \"mejorar_ritmo_tipografico\",\n      \"why\": \"Ajustar la tipografía para mejorar la legibilidad y el escaneo rápido, especialmente en los bloques de texto más largos.\",\n      \"implementation_hint\": \"Revisar el tamaño de fuente, interlineado y espaciado entre párrafos para crear una jerarquía visual más clara y reducir la percepción de densidad.\"\n    },\n    {\n      \"id\": \"hacer_mobile_mas_pulgar_amigable\",\n      \"why\": \"Aunque hay una dirección mobile-first, la extensión de la página y la densidad de algunos elementos podrían dificultar la interacción con el pulgar en móvil.\",\n      \"implementation_hint\": \"Priorizar la accesibilidad de los elementos interactivos clave en la parte inferior de la pantalla, reducir la longitud de la página y asegurar que los targets de toque sean generosos.\"\n    }\n  ],\n  \"mobile_readiness_score\": 8,\n  \"app_readiness_score\": 9,\n  \"final_verdict\": \"Auditapatron tiene una base excepcionalmente sólida con una propuesta de valor clara, un lenguaje humano y un tono de confianza que resuenan con su público objetivo. La estructura de contenido y la lógica de los flujos son excelentes para una futura aplicación. Sin embargo, la interfaz actual del hero y la densidad de información podrían beneficiarse de una simplificación visual y una mejor jerarquía para maximizar el impacto y la usabilidad, especialmente en dispositivos móviles.\",\n  \"one_sentence_consensus_proposal\": \"Simplificar el hero, consolidar los CTAs y optimizar la densidad de información para una experiencia móvil más fluida y un enfoque más nítido en la acción principal.\"\n}",
+      "parsed": {
+        "overall_score": 8,
+        "strength_ids": [
+          "hero_claro",
+          "lenguaje_humano",
+          "identidad_amable",
+          "propuesta_facil",
+          "mobile_direction"
+        ],
+        "strength_notes": [
+          {
+            "id": "hero_claro",
+            "why": "El titular principal y el subtítulo del hero son extremadamente claros, concisos y potentes, comunicando de inmediato el valor central de Auditapatron."
+          },
+          {
+            "id": "lenguaje_humano",
+            "why": "El copy en todos los extractos (Home.tsx y Auditar.tsx) es consistentemente no técnico, empático y fácil de entender, cumpliendo perfectamente con la meta de claridad laboral para trabajadores."
+          },
+          {
+            "id": "identidad_amable",
+            "why": "El tono general es protector, constructivo y amigable, lo que genera confianza y hace que el usuario se sienta acompañado, no intimidado, un pilar clave de la meta."
+          },
+          {
+            "id": "propuesta_facil",
+            "why": "La propuesta de valor de subir documentos para obtener claridad y fortalecer un expediente es muy fácil de comprender desde el primer vistazo y a lo largo de los pasos descritos."
+          },
+          {
+            "id": "mobile_direction",
+            "why": "El código muestra una clara intención mobile-first con el uso de clases responsivas (md:hidden, sm:) y la mención explícita de 'Hecho para celular' en el hero, lo cual es fundamental para el objetivo."
+          }
+        ],
+        "issue_ids": [
+          "hero_desbalanceado",
+          "cta_duplicado_o_confuso",
+          "progreso_compite_con_hero",
+          "microcopy_extenso",
+          "scroll_extenso"
+        ],
+        "issue_notes": [
+          {
+            "id": "hero_desbalanceado",
+            "why": "El panel lateral derecho en la sección hero, aunque informativo, introduce demasiada información visual y compite con el mensaje principal, desequilibrando la composición."
+          },
+          {
+            "id": "cta_duplicado_o_confuso",
+            "why": "El CTA principal 'Auditar mis documentos' se repite en el header y en el hero. Además, 'Ver tu expediente' en el header y 'Entender mi expediente' en el menú móvil son similares pero no idénticos, lo que puede generar una ligera confusión."
+          },
+          {
+            "id": "progreso_compite_con_hero",
+            "why": "La barra de 'Claridad acumulada' y los pasos numerados en el panel derecho del hero, aunque útiles, distraen la atención del mensaje central y la acción principal que se busca promover."
+          },
+          {
+            "id": "microcopy_extenso",
+            "why": "Algunas descripciones, especialmente en el panel lateral del hero y en las tarjetas de información, son un poco extensas para una lectura rápida, lo que podría abrumar al usuario en un primer contacto."
+          },
+          {
+            "id": "scroll_extenso",
+            "why": "La cantidad de secciones de contenido (tour, checks, benefits, dossier, findings, FAQs) sugiere una página de inicio muy larga, lo que podría resultar en un scroll excesivo y fatiga en dispositivos móviles."
+          }
+        ],
+        "priority_change_ids": [
+          "dar_mas_aire_al_hero",
+          "reforzar_cta_principal",
+          "compactar_tarjetas_laterales",
+          "mejorar_ritmo_tipografico",
+          "hacer_mobile_mas_pulgar_amigable"
+        ],
+        "priority_change_notes": [
+          {
+            "id": "dar_mas_aire_al_hero",
+            "why": "El hero necesita más espacio para respirar. El panel lateral derecho debería simplificarse drásticamente o reubicarse debajo del fold para que el titular y los CTAs principales sean el foco indiscutible.",
+            "implementation_hint": "Considerar mover el panel derecho a una sección posterior o reducirlo a un solo elemento visual clave con un CTA secundario."
+          },
+          {
+            "id": "reforzar_cta_principal",
+            "why": "Es crucial tener un único CTA principal que guíe al usuario. La duplicidad y la similitud de los CTAs secundarios pueden diluir la acción deseada.",
+            "implementation_hint": "Mantener 'Auditar mis documentos' como el CTA principal y único en el header y hero. Renombrar y diferenciar claramente los CTAs secundarios como 'Conoce más' o 'Ver detalles del expediente'."
+          },
+          {
+            "id": "compactar_tarjetas_laterales",
+            "why": "La densidad de texto en las tarjetas y paneles laterales puede ser abrumadora. Se necesita una presentación más concisa y visualmente ligera.",
+            "implementation_hint": "Utilizar más iconos, menos texto en viñetas o resúmenes muy breves, y quizás un diseño de carrusel o acordeón para la información secundaria en móvil."
+          },
+          {
+            "id": "mejorar_ritmo_tipografico",
+            "why": "Ajustar la tipografía para mejorar la legibilidad y el escaneo rápido, especialmente en los bloques de texto más largos.",
+            "implementation_hint": "Revisar el tamaño de fuente, interlineado y espaciado entre párrafos para crear una jerarquía visual más clara y reducir la percepción de densidad."
+          },
+          {
+            "id": "hacer_mobile_mas_pulgar_amigable",
+            "why": "Aunque hay una dirección mobile-first, la extensión de la página y la densidad de algunos elementos podrían dificultar la interacción con el pulgar en móvil.",
+            "implementation_hint": "Priorizar la accesibilidad de los elementos interactivos clave en la parte inferior de la pantalla, reducir la longitud de la página y asegurar que los targets de toque sean generosos."
+          }
+        ],
+        "mobile_readiness_score": 8,
+        "app_readiness_score": 9,
+        "final_verdict": "Auditapatron tiene una base excepcionalmente sólida con una propuesta de valor clara, un lenguaje humano y un tono de confianza que resuenan con su público objetivo. La estructura de contenido y la lógica de los flujos son excelentes para una futura aplicación. Sin embargo, la interfaz actual del hero y la densidad de información podrían beneficiarse de una simplificación visual y una mejor jerarquía para maximizar el impacto y la usabilidad, especialmente en dispositivos móviles.",
+        "one_sentence_consensus_proposal": "Simplificar el hero, consolidar los CTAs y optimizar la densidad de información para una experiencia móvil más fluida y un enfoque más nítido en la acción principal."
+      }
+    }
+  ],
+  "consensus": {
+    "model_count": 3,
+    "strengths_vote_count": {
+      "hero_claro": 3,
+      "lenguaje_humano": 3,
+      "cta_visible": 2,
+      "confianza_visual": 2,
+      "propuesta_facil": 2,
+      "identidad_amable": 2,
+      "mobile_direction": 1
+    },
+    "issues_vote_count": {
+      "hero_desbalanceado": 3,
+      "progreso_compite_con_hero": 3,
+      "tarjetas_densas": 2,
+      "mobile_no_suficientemente_puro": 2,
+      "header_saturado": 1,
+      "jerarquia_irregular": 1,
+      "cta_duplicado_o_confuso": 1,
+      "microcopy_extenso": 1,
+      "scroll_extenso": 1
+    },
+    "priority_changes_vote_count": {
+      "dar_mas_aire_al_hero": 3,
+      "hacer_mobile_mas_pulgar_amigable": 3,
+      "simplificar_header": 2,
+      "compactar_tarjetas_laterales": 2,
+      "mejorar_ritmo_tipografico": 2,
+      "reforzar_cta_principal": 2,
+      "reducir_ruido_visual": 1
+    },
+    "strong_consensus_strengths": [
+      {
+        "id": "hero_claro",
+        "count": 3
+      },
+      {
+        "id": "lenguaje_humano",
+        "count": 3
+      },
+      {
+        "id": "cta_visible",
+        "count": 2
+      },
+      {
+        "id": "confianza_visual",
+        "count": 2
+      },
+      {
+        "id": "propuesta_facil",
+        "count": 2
+      },
+      {
+        "id": "identidad_amable",
+        "count": 2
+      }
+    ],
+    "strong_consensus_issues": [
+      {
+        "id": "hero_desbalanceado",
+        "count": 3
+      },
+      {
+        "id": "progreso_compite_con_hero",
+        "count": 3
+      },
+      {
+        "id": "tarjetas_densas",
+        "count": 2
+      },
+      {
+        "id": "mobile_no_suficientemente_puro",
+        "count": 2
+      }
+    ],
+    "strong_consensus_changes": [
+      {
+        "id": "dar_mas_aire_al_hero",
+        "count": 3
+      },
+      {
+        "id": "hacer_mobile_mas_pulgar_amigable",
+        "count": 3
+      },
+      {
+        "id": "simplificar_header",
+        "count": 2
+      },
+      {
+        "id": "compactar_tarjetas_laterales",
+        "count": 2
+      },
+      {
+        "id": "mejorar_ritmo_tipografico",
+        "count": 2
+      },
+      {
+        "id": "reforzar_cta_principal",
+        "count": 2
+      }
+    ]
+  }
+}

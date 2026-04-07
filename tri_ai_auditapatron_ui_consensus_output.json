@@ -1,0 +1,557 @@
+{
+  "generatedAt": "2026-04-07T03:52:57.651Z",
+  "sourcePath": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Auditar.tsx",
+  "providers": {
+    "chatgpt": {
+      "provider": "chatgpt",
+      "ok": true,
+      "raw": {
+        "id": "chatcmpl-DRrm0sakzeqmDQvMdWgYjOYEkZDgh",
+        "object": "chat.completion",
+        "created": 1775533932,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"diagnosis\": {\n    \"what_is_working\": [\n      \"La pantalla muestra claramente el estado del expediente y los documentos ya incorporados.\",\n      \"Se ofrece un indicador visual y textual del progreso del expediente (fortaleza y porcentaje).\",\n      \"La sección de subir documento es clara en sus instrucciones y controles.\",\n      \"Se comunica el estado del último procesamiento con detalles técnicos simplificados.\",\n      \"Se sugieren próximos documentos útiles para fortalecer el expediente.\"\n    ],\n    \"what_is_confusing\": [\n      \"La terminología técnica o interna aparece en varias partes (ej. 'classificationConfidence', 'integrityStatus', 'consentStatus', 'engineDispatch').\",\n      \"La distinción entre datos confirmados y estimados no está explícita para el usuario.\",\n      \"El estado del motor de análisis usa tonos y mensajes que pueden generar incertidumbre o ansiedad sin aclarar el impacto real.\",\n      \"La cantidad de información en la sección de documentos incorporados puede saturar sin jerarquía clara.\",\n      \"No está claro qué significa cada estado del documento para el usuario final (qué puede hacer o esperar).\"\n    ],\n    \"highest_risk_for_user_trust\": [\n      \"Mensajes técnicos o estados ambiguos pueden generar desconfianza o ansiedad.\",\n      \"Falta de separación clara entre información confirmada y estimada puede llevar a malinterpretaciones.\",\n      \"No se comunica con suficiente honestidad que el sistema no da asesoría legal definitiva ni promesas.\",\n      \"El flujo actual puede parecer complejo o intimidante para usuarios no técnicos.\"\n    ]\n  },\n  \"recommended_information_hierarchy\": [\n    {\n      \"order\": 1,\n      \"section\": \"Estado general y fortaleza del expediente\",\n      \"why\": \"Es lo primero que el usuario debe entender para saber qué tan completo está su respaldo documental y qué tan protegido está su caso.\"\n    },\n    {\n      \"order\": 2,\n      \"section\": \"Siguiente documento recomendado\",\n      \"why\": \"Orientar sin presión sobre qué documento puede aportar más valor, manteniendo la sensación de control y utilidad.\"\n    },\n    {\n      \"order\": 3,\n      \"section\": \"Subir documento nuevo\",\n      \"why\": \"Facilitar la acción principal del usuario con instrucciones claras y sin ansiedad, mostrando qué aportará el documento.\"\n    },\n    {\n      \"order\": 4,\n      \"section\": \"Último documento subido y estado de procesamiento\",\n      \"why\": \"Mostrar resultados inmediatos de la acción del usuario, explicando qué se confirmó, qué es estimado y cuál es el siguiente paso, con tono honesto y tranquilizador.\"\n    },\n    {\n      \"order\": 5,\n      \"section\": \"Historial de documentos incorporados\",\n      \"why\": \"Permitir revisar el contexto completo del expediente sin saturar, con etiquetas claras y lenguaje simple.\"\n    },\n    {\n      \"order\": 6,\n      \"section\": \"Información adicional y hallazgos frecuentes\",\n      \"why\": \"Educar y preparar al usuario para entender mejor su caso, sin sobrecargar la pantalla principal.\"\n    }\n  ],\n  \"recommended_core_cards\": [\n    {\n      \"name\": \"Fortaleza del expediente\",\n      \"purpose\": \"Mostrar progreso real y claro del respaldo documental con porcentaje y etiquetas simples.\",\n      \"must_show\": [\n        \"Porcentaje de cobertura documental\",\n        \"Etiqueta simple del estado (ej. Base inicial, Respaldo en crecimiento, Respaldo sólido)\",\n        \"Siguiente documento recomendado con descripción breve\"\n      ],\n      \"must_not_show\": [\n        \"Terminología técnica o interna\",\n        \"Indicadores de cantidad sin contexto\"\n      ]\n    },\n    {\n      \"name\": \"Subir documento\",\n      \"purpose\": \"Facilitar la carga de documentos con instrucciones claras y sin presión.\",\n      \"must_show\": [\n        \"Selección de expediente y caso\",\n        \"Selector de archivo con tipos permitidos\",\n        \"Campo opcional para descripción o pista\",\n        \"Mensaje de privacidad y trazabilidad\",\n        \"Botón de subir con estado claro\"\n      ],\n      \"must_not_show\": [\n        \"Errores técnicos sin explicación simple\",\n        \"Terminología interna o jerga\"\n      ]\n    },\n    {\n      \"name\": \"Estado del último documento subido\",\n      \"purpose\": \"Explicar qué aportó el documento, qué datos están confirmados, cuáles son estimados, y cuál es el siguiente paso sugerido.\",\n      \"must_show\": [\n        \"Título claro del documento subido\",\n        \"Contribución concreta y sencilla del documento\",\n        \"Separación clara entre datos confirmados y estimados\",\n        \"Estado del procesamiento con tono honesto y tranquilizador\",\n        \"Siguiente paso sugerido con lenguaje amable\"\n      ],\n      \"must_not_show\": [\n        \"Porcentajes técnicos sin contexto\",\n        \"Mensajes de error alarmantes sin explicación\",\n        \"Promesas o asesoría legal definitiva\"\n      ]\n    },\n    {\n      \"name\": \"Historial de documentos\",\n      \"purpose\": \"Mostrar documentos ya incorporados con información relevante y simple para que el usuario entienda su expediente.\",\n      \"must_show\": [\n        \"Nombre original del documento\",\n        \"Tipo detectado en lenguaje simple\",\n        \"Fecha de incorporación\",\n        \"Estado general simplificado (ej. Integridad, consentimiento, visibilidad) con etiquetas claras\"\n      ],\n      \"must_not_show\": [\n        \"Terminología técnica sin explicación\",\n        \"Datos redundantes o confusos\"\n      ]\n    }\n  ],\n  \"copy_principles\": [\n    \"Usar lenguaje claro, simple y cercano, evitando jerga técnica o legal.\",\n    \"Separar explícitamente lo confirmado de lo estimado para evitar confusiones.\",\n    \"Minimizar la ansiedad con mensajes honestos, positivos y sin falsas promesas.\",\n    \"Ser transparente sobre limitaciones del sistema, evitando asesoría legal definitiva.\",\n    \"Orientar con sugerencias útiles y amables, sin presionar al usuario.\"\n  ],\n  \"microcopy_examples\": {\n    \"confirmed_data_title\": \"Datos confirmados\",\n    \"estimated_data_title\": \"Datos preliminares (estimados)\",\n    \"next_step_title\": \"Siguiente paso sugerido\",\n    \"processing_state_sent\": \"Documento enviado para análisis automático y protegido en tu expediente.\",\n    \"processing_state_pending\": \"Documento guardado, el análisis automático está en proceso. Te avisaremos cuando haya resultados.\",\n    \"empty_state\": \"Aún no hay documentos en este expediente. Puedes empezar subiendo el primer archivo que tengas a la mano.\"\n  },\n  \"interaction_recommendations\": [\n    \"Actualizar estados y datos con un botón visible y accesible para que el usuario tenga control.\",\n    \"Permitir limpiar el formulario de carga fácilmente para evitar errores o confusión.\",\n    \"Mostrar feedback inmediato y claro tras subir un documento, incluyendo qué aportó y qué sigue.\",\n    \"Mantener controles simples y evitar múltiples pasos o configuraciones complejas.\",\n    \"Usar etiquetas y colores suaves para estados, evitando alarmas o colores agresivos salvo casos críticos.\"\n  ],\n  \"visual_tone\": {\n    \"overall\": \"Simple, confiable, amable y profesional con uso de colores suaves y tipografía clara.\",\n    \"avoid\": [\n      \"Colores agresivos o alarmantes sin contexto\",\n      \"Demasiada información técnica o densa\",\n      \"Diseños recargados o confusos\"\n    ],\n    \"emphasis\": [\n      \"Claridad en jerarquía visual\",\n      \"Separación clara entre secciones confirmadas y estimadas\",\n      \"Uso de iconos amigables y explicativos\",\n      \"Espacios blancos para respirar y evitar saturación\"\n    ]\n  },\n  \"one_sentence_direction\": \"Rediseñar la pantalla central para que cualquier trabajador entienda con claridad y confianza qué documentos tiene, qué aportan, qué está confirmado o estimado, y cuál es el siguiente paso, usando lenguaje simple, estructura clara y un tono honesto que minimice ansiedad y evite falsas expectativas.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 9322,
+          "completion_tokens": 1665,
+          "total_tokens": 10987,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_fef13761cf"
+      },
+      "parsed": {
+        "diagnosis": {
+          "what_is_working": [
+            "La pantalla muestra claramente el estado del expediente y los documentos ya incorporados.",
+            "Se ofrece un indicador visual y textual del progreso del expediente (fortaleza y porcentaje).",
+            "La sección de subir documento es clara en sus instrucciones y controles.",
+            "Se comunica el estado del último procesamiento con detalles técnicos simplificados.",
+            "Se sugieren próximos documentos útiles para fortalecer el expediente."
+          ],
+          "what_is_confusing": [
+            "La terminología técnica o interna aparece en varias partes (ej. 'classificationConfidence', 'integrityStatus', 'consentStatus', 'engineDispatch').",
+            "La distinción entre datos confirmados y estimados no está explícita para el usuario.",
+            "El estado del motor de análisis usa tonos y mensajes que pueden generar incertidumbre o ansiedad sin aclarar el impacto real.",
+            "La cantidad de información en la sección de documentos incorporados puede saturar sin jerarquía clara.",
+            "No está claro qué significa cada estado del documento para el usuario final (qué puede hacer o esperar)."
+          ],
+          "highest_risk_for_user_trust": [
+            "Mensajes técnicos o estados ambiguos pueden generar desconfianza o ansiedad.",
+            "Falta de separación clara entre información confirmada y estimada puede llevar a malinterpretaciones.",
+            "No se comunica con suficiente honestidad que el sistema no da asesoría legal definitiva ni promesas.",
+            "El flujo actual puede parecer complejo o intimidante para usuarios no técnicos."
+          ]
+        },
+        "recommended_information_hierarchy": [
+          {
+            "order": 1,
+            "section": "Estado general y fortaleza del expediente",
+            "why": "Es lo primero que el usuario debe entender para saber qué tan completo está su respaldo documental y qué tan protegido está su caso."
+          },
+          {
+            "order": 2,
+            "section": "Siguiente documento recomendado",
+            "why": "Orientar sin presión sobre qué documento puede aportar más valor, manteniendo la sensación de control y utilidad."
+          },
+          {
+            "order": 3,
+            "section": "Subir documento nuevo",
+            "why": "Facilitar la acción principal del usuario con instrucciones claras y sin ansiedad, mostrando qué aportará el documento."
+          },
+          {
+            "order": 4,
+            "section": "Último documento subido y estado de procesamiento",
+            "why": "Mostrar resultados inmediatos de la acción del usuario, explicando qué se confirmó, qué es estimado y cuál es el siguiente paso, con tono honesto y tranquilizador."
+          },
+          {
+            "order": 5,
+            "section": "Historial de documentos incorporados",
+            "why": "Permitir revisar el contexto completo del expediente sin saturar, con etiquetas claras y lenguaje simple."
+          },
+          {
+            "order": 6,
+            "section": "Información adicional y hallazgos frecuentes",
+            "why": "Educar y preparar al usuario para entender mejor su caso, sin sobrecargar la pantalla principal."
+          }
+        ],
+        "recommended_core_cards": [
+          {
+            "name": "Fortaleza del expediente",
+            "purpose": "Mostrar progreso real y claro del respaldo documental con porcentaje y etiquetas simples.",
+            "must_show": [
+              "Porcentaje de cobertura documental",
+              "Etiqueta simple del estado (ej. Base inicial, Respaldo en crecimiento, Respaldo sólido)",
+              "Siguiente documento recomendado con descripción breve"
+            ],
+            "must_not_show": [
+              "Terminología técnica o interna",
+              "Indicadores de cantidad sin contexto"
+            ]
+          },
+          {
+            "name": "Subir documento",
+            "purpose": "Facilitar la carga de documentos con instrucciones claras y sin presión.",
+            "must_show": [
+              "Selección de expediente y caso",
+              "Selector de archivo con tipos permitidos",
+              "Campo opcional para descripción o pista",
+              "Mensaje de privacidad y trazabilidad",
+              "Botón de subir con estado claro"
+            ],
+            "must_not_show": [
+              "Errores técnicos sin explicación simple",
+              "Terminología interna o jerga"
+            ]
+          },
+          {
+            "name": "Estado del último documento subido",
+            "purpose": "Explicar qué aportó el documento, qué datos están confirmados, cuáles son estimados, y cuál es el siguiente paso sugerido.",
+            "must_show": [
+              "Título claro del documento subido",
+              "Contribución concreta y sencilla del documento",
+              "Separación clara entre datos confirmados y estimados",
+              "Estado del procesamiento con tono honesto y tranquilizador",
+              "Siguiente paso sugerido con lenguaje amable"
+            ],
+            "must_not_show": [
+              "Porcentajes técnicos sin contexto",
+              "Mensajes de error alarmantes sin explicación",
+              "Promesas o asesoría legal definitiva"
+            ]
+          },
+          {
+            "name": "Historial de documentos",
+            "purpose": "Mostrar documentos ya incorporados con información relevante y simple para que el usuario entienda su expediente.",
+            "must_show": [
+              "Nombre original del documento",
+              "Tipo detectado en lenguaje simple",
+              "Fecha de incorporación",
+              "Estado general simplificado (ej. Integridad, consentimiento, visibilidad) con etiquetas claras"
+            ],
+            "must_not_show": [
+              "Terminología técnica sin explicación",
+              "Datos redundantes o confusos"
+            ]
+          }
+        ],
+        "copy_principles": [
+          "Usar lenguaje claro, simple y cercano, evitando jerga técnica o legal.",
+          "Separar explícitamente lo confirmado de lo estimado para evitar confusiones.",
+          "Minimizar la ansiedad con mensajes honestos, positivos y sin falsas promesas.",
+          "Ser transparente sobre limitaciones del sistema, evitando asesoría legal definitiva.",
+          "Orientar con sugerencias útiles y amables, sin presionar al usuario."
+        ],
+        "microcopy_examples": {
+          "confirmed_data_title": "Datos confirmados",
+          "estimated_data_title": "Datos preliminares (estimados)",
+          "next_step_title": "Siguiente paso sugerido",
+          "processing_state_sent": "Documento enviado para análisis automático y protegido en tu expediente.",
+          "processing_state_pending": "Documento guardado, el análisis automático está en proceso. Te avisaremos cuando haya resultados.",
+          "empty_state": "Aún no hay documentos en este expediente. Puedes empezar subiendo el primer archivo que tengas a la mano."
+        },
+        "interaction_recommendations": [
+          "Actualizar estados y datos con un botón visible y accesible para que el usuario tenga control.",
+          "Permitir limpiar el formulario de carga fácilmente para evitar errores o confusión.",
+          "Mostrar feedback inmediato y claro tras subir un documento, incluyendo qué aportó y qué sigue.",
+          "Mantener controles simples y evitar múltiples pasos o configuraciones complejas.",
+          "Usar etiquetas y colores suaves para estados, evitando alarmas o colores agresivos salvo casos críticos."
+        ],
+        "visual_tone": {
+          "overall": "Simple, confiable, amable y profesional con uso de colores suaves y tipografía clara.",
+          "avoid": [
+            "Colores agresivos o alarmantes sin contexto",
+            "Demasiada información técnica o densa",
+            "Diseños recargados o confusos"
+          ],
+          "emphasis": [
+            "Claridad en jerarquía visual",
+            "Separación clara entre secciones confirmadas y estimadas",
+            "Uso de iconos amigables y explicativos",
+            "Espacios blancos para respirar y evitar saturación"
+          ]
+        },
+        "one_sentence_direction": "Rediseñar la pantalla central para que cualquier trabajador entienda con claridad y confianza qué documentos tiene, qué aportan, qué está confirmado o estimado, y cuál es el siguiente paso, usando lenguaje simple, estructura clara y un tono honesto que minimice ansiedad y evite falsas expectativas."
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "ok": true,
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"diagnosis\": {\n    \"what_is_working\": [\n      \"El lenguaje general es amigable y busca ser no técnico, utilizando frases como 'Fortaleza del expediente' o 'Añade una pieza útil'.\",\n      \"La sección 'Fortaleza del expediente' con su indicador de progreso y sugerencia del 'Siguiente documento especialmente útil' es una buena aproximación a guiar al usuario.\",\n      \"La separación de la interfaz en dos columnas (contenido principal y barra lateral) es una estructura común y familiar.\",\n      \"El feedback inmediato tras la subida de un documento (lastUpload) es crucial y ya está implementado, incluyendo el tipo detectado y su contribución.\",\n      \"Los mensajes de seguridad y trazabilidad ('Tu documento se guarda con trazabilidad...') son importantes para generar confianza.\",\n      \"La funcionalidad de 'Limpiar formulario' y 'Actualizar estado' da control al usuario.\"\n    ],\n    \"what_is_confusing\": [\n      \"La distinción entre 'datos confirmados' y 'datos estimados preliminarmente' no es explícita ni visualmente prominente. La 'confianza' en porcentaje (classificationConfidence) es un dato técnico que no se traduce claramente para un usuario no técnico en términos de 'confirmado' o 'estimado'.\",\n      \"Demasiada información técnica en la sección 'Estado del último procesamiento' (integrityStatus, consentStatus, visibility, webhook_rejected, engine_not_configured) que, aunque explicada, puede abrumar y generar ansiedad.\",\n      \"El 'documentType' en la lista de documentos incorporados se muestra como un string técnico ('payroll_receipt', 'cfdi') en lugar de su etiqueta amigable ('Recibo de nómina', 'CFDI').\",\n      \"La sección 'Hallazgos que suelen aclararse mejor' es útil, pero su ubicación al final de la barra lateral puede hacer que pase desapercibida o se sienta menos relevante para el paso actual del usuario.\",\n      \"La jerarquía visual de la información en 'Estado del último procesamiento' es un poco plana; todos los puntos parecen tener la misma importancia, mezclando el 'qué pasó' con el 'qué significa' y el 'qué sigue'.\",\n      \"El selector de 'Expediente o caso' no muestra suficiente información para que el usuario elija el correcto si tiene varios casos con nombres similares, lo que puede llevar a errores de subida.\"\n    ],\n    \"highest_risk_for_user_trust\": [\n      \"La falta de una distinción clara y visual entre 'confirmado' y 'estimado' puede llevar a malinterpretaciones de la solidez de su evidencia y generar falsas expectativas o desconfianza si los resultados finales difieren.\",\n      \"Mensajes de error o estados de procesamiento como 'webhook_rejected' o 'engine_not_configured' (aunque explicados) pueden generar pánico o la sensación de que el sistema no funciona correctamente o que su documento no está seguro.\",\n      \"La mezcla de información técnica sin una clara priorización o explicación en lenguaje llano puede hacer que el producto se sienta opaco o poco confiable, especialmente en un contexto legal y sensible.\",\n      \"Si el 'Siguiente paso sugerido' no es percibido como útil o relevante, o si se siente como una 'gamificación' forzada, puede erosionar la credibilidad del sistema como una herramienta de apoyo genuino.\"\n    ]\n  },\n  \"recommended_information_hierarchy\": [\n    {\n      \"order\": 1,\n      \"section\": \"Tu Expediente y Próximo Paso Clave\",\n      \"why\": \"Esta sección debe ser lo primero que vea el usuario al llegar a la pantalla. Debe resumir de forma muy sencilla la situación general de su expediente y el siguiente documento más estratégico a subir. Esto reduce la ansiedad y orienta rápidamente.\"\n    },\n    {\n      \"order\": 2,\n      \"section\": \"Sube tu Documento\",\n      \"why\": \"El flujo de subida es la acción principal. Debe ser simple, guiado y con feedback claro. Es el corazón de la interacción y debe estar inmediatamente accesible después de entender el panorama general.\"\n    },\n    {\n      \"order\": 3,\n      \"section\": \"Resultados del Último Documento Subido\",\n      \"why\": \"Después de subir, el usuario necesita saber qué pasó con *su* archivo. Esta sección debe ser dinámica y aparecer solo después de una subida exitosa, mostrando de forma muy clara qué se confirmó, qué se estimó y cuál es el siguiente paso *específico* para ese documento.\"\n    },\n    {\n      \"order\": 4,\n      \"section\": \"Tu Historial Documental (Confirmado y en Revisión)\",\n      \"why\": \"Una vez que el usuario ha subido y entendido el último documento, querrá ver el panorama completo de lo que ya tiene. Esta sección debe listar todos los documentos, separando visualmente los que tienen datos 'confirmados' de los que aún están 'en revisión' o 'pendientes de validación'.\"\n    },\n    {\n      \"order\": 5,\n      \"section\": \"Tu Expediente en Detalle\",\n      \"why\": \"Información secundaria del expediente (nombre del trabajador, patrón, estado del caso) que complementa el contexto pero no es la acción principal. Puede ir en una barra lateral o al final.\"\n    }\n  ],\n  \"recommended_core_cards\": [\n    {\n      \"name\": \"Panorama de tu Expediente\",\n      \"purpose\": \"Mostrar de un vistazo la fortaleza del expediente y el siguiente tipo de documento más útil para el usuario.\",\n      \"must_show\": [\n        \"Título claro: 'Tu Expediente: ¿Qué tan sólido es?'\",\n        \"Indicador de fortaleza (ej. 'Base inicial', 'En crecimiento', 'Sólido').\",\n        \"Siguiente documento recomendado con su beneficio clave, en lenguaje sencillo.\",\n        \"Un botón claro para 'Subir este documento' o 'Ver más sobre documentos'.\"\n      ],\n      \"must_not_show\": [\n        \"Porcentajes técnicos de cobertura.\",\n        \"Jargon como 'dossier targets' o 'present types'.\",\n        \"Listado completo de todos los tipos de documentos posibles aquí; solo el siguiente más relevante.\"\n      ]\n    },\n    {\n      \"name\": \"Sube tu Documento\",\n      \"purpose\": \"Facilitar la carga de un nuevo documento al expediente seleccionado.\",\n      \"must_show\": [\n        \"Título: 'Sube un documento a tu expediente'\",\n        \"Selector de expediente/caso con nombre completo y breve descripción si hay varios.\",\n        \"Área de carga de archivo con drag-and-drop y botón de selección.\",\n        \"Campo opcional para '¿Qué tipo de documento es o qué quieres que sepamos de él?' (en lugar de 'pista').\",\n        \"Mensaje de seguridad y privacidad claro.\",\n        \"Botón principal 'Subir y analizar documento'.\"\n      ],\n      \"must_not_show\": [\n        \"Jargon de 'tenantId' o 'caseId'.\",\n        \"Mensajes de error técnicos del backend directamente en el formulario.\"\n      ]\n    },\n    {\n      \"name\": \"Tu Último Documento: ¿Qué Aportó?\",\n      \"purpose\": \"Dar feedback inmediato y comprensible sobre el documento recién subido, separando lo confirmado de lo estimado y sugiriendo el siguiente paso.\",\n      \"must_show\": [\n        \"Título: '¡Documento subido! Esto es lo que encontramos:'\",\n        \"Nombre del archivo subido.\",\n        \"Tipo de documento detectado (con su etiqueta amigable, no el tipo técnico).\",\n        \"Una sección clara para 'Datos Confirmados' (ej. 'Fecha de emisión: 15/03/2023').\",\n        \"Una sección clara para 'Datos Estimados' (ej. 'Sueldo base: $15,000 MXN (estimado con 85% de confianza)').\",\n        \"Estado del procesamiento (ej. 'En análisis', 'Listo para revisión').\",\n        \"Siguiente paso sugerido *específico* para este documento o para el expediente en general.\",\n        \"Un botón para 'Ver todos mis documentos' o 'Subir otro'.\"\n      ],\n      \"must_not_show\": [\n        \"classificationConfidence en porcentaje directamente.\",\n        \"integrityStatus, consentStatus, visibility como texto técnico.\",\n        \"Razones de clasificación detalladas a menos que sean muy simples y útiles.\",\n        \"Mensajes de error técnicos como 'webhook_rejected'.\"\n      ]\n    },\n    {\n      \"name\": \"Mis Documentos en el Expediente\",\n      \"purpose\": \"Listar todos los documentos del expediente, con una clara distinción visual entre su estado de procesamiento y la fiabilidad de sus datos.\",\n      \"must_show\": [\n        \"Título: 'Documentos en tu expediente'\",\n        \"Filtros o pestañas para 'Confirmados' y 'En Revisión/Pendientes'.\",\n        \"Para cada documento: nombre, tipo amigable, fecha de subida, estado de procesamiento (ej. 'Analizado', 'En espera', 'Requiere atención').\",\n        \"Iconos visuales claros para 'Confirmado' (paloma verde) y 'En Revisión' (reloj o signo de interrogación amarillo).\",\n        \"Mensaje claro si no hay documentos.\"\n      ],\n      \"must_not_show\": [\n        \"classificationConfidence, integrityStatus, consentStatus como texto técnico en la lista principal.\",\n        \"Demasiados detalles por documento; solo lo esencial para identificarlo y entender su estado.\"\n      ]\n    }\n  ],\n  \"copy_principles\": [\n    \"**Claridad antes que concisión:** Es preferible usar unas palabras más si eso asegura que el usuario no técnico entiende perfectamente.\",\n    \"**Honestidad y transparencia:** Explicar los límites del análisis (estimado vs. confirmado) sin sonar a promesa definitiva o asesoría legal.\",\n    \"**Empatía y reducción de ansiedad:** Usar un tono que transmita seguridad, control y apoyo, evitando jerga que pueda generar confusión o preocupación.\",\n    \"**Accionable y orientado al siguiente paso:** Cada pieza de información debe guiar al usuario hacia lo que puede o debe hacer después.\",\n    \"**Lenguaje mexicano coloquial (sin informalidad):** Usar expresiones comunes en México que no sean excesivamente formales ni demasiado casuales, manteniendo un tono profesional y de confianza.\",\n    \"**Enfoque en el beneficio del usuario:** Explicar 'para qué sirve' cada documento o cada paso del proceso, en lugar de solo 'qué es'.\"\n  ],\n  \"microcopy_examples\": {\n    \"confirmed_data_title\": \"Datos Confirmados por el Sistema\",\n    \"estimated_data_title\": \"Datos Estimados (en Revisión)\",\n    \"next_step_title\": \"Siguiente Paso Sugerido para Ti\",\n    \"processing_state_sent\": \"Tu documento ya está en análisis.\",\n    \"processing_state_pending\": \"Tu documento está guardado, pero el análisis automático está pendiente. Lo revisaremos.\",\n    \"empty_state\": \"Aún no tienes documentos en este expediente. Sube el primero que tengas a la mano para empezar a fortalecerlo.\"\n  },\n  \"interaction_recommendations\": [\n    \"**Separación visual clara:** Utilizar colores, iconos y secciones dedicadas para diferenciar explícitamente 'Datos Confirmados' (verde, paloma) de 'Datos Estimados' (amarillo, signo de interrogación o ojo).\",\n    \"**Feedback progresivo:** Mostrar un estado de carga claro y animado durante la subida y procesamiento, con mensajes que tranquilicen al usuario ('Analizando tu documento...', 'Casi listo...').\",\n    \"**Explicaciones al pasar el cursor (tooltips):** Para términos que aún puedan ser ligeramente técnicos (ej. 'Integridad verificada'), ofrecer una explicación sencilla al pasar el cursor sobre ellos.\",\n    \"**Acciones contextuales:** Después de la subida, el botón principal debe ser 'Subir otro documento' o 'Ver mis documentos', guiando al usuario a su siguiente acción más probable.\",\n    \"**Mejora de selectores:** Para 'Expediente o caso', mostrar no solo el título, sino también el nombre del trabajador o un identificador clave para evitar confusiones si el usuario tiene múltiples expedientes.\",\n    \"**Notificaciones no intrusivas:** Usar banners o toasts discretos para mensajes de éxito o error que no interrumpan el flujo principal pero sean claramente visibles.\"\n  ],\n  \"visual_tone\": {\n    \"overall\": \"Profesional, limpio, moderno, con un toque de calidez y seguridad. Predominio de blancos, grises suaves y acentos en tonos de verde azulado (teal) y cian para transmitir confianza y claridad. Uso de iconos claros y reconocibles.\",\n    \"avoid\": [\n      \"Colores estridentes o que generen alarma (rojos intensos, naranjas chillones, a menos que sea una alerta crítica y bien justificada).\",\n      \"Tipografías complejas o difíciles de leer.\",\n      \"Elementos visuales que sugieran 'gamificación' o trivialidad en un tema sensible.\",\n      \"Diseños recargados o con demasiados elementos visuales que compitan por la atención.\"\n    ],\n    \"emphasis\": [\n      \"Claridad en la jerarquía de la información mediante el tamaño de la fuente, el peso y el espaciado.\",\n      \"Uso estratégico de iconos para reforzar el significado de los estados (confirmado, estimado, en proceso).\",\n      \"Espacios en blanco generosos para reducir la carga cognitiva y mejorar la legibilidad.\",\n      \"Bordes suaves y esquinas redondeadas para una sensación de amabilidad y accesibilidad.\"\n    ]\n  },\n  \"one_sentence_direction\": \"Diseñar una interfaz que, con un lenguaje sencillo y una estructura clara, empodere al trabajador mexicano a entender y fortalecer su expediente laboral, diferenciando con honestidad lo confirmado de lo estimado, y guiándolo con seguridad al siguiente paso.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 10489,
+          "candidatesTokenCount": 3115,
+          "totalTokenCount": 15203,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 10489
+            }
+          ],
+          "thoughtsTokenCount": 1599
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "a3_UafXvGq-OjMcP6I6GIQ"
+      },
+      "parsed": {
+        "diagnosis": {
+          "what_is_working": [
+            "El lenguaje general es amigable y busca ser no técnico, utilizando frases como 'Fortaleza del expediente' o 'Añade una pieza útil'.",
+            "La sección 'Fortaleza del expediente' con su indicador de progreso y sugerencia del 'Siguiente documento especialmente útil' es una buena aproximación a guiar al usuario.",
+            "La separación de la interfaz en dos columnas (contenido principal y barra lateral) es una estructura común y familiar.",
+            "El feedback inmediato tras la subida de un documento (lastUpload) es crucial y ya está implementado, incluyendo el tipo detectado y su contribución.",
+            "Los mensajes de seguridad y trazabilidad ('Tu documento se guarda con trazabilidad...') son importantes para generar confianza.",
+            "La funcionalidad de 'Limpiar formulario' y 'Actualizar estado' da control al usuario."
+          ],
+          "what_is_confusing": [
+            "La distinción entre 'datos confirmados' y 'datos estimados preliminarmente' no es explícita ni visualmente prominente. La 'confianza' en porcentaje (classificationConfidence) es un dato técnico que no se traduce claramente para un usuario no técnico en términos de 'confirmado' o 'estimado'.",
+            "Demasiada información técnica en la sección 'Estado del último procesamiento' (integrityStatus, consentStatus, visibility, webhook_rejected, engine_not_configured) que, aunque explicada, puede abrumar y generar ansiedad.",
+            "El 'documentType' en la lista de documentos incorporados se muestra como un string técnico ('payroll_receipt', 'cfdi') en lugar de su etiqueta amigable ('Recibo de nómina', 'CFDI').",
+            "La sección 'Hallazgos que suelen aclararse mejor' es útil, pero su ubicación al final de la barra lateral puede hacer que pase desapercibida o se sienta menos relevante para el paso actual del usuario.",
+            "La jerarquía visual de la información en 'Estado del último procesamiento' es un poco plana; todos los puntos parecen tener la misma importancia, mezclando el 'qué pasó' con el 'qué significa' y el 'qué sigue'.",
+            "El selector de 'Expediente o caso' no muestra suficiente información para que el usuario elija el correcto si tiene varios casos con nombres similares, lo que puede llevar a errores de subida."
+          ],
+          "highest_risk_for_user_trust": [
+            "La falta de una distinción clara y visual entre 'confirmado' y 'estimado' puede llevar a malinterpretaciones de la solidez de su evidencia y generar falsas expectativas o desconfianza si los resultados finales difieren.",
+            "Mensajes de error o estados de procesamiento como 'webhook_rejected' o 'engine_not_configured' (aunque explicados) pueden generar pánico o la sensación de que el sistema no funciona correctamente o que su documento no está seguro.",
+            "La mezcla de información técnica sin una clara priorización o explicación en lenguaje llano puede hacer que el producto se sienta opaco o poco confiable, especialmente en un contexto legal y sensible.",
+            "Si el 'Siguiente paso sugerido' no es percibido como útil o relevante, o si se siente como una 'gamificación' forzada, puede erosionar la credibilidad del sistema como una herramienta de apoyo genuino."
+          ]
+        },
+        "recommended_information_hierarchy": [
+          {
+            "order": 1,
+            "section": "Tu Expediente y Próximo Paso Clave",
+            "why": "Esta sección debe ser lo primero que vea el usuario al llegar a la pantalla. Debe resumir de forma muy sencilla la situación general de su expediente y el siguiente documento más estratégico a subir. Esto reduce la ansiedad y orienta rápidamente."
+          },
+          {
+            "order": 2,
+            "section": "Sube tu Documento",
+            "why": "El flujo de subida es la acción principal. Debe ser simple, guiado y con feedback claro. Es el corazón de la interacción y debe estar inmediatamente accesible después de entender el panorama general."
+          },
+          {
+            "order": 3,
+            "section": "Resultados del Último Documento Subido",
+            "why": "Después de subir, el usuario necesita saber qué pasó con *su* archivo. Esta sección debe ser dinámica y aparecer solo después de una subida exitosa, mostrando de forma muy clara qué se confirmó, qué se estimó y cuál es el siguiente paso *específico* para ese documento."
+          },
+          {
+            "order": 4,
+            "section": "Tu Historial Documental (Confirmado y en Revisión)",
+            "why": "Una vez que el usuario ha subido y entendido el último documento, querrá ver el panorama completo de lo que ya tiene. Esta sección debe listar todos los documentos, separando visualmente los que tienen datos 'confirmados' de los que aún están 'en revisión' o 'pendientes de validación'."
+          },
+          {
+            "order": 5,
+            "section": "Tu Expediente en Detalle",
+            "why": "Información secundaria del expediente (nombre del trabajador, patrón, estado del caso) que complementa el contexto pero no es la acción principal. Puede ir en una barra lateral o al final."
+          }
+        ],
+        "recommended_core_cards": [
+          {
+            "name": "Panorama de tu Expediente",
+            "purpose": "Mostrar de un vistazo la fortaleza del expediente y el siguiente tipo de documento más útil para el usuario.",
+            "must_show": [
+              "Título claro: 'Tu Expediente: ¿Qué tan sólido es?'",
+              "Indicador de fortaleza (ej. 'Base inicial', 'En crecimiento', 'Sólido').",
+              "Siguiente documento recomendado con su beneficio clave, en lenguaje sencillo.",
+              "Un botón claro para 'Subir este documento' o 'Ver más sobre documentos'."
+            ],
+            "must_not_show": [
+              "Porcentajes técnicos de cobertura.",
+              "Jargon como 'dossier targets' o 'present types'.",
+              "Listado completo de todos los tipos de documentos posibles aquí; solo el siguiente más relevante."
+            ]
+          },
+          {
+            "name": "Sube tu Documento",
+            "purpose": "Facilitar la carga de un nuevo documento al expediente seleccionado.",
+            "must_show": [
+              "Título: 'Sube un documento a tu expediente'",
+              "Selector de expediente/caso con nombre completo y breve descripción si hay varios.",
+              "Área de carga de archivo con drag-and-drop y botón de selección.",
+              "Campo opcional para '¿Qué tipo de documento es o qué quieres que sepamos de él?' (en lugar de 'pista').",
+              "Mensaje de seguridad y privacidad claro.",
+              "Botón principal 'Subir y analizar documento'."
+            ],
+            "must_not_show": [
+              "Jargon de 'tenantId' o 'caseId'.",
+              "Mensajes de error técnicos del backend directamente en el formulario."
+            ]
+          },
+          {
+            "name": "Tu Último Documento: ¿Qué Aportó?",
+            "purpose": "Dar feedback inmediato y comprensible sobre el documento recién subido, separando lo confirmado de lo estimado y sugiriendo el siguiente paso.",
+            "must_show": [
+              "Título: '¡Documento subido! Esto es lo que encontramos:'",
+              "Nombre del archivo subido.",
+              "Tipo de documento detectado (con su etiqueta amigable, no el tipo técnico).",
+              "Una sección clara para 'Datos Confirmados' (ej. 'Fecha de emisión: 15/03/2023').",
+              "Una sección clara para 'Datos Estimados' (ej. 'Sueldo base: $15,000 MXN (estimado con 85% de confianza)').",
+              "Estado del procesamiento (ej. 'En análisis', 'Listo para revisión').",
+              "Siguiente paso sugerido *específico* para este documento o para el expediente en general.",
+              "Un botón para 'Ver todos mis documentos' o 'Subir otro'."
+            ],
+            "must_not_show": [
+              "classificationConfidence en porcentaje directamente.",
+              "integrityStatus, consentStatus, visibility como texto técnico.",
+              "Razones de clasificación detalladas a menos que sean muy simples y útiles.",
+              "Mensajes de error técnicos como 'webhook_rejected'."
+            ]
+          },
+          {
+            "name": "Mis Documentos en el Expediente",
+            "purpose": "Listar todos los documentos del expediente, con una clara distinción visual entre su estado de procesamiento y la fiabilidad de sus datos.",
+            "must_show": [
+              "Título: 'Documentos en tu expediente'",
+              "Filtros o pestañas para 'Confirmados' y 'En Revisión/Pendientes'.",
+              "Para cada documento: nombre, tipo amigable, fecha de subida, estado de procesamiento (ej. 'Analizado', 'En espera', 'Requiere atención').",
+              "Iconos visuales claros para 'Confirmado' (paloma verde) y 'En Revisión' (reloj o signo de interrogación amarillo).",
+              "Mensaje claro si no hay documentos."
+            ],
+            "must_not_show": [
+              "classificationConfidence, integrityStatus, consentStatus como texto técnico en la lista principal.",
+              "Demasiados detalles por documento; solo lo esencial para identificarlo y entender su estado."
+            ]
+          }
+        ],
+        "copy_principles": [
+          "**Claridad antes que concisión:** Es preferible usar unas palabras más si eso asegura que el usuario no técnico entiende perfectamente.",
+          "**Honestidad y transparencia:** Explicar los límites del análisis (estimado vs. confirmado) sin sonar a promesa definitiva o asesoría legal.",
+          "**Empatía y reducción de ansiedad:** Usar un tono que transmita seguridad, control y apoyo, evitando jerga que pueda generar confusión o preocupación.",
+          "**Accionable y orientado al siguiente paso:** Cada pieza de información debe guiar al usuario hacia lo que puede o debe hacer después.",
+          "**Lenguaje mexicano coloquial (sin informalidad):** Usar expresiones comunes en México que no sean excesivamente formales ni demasiado casuales, manteniendo un tono profesional y de confianza.",
+          "**Enfoque en el beneficio del usuario:** Explicar 'para qué sirve' cada documento o cada paso del proceso, en lugar de solo 'qué es'."
+        ],
+        "microcopy_examples": {
+          "confirmed_data_title": "Datos Confirmados por el Sistema",
+          "estimated_data_title": "Datos Estimados (en Revisión)",
+          "next_step_title": "Siguiente Paso Sugerido para Ti",
+          "processing_state_sent": "Tu documento ya está en análisis.",
+          "processing_state_pending": "Tu documento está guardado, pero el análisis automático está pendiente. Lo revisaremos.",
+          "empty_state": "Aún no tienes documentos en este expediente. Sube el primero que tengas a la mano para empezar a fortalecerlo."
+        },
+        "interaction_recommendations": [
+          "**Separación visual clara:** Utilizar colores, iconos y secciones dedicadas para diferenciar explícitamente 'Datos Confirmados' (verde, paloma) de 'Datos Estimados' (amarillo, signo de interrogación o ojo).",
+          "**Feedback progresivo:** Mostrar un estado de carga claro y animado durante la subida y procesamiento, con mensajes que tranquilicen al usuario ('Analizando tu documento...', 'Casi listo...').",
+          "**Explicaciones al pasar el cursor (tooltips):** Para términos que aún puedan ser ligeramente técnicos (ej. 'Integridad verificada'), ofrecer una explicación sencilla al pasar el cursor sobre ellos.",
+          "**Acciones contextuales:** Después de la subida, el botón principal debe ser 'Subir otro documento' o 'Ver mis documentos', guiando al usuario a su siguiente acción más probable.",
+          "**Mejora de selectores:** Para 'Expediente o caso', mostrar no solo el título, sino también el nombre del trabajador o un identificador clave para evitar confusiones si el usuario tiene múltiples expedientes.",
+          "**Notificaciones no intrusivas:** Usar banners o toasts discretos para mensajes de éxito o error que no interrumpan el flujo principal pero sean claramente visibles."
+        ],
+        "visual_tone": {
+          "overall": "Profesional, limpio, moderno, con un toque de calidez y seguridad. Predominio de blancos, grises suaves y acentos en tonos de verde azulado (teal) y cian para transmitir confianza y claridad. Uso de iconos claros y reconocibles.",
+          "avoid": [
+            "Colores estridentes o que generen alarma (rojos intensos, naranjas chillones, a menos que sea una alerta crítica y bien justificada).",
+            "Tipografías complejas o difíciles de leer.",
+            "Elementos visuales que sugieran 'gamificación' o trivialidad en un tema sensible.",
+            "Diseños recargados o con demasiados elementos visuales que compitan por la atención."
+          ],
+          "emphasis": [
+            "Claridad en la jerarquía de la información mediante el tamaño de la fuente, el peso y el espaciado.",
+            "Uso estratégico de iconos para reforzar el significado de los estados (confirmado, estimado, en proceso).",
+            "Espacios en blanco generosos para reducir la carga cognitiva y mejorar la legibilidad.",
+            "Bordes suaves y esquinas redondeadas para una sensación de amabilidad y accesibilidad."
+          ]
+        },
+        "one_sentence_direction": "Diseñar una interfaz que, con un lenguaje sencillo y una estructura clara, empodere al trabajador mexicano a entender y fortalecer su expediente laboral, diferenciando con honestidad lo confirmado de lo estimado, y guiándolo con seguridad al siguiente paso."
+      }
+    },
+    "grok": {
+      "provider": "grok",
+      "ok": true,
+      "raw": {
+        "id": "59c9e26a-a450-9984-9268-1d65d1fb2326",
+        "object": "chat.completion",
+        "created": 1775533932,
+        "model": "grok-4-0709",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"diagnosis\": {\n    \"what_is_working\": [\n      \"La interfaz es clara en mostrar el progreso del expediente con un indicador de fortaleza simple y no gamificado, lo que evita presión innecesaria.\",\n      \"Las sugerencias de próximos documentos son útiles y contextuales, basadas en tipos reales de documentos laborales mexicanos.\",\n      \"Se separa visualmente el estado de procesamiento y se proporciona retroalimentación inmediata después de subir un documento, fomentando confianza.\"\n    ],\n    \"what_is_confusing\": [\n      \"La pantalla está sobrecargada con secciones laterales y principales que compiten por atención, lo que puede abrumar a usuarios no técnicos al no priorizar jerárquicamente la información crítica como datos confirmados vs. estimados.\",\n      \"Los detalles técnicos como 'SHA-256' o 'confianza %' aparecen en el historial, introduciendo jerga que no es necesaria para el usuario final.\",\n      \"No hay una separación clara entre datos confirmados y estimados en los resultados de procesamiento, lo que podría generar expectativas irreales.\"\n    ],\n    \"highest_risk_for_user_trust\": [\n      \"Mostrar estimaciones sin diferenciarlas claramente de lo confirmado podría llevar a malentendidos, haciendo que el usuario crea que el análisis es definitivo cuando no lo es.\",\n      \"La falta de énfasis en la trazabilidad y seguridad podría generar ansiedad sobre la privacidad de documentos sensibles laborales.\",\n      \"Sugerencias de próximos pasos que suenan como obligaciones podrían percibirse como presión, erosionando la sensación de control y simplicidad.\"\n    ]\n  },\n  \"recommended_information_hierarchy\": [\n    {\n      \"order\": 1,\n      \"section\": \"Resumen del expediente actual\",\n      \"why\": \"Debe ser lo primero para que el usuario entienda inmediatamente el estado general, reduciendo ansiedad al mostrar progreso confirmado y estimado de manera honesta.\"\n    },\n    {\n      \"order\": 2,\n      \"section\": \"Último documento subido y su aporte\",\n      \"why\": \"Proporciona retroalimentación inmediata sobre la acción reciente, separando lo confirmado de lo estimado para mantener la honestidad y guiar al siguiente paso sin promesas exageradas.\"\n    },\n    {\n      \"order\": 3,\n      \"section\": \"Formulario de subida de documento\",\n      \"why\": \"Facilita la acción principal de forma simple, con pistas claras para no técnicos, posicionada después del contexto para que el usuario suba con comprensión.\"\n    },\n    {\n      \"order\": 4,\n      \"section\": \"Historial de documentos\",\n      \"why\": \"Ofrece trazabilidad al final, como referencia, sin abrumar, enfocándose en aportes útiles en lugar de detalles técnicos.\"\n    },\n    {\n      \"order\": 5,\n      \"section\": \"Sugerencia de siguiente paso\",\n      \"why\": \"Cierra el flujo con una guía suave y no prescriptiva, basada en el expediente actual, para sentir utilidad sin generar ansiedad.\"\n    }\n  ],\n  \"recommended_core_cards\": [\n    {\n      \"name\": \"Tarjeta de Resumen de Expediente\",\n      \"purpose\": \"Mostrar la fortaleza general del expediente, separando cobertura confirmada de estimada, para dar una visión honesta y tranquilizadora.\",\n      \"must_show\": [\n        \"Porcentaje de cobertura útil (basado en tipos de documentos presentes)\",\n        \"Etiquetas simples como 'Base sólida' o 'En crecimiento'\",\n        \"Separación clara: 'Documentos confirmados' vs. 'Estimaciones preliminares'\"\n      ],\n      \"must_not_show\": [\n        \"Barras de progreso gamificadas o colores que impliquen urgencia\",\n        \"Cualquier mención a análisis legales definitivos\"\n      ]\n    },\n    {\n      \"name\": \"Tarjeta de Último Documento\",\n      \"purpose\": \"Explicar qué se subió, su aporte confirmado y estimado, y estado de procesamiento, para reforzar confianza en la utilidad del producto.\",\n      \"must_show\": [\n        \"Nombre del documento y tipo clasificado\",\n        \"Aporte: 'Esto confirma...' vs. 'Esto estima...'\",\n        \"Estado de procesamiento con iconos simples (e.g., check para enviado)\"\n      ],\n      \"must_not_show\": [\n        \"Detalles técnicos como hashes o porcentajes de confianza\",\n        \"Sugerencias que suenen como promesas de resultados\"\n      ]\n    },\n    {\n      \"name\": \"Tarjeta de Sugerencia\",\n      \"purpose\": \"Guiar al siguiente paso útil sin presión, basado en el expediente actual, para que el usuario se sienta apoyado.\",\n      \"must_show\": [\n        \"Sugerencia suave: 'Un documento como [tipo] podría ayudar a aclarar...'\",\n        \"Razones simples y beneficios laborales reales\"\n      ],\n      \"must_not_show\": [\n        \"Llamados a acción urgentes o contadores de 'falta'\",\n        \"Cualquier implicación de que sea obligatorio\"\n      ]\n    }\n  ],\n  \"copy_principles\": [\n    \"Usar lenguaje cotidiano mexicano, simple y empático, como 'Esto ayuda a ver mejor...' en lugar de términos técnicos.\",\n    \"Siempre separar 'confirmado' (basado en datos verificados) de 'estimado' (preliminar de IA) con palabras claras y honestas.\",\n    \"Evitar promesas: no decir 'resolverá tu caso', sino 'puede dar más contexto para entender tu situación'.\",\n    \"Minimizar ansiedad con frases tranquilizadoras como 'Tu documento está seguro y trazado'.\",\n    \"Ser breve: oraciones cortas, listas simples, nada de párrafos densos.\"\n  ],\n  \"microcopy_examples\": {\n    \"confirmed_data_title\": \"Datos confirmados del documento\",\n    \"estimated_data_title\": \"Estimaciones preliminares (aún no verificadas)\",\n    \"next_step_title\": \"Qué podría ayudar después\",\n    \"processing_state_sent\": \"Documento enviado y en revisión segura.\",\n    \"processing_state_pending\": \"Guardado, pero la revisión automática está pendiente; lo revisaremos pronto.\",\n    \"empty_state\": \"Empieza subiendo tu primer documento, como un recibo de nómina, para ver cómo fortalece tu expediente.\"\n  },\n  \"interaction_recommendations\": [\n    \"Usar un flujo progresivo: después de subir, mostrar inmediatamente la tarjeta de último documento con animación suave para retroalimentación positiva.\",\n    \"Incluir botones grandes y claros, como 'Subir documento' con icono, y un 'Limpiar' secundario, para simplicidad en móviles.\",\n    \"Agregar tooltips no intrusivos en términos como 'CFDI' explicando 'Comprobante Fiscal Digital por Internet' solo si se hoverea.\",\n    \"Permitir refrescar el estado con un botón visible, pero con mensaje 'Actualizando...' para evitar clics repetidos.\",\n    \"Asegurar que selecciones de expediente y caso sean dropdowns con etiquetas descriptivas, precargando el más reciente para reducir pasos.\"\n  ],\n  \"visual_tone\": {\n    \"overall\": \"Simple y confiable, con tonos suaves de verde y azul para transmitir seguridad y calma, como un expediente organizado y accesible.\",\n    \"avoid\": [\n      \"Colores rojos o amarillos que sugieran alerta o error, a menos que sea un fallo real\",\n      \"Elementos gamificados como badges o estrellas\",\n      \"Diseños densos con muchas tarjetas; priorizar espacio blanco\"\n    ],\n    \"emphasis\": [\n      \"Iconos simples (e.g., candado para seguridad) en verde para elementos confirmados\",\n      \"Texto en negrita para separadores como 'Confirmado' vs. 'Estimado'\",\n      \"Bordes suaves y redondeados para todas las tarjetas, evocando accesibilidad\"\n    ]\n  },\n  \"one_sentence_direction\": \"Rediseña la interfaz para priorizar una jerarquía clara que separe lo confirmado de lo estimado, con tarjetas simples que guíen al usuario de manera honesta y tranquilizadora hacia un expediente laboral más fuerte.\"\n}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 9883,
+          "completion_tokens": 1695,
+          "total_tokens": 12121,
+          "prompt_tokens_details": {
+            "text_tokens": 9883,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 676
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 543,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 616980000
+        },
+        "system_fingerprint": "fp_74614d6fcc"
+      },
+      "parsed": {
+        "diagnosis": {
+          "what_is_working": [
+            "La interfaz es clara en mostrar el progreso del expediente con un indicador de fortaleza simple y no gamificado, lo que evita presión innecesaria.",
+            "Las sugerencias de próximos documentos son útiles y contextuales, basadas en tipos reales de documentos laborales mexicanos.",
+            "Se separa visualmente el estado de procesamiento y se proporciona retroalimentación inmediata después de subir un documento, fomentando confianza."
+          ],
+          "what_is_confusing": [
+            "La pantalla está sobrecargada con secciones laterales y principales que compiten por atención, lo que puede abrumar a usuarios no técnicos al no priorizar jerárquicamente la información crítica como datos confirmados vs. estimados.",
+            "Los detalles técnicos como 'SHA-256' o 'confianza %' aparecen en el historial, introduciendo jerga que no es necesaria para el usuario final.",
+            "No hay una separación clara entre datos confirmados y estimados en los resultados de procesamiento, lo que podría generar expectativas irreales."
+          ],
+          "highest_risk_for_user_trust": [
+            "Mostrar estimaciones sin diferenciarlas claramente de lo confirmado podría llevar a malentendidos, haciendo que el usuario crea que el análisis es definitivo cuando no lo es.",
+            "La falta de énfasis en la trazabilidad y seguridad podría generar ansiedad sobre la privacidad de documentos sensibles laborales.",
+            "Sugerencias de próximos pasos que suenan como obligaciones podrían percibirse como presión, erosionando la sensación de control y simplicidad."
+          ]
+        },
+        "recommended_information_hierarchy": [
+          {
+            "order": 1,
+            "section": "Resumen del expediente actual",
+            "why": "Debe ser lo primero para que el usuario entienda inmediatamente el estado general, reduciendo ansiedad al mostrar progreso confirmado y estimado de manera honesta."
+          },
+          {
+            "order": 2,
+            "section": "Último documento subido y su aporte",
+            "why": "Proporciona retroalimentación inmediata sobre la acción reciente, separando lo confirmado de lo estimado para mantener la honestidad y guiar al siguiente paso sin promesas exageradas."
+          },
+          {
+            "order": 3,
+            "section": "Formulario de subida de documento",
+            "why": "Facilita la acción principal de forma simple, con pistas claras para no técnicos, posicionada después del contexto para que el usuario suba con comprensión."
+          },
+          {
+            "order": 4,
+            "section": "Historial de documentos",
+            "why": "Ofrece trazabilidad al final, como referencia, sin abrumar, enfocándose en aportes útiles en lugar de detalles técnicos."
+          },
+          {
+            "order": 5,
+            "section": "Sugerencia de siguiente paso",
+            "why": "Cierra el flujo con una guía suave y no prescriptiva, basada en el expediente actual, para sentir utilidad sin generar ansiedad."
+          }
+        ],
+        "recommended_core_cards": [
+          {
+            "name": "Tarjeta de Resumen de Expediente",
+            "purpose": "Mostrar la fortaleza general del expediente, separando cobertura confirmada de estimada, para dar una visión honesta y tranquilizadora.",
+            "must_show": [
+              "Porcentaje de cobertura útil (basado en tipos de documentos presentes)",
+              "Etiquetas simples como 'Base sólida' o 'En crecimiento'",
+              "Separación clara: 'Documentos confirmados' vs. 'Estimaciones preliminares'"
+            ],
+            "must_not_show": [
+              "Barras de progreso gamificadas o colores que impliquen urgencia",
+              "Cualquier mención a análisis legales definitivos"
+            ]
+          },
+          {
+            "name": "Tarjeta de Último Documento",
+            "purpose": "Explicar qué se subió, su aporte confirmado y estimado, y estado de procesamiento, para reforzar confianza en la utilidad del producto.",
+            "must_show": [
+              "Nombre del documento y tipo clasificado",
+              "Aporte: 'Esto confirma...' vs. 'Esto estima...'",
+              "Estado de procesamiento con iconos simples (e.g., check para enviado)"
+            ],
+            "must_not_show": [
+              "Detalles técnicos como hashes o porcentajes de confianza",
+              "Sugerencias que suenen como promesas de resultados"
+            ]
+          },
+          {
+            "name": "Tarjeta de Sugerencia",
+            "purpose": "Guiar al siguiente paso útil sin presión, basado en el expediente actual, para que el usuario se sienta apoyado.",
+            "must_show": [
+              "Sugerencia suave: 'Un documento como [tipo] podría ayudar a aclarar...'",
+              "Razones simples y beneficios laborales reales"
+            ],
+            "must_not_show": [
+              "Llamados a acción urgentes o contadores de 'falta'",
+              "Cualquier implicación de que sea obligatorio"
+            ]
+          }
+        ],
+        "copy_principles": [
+          "Usar lenguaje cotidiano mexicano, simple y empático, como 'Esto ayuda a ver mejor...' en lugar de términos técnicos.",
+          "Siempre separar 'confirmado' (basado en datos verificados) de 'estimado' (preliminar de IA) con palabras claras y honestas.",
+          "Evitar promesas: no decir 'resolverá tu caso', sino 'puede dar más contexto para entender tu situación'.",
+          "Minimizar ansiedad con frases tranquilizadoras como 'Tu documento está seguro y trazado'.",
+          "Ser breve: oraciones cortas, listas simples, nada de párrafos densos."
+        ],
+        "microcopy_examples": {
+          "confirmed_data_title": "Datos confirmados del documento",
+          "estimated_data_title": "Estimaciones preliminares (aún no verificadas)",
+          "next_step_title": "Qué podría ayudar después",
+          "processing_state_sent": "Documento enviado y en revisión segura.",
+          "processing_state_pending": "Guardado, pero la revisión automática está pendiente; lo revisaremos pronto.",
+          "empty_state": "Empieza subiendo tu primer documento, como un recibo de nómina, para ver cómo fortalece tu expediente."
+        },
+        "interaction_recommendations": [
+          "Usar un flujo progresivo: después de subir, mostrar inmediatamente la tarjeta de último documento con animación suave para retroalimentación positiva.",
+          "Incluir botones grandes y claros, como 'Subir documento' con icono, y un 'Limpiar' secundario, para simplicidad en móviles.",
+          "Agregar tooltips no intrusivos en términos como 'CFDI' explicando 'Comprobante Fiscal Digital por Internet' solo si se hoverea.",
+          "Permitir refrescar el estado con un botón visible, pero con mensaje 'Actualizando...' para evitar clics repetidos.",
+          "Asegurar que selecciones de expediente y caso sean dropdowns con etiquetas descriptivas, precargando el más reciente para reducir pasos."
+        ],
+        "visual_tone": {
+          "overall": "Simple y confiable, con tonos suaves de verde y azul para transmitir seguridad y calma, como un expediente organizado y accesible.",
+          "avoid": [
+            "Colores rojos o amarillos que sugieran alerta o error, a menos que sea un fallo real",
+            "Elementos gamificados como badges o estrellas",
+            "Diseños densos con muchas tarjetas; priorizar espacio blanco"
+          ],
+          "emphasis": [
+            "Iconos simples (e.g., candado para seguridad) en verde para elementos confirmados",
+            "Texto en negrita para separadores como 'Confirmado' vs. 'Estimado'",
+            "Bordes suaves y redondeados para todas las tarjetas, evocando accesibilidad"
+          ]
+        },
+        "one_sentence_direction": "Rediseña la interfaz para priorizar una jerarquía clara que separe lo confirmado de lo estimado, con tarjetas simples que guíen al usuario de manera honesta y tranquilizadora hacia un expediente laboral más fuerte."
+      }
+    }
+  }
+}

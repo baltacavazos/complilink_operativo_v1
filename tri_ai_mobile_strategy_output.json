@@ -1,0 +1,729 @@
+{
+  "startedAt": "2026-04-07T04:37:01.680Z",
+  "finishedAt": "2026-04-07T04:38:07.726Z",
+  "context": {
+    "product": "Auditapatron",
+    "focus": "mobile_first_and_app_ready_strategy",
+    "screen": "/auditar"
+  },
+  "providers": [
+    {
+      "provider": "chatgpt",
+      "ok": true,
+      "model": "gpt-4.1-mini",
+      "data": {
+        "core_direction": "Priorizar una experiencia móvil clara, simple y segura que facilite la carga y comprensión de documentos laborales, con foco en la acción principal y preparación para futura app nativa Android/iOS.",
+        "must_keep_codes": [
+          "single_column_mobile",
+          "sticky_primary_upload_cta",
+          "status_first_header",
+          "confirmed_vs_estimated_split",
+          "next_document_recommendation",
+          "passive_return_tracking"
+        ],
+        "add_now_codes": [
+          "mobile_step_summary",
+          "sticky_bottom_continue",
+          "document_preview_compact",
+          "one_hand_navigation",
+          "safe_estimation_acknowledgement",
+          "mobile_first_spacing_system"
+        ],
+        "avoid_codes": [
+          "dense_desktop_grid",
+          "long_explanatory_paragraphs",
+          "competing_ctas",
+          "technical_labels",
+          "horizontal_scroll",
+          "modal_overload"
+        ],
+        "screen_order_codes": [
+          "status_header",
+          "next_best_document",
+          "primary_upload_action",
+          "latest_result_summary",
+          "confirmed_data_block",
+          "estimated_data_block",
+          "return_tracking_block",
+          "recommended_next_step",
+          "history_block"
+        ],
+        "native_transition": {
+          "shared_patterns": [
+            "tokenized_spacing",
+            "tokenized_colors",
+            "state_driven_cards",
+            "bottom_navigation_ready",
+            "camera_upload_abstraction",
+            "cross_platform_iconography"
+          ],
+          "defer_for_native": [
+            "push_notifications",
+            "offline_file_queue",
+            "biometric_unlock",
+            "native_document_scanner"
+          ]
+        },
+        "top_recommendations": [
+          {
+            "title": "Optimizar la carga principal con CTA sticky y accesible",
+            "why": "El upload es la acción central; mantenerla visible y fácil de alcanzar con una mano mejora la tasa de uso y reduce fricción.",
+            "how_now": "Implementar sticky_primary_upload_cta y one_hand_navigation para facilitar el acceso rápido y cómodo al botón de carga.",
+            "future_app_value": "En app nativa, esta accesibilidad se traduce en mejores patrones de interacción y uso de gestos nativos."
+          },
+          {
+            "title": "Claridad en la separación de datos confirmados y estimados",
+            "why": "Los usuarios necesitan entender qué información es segura y qué es estimación para tomar decisiones confiables.",
+            "how_now": "Mantener confirmed_vs_estimated_split y agregar safe_estimation_acknowledgement para comunicar con tono sereno y protector.",
+            "future_app_value": "Esta claridad es clave para confianza y puede enriquecerse con notificaciones y estados en tiempo real en app nativa."
+          },
+          {
+            "title": "Diseño mobile-first con espaciado y navegación adaptada",
+            "why": "Pantallas pequeñas requieren jerarquía clara, espaciado adecuado y navegación con una mano para evitar frustración.",
+            "how_now": "Adoptar mobile_first_spacing_system y one_hand_navigation para mejorar legibilidad y usabilidad en móviles actuales.",
+            "future_app_value": "Facilita la transición a apps nativas con patrones consistentes y experiencia fluida."
+          },
+          {
+            "title": "Resumen móvil de pasos y resultados para foco en lo esencial",
+            "why": "Usuarios móviles necesitan información condensada y clara para entender estado y próximos pasos sin saturación.",
+            "how_now": "Incluir mobile_step_summary y document_preview_compact para mostrar info clave sin sobrecargar la pantalla.",
+            "future_app_value": "Permite integrar microestados y notificaciones en app nativa para seguimiento activo y contextual."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Confirmación visual de carga exitosa",
+            "purpose": "Informar al usuario que el documento fue subido correctamente y está siendo procesado.",
+            "implementation_hint": "Usar animación breve y cambio de estado en sticky_primary_upload_cta con mensaje claro y tono sereno."
+          },
+          {
+            "name": "Indicador de estado confirmado vs estimado",
+            "purpose": "Diferenciar visualmente datos confirmados y estimados para facilitar comprensión rápida.",
+            "implementation_hint": "Colores tokenizados y etiquetas simples en confirmed_vs_estimated_split con microcopy protector."
+          },
+          {
+            "name": "Recordatorio suave de siguiente documento recomendado",
+            "purpose": "Guiar al usuario hacia la siguiente acción sin interrumpir ni saturar la experiencia.",
+            "implementation_hint": "Sticky bottom continue con texto breve y botón claro, activado tras revisión del resultado reciente."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Saturación de información en pantalla pequeña",
+            "mitigation": "Priorizar single_column_mobile y mobile_step_summary para mostrar solo lo esencial y evitar scroll excesivo."
+          },
+          {
+            "risk": "Dificultad para usar con una mano en dispositivos grandes",
+            "mitigation": "Implementar one_hand_navigation y thumb_reach_priority para colocar elementos clave al alcance natural del pulgar."
+          },
+          {
+            "risk": "Confusión entre datos confirmados y estimados por lenguaje técnico",
+            "mitigation": "Evitar technical_labels y usar short_plain_language junto con safe_estimation_acknowledgement para tono claro y protector."
+          },
+          {
+            "risk": "Interrupciones molestas por múltiples CTAs o modales",
+            "mitigation": "Evitar competing_ctas y modal_overload, mantener sticky_primary_upload_cta y sticky_bottom_continue como únicas CTAs visibles."
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "provider": "gemini",
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "data": {
+        "core_direction": "Optimizar la experiencia de Auditapatron para dispositivos móviles, priorizando la claridad, la confianza y la facilidad de uso con una sola mano, sentando las bases para una futura aplicación nativa con un diseño de sistema coherente y patrones de interacción compartidos.",
+        "must_keep_codes": [
+          "single_column_mobile",
+          "sticky_primary_upload_cta",
+          "status_first_header",
+          "confirmed_vs_estimated_split",
+          "next_document_recommendation",
+          "large_tap_targets"
+        ],
+        "add_now_codes": [
+          "mobile_step_summary",
+          "sticky_bottom_continue",
+          "upload_source_sheet",
+          "smart_empty_states",
+          "progress_microstates",
+          "scan_or_photo_shortcut"
+        ],
+        "avoid_codes": [
+          "dense_desktop_grid",
+          "small_secondary_text",
+          "long_explanatory_paragraphs",
+          "competing_ctas",
+          "technical_labels",
+          "top_only_actions"
+        ],
+        "screen_order_codes": [
+          "status_header",
+          "next_best_document",
+          "primary_upload_action",
+          "latest_result_summary",
+          "confirmed_data_block",
+          "estimated_data_block"
+        ],
+        "native_transition": {
+          "shared_patterns": [
+            "tokenized_spacing",
+            "tokenized_colors",
+            "state_driven_cards",
+            "bottom_navigation_ready",
+            "camera_upload_abstraction",
+            "cross_platform_iconography"
+          ],
+          "defer_for_native": [
+            "push_notifications",
+            "offline_file_queue",
+            "biometric_unlock",
+            "background_upload_resume",
+            "native_document_scanner",
+            "share_sheet_ingestion"
+          ]
+        },
+        "top_recommendations": [
+          {
+            "title": "Flujo de Carga de Documentos Guiado y Simplificado",
+            "why": "Minimiza la fricción y la ansiedad del usuario al subir documentos, reforzando el tono protector y sereno. Facilita la acción principal del producto.",
+            "how_now": "Implementar 'upload_source_sheet' para elegir entre cámara o galería, con un 'scan_or_photo_shortcut' prominente. Usar 'mobile_step_summary' para guiar al usuario a través de los pasos de carga y procesamiento.",
+            "future_app_value": "La abstracción de la carga de cámara ('camera_upload_abstraction') se traducirá directamente a la integración con el 'native_document_scanner' y la 'share_sheet_ingestion' en la app nativa, permitiendo cargas más rápidas y de mayor calidad."
+          },
+          {
+            "title": "Claridad Inmediata del Estado y Siguientes Pasos",
+            "why": "Construye confianza y reduce la incertidumbre al mantener al usuario informado sobre el estado de su expediente y lo que debe hacer a continuación, alineándose con el tono confiable y no técnico.",
+            "how_now": "Priorizar 'status_first_header' y 'next_document_recommendation' en la parte superior de la pantalla. Utilizar 'progress_microstates' para mostrar el avance del procesamiento y 'smart_empty_states' para guiar cuando no hay datos.",
+            "future_app_value": "La estructura clara del estado y las recomendaciones facilitará la implementación de 'push_notifications' para actualizaciones críticas y una experiencia de usuario más proactiva en la app nativa."
+          },
+          {
+            "title": "Diseño para Interacción con Una Sola Mano",
+            "why": "Es fundamental para una experiencia móvil fluida y cómoda, asegurando que las acciones clave sean fácilmente accesibles para la mayoría de los usuarios.",
+            "how_now": "Posicionar la 'sticky_primary_upload_cta' en la parte inferior de la pantalla. Asegurar 'large_tap_targets' y diseñar con 'thumb_reach_priority' en mente para elementos interactivos y navegación, como 'bottom_sheet_actions' para opciones secundarias.",
+            "future_app_value": "La adopción de patrones como 'bottom_navigation_ready' desde ahora facilitará una transición natural a la navegación por pestañas nativa, que es un estándar para la interacción con una sola mano en iOS y Android."
+          },
+          {
+            "title": "Comunicación Visual de Confianza y Calma",
+            "why": "Refuerza el tono protector, sereno y confiable del producto, ayudando a los usuarios a sentirse seguros y apoyados durante un proceso potencialmente estresante.",
+            "how_now": "Utilizar 'short_plain_language' en todas las descripciones y estados. Implementar un sistema de 'tokenized_colors' y 'tokenized_spacing' que transmita calma y profesionalismo. Mostrar 'progress_microstates' con animaciones suaves y mensajes tranquilizadores.",
+            "future_app_value": "Un sistema de diseño basado en tokens ('tokenized_spacing', 'tokenized_colors') y 'cross_platform_iconography' garantiza una identidad visual coherente y una experiencia de marca unificada en la web y en las futuras aplicaciones nativas, fortaleciendo la confianza a largo plazo."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Indicador de Progreso de Carga/Procesamiento",
+            "purpose": "Reducir la ansiedad del usuario y proporcionar retroalimentación visual inmediata sobre el estado de su documento después de la carga.",
+            "implementation_hint": "Usar 'progress_microstates' con una barra de progreso sutil o un spinner animado, acompañado de texto claro como 'Analizando documento...' o 'Confirmando datos...'."
+          },
+          {
+            "name": "Confirmación Visual de Datos",
+            "purpose": "Reforzar la confianza del usuario al destacar claramente qué información ha sido verificada y confirmada por el sistema.",
+            "implementation_hint": "Cuando un dato pasa de 'estimado' a 'confirmado', mostrar una pequeña animación de 'check' o un cambio de color sutil en el bloque de datos, junto con un mensaje breve y protector."
+          },
+          {
+            "name": "Sugerencia de Siguiente Documento",
+            "purpose": "Guiar al usuario de forma proactiva hacia la siguiente acción más beneficiosa para su expediente, manteniendo el flujo de trabajo.",
+            "implementation_hint": "Un pequeño icono o un sutil efecto de 'bounce' en la tarjeta de 'next_document_recommendation' cuando esté disponible, invitando al tap sin ser intrusivo."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Complejidad en la carga de documentos desde el móvil (calidad, tipo de archivo, proceso).",
+            "mitigation": "Implementar 'upload_source_sheet' con opciones claras (cámara/galería) y 'scan_or_photo_shortcut'. Proporcionar instrucciones concisas y visuales para la captura de documentos, y validación temprana de formato/calidad."
+          },
+          {
+            "risk": "Sobrecarga de información en pantallas pequeñas, dificultando la comprensión del estado y las recomendaciones.",
+            "mitigation": "Asegurar 'single_column_mobile' y 'short_plain_language'. Utilizar 'confirmed_vs_estimated_split' con una jerarquía visual clara. Considerar el uso de acordeones ('accordion_history') para detalles menos críticos o históricos."
+          },
+          {
+            "risk": "Falta de confianza o claridad durante los tiempos de espera del procesamiento de documentos.",
+            "mitigation": "Implementar 'progress_microstates' con mensajes tranquilizadores y 'optimistic_status_updates' cuando sea posible. Usar 'smart_empty_states' para guiar al usuario cuando no hay resultados inmediatos, y 'safe_estimation_acknowledgement' para gestionar expectativas."
+          },
+          {
+            "risk": "Rendimiento lento o interfaz poco responsiva en web móvil, frustrando al usuario.",
+            "mitigation": "Optimizar la carga de imágenes y recursos. Priorizar la renderización de los elementos clave ('status_first_header', 'primary_upload_action'). Implementar un 'mobile_first_spacing_system' para asegurar un layout eficiente y responsivo, y minimizar el JavaScript pesado."
+          }
+        ],
+        "confidence": "high"
+      }
+    },
+    {
+      "provider": "grok",
+      "ok": true,
+      "model": "grok-4",
+      "data": {
+        "core_direction": "Adopt a mobile-first approach with single-column layouts, thumb-reachable controls, and streamlined flows to ensure clarity on small screens, while building shared patterns for seamless transition to native Android and iOS apps.",
+        "must_keep_codes": [
+          "status_first_header",
+          "confirmed_vs_estimated_split",
+          "next_document_recommendation",
+          "passive_return_tracking",
+          "sticky_primary_upload_cta",
+          "camera_scan_first"
+        ],
+        "add_now_codes": [
+          "mobile_step_summary",
+          "sticky_bottom_continue",
+          "one_hand_navigation",
+          "upload_source_sheet",
+          "smart_empty_states",
+          "scan_or_photo_shortcut"
+        ],
+        "avoid_codes": [
+          "dense_desktop_grid",
+          "long_explanatory_paragraphs",
+          "competing_ctas",
+          "technical_labels",
+          "horizontal_scroll",
+          "multi_column_result_cards"
+        ],
+        "screen_order_codes": [
+          "status_header",
+          "next_best_document",
+          "primary_upload_action",
+          "latest_result_summary",
+          "confirmed_data_block",
+          "estimated_data_block",
+          "return_tracking_block"
+        ],
+        "native_transition": {
+          "shared_patterns": [
+            "tokenized_spacing",
+            "tokenized_colors",
+            "state_driven_cards",
+            "bottom_navigation_ready",
+            "camera_upload_abstraction",
+            "cross_platform_iconography"
+          ],
+          "defer_for_native": [
+            "push_notifications",
+            "offline_file_queue",
+            "native_document_scanner",
+            "background_upload_resume"
+          ]
+        },
+        "top_recommendations": [
+          {
+            "title": "Thumb-Friendly Upload Flow",
+            "why": "Users often interact with one hand on mobile, so prioritizing easy access builds trust and reduces frustration.",
+            "how_now": "Implement sticky bottom CTAs for uploads in responsive web, ensuring large tap targets.",
+            "future_app_value": "Directly ports to native bottom sheets, enhancing quick document scans via device camera."
+          },
+          {
+            "title": "Compact Status Summary",
+            "why": "Small screens need clear, at-a-glance info to maintain a serene, protective tone without overwhelming users.",
+            "how_now": "Use accordions for history and split views for confirmed vs. estimated data in a single column.",
+            "future_app_value": "Evolves into native collapsible sections, improving offline readability in apps."
+          },
+          {
+            "title": "Smart Guidance Prompts",
+            "why": "Guiding next steps non-technically reassures users, aligning with reliable and protective messaging.",
+            "how_now": "Add empty states with simple recommendations and progress indicators in web views.",
+            "future_app_value": "Integrates with push notifications for proactive updates in native apps."
+          },
+          {
+            "title": "Portable Design Tokens",
+            "why": "Consistent spacing and colors ensure serenity across devices, preparing for app scalability.",
+            "how_now": "Define tokens in CSS for web, applying to all elements like cards and buttons.",
+            "future_app_value": "Tokens translate to SwiftUI or Jetpack Compose, maintaining brand consistency in apps."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Upload Progress Pulse",
+            "purpose": "Provides serene reassurance during uploads, showing progress without technical details.",
+            "implementation_hint": "Use subtle animation on the sticky CTA, with optimistic updates for quick feedback."
+          },
+          {
+            "name": "Status Toggle Reveal",
+            "purpose": "Clearly distinguishes confirmed from estimated data, building user confidence calmly.",
+            "implementation_hint": "Animate a gentle expand/collapse on tap, using color shifts from design tokens."
+          },
+          {
+            "name": "Next Step Nudge",
+            "purpose": "Protectively guides users to the best action, maintaining focus on small screens.",
+            "implementation_hint": "Fade-in recommendation card after upload, with one-tap navigation."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Screen clutter on small devices",
+            "mitigation": "Enforce single-column order and accordions to hide non-essential info until tapped."
+          },
+          {
+            "risk": "Fat-finger errors in uploads",
+            "mitigation": "Use large tap targets and bottom-sheet sources for one-hand selection."
+          },
+          {
+            "risk": "Connectivity issues during tracking",
+            "mitigation": "Implement optimistic updates and offline-friendly copy for passive return monitoring."
+          },
+          {
+            "risk": "Inconsistent experience across platforms",
+            "mitigation": "Adopt shared patterns like tokenized spacing for easy native adaptation."
+          }
+        ],
+        "confidence": "high"
+      }
+    }
+  ],
+  "consensus": {
+    "provider_count": 3,
+    "consensus_strength": "triangulado",
+    "must_keep": [
+      {
+        "code": "confirmed_vs_estimated_split",
+        "count": 3
+      },
+      {
+        "code": "next_document_recommendation",
+        "count": 3
+      },
+      {
+        "code": "status_first_header",
+        "count": 3
+      },
+      {
+        "code": "sticky_primary_upload_cta",
+        "count": 3
+      },
+      {
+        "code": "passive_return_tracking",
+        "count": 2
+      },
+      {
+        "code": "single_column_mobile",
+        "count": 2
+      }
+    ],
+    "add_now": [
+      {
+        "code": "mobile_step_summary",
+        "count": 3
+      },
+      {
+        "code": "sticky_bottom_continue",
+        "count": 3
+      },
+      {
+        "code": "one_hand_navigation",
+        "count": 2
+      },
+      {
+        "code": "scan_or_photo_shortcut",
+        "count": 2
+      },
+      {
+        "code": "smart_empty_states",
+        "count": 2
+      },
+      {
+        "code": "upload_source_sheet",
+        "count": 2
+      }
+    ],
+    "avoid": [
+      {
+        "code": "competing_ctas",
+        "count": 3
+      },
+      {
+        "code": "dense_desktop_grid",
+        "count": 3
+      },
+      {
+        "code": "long_explanatory_paragraphs",
+        "count": 3
+      },
+      {
+        "code": "technical_labels",
+        "count": 3
+      },
+      {
+        "code": "horizontal_scroll",
+        "count": 2
+      }
+    ],
+    "screen_order": [
+      {
+        "code": "confirmed_data_block",
+        "count": 3
+      },
+      {
+        "code": "estimated_data_block",
+        "count": 3
+      },
+      {
+        "code": "latest_result_summary",
+        "count": 3
+      },
+      {
+        "code": "next_best_document",
+        "count": 3
+      },
+      {
+        "code": "primary_upload_action",
+        "count": 3
+      },
+      {
+        "code": "status_header",
+        "count": 3
+      },
+      {
+        "code": "return_tracking_block",
+        "count": 2
+      }
+    ],
+    "native_transition": {
+      "shared_patterns": [
+        {
+          "code": "bottom_navigation_ready",
+          "count": 3
+        },
+        {
+          "code": "camera_upload_abstraction",
+          "count": 3
+        },
+        {
+          "code": "cross_platform_iconography",
+          "count": 3
+        },
+        {
+          "code": "state_driven_cards",
+          "count": 3
+        },
+        {
+          "code": "tokenized_colors",
+          "count": 3
+        },
+        {
+          "code": "tokenized_spacing",
+          "count": 3
+        }
+      ],
+      "defer_for_native": [
+        {
+          "code": "native_document_scanner",
+          "count": 3
+        },
+        {
+          "code": "offline_file_queue",
+          "count": 3
+        },
+        {
+          "code": "push_notifications",
+          "count": 3
+        },
+        {
+          "code": "background_upload_resume",
+          "count": 2
+        },
+        {
+          "code": "biometric_unlock",
+          "count": 2
+        }
+      ]
+    },
+    "representative_recommendations": [
+      {
+        "provider": "chatgpt",
+        "core_direction": "Priorizar una experiencia móvil clara, simple y segura que facilite la carga y comprensión de documentos laborales, con foco en la acción principal y preparación para futura app nativa Android/iOS.",
+        "top_recommendations": [
+          {
+            "title": "Optimizar la carga principal con CTA sticky y accesible",
+            "why": "El upload es la acción central; mantenerla visible y fácil de alcanzar con una mano mejora la tasa de uso y reduce fricción.",
+            "how_now": "Implementar sticky_primary_upload_cta y one_hand_navigation para facilitar el acceso rápido y cómodo al botón de carga.",
+            "future_app_value": "En app nativa, esta accesibilidad se traduce en mejores patrones de interacción y uso de gestos nativos."
+          },
+          {
+            "title": "Claridad en la separación de datos confirmados y estimados",
+            "why": "Los usuarios necesitan entender qué información es segura y qué es estimación para tomar decisiones confiables.",
+            "how_now": "Mantener confirmed_vs_estimated_split y agregar safe_estimation_acknowledgement para comunicar con tono sereno y protector.",
+            "future_app_value": "Esta claridad es clave para confianza y puede enriquecerse con notificaciones y estados en tiempo real en app nativa."
+          },
+          {
+            "title": "Diseño mobile-first con espaciado y navegación adaptada",
+            "why": "Pantallas pequeñas requieren jerarquía clara, espaciado adecuado y navegación con una mano para evitar frustración.",
+            "how_now": "Adoptar mobile_first_spacing_system y one_hand_navigation para mejorar legibilidad y usabilidad en móviles actuales.",
+            "future_app_value": "Facilita la transición a apps nativas con patrones consistentes y experiencia fluida."
+          },
+          {
+            "title": "Resumen móvil de pasos y resultados para foco en lo esencial",
+            "why": "Usuarios móviles necesitan información condensada y clara para entender estado y próximos pasos sin saturación.",
+            "how_now": "Incluir mobile_step_summary y document_preview_compact para mostrar info clave sin sobrecargar la pantalla.",
+            "future_app_value": "Permite integrar microestados y notificaciones en app nativa para seguimiento activo y contextual."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Confirmación visual de carga exitosa",
+            "purpose": "Informar al usuario que el documento fue subido correctamente y está siendo procesado.",
+            "implementation_hint": "Usar animación breve y cambio de estado en sticky_primary_upload_cta con mensaje claro y tono sereno."
+          },
+          {
+            "name": "Indicador de estado confirmado vs estimado",
+            "purpose": "Diferenciar visualmente datos confirmados y estimados para facilitar comprensión rápida.",
+            "implementation_hint": "Colores tokenizados y etiquetas simples en confirmed_vs_estimated_split con microcopy protector."
+          },
+          {
+            "name": "Recordatorio suave de siguiente documento recomendado",
+            "purpose": "Guiar al usuario hacia la siguiente acción sin interrumpir ni saturar la experiencia.",
+            "implementation_hint": "Sticky bottom continue con texto breve y botón claro, activado tras revisión del resultado reciente."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Saturación de información en pantalla pequeña",
+            "mitigation": "Priorizar single_column_mobile y mobile_step_summary para mostrar solo lo esencial y evitar scroll excesivo."
+          },
+          {
+            "risk": "Dificultad para usar con una mano en dispositivos grandes",
+            "mitigation": "Implementar one_hand_navigation y thumb_reach_priority para colocar elementos clave al alcance natural del pulgar."
+          },
+          {
+            "risk": "Confusión entre datos confirmados y estimados por lenguaje técnico",
+            "mitigation": "Evitar technical_labels y usar short_plain_language junto con safe_estimation_acknowledgement para tono claro y protector."
+          },
+          {
+            "risk": "Interrupciones molestas por múltiples CTAs o modales",
+            "mitigation": "Evitar competing_ctas y modal_overload, mantener sticky_primary_upload_cta y sticky_bottom_continue como únicas CTAs visibles."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "gemini",
+        "core_direction": "Optimizar la experiencia de Auditapatron para dispositivos móviles, priorizando la claridad, la confianza y la facilidad de uso con una sola mano, sentando las bases para una futura aplicación nativa con un diseño de sistema coherente y patrones de interacción compartidos.",
+        "top_recommendations": [
+          {
+            "title": "Flujo de Carga de Documentos Guiado y Simplificado",
+            "why": "Minimiza la fricción y la ansiedad del usuario al subir documentos, reforzando el tono protector y sereno. Facilita la acción principal del producto.",
+            "how_now": "Implementar 'upload_source_sheet' para elegir entre cámara o galería, con un 'scan_or_photo_shortcut' prominente. Usar 'mobile_step_summary' para guiar al usuario a través de los pasos de carga y procesamiento.",
+            "future_app_value": "La abstracción de la carga de cámara ('camera_upload_abstraction') se traducirá directamente a la integración con el 'native_document_scanner' y la 'share_sheet_ingestion' en la app nativa, permitiendo cargas más rápidas y de mayor calidad."
+          },
+          {
+            "title": "Claridad Inmediata del Estado y Siguientes Pasos",
+            "why": "Construye confianza y reduce la incertidumbre al mantener al usuario informado sobre el estado de su expediente y lo que debe hacer a continuación, alineándose con el tono confiable y no técnico.",
+            "how_now": "Priorizar 'status_first_header' y 'next_document_recommendation' en la parte superior de la pantalla. Utilizar 'progress_microstates' para mostrar el avance del procesamiento y 'smart_empty_states' para guiar cuando no hay datos.",
+            "future_app_value": "La estructura clara del estado y las recomendaciones facilitará la implementación de 'push_notifications' para actualizaciones críticas y una experiencia de usuario más proactiva en la app nativa."
+          },
+          {
+            "title": "Diseño para Interacción con Una Sola Mano",
+            "why": "Es fundamental para una experiencia móvil fluida y cómoda, asegurando que las acciones clave sean fácilmente accesibles para la mayoría de los usuarios.",
+            "how_now": "Posicionar la 'sticky_primary_upload_cta' en la parte inferior de la pantalla. Asegurar 'large_tap_targets' y diseñar con 'thumb_reach_priority' en mente para elementos interactivos y navegación, como 'bottom_sheet_actions' para opciones secundarias.",
+            "future_app_value": "La adopción de patrones como 'bottom_navigation_ready' desde ahora facilitará una transición natural a la navegación por pestañas nativa, que es un estándar para la interacción con una sola mano en iOS y Android."
+          },
+          {
+            "title": "Comunicación Visual de Confianza y Calma",
+            "why": "Refuerza el tono protector, sereno y confiable del producto, ayudando a los usuarios a sentirse seguros y apoyados durante un proceso potencialmente estresante.",
+            "how_now": "Utilizar 'short_plain_language' en todas las descripciones y estados. Implementar un sistema de 'tokenized_colors' y 'tokenized_spacing' que transmita calma y profesionalismo. Mostrar 'progress_microstates' con animaciones suaves y mensajes tranquilizadores.",
+            "future_app_value": "Un sistema de diseño basado en tokens ('tokenized_spacing', 'tokenized_colors') y 'cross_platform_iconography' garantiza una identidad visual coherente y una experiencia de marca unificada en la web y en las futuras aplicaciones nativas, fortaleciendo la confianza a largo plazo."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Indicador de Progreso de Carga/Procesamiento",
+            "purpose": "Reducir la ansiedad del usuario y proporcionar retroalimentación visual inmediata sobre el estado de su documento después de la carga.",
+            "implementation_hint": "Usar 'progress_microstates' con una barra de progreso sutil o un spinner animado, acompañado de texto claro como 'Analizando documento...' o 'Confirmando datos...'."
+          },
+          {
+            "name": "Confirmación Visual de Datos",
+            "purpose": "Reforzar la confianza del usuario al destacar claramente qué información ha sido verificada y confirmada por el sistema.",
+            "implementation_hint": "Cuando un dato pasa de 'estimado' a 'confirmado', mostrar una pequeña animación de 'check' o un cambio de color sutil en el bloque de datos, junto con un mensaje breve y protector."
+          },
+          {
+            "name": "Sugerencia de Siguiente Documento",
+            "purpose": "Guiar al usuario de forma proactiva hacia la siguiente acción más beneficiosa para su expediente, manteniendo el flujo de trabajo.",
+            "implementation_hint": "Un pequeño icono o un sutil efecto de 'bounce' en la tarjeta de 'next_document_recommendation' cuando esté disponible, invitando al tap sin ser intrusivo."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Complejidad en la carga de documentos desde el móvil (calidad, tipo de archivo, proceso).",
+            "mitigation": "Implementar 'upload_source_sheet' con opciones claras (cámara/galería) y 'scan_or_photo_shortcut'. Proporcionar instrucciones concisas y visuales para la captura de documentos, y validación temprana de formato/calidad."
+          },
+          {
+            "risk": "Sobrecarga de información en pantallas pequeñas, dificultando la comprensión del estado y las recomendaciones.",
+            "mitigation": "Asegurar 'single_column_mobile' y 'short_plain_language'. Utilizar 'confirmed_vs_estimated_split' con una jerarquía visual clara. Considerar el uso de acordeones ('accordion_history') para detalles menos críticos o históricos."
+          },
+          {
+            "risk": "Falta de confianza o claridad durante los tiempos de espera del procesamiento de documentos.",
+            "mitigation": "Implementar 'progress_microstates' con mensajes tranquilizadores y 'optimistic_status_updates' cuando sea posible. Usar 'smart_empty_states' para guiar al usuario cuando no hay resultados inmediatos, y 'safe_estimation_acknowledgement' para gestionar expectativas."
+          },
+          {
+            "risk": "Rendimiento lento o interfaz poco responsiva en web móvil, frustrando al usuario.",
+            "mitigation": "Optimizar la carga de imágenes y recursos. Priorizar la renderización de los elementos clave ('status_first_header', 'primary_upload_action'). Implementar un 'mobile_first_spacing_system' para asegurar un layout eficiente y responsivo, y minimizar el JavaScript pesado."
+          }
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "grok",
+        "core_direction": "Adopt a mobile-first approach with single-column layouts, thumb-reachable controls, and streamlined flows to ensure clarity on small screens, while building shared patterns for seamless transition to native Android and iOS apps.",
+        "top_recommendations": [
+          {
+            "title": "Thumb-Friendly Upload Flow",
+            "why": "Users often interact with one hand on mobile, so prioritizing easy access builds trust and reduces frustration.",
+            "how_now": "Implement sticky bottom CTAs for uploads in responsive web, ensuring large tap targets.",
+            "future_app_value": "Directly ports to native bottom sheets, enhancing quick document scans via device camera."
+          },
+          {
+            "title": "Compact Status Summary",
+            "why": "Small screens need clear, at-a-glance info to maintain a serene, protective tone without overwhelming users.",
+            "how_now": "Use accordions for history and split views for confirmed vs. estimated data in a single column.",
+            "future_app_value": "Evolves into native collapsible sections, improving offline readability in apps."
+          },
+          {
+            "title": "Smart Guidance Prompts",
+            "why": "Guiding next steps non-technically reassures users, aligning with reliable and protective messaging.",
+            "how_now": "Add empty states with simple recommendations and progress indicators in web views.",
+            "future_app_value": "Integrates with push notifications for proactive updates in native apps."
+          },
+          {
+            "title": "Portable Design Tokens",
+            "why": "Consistent spacing and colors ensure serenity across devices, preparing for app scalability.",
+            "how_now": "Define tokens in CSS for web, applying to all elements like cards and buttons.",
+            "future_app_value": "Tokens translate to SwiftUI or Jetpack Compose, maintaining brand consistency in apps."
+          }
+        ],
+        "microinteractions": [
+          {
+            "name": "Upload Progress Pulse",
+            "purpose": "Provides serene reassurance during uploads, showing progress without technical details.",
+            "implementation_hint": "Use subtle animation on the sticky CTA, with optimistic updates for quick feedback."
+          },
+          {
+            "name": "Status Toggle Reveal",
+            "purpose": "Clearly distinguishes confirmed from estimated data, building user confidence calmly.",
+            "implementation_hint": "Animate a gentle expand/collapse on tap, using color shifts from design tokens."
+          },
+          {
+            "name": "Next Step Nudge",
+            "purpose": "Protectively guides users to the best action, maintaining focus on small screens.",
+            "implementation_hint": "Fade-in recommendation card after upload, with one-tap navigation."
+          }
+        ],
+        "mobile_risks": [
+          {
+            "risk": "Screen clutter on small devices",
+            "mitigation": "Enforce single-column order and accordions to hide non-essential info until tapped."
+          },
+          {
+            "risk": "Fat-finger errors in uploads",
+            "mitigation": "Use large tap targets and bottom-sheet sources for one-hand selection."
+          },
+          {
+            "risk": "Connectivity issues during tracking",
+            "mitigation": "Implement optimistic updates and offline-friendly copy for passive return monitoring."
+          },
+          {
+            "risk": "Inconsistent experience across platforms",
+            "mitigation": "Adopt shared patterns like tokenized spacing for easy native adaptation."
+          }
+        ],
+        "confidence": "high"
+      }
+    ]
+  }
+}

@@ -39,6 +39,7 @@ import {
   buildCanonicalDocumentContract,
   buildDocumentId,
   buildDocumentStorageKey,
+  buildPreliminaryLaborAnalysis,
   buildSharedEngineEnvelope,
   CASE_PRIORITIES,
   CASE_STATUSES,
@@ -56,6 +57,105 @@ const casePrioritySchema = z.enum(CASE_PRIORITIES);
 const consentStatusSchema = z.enum(CONSENT_STATUSES);
 const documentConsentStatusSchema = z.enum(["pending", "granted", "revoked", "not_required"]);
 const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
+
+const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
+const complilinkReturnEventNames = new Set([
+  "document.processing.started",
+  "document.analysis.completed",
+  "document.analyzed",
+  "contract.analysis.detailed",
+]);
+
+function parseEventMetadata(metadata: string | null) {
+  if (!metadata) return null;
+
+  try {
+    const parsed = JSON.parse(metadata);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getMetadataDocumentId(metadata: Record<string, unknown> | null) {
+  if (!metadata) return null;
+  if (typeof metadata.documentId === "string") return metadata.documentId;
+  if (typeof metadata.document_id === "string") return metadata.document_id;
+  return null;
+}
+
+function buildCompliLinkMonitoring(
+  documents: Array<{ documentId: string; originalName: string }>,
+  events: Array<{ title: string; metadata: string | null; eventAt: Date }>,
+) {
+  const now = Date.now();
+
+  const items = documents.map((document) => {
+    const relatedEvents = events
+      .map((event) => ({ event, metadata: parseEventMetadata(event.metadata) }))
+      .filter(({ metadata }) => getMetadataDocumentId(metadata) === document.documentId);
+
+    const dispatchEntry = relatedEvents.find(
+      ({ metadata }) => metadata?.stage === "complilink_dispatch" && metadata?.dispatch_status === "sent",
+    );
+
+    if (!dispatchEntry) {
+      return {
+        documentId: document.documentId,
+        documentName: document.originalName,
+        status: "not_sent",
+        dispatchedAt: null,
+        respondedAt: null,
+        responseEvent: null,
+        message: "",
+      } as const;
+    }
+
+    const returnEntry = relatedEvents.find(
+      ({ metadata }) => typeof metadata?.event === "string" && complilinkReturnEventNames.has(metadata.event),
+    );
+
+    const dispatchedAt =
+      typeof dispatchEntry.metadata?.dispatched_at === "string"
+        ? dispatchEntry.metadata.dispatched_at
+        : dispatchEntry.event.eventAt.toISOString();
+
+    if (returnEntry) {
+      return {
+        documentId: document.documentId,
+        documentName: document.originalName,
+        status: "received",
+        dispatchedAt,
+        respondedAt: returnEntry.event.eventAt.toISOString(),
+        responseEvent: String(returnEntry.metadata?.event ?? returnEntry.event.title),
+        message: "CompliLink ya devolvió una respuesta para este documento.",
+      } as const;
+    }
+
+    const overdue = now - new Date(dispatchedAt).getTime() >= COMPLILINK_RETURN_TIMEOUT_MS;
+
+    return {
+      documentId: document.documentId,
+      documentName: document.originalName,
+      status: overdue ? "attention" : "waiting",
+      dispatchedAt,
+      respondedAt: null,
+      responseEvent: null,
+      message: overdue
+        ? "Este documento ya fue enviado, pero todavía no llega una respuesta automática. Conviene revisarlo con calma."
+        : "Este documento ya fue enviado y seguimos esperando la respuesta automática.",
+    } as const;
+  });
+
+  return {
+    documents: items,
+    summary: {
+      waitingCount: items.filter((item) => item.status === "waiting").length,
+      attentionCount: items.filter((item) => item.status === "attention").length,
+      receivedCount: items.filter((item) => item.status === "received").length,
+    },
+  };
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -143,9 +243,11 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const complilinkMonitoring = buildCompliLinkMonitoring(documents, detail.events);
         return {
           ...detail,
           documents,
+          complilinkMonitoring,
         };
       }),
     create: protectedProcedure
@@ -355,6 +457,12 @@ export const appRouter = router({
           mimeType: input.mimeType,
           textHint: input.textHint,
         });
+        const preliminaryAnalysis = buildPreliminaryLaborAnalysis({
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          textHint: input.textHint,
+          classification,
+        });
 
         const processedAt = new Date();
 
@@ -429,8 +537,15 @@ export const appRouter = router({
           actorUserId: ctx.user.id,
           eventType: "document_classified",
           title: "Documento clasificado",
-          description: `Clasificación automática preliminar: ${classification.documentType}.`,
-          metadata: JSON.stringify({ reasons: classification.reasons }),
+          description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
+          metadata: JSON.stringify({
+            reasons: classification.reasons,
+            normalized_doc_type: classification.normalizedDocType,
+            processing_profile: classification.processingProfile,
+            review_recommendation: classification.reviewRecommendation,
+            supports_structured_extraction: classification.supportsStructuredExtraction,
+            supports_benefit_estimation: classification.supportsBenefitEstimation,
+          }),
           eventAt: new Date(),
         });
 
@@ -455,6 +570,24 @@ export const appRouter = router({
           contractType: "document",
           schemaVersion: "v1",
           payload: JSON.stringify(documentContract),
+          status: "ready",
+        });
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "classification",
+          schemaVersion: "v1",
+          payload: JSON.stringify({
+            documentId,
+            classification,
+            preliminaryAnalysis,
+            confirmedData: preliminaryAnalysis.confirmedData,
+            estimatedData: preliminaryAnalysis.estimatedData,
+            extractionTargets: preliminaryAnalysis.extractionTargets,
+            generatedAt: processedAt.toISOString(),
+          }),
           status: "ready",
         });
 
@@ -494,6 +627,15 @@ export const appRouter = router({
           sharedEngineEnvelope,
           sourceUserId: ctx.user.id,
           uploadedAt: documentRecord.createdAt ?? processedAt,
+          docType: classification.normalizedDocType,
+          auditId: detail.case.traceId,
+          caseId: detail.case.caseId,
+          metadata: {
+            employerRfc: preliminaryAnalysis.estimatedData.employerRfc,
+            workerName: preliminaryAnalysis.estimatedData.workerName,
+            period: preliminaryAnalysis.estimatedData.period,
+            descriptiveDocType: classification.normalizedDocType,
+          },
         });
 
         if (engineDispatch.status !== "sent") {
@@ -507,6 +649,25 @@ export const appRouter = router({
             description: `La entrega documental al motor inteligente no se completó el ${engineDispatch.dispatchedAt}. Estado: ${engineDispatch.status}. Motivo: ${engineDispatch.reason ?? "sin detalle"}.`,
             status: "open",
             raisedAt: new Date(engineDispatch.dispatchedAt),
+          });
+        } else {
+          await addCaseEvent({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "note_added",
+            title: "Documento enviado a CompliLink",
+            description: "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+            metadata: JSON.stringify({
+              document_id: documentId,
+              stage: "complilink_dispatch",
+              dispatch_status: engineDispatch.status,
+              dispatched_at: engineDispatch.dispatchedAt,
+              attempts: engineDispatch.attempts,
+              http_status: engineDispatch.httpStatus,
+            }),
+            eventAt: new Date(engineDispatch.dispatchedAt),
           });
         }
 
@@ -537,6 +698,7 @@ export const appRouter = router({
         return {
           document: documentRecord,
           classification,
+          preliminaryAnalysis,
           documentContract,
           sharedEngineEnvelope,
           engineDispatch,

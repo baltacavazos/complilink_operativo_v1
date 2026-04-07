@@ -1,0 +1,254 @@
+{
+  "generated_at": "2026-04-07T02:23:05Z",
+  "prompt": "Contexto:\n- AuditaPatron es la experiencia frontal para el trabajador: captura documentos, muestra expediente y trazabilidad.\n- CompliLink MX es la capa operativa que recibe documentos y ejecuta el procesamiento pesado.\n- Ya existe un contrato confirmado de salida desde AuditaPatron hacia CompliLink MX.\n- El contrato confirmado de salida es:\n  - evento: document.uploaded\n  - headers requeridos: X-AuditaPatron-Timestamp y X-AuditaPatron-Signature\n  - firma: HMAC-SHA256 sobre la cadena timestamp.body\n  - CompliLink deduplica por sha256\n  - AuditaPatron debe reintentar solo errores 5xx con backoff 30s, 60s, 120s\n- Tipos documentales externos confirmados: recibo_nomina, cfdi_nomina, constancia_imss, constancia_infonavit, contrato_laboral, opinion_cumplimiento\n- Capacidades actuales de AuditaPatron:\n  - Backend Express con endpoints HTTP públicos posibles\n  - Base de datos con labor_cases, case_documents, case_events, operational_alerts, canonical_contracts y audit_logs\n  - Hoy NO existe un webhook público de retorno desde CompliLink hacia AuditaPatron\n  - Hoy NO hay helpers dedicados para actualizar automáticamente documentos/casos tras análisis externo\n- Objetivo del negocio: máxima automatización bidireccional con mínima intervención humana, alta robustez, bajo costo inicial y rápida operación.\n\nTarea:\nDiseña la arquitectura mínima y robusta para el RETORNO desde CompliLink MX hacia AuditaPatron.\nQuiero que definas:\n1. el conjunto mínimo de eventos de retorno recomendados,\n2. el payload mínimo por evento,\n3. la estrategia de autenticación y firma del retorno,\n4. la estrategia de idempotencia,\n5. cómo debe reaccionar AuditaPatron en BD y trazabilidad,\n6. cómo manejar reintentos, duplicados y eventos fuera de orden,\n7. qué campos deben quedarse internos en AuditaPatron y no viajar en el webhook,\n8. un veredicto final de implementación MVP de doble vía.\n\nResponde SOLO con JSON válido usando exactamente esta forma:\n{\n  \"recommended_inbound_events\": [\n    {\n      \"event\": \"string\",\n      \"purpose\": \"string\",\n      \"required_fields\": [\"string\"],\n      \"optional_fields\": [\"string\"]\n    }\n  ],\n  \"security\": {\n    \"signature_algorithm\": \"string\",\n    \"signature_input\": \"string\",\n    \"required_headers\": [\"string\"],\n    \"timestamp_tolerance_seconds\": 0\n  },\n  \"idempotency\": {\n    \"key_strategy\": \"string\",\n    \"duplicate_behavior\": \"string\"\n  },\n  \"auditapatron_reactions\": {\n    \"db_updates\": [\"string\"],\n    \"case_events\": [\"string\"],\n    \"alerts\": [\"string\"],\n    \"audit_logs\": [\"string\"]\n  },\n  \"resilience\": {\n    \"retry_policy_for_complilink\": \"string\",\n    \"out_of_order_handling\": \"string\",\n    \"dead_letter_recommendation\": \"string\"\n  },\n  \"keep_internal_only\": [\"string\"],\n  \"mvp_verdict\": \"string\"\n}",
+  "models": {
+    "chatgpt": {
+      "status": "ok",
+      "output": {
+        "recommended_inbound_events": [
+          {
+            "event": "document.processed",
+            "purpose": "Informar el resultado del análisis y procesamiento de un documento enviado previamente",
+            "required_fields": [
+              "document_id",
+              "case_id",
+              "processing_status",
+              "processing_timestamp",
+              "processing_result_summary",
+              "sha256_document_hash"
+            ],
+            "optional_fields": [
+              "error_code",
+              "error_message",
+              "detailed_analysis_url"
+            ]
+          },
+          {
+            "event": "case.status.updated",
+            "purpose": "Comunicar cambios relevantes en el estado del caso tras procesamiento o validaciones externas",
+            "required_fields": [
+              "case_id",
+              "new_status",
+              "update_timestamp"
+            ],
+            "optional_fields": [
+              "status_reason",
+              "related_document_ids"
+            ]
+          }
+        ],
+        "security": {
+          "signature_algorithm": "HMAC-SHA256",
+          "signature_input": "timestamp.body",
+          "required_headers": [
+            "X-CompliLink-Timestamp",
+            "X-CompliLink-Signature"
+          ],
+          "timestamp_tolerance_seconds": 300
+        },
+        "idempotency": {
+          "key_strategy": "composite key of event + document_id or case_id + processing_timestamp",
+          "duplicate_behavior": "ignorar eventos con la misma key ya procesada, registrar en audit_logs"
+        },
+        "auditapatron_reactions": {
+          "db_updates": [
+            "actualizar estado y metadatos en case_documents y labor_cases",
+            "registrar errores o resultados en case_events"
+          ],
+          "case_events": [
+            "crear eventos con timestamps y resultados para trazabilidad completa"
+          ],
+          "alerts": [
+            "generar operational_alerts para errores críticos o inconsistencias detectadas"
+          ],
+          "audit_logs": [
+            "loggear recepción, validación, duplicados y errores de webhook"
+          ]
+        },
+        "resilience": {
+          "retry_policy_for_complilink": "AuditaPatron responde 5xx para que CompliLink reintente con backoff exponencial; 2xx para éxito",
+          "out_of_order_handling": "usar timestamps y versionado para aplicar solo actualizaciones más recientes; almacenar eventos fuera de orden para reconciliación",
+          "dead_letter_recommendation": "guardar eventos fallidos o inválidos en tabla dead_letter para análisis manual y re-procesamiento"
+        },
+        "keep_internal_only": [
+          "internal_document_processing_notes",
+          "worker_personal_data_no_requerida",
+          "system_audit_trail_details",
+          "internal_case_risk_scores"
+        ],
+        "mvp_verdict": "Implementar webhook público en AuditaPatron para recibir eventos document.processed y case.status.updated con firma HMAC-SHA256 y tolerancia de 5 minutos; usar idempotencia basada en event+id+timestamp; actualizar BD y trazabilidad con eventos y alertas; manejar duplicados y orden con timestamps; almacenar dead letters; esta solución mínima permite automatización bidireccional robusta, rápida y de bajo costo inicial."
+      }
+    },
+    "gemini": {
+      "status": "ok",
+      "output": {
+        "recommended_inbound_events": [
+          {
+            "event": "document.analysis_completed",
+            "purpose": "Indica que un documento ha sido procesado y analizado exitosamente por CompliLink MX, con datos extraídos y resultados de validación.",
+            "required_fields": [
+              "document_id",
+              "case_id",
+              "sha256_hash",
+              "status",
+              "extracted_data"
+            ],
+            "optional_fields": [
+              "validation_results",
+              "complilink_processing_id"
+            ]
+          },
+          {
+            "event": "document.analysis_failed",
+            "purpose": "Notifica que CompliLink MX no pudo procesar o analizar un documento debido a errores internos, formato inválido, o fallos de validación críticos.",
+            "required_fields": [
+              "document_id",
+              "case_id",
+              "sha256_hash",
+              "status",
+              "error_code",
+              "error_message"
+            ],
+            "optional_fields": [
+              "details",
+              "complilink_processing_id"
+            ]
+          },
+          {
+            "event": "document.deduplicated",
+            "purpose": "Informa que CompliLink MX identificó el documento como un duplicado de uno previamente recibido y procesado.",
+            "required_fields": [
+              "document_id",
+              "case_id",
+              "sha256_hash",
+              "status"
+            ],
+            "optional_fields": [
+              "original_document_id",
+              "reason",
+              "complilink_processing_id"
+            ]
+          }
+        ],
+        "security": {
+          "signature_algorithm": "HMAC-SHA256",
+          "signature_input": "X-CompliLinkMX-Timestamp.body",
+          "required_headers": [
+            "X-CompliLinkMX-Timestamp",
+            "X-CompliLinkMX-Signature",
+            "X-CompliLinkMX-Request-ID"
+          ],
+          "timestamp_tolerance_seconds": 300
+        },
+        "idempotency": {
+          "key_strategy": "X-CompliLinkMX-Request-ID (UUID generado por CompliLink MX por cada intento de webhook único)",
+          "duplicate_behavior": "AuditaPatron debe almacenar los X-CompliLinkMX-Request-ID procesados (ej. por 7 días). Si se recibe un ID ya procesado, retornar 200 OK sin re-procesar. Esto previene reintentos de CompliLink MX de causar efectos secundarios."
+        },
+        "auditapatron_reactions": {
+          "db_updates": [
+            "case_documents: Actualizar 'status' (e.g., 'analyzed', 'analysis_failed', 'deduplicated').",
+            "case_documents: Almacenar 'extracted_data' y 'validation_results' (JSONB) para 'document.analysis_completed'.",
+            "case_documents: Almacenar 'error_code' y 'error_message' para 'document.analysis_failed'.",
+            "case_documents: Almacenar 'original_document_id' para 'document.deduplicated'."
+          ],
+          "case_events": [
+            "Crear 'case_event' para cada webhook recibido, detallando el evento y su resultado (e.g., 'Document [document_id] analysis completed', 'Document [document_id] analysis failed: [error_message]')."
+          ],
+          "alerts": [
+            "Crear 'operational_alert' para 'document.analysis_failed' (requiere intervención humana).",
+            "Crear 'operational_alert' si 'document.analysis_completed' contiene 'validation_results' que indican fallos críticos o advertencias que requieren revisión."
+          ],
+          "audit_logs": [
+            "Registrar cada recepción de webhook, incluyendo headers, payload, y resultado del procesamiento (éxito/fallo, errores de firma/idempotencia)."
+          ]
+        },
+        "resilience": {
+          "retry_policy_for_complilink": "CompliLink MX debe reintentar solo errores 5xx de AuditaPatron con backoff exponencial (ej. 30s, 60s, 120s, etc.). AuditaPatron debe retornar 2xx para éxito, 4xx para errores del cliente (firma inválida, payload malformado), y 5xx para errores internos del servidor.",
+          "out_of_order_handling": "AuditaPatron debe almacenar el 'last_processed_complilink_timestamp' por documento. Si un evento entrante tiene un timestamp igual o anterior al último procesado, se ignora a menos que sea un evento de re-procesamiento explícito. En caso de 'analysis_failed' después de 'analysis_completed', el estado 'failed' prevalece y se actualiza, ya que indica un problema posterior o una re-evaluación.",
+          "dead_letter_recommendation": "CompliLink MX debe implementar una Dead Letter Queue (DLQ) para eventos que fallan persistentemente después de todos los reintentos. Esto permite una revisión manual y re-envío si es necesario, evitando la pérdida de eventos."
+        },
+        "keep_internal_only": [
+          "IDs internos de AuditaPatron no relevantes para CompliLink MX (ej. user_id del cargador, internal_contract_id si no es case_id).",
+          "Datos de auditoría y logs internos de AuditaPatron.",
+          "Cualquier PII o dato sensible que no sea estrictamente necesario para el procesamiento o el retorno de CompliLink MX."
+        ],
+        "mvp_verdict": "El MVP bidireccional propuesto establece un flujo robusto y automatizado. La salida de AuditaPatron (document.uploaded) y la entrada de CompliLink MX (document.analysis_completed, document.analysis_failed, document.deduplicated) cubren los estados críticos del ciclo de vida del documento. La consistencia en la seguridad (HMAC-SHA256), la idempotencia (X-CompliLinkMX-Request-ID) y las políticas de reintento aseguran alta fiabilidad. La inclusión de 'extracted_data' en el payload de éxito es clave para la máxima automatización deseada, permitiendo a AuditaPatron actualizar automáticamente expedientes y disparar flujos de trabajo sin intervención humana. Este diseño minimiza el costo inicial al reutilizar patrones existentes y maximiza la robustez y la automatización."
+      }
+    },
+    "grok": {
+      "status": "ok",
+      "output": {
+        "recommended_inbound_events": [
+          {
+            "event": "document.analyzed",
+            "purpose": "Notificar resultados de procesamiento y validación del documento",
+            "required_fields": [
+              "document_id",
+              "document_type",
+              "status",
+              "analysis_results"
+            ],
+            "optional_fields": [
+              "error_details",
+              "validation_timestamp"
+            ]
+          },
+          {
+            "event": "processing.error",
+            "purpose": "Notificar errores irrecuperables en el procesamiento del documento",
+            "required_fields": [
+              "document_id",
+              "error_code",
+              "error_message"
+            ],
+            "optional_fields": [
+              "retry_count",
+              "error_timestamp"
+            ]
+          }
+        ],
+        "security": {
+          "signature_algorithm": "HMAC-SHA256",
+          "signature_input": "timestamp.body",
+          "required_headers": [
+            "X-CompliLink-Timestamp",
+            "X-CompliLink-Signature"
+          ],
+          "timestamp_tolerance_seconds": 300
+        },
+        "idempotency": {
+          "key_strategy": "sha256 hash of payload",
+          "duplicate_behavior": "Ignore and log duplicate events"
+        },
+        "auditapatron_reactions": {
+          "db_updates": [
+            "Update case_documents with status and results",
+            "Update labor_cases with aggregated compliance status"
+          ],
+          "case_events": [
+            "Insert event record with timestamp, type, and details"
+          ],
+          "alerts": [
+            "Create operational_alert if status is error or invalid"
+          ],
+          "audit_logs": [
+            "Log inbound event receipt, validation, and processing outcome"
+          ]
+        },
+        "resilience": {
+          "retry_policy_for_complilink": "Retry 5xx errors with exponential backoff: 30s, 60s, 120s, max 3 attempts",
+          "out_of_order_handling": "Process based on event timestamp; queue and reorder if necessary using sequence_id",
+          "dead_letter_recommendation": "Implement dead letter queue for persistent failures after max retries"
+        },
+        "keep_internal_only": [
+          "internal_case_id",
+          "user_personal_data",
+          "db_timestamps",
+          "audit_log_details"
+        ],
+        "mvp_verdict": "Viable MVP: Implement public webhook endpoint in AuditaPatron backend, add event handlers for DB updates and idempotency checks; enables bidirectional automation with low cost and high robustness"
+      }
+    }
+  },
+  "duration_seconds": 59.48
+}

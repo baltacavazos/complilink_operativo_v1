@@ -1,0 +1,537 @@
+{
+  "generated_at": "2026-04-07T02:29:14Z",
+  "prompt": "Contexto del producto:\n- AuditaPatron es la experiencia frontal para el trabajador.\n- CompliLink MX es la capa operativa y de procesamiento conectada por webhooks.\n- Ya existe un flujo de carga documental en AuditaPatron con almacenamiento, hash SHA-256, clasificación inicial simple, contratos canónicos y envío al motor conectado.\n- La clasificación actual es limitada y basada sobre todo en nombre de archivo, mimeType y textHint.\n- Actualmente el sistema reconoce principalmente: payroll_receipt, cfdi, imss, contract, settlement, evidence, other.\n- Existe helper server-side para invocar LLM con salida estructurada JSON.\n- El usuario quiere ampliar AuditaPatron para que se puedan subir prácticamente CUALQUIER documento laboral relevante y que la IA lo analice a profundidad.\n- Debe incluir contratos individuales de trabajo para calcular preliminarmente prestaciones, obligaciones, riesgos y posibles hallazgos.\n- Se busca mínima intervención humana, máxima automatización, explicabilidad y robustez operativa.\n- Es importante no prometer certeza jurídica absoluta cuando falten datos; el sistema debe distinguir entre cálculo preliminar, estimación y dato confirmado.\n\nObjetivo del análisis:\nProponer la mejor arquitectura MVP para que AuditaPatron pueda:\n1. aceptar documentos laborales heterogéneos,\n2. clasificarlos con IA de forma más amplia,\n3. extraer datos clave por tipo documental,\n4. analizar contratos individuales de trabajo,\n5. estimar prestaciones y conceptos laborales cuando sea razonable,\n6. dejar resultados estructurados y útiles para expediente, interfaz y CompliLink MX,\n7. mantener guardrails legales y operativos.\n\nQuiero que respondas SOLO con JSON válido usando exactamente esta estructura:\n{\n  \"document_families\": [\n    {\n      \"family\": \"string\",\n      \"examples\": [\"string\"],\n      \"analysis_priority\": \"high|medium|low\"\n    }\n  ],\n  \"ingestion_and_analysis_pipeline\": [\"string\"],\n  \"structured_outputs\": {\n    \"common_fields\": [\"string\"],\n    \"contract_fields\": [\"string\"],\n    \"benefits_fields\": [\"string\"],\n    \"risk_fields\": [\"string\"]\n  },\n  \"prestaciones_scope\": {\n    \"can_estimate_with_contract_only\": [\"string\"],\n    \"requires_additional_documents\": [\"string\"],\n    \"should_be_marked_as_preliminary\": [\"string\"]\n  },\n  \"legal_and_product_guardrails\": [\"string\"],\n  \"backend_changes\": [\"string\"],\n  \"frontend_changes\": [\"string\"],\n  \"complilink_integration\": [\"string\"],\n  \"mvp_verdict\": \"string\"\n}",
+  "models": {
+    "chatgpt": {
+      "status": "ok",
+      "output": {
+        "document_families": [
+          {
+            "family": "payroll_documents",
+            "examples": [
+              "payroll_receipt",
+              "nomina",
+              "comprobante de pago"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "tax_documents",
+            "examples": [
+              "cfdi",
+              "declaraciones fiscales",
+              "comprobantes fiscales"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "social_security_documents",
+            "examples": [
+              "imss",
+              "afore",
+              "infonavit"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "contracts_individual_work",
+            "examples": [
+              "contrato individual de trabajo",
+              "anexos contractuales",
+              "modificaciones contractuales"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "settlement_documents",
+            "examples": [
+              "finiquito",
+              "liquidación",
+              "acuerdos de terminación"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "evidence_documents",
+            "examples": [
+              "comunicaciones laborales",
+              "cartas, avisos",
+              "evaluaciones de desempeño"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "other_labor_documents",
+            "examples": [
+              "actas administrativas",
+              "reglamentos internos",
+              "constancias diversas"
+            ],
+            "analysis_priority": "low"
+          }
+        ],
+        "ingestion_and_analysis_pipeline": [
+          "Recepción y almacenamiento con hash SHA-256",
+          "Preclasificación simple por metadata (nombre, mimeType, textHint)",
+          "Invocación de LLM helper para clasificación avanzada con salida JSON estructurada",
+          "Clasificación en document_families ampliadas",
+          "Extracción de datos clave por tipo documental usando LLM y reglas específicas",
+          "Análisis profundo de contratos individuales para identificar cláusulas, obligaciones y derechos",
+          "Estimación preliminar de prestaciones y riesgos basada en datos contractuales y documentos relacionados",
+          "Generación de resultados estructurados con niveles de confianza y etiquetas de certeza (confirmado, estimado, preliminar)",
+          "Almacenamiento de resultados en base de datos para consulta y envío a CompliLink MX vía webhooks",
+          "Monitoreo y logging para trazabilidad y guardrails legales"
+        ],
+        "structured_outputs": {
+          "common_fields": [
+            "document_id",
+            "document_family",
+            "upload_date",
+            "hash_sha256",
+            "confidence_level",
+            "extracted_text_summary",
+            "classification_reasoning",
+            "certainty_tag"
+          ],
+          "contract_fields": [
+            "contract_type",
+            "start_date",
+            "end_date",
+            "salary_base",
+            "work_hours",
+            "job_position",
+            "obligations_employer",
+            "obligations_employee",
+            "termination_clauses",
+            "modification_clauses",
+            "jurisdiction",
+            "clauses_risks_flags"
+          ],
+          "benefits_fields": [
+            "vacation_days",
+            "vacation_bonus",
+            "aguinaldo_days",
+            "prima_vacacional",
+            "other_benefits",
+            "estimated_prestations_value",
+            "calculation_basis",
+            "estimation_confidence"
+          ],
+          "risk_fields": [
+            "non_compliance_flags",
+            "missing_mandatory_clauses",
+            "potential_liabilities",
+            "legal_risks_summary",
+            "recommendations"
+          ]
+        },
+        "prestaciones_scope": {
+          "can_estimate_with_contract_only": [
+            "vacation_days",
+            "aguinaldo_days",
+            "prima_vacacional",
+            "basic_salary_based_benefits"
+          ],
+          "requires_additional_documents": [
+            "settlement_amounts",
+            "actual_payroll_receipts",
+            "social_security_contributions",
+            "modifications or addenda to contract"
+          ],
+          "should_be_marked_as_preliminary": [
+            "estimated_prestations_value",
+            "risk_assessments",
+            "obligations_inferred_from_contract"
+          ]
+        },
+        "legal_and_product_guardrails": [
+          "Incluir disclaimers claros sobre naturaleza preliminar y no certeza jurídica absoluta",
+          "Etiquetar resultados con niveles de confianza y certeza",
+          "Registrar trazabilidad completa de análisis y versiones de modelos IA",
+          "Permitir revisión humana en casos de baja confianza o documentos críticos",
+          "Cumplir con normativas de protección de datos y privacidad",
+          "No automatizar decisiones legales definitivas sin intervención humana",
+          "Mantener logs y auditoría para soporte legal y operativa"
+        ],
+        "backend_changes": [
+          "Integrar LLM helper para clasificación y extracción avanzada",
+          "Ampliar esquema de base de datos para nuevos campos estructurados",
+          "Implementar pipeline de análisis modular y escalable",
+          "Agregar sistema de etiquetado de certeza y niveles de confianza",
+          "Desarrollar API para consulta y actualización de resultados analíticos",
+          "Implementar logging y monitoreo específico para guardrails"
+        ],
+        "frontend_changes": [
+          "Actualizar interfaz de carga para aceptar cualquier documento laboral relevante",
+          "Mostrar clasificación avanzada y explicación de IA al usuario",
+          "Presentar resultados estructurados con niveles de confianza y disclaimers",
+          "Incluir sección específica para análisis de contratos y estimaciones preliminares",
+          "Permitir feedback y solicitud de revisión humana en casos dudosos",
+          "Mejorar visualización de hallazgos, riesgos y prestaciones estimadas"
+        ],
+        "complilink_integration": [
+          "Enviar resultados estructurados y etiquetados vía webhook a CompliLink MX",
+          "Incluir campos de certeza y confianza para uso operativo",
+          "Permitir actualización incremental conforme se reciban nuevos documentos",
+          "Sincronizar estados y alertas de riesgos detectados",
+          "Garantizar formato JSON robusto y validado para integración"
+        ],
+        "mvp_verdict": "Implementar pipeline IA modular que permita carga y análisis de documentos laborales heterogéneos con clasificación avanzada y extracción estructurada, enfocándose inicialmente en contratos individuales para estimación preliminar de prestaciones y riesgos, manteniendo guardrails legales claros y niveles de certeza, con integración robusta a CompliLink MX y experiencia de usuario que promueva transparencia y mínima intervención humana."
+      }
+    },
+    "gemini": {
+      "status": "ok",
+      "output": {
+        "document_families": [
+          {
+            "family": "Contrato Individual de Trabajo (CIT)",
+            "examples": [
+              "Contrato por tiempo indeterminado",
+              "Contrato por obra determinada",
+              "Contrato por temporada"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "Recibo de Nómina / CFDI de Nómina",
+            "examples": [
+              "Recibo de nómina mensual",
+              "CFDI de nómina quincenal"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "Documentos IMSS",
+            "examples": [
+              "Alta IMSS",
+              "Baja IMSS",
+              "Modificación de Salario",
+              "Aportaciones Obrero-Patronales"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "Finiquito / Liquidación",
+            "examples": [
+              "Recibo de finiquito",
+              "Convenio de liquidación"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "Reglamento Interior de Trabajo (RIT)",
+            "examples": [
+              "Reglamento de la empresa X"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "Cartas (Renuncia, Despido, Amonestación)",
+            "examples": [
+              "Carta de renuncia voluntaria",
+              "Aviso de rescisión de contrato",
+              "Acta administrativa"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "Identificación Oficial",
+            "examples": [
+              "INE",
+              "Pasaporte"
+            ],
+            "analysis_priority": "low"
+          },
+          {
+            "family": "Comprobante de Domicilio",
+            "examples": [
+              "Recibo de luz",
+              "Estado de cuenta bancario"
+            ],
+            "analysis_priority": "low"
+          },
+          {
+            "family": "Otros Documentos de Evidencia",
+            "examples": [
+              "Correos electrónicos",
+              "Mensajes de texto",
+              "Fotografías",
+              "Comunicaciones internas"
+            ],
+            "analysis_priority": "low"
+          }
+        ],
+        "ingestion_and_analysis_pipeline": [
+          "AuditaPatron: User Upload & Initial Validation (File Type, Size)",
+          "AuditaPatron: Secure Storage (S3/Blob) & SHA-256 Hashing",
+          "CompliLink MX (Webhook Trigger): Document Pre-processing (OCR for images, Text Extraction for PDFs)",
+          "CompliLink MX: Enhanced AI Classification (LLM + Heuristics based on content, metadata, textHint)",
+          "CompliLink MX: Document-Specific Data Extraction (LLM with tailored prompts for each classified type, outputting structured JSON)",
+          "CompliLink MX: Contract Analysis Module (Specific LLM prompt for CITs to identify clauses, terms, and conditions)",
+          "CompliLink MX: Preliminary Calculation Engine (Rule-based logic combined with LLM for estimations based on extracted data)",
+          "CompliLink MX: Data Structuring, Validation & Persistency (Store results in a structured data model)",
+          "CompliLink MX: Risk & Finding Identification (LLM-driven analysis of extracted data against legal norms)",
+          "AuditaPatron: Asynchronous Notification & UI Update (Display analysis status and preliminary findings)"
+        ],
+        "structured_outputs": {
+          "common_fields": [
+            "document_id",
+            "original_filename",
+            "sha256_hash",
+            "mime_type",
+            "classified_type",
+            "extracted_text_sample",
+            "extraction_timestamp",
+            "processing_status",
+            "confidence_score_classification",
+            "confidence_score_extraction"
+          ],
+          "contract_fields": [
+            "employer_name",
+            "employee_name",
+            "start_date",
+            "end_date",
+            "contract_type",
+            "salary_base",
+            "salary_integrated",
+            "work_schedule",
+            "job_title",
+            "place_of_work",
+            "probation_period_days",
+            "benefits_explicitly_mentioned",
+            "clauses_identified",
+            "termination_conditions"
+          ],
+          "benefits_fields": [
+            "estimated_seniority_days",
+            "estimated_vacation_days_accrued",
+            "estimated_vacation_premium_accrued",
+            "estimated_aguinaldo_proportion",
+            "estimated_severance_pay_components",
+            "estimated_pension_fund_contributions",
+            "estimated_housing_fund_contributions",
+            "estimated_social_security_contributions"
+          ],
+          "risk_fields": [
+            "potential_non_compliance_flags",
+            "missing_key_clauses",
+            "ambiguous_terms",
+            "discrepancies_with_law",
+            "unusual_clauses",
+            "recommendations_for_review"
+          ]
+        },
+        "prestaciones_scope": {
+          "can_estimate_with_contract_only": [
+            "Antigüedad (fecha inicio)",
+            "Vacaciones (días por año)",
+            "Prima Vacacional (porcentaje)",
+            "Aguinaldo (proporcional)",
+            "Salario Base",
+            "Tipo de Contrato",
+            "Periodo de Prueba"
+          ],
+          "requires_additional_documents": [
+            "Salario Diario Integrado (requiere recibos de nómina)",
+            "Cálculo exacto de Finiquito/Liquidación (requiere recibos, bajas IMSS, historial de pagos)",
+            "Aportaciones IMSS/INFONAVIT (requiere estados de cuenta, recibos)",
+            "PTU (requiere declaraciones fiscales de la empresa)",
+            "Horas Extra (requiere registros de asistencia)"
+          ],
+          "should_be_marked_as_preliminary": [
+            "TODOS los cálculos de prestaciones y riesgos",
+            "Cualquier estimación de montos monetarios",
+            "Cualquier hallazgo de riesgo legal",
+            "Cualquier dato derivado de un solo documento sin corroboración"
+          ]
+        },
+        "legal_and_product_guardrails": [
+          "Clear Disclaimer in UI: 'Los cálculos y análisis son preliminares y no constituyen asesoría legal definitiva. Siempre consulte a un experto.'",
+          "Confidence Scores: Display AI confidence for classification and extraction to the user/operator.",
+          "Human-in-the-Loop (HIL) Flag: Implement a mechanism to flag documents/analyses for human review when confidence is low or specific risks are identified.",
+          "Data Privacy & Security: Adhere to LFPDPPP, encrypt data at rest and in transit, strict access controls.",
+          "Explainability: Provide snippets of text from the document that led to a specific extraction or finding.",
+          "Version Control: Track changes to documents and analysis results.",
+          "Audit Trail: Log all actions performed on documents and data.",
+          "No Legal Advice: System explicitly states it does not provide legal advice, only analytical insights."
+        ],
+        "backend_changes": [
+          "CompliLink MX: New Data Models (Extend existing document and analysis models to store richer structured data like DocumentAnalysisResult, ContractAnalysisDetails, BenefitEstimates, RiskFindings).",
+          "CompliLink MX: Enhanced Webhook Handler (Process new webhook payloads from AuditaPatron for document upload, trigger analysis).",
+          "CompliLink MX: AI Orchestration Service (Manage calls to LLM helper, handle retries, context management, prompt engineering).",
+          "CompliLink MX: Rule-Based Calculation Engine (Implement business logic for preliminary benefit calculations).",
+          "CompliLink MX: Document Pre-processing Microservice (Integrate OCR and text extraction tools).",
+          "CompliLink MX: API Endpoints (New endpoints for AuditaPatron to query analysis status and results).",
+          "LLM Helper Server-Side: Expanded Prompt Library (Develop and manage specific prompts for each document family and analysis task).",
+          "LLM Helper Server-Side: Output Schema Enforcement (Ensure LLM outputs strictly adhere to defined JSON schemas for each task).",
+          "LLM Helper Server-Side: Context Management (Handle larger document contexts for LLM processing)."
+        ],
+        "frontend_changes": [
+          "AuditaPatron: Enhanced Document Upload Interface (Allow users to upload multiple document types, potentially with initial hints).",
+          "AuditaPatron: Processing Status Indicators (Show real-time status of document analysis, e.g., 'Clasificando...', 'Analizando Contrato...', 'Cálculos Preliminares...').",
+          "AuditaPatron: Results Display Component (Categorized view for extracted data, benefit estimations, and risk findings; highlighting of extracted data points; prominent legal disclaimers; actionable insights).",
+          "AuditaPatron: Feedback Mechanism (Optional for MVP, but good for future: allow users to provide feedback on analysis accuracy)."
+        ],
+        "complilink_integration": [
+          "Asynchronous Webhook Communication: AuditaPatron sends 'document_uploaded' webhook to CompliLink MX.",
+          "CompliLink MX Processing: Performs all analysis steps.",
+          "Status & Results Webhooks: CompliLink MX sends 'analysis_completed' or 'analysis_updated' webhooks back to AuditaPatron, including a link to the structured results API endpoint.",
+          "Shared Data Model: Agree on common identifiers (e.g., 'document_id', 'worker_id') and structured output schemas for seamless data exchange.",
+          "Error Handling & Retries: Robust mechanisms for failed webhooks or API calls."
+        ],
+        "mvp_verdict": "This MVP architecture provides a robust, AI-driven framework for heterogeneous document ingestion and preliminary analysis, focusing on individual labor contracts. It leverages existing infrastructure, prioritizes automation and explainability, and incorporates critical legal guardrails. The structured outputs are designed for immediate utility in AuditaPatron and CompliLink MX, enabling foundational insights for workers while clearly distinguishing between estimations and confirmed data."
+      }
+    },
+    "grok": {
+      "status": "ok",
+      "output": {
+        "document_families": [
+          {
+            "family": "contracts",
+            "examples": [
+              "individual_labor_contract",
+              "collective_bargaining_agreement",
+              "amendment"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "payroll",
+            "examples": [
+              "payroll_receipt",
+              "cfdi",
+              "tax_withholding"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "social_security",
+            "examples": [
+              "imss_registration",
+              "infonavit_contributions",
+              "afore_statements"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "settlements",
+            "examples": [
+              "termination_agreement",
+              "severance_calculation",
+              "resignation_letter"
+            ],
+            "analysis_priority": "high"
+          },
+          {
+            "family": "evidence",
+            "examples": [
+              "work_performance_reviews",
+              "disciplinary_records",
+              "medical_certificates"
+            ],
+            "analysis_priority": "medium"
+          },
+          {
+            "family": "other",
+            "examples": [
+              "id_documents",
+              "training_certificates",
+              "misc_labor_records"
+            ],
+            "analysis_priority": "low"
+          }
+        ],
+        "ingestion_and_analysis_pipeline": [
+          "User uploads document via AuditaPatron frontend",
+          "Store file with SHA-256 hash and metadata (name, mimeType, textHint)",
+          "Initial rule-based classification using existing logic",
+          "Invoke server-side LLM helper for advanced classification into document_families",
+          "If classified as contract or high-priority, extract key data via LLM structured JSON output",
+          "Analyze contracts for obligations, risks, and preliminary benefits estimation",
+          "Store structured results in database for expediente and CompliLink webhook",
+          "Flag for human review if confidence below threshold or data incomplete"
+        ],
+        "structured_outputs": {
+          "common_fields": [
+            "document_id",
+            "upload_date",
+            "employee_id",
+            "document_family",
+            "confidence_score",
+            "hash"
+          ],
+          "contract_fields": [
+            "start_date",
+            "end_date",
+            "position",
+            "salary_base",
+            "work_schedule",
+            "probation_period",
+            "non_compete_clause"
+          ],
+          "benefits_fields": [
+            "vacation_days",
+            "christmas_bonus",
+            "seniority_premium",
+            "maternity_leave",
+            "estimated_severance"
+          ],
+          "risk_fields": [
+            "potential_non_compliance_issues",
+            "missing_clauses",
+            "risk_level",
+            "recommendations"
+          ]
+        },
+        "prestaciones_scope": {
+          "can_estimate_with_contract_only": [
+            "base_salary",
+            "vacation_entitlement",
+            "work_schedule_obligations"
+          ],
+          "requires_additional_documents": [
+            "seniority_premium (needs payroll history)",
+            "severance (needs termination docs)",
+            "social_security_benefits (needs IMSS records)"
+          ],
+          "should_be_marked_as_preliminary": [
+            "all_estimations_without_full_document_set",
+            "risk_assessments_based_on_partial_data",
+            "benefits_calculations_lacking_confirmation"
+          ]
+        },
+        "legal_and_product_guardrails": [
+          "Always mark outputs as preliminary/estimative if data incomplete; no absolute legal certainty",
+          "Include disclaimers in outputs: 'This is not legal advice; consult professional'",
+          "Limit analysis to Mexican labor law (LFT) basics; flag complex cases for human review",
+          "Ensure data privacy: anonymize sensitive info in processing",
+          "Throttle LLM calls to prevent abuse; monitor for hallucinations via confidence scores",
+          "Do not automate actions like dispute filings; only provide analysis"
+        ],
+        "backend_changes": [
+          "Enhance LLM helper to support expanded classification and extraction prompts",
+          "Add database schemas for new structured_outputs fields",
+          "Implement webhook triggers to CompliLink MX post-analysis",
+          "Add confidence thresholding for auto vs manual routing",
+          "Integrate error handling for invalid/unsupported documents"
+        ],
+        "frontend_changes": [
+          "Update upload UI to handle heterogeneous docs with progress indicators",
+          "Display structured analysis results in user expediente view",
+          "Add disclaimers and preliminary markers in UI",
+          "Enable user feedback loop for classification corrections",
+          "Visualize risks and benefits in dashboard summaries"
+        ],
+        "complilink_integration": [
+          "Send structured JSON via webhook after analysis completion",
+          "Include document_id, family, extracted fields, and preliminary estimates",
+          "Receive CompliLink confirmations or updates to refine AuditaPatron data",
+          "Use secure API keys for bidirectional sync",
+          "Batch process for high-volume uploads to avoid overload"
+        ],
+        "mvp_verdict": "Feasible MVP: Focus on high-priority families first, leverage existing LLM helper for 80% automation, ensure explicability via structured outputs and guardrails; iterate based on user feedback."
+      }
+    }
+  },
+  "duration_seconds": 79.71
+}

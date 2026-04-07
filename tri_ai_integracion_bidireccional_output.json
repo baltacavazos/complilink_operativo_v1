@@ -1,0 +1,512 @@
+{
+  "task": "tri_ai_review_integracion_bidireccional_y_analisis_documental",
+  "startedAt": "2026-04-07T03:11:52.259Z",
+  "completedAt": "2026-04-07T03:12:39.702Z",
+  "promptVersion": "v1",
+  "results": [
+    {
+      "provider": "chatgpt",
+      "model": "gpt-4.1-2025-04-14",
+      "ok": true,
+      "data": {
+        "executive_summary": "La siguiente iteración del producto debe enfocarse en robustecer la integración bidireccional entre AuditaPatron y CompliLink MX, permitiendo la ingestión y análisis automático de cualquier documento laboral relevante. Esto se logrará mediante un webhook outbound estandarizado y seguro, capaz de manejar una amplia variedad de documentos, con deduplicación, idempotencia y trazabilidad total. El backend de CompliLink MX debe incorporar una arquitectura de inteligencia documental en capas: primero clasificando el tipo de documento, luego extrayendo campos clave y, en el caso de contratos individuales, realizando un análisis profundo de cláusulas y estimación de prestaciones, diferenciando claramente entre datos confirmados y estimados. La experiencia de usuario debe ser fluida y transparente, con explicaciones claras sobre los resultados y límites del análisis. Esta dupla de plataformas establece una base flexible y auditable para futuros productos laborales, permitiendo escalar hacia nuevas soluciones y verticales sin rediseños disruptivos. La iteración propuesta es realista, incremental y alineada con los requisitos legales y de negocio, maximizando valor y control.",
+        "recommended_outbound_contract": {
+          "keep_event_name": "document.uploaded",
+          "signature_recipe": "HMAC-SHA256 sobre el string concatenado de timestamp y body JSON serializado, usando la clave compartida",
+          "required_headers": [
+            "X-Event-Name",
+            "X-Signature",
+            "X-Timestamp",
+            "X-Idempotency-Key",
+            "Content-Type: application/json"
+          ],
+          "payload_shape": [
+            "document_id",
+            "user_id",
+            "upload_timestamp",
+            "document_type (optional, if known)",
+            "file_url",
+            "file_sha256",
+            "original_filename",
+            "metadata (object, optional)",
+            "source_platform"
+          ],
+          "retry_policy": [
+            "Retry on 5xx responses only",
+            "Backoff intervals: 30s, 60s, 120s",
+            "Max 3 attempts per event"
+          ],
+          "idempotency_strategy": [
+            "Use X-Idempotency-Key header with SHA256(document_id + file_sha256)",
+            "Receiver must ensure processing is idempotent per key"
+          ]
+        },
+        "recommended_return_webhooks": [
+          {
+            "event_name": "document.processed",
+            "when_to_emit": "Upon successful classification and field extraction of a document",
+            "minimum_payload_fields": [
+              "document_id",
+              "processing_status",
+              "document_type",
+              "extracted_fields",
+              "signals_detected",
+              "explainability_report",
+              "processed_at"
+            ],
+            "why_it_matters": "Permite a AuditaPatron actualizar el expediente del usuario en tiempo real y mostrar resultados explicables, cerrando el ciclo de experiencia fluida y auditable."
+          },
+          {
+            "event_name": "contract.analysis.completed",
+            "when_to_emit": "When a document is classified as a contract individual and deep clause/benefit analysis is finished",
+            "minimum_payload_fields": [
+              "document_id",
+              "analysis_status",
+              "clause_summary",
+              "benefit_estimates",
+              "confirmed_vs_estimated_fields",
+              "explainability_report",
+              "analyzed_at"
+            ],
+            "why_it_matters": "Permite mostrar insights avanzados y diferenciados sobre contratos, habilitando nuevas funcionalidades y confianza en la plataforma."
+          }
+        ],
+        "document_intelligence_architecture": {
+          "classification_layers": [
+            "File type detection (PDF, image, email, etc.)",
+            "Document OCR and text extraction",
+            "Document type classification (contrato, recibo, CFDI, IMSS, carta, chat, etc.)",
+            "Signal/entity detection (nombres, fechas, montos, patrones legales)",
+            "Confidence scoring and fallback to manual review if below threshold"
+          ],
+          "must_extract_fields": [
+            "Nombre(s) de partes",
+            "Fechas relevantes",
+            "Montos y conceptos de pago",
+            "Cláusulas clave (si aplica)",
+            "Identificadores fiscales o de seguridad social",
+            "Firmas o sellos",
+            "Metadatos contextuales"
+          ],
+          "how_to_handle_unknown_documents": "Clasificar como 'tipo desconocido', extraer texto y metadatos básicos, marcar para revisión posterior y registrar en el expediente con explicación de límites.",
+          "explainability_requirements": [
+            "Mostrar al usuario por qué se clasificó el documento de cierta forma",
+            "Listar campos extraídos y su fuente textual",
+            "Diferenciar entre datos confirmados y estimados",
+            "Registrar logs de decisiones automáticas para auditoría"
+          ],
+          "dedup_and_traceability": [
+            "SHA256 de archivo para deduplicación",
+            "Registro de cada procesamiento con ID único y timestamp",
+            "Historial de eventos y cambios por documento"
+          ]
+        },
+        "contract_analysis_module": {
+          "must_detect": [
+            "Tipo de contrato (individual, colectivo, etc.)",
+            "Duración y vigencia",
+            "Partes involucradas",
+            "Cláusulas de salario, jornada, prestaciones",
+            "Firmas y sellos",
+            "Cláusulas atípicas o riesgosas"
+          ],
+          "benefit_estimation_scope": [
+            "Salario base y prestaciones legales mínimas",
+            "Estimación de aguinaldo, vacaciones, prima vacacional",
+            "Indemnización por despido (estimada)",
+            "Diferenciación entre lo explícito en contrato y lo legalmente exigible"
+          ],
+          "guardrails": [
+            "Separar claramente datos confirmados vs. estimados",
+            "Explicar supuestos usados en estimaciones",
+            "No emitir recomendaciones legales automáticas",
+            "Registrar todas las inferencias y su fuente"
+          ],
+          "output_sections": [
+            "Resumen de contrato",
+            "Cláusulas clave detectadas",
+            "Estimaciones de prestaciones",
+            "Advertencias y explicaciones",
+            "Historial de análisis"
+          ]
+        },
+        "magical_ux_recommendations": [
+          "Mostrar progreso en tiempo real del análisis documental ('procesando...')",
+          "Explicaciones visuales de cómo se clasificó y qué se extrajo de cada documento",
+          "Diferenciar visualmente entre datos confirmados y estimados",
+          "Permitir al usuario ver y descargar el historial completo de su expediente",
+          "Notificaciones automáticas y amigables cuando un documento es procesado o requiere revisión",
+          "Botón de '¿Por qué este resultado?' en cada análisis"
+        ],
+        "implementation_order_next_sprint": [
+          "Actualizar webhook outbound para soportar cualquier tipo documental y headers requeridos",
+          "Implementar deduplicación SHA256 y estrategia de idempotencia en ambos extremos",
+          "Desplegar capa de clasificación documental automática y extracción de campos clave",
+          "Emitir webhook de retorno 'document.processed' con explainability básica",
+          "Desarrollar módulo inicial de análisis de contratos individuales con separación de datos confirmados/estimados",
+          "Actualizar frontend para mostrar resultados explicables y diferenciados",
+          "Registrar logs de decisiones automáticas para auditoría"
+        ],
+        "key_risks": [
+          "Falsos positivos/negativos en clasificación automática de documentos",
+          "Errores en extracción de campos por baja calidad de imagen o formato atípico",
+          "Complejidad legal en estimaciones automáticas de prestaciones",
+          "Sobrecarga de logs y trazabilidad si el volumen crece rápido",
+          "Posibles brechas de seguridad si la firma HMAC no se implementa correctamente"
+        ],
+        "open_questions": [
+          "¿Qué nivel de intervención humana se permitirá en casos de baja confianza?",
+          "¿Cómo se manejarán documentos ilegibles o corruptos?",
+          "¿Qué SLA se espera para el procesamiento y retorno de resultados?",
+          "¿Se requiere soporte multilenguaje desde esta iteración?",
+          "¿Cómo se notificará al usuario final sobre límites de análisis automático?"
+        ],
+        "verdict": {
+          "approach_is_sound": true,
+          "confidence_0_to_100": 88,
+          "one_sentence_reason": "La propuesta es incremental, realista y cubre los requisitos críticos de integración, experiencia mágica y trazabilidad, sentando bases sólidas para futuras extensiones."
+        }
+      },
+      "raw": "{\n  \"executive_summary\": \"La siguiente iteración del producto debe enfocarse en robustecer la integración bidireccional entre AuditaPatron y CompliLink MX, permitiendo la ingestión y análisis automático de cualquier documento laboral relevante. Esto se logrará mediante un webhook outbound estandarizado y seguro, capaz de manejar una amplia variedad de documentos, con deduplicación, idempotencia y trazabilidad total. El backend de CompliLink MX debe incorporar una arquitectura de inteligencia documental en capas: primero clasificando el tipo de documento, luego extrayendo campos clave y, en el caso de contratos individuales, realizando un análisis profundo de cláusulas y estimación de prestaciones, diferenciando claramente entre datos confirmados y estimados. La experiencia de usuario debe ser fluida y transparente, con explicaciones claras sobre los resultados y límites del análisis. Esta dupla de plataformas establece una base flexible y auditable para futuros productos laborales, permitiendo escalar hacia nuevas soluciones y verticales sin rediseños disruptivos. La iteración propuesta es realista, incremental y alineada con los requisitos legales y de negocio, maximizando valor y control.\",\n  \"recommended_outbound_contract\": {\n    \"keep_event_name\": \"document.uploaded\",\n    \"signature_recipe\": \"HMAC-SHA256 sobre el string concatenado de timestamp y body JSON serializado, usando la clave compartida\",\n    \"required_headers\": [\n      \"X-Event-Name\",\n      \"X-Signature\",\n      \"X-Timestamp\",\n      \"X-Idempotency-Key\",\n      \"Content-Type: application/json\"\n    ],\n    \"payload_shape\": [\n      \"document_id\",\n      \"user_id\",\n      \"upload_timestamp\",\n      \"document_type (optional, if known)\",\n      \"file_url\",\n      \"file_sha256\",\n      \"original_filename\",\n      \"metadata (object, optional)\",\n      \"source_platform\"\n    ],\n    \"retry_policy\": [\n      \"Retry on 5xx responses only\",\n      \"Backoff intervals: 30s, 60s, 120s\",\n      \"Max 3 attempts per event\"\n    ],\n    \"idempotency_strategy\": [\n      \"Use X-Idempotency-Key header with SHA256(document_id + file_sha256)\",\n      \"Receiver must ensure processing is idempotent per key\"\n    ]\n  },\n  \"recommended_return_webhooks\": [\n    {\n      \"event_name\": \"document.processed\",\n      \"when_to_emit\": \"Upon successful classification and field extraction of a document\",\n      \"minimum_payload_fields\": [\n        \"document_id\",\n        \"processing_status\",\n        \"document_type\",\n        \"extracted_fields\",\n        \"signals_detected\",\n        \"explainability_report\",\n        \"processed_at\"\n      ],\n      \"why_it_matters\": \"Permite a AuditaPatron actualizar el expediente del usuario en tiempo real y mostrar resultados explicables, cerrando el ciclo de experiencia fluida y auditable.\"\n    },\n    {\n      \"event_name\": \"contract.analysis.completed\",\n      \"when_to_emit\": \"When a document is classified as a contract individual and deep clause/benefit analysis is finished\",\n      \"minimum_payload_fields\": [\n        \"document_id\",\n        \"analysis_status\",\n        \"clause_summary\",\n        \"benefit_estimates\",\n        \"confirmed_vs_estimated_fields\",\n        \"explainability_report\",\n        \"analyzed_at\"\n      ],\n      \"why_it_matters\": \"Permite mostrar insights avanzados y diferenciados sobre contratos, habilitando nuevas funcionalidades y confianza en la plataforma.\"\n    }\n  ],\n  \"document_intelligence_architecture\": {\n    \"classification_layers\": [\n      \"File type detection (PDF, image, email, etc.)\",\n      \"Document OCR and text extraction\",\n      \"Document type classification (contrato, recibo, CFDI, IMSS, carta, chat, etc.)\",\n      \"Signal/entity detection (nombres, fechas, montos, patrones legales)\",\n      \"Confidence scoring and fallback to manual review if below threshold\"\n    ],\n    \"must_extract_fields\": [\n      \"Nombre(s) de partes\",\n      \"Fechas relevantes\",\n      \"Montos y conceptos de pago\",\n      \"Cláusulas clave (si aplica)\",\n      \"Identificadores fiscales o de seguridad social\",\n      \"Firmas o sellos\",\n      \"Metadatos contextuales\"\n    ],\n    \"how_to_handle_unknown_documents\": \"Clasificar como 'tipo desconocido', extraer texto y metadatos básicos, marcar para revisión posterior y registrar en el expediente con explicación de límites.\",\n    \"explainability_requirements\": [\n      \"Mostrar al usuario por qué se clasificó el documento de cierta forma\",\n      \"Listar campos extraídos y su fuente textual\",\n      \"Diferenciar entre datos confirmados y estimados\",\n      \"Registrar logs de decisiones automáticas para auditoría\"\n    ],\n    \"dedup_and_traceability\": [\n      \"SHA256 de archivo para deduplicación\",\n      \"Registro de cada procesamiento con ID único y timestamp\",\n      \"Historial de eventos y cambios por documento\"\n    ]\n  },\n  \"contract_analysis_module\": {\n    \"must_detect\": [\n      \"Tipo de contrato (individual, colectivo, etc.)\",\n      \"Duración y vigencia\",\n      \"Partes involucradas\",\n      \"Cláusulas de salario, jornada, prestaciones\",\n      \"Firmas y sellos\",\n      \"Cláusulas atípicas o riesgosas\"\n    ],\n    \"benefit_estimation_scope\": [\n      \"Salario base y prestaciones legales mínimas\",\n      \"Estimación de aguinaldo, vacaciones, prima vacacional\",\n      \"Indemnización por despido (estimada)\",\n      \"Diferenciación entre lo explícito en contrato y lo legalmente exigible\"\n    ],\n    \"guardrails\": [\n      \"Separar claramente datos confirmados vs. estimados\",\n      \"Explicar supuestos usados en estimaciones\",\n      \"No emitir recomendaciones legales automáticas\",\n      \"Registrar todas las inferencias y su fuente\"\n    ],\n    \"output_sections\": [\n      \"Resumen de contrato\",\n      \"Cláusulas clave detectadas\",\n      \"Estimaciones de prestaciones\",\n      \"Advertencias y explicaciones\",\n      \"Historial de análisis\"\n    ]\n  },\n  \"magical_ux_recommendations\": [\n    \"Mostrar progreso en tiempo real del análisis documental ('procesando...')\",\n    \"Explicaciones visuales de cómo se clasificó y qué se extrajo de cada documento\",\n    \"Diferenciar visualmente entre datos confirmados y estimados\",\n    \"Permitir al usuario ver y descargar el historial completo de su expediente\",\n    \"Notificaciones automáticas y amigables cuando un documento es procesado o requiere revisión\",\n    \"Botón de '¿Por qué este resultado?' en cada análisis\"\n  ],\n  \"implementation_order_next_sprint\": [\n    \"Actualizar webhook outbound para soportar cualquier tipo documental y headers requeridos\",\n    \"Implementar deduplicación SHA256 y estrategia de idempotencia en ambos extremos\",\n    \"Desplegar capa de clasificación documental automática y extracción de campos clave\",\n    \"Emitir webhook de retorno 'document.processed' con explainability básica\",\n    \"Desarrollar módulo inicial de análisis de contratos individuales con separación de datos confirmados/estimados\",\n    \"Actualizar frontend para mostrar resultados explicables y diferenciados\",\n    \"Registrar logs de decisiones automáticas para auditoría\"\n  ],\n  \"key_risks\": [\n    \"Falsos positivos/negativos en clasificación automática de documentos\",\n    \"Errores en extracción de campos por baja calidad de imagen o formato atípico\",\n    \"Complejidad legal en estimaciones automáticas de prestaciones\",\n    \"Sobrecarga de logs y trazabilidad si el volumen crece rápido\",\n    \"Posibles brechas de seguridad si la firma HMAC no se implementa correctamente\"\n  ],\n  \"open_questions\": [\n    \"¿Qué nivel de intervención humana se permitirá en casos de baja confianza?\",\n    \"¿Cómo se manejarán documentos ilegibles o corruptos?\",\n    \"¿Qué SLA se espera para el procesamiento y retorno de resultados?\",\n    \"¿Se requiere soporte multilenguaje desde esta iteración?\",\n    \"¿Cómo se notificará al usuario final sobre límites de análisis automático?\"\n  ],\n  \"verdict\": {\n    \"approach_is_sound\": true,\n    \"confidence_0_to_100\": 88,\n    \"one_sentence_reason\": \"La propuesta es incremental, realista y cubre los requisitos críticos de integración, experiencia mágica y trazabilidad, sentando bases sólidas para futuras extensiones.\"\n  }\n}"
+    },
+    {
+      "provider": "grok",
+      "model": "grok-4-0709",
+      "ok": true,
+      "data": {
+        "executive_summary": "Para la siguiente iteración, proponemos una implementación realista que expande la integración webhook entre AuditaPatron y CompliLink MX, manteniendo la separación de plataformas mientras se habilita el procesamiento de cualquier documento laboral relevante. Enfocándonos en idempotencia y trazabilidad, reutilizaremos el evento 'document.uploaded' con firma HMAC-SHA256, agregando webhooks de retorno para notificaciones bidireccionales como 'document.classified' y 'analysis.completed'. La arquitectura de inteligencia documental incorporará capas de clasificación con ML para identificar tipos como contratos, recibos o chats, extrayendo campos clave y manejando desconocidos con fallback humano. Para contratos individuales, un módulo dedicado detectará cláusulas críticas y estimará prestaciones con guardrails que distinguen datos confirmados de estimados. La UX 'mágica' se logrará mediante progresos automáticos en la app, con tooltips explicativos para auditabilidad. El pitch interno destaca que esta dupla crea una base escalable: AuditaPatron como frontend protector del trabajador y CompliLink como backend analítico, permitiendo futuros productos como IA predictiva de litigios o marketplaces laborales, todo con mínima intervención humana y compliance legal. Esta iteración es fuerte y viable, priorizando quick wins sobre rediseños totales, con un sprint enfocado en webhooks, clasificación y análisis básico.",
+        "recommended_outbound_contract": {
+          "keep_event_name": "document.uploaded",
+          "signature_recipe": "HMAC-SHA256 applied over concatenated timestamp and body string",
+          "required_headers": [
+            "X-Timestamp",
+            "X-Signature",
+            "Content-Type: application/json",
+            "X-Idempotency-Key"
+          ],
+          "payload_shape": [
+            "event_id: unique UUID",
+            "user_id: string",
+            "document_type: optional string (for hinting)",
+            "file_url: secure S3 link",
+            "metadata: object with upload_timestamp and source"
+          ],
+          "retry_policy": [
+            "Retry on 5xx responses",
+            "Backoff intervals: 30s, 60s, 120s",
+            "Maximum 3 attempts",
+            "Log failures for audit"
+          ],
+          "idempotency_strategy": [
+            "Use SHA256 hash of payload as idempotency key",
+            "Store keys in Redis with 24h TTL",
+            "Check for duplicates before processing",
+            "Return 200 on duplicate with cached response"
+          ]
+        },
+        "recommended_return_webhooks": [
+          {
+            "event_name": "document.classified",
+            "when_to_emit": "Immediately after automatic classification and initial extraction",
+            "minimum_payload_fields": [
+              "event_id",
+              "classification_type",
+              "extracted_fields",
+              "confidence_score"
+            ],
+            "why_it_matters": "Enables AuditaPatron to update UI in real-time, providing 'magical' feedback to users while maintaining traceability"
+          },
+          {
+            "event_name": "analysis.completed",
+            "when_to_emit": "Upon finishing deep analysis, especially for contracts",
+            "minimum_payload_fields": [
+              "event_id",
+              "analysis_results",
+              "estimated_benefits",
+              "guardrails_flags"
+            ],
+            "why_it_matters": "Closes the bidirectional loop, allowing AuditaPatron to build the worker's expediente with explained, auditable insights"
+          },
+          {
+            "event_name": "error.occurred",
+            "when_to_emit": "On processing failures or low-confidence classifications",
+            "minimum_payload_fields": [
+              "event_id",
+              "error_code",
+              "error_message",
+              "retry_suggested"
+            ],
+            "why_it_matters": "Ensures robustness and prompts minimal human intervention only when necessary"
+          }
+        ],
+        "document_intelligence_architecture": {
+          "classification_layers": [
+            "Initial ML model (e.g., fine-tuned BERT) for broad type detection",
+            "Secondary rule-based layer for labor-specific subtypes",
+            "Fallback to OCR + keyword matching for unknowns"
+          ],
+          "must_extract_fields": [
+            "Date of document",
+            "Parties involved (e.g., employer, employee)",
+            "Key amounts (e.g., salary, deductions)",
+            "Signatures or stamps",
+            "Relevant clauses or sections"
+          ],
+          "how_to_handle_unknown_documents": "Flag as 'unclassified', store in queue for human review, emit error webhook, and provide basic metadata extraction meanwhile",
+          "explainability_requirements": [
+            "Include confidence scores per classification",
+            "Log decision trees or attention maps from ML models",
+            "Provide human-readable summaries of extractions",
+            "Audit trail with timestamps and versions"
+          ],
+          "dedup_and_traceability": [
+            "Compute SHA256 hash of file content for deduplication",
+            "Link all events via unique trace_id",
+            "Store processing history in immutable logs (e.g., DynamoDB)",
+            "Ensure GDPR-compliant data retention"
+          ]
+        },
+        "contract_analysis_module": {
+          "must_detect": [
+            "Clauses on salary, working hours, and termination",
+            "Compliance with Mexican labor laws (e.g., LFT articles)",
+            "Red flags like non-compete or unfair terms"
+          ],
+          "benefit_estimation_scope": [
+            "Preliminary calculation of vacation pay, aguinaldo, and severance",
+            "Estimates based on extracted salary and tenure",
+            "Integration with external APIs for IMSS/INFONAVIT rates"
+          ],
+          "guardrails": [
+            "Clearly label 'confirmed' vs 'estimated' data",
+            "Disclaimer on non-legal advice",
+            "Threshold for human review if confidence < 80%",
+            "Prevent analysis on non-contract docs"
+          ],
+          "output_sections": [
+            "Summary of key clauses",
+            "Benefit estimates with breakdowns",
+            "Compliance signals (green/yellow/red)",
+            "Recommendations for worker actions"
+          ]
+        },
+        "magical_ux_recommendations": [
+          "Auto-progress UI bars on document upload with real-time status from webhooks",
+          "Tooltip overlays explaining AI decisions without cluttering the interface",
+          "Seamless expediente building with animated additions of analyzed insights",
+          "Predictive prompts like 'Based on this contract, you might be eligible for X – verify here'",
+          "Audit mode toggle for users to view full traceability logs on demand"
+        ],
+        "implementation_order_next_sprint": [
+          "Enhance outbound webhook with expanded payload for any document type",
+          "Implement classification and extraction pipeline in CompliLink",
+          "Set up return webhooks and integrate into AuditaPatron",
+          "Build contract analysis module with guardrails",
+          "Add UX enhancements and test end-to-end idempotency",
+          "Internal pitch and documentation"
+        ],
+        "key_risks": [
+          "Over-reliance on ML accuracy leading to misclassifications",
+          "Scalability issues with high-volume document uploads",
+          "Legal exposure from inaccurate benefit estimates",
+          "Integration delays due to webhook retries in unstable networks",
+          "Data privacy breaches if traceability is not robust"
+        ],
+        "open_questions": [
+          "What specific ML models or libraries to use for classification (e.g., Hugging Face vs custom)?",
+          "How to source training data for diverse Mexican labor documents?",
+          "Integration with external APIs for real-time law updates?",
+          "Metrics for 'magical' UX success (e.g., user satisfaction scores)?",
+          "Budget for potential human review queues?"
+        ],
+        "verdict": {
+          "approach_is_sound": true,
+          "confidence_0_to_100": 85,
+          "one_sentence_reason": "This iterative plan builds directly on existing infrastructure for quick value delivery while addressing core requirements realistically."
+        }
+      },
+      "raw": "{\n  \"executive_summary\": \"Para la siguiente iteración, proponemos una implementación realista que expande la integración webhook entre AuditaPatron y CompliLink MX, manteniendo la separación de plataformas mientras se habilita el procesamiento de cualquier documento laboral relevante. Enfocándonos en idempotencia y trazabilidad, reutilizaremos el evento 'document.uploaded' con firma HMAC-SHA256, agregando webhooks de retorno para notificaciones bidireccionales como 'document.classified' y 'analysis.completed'. La arquitectura de inteligencia documental incorporará capas de clasificación con ML para identificar tipos como contratos, recibos o chats, extrayendo campos clave y manejando desconocidos con fallback humano. Para contratos individuales, un módulo dedicado detectará cláusulas críticas y estimará prestaciones con guardrails que distinguen datos confirmados de estimados. La UX 'mágica' se logrará mediante progresos automáticos en la app, con tooltips explicativos para auditabilidad. El pitch interno destaca que esta dupla crea una base escalable: AuditaPatron como frontend protector del trabajador y CompliLink como backend analítico, permitiendo futuros productos como IA predictiva de litigios o marketplaces laborales, todo con mínima intervención humana y compliance legal. Esta iteración es fuerte y viable, priorizando quick wins sobre rediseños totales, con un sprint enfocado en webhooks, clasificación y análisis básico.\",\n  \"recommended_outbound_contract\": {\n    \"keep_event_name\": \"document.uploaded\",\n    \"signature_recipe\": \"HMAC-SHA256 applied over concatenated timestamp and body string\",\n    \"required_headers\": [\"X-Timestamp\", \"X-Signature\", \"Content-Type: application/json\", \"X-Idempotency-Key\"],\n    \"payload_shape\": [\"event_id: unique UUID\", \"user_id: string\", \"document_type: optional string (for hinting)\", \"file_url: secure S3 link\", \"metadata: object with upload_timestamp and source\"],\n    \"retry_policy\": [\"Retry on 5xx responses\", \"Backoff intervals: 30s, 60s, 120s\", \"Maximum 3 attempts\", \"Log failures for audit\"],\n    \"idempotency_strategy\": [\"Use SHA256 hash of payload as idempotency key\", \"Store keys in Redis with 24h TTL\", \"Check for duplicates before processing\", \"Return 200 on duplicate with cached response\"]\n  },\n  \"recommended_return_webhooks\": [\n    {\n      \"event_name\": \"document.classified\",\n      \"when_to_emit\": \"Immediately after automatic classification and initial extraction\",\n      \"minimum_payload_fields\": [\"event_id\", \"classification_type\", \"extracted_fields\", \"confidence_score\"],\n      \"why_it_matters\": \"Enables AuditaPatron to update UI in real-time, providing 'magical' feedback to users while maintaining traceability\"\n    },\n    {\n      \"event_name\": \"analysis.completed\",\n      \"when_to_emit\": \"Upon finishing deep analysis, especially for contracts\",\n      \"minimum_payload_fields\": [\"event_id\", \"analysis_results\", \"estimated_benefits\", \"guardrails_flags\"],\n      \"why_it_matters\": \"Closes the bidirectional loop, allowing AuditaPatron to build the worker's expediente with explained, auditable insights\"\n    },\n    {\n      \"event_name\": \"error.occurred\",\n      \"when_to_emit\": \"On processing failures or low-confidence classifications\",\n      \"minimum_payload_fields\": [\"event_id\", \"error_code\", \"error_message\", \"retry_suggested\"],\n      \"why_it_matters\": \"Ensures robustness and prompts minimal human intervention only when necessary\"\n    }\n  ],\n  \"document_intelligence_architecture\": {\n    \"classification_layers\": [\"Initial ML model (e.g., fine-tuned BERT) for broad type detection\", \"Secondary rule-based layer for labor-specific subtypes\", \"Fallback to OCR + keyword matching for unknowns\"],\n    \"must_extract_fields\": [\"Date of document\", \"Parties involved (e.g., employer, employee)\", \"Key amounts (e.g., salary, deductions)\", \"Signatures or stamps\", \"Relevant clauses or sections\"],\n    \"how_to_handle_unknown_documents\": \"Flag as 'unclassified', store in queue for human review, emit error webhook, and provide basic metadata extraction meanwhile\",\n    \"explainability_requirements\": [\"Include confidence scores per classification\", \"Log decision trees or attention maps from ML models\", \"Provide human-readable summaries of extractions\", \"Audit trail with timestamps and versions\"],\n    \"dedup_and_traceability\": [\"Compute SHA256 hash of file content for deduplication\", \"Link all events via unique trace_id\", \"Store processing history in immutable logs (e.g., DynamoDB)\", \"Ensure GDPR-compliant data retention\"]\n  },\n  \"contract_analysis_module\": {\n    \"must_detect\": [\"Clauses on salary, working hours, and termination\", \"Compliance with Mexican labor laws (e.g., LFT articles)\", \"Red flags like non-compete or unfair terms\"],\n    \"benefit_estimation_scope\": [\"Preliminary calculation of vacation pay, aguinaldo, and severance\", \"Estimates based on extracted salary and tenure\", \"Integration with external APIs for IMSS/INFONAVIT rates\"],\n    \"guardrails\": [\"Clearly label 'confirmed' vs 'estimated' data\", \"Disclaimer on non-legal advice\", \"Threshold for human review if confidence < 80%\", \"Prevent analysis on non-contract docs\"],\n    \"output_sections\": [\"Summary of key clauses\", \"Benefit estimates with breakdowns\", \"Compliance signals (green/yellow/red)\", \"Recommendations for worker actions\"]\n  },\n  \"magical_ux_recommendations\": [\"Auto-progress UI bars on document upload with real-time status from webhooks\", \"Tooltip overlays explaining AI decisions without cluttering the interface\", \"Seamless expediente building with animated additions of analyzed insights\", \"Predictive prompts like 'Based on this contract, you might be eligible for X – verify here'\", \"Audit mode toggle for users to view full traceability logs on demand\"],\n  \"implementation_order_next_sprint\": [\"Enhance outbound webhook with expanded payload for any document type\", \"Implement classification and extraction pipeline in CompliLink\", \"Set up return webhooks and integrate into AuditaPatron\", \"Build contract analysis module with guardrails\", \"Add UX enhancements and test end-to-end idempotency\", \"Internal pitch and documentation\"],\n  \"key_risks\": [\"Over-reliance on ML accuracy leading to misclassifications\", \"Scalability issues with high-volume document uploads\", \"Legal exposure from inaccurate benefit estimates\", \"Integration delays due to webhook retries in unstable networks\", \"Data privacy breaches if traceability is not robust\"],\n  \"open_questions\": [\"What specific ML models or libraries to use for classification (e.g., Hugging Face vs custom)?\", \"How to source training data for diverse Mexican labor documents?\", \"Integration with external APIs for real-time law updates?\", \"Metrics for 'magical' UX success (e.g., user satisfaction scores)?\", \"Budget for potential human review queues?\"],\n  \"verdict\": {\n    \"approach_is_sound\": true,\n    \"confidence_0_to_100\": 85,\n    \"one_sentence_reason\": \"This iterative plan builds directly on existing infrastructure for quick value delivery while addressing core requirements realistically.\"\n  }\n}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "ok": true,
+      "data": {
+        "executive_summary": "Esta iteración estratégica consolida la integración bidireccional entre AuditaPatron y CompliLink MX, transformando la gestión documental laboral en una experiencia fluida y automatizada. Al expandir la capacidad de CompliLink para procesar cualquier tipo de documento laboral mediante IA avanzada, no solo se clasifica y extrae información clave, sino que se realiza un análisis profundo de contratos, ofreciendo estimaciones de prestaciones con guardrails claros. Esta base técnica y funcional, centrada en la trazabilidad, idempotencia y explicabilidad, es fundamental para una UX 'mágica' y sienta las bases para futuros productos innovadores en el ecosistema laboral, permitiendo una protección proactiva y una comprensión sin precedentes del expediente del trabajador.",
+        "recommended_outbound_contract": {
+          "keep_event_name": "document.uploaded",
+          "signature_recipe": "HMAC-SHA256 sobre X-AuditaPatron-Timestamp.body",
+          "required_headers": [
+            "Content-Type: application/json",
+            "X-AuditaPatron-Timestamp",
+            "X-AuditaPatron-Signature",
+            "X-AuditaPatron-Idempotency-Key"
+          ],
+          "payload_shape": [
+            "documentId: string (UUID de AuditaPatron)",
+            "userId: string (ID del usuario en AuditaPatron)",
+            "fileName: string",
+            "fileType: string (MIME type)",
+            "fileUrl: string (URL temporal y segura para descarga)",
+            "uploadTimestamp: string (ISO 8601)",
+            "metadata: object (e.g., sourceSystem, contextTags)"
+          ],
+          "retry_policy": [
+            "Reintentos automáticos para respuestas 5xx",
+            "Backoff exponencial: 30s, 60s, 120s",
+            "Máximo 3 reintentos"
+          ],
+          "idempotency_strategy": [
+            "AuditaPatron generará un X-AuditaPatron-Idempotency-Key único por cada intento de envío.",
+            "CompliLink MX usará esta clave para asegurar que cada operación de carga sea procesada una única vez, devolviendo el resultado original en reintentos de la misma clave."
+          ]
+        },
+        "recommended_return_webhooks": [
+          {
+            "event_name": "document.processing.started",
+            "when_to_emit": "Inmediatamente después de la recepción exitosa y validación inicial del webhook de AuditaPatron por CompliLink MX.",
+            "minimum_payload_fields": [
+              "documentId: string (UUID de AuditaPatron)",
+              "compliLinkId: string (ID interno de CompliLink)",
+              "status: 'processing'",
+              "timestamp: string (ISO 8601)"
+            ],
+            "why_it_matters": "Proporciona feedback instantáneo al usuario en AuditaPatron, mejorando la percepción de fluidez y que el sistema ha recibido y está trabajando en su documento."
+          },
+          {
+            "event_name": "document.analysis.completed",
+            "when_to_emit": "Una vez que la clasificación inicial, extracción de campos básicos y la deduplicación han finalizado en CompliLink MX.",
+            "minimum_payload_fields": [
+              "documentId: string",
+              "compliLinkId: string",
+              "status: 'analyzed'",
+              "documentType: string (clasificación principal)",
+              "subDocumentType: string (clasificación granular)",
+              "extractedFields: object (campos comunes como fecha, emisor, receptor)",
+              "deduplicationStatus: object (isDuplicate: boolean, originalCompliLinkId: string)",
+              "confidenceScore: number (0-1)",
+              "timestamp: string"
+            ],
+            "why_it_matters": "Actualiza la UI de AuditaPatron con el tipo de documento y datos iniciales, permitiendo al usuario ver el progreso y la comprensión del sistema sobre su documento."
+          },
+          {
+            "event_name": "contract.analysis.detailed",
+            "when_to_emit": "Después de completar el análisis profundo de un Contrato Individual de Trabajo, incluyendo la extracción de cláusulas y la estimación de prestaciones.",
+            "minimum_payload_fields": [
+              "documentId: string",
+              "compliLinkId: string",
+              "status: 'contract_analyzed'",
+              "contractSummary: object",
+              "clauseAnalysis: array (detalles por cláusula)",
+              "benefitEstimation: object (estimaciones preliminares)",
+              "guardrailWarnings: array (advertencias legales/contextuales)",
+              "timestamp: string"
+            ],
+            "why_it_matters": "Entrega el valor central del análisis de contratos a AuditaPatron, permitiendo una visualización rica y accionable para el trabajador, habilitando la experiencia 'mágica' de comprensión automática."
+          }
+        ],
+        "document_intelligence_architecture": {
+          "classification_layers": [
+            "Capa 1: Clasificación macro (e.g., 'Contrato', 'Recibo', 'Oficial', 'Comunicación', 'Otro').",
+            "Capa 2: Clasificación granular (e.g., 'Contrato Indefinido', 'Recibo CFDI', 'Aviso Retención INFONAVIT', 'Correo Electrónico').",
+            "Capa 3: Detección de sub-componentes (e.g., anexos, adendas dentro de un contrato)."
+          ],
+          "must_extract_fields": [
+            "documentType (clasificado)",
+            "subDocumentType (clasificado granular)",
+            "issuerName",
+            "recipientName",
+            "documentDate",
+            "effectiveDate (si aplica)",
+            "amount (si aplica)",
+            "periodStart/End (si aplica)",
+            "keywords/tags",
+            "documentHash (SHA256 del contenido)"
+          ],
+          "how_to_handle_unknown_documents": "Clasificar como 'Unknown/Other', extraer entidades genéricas (fechas, nombres, montos), almacenar el texto completo para futura re-clasificación o entrenamiento de modelos, y permitir al usuario etiquetar manualmente para mejorar la IA.",
+          "explainability_requirements": [
+            "Mostrar el 'confidence score' de la clasificación y extracción.",
+            "Resaltar en el documento las secciones que justifican una clasificación o extracción específica.",
+            "Proveer un 'audit trail' de las versiones de modelos de IA utilizados para cada análisis.",
+            "Explicaciones en lenguaje natural sobre por qué se llegó a una conclusión."
+          ],
+          "dedup_and_traceability": [
+            "SHA256 del contenido del documento para deduplicación, almacenando solo una copia física y referenciando las duplicadas.",
+            "Cada documento tendrá un 'compliLinkId' único y se mantendrá el 'documentId' original de AuditaPatron.",
+            "Registro de 'processingHistory' con timestamps, estados, versiones de modelos de IA y resultados intermedios."
+          ]
+        },
+        "contract_analysis_module": {
+          "must_detect": [
+            "Tipo de contrato (indefinido, temporal, por obra, etc.)",
+            "Salario (base, integrado, componentes)",
+            "Jornada laboral (tipo, horario)",
+            "Prestaciones (vacaciones, aguinaldo, prima vacacional, seguridad social, otras)",
+            "Cláusulas de rescisión y terminación",
+            "Cláusulas de confidencialidad, no competencia, exclusividad",
+            "Anomalías o cláusulas potencialmente abusivas/ilegales",
+            "Omisiones de cláusulas estándar"
+          ],
+          "benefit_estimation_scope": [
+            "Estimación preliminar de finiquito/liquidación (basado en salario, antigüedad, tipo de contrato y causales de terminación).",
+            "Estimación de días de vacaciones pendientes y prima vacacional.",
+            "Estimación de aguinaldo proporcional.",
+            "Cálculo de antigüedad."
+          ],
+          "guardrails": [
+            "Clara distinción visual y textual entre 'Dato Confirmado' (extraído directamente) y 'Dato Estimado' (inferido por IA).",
+            "Disclaimers legales prominentes: 'Esta es una estimación y no constituye asesoría legal. Consulta a un experto.'",
+            "Confidence scores para cada estimación y detección de anomalías.",
+            "Alertas para cláusulas que requieran revisión humana o legal."
+          ],
+          "output_sections": [
+            "Resumen Ejecutivo del Contrato",
+            "Análisis Detallado de Cláusulas Clave (con highlights)",
+            "Riesgos Identificados y Oportunidades",
+            "Estimación Preliminar de Prestaciones y Antigüedad",
+            "Recomendaciones y Siguientes Pasos"
+          ]
+        },
+        "magical_ux_recommendations": [
+          "Feedback en tiempo real: 'Documento recibido', 'Analizando...', 'Análisis completado'.",
+          "Visualización interactiva del documento con resaltado de campos extraídos y cláusulas identificadas por IA.",
+          "Explicaciones en lenguaje sencillo de los hallazgos de la IA, evitando jerga técnica o legal excesiva.",
+          "Sugerencias inteligentes basadas en el contenido (ej. 'Este contrato parece requerir un anexo, ¿deseas subirlo?').",
+          "Acciones con un clic: 'Añadir este recibo a mi historial de pagos', 'Marcar esta cláusula para revisión legal'.",
+          "Interfaz de 'chat' o 'preguntas frecuentes' contextual que responda sobre el documento analizado."
+        ],
+        "implementation_order_next_sprint": [
+          "1. Refinamiento y pruebas del webhook AuditaPatron -> CompliLink MX (payload, headers, idempotency).",
+          "2. Implementación del webhook CompliLink MX -> AuditaPatron para 'document.processing.started'.",
+          "3. Desarrollo del módulo de ingesta de documentos en CompliLink MX con SHA256 para deduplicación.",
+          "4. Implementación de la primera capa de clasificación documental (macro) en CompliLink MX.",
+          "5. Desarrollo de la extracción de campos básicos para tipos documentales comunes (fecha, emisor, receptor).",
+          "6. Implementación del webhook CompliLink MX -> AuditaPatron para 'document.analysis.completed'.",
+          "7. Actualizaciones en la UI de AuditaPatron para mostrar el estado de procesamiento y los datos básicos extraídos."
+        ],
+        "key_risks": [
+          "Precisión y sesgo de los modelos de IA con la diversidad de documentos laborales.",
+          "Seguridad y privacidad de datos sensibles (GDPR, LFPDPPP) en el manejo y almacenamiento de documentos.",
+          "Escalabilidad de la infraestructura de IA para procesar grandes volúmenes de documentos en tiempo real.",
+          "Mantenimiento de la conformidad legal y la responsabilidad en las estimaciones y análisis generados por IA.",
+          "Gestión de expectativas del usuario sobre la 'magia' de la IA frente a las limitaciones iniciales.",
+          "Complejidad en la orquestación de múltiples modelos de IA y su ciclo de vida."
+        ],
+        "open_questions": [
+          "¿Cuál es el SLA de procesamiento deseado para documentos de alta prioridad?",
+          "¿Cómo se gestionará el feedback de los usuarios para mejorar continuamente la precisión de la IA?",
+          "¿Cuál es la estrategia de retención de datos para los documentos originales y los datos extraídos?",
+          "¿Se requiere una revisión legal externa para validar los 'guardrails' y disclaimers propuestos?",
+          "¿Qué infraestructura de GPU/MLOps se necesita para soportar los modelos de análisis profundo?",
+          "¿Cómo se priorizarán los tipos de documentos para el entrenamiento inicial de los modelos de IA?"
+        ],
+        "verdict": {
+          "approach_is_sound": true,
+          "confidence_0_to_100": 85,
+          "one_sentence_reason": "Esta iteración establece una robusta y extensible fundación para la inteligencia documental impulsada por IA y una experiencia de usuario altamente responsiva, gestionando cuidadosamente las complejidades legales y técnicas."
+        }
+      },
+      "raw": "{\n  \"executive_summary\": \"Esta iteración estratégica consolida la integración bidireccional entre AuditaPatron y CompliLink MX, transformando la gestión documental laboral en una experiencia fluida y automatizada. Al expandir la capacidad de CompliLink para procesar cualquier tipo de documento laboral mediante IA avanzada, no solo se clasifica y extrae información clave, sino que se realiza un análisis profundo de contratos, ofreciendo estimaciones de prestaciones con guardrails claros. Esta base técnica y funcional, centrada en la trazabilidad, idempotencia y explicabilidad, es fundamental para una UX 'mágica' y sienta las bases para futuros productos innovadores en el ecosistema laboral, permitiendo una protección proactiva y una comprensión sin precedentes del expediente del trabajador.\",\n  \"recommended_outbound_contract\": {\n    \"keep_event_name\": \"document.uploaded\",\n    \"signature_recipe\": \"HMAC-SHA256 sobre X-AuditaPatron-Timestamp.body\",\n    \"required_headers\": [\n      \"Content-Type: application/json\",\n      \"X-AuditaPatron-Timestamp\",\n      \"X-AuditaPatron-Signature\",\n      \"X-AuditaPatron-Idempotency-Key\"\n    ],\n    \"payload_shape\": [\n      \"documentId: string (UUID de AuditaPatron)\",\n      \"userId: string (ID del usuario en AuditaPatron)\",\n      \"fileName: string\",\n      \"fileType: string (MIME type)\",\n      \"fileUrl: string (URL temporal y segura para descarga)\",\n      \"uploadTimestamp: string (ISO 8601)\",\n      \"metadata: object (e.g., sourceSystem, contextTags)\"\n    ],\n    \"retry_policy\": [\n      \"Reintentos automáticos para respuestas 5xx\",\n      \"Backoff exponencial: 30s, 60s, 120s\",\n      \"Máximo 3 reintentos\"\n    ],\n    \"idempotency_strategy\": [\n      \"AuditaPatron generará un X-AuditaPatron-Idempotency-Key único por cada intento de envío.\",\n      \"CompliLink MX usará esta clave para asegurar que cada operación de carga sea procesada una única vez, devolviendo el resultado original en reintentos de la misma clave.\"\n    ]\n  },\n  \"recommended_return_webhooks\": [\n    {\n      \"event_name\": \"document.processing.started\",\n      \"when_to_emit\": \"Inmediatamente después de la recepción exitosa y validación inicial del webhook de AuditaPatron por CompliLink MX.\",\n      \"minimum_payload_fields\": [\n        \"documentId: string (UUID de AuditaPatron)\",\n        \"compliLinkId: string (ID interno de CompliLink)\",\n        \"status: 'processing'\",\n        \"timestamp: string (ISO 8601)\"\n      ],\n      \"why_it_matters\": \"Proporciona feedback instantáneo al usuario en AuditaPatron, mejorando la percepción de fluidez y que el sistema ha recibido y está trabajando en su documento.\"\n    },\n    {\n      \"event_name\": \"document.analysis.completed\",\n      \"when_to_emit\": \"Una vez que la clasificación inicial, extracción de campos básicos y la deduplicación han finalizado en CompliLink MX.\",\n      \"minimum_payload_fields\": [\n        \"documentId: string\",\n        \"compliLinkId: string\",\n        \"status: 'analyzed'\",\n        \"documentType: string (clasificación principal)\",\n        \"subDocumentType: string (clasificación granular)\",\n        \"extractedFields: object (campos comunes como fecha, emisor, receptor)\",\n        \"deduplicationStatus: object (isDuplicate: boolean, originalCompliLinkId: string)\",\n        \"confidenceScore: number (0-1)\",\n        \"timestamp: string\"\n      ],\n      \"why_it_matters\": \"Actualiza la UI de AuditaPatron con el tipo de documento y datos iniciales, permitiendo al usuario ver el progreso y la comprensión del sistema sobre su documento.\"\n    },\n    {\n      \"event_name\": \"contract.analysis.detailed\",\n      \"when_to_emit\": \"Después de completar el análisis profundo de un Contrato Individual de Trabajo, incluyendo la extracción de cláusulas y la estimación de prestaciones.\",\n      \"minimum_payload_fields\": [\n        \"documentId: string\",\n        \"compliLinkId: string\",\n        \"status: 'contract_analyzed'\",\n        \"contractSummary: object\",\n        \"clauseAnalysis: array (detalles por cláusula)\",\n        \"benefitEstimation: object (estimaciones preliminares)\",\n        \"guardrailWarnings: array (advertencias legales/contextuales)\",\n        \"timestamp: string\"\n      ],\n      \"why_it_matters\": \"Entrega el valor central del análisis de contratos a AuditaPatron, permitiendo una visualización rica y accionable para el trabajador, habilitando la experiencia 'mágica' de comprensión automática.\"\n    }\n  ],\n  \"document_intelligence_architecture\": {\n    \"classification_layers\": [\n      \"Capa 1: Clasificación macro (e.g., 'Contrato', 'Recibo', 'Oficial', 'Comunicación', 'Otro').\",\n      \"Capa 2: Clasificación granular (e.g., 'Contrato Indefinido', 'Recibo CFDI', 'Aviso Retención INFONAVIT', 'Correo Electrónico').\",\n      \"Capa 3: Detección de sub-componentes (e.g., anexos, adendas dentro de un contrato).\"\n    ],\n    \"must_extract_fields\": [\n      \"documentType (clasificado)\",\n      \"subDocumentType (clasificado granular)\",\n      \"issuerName\",\n      \"recipientName\",\n      \"documentDate\",\n      \"effectiveDate (si aplica)\",\n      \"amount (si aplica)\",\n      \"periodStart/End (si aplica)\",\n      \"keywords/tags\",\n      \"documentHash (SHA256 del contenido)\"\n    ],\n    \"how_to_handle_unknown_documents\": \"Clasificar como 'Unknown/Other', extraer entidades genéricas (fechas, nombres, montos), almacenar el texto completo para futura re-clasificación o entrenamiento de modelos, y permitir al usuario etiquetar manualmente para mejorar la IA.\",\n    \"explainability_requirements\": [\n      \"Mostrar el 'confidence score' de la clasificación y extracción.\",\n      \"Resaltar en el documento las secciones que justifican una clasificación o extracción específica.\",\n      \"Proveer un 'audit trail' de las versiones de modelos de IA utilizados para cada análisis.\",\n      \"Explicaciones en lenguaje natural sobre por qué se llegó a una conclusión.\"\n    ],\n    \"dedup_and_traceability\": [\n      \"SHA256 del contenido del documento para deduplicación, almacenando solo una copia física y referenciando las duplicadas.\",\n      \"Cada documento tendrá un 'compliLinkId' único y se mantendrá el 'documentId' original de AuditaPatron.\",\n      \"Registro de 'processingHistory' con timestamps, estados, versiones de modelos de IA y resultados intermedios.\"\n    ]\n  },\n  \"contract_analysis_module\": {\n    \"must_detect\": [\n      \"Tipo de contrato (indefinido, temporal, por obra, etc.)\",\n      \"Salario (base, integrado, componentes)\",\n      \"Jornada laboral (tipo, horario)\",\n      \"Prestaciones (vacaciones, aguinaldo, prima vacacional, seguridad social, otras)\",\n      \"Cláusulas de rescisión y terminación\",\n      \"Cláusulas de confidencialidad, no competencia, exclusividad\",\n      \"Anomalías o cláusulas potencialmente abusivas/ilegales\",\n      \"Omisiones de cláusulas estándar\"\n    ],\n    \"benefit_estimation_scope\": [\n      \"Estimación preliminar de finiquito/liquidación (basado en salario, antigüedad, tipo de contrato y causales de terminación).\",\n      \"Estimación de días de vacaciones pendientes y prima vacacional.\",\n      \"Estimación de aguinaldo proporcional.\",\n      \"Cálculo de antigüedad.\"\n    ],\n    \"guardrails\": [\n      \"Clara distinción visual y textual entre 'Dato Confirmado' (extraído directamente) y 'Dato Estimado' (inferido por IA).\",\n      \"Disclaimers legales prominentes: 'Esta es una estimación y no constituye asesoría legal. Consulta a un experto.'\",\n      \"Confidence scores para cada estimación y detección de anomalías.\",\n      \"Alertas para cláusulas que requieran revisión humana o legal.\"\n    ],\n    \"output_sections\": [\n      \"Resumen Ejecutivo del Contrato\",\n      \"Análisis Detallado de Cláusulas Clave (con highlights)\",\n      \"Riesgos Identificados y Oportunidades\",\n      \"Estimación Preliminar de Prestaciones y Antigüedad\",\n      \"Recomendaciones y Siguientes Pasos\"\n    ]\n  },\n  \"magical_ux_recommendations\": [\n    \"Feedback en tiempo real: 'Documento recibido', 'Analizando...', 'Análisis completado'.\",\n    \"Visualización interactiva del documento con resaltado de campos extraídos y cláusulas identificadas por IA.\",\n    \"Explicaciones en lenguaje sencillo de los hallazgos de la IA, evitando jerga técnica o legal excesiva.\",\n    \"Sugerencias inteligentes basadas en el contenido (ej. 'Este contrato parece requerir un anexo, ¿deseas subirlo?').\",\n    \"Acciones con un clic: 'Añadir este recibo a mi historial de pagos', 'Marcar esta cláusula para revisión legal'.\",\n    \"Interfaz de 'chat' o 'preguntas frecuentes' contextual que responda sobre el documento analizado.\"\n  ],\n  \"implementation_order_next_sprint\": [\n    \"1. Refinamiento y pruebas del webhook AuditaPatron -> CompliLink MX (payload, headers, idempotency).\",\n    \"2. Implementación del webhook CompliLink MX -> AuditaPatron para 'document.processing.started'.\",\n    \"3. Desarrollo del módulo de ingesta de documentos en CompliLink MX con SHA256 para deduplicación.\",\n    \"4. Implementación de la primera capa de clasificación documental (macro) en CompliLink MX.\",\n    \"5. Desarrollo de la extracción de campos básicos para tipos documentales comunes (fecha, emisor, receptor).\",\n    \"6. Implementación del webhook CompliLink MX -> AuditaPatron para 'document.analysis.completed'.\",\n    \"7. Actualizaciones en la UI de AuditaPatron para mostrar el estado de procesamiento y los datos básicos extraídos.\"\n  ],\n  \"key_risks\": [\n    \"Precisión y sesgo de los modelos de IA con la diversidad de documentos laborales.\",\n    \"Seguridad y privacidad de datos sensibles (GDPR, LFPDPPP) en el manejo y almacenamiento de documentos.\",\n    \"Escalabilidad de la infraestructura de IA para procesar grandes volúmenes de documentos en tiempo real.\",\n    \"Mantenimiento de la conformidad legal y la responsabilidad en las estimaciones y análisis generados por IA.\",\n    \"Gestión de expectativas del usuario sobre la 'magia' de la IA frente a las limitaciones iniciales.\",\n    \"Complejidad en la orquestación de múltiples modelos de IA y su ciclo de vida.\"\n  ],\n  \"open_questions\": [\n    \"¿Cuál es el SLA de procesamiento deseado para documentos de alta prioridad?\",\n    \"¿Cómo se gestionará el feedback de los usuarios para mejorar continuamente la precisión de la IA?\",\n    \"¿Cuál es la estrategia de retención de datos para los documentos originales y los datos extraídos?\",\n    \"¿Se requiere una revisión legal externa para validar los 'guardrails' y disclaimers propuestos?\",\n    \"¿Qué infraestructura de GPU/MLOps se necesita para soportar los modelos de análisis profundo?\",\n    \"¿Cómo se priorizarán los tipos de documentos para el entrenamiento inicial de los modelos de IA?\"\n  ],\n  \"verdict\": {\n    \"approach_is_sound\": true,\n    \"confidence_0_to_100\": 85,\n    \"one_sentence_reason\": \"Esta iteración establece una robusta y extensible fundación para la inteligencia documental impulsada por IA y una experiencia de usuario altamente responsiva, gestionando cuidadosamente las complejidades legales y técnicas.\"\n  }\n}"
+    }
+  ]
+}

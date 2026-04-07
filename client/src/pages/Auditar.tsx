@@ -3,18 +3,29 @@ import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Camera,
   CheckCircle2,
   FileSearch,
   FileUp,
+  FolderOpen,
   Lock,
   RefreshCw,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type DossierTarget = {
   type: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence";
@@ -62,6 +73,23 @@ const dossierTargets: DossierTarget[] = [
   },
 ];
 
+const analysisFieldLabels: Record<string, string> = {
+  fileName: "Archivo",
+  mimeType: "Formato",
+  internalDocumentType: "Tipo de documento",
+  normalizedDocType: "Detalle detectado",
+  processingProfile: "Nivel de revisión",
+  structuredExtractionReady: "Puede leer detalles",
+  benefitEstimationReady: "Puede estimar prestaciones",
+  employerRfc: "RFC visible",
+  period: "Periodo visible",
+  apparentAmount: "Monto visible",
+  apparentEffectiveDate: "Fecha visible",
+  workerName: "Nombre visible de la persona trabajadora",
+  employerName: "Nombre visible de la empresa",
+  jobTitle: "Puesto visible",
+};
+
 function formatDate(value?: Date | string | null) {
   if (!value) return "Sin fecha visible";
   const date = value instanceof Date ? value : new Date(value);
@@ -88,21 +116,138 @@ function fileToBase64(file: File) {
   });
 }
 
+function humanizeSnakeCase(value: string) {
+  return value
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function getSimpleDocumentTypeLabel(value?: string | null) {
+  switch (value) {
+    case "payroll_receipt":
+      return "Recibo de nómina";
+    case "cfdi":
+      return "CFDI";
+    case "imss":
+      return "Soporte IMSS";
+    case "contract":
+      return "Contrato laboral";
+    case "settlement":
+      return "Finiquito o liquidación";
+    case "evidence":
+      return "Evidencia complementaria";
+    case "other":
+      return "Otro documento laboral";
+    default:
+      return value ? humanizeSnakeCase(value) : "Documento laboral";
+  }
+}
+
+function getVisibilityLabel(value?: string | null) {
+  switch (value) {
+    case "case_team":
+      return "Solo equipo del caso";
+    case "tenant_legal":
+      return "Equipo legal";
+    case "tenant_hr":
+      return "Equipo interno autorizado";
+    case "restricted":
+      return "Acceso restringido";
+    default:
+      return "Visibilidad sin detalle";
+  }
+}
+
+function getConsentLabel(value?: string | null) {
+  switch (value) {
+    case "pending":
+      return "Permiso pendiente";
+    case "granted":
+      return "Permiso confirmado";
+    case "revoked":
+      return "Permiso retirado";
+    case "expired":
+      return "Permiso vencido";
+    case "not_required":
+      return "No hace falta permiso";
+    default:
+      return "Permiso sin detalle";
+  }
+}
+
+function getCaseStatusLabel(value?: string | null) {
+  switch (value) {
+    case "intake":
+      return "Inicio del caso";
+    case "analysis":
+      return "En análisis";
+    case "conciliation":
+      return "En conciliación";
+    case "litigation":
+      return "En juicio";
+    case "resolved":
+      return "Resuelto";
+    case "archived":
+      return "Archivado";
+    default:
+      return "Sin estado visible";
+  }
+}
+
+function getProcessingProfileLabel(value?: string | null) {
+  switch (value) {
+    case "standard":
+      return "Revisión inicial";
+    case "expanded":
+      return "Revisión ampliada";
+    case "contract_deep_dive":
+      return "Revisión profunda de contrato";
+    default:
+      return value ? humanizeSnakeCase(value) : "Sin detalle";
+  }
+}
+
+function getDocumentReadiness(confidence?: number | null) {
+  if ((confidence ?? 0) >= 85) {
+    return {
+      label: "Lectura clara",
+      classes: "bg-emerald-100 text-emerald-800",
+      description: "Este documento ya deja señales bastante claras para empezar a usarlo en el expediente.",
+    } as const;
+  }
+
+  if ((confidence ?? 0) >= 65) {
+    return {
+      label: "Lectura útil",
+      classes: "bg-teal-100 text-teal-800",
+      description: "Este documento ya aporta contexto útil, aunque algunas partes pueden necesitar revisión adicional.",
+    } as const;
+  }
+
+  return {
+    label: "Conviene revisar",
+    classes: "bg-amber-100 text-amber-800",
+    description: "El sistema encontró valor en este archivo, pero conviene revisar con más cuidado algunos detalles.",
+  } as const;
+}
+
 function getUploadInsight(documentType: string): UploadInsight {
   switch (documentType) {
     case "payroll_receipt":
       return {
         label: "Recibo de nómina incorporado",
         contribution:
-          "Este archivo ayuda a revisar percepciones, deducciones y cambios entre pagos. Ya forma parte de tu expediente para análisis posteriores.",
+          "Este archivo ayuda a revisar percepciones, deducciones y cambios entre pagos. Ya suma contexto útil para tu expediente.",
         nextSuggestion:
-          "Si también tienes tu CFDI o contrato, súbelo para contrastar lo reportado y fortalecer mejor tu respaldo.",
+          "Si también tienes tu CFDI o contrato, subirlo puede ayudarte a comparar mejor lo reportado con lo que realmente pasó.",
       };
     case "cfdi":
       return {
         label: "CFDI incorporado",
         contribution:
-          "Este documento aporta una capa fiscal muy útil para comparar lo timbrado contra lo que realmente recibiste o trabajaste.",
+          "Este documento aporta una capa fiscal muy útil para contrastar lo timbrado con lo que recibiste o trabajaste.",
         nextSuggestion:
           "Si cuentas con recibos de nómina o soporte IMSS, agregarlos puede aclarar mejor diferencias o patrones.",
       };
@@ -110,7 +255,7 @@ function getUploadInsight(documentType: string): UploadInsight {
       return {
         label: "Contrato incorporado",
         contribution:
-          "Este archivo ayuda a fijar el punto de partida de la relación laboral y a entender mejor las condiciones pactadas.",
+          "Este archivo ayuda a fijar el punto de partida de la relación laboral y a entender mejor lo que se pactó desde el inicio.",
         nextSuggestion:
           "Subir recibos de nómina y CFDI puede ayudarte a comparar lo prometido con lo que sucedió en la práctica.",
       };
@@ -136,7 +281,7 @@ function getUploadInsight(documentType: string): UploadInsight {
         contribution:
           "Tu archivo ya forma parte del expediente y puede sumar contexto útil para una revisión más completa.",
         nextSuggestion:
-          "Si sabes qué tipo de documento es, agrega una pista en la descripción o sube también recibos, CFDI o contrato para fortalecer el análisis.",
+          "Si sabes qué tipo de documento es, cuéntalo en la descripción o sube también recibos, CFDI o contrato para fortalecer mejor el análisis.",
       };
   }
 }
@@ -144,31 +289,110 @@ function getUploadInsight(documentType: string): UploadInsight {
 function getEngineStatusCopy(status?: string, reason?: string | null) {
   if (status === "sent") {
     return {
-      title: "Enviado al motor de análisis",
-      description: "El documento ya fue incorporado al procesamiento automatizado y a tu expediente trazable.",
+      title: "Tu documento ya está en análisis",
+      description: "Quedó guardado, siguió su proceso automático y ahora esperamos la respuesta de vuelta para completar más detalle.",
       tone: "success",
     } as const;
   }
 
   if (status === "failed") {
     return {
-      title: "Entrega automática pendiente",
+      title: "Tu documento sí quedó protegido",
       description:
         reason === "webhook_rejected"
-          ? "Tu documento sí quedó guardado, pero la entrega automática al motor fue rechazada y debe revisarse."
-          : "Tu documento sí quedó guardado, pero la entrega automática al motor quedó pendiente por un problema técnico temporal.",
+          ? "Tu archivo sí se guardó bien. La siguiente etapa automática necesita revisión, pero tu documento no se perdió."
+          : "Tu archivo sí se guardó bien. La siguiente etapa automática quedó pendiente por un tema temporal y puede revisarse después.",
       tone: "warning",
     } as const;
   }
 
   return {
-    title: "Expediente guardado y trazado",
+    title: "Tu documento ya quedó resguardado",
     description:
       reason === "engine_not_configured"
-        ? "Tu documento ya está protegido en el expediente, pero la conexión automática al motor aún no está configurada en este entorno."
-        : "Tu documento ya quedó resguardado en el expediente y listo para continuar su procesamiento.",
+        ? "Tu documento ya está protegido dentro del expediente. En este entorno, la parte automática todavía no está encendida por completo."
+        : "Tu documento ya quedó guardado y listo para continuar con su revisión.",
     tone: "neutral",
   } as const;
+}
+
+function getMonitoringStatusCopy(status?: string | null) {
+  switch (status) {
+    case "received":
+      return {
+        label: "Respuesta recibida",
+        classes: "bg-emerald-100 text-emerald-800",
+        description: "CompliLink ya devolvió información para este documento.",
+      } as const;
+    case "attention":
+      return {
+        label: "Conviene revisarlo",
+        classes: "bg-amber-100 text-amber-800",
+        description: "Ya se envió, pero la respuesta automática está tardando más de lo esperado.",
+      } as const;
+    case "waiting":
+      return {
+        label: "Esperando respuesta",
+        classes: "bg-sky-100 text-sky-800",
+        description: "El documento ya salió y sigue en espera de respuesta automática.",
+      } as const;
+    default:
+      return {
+        label: "Aún no enviado",
+        classes: "bg-slate-100 text-slate-700",
+        description: "Este documento todavía no entra a un seguimiento automático visible.",
+      } as const;
+  }
+}
+
+function getReturnEventLabel(value?: string | null) {
+  switch (value) {
+    case "document.processing.started":
+      return "Procesamiento iniciado";
+    case "document.analysis.completed":
+    case "document.analyzed":
+      return "Análisis documental completado";
+    case "contract.analysis.detailed":
+      return "Análisis profundo recibido";
+    default:
+      return value ? humanizeSnakeCase(value.replace(/\./g, "_")) : "Respuesta recibida";
+  }
+}
+
+function getAnalysisFieldLabel(key: string) {
+  return analysisFieldLabels[key] ?? humanizeSnakeCase(key);
+}
+
+function formatAnalysisValue(key: string, value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return "Sin dato visible";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+
+  if (key === "internalDocumentType") {
+    return getSimpleDocumentTypeLabel(String(value));
+  }
+
+  if (key === "normalizedDocType") {
+    return humanizeSnakeCase(String(value));
+  }
+
+  if (key === "processingProfile") {
+    return getProcessingProfileLabel(String(value));
+  }
+
+  if (value instanceof Date) {
+    return formatDate(value);
+  }
+
+  return String(value);
+}
+
+function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
+  return Object.entries(record ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== "");
 }
 
 export default function Auditar() {
@@ -183,8 +407,12 @@ export default function Auditar() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [textHint, setTextHint] = useState("");
   const [pickerKey, setPickerKey] = useState(0);
+  const [uploadSourceOpen, setUploadSourceOpen] = useState(false);
+  const [estimatedAcknowledged, setEstimatedAcknowledged] = useState(false);
   const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (auth.loading || !auth.isAuthenticated || bootstrapStarted) return;
@@ -209,9 +437,7 @@ export default function Auditar() {
     refetchOnWindowFocus: false,
   });
 
-  const caseDetailInput = selectedTenantId && selectedCaseId
-    ? { tenantId: selectedTenantId, caseId: selectedCaseId }
-    : undefined;
+  const caseDetailInput = selectedTenantId && selectedCaseId ? { tenantId: selectedTenantId, caseId: selectedCaseId } : undefined;
 
   const caseDetailQuery = trpc.cases.detail.useQuery(caseDetailInput as { tenantId: string; caseId: string }, {
     enabled: auth.isAuthenticated && Boolean(caseDetailInput),
@@ -239,28 +465,61 @@ export default function Auditar() {
     const completed = dossierTargets.filter((item) => presentTypes.has(item.type)).length;
     const percent = Math.max(12, Math.round((completed / dossierTargets.length) * 100));
     const nextTarget = dossierTargets.find((item) => !presentTypes.has(item.type));
-    const label =
-      completed >= 4
-        ? "Respaldo sólido"
-        : completed >= 2
-          ? "Respaldo en crecimiento"
-          : "Base inicial";
+    const label = completed >= 4 ? "Respaldo sólido" : completed >= 2 ? "Respaldo en crecimiento" : "Base inicial";
 
     return {
       completed,
       percent,
       label,
       nextTarget,
+      total: dossierTargets.length,
     };
   }, [presentTypes]);
 
   const engineStatus = getEngineStatusCopy(lastUpload?.engineDispatch?.status, lastUpload?.engineDispatch?.reason);
   const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
+  const confirmedEntries = useMemo(
+    () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined),
+    [lastUpload],
+  );
+  const estimatedEntries = useMemo(
+    () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined),
+    [lastUpload],
+  );
+  const guardrails = lastUpload?.preliminaryAnalysis?.guardrails ?? [];
+  const lastUploadReadiness = getDocumentReadiness(lastUpload?.classification?.classificationConfidence);
+  const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
+  const monitoringDocuments = complilinkMonitoring?.documents ?? [];
+  const pendingMonitoringDocuments = monitoringDocuments.filter(
+    (item) => item.status === "waiting" || item.status === "attention",
+  );
+  const attentionMonitoringDocuments = pendingMonitoringDocuments.filter((item) => item.status === "attention");
+
+  useEffect(() => {
+    setEstimatedAcknowledged(false);
+  }, [lastUpload]);
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setTextHint("");
+    setSubmitError(null);
+    setPickerKey((value) => value + 1);
+    setUploadSourceOpen(false);
+  };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
     setSubmitError(null);
+    setUploadSourceOpen(false);
+  };
+
+  const openCameraPicker = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
   };
 
   const handleUpload = async () => {
@@ -304,7 +563,7 @@ export default function Auditar() {
         <div className="container max-w-5xl">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
             <p className="text-sm font-semibold text-teal-700">AuditaPatron</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu flujo de auditoría...</h1>
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu espacio de revisión...</h1>
           </div>
         </div>
       </main>
@@ -324,13 +583,13 @@ export default function Auditar() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                Flujo real de auditoría documental
+                Para trabajadores, sin lenguaje complicado
               </div>
               <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-slate-950">
-                Entra para empezar tu expediente con el primer documento que ya tienes.
+                Tus derechos laborales, claros y protegidos
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-                Aquí podrás subir archivos reales, fortalecer tu expediente, ver qué tipo de respaldo ya tienes y recibir sugerencias claras sobre qué documento podría ayudarte después.
+                Entiende y defiende lo que te corresponde sin complicaciones.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -340,7 +599,7 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Iniciar sesión para auditar
+                  Auditar mis documentos
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
@@ -350,19 +609,19 @@ export default function Auditar() {
                     window.location.href = "/";
                   }}
                 >
-                  Seguir leyendo primero
+                  Ver primero cómo funciona
                 </Button>
               </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Lo que encontrarás aquí</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué verás aquí</p>
               <div className="mt-5 space-y-4">
                 {[
-                  "Indicador discreto de fortaleza del expediente.",
-                  "Carga documental real conectada al análisis del sistema.",
-                  "Estados visibles de verificación, clasificación y procesamiento.",
-                  "Sugerencias del siguiente documento útil, sin presión ni gamificación.",
+                  "Ver rápido cómo va tu expediente.",
+                  "Subir documentos con pasos simples.",
+                  "Separar lo confirmado de lo estimado.",
+                  "Saber qué te conviene revisar después.",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 rounded-[1.2rem] border border-white bg-white p-4">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -378,7 +637,7 @@ export default function Auditar() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 text-slate-950">
+    <main className="min-h-screen bg-slate-50 px-4 py-10 pb-32 text-slate-950 sm:pb-10">
       <div className="container max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -388,10 +647,10 @@ export default function Auditar() {
             </a>
             <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">/auditar</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Tu flujo de auditoría y fortalecimiento del expediente
+              Tus derechos laborales, claros y protegidos
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Sube documentos reales, entiende qué aportan a tu caso y visualiza qué piezas pueden darte más contexto para proteger mejor tus derechos laborales.
+              Sube documentos, distingue lo confirmado de lo estimado y fortalece tu expediente con pasos simples.
             </p>
           </div>
 
@@ -401,27 +660,23 @@ export default function Auditar() {
             onClick={() => {
               setSubmitError(null);
               setLastUpload(null);
-              void Promise.all([
-                tenantsQuery.refetch(),
-                casesQuery.refetch(),
-                caseDetailQuery.refetch(),
-              ]);
+              void Promise.all([tenantsQuery.refetch(), casesQuery.refetch(), caseDetailQuery.refetch()]);
             }}
           >
             <RefreshCw className="mr-2 h-4 w-4" strokeWidth={1.8} />
-            Actualizar estado
+            Actualizar información
           </Button>
         </div>
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-600">Estamos preparando tu espacio de trabajo y tu expediente inicial...</p>
+            <p className="text-sm font-medium text-slate-600">Estamos preparando tu espacio y tu expediente inicial...</p>
           </div>
         ) : null}
 
         {bootstrapMutation.isError ? (
           <div className="mt-8 rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-amber-950">
-            <p className="font-semibold">No fue posible preparar tu espacio de auditoría.</p>
+            <p className="font-semibold">No fue posible preparar tu espacio de revisión.</p>
             <p className="mt-2 text-sm leading-7">{bootstrapMutation.error.message}</p>
             <Button
               className="mt-4 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
@@ -440,29 +695,30 @@ export default function Auditar() {
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente actual</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Fortaleza del expediente: {dossierStatus.label}</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Hoy tu expediente va en: {dossierStatus.label}
+                  </h2>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                    Este indicador no premia cantidad. Solo te muestra si tu expediente ya reúne varios tipos de documentos que suelen dar mejor contexto para entender una situación laboral.
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"} y {dossierStatus.completed} de {dossierStatus.total} tipos de documento que suelen ayudar a entender mejor un caso laboral.
                   </p>
                 </div>
-                <div className="min-w-[220px] rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4">
-                  <div className="flex items-center justify-between gap-4 text-sm font-semibold text-teal-900">
-                    <span>Cobertura documental útil</span>
-                    <span>{dossierStatus.percent}%</span>
-                  </div>
-                  <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
-                      style={{ width: `${dossierStatus.percent}%` }}
-                    />
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-teal-900">
+
+                <div className="min-w-[240px] rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4">
+                  <p className="text-sm font-semibold text-teal-900">Próximo paso que más puede ayudarte</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">
+                    {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Ya tienes una base documental muy completa"}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-teal-950">
                     {dossierStatus.nextTarget
-                      ? `Siguiente documento especialmente útil: ${dossierStatus.nextTarget.label}.`
-                      : "Ya cuentas con una base documental bastante completa para análisis más profundos."}
+                      ? dossierStatus.nextTarget.benefit
+                      : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil."}
                   </p>
                 </div>
+              </div>
+
+              <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{ width: `${dossierStatus.percent}%` }} />
               </div>
 
               <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -480,7 +736,7 @@ export default function Auditar() {
                             isPresent ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
                           }`}
                         >
-                          {isPresent ? "Ya aporta claridad" : "Podría fortalecerlo"}
+                          {isPresent ? "Ya está presente" : "Puede ayudar mucho"}
                         </span>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-slate-700">{item.benefit}</p>
@@ -493,11 +749,13 @@ export default function Auditar() {
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Subir documento</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Añade una pieza útil a tu expediente</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Sube tu documento</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Añade un documento a tu expediente
+                  </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de cargarlo, te mostraremos qué aportó ese documento y cuál puede ser la siguiente pieza más útil para tu caso.
+                  Después de subirlo, te mostraremos con palabras simples qué detectamos, qué parte está clara y qué conviene revisar después.
                 </p>
               </div>
 
@@ -522,7 +780,7 @@ export default function Auditar() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Expediente o caso</span>
+                  <span className="text-sm font-medium text-slate-700">Elige el expediente correcto</span>
                   <select
                     value={selectedCaseId}
                     onChange={(event) => {
@@ -533,7 +791,7 @@ export default function Auditar() {
                   >
                     {casesQuery.data?.map((item) => (
                       <option key={item.caseId} value={item.caseId}>
-                        {item.title}
+                        {item.title} · Folio {item.caseId.slice(-6)}
                       </option>
                     ))}
                   </select>
@@ -547,27 +805,76 @@ export default function Auditar() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-950">Archivo principal</p>
-                    <p className="text-sm text-slate-600">PDF, imagen, XML u otro documento laboral útil.</p>
+                    <p className="text-sm text-slate-600">Puede ser foto, PDF, XML u otro archivo laboral útil.</p>
                   </div>
                 </div>
 
                 <input
-                  key={pickerKey}
+                  ref={cameraInputRef}
+                  key={`camera-${pickerKey}`}
                   type="file"
+                  accept="image/*,application/pdf,.xml,text/xml,application/xml"
+                  capture="environment"
                   onChange={handleFileChange}
-                  className="mt-5 block w-full rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-teal-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white"
+                  className="hidden"
                 />
+                <input
+                  ref={fileInputRef}
+                  key={`file-${pickerKey}`}
+                  type="file"
+                  accept="image/*,application/pdf,.xml,text/xml,application/xml"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
+                  <div className="sm:hidden">
+                    <Button
+                      variant="outline"
+                      className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      onClick={() => setUploadSourceOpen(true)}
+                    >
+                      {selectedFile ? "Cambiar foto o archivo" : "Elegir cómo subirlo"}
+                    </Button>
+                    <p className="mt-3 text-xs leading-6 text-slate-500">
+                      Pensado para celular: puedes tomar foto del documento o elegir un archivo ya guardado.
+                    </p>
+                  </div>
+
+                  <div className="hidden gap-3 sm:grid sm:grid-cols-2">
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      onClick={openCameraPicker}
+                    >
+                      <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                      Tomar foto
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      onClick={openFilePicker}
+                    >
+                      <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                      Elegir archivo
+                    </Button>
+                  </div>
+                </div>
 
                 {selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
                     <p className="font-semibold">Archivo listo para enviarse</p>
                     <p className="mt-1">{selectedFile.name} · {(selectedFile.size / 1024).toFixed(1)} KB</p>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
+                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre antes de enviarlo.
+                  </div>
+                )}
               </div>
 
               <label className="mt-6 block">
-                <span className="text-sm font-medium text-slate-700">Descripción opcional o pista del documento</span>
+                <span className="text-sm font-medium text-slate-700">Si quieres, cuéntanos qué es este archivo o para qué te ayuda</span>
                 <textarea
                   value={textHint}
                   onChange={(event) => setTextHint(event.target.value)}
@@ -581,7 +888,7 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p>
-                    Tu documento se guarda con trazabilidad y entra a revisión. Este flujo está diseñado para fortalecer tu expediente, no para presionarte a subir archivos innecesarios.
+                    Tu documento se guarda con trazabilidad y entra a revisión. Lo que sí se vea con claridad aparecerá como dato confirmado. Lo que todavía sea solo una pista útil aparecerá como estimación para revisarlo con calma.
                   </p>
                 </div>
               </div>
@@ -595,26 +902,29 @@ export default function Auditar() {
                 </div>
               ) : null}
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 hidden flex-col gap-3 sm:flex lg:flex-row">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
-                  disabled={uploadMutation.isPending || !selectedFile || !selectedTenantId || !selectedCaseId}
+                  disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
                   onClick={() => {
+                    if (!selectedFile) {
+                      openFilePicker();
+                      return;
+                    }
                     void handleUpload();
                   }}
                 >
-                  {uploadMutation.isPending ? "Subiendo y procesando..." : "Subir y auditar documento"}
+                  {uploadMutation.isPending
+                    ? "Subiendo y revisando..."
+                    : selectedFile
+                      ? "Subir y revisar documento"
+                      : "Elegir archivo para continuar"}
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setTextHint("");
-                    setSubmitError(null);
-                    setPickerKey((value) => value + 1);
-                  }}
+                  onClick={clearSelectedFile}
                 >
                   Limpiar formulario
                 </Button>
@@ -622,10 +932,240 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Resultado del último documento</p>
+
+              {!lastUpload ? (
+                <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                  Cuando subas un documento, aquí verás qué aportó, qué datos sí quedaron claros y qué parte todavía necesita revisión.
+                </div>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                      <div>
+                        <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
+                        <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`rounded-[1.3rem] border p-4 ${
+                      engineStatus.tone === "success"
+                        ? "border-emerald-100 bg-emerald-50"
+                        : engineStatus.tone === "warning"
+                          ? "border-amber-200 bg-amber-50"
+                          : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {engineStatus.tone === "warning" ? (
+                        <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
+                      ) : (
+                        <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                      )}
+                      <div>
+                        <p className="font-semibold text-slate-950">{engineStatus.title}</p>
+                        <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
+                    <p className="font-semibold text-slate-950">Cómo leer este resultado</p>
+                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                      <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4 text-sm leading-7 text-emerald-950">
+                        <p className="font-semibold">Dato confirmado</p>
+                        <p className="mt-1">
+                          Es algo que sí se alcanza a ver con claridad en este documento y ya puede ayudarte a entender mejor el expediente.
+                        </p>
+                      </div>
+                      <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
+                        <p className="font-semibold">Dato estimado</p>
+                        <p className="mt-1">
+                          Es una señal útil, pero todavía conviene confirmarla con más documentos o con una revisión más cuidadosa antes de tomar decisiones.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                    <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">Resumen sencillo</p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                        {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                      </h3>
+                      <p className="mt-3 text-sm leading-7 text-slate-700">{lastUpload.preliminaryAnalysis.summary}</p>
+                      <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          Tipo: {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          Revisión: {getProcessingProfileLabel(lastUpload.preliminaryAnalysis.processingProfile)}
+                        </span>
+                        <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                        <div>
+                          <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
+                          <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {lastUpload?.engineDispatch?.status === "sent" ? (
+                    <div className="rounded-[1.3rem] border border-sky-200 bg-sky-50 p-4 text-sm leading-7 text-sky-950">
+                      <div className="flex items-start gap-3">
+                        <RefreshCw className="mt-1 h-5 w-5 shrink-0 text-sky-700" strokeWidth={1.8} />
+                        <div>
+                          <p className="font-semibold">Seguimos esperando la respuesta automática</p>
+                          <p className="mt-1">
+                            Este documento ya se envió a CompliLink. En la columna lateral verás si la respuesta ya llegó o si conviene darle seguimiento con calma.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="font-semibold text-emerald-950">Datos confirmados</p>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
+                          {confirmedEntries.length} dato{confirmedEntries.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+
+                      {confirmedEntries.length === 0 ? (
+                        <p className="mt-3 text-sm leading-7 text-emerald-900">
+                          Todavía no hay datos claros que mostrar en esta parte.
+                        </p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {confirmedEntries.map(([key, value]) => (
+                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                {getAnalysisFieldLabel(key)}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="font-semibold text-amber-950">Datos estimados (en revisión)</p>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                          {estimatedEntries.length} dato{estimatedEntries.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-7 text-amber-900">
+                        Tómalos como orientación inicial. Pueden ayudarte, pero todavía conviene confirmarlos con más contexto antes de darlos por cerrados.
+                      </p>
+
+                      <div className="mt-4 rounded-[1rem] border border-amber-200 bg-white p-3">
+                        <button
+                          type="button"
+                          className="flex w-full items-start gap-3 text-left"
+                          onClick={() => setEstimatedAcknowledged((value) => !value)}
+                        >
+                          <CheckCircle2
+                            className={`mt-0.5 h-5 w-5 shrink-0 ${estimatedAcknowledged ? "text-emerald-600" : "text-amber-600"}`}
+                            strokeWidth={1.8}
+                          />
+                          <div>
+                            <p className="text-sm font-semibold text-slate-950">Entiendo que esto todavía necesita confirmarse</p>
+                            <p className="mt-1 text-xs leading-6 text-slate-600">
+                              {estimatedAcknowledged
+                                ? "Perfecto. Estos datos se quedan como orientación útil, no como cierre definitivo."
+                                : "Márcalo cuando te quede claro que esta parte todavía no debe tomarse como definitiva."}
+                            </p>
+                          </div>
+                        </button>
+                      </div>
+
+                      {estimatedEntries.length === 0 ? (
+                        <p className="mt-3 text-sm leading-7 text-amber-900">
+                          Por ahora no hay estimaciones adicionales que mostrar.
+                        </p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {estimatedEntries.map(([key, value]) => (
+                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                {getAnalysisFieldLabel(key)}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {guardrails.length > 0 ? (
+                    <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
+                      <p className="font-semibold text-slate-950">Antes de tomar decisiones</p>
+                      <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
+                        {guardrails.map((item) => (
+                          <p key={item}>• {item}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm xl:hidden">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento rápido</p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
+                </div>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  {complilinkMonitoring?.summary.waitingCount ?? 0} en espera
+                </span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">En espera</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
+                </div>
+                <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">Revisar</p>
+                  <p className="mt-2 text-xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
+                </div>
+                <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">Listos</p>
+                  <p className="mt-2 text-xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
+                </div>
+              </div>
+
+              {attentionMonitoringDocuments.length > 0 ? (
+                <div className="mt-4 rounded-[1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                  Hay {attentionMonitoringDocuments.length} documento{attentionMonitoringDocuments.length === 1 ? "" : "s"} cuya respuesta está tardando más de lo normal. No se perdió, pero conviene revisarlo.
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Historial visible del expediente</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Documentos ya incorporados</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tus documentos</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Documentos ya incorporados al expediente
+                  </h2>
                 </div>
                 <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {documents.length} documento{documents.length === 1 ? "" : "s"}
@@ -635,29 +1175,35 @@ export default function Auditar() {
               <div className="mt-6 space-y-4">
                 {documents.length === 0 ? (
                   <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                    Aún no hay documentos visibles en este expediente. Puedes empezar con el primer archivo que tengas más a la mano.
+                    Aún no tienes documentos en este expediente. Puedes empezar con el archivo que tengas más a la mano.
                   </div>
                 ) : (
-                  documents.map((document) => (
-                    <article key={document.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                        <div>
-                          <p className="font-semibold text-slate-950">{document.originalName}</p>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">
-                            Tipo detectado: {document.documentType} · Confianza {document.classificationConfidence}%
-                          </p>
-                          <p className="mt-1 text-sm leading-6 text-slate-500">
-                            Incorporado el {formatDate(document.createdAt)}
-                          </p>
+                  documents.map((document) => {
+                    const readiness = getDocumentReadiness(document.classificationConfidence);
+                    return (
+                      <article key={document.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <p className="font-semibold text-slate-950">{document.originalName}</p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              Tipo detectado: {getSimpleDocumentTypeLabel(document.documentType)}
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-slate-500">Incorporado el {formatDate(document.createdAt)}</p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                            <span className={`rounded-full px-3 py-1 ${readiness.classes}`}>{readiness.label}</span>
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">Integridad: {document.integrityStatus}</span>
-                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">Consentimiento: {document.consentStatus}</span>
-                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">Visibilidad: {document.visibility}</span>
+
+                        <div className="mt-4 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
+                          {readiness.description}
                         </div>
-                      </div>
-                    </article>
-                  ))
+                      </article>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -680,111 +1226,118 @@ export default function Auditar() {
                 </p>
                 <p>
                   <span className="font-semibold text-slate-900">Estado del caso:</span>{" "}
-                  {caseDetailQuery.data?.case.status ?? "Sin estado"}
-                </p>
-              </div>
-
-              <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Siguiente documento recomendado</p>
-                <p className="mt-2 text-sm leading-7 text-slate-600">
-                  {dossierStatus.nextTarget
-                    ? `${dossierStatus.nextTarget.label}: ${dossierStatus.nextTarget.description}`
-                    : "Tu expediente ya cubre varias categorías útiles. Si tienes documentación adicional específica de tu caso, también puede complementar el análisis."}
+                  {getCaseStatusLabel(caseDetailQuery.data?.case.status)}
                 </p>
               </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Estado del último procesamiento</p>
-              {!lastUpload ? (
-                <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                  Cuando subas un documento, aquí verás qué aportó a tu expediente y cómo avanzó su procesamiento.
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento con CompliLink</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">En espera</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Conviene revisar</p>
+                  <p className="mt-2 text-2xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Ya respondidos</p>
+                  <p className="mt-2 text-2xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
+                </div>
+              </div>
+
+              {pendingMonitoringDocuments.length === 0 ? (
+                <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                  {monitoringDocuments.length === 0
+                    ? "Todavía no hay documentos con seguimiento automático visible en esta parte."
+                    : "Por ahora no tienes documentos esperando respuesta automática fuera del tiempo normal."}
                 </div>
               ) : (
-                <div className="mt-4 space-y-4">
-                  <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
-                      <div>
-                        <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
-                        <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                <div className="mt-4 space-y-3">
+                  {pendingMonitoringDocuments.map((item) => {
+                    const state = getMonitoringStatusCopy(item.status);
+                    return (
+                      <div key={item.documentId} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-950">{item.documentName}</p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">{item.message}</p>
+                          </div>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${state.classes}`}>{state.label}</span>
+                        </div>
+                        <div className="mt-3 text-xs leading-6 text-slate-500">
+                          <p>Enviado el {item.dispatchedAt ? formatDate(item.dispatchedAt) : "sin fecha visible"}</p>
+                          {item.respondedAt ? <p>Respondido el {formatDate(item.respondedAt)}</p> : null}
+                          {item.responseEvent ? <p>Último movimiento: {getReturnEventLabel(item.responseEvent)}</p> : null}
+                        </div>
+                        {item.status === "attention" ? (
+                          <div className="mt-3 rounded-[1rem] border border-amber-200 bg-white p-3 text-sm leading-6 text-amber-950">
+                            Este documento no está perdido, pero sí conviene revisarlo porque la respuesta está tardando más de lo normal.
+                          </div>
+                        ) : null}
                       </div>
-                    </div>
-                  </div>
-
-                  <div className={`rounded-[1.3rem] border p-4 ${
-                    engineStatus.tone === "success"
-                      ? "border-emerald-100 bg-emerald-50"
-                      : engineStatus.tone === "warning"
-                        ? "border-amber-200 bg-amber-50"
-                        : "border-slate-200 bg-slate-50"
-                  }`}>
-                    <div className="flex items-start gap-3">
-                      {engineStatus.tone === "warning" ? (
-                        <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
-                      ) : (
-                        <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                      )}
-                      <div>
-                        <p className="font-semibold text-slate-950">{engineStatus.title}</p>
-                        <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3">
-                    {[
-                      {
-                        title: "Integridad verificada",
-                        description: `SHA-256 generado y estado ${lastUpload.document.integrityStatus}.`,
-                      },
-                      {
-                        title: "Clasificación preliminar",
-                        description: `${lastUpload.classification.documentType} con confianza ${lastUpload.classification.classificationConfidence}%.`,
-                      },
-                      {
-                        title: "Consentimiento actual",
-                        description: `Estado ${lastUpload.document.consentStatus}. Puedes regularizarlo después si aplica.`,
-                      },
-                    ].map((item) => (
-                      <div key={item.title} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                        <p className="font-semibold text-slate-900">{item.title}</p>
-                        <p className="mt-1 text-sm leading-7 text-slate-600">{item.description}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                      <div>
-                        <p className="font-semibold text-teal-950">Siguiente paso sugerido</p>
-                        <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {lastUpload.classification.reasons?.length ? (
-                    <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
-                      <p className="font-semibold text-slate-900">Por qué se clasificó así</p>
-                      <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
-                        {lastUpload.classification.reasons.map((reason) => (
-                          <p key={reason}>• {reason}</p>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Hallazgos que suelen aclararse mejor</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué documento suele ayudar más</p>
+              <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
+                <p className="font-semibold text-teal-950">
+                  {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Tu expediente ya cubre varias piezas clave"}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-teal-900">
+                  {dossierStatus.nextTarget
+                    ? `${dossierStatus.nextTarget.description} ${dossierStatus.nextTarget.benefit}`
+                    : "Si tienes un archivo adicional específico de tu caso, también puede complementar el contexto del expediente."}
+                </p>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {dossierTargets.map((item) => {
+                  const isPresent = presentTypes.has(item.type);
+                  return (
+                    <div key={item.type} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                      <CheckCircle2 className={`mt-1 h-5 w-5 shrink-0 ${isPresent ? "text-emerald-600" : "text-slate-400"}`} strokeWidth={1.8} />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                        <p className="text-sm leading-6 text-slate-600">{isPresent ? "Ya forma parte del expediente." : item.benefit}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Lo que cuidamos al revisar</p>
+              <div className="mt-4 space-y-3">
+                {[
+                  "Tu archivo queda guardado con trazabilidad.",
+                  "Lo confirmado y lo estimado se muestran por separado.",
+                  "Si algo necesita revisión humana, te lo diremos con claridad.",
+                ].map((item) => (
+                  <div key={item} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                    <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                    <p className="text-sm leading-7 text-slate-700">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué suele aclararse mejor</p>
               <div className="mt-4 space-y-3">
                 {[
                   "Diferencias entre recibos y CFDI cuando se comparan varios periodos.",
                   "Cambios repetidos en deducciones o montos a lo largo del tiempo.",
-                  "Condiciones pactadas frente a la práctica cuando también existe contrato o evidencia complementaria.",
+                  "Condiciones pactadas frente a lo que realmente ocurrió cuando también existe contrato o evidencia complementaria.",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
                     <FileSearch className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -794,6 +1347,74 @@ export default function Auditar() {
               </div>
             </div>
           </aside>
+        </div>
+      </div>
+
+      <Drawer open={uploadSourceOpen} onOpenChange={setUploadSourceOpen}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle>Elige cómo quieres subir tu documento</DrawerTitle>
+            <DrawerDescription>
+              Puedes tomar una foto en ese momento o elegir un archivo que ya tengas guardado en tu celular o computadora.
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3 px-4 pb-2">
+            <Button
+              className="h-12 w-full rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
+              onClick={openCameraPicker}
+            >
+              <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
+              Tomar foto del documento
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+              onClick={openFilePicker}
+            >
+              <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+              Elegir archivo guardado
+            </Button>
+          </div>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                Cerrar
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden">
+        <div className="mx-auto max-w-6xl">
+          <Button
+            className="h-14 w-full rounded-[1.2rem] bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
+            disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
+            onClick={() => {
+              if (!selectedFile) {
+                setUploadSourceOpen(true);
+                return;
+              }
+              void handleUpload();
+            }}
+          >
+            {uploadMutation.isPending
+              ? "Subiendo y revisando..."
+              : selectedFile
+                ? "Subir y revisar documento"
+                : "Tomar foto o elegir archivo"}
+          </Button>
+
+          <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">
+            <p className="min-w-0 flex-1 truncate">
+              {selectedFile ? `Listo para enviar: ${selectedFile.name}` : "Primero elige tu documento desde el celular o tus archivos guardados."}
+            </p>
+            {selectedFile ? (
+              <button className="font-semibold text-slate-700" onClick={clearSelectedFile} type="button">
+                Limpiar
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </main>

@@ -1,10 +1,11 @@
 import { createServer } from "node:http";
-import { AddressInfo } from "node:net";
+import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildAuditaPatronEnginePayload,
   buildAuditaPatronEngineSignature,
   sendDocumentToAuditaPatronEngine,
+  verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
 import {
   buildCanonicalCaseContract,
@@ -74,7 +75,7 @@ function buildFixtures() {
 }
 
 describe("auditaPatronIntegrationService", () => {
-  it("builds a versioned payload from canonical contracts", () => {
+  it("builds a compliant payload for CompliLink MX", () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
 
     const payload = buildAuditaPatronEnginePayload({
@@ -83,124 +84,162 @@ describe("auditaPatronIntegrationService", () => {
       sharedEngineEnvelope,
       sourceUserId: 99,
       uploadedAt: "2026-04-06T10:00:00.000Z",
-      dispatchedAt: "2026-04-06T10:05:00.000Z",
+      metadata: {
+        descriptiveDocType: "Recibo Nómina",
+        employerRfc: "AAA010101AAA",
+      },
     });
 
     expect(payload).toMatchObject({
-      event: "document_uploaded",
-      payloadVersion: "v1",
-      source: "auditapatron",
-      tenantId: "tenant-001",
-      caseId: "case-001",
-      traceId: "trace-001",
-      sourceUserId: "99",
+      event: "document.uploaded",
       documentId: "DOC-001",
+      sourceUserId: "99",
+      docType: "recibo_nomina",
       fileUrl: "https://cdn.example.com/paystub.pdf",
-      fileKey: "complilink/tenant-001/case-001/DOC-001/paystub.pdf",
       sha256: "a".repeat(64),
       mimeType: "application/pdf",
-      docType: "payroll_receipt",
       uploadedAt: "2026-04-06T10:00:00.000Z",
-      dispatchedAt: "2026-04-06T10:05:00.000Z",
-      idempotencyKey: `DOC-001:${"a".repeat(64)}`,
+      fileSizeBytes: 2048,
+      auditId: "trace-001",
+      caseId: "case-001",
+      metadata: {
+        descriptiveDocType: "Recibo Nómina",
+        employerRfc: "AAA010101AAA",
+      },
     });
-    expect(payload.contracts.sharedEngine.document_contracts).toHaveLength(1);
   });
 
-  it("creates a deterministic HMAC signature", () => {
-    const signature = buildAuditaPatronEngineSignature('{"ok":true}', "super-secret-key-123456");
-    expect(signature).toMatch(/^hmac-sha256:[a-f0-9]{64}$/);
-    expect(signature).toBe(buildAuditaPatronEngineSignature('{"ok":true}', "super-secret-key-123456"));
+  it("creates a deterministic HMAC signature from timestamp and body", () => {
+    const timestamp = "1712397900";
+    const body = '{"ok":true}';
+
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "super-secret-key-123456");
+
+    expect(signature).toMatch(/^[a-f0-9]{64}$/);
+    expect(signature).toBe(buildAuditaPatronEngineSignature(timestamp, body, "super-secret-key-123456"));
+    expect(signature).not.toBe(buildAuditaPatronEngineSignature("1712397901", body, "super-secret-key-123456"));
+  });
+
+  it("verifies a signed webhook using timestamp and raw body", () => {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const body = JSON.stringify({ event: "document.analysis.completed", documentId: "DOC-001" });
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "secret-for-engine-123456");
+
+    const verification = verifySignedWebhook({
+      signatureHeader: signature,
+      timestampHeader: timestamp,
+      payloadBody: body,
+      hmacSecret: "secret-for-engine-123456",
+    });
+
+    expect(verification.ok).toBe(true);
   });
 
   it("sends the webhook payload with signed headers", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
 
-    const received = await new Promise<{
-      result: Awaited<ReturnType<typeof sendDocumentToAuditaPatronEngine>>;
-      signature: string | undefined;
-      eventName: string | undefined;
-      payloadVersion: string | undefined;
-      idempotencyKey: string | undefined;
+    const receivedPromise = new Promise<{
       body: string;
-    }>((resolve, reject) => {
+      timestamp: string | undefined;
+      signature: string | undefined;
+    }>((resolve) => {
       const server = createServer((req, res) => {
         const chunks: Buffer[] = [];
         req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-        req.on("end", async () => {
-          try {
-            const body = Buffer.concat(chunks).toString("utf-8");
-            res.statusCode = 202;
-            res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({ accepted: true }));
-
-            const result = await sendDocumentToAuditaPatronEngine(
-              {
-                caseContract,
-                documentContract,
-                sharedEngineEnvelope,
-                sourceUserId: 77,
-                uploadedAt: "2026-04-06T10:00:00.000Z",
-                dispatchedAt: "2026-04-06T10:05:00.000Z",
-              },
-              {
-                webhookUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`,
-                hmacSecret: "secret-for-engine-123456",
-              },
-            );
-
-            resolve({
-              result,
-              signature: req.headers["x-auditapatron-signature"] as string | undefined,
-              eventName: req.headers["x-auditapatron-event"] as string | undefined,
-              payloadVersion: req.headers["x-auditapatron-payload-version"] as string | undefined,
-              idempotencyKey: req.headers["x-auditapatron-idempotency-key"] as string | undefined,
-              body,
-            });
-          } catch (error) {
-            reject(error);
-          }
+        req.on("end", () => {
+          const body = Buffer.concat(chunks).toString("utf8");
+          res.statusCode = 202;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ accepted: true }));
+          resolve({
+            body,
+            timestamp: req.headers["x-auditapatron-timestamp"] as string | undefined,
+            signature: req.headers["x-auditapatron-signature"] as string | undefined,
+          });
         });
       });
 
       serversToClose.push(server);
-
-      server.listen(0, "127.0.0.1", async () => {
-        try {
-          const result = await sendDocumentToAuditaPatronEngine(
-            {
-              caseContract,
-              documentContract,
-              sharedEngineEnvelope,
-              sourceUserId: 77,
-              uploadedAt: "2026-04-06T10:00:00.000Z",
-              dispatchedAt: "2026-04-06T10:05:00.000Z",
-            },
-            {
-              webhookUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`,
-              hmacSecret: "secret-for-engine-123456",
-            },
-          );
-
-          const body = JSON.stringify(result.payload);
-          resolve({
-            result,
-            signature: undefined,
-            eventName: undefined,
-            payloadVersion: undefined,
-            idempotencyKey: undefined,
-            body,
-          });
-        } catch (error) {
-          reject(error);
-        }
-      });
+      server.listen(0, "127.0.0.1");
     });
 
-    expect(received.result.status).toBe("sent");
-    expect(received.result.httpStatus).toBe(202);
-    expect(received.result.responseBody).toContain("accepted");
-    expect(received.result.payload.idempotencyKey).toBe(`DOC-001:${"a".repeat(64)}`);
+    const server = serversToClose.at(-1);
+    if (!server) {
+      throw new Error("Server was not created");
+    }
+
+    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
+    const webhookUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`;
+
+    const resultPromise = sendDocumentToAuditaPatronEngine(
+      {
+        caseContract,
+        documentContract,
+        sharedEngineEnvelope,
+        sourceUserId: 77,
+        uploadedAt: "2026-04-06T10:00:00.000Z",
+        docType: "recibo_nomina",
+      },
+      {
+        webhookUrl,
+        hmacSecret: "secret-for-engine-123456",
+        retryDelaysMs: [],
+      },
+    );
+
+    const [received, result] = await Promise.all([receivedPromise, resultPromise]);
+
+    expect(received.timestamp).toBeTruthy();
+    expect(received.signature).toBe(
+      buildAuditaPatronEngineSignature(received.timestamp ?? "", received.body, "secret-for-engine-123456"),
+    );
+    expect(result.status).toBe("sent");
+    expect(result.httpStatus).toBe(202);
+    expect(result.attempts).toBe(1);
+    expect(result.responseBody).toContain("accepted");
+    expect(result.payload.event).toBe("document.uploaded");
+  });
+
+  it("retries only for 5xx responses and eventually succeeds", async () => {
+    const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
+    let hitCount = 0;
+
+    const server = createServer((req, res) => {
+      hitCount += 1;
+      req.resume();
+      if (hitCount < 3) {
+        res.statusCode = 503;
+        res.end("temporary error");
+        return;
+      }
+
+      res.statusCode = 202;
+      res.end("accepted");
+    });
+
+    serversToClose.push(server);
+    server.listen(0, "127.0.0.1");
+    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
+
+    const result = await sendDocumentToAuditaPatronEngine(
+      {
+        caseContract,
+        documentContract,
+        sharedEngineEnvelope,
+        sourceUserId: 77,
+        uploadedAt: "2026-04-06T10:00:00.000Z",
+      },
+      {
+        webhookUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`,
+        hmacSecret: "secret-for-engine-123456",
+        retryDelaysMs: [0, 0],
+      },
+    );
+
+    expect(hitCount).toBe(3);
+    expect(result.status).toBe("sent");
+    expect(result.httpStatus).toBe(202);
+    expect(result.attempts).toBe(3);
   });
 
   it("skips delivery cleanly when configuration is missing", async () => {
@@ -223,5 +262,6 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.status).toBe("skipped");
     expect(result.reason).toBe("engine_not_configured");
     expect(result.httpStatus).toBeNull();
+    expect(result.attempts).toBe(0);
   });
 });

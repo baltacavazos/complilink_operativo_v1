@@ -298,7 +298,7 @@ describe("appRouter case workflows", () => {
     const uploadContractTypes = vi
       .mocked(db.upsertCanonicalContract)
       .mock.calls.map((call) => call[0]?.contractType);
-    expect(uploadContractTypes).toEqual(["document", "shared_engine"]);
+    expect(uploadContractTypes).toEqual(["document", "classification", "shared_engine"]);
     expect(db.createAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "document.upload",

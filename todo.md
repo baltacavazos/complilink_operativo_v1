@@ -29,7 +29,7 @@
 - [ ] Reorientar CompliLink como hub personal de control operativo para uso del propietario
 - [ ] Preparar ruta de contratación mínima de servicios para lanzar hoy mismo la plataforma
 - [x] Ajustar la plataforma actual para un lanzamiento inmediato con intervención mínima del usuario
-- [ ] Auditar cada bloque crítico de implementación y cada decisión previa al lanzamiento con ChatGPT, Grok y Gemini antes del checkpoint
+- [x] Auditar cada bloque crítico de implementación y cada decisión previa al lanzamiento con ChatGPT, Grok y Gemini antes del checkpoint
 - [x] Dejar el command center fuera del alcance del lanzamiento inmediato de CompliLink
 - [x] Priorizar exclusivamente los flujos esenciales publicables de CompliLink: casos, documentos, consentimientos, auditoría y publicación
 - [x] Dejar CompliLink funcional hoy mismo con el MVP mínimo publicable
@@ -78,3 +78,56 @@
 - [x] Reforzar el flujo de carga para explicar cómo cada documento fortalece el expediente y sugerir el siguiente documento recomendado
 - [x] Incorporar una sección de ejemplos reales de hallazgos que se vuelven más claros al acumular documentos
 - [x] Validar los cambios de AuditaPatron con pruebas, revisión técnica y checkpoint listo para revisión
+- [x] Analizar el PDF de integración conectada entre AuditaPatron y CompliLink MX para extraer requisitos, arquitectura y dependencias compartidas
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor estrategia de integración conectada entre AuditaPatron y CompliLink MX
+- [x] Definir una arquitectura de integración conectada para AuditaPatron y CompliLink MX con datos, expedientes, motor inteligente y flujos documentales compartidos
+- [ ] Presentar al usuario un plan integral de integración conectada para aprobación antes de implementar cambios
+- [ ] Implementar la integración conectada aprobada entre AuditaPatron y CompliLink MX en frontend, backend y flujos documentales
+- [ ] Validar la integración conectada con pruebas, revisión técnica y checkpoint listo para revisión
+- [x] Revisar la respuesta del arquitecto de CompliLink MX para confirmar contrato receptor, autenticación HMAC, idempotencia y mapeo documental de la integración conectada
+- [x] Alinear el adaptador saliente de AuditaPatron al contrato confirmado de CompliLink MX cambiando evento, payload y headers
+- [x] Implementar firma HMAC con formato timestamp.body y envío seguro hacia el webhook de CompliLink MX
+- [x] Mapear los tipos documentales internos de AuditaPatron a los docType esperados por CompliLink MX
+- [x] Implementar manejo de respuestas 200 y 201, deduplicación por sha256 y reintentos controlados solo para errores 5xx
+- [x] Actualizar y ampliar las pruebas Vitest del adaptador de integración conforme al contrato confirmado
+- [x] Diseñar e implementar una conexión bidireccional entre AuditaPatron y CompliLink MX con la menor intervención humana posible
+- [x] Automatizar el ciclo de envío, recepción de resultados y actualización de expediente entre ambas plataformas
+- [x] Reducir al mínimo los pasos manuales del operador mediante sincronización segura, reintentos y trazabilidad automática
+- [x] Definir un webhook de retorno desde CompliLink hacia AuditaPatron para eventos como document.analyzed y audit.completed
+- [x] Implementar la recepción automática en AuditaPatron de resultados y hallazgos generados por CompliLink MX
+- [x] Actualizar expedientes, estados de auditoría y trazabilidad en AuditaPatron a partir de eventos de retorno sin intervención humana manual
+- [x] Ampliar AuditaPatron para aceptar cualquier documento laboral relevante y analizarlo con IA de forma integral
+- [x] Incorporar soporte específico para contratos individuales de trabajo con extracción de cláusulas, obligaciones y cálculo preliminar de prestaciones
+- [x] Definir el alcance jurídico-operativo del análisis automatizado para documentos no estructurados, hallazgos, riesgos y estimaciones económicas
+- [x] Contrastar con ChatGPT, Gemini y Grok la mejor arquitectura para análisis documental amplio, clasificación automática y cálculo preliminar de prestaciones
+- [ ] Presentar para aprobación una estrategia segura, explicable y operativamente viable antes de implementar el motor documental ampliado
+- [ ] Elevar la experiencia de AuditaPatron a un estándar cutting-edge con microestados inteligentes, análisis documental profundo y automatización visible pero discreta para que el flujo se sienta casi mágico sin perder trazabilidad ni guardrails
+- [x] Redactar un documento breve de pitch interno para el grupo del usuario que explique las bondades de CompliLink, la genialidad estratégica de complementarlo con AuditaPatron como marca distinta y el valor casi irrepetible de captar voluntariamente documentos laborales masivos para fortalecer la plataforma
+- [x] Incluir en el pitch interno que la mancuerna CompliLink + AuditaPatron sienta las bases tecnológicas, operativas y de datos para futuros proyectos laborales que hoy todavía no se han imaginado
+- [x] Redactar el pitch interno en lenguaje muy sencillo, claro y no técnico para que cualquier persona del grupo entienda rápidamente el valor de CompliLink + AuditaPatron
+- [x] Corregir en el código vigente el contrato saliente `document.uploaded` con firma HMAC sobre `timestamp.body`, headers esperados e idempotencia compatible con CompliLink MX
+- [x] Implementar en el backend los eventos de retorno `document.processing.started`, `document.analysis.completed` y `contract.analysis.detailed` para la sincronización bidireccional con AuditaPatron
+- [x] Persistir resultados estructurados de clasificación, extracción y análisis contractual distinguiendo explícitamente entre dato confirmado y dato estimado
+- [x] Expandir la taxonomía documental y el manejo de documentos laborales desconocidos con extracción genérica, explicabilidad y trazabilidad completa
+- [x] Validar con pruebas el nuevo ciclo bidireccional completo antes del siguiente checkpoint
+- [x] Consensuar con Grok, Gemini y ChatGPT la mejor arquitectura visible para la interfaz central de Auditapatron, priorizando claridad, confianza y facilidad de uso
+- [x] Rediseñar la interfaz central de Auditapatron para mostrar con lenguaje muy simple qué se confirmó, qué es estimación y qué sigue después
+- [x] Validar después del rediseño que la interfaz central mantenga una experiencia clara, confiable y fácil de entender
+- [x] Añadir una explicación visual todavía más clara sobre la diferencia entre datos confirmados y datos estimados dentro de /auditar
+- [x] Incorporar una confirmación simple de lectura o entendimiento para los datos estimados antes de que la persona los tome como definitivos
+- [x] Implementar monitoreo pasivo para documentos enviados a CompliLink que no reciban evento de retorno en un tiempo razonable
+- [x] Validar con pruebas los ajustes consensuados de claridad, confianza y seguimiento operativo
+- [x] Consensuar con Grok, Gemini y ChatGPT la mejor estrategia mobile-first y app-ready para Auditapatron
+- [x] Adaptar la interfaz central de Auditapatron para uso predominante en móvil, con jerarquía clara en pantallas pequeñas
+- [x] Preparar desde ahora patrones visuales y estructurales que faciliten una futura app para Android e iOS
+- [x] Añadir en /auditar un selector simple de origen de carga pensado para móvil, con opción de tomar foto o elegir archivo
+- [x] Incorporar en /auditar una acción principal inferior fácil de alcanzar con el pulgar durante la carga documental
+- [x] Compactar seguimiento, resultados y bloques informativos de /auditar para lectura cómoda en pantallas pequeñas sin scroll horizontal
+- [x] Consensuar con Grok, Gemini y ChatGPT una evaluación final de Auditapatron para identificar con precisión qué está bien, qué está mal y qué debe pulirse antes del cierre
+- [x] Aplicar una ronda final de pulido visual y de experiencia en Auditapatron con base en el consenso multi-IA
+- [x] Validar con pruebas y revisión final la última ronda de pulido antes del checkpoint de cierre
+- [x] Consensuar con Grok, Gemini, ChatGPT y criterio interno el mejor catch phrase y header principal posible para la primera impresión de Auditapatron
+- [x] Aplicar el pulido final del hero y del header principal con base en el consenso del mejor mensaje de entrada
+- [x] Validar con pruebas y revisión final la última ronda de pulido del hero antes del checkpoint de cierre
+- [x] Organizar una nueva ronda de consenso con Grok, Gemini, ChatGPT y criterio interno para redefinir el header principal incorporando explícitamente la defensa de derechos laborales en México
+- [x] Evaluar en esa ronda qué formulación del hero genera más empatía, confianza y fuerza de primera impresión al hablar de derechos laborales

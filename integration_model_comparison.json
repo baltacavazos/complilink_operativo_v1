@@ -1,0 +1,365 @@
+{
+  "prompt_version": 2,
+  "results": {
+    "chatgpt": {
+      "raw": "{\n  \"summary\": \"La integración actual entre AuditaPatron y CompliLink MX presenta discrepancias críticas en el evento, estructura del payload, firma y headers que impiden cumplimiento con el contrato confirmado del Documento 2.\",\n  \"current_mismatches\": [\n    {\n      \"area\": \"Evento\",\n      \"severity\": \"high\",\n      \"issue\": \"El evento enviado es 'document_uploaded' pero el contrato confirmado requiere 'document.uploaded'.\",\n      \"required_change\": \"Cambiar el valor del campo 'event' a 'document.uploaded' en el payload.\"\n    },\n    {\n      \"area\": \"Payload - Campos\",\n      \"severity\": \"high\",\n      \"issue\": \"El payload actual incluye campos adicionales (payloadVersion, source, dispatchedAt, tenantId, caseId, traceId, fileKey, idempotencyKey, contracts) que no están en el contrato confirmado y omite campos obligatorios como 'sourceUserId' debe ser string, pero no se valida formato, y no se usa 'uploadedAt' correctamente.\",\n      \"required_change\": \"Ajustar el payload para que contenga solo los campos confirmados: event, documentId, sourceUserId, docType, fileUrl, sha256, mimeType, uploadedAt, y opcionales fileSizeBytes, auditId, caseId, metadata. Eliminar campos no requeridos y asegurar formatos correctos.\"\n    },\n    {\n      \"area\": \"Firma HMAC\",\n      \"severity\": \"high\",\n      \"issue\": \"El cálculo de la firma actual es HMAC_SHA256(secret, body) mientras que el contrato confirmado requiere HMAC_SHA256(secret, timestamp + '.' + body).\",\n      \"required_change\": \"Modificar la función de firma para concatenar el timestamp (X-AuditaPatron-Timestamp) y el body con un punto antes de aplicar HMAC_SHA256.\"\n    },\n    {\n      \"area\": \"Headers HTTP\",\n      \"severity\": \"medium\",\n      \"issue\": \"El adaptador envía headers personalizados X-AuditaPatron-Event, X-AuditaPatron-Payload-Version, X-AuditaPatron-Idempotency-Key que no están especificados en el contrato confirmado. El contrato solo menciona X-AuditaPatron-Signature y X-AuditaPatron-Timestamp.\",\n      \"required_change\": \"Eliminar headers no requeridos y mantener solo X-AuditaPatron-Signature y X-AuditaPatron-Timestamp para cumplir con el contrato.\"\n    },\n    {\n      \"area\": \"Idempotencia\",\n      \"severity\": \"medium\",\n      \"issue\": \"El adaptador usa un idempotencyKey personalizado basado en documentId y sha256, pero el contrato confirma que la deduplicación se basa únicamente en sha256 y que el idempotencyKey no es un header requerido.\",\n      \"required_change\": \"Eliminar el uso de header X-AuditaPatron-Idempotency-Key y confiar en la deduplicación por sha256 en el payload.\"\n    },\n    {\n      \"area\": \"DocType Mapping\",\n      \"severity\": \"high\",\n      \"issue\": \"El código usa docType 'payroll_receipt' que no coincide con los tipos confirmados en el contrato (recibo_nomina, constancia_imss, constancia_infonavit, contrato_laboral, cfdi_nomina, opinion_cumplimiento).\",\n      \"required_change\": \"Mapear correctamente los tipos internos a los tipos confirmados en CompliLink MX.\"\n    }\n  ],\n  \"target_contract\": {\n    \"event\": \"document.uploaded\",\n    \"required_fields\": [\n      \"event\",\n      \"documentId\",\n      \"sourceUserId\",\n      \"docType\",\n      \"fileUrl\",\n      \"sha256\",\n      \"mimeType\",\n      \"uploadedAt\"\n    ],\n    \"optional_fields\": [\n      \"fileSizeBytes\",\n      \"auditId\",\n      \"caseId\",\n      \"metadata\"\n    ],\n    \"signature_algorithm\": \"HMAC_SHA256\",\n    \"signature_input\": \"timestamp + '.' + body\",\n    \"required_headers\": [\n      \"X-AuditaPatron-Signature\",\n      \"X-AuditaPatron-Timestamp\"\n    ],\n    \"retry_policy\": \"Reintentos solo en 5xx con backoff exponencial 30s, 60s, 120s, máximo 3 intentos. No reintentar en 4xx.\",\n    \"idempotency_rule\": \"Deduplicación basada en sha256 del documento.\"\n  },\n  \"doc_type_mapping\": [\n    {\n      \"current_internal_type\": \"payroll_receipt\",\n      \"target_doc_type\": \"recibo_nomina\",\n      \"notes\": \"Mapeo correcto para recibo de nómina.\"\n    },\n    {\n      \"current_internal_type\": \"imss_certificate\",\n      \"target_doc_type\": \"constancia_imss\",\n      \"notes\": \"Mapeo para constancia IMSS.\"\n    },\n    {\n      \"current_internal_type\": \"infonavit_certificate\",\n      \"target_doc_type\": \"constancia_infonavit\",\n      \"notes\": \"Mapeo para constancia Infonavit.\"\n    },\n    {\n      \"current_internal_type\": \"labor_contract\",\n      \"target_doc_type\": \"contrato_laboral\",\n      \"notes\": \"Mapeo para contrato laboral.\"\n    },\n    {\n      \"current_internal_type\": \"payroll_cfdi\",\n      \"target_doc_type\": \"cfdi_nomina\",\n      \"notes\": \"Mapeo para CFDI de nómina.\"\n    },\n    {\n      \"current_internal_type\": \"compliance_opinion\",\n      \"target_doc_type\": \"opinion_cumplimiento\",\n      \"notes\": \"Mapeo para opinión de cumplimiento.\"\n    }\n  ],\n  \"implementation_sequence\": [\n    \"Actualizar constante de evento a 'document.uploaded'.\",\n    \"Modificar función buildAuditaPatronEnginePayload para emitir solo campos requeridos y opcionales según contrato confirmado.\",\n    \"Eliminar campos no requeridos como payloadVersion, source, dispatchedAt, tenantId, traceId, fileKey, idempotencyKey, contracts del payload enviado.\",\n    \"Ajustar función buildAuditaPatronEngineSignature para usar input concatenado: timestamp + '.' + body.\",\n    \"Modificar envío HTTP para incluir únicamente headers X-AuditaPatron-Signature y X-AuditaPatron-Timestamp.\",\n    \"Eliminar header X-AuditaPatron-Idempotency-Key.\",\n    \"Implementar mapeo explícito de docType interno a docType esperado por CompliLink MX.\",\n    \"Actualizar pruebas unitarias para reflejar cambios en evento, payload, firma y headers.\",\n    \"Verificar que la deduplicación y reintentos se ajusten a la política de retry y idempotencia confirmada.\"\n  ],\n  \"risks\": [\n    \"Riesgo alto de rechazo por parte de CompliLink MX debido a evento incorrecto y payload no conforme.\",\n    \"Posible fallo en validación de firma HMAC y rechazo 401 invalid_signature.\",\n    \"Incompatibilidad en docType puede causar rechazo o mal procesamiento del documento.\",\n    \"Eliminación de headers personalizados puede afectar monitoreo o trazabilidad si se usan internamente.\",\n    \"Cambios en payload pueden requerir actualización en sistemas consumidores internos.\"\n  ],\n  \"go_no_go\": \"go_with_changes\"\n}",
+      "parsed": {
+        "summary": "La integración actual entre AuditaPatron y CompliLink MX presenta discrepancias críticas en el evento, estructura del payload, firma y headers que impiden cumplimiento con el contrato confirmado del Documento 2.",
+        "current_mismatches": [
+          {
+            "area": "Evento",
+            "severity": "high",
+            "issue": "El evento enviado es 'document_uploaded' pero el contrato confirmado requiere 'document.uploaded'.",
+            "required_change": "Cambiar el valor del campo 'event' a 'document.uploaded' en el payload."
+          },
+          {
+            "area": "Payload - Campos",
+            "severity": "high",
+            "issue": "El payload actual incluye campos adicionales (payloadVersion, source, dispatchedAt, tenantId, caseId, traceId, fileKey, idempotencyKey, contracts) que no están en el contrato confirmado y omite campos obligatorios como 'sourceUserId' debe ser string, pero no se valida formato, y no se usa 'uploadedAt' correctamente.",
+            "required_change": "Ajustar el payload para que contenga solo los campos confirmados: event, documentId, sourceUserId, docType, fileUrl, sha256, mimeType, uploadedAt, y opcionales fileSizeBytes, auditId, caseId, metadata. Eliminar campos no requeridos y asegurar formatos correctos."
+          },
+          {
+            "area": "Firma HMAC",
+            "severity": "high",
+            "issue": "El cálculo de la firma actual es HMAC_SHA256(secret, body) mientras que el contrato confirmado requiere HMAC_SHA256(secret, timestamp + '.' + body).",
+            "required_change": "Modificar la función de firma para concatenar el timestamp (X-AuditaPatron-Timestamp) y el body con un punto antes de aplicar HMAC_SHA256."
+          },
+          {
+            "area": "Headers HTTP",
+            "severity": "medium",
+            "issue": "El adaptador envía headers personalizados X-AuditaPatron-Event, X-AuditaPatron-Payload-Version, X-AuditaPatron-Idempotency-Key que no están especificados en el contrato confirmado. El contrato solo menciona X-AuditaPatron-Signature y X-AuditaPatron-Timestamp.",
+            "required_change": "Eliminar headers no requeridos y mantener solo X-AuditaPatron-Signature y X-AuditaPatron-Timestamp para cumplir con el contrato."
+          },
+          {
+            "area": "Idempotencia",
+            "severity": "medium",
+            "issue": "El adaptador usa un idempotencyKey personalizado basado en documentId y sha256, pero el contrato confirma que la deduplicación se basa únicamente en sha256 y que el idempotencyKey no es un header requerido.",
+            "required_change": "Eliminar el uso de header X-AuditaPatron-Idempotency-Key y confiar en la deduplicación por sha256 en el payload."
+          },
+          {
+            "area": "DocType Mapping",
+            "severity": "high",
+            "issue": "El código usa docType 'payroll_receipt' que no coincide con los tipos confirmados en el contrato (recibo_nomina, constancia_imss, constancia_infonavit, contrato_laboral, cfdi_nomina, opinion_cumplimiento).",
+            "required_change": "Mapear correctamente los tipos internos a los tipos confirmados en CompliLink MX."
+          }
+        ],
+        "target_contract": {
+          "event": "document.uploaded",
+          "required_fields": [
+            "event",
+            "documentId",
+            "sourceUserId",
+            "docType",
+            "fileUrl",
+            "sha256",
+            "mimeType",
+            "uploadedAt"
+          ],
+          "optional_fields": [
+            "fileSizeBytes",
+            "auditId",
+            "caseId",
+            "metadata"
+          ],
+          "signature_algorithm": "HMAC_SHA256",
+          "signature_input": "timestamp + '.' + body",
+          "required_headers": [
+            "X-AuditaPatron-Signature",
+            "X-AuditaPatron-Timestamp"
+          ],
+          "retry_policy": "Reintentos solo en 5xx con backoff exponencial 30s, 60s, 120s, máximo 3 intentos. No reintentar en 4xx.",
+          "idempotency_rule": "Deduplicación basada en sha256 del documento."
+        },
+        "doc_type_mapping": [
+          {
+            "current_internal_type": "payroll_receipt",
+            "target_doc_type": "recibo_nomina",
+            "notes": "Mapeo correcto para recibo de nómina."
+          },
+          {
+            "current_internal_type": "imss_certificate",
+            "target_doc_type": "constancia_imss",
+            "notes": "Mapeo para constancia IMSS."
+          },
+          {
+            "current_internal_type": "infonavit_certificate",
+            "target_doc_type": "constancia_infonavit",
+            "notes": "Mapeo para constancia Infonavit."
+          },
+          {
+            "current_internal_type": "labor_contract",
+            "target_doc_type": "contrato_laboral",
+            "notes": "Mapeo para contrato laboral."
+          },
+          {
+            "current_internal_type": "payroll_cfdi",
+            "target_doc_type": "cfdi_nomina",
+            "notes": "Mapeo para CFDI de nómina."
+          },
+          {
+            "current_internal_type": "compliance_opinion",
+            "target_doc_type": "opinion_cumplimiento",
+            "notes": "Mapeo para opinión de cumplimiento."
+          }
+        ],
+        "implementation_sequence": [
+          "Actualizar constante de evento a 'document.uploaded'.",
+          "Modificar función buildAuditaPatronEnginePayload para emitir solo campos requeridos y opcionales según contrato confirmado.",
+          "Eliminar campos no requeridos como payloadVersion, source, dispatchedAt, tenantId, traceId, fileKey, idempotencyKey, contracts del payload enviado.",
+          "Ajustar función buildAuditaPatronEngineSignature para usar input concatenado: timestamp + '.' + body.",
+          "Modificar envío HTTP para incluir únicamente headers X-AuditaPatron-Signature y X-AuditaPatron-Timestamp.",
+          "Eliminar header X-AuditaPatron-Idempotency-Key.",
+          "Implementar mapeo explícito de docType interno a docType esperado por CompliLink MX.",
+          "Actualizar pruebas unitarias para reflejar cambios en evento, payload, firma y headers.",
+          "Verificar que la deduplicación y reintentos se ajusten a la política de retry y idempotencia confirmada."
+        ],
+        "risks": [
+          "Riesgo alto de rechazo por parte de CompliLink MX debido a evento incorrecto y payload no conforme.",
+          "Posible fallo en validación de firma HMAC y rechazo 401 invalid_signature.",
+          "Incompatibilidad en docType puede causar rechazo o mal procesamiento del documento.",
+          "Eliminación de headers personalizados puede afectar monitoreo o trazabilidad si se usan internamente.",
+          "Cambios en payload pueden requerir actualización en sistemas consumidores internos."
+        ],
+        "go_no_go": "go_with_changes"
+      }
+    },
+    "gemini": {
+      "raw": "{\n  \"summary\": \"Análisis de la integración entre AuditaPatron y CompliLink MX para la carga de documentos, identificando incompatibilidades críticas en el contrato y la implementación actual.\",\n  \"current_mismatches\": [\n    {\n      \"area\": \"Event Name\",\n      \"severity\": \"high\",\n      \"issue\": \"El código envía `event: \\\"document_uploaded\\\"` (snake_case) en el payload, mientras que el contrato de CompliLink MX espera `event: \\\"document.uploaded\\\"` (dot notation).\",\n      \"required_change\": \"Actualizar la constante `AUDITAPATRON_ENGINE_EVENT` a `\\\"document.uploaded\\\"`.\"\n    },\n    {\n      \"area\": \"Payload Structure - Extra Fields\",\n      \"severity\": \"high\",\n      \"issue\": \"El payload actual incluye campos no esperados por el contrato de CompliLink MX: `payloadVersion`, `source`, `dispatchedAt`, `tenantId`, `traceId`, `fileKey`, `idempotencyKey`, y el objeto anidado `contracts` (que contiene `case`, `document`, `sharedEngine`).\",\n      \"required_change\": \"Eliminar estos campos y el objeto `contracts` del payload JSON enviado a CompliLink MX.\"\n    },\n    {\n      \"area\": \"Signature Calculation\",\n      \"severity\": \"high\",\n      \"issue\": \"El contrato de CompliLink MX especifica que la firma HMAC-SHA256 debe calcularse sobre `timestamp + '.' + body`. El código actual (`buildAuditaPatronEngineSignature`) calcula la firma únicamente sobre `payloadBody`, sin incluir el timestamp.\",\n      \"required_change\": \"Modificar `buildAuditaPatronEngineSignature` para que el input del HMAC sea la concatenación del timestamp (usado en `X-AuditaPatron-Timestamp`) y el cuerpo del payload, separados por un punto.\"\n    },\n    {\n      \"area\": \"Request Headers - Extra Headers\",\n      \"severity\": \"medium\",\n      \"issue\": \"El código envía headers no especificados por el contrato: `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, `X-AuditaPatron-Idempotency-Key`. El evento debe ir en el cuerpo, no en un header adicional. La idempotencia se basa en `sha256` en el cuerpo, no en un header.\",\n      \"required_change\": \"Eliminar los headers `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, `X-AuditaPatron-Idempotency-Key`.\"\n    },\n    {\n      \"area\": \"Retry Policy\",\n      \"severity\": \"high\",\n      \"issue\": \"El código actual no implementa ninguna lógica de reintentos. El contrato de CompliLink MX requiere reintentos con backoff exponencial para errores 5xx.\",\n      \"required_change\": \"Implementar un mecanismo de reintentos para errores HTTP 5xx con la política de backoff exponencial especificada (30s, 60s, 120s, máx. 3 intentos).\"\n    },\n    {\n      \"area\": \"Payload Structure - caseId\",\n      \"severity\": \"low\",\n      \"issue\": \"El contrato de CompliLink MX lista `caseId?` como un campo opcional de nivel superior. El código envía `caseId` como un campo de nivel superior y también anidado dentro de `contracts` (que es un objeto no esperado).\",\n      \"required_change\": \"Asegurarse de que `caseId` se envíe solo como un campo de nivel superior si es necesario, y eliminar su duplicación dentro del objeto `contracts` (que de todos modos debe ser eliminado).\"\n    }\n  ],\n  \"target_contract\": {\n    \"event\": \"document.uploaded\",\n    \"required_fields\": [\n      \"event\",\n      \"documentId\",\n      \"sourceUserId\",\n      \"docType\",\n      \"fileUrl\",\n      \"sha256\",\n      \"mimeType\",\n      \"uploadedAt\"\n    ],\n    \"optional_fields\": [\n      \"fileSizeBytes\",\n      \"auditId\",\n      \"caseId\",\n      \"metadata\"\n    ],\n    \"signature_algorithm\": \"HMAC-SHA256\",\n    \"signature_input\": \"timestamp + '.' + body\",\n    \"signature_input_notes\": \"Donde 'timestamp' es el valor del header X-AuditaPatron-Timestamp y 'body' es el payload JSON serializado.\",\n    \"required_headers\": [\n      \"Content-Type: application/json\",\n      \"X-AuditaPatron-Signature\",\n      \"X-AuditaPatron-Timestamp\"\n    ],\n    \"retry_policy\": \"Reintentos solo en 5xx con backoff exponencial (30s, 60s, 120s), máximo 3 intentos. No reintentar 4xx.\",\n    \"idempotency_rule\": \"Deduplicación por el campo 'sha256' en el payload.\"\n  },\n  \"doc_type_mapping\": [\n    {\n      \"current_internal_type\": \"payroll_receipt\",\n      \"target_doc_type\": \"recibo_nomina\",\n      \"notes\": \"Mapeo inferido del ejemplo en los tests del adaptador. Otros tipos documentales internos deberán ser mapeados explícitamente a los tipos confirmados por CompliLink MX: `constancia_imss`, `constancia_infonavit`, `contrato_laboral`, `cfdi_nomina`, `opinion_cumplimiento`.\"\n    }\n  ],\n  \"implementation_sequence\": [\n    \"Actualizar el nombre del evento en el código de `document_uploaded` a `document.uploaded`.\",\n    \"Modificar la función `buildAuditaPatronEngineSignature` para incluir el timestamp en el string de entrada del HMAC, siguiendo el formato `timestamp + '.' + body`.\",\n    \"Refactorizar `buildAuditaPatronEnginePayload` para construir un payload que contenga únicamente los campos requeridos y opcionales del contrato de CompliLink MX, eliminando campos internos y el objeto `contracts`.\",\n    \"Eliminar los headers `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, y `X-AuditaPatron-Idempotency-Key` de la solicitud HTTP.\",\n    \"Implementar la lógica de reintentos con backoff exponencial para errores HTTP 5xx (30s, 60s, 120s, máximo 3 intentos).\",\n    \"Revisar y ajustar el mapeo de todos los `document_type` internos a los `docType` de CompliLink MX.\",\n    \"Realizar pruebas de integración exhaustivas con el entorno de CompliLink MX, incluyendo el modo de prueba (`documentId` que empieza con `test_`).\"\n  ],\n  \"risks\": [\n    \"Fallo en la autenticación debido a una firma HMAC incorrecta, resultando en rechazo de todos los documentos.\",\n    \"Rechazo de payloads por CompliLink MX debido a la presencia de campos inesperados o un formato de evento incorrecto.\",\n    \"Pérdida de documentos o procesamiento tardío debido a la falta de un mecanismo de reintentos para errores transitorios del lado del receptor.\",\n    \"Incompatibilidad o malinterpretación de tipos documentales si el mapeo no es completo o correcto.\",\n    \"Impacto en la trazabilidad interna de AuditaPatron si se eliminan campos como `tenantId` o `traceId` del payload sin asegurar su disponibilidad por otros medios para fines de auditoría o depuración.\"\n  ],\n  \"go_no_go\": \"go_with_changes\"\n}",
+      "parsed": {
+        "summary": "Análisis de la integración entre AuditaPatron y CompliLink MX para la carga de documentos, identificando incompatibilidades críticas en el contrato y la implementación actual.",
+        "current_mismatches": [
+          {
+            "area": "Event Name",
+            "severity": "high",
+            "issue": "El código envía `event: \"document_uploaded\"` (snake_case) en el payload, mientras que el contrato de CompliLink MX espera `event: \"document.uploaded\"` (dot notation).",
+            "required_change": "Actualizar la constante `AUDITAPATRON_ENGINE_EVENT` a `\"document.uploaded\"`."
+          },
+          {
+            "area": "Payload Structure - Extra Fields",
+            "severity": "high",
+            "issue": "El payload actual incluye campos no esperados por el contrato de CompliLink MX: `payloadVersion`, `source`, `dispatchedAt`, `tenantId`, `traceId`, `fileKey`, `idempotencyKey`, y el objeto anidado `contracts` (que contiene `case`, `document`, `sharedEngine`).",
+            "required_change": "Eliminar estos campos y el objeto `contracts` del payload JSON enviado a CompliLink MX."
+          },
+          {
+            "area": "Signature Calculation",
+            "severity": "high",
+            "issue": "El contrato de CompliLink MX especifica que la firma HMAC-SHA256 debe calcularse sobre `timestamp + '.' + body`. El código actual (`buildAuditaPatronEngineSignature`) calcula la firma únicamente sobre `payloadBody`, sin incluir el timestamp.",
+            "required_change": "Modificar `buildAuditaPatronEngineSignature` para que el input del HMAC sea la concatenación del timestamp (usado en `X-AuditaPatron-Timestamp`) y el cuerpo del payload, separados por un punto."
+          },
+          {
+            "area": "Request Headers - Extra Headers",
+            "severity": "medium",
+            "issue": "El código envía headers no especificados por el contrato: `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, `X-AuditaPatron-Idempotency-Key`. El evento debe ir en el cuerpo, no en un header adicional. La idempotencia se basa en `sha256` en el cuerpo, no en un header.",
+            "required_change": "Eliminar los headers `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, `X-AuditaPatron-Idempotency-Key`."
+          },
+          {
+            "area": "Retry Policy",
+            "severity": "high",
+            "issue": "El código actual no implementa ninguna lógica de reintentos. El contrato de CompliLink MX requiere reintentos con backoff exponencial para errores 5xx.",
+            "required_change": "Implementar un mecanismo de reintentos para errores HTTP 5xx con la política de backoff exponencial especificada (30s, 60s, 120s, máx. 3 intentos)."
+          },
+          {
+            "area": "Payload Structure - caseId",
+            "severity": "low",
+            "issue": "El contrato de CompliLink MX lista `caseId?` como un campo opcional de nivel superior. El código envía `caseId` como un campo de nivel superior y también anidado dentro de `contracts` (que es un objeto no esperado).",
+            "required_change": "Asegurarse de que `caseId` se envíe solo como un campo de nivel superior si es necesario, y eliminar su duplicación dentro del objeto `contracts` (que de todos modos debe ser eliminado)."
+          }
+        ],
+        "target_contract": {
+          "event": "document.uploaded",
+          "required_fields": [
+            "event",
+            "documentId",
+            "sourceUserId",
+            "docType",
+            "fileUrl",
+            "sha256",
+            "mimeType",
+            "uploadedAt"
+          ],
+          "optional_fields": [
+            "fileSizeBytes",
+            "auditId",
+            "caseId",
+            "metadata"
+          ],
+          "signature_algorithm": "HMAC-SHA256",
+          "signature_input": "timestamp + '.' + body",
+          "signature_input_notes": "Donde 'timestamp' es el valor del header X-AuditaPatron-Timestamp y 'body' es el payload JSON serializado.",
+          "required_headers": [
+            "Content-Type: application/json",
+            "X-AuditaPatron-Signature",
+            "X-AuditaPatron-Timestamp"
+          ],
+          "retry_policy": "Reintentos solo en 5xx con backoff exponencial (30s, 60s, 120s), máximo 3 intentos. No reintentar 4xx.",
+          "idempotency_rule": "Deduplicación por el campo 'sha256' en el payload."
+        },
+        "doc_type_mapping": [
+          {
+            "current_internal_type": "payroll_receipt",
+            "target_doc_type": "recibo_nomina",
+            "notes": "Mapeo inferido del ejemplo en los tests del adaptador. Otros tipos documentales internos deberán ser mapeados explícitamente a los tipos confirmados por CompliLink MX: `constancia_imss`, `constancia_infonavit`, `contrato_laboral`, `cfdi_nomina`, `opinion_cumplimiento`."
+          }
+        ],
+        "implementation_sequence": [
+          "Actualizar el nombre del evento en el código de `document_uploaded` a `document.uploaded`.",
+          "Modificar la función `buildAuditaPatronEngineSignature` para incluir el timestamp en el string de entrada del HMAC, siguiendo el formato `timestamp + '.' + body`.",
+          "Refactorizar `buildAuditaPatronEnginePayload` para construir un payload que contenga únicamente los campos requeridos y opcionales del contrato de CompliLink MX, eliminando campos internos y el objeto `contracts`.",
+          "Eliminar los headers `X-AuditaPatron-Event`, `X-AuditaPatron-Payload-Version`, y `X-AuditaPatron-Idempotency-Key` de la solicitud HTTP.",
+          "Implementar la lógica de reintentos con backoff exponencial para errores HTTP 5xx (30s, 60s, 120s, máximo 3 intentos).",
+          "Revisar y ajustar el mapeo de todos los `document_type` internos a los `docType` de CompliLink MX.",
+          "Realizar pruebas de integración exhaustivas con el entorno de CompliLink MX, incluyendo el modo de prueba (`documentId` que empieza con `test_`)."
+        ],
+        "risks": [
+          "Fallo en la autenticación debido a una firma HMAC incorrecta, resultando en rechazo de todos los documentos.",
+          "Rechazo de payloads por CompliLink MX debido a la presencia de campos inesperados o un formato de evento incorrecto.",
+          "Pérdida de documentos o procesamiento tardío debido a la falta de un mecanismo de reintentos para errores transitorios del lado del receptor.",
+          "Incompatibilidad o malinterpretación de tipos documentales si el mapeo no es completo o correcto.",
+          "Impacto en la trazabilidad interna de AuditaPatron si se eliminan campos como `tenantId` o `traceId` del payload sin asegurar su disponibilidad por otros medios para fines de auditoría o depuración."
+        ],
+        "go_no_go": "go_with_changes"
+      }
+    },
+    "grok": {
+      "raw": "{\n  \"summary\": \"La integración actual tiene incompatibilidades en evento, payload, firma y políticas; requiere ajustes para alinear con Documento 2.\",\n  \"current_mismatches\": [\n    {\n      \"area\": \"event_name\",\n      \"severity\": \"medium\",\n      \"issue\": \"Código usa 'document_uploaded'; contrato espera 'document.uploaded'.\",\n      \"required_change\": \"Cambiar constante AUDITAPATRON_ENGINE_EVENT a 'document.uploaded'.\"\n    },\n    {\n      \"area\": \"payload_structure\",\n      \"severity\": \"high\",\n      \"issue\": \"Payload incluye campos extras (payloadVersion, source, tenantId, traceId, fileKey, idempotencyKey, contracts) y falta fileSizeBytes opcional; contrato espera estructura plana específica sin extras.\",\n      \"required_change\": \"Reconstruir payload en buildAuditaPatronEnginePayload para incluir solo campos requeridos/opcionales de Documento 2, eliminando extras y nested contracts.\"\n    },\n    {\n      \"area\": \"signature_calculation\",\n      \"severity\": \"high\",\n      \"issue\": \"Firma calcula HMAC_SHA256 solo sobre body; contrato requiere HMAC_SHA256 sobre timestamp + '.' + body.\",\n      \"required_change\": \"Modificar buildAuditaPatronEngineSignature para usar input = timestamp + '.' + body, donde timestamp es dispatchedAt.\"\n    },\n    {\n      \"area\": \"signature_format\",\n      \"severity\": \"medium\",\n      \"issue\": \"Firma prefijada con 'hmac-sha256:'; contrato no especifica prefijo, solo hex digest.\",\n      \"required_change\": \"Eliminar prefijo en buildAuditaPatronEngineSignature, enviar solo el hex digest en header X-AuditaPatron-Signature.\"\n    },\n    {\n      \"area\": \"headers\",\n      \"severity\": \"medium\",\n      \"issue\": \"Envía headers extras (X-AuditaPatron-Event, X-AuditaPatron-Payload-Version, X-AuditaPatron-Idempotency-Key); contrato implica solo signature y timestamp.\",\n      \"required_change\": \"Limitar headers a Content-Type, X-AuditaPatron-Signature y X-AuditaPatron-Timestamp en sendDocumentToAuditaPatronEngine.\"\n    },\n    {\n      \"area\": \"retry_policy\",\n      \"severity\": \"high\",\n      \"issue\": \"No implementa reintentos; contrato requiere backoff exponencial (30s, 60s, 120s, max 3) solo en 5xx, no en 4xx.\",\n      \"required_change\": \"Agregar lógica de reintentos en sendDocumentToAuditaPatronEngine con backoff y límite, condicional a HTTP 5xx.\"\n    },\n    {\n      \"area\": \"idempotency\",\n      \"severity\": \"low\",\n      \"issue\": \"Usa idempotencyKey como document_id:sha256; contrato deduplica por sha256 solo.\",\n      \"required_change\": \"Eliminar envío de idempotencyKey, confiar en deduplicación por sha256 del receptor.\"\n    },\n    {\n      \"area\": \"response_handling\",\n      \"severity\": \"medium\",\n      \"issue\": \"Considera !response.ok como failure; contrato usa 200 para duplicados y 201 para nuevos, ambos success.\",\n      \"required_change\": \"Ajustar chequeo para tratar 200 y 201 como 'sent', manejar errores específicos como 401, 400, etc.\"\n    },\n    {\n      \"area\": \"test_mode\",\n      \"severity\": \"low\",\n      \"issue\": \"No soporta modo test (documentId inicia con test_); contrato lo valida.\",\n      \"required_change\": \"Agregar soporte opcional para prefijar documentId con 'test_' en entornos de prueba.\"\n    }\n  ],\n  \"target_contract\": {\n    \"event\": \"document.uploaded\",\n    \"required_fields\": [\"event\", \"documentId\", \"sourceUserId\", \"docType\", \"fileUrl\", \"sha256\", \"mimeType\", \"uploadedAt\"],\n    \"optional_fields\": [\"fileSizeBytes\", \"auditId\", \"caseId\", \"metadata\"],\n    \"signature_algorithm\": \"HMAC_SHA256\",\n    \"signature_input\": \"timestamp + '.' + body\",\n    \"required_headers\": [\"X-AuditaPatron-Signature\", \"X-AuditaPatron-Timestamp\"],\n    \"retry_policy\": \"Reintentar solo en 5xx con backoff 30s -> 60s -> 120s, máximo 3 intentos; no reintentar 4xx\",\n    \"idempotency_rule\": \"Deduplicación por sha256; reintentos seguros\"\n  },\n  \"doc_type_mapping\": [\n    {\n      \"current_internal_type\": \"payroll_receipt\",\n      \"target_doc_type\": \"recibo_nomina\",\n      \"notes\": \"Mapeo directo basado en ejemplo de prueba; asumir equivalencia semántica.\"\n    },\n    {\n      \"current_internal_type\": \"imss_certificate\",\n      \"target_doc_type\": \"constancia_imss\",\n      \"notes\": \"Mapeo propuesto para certificados IMSS.\"\n    },\n    {\n      \"current_internal_type\": \"infonavit_certificate\",\n      \"target_doc_type\": \"constancia_infonavit\",\n      \"notes\": \"Mapeo propuesto para certificados INFONAVIT.\"\n    },\n    {\n      \"current_internal_type\": \"employment_contract\",\n      \"target_doc_type\": \"contrato_laboral\",\n      \"notes\": \"Mapeo propuesto para contratos laborales.\"\n    },\n    {\n      \"current_internal_type\": \"cfdi_payroll\",\n      \"target_doc_type\": \"cfdi_nomina\",\n      \"notes\": \"Mapeo propuesto para CFDI de nómina.\"\n    },\n    {\n      \"current_internal_type\": \"compliance_opinion\",\n      \"target_doc_type\": \"opinion_cumplimiento\",\n      \"notes\": \"Mapeo propuesto para opiniones de cumplimiento.\"\n    }\n  ],\n  \"implementation_sequence\": [\n    \"Actualizar nombre de evento a 'document.uploaded'.\",\n    \"Simplificar estructura de payload para coincidir con campos requeridos/opcionales.\",\n    \"Corregir cálculo y formato de firma HMAC.\",\n    \"Ajustar headers enviados a solo los requeridos.\",\n    \"Implementar mapeo de tipos documentales en buildAuditaPatronEnginePayload.\",\n    \"Agregar lógica de reintentos con backoff en sendDocumentToAuditaPatronEngine.\",\n    \"Actualizar manejo de respuestas para 200/201 como éxito.\",\n    \"Agregar soporte para modo test.\",\n    \"Actualizar pruebas para validar contra contrato de Documento 2.\",\n    \"Desplegar y monitorear integración.\"\n  ],\n  \"risks\": [\n    \"Pérdida de datos al eliminar campos extras como contracts, potencialmente afectando trazabilidad.\",\n    \"Fallas de seguridad si firma no se alinea, causando rechazos 401.\",\n    \"Sobrecarga en receptor si reintentos no se implementan correctamente.\",\n    \"Incompatibilidades en producción si mapeo de docType es incorrecto.\",\n    \"Falta de manejo de errores específicos (e.g., 429 rate_limit) podría causar loops.\"\n  ],\n  \"go_no_go\": \"go_with_changes\"\n}",
+      "parsed": {
+        "summary": "La integración actual tiene incompatibilidades en evento, payload, firma y políticas; requiere ajustes para alinear con Documento 2.",
+        "current_mismatches": [
+          {
+            "area": "event_name",
+            "severity": "medium",
+            "issue": "Código usa 'document_uploaded'; contrato espera 'document.uploaded'.",
+            "required_change": "Cambiar constante AUDITAPATRON_ENGINE_EVENT a 'document.uploaded'."
+          },
+          {
+            "area": "payload_structure",
+            "severity": "high",
+            "issue": "Payload incluye campos extras (payloadVersion, source, tenantId, traceId, fileKey, idempotencyKey, contracts) y falta fileSizeBytes opcional; contrato espera estructura plana específica sin extras.",
+            "required_change": "Reconstruir payload en buildAuditaPatronEnginePayload para incluir solo campos requeridos/opcionales de Documento 2, eliminando extras y nested contracts."
+          },
+          {
+            "area": "signature_calculation",
+            "severity": "high",
+            "issue": "Firma calcula HMAC_SHA256 solo sobre body; contrato requiere HMAC_SHA256 sobre timestamp + '.' + body.",
+            "required_change": "Modificar buildAuditaPatronEngineSignature para usar input = timestamp + '.' + body, donde timestamp es dispatchedAt."
+          },
+          {
+            "area": "signature_format",
+            "severity": "medium",
+            "issue": "Firma prefijada con 'hmac-sha256:'; contrato no especifica prefijo, solo hex digest.",
+            "required_change": "Eliminar prefijo en buildAuditaPatronEngineSignature, enviar solo el hex digest en header X-AuditaPatron-Signature."
+          },
+          {
+            "area": "headers",
+            "severity": "medium",
+            "issue": "Envía headers extras (X-AuditaPatron-Event, X-AuditaPatron-Payload-Version, X-AuditaPatron-Idempotency-Key); contrato implica solo signature y timestamp.",
+            "required_change": "Limitar headers a Content-Type, X-AuditaPatron-Signature y X-AuditaPatron-Timestamp en sendDocumentToAuditaPatronEngine."
+          },
+          {
+            "area": "retry_policy",
+            "severity": "high",
+            "issue": "No implementa reintentos; contrato requiere backoff exponencial (30s, 60s, 120s, max 3) solo en 5xx, no en 4xx.",
+            "required_change": "Agregar lógica de reintentos en sendDocumentToAuditaPatronEngine con backoff y límite, condicional a HTTP 5xx."
+          },
+          {
+            "area": "idempotency",
+            "severity": "low",
+            "issue": "Usa idempotencyKey como document_id:sha256; contrato deduplica por sha256 solo.",
+            "required_change": "Eliminar envío de idempotencyKey, confiar en deduplicación por sha256 del receptor."
+          },
+          {
+            "area": "response_handling",
+            "severity": "medium",
+            "issue": "Considera !response.ok como failure; contrato usa 200 para duplicados y 201 para nuevos, ambos success.",
+            "required_change": "Ajustar chequeo para tratar 200 y 201 como 'sent', manejar errores específicos como 401, 400, etc."
+          },
+          {
+            "area": "test_mode",
+            "severity": "low",
+            "issue": "No soporta modo test (documentId inicia con test_); contrato lo valida.",
+            "required_change": "Agregar soporte opcional para prefijar documentId con 'test_' en entornos de prueba."
+          }
+        ],
+        "target_contract": {
+          "event": "document.uploaded",
+          "required_fields": [
+            "event",
+            "documentId",
+            "sourceUserId",
+            "docType",
+            "fileUrl",
+            "sha256",
+            "mimeType",
+            "uploadedAt"
+          ],
+          "optional_fields": [
+            "fileSizeBytes",
+            "auditId",
+            "caseId",
+            "metadata"
+          ],
+          "signature_algorithm": "HMAC_SHA256",
+          "signature_input": "timestamp + '.' + body",
+          "required_headers": [
+            "X-AuditaPatron-Signature",
+            "X-AuditaPatron-Timestamp"
+          ],
+          "retry_policy": "Reintentar solo en 5xx con backoff 30s -> 60s -> 120s, máximo 3 intentos; no reintentar 4xx",
+          "idempotency_rule": "Deduplicación por sha256; reintentos seguros"
+        },
+        "doc_type_mapping": [
+          {
+            "current_internal_type": "payroll_receipt",
+            "target_doc_type": "recibo_nomina",
+            "notes": "Mapeo directo basado en ejemplo de prueba; asumir equivalencia semántica."
+          },
+          {
+            "current_internal_type": "imss_certificate",
+            "target_doc_type": "constancia_imss",
+            "notes": "Mapeo propuesto para certificados IMSS."
+          },
+          {
+            "current_internal_type": "infonavit_certificate",
+            "target_doc_type": "constancia_infonavit",
+            "notes": "Mapeo propuesto para certificados INFONAVIT."
+          },
+          {
+            "current_internal_type": "employment_contract",
+            "target_doc_type": "contrato_laboral",
+            "notes": "Mapeo propuesto para contratos laborales."
+          },
+          {
+            "current_internal_type": "cfdi_payroll",
+            "target_doc_type": "cfdi_nomina",
+            "notes": "Mapeo propuesto para CFDI de nómina."
+          },
+          {
+            "current_internal_type": "compliance_opinion",
+            "target_doc_type": "opinion_cumplimiento",
+            "notes": "Mapeo propuesto para opiniones de cumplimiento."
+          }
+        ],
+        "implementation_sequence": [
+          "Actualizar nombre de evento a 'document.uploaded'.",
+          "Simplificar estructura de payload para coincidir con campos requeridos/opcionales.",
+          "Corregir cálculo y formato de firma HMAC.",
+          "Ajustar headers enviados a solo los requeridos.",
+          "Implementar mapeo de tipos documentales en buildAuditaPatronEnginePayload.",
+          "Agregar lógica de reintentos con backoff en sendDocumentToAuditaPatronEngine.",
+          "Actualizar manejo de respuestas para 200/201 como éxito.",
+          "Agregar soporte para modo test.",
+          "Actualizar pruebas para validar contra contrato de Documento 2.",
+          "Desplegar y monitorear integración."
+        ],
+        "risks": [
+          "Pérdida de datos al eliminar campos extras como contracts, potencialmente afectando trazabilidad.",
+          "Fallas de seguridad si firma no se alinea, causando rechazos 401.",
+          "Sobrecarga en receptor si reintentos no se implementan correctamente.",
+          "Incompatibilidades en producción si mapeo de docType es incorrecto.",
+          "Falta de manejo de errores específicos (e.g., 429 rate_limit) podría causar loops."
+        ],
+        "go_no_go": "go_with_changes"
+      }
+    }
+  }
+}

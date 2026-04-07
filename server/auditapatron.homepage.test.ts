@@ -48,12 +48,12 @@ describe("Auditapatron homepage content", () => {
   });
 
   it("ships a functional audit workspace that explains contributions and next useful documents after upload", () => {
-    expect(auditFlowSource).toContain("Tu flujo de auditoría y fortalecimiento del expediente");
-    expect(auditFlowSource).toContain("Fortaleza del expediente:");
-    expect(auditFlowSource).toContain("Cobertura documental útil");
-    expect(auditFlowSource).toContain("Siguiente documento recomendado");
-    expect(auditFlowSource).toContain("Subir y auditar documento");
-    expect(auditFlowSource).toContain("Siguiente paso sugerido");
-    expect(auditFlowSource).toContain("Tu documento ya forma parte del expediente");
+    expect(auditFlowSource).toContain("Tus derechos laborales, claros y protegidos");
+    expect(auditFlowSource).toContain("Hoy tu expediente va en:");
+    expect(auditFlowSource).toContain("Próximo paso que más puede ayudarte");
+    expect(auditFlowSource).toContain("Añade un documento a tu expediente");
+    expect(auditFlowSource).toContain("Subir y revisar documento");
+    expect(auditFlowSource).toContain("Siguiente paso sugerido para ti");
+    expect(auditFlowSource).toContain("Ya forma parte del expediente.");
   });
 });
