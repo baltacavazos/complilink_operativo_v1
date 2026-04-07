@@ -572,27 +572,27 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-12 text-slate-950">
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-10 text-slate-950">
         <div className="container max-w-5xl">
           <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950">
             <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
             Volver al inicio
           </a>
 
-          <div className="mt-6 grid gap-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] lg:grid-cols-[1fr_0.9fr] lg:p-10">
+          <div className="mt-5 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Para trabajadores, sin lenguaje complicado
               </div>
-              <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-slate-950">
+              <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
                 Tus derechos laborales, claros y protegidos
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-                Entiende y defiende lo que te corresponde sin complicaciones.
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                Entiende lo importante y avanza con pasos simples.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
                   onClick={() => {
@@ -614,18 +614,17 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+            <div className="rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué verás aquí</p>
-              <div className="mt-5 space-y-4">
+              <div className="mt-4 space-y-3">
                 {[
-                  "Ver rápido cómo va tu expediente.",
-                  "Subir documentos con pasos simples.",
-                  "Separar lo confirmado de lo estimado.",
-                  "Saber qué te conviene revisar después.",
+                  "Ve rápido cómo va tu expediente.",
+                  "Sube documentos con pasos simples.",
+                  "Distingue lo confirmado de lo estimado.",
                 ].map((item) => (
-                  <div key={item} className="flex gap-3 rounded-[1.2rem] border border-white bg-white p-4">
+                  <div key={item} className="flex gap-3 rounded-[1.1rem] border border-white bg-white p-3.5">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                    <p className="text-sm leading-7 text-slate-700">{item}</p>
+                    <p className="text-sm leading-6 text-slate-700">{item}</p>
                   </div>
                 ))}
               </div>
@@ -637,9 +636,9 @@ export default function Auditar() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 pb-32 text-slate-950 sm:pb-10">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 pb-32 text-slate-950 sm:pb-10">
       <div className="container max-w-6xl">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
@@ -649,8 +648,8 @@ export default function Auditar() {
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Tus derechos laborales, claros y protegidos
             </h1>
-            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Sube documentos, distingue lo confirmado de lo estimado y fortalece tu expediente con pasos simples.
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+              Sube documentos, entiende qué ya está claro y fortalece tu expediente.
             </p>
           </div>
 
@@ -690,17 +689,17 @@ export default function Auditar() {
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                     Hoy tu expediente va en: {dossierStatus.label}
                   </h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"} y {dossierStatus.completed} de {dossierStatus.total} tipos de documento que suelen ayudar a entender mejor un caso laboral.
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"} y {dossierStatus.completed} de {dossierStatus.total} tipos útiles para entender mejor tu caso.
                   </p>
                 </div>
 
@@ -717,15 +716,15 @@ export default function Auditar() {
                 </div>
               </div>
 
-              <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-100">
+              <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
                 <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{ width: `${dossierStatus.percent}%` }} />
               </div>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
                 {dossierTargets.map((item) => {
                   const isPresent = presentTypes.has(item.type);
                   return (
-                    <article key={item.type} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
+                    <article key={item.type} className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-semibold text-slate-900">{item.label}</p>
@@ -739,15 +738,15 @@ export default function Auditar() {
                           {isPresent ? "Ya está presente" : "Puede ayudar mucho"}
                         </span>
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-slate-700">{item.benefit}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">{item.benefit}</p>
                     </article>
                   );
                 })}
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Sube tu documento</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -755,11 +754,11 @@ export default function Auditar() {
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de subirlo, te mostraremos con palabras simples qué detectamos, qué parte está clara y qué conviene revisar después.
+                  Después de subirlo, verás qué detectamos y qué conviene revisar después.
                 </p>
               </div>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">Espacio de trabajo</span>
                   <select
@@ -828,7 +827,7 @@ export default function Auditar() {
                 />
 
                 <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
-                  <div className="sm:hidden">
+                  <div className="sm:hidden space-y-2">
                     <Button
                       variant="outline"
                       className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
@@ -836,8 +835,8 @@ export default function Auditar() {
                     >
                       {selectedFile ? "Cambiar foto o archivo" : "Elegir cómo subirlo"}
                     </Button>
-                    <p className="mt-3 text-xs leading-6 text-slate-500">
-                      Pensado para celular: puedes tomar foto del documento o elegir un archivo ya guardado.
+                    <p className="text-xs leading-5 text-slate-500">
+                      Toma foto o elige un archivo ya guardado.
                     </p>
                   </div>
 
@@ -873,18 +872,18 @@ export default function Auditar() {
                 )}
               </div>
 
-              <label className="mt-6 block">
+              <label className="mt-5 block">
                 <span className="text-sm font-medium text-slate-700">Si quieres, cuéntanos qué es este archivo o para qué te ayuda</span>
                 <textarea
                   value={textHint}
                   onChange={(event) => setTextHint(event.target.value)}
-                  rows={4}
+                  rows={3}
                   placeholder="Ejemplo: recibo de nómina de marzo, alta IMSS, contrato inicial, captura de instrucciones por WhatsApp..."
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-teal-500"
                 />
               </label>
 
-              <div className="mt-6 flex flex-col gap-3 rounded-[1.4rem] border border-teal-100 bg-teal-50 p-4 text-sm leading-7 text-teal-950">
+              <div className="mt-5 flex flex-col gap-3 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p>
@@ -902,7 +901,7 @@ export default function Auditar() {
                 </div>
               ) : null}
 
-              <div className="mt-6 hidden flex-col gap-3 sm:flex lg:flex-row">
+              <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
                   disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
@@ -1087,7 +1086,7 @@ export default function Auditar() {
                             <p className="mt-1 text-xs leading-6 text-slate-600">
                               {estimatedAcknowledged
                                 ? "Perfecto. Estos datos se quedan como orientación útil, no como cierre definitivo."
-                                : "Márcalo cuando te quede claro que esta parte todavía no debe tomarse como definitiva."}
+                                : "Márcalo cuando tengas claro que esta parte sigue siendo una orientación inicial."}
                             </p>
                           </div>
                         </button>
@@ -1126,18 +1125,18 @@ export default function Auditar() {
               )}
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm xl:hidden">
+            <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento rápido</p>
-                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
+                  <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {complilinkMonitoring?.summary.waitingCount ?? 0} en espera
                 </span>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">En espera</p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>

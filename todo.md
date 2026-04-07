@@ -131,3 +131,11 @@
 - [x] Validar con pruebas y revisión final la última ronda de pulido del hero antes del checkpoint de cierre
 - [x] Organizar una nueva ronda de consenso con Grok, Gemini, ChatGPT y criterio interno para redefinir el header principal incorporando explícitamente la defensa de derechos laborales en México
 - [x] Evaluar en esa ronda qué formulación del hero genera más empatía, confianza y fuerza de primera impresión al hablar de derechos laborales
+- [x] Consensuar con Grok, Gemini y ChatGPT cómo recortar la home y la primera experiencia móvil de Auditapatron para reducir scroll sin perder claridad
+- [x] Detectar y eliminar de la interfaz cualquier texto que suene a instrucción interna, nota de diseño o mensaje no pensado para personas usuarias
+- [x] Reescribir el hero, bloques iniciales y mensajes de apoyo con frases más cortas, humanas y visibles en una primera pantalla móvil más compacta
+- [x] Compactar la estructura visible de la página para que en celular se entienda más rápido qué hace Auditapatron y por qué conviene seguir
+- [x] Validar con pruebas y revisión final que la versión recortada siga clara, confiable y sin textos internos expuestos
+- [x] Compactar la pantalla /auditar para reducir scroll excesivo en móvil sin perder claridad.
+- [x] Identificar y eliminar cualquier texto interno o de instrucción filtrado en contenido visible para personas usuarias.
+- [x] Proponer una versión inicial más breve y más clara de la experiencia móvil con consenso entre Grok, ChatGPT y Gemini antes de implementar.
