@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "content": {
+    "recommended_angle": "Enfocarse en la simplicidad y el valor cotidiano, presentando el proyecto como una solución accesible que une tecnología inteligente con necesidades reales de las personas, destacando la colaboración entre componentes para crear un ecosistema útil y sostenible.",
+    "plain_language_explanation": {
+      "complilink": "CompliLink es como el gran paraguas que une todo: una plataforma amplia que conecta diferentes herramientas y servicios para ayudar a las personas y empresas a manejar sus documentos y cumplimiento de normas de manera fácil y organizada.",
+      "helios": "Helios es el cerebro inteligente en el centro de todo, un sistema que analiza y aprende de los documentos que la gente sube, mejorando con el tiempo para ofrecer consejos y soluciones más precisas y útiles.",
+      "auditapatron": "AuditaPatron es una herramienta independiente y amigable para el público en general, que permite a cualquier persona subir sus documentos personales o de trabajo para revisarlos rápidamente y asegurarse de que todo esté en orden, sin complicaciones."
+    },
+    "why_it_works": [
+      "Resuelve problemas reales de la vida diaria, como manejar papeleo y cumplimiento, de forma sencilla y accesible para todos, lo que atrae a un mercado amplio y en crecimiento.",
+      "Crea un ciclo virtuoso donde los usuarios contribuyen datos voluntariamente, fortaleciendo el sistema central y mejorando la experiencia para todos, fomentando la lealtad y el uso continuo.",
+      "Combina innovación con practicidad, posicionándose en un nicho donde la demanda por herramientas digitales confiables está aumentando, especialmente en un mundo cada vez más regulado."
+    ],
+    "why_hard_to_copy": [
+      "Depende de un ecosistema interconectado que se fortalece con datos reales de usuarios, lo que requiere tiempo y escala para replicar de manera efectiva.",
+      "El cerebro central (Helios) aprende y evoluciona con contribuciones voluntarias, creando una ventaja única basada en datos acumulados que no se puede copiar fácilmente.",
+      "Integra múltiples capas (plataforma, cerebro y herramienta masiva) en un todo coherente, demandando expertise en diseño y una visión estratégica que es difícil de imitar sin empezar desde cero."
+    ],
+    "tone_guidance": [
+      "Mantén un tono optimista y ambicioso, destacando posibilidades positivas sin promesas irreales.",
+      "Sé claro y comprensible, usando lenguaje cotidiano como si explicaras a un amigo.",
+      "Evita lo técnico, enfocándote en beneficios y conceptos simples en lugar de detalles mecánicos."
+    ],
+    "must_include_phrases": [
+      "Un ecosistema que crece con la participación de los usuarios",
+      "Solución accesible para el día a día",
+      "Fortalece el cerebro central con cada documento subido"
+    ],
+    "avoid": [
+      "Jerga técnica como 'algoritmos' o 'big data'",
+      "Exageraciones como 'revolucionará el mundo' o 'invencible'",
+      "Detalles complejos sobre implementación o arquitectura interna"
+    ],
+    "suggested_structure": [
+      "Introducción: Presenta el proyecto general y su propósito.",
+      "Explicación de componentes: Describe qué es CompliLink, Helios y AuditaPatron.",
+      "Construcción conjunta: Explica cómo se integran y el rol de las subidas voluntarias.",
+      "Por qué funciona: Razones de mercado y beneficios.",
+      "Por qué es único: Dificultades para copiar y cierre optimista."
+    ],
+    "sample_opening_paragraph": "Imagina un mundo donde manejar tus documentos y asegurarte de que todo cumpla con las normas sea tan simple como subir una foto a tu red social favorita. Eso es lo que estamos construyendo con CompliLink, Helios y AuditaPatron: un ecosistema inteligente y accesible que ayuda a personas y empresas a navegar el papeleo diario con facilidad y confianza."
+  }
+}

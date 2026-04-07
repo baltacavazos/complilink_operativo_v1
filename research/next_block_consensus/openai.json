@@ -1,0 +1,72 @@
+{
+  "ok": true,
+  "model": "gpt-4.1-mini",
+  "content": {
+    "recommended_priority": "contract",
+    "why_this_first": "El contrato es la base legal que establece tu relación laboral. Subirlo primero ayuda a Helios a entender mejor tu caso y a validar otros documentos relacionados.",
+    "next_best_document_logic": {
+      "title": "Cómo elegimos el siguiente documento para ti",
+      "description": "Helios analiza qué documentos tienes y cuáles faltan para fortalecer tu expediente. Prioriza los que aportan más claridad y respaldo legal en cada etapa.",
+      "rules": [
+        "Si no hay contrato, sugerir subir el contrato primero.",
+        "Si ya hay contrato, sugerir recibos de nómina para evidenciar pagos.",
+        "Si hay recibos, sugerir CFDI para validar ingresos formales.",
+        "Si hay CFDI, sugerir documentos del IMSS para confirmar afiliación y aportaciones.",
+        "Si hay documentos anteriores, sugerir finiquito o evidencia adicional para cerrar etapas.",
+        "Otros documentos se sugieren solo si fortalecen puntos específicos detectados por Helios."
+      ],
+      "tone": "Amigable, claro y motivador, enfocándose en cómo cada documento fortalece el expediente para proteger tus derechos."
+    },
+    "timeline_module": {
+      "title": "Tu expediente paso a paso",
+      "description": "Aquí ves cómo cada documento que subes ayuda a construir y fortalecer tu caso, desde el inicio hasta la etapa actual.",
+      "items": [
+        {
+          "label": "Contrato",
+          "meaning": "Base legal que define tu relación laboral."
+        },
+        {
+          "label": "Recibos de nómina",
+          "meaning": "Pruebas de los pagos que has recibido."
+        },
+        {
+          "label": "CFDI",
+          "meaning": "Comprobantes fiscales que validan tus ingresos."
+        },
+        {
+          "label": "Documentos IMSS",
+          "meaning": "Confirmación de tu afiliación y aportaciones al seguro social."
+        },
+        {
+          "label": "Finiquito",
+          "meaning": "Documento que cierra tu relación laboral."
+        },
+        {
+          "label": "Evidencia adicional",
+          "meaning": "Pruebas extra que fortalecen tu expediente."
+        }
+      ]
+    },
+    "copy_suggestions": {
+      "next_step_heading": "¿Qué documento subir ahora?",
+      "next_step_explainer": "Sube el documento que más fortalezca tu expediente. Helios te explica por qué es importante y cómo ayuda a proteger tus derechos.",
+      "timeline_heading": "Cómo crece tu expediente",
+      "timeline_explainer": "Cada documento que agregas hace tu caso más sólido. Aquí puedes ver el progreso y entender el valor de cada paso."
+    },
+    "risks_to_avoid": [
+      "No sobrecargar la pantalla con demasiada información técnica o legal.",
+      "No usar términos complejos o jerga que confunda a personas no técnicas.",
+      "No generar expectativas de respuestas inmediatas o automáticas más allá de la guía.",
+      "No cambiar la forma de uso actual para no afectar la familiaridad del usuario.",
+      "No incluir funcionalidades que requieran conexión remota activa en esta etapa."
+    ],
+    "implementation_notes": [
+      "La recomendación debe actualizarse dinámicamente según documentos ya subidos.",
+      "La línea de tiempo debe ser un componente visual simple, con iconos o colores que indiquen progreso sin complejidad.",
+      "Mantener la interfaz limpia y mobile-first, con textos breves y claros.",
+      "Preparar la estructura de datos para integrar en futuro modo remoto sin alterar UX actual.",
+      "Evitar interacciones complejas; la línea de tiempo es solo informativa y no editable."
+    ]
+  },
+  "elapsed_seconds": 10.33
+}

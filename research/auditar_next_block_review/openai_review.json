@@ -1,0 +1,45 @@
+{
+  "verdict": "approve_with_adjustments",
+  "strengths": [
+    "La interfaz comunica claramente el rol de Helios como cerebro central del expediente, reforzando confianza y entendimiento.",
+    "El flujo de subir documentos es simple y accesible, con opciones claras para móvil y escritorio.",
+    "La separación visual y textual entre datos confirmados y estimados aporta transparencia y confianza.",
+    "La línea de tiempo y la tarjeta de siguiente documento recomendado guían al usuario en el proceso de forma didáctica.",
+    "Uso consistente de colores, iconografía y tipografía para estados y niveles de confianza, facilitando la comprensión rápida.",
+    "El diseño es responsive y mobile-first, con controles adaptados para pantallas pequeñas (botón fijo inferior, drawer para selección).",
+    "Mensajes de estado y errores son claros y ayudan a entender qué sucede con la carga y análisis de documentos."
+  ],
+  "issues": [
+    "El botón para subir/cambiar archivo en móvil muestra texto diferente entre estados, pero el cambio podría ser confuso sin animación o transición.",
+    "El texto explicativo sobre datos estimados y confirmados puede ser denso para usuarios no técnicos; podría simplificarse o dividirse.",
+    "El uso de términos como 'lectura preliminar', 'orientación inicial' y 'estimación' puede generar dudas sobre la fiabilidad real de Helios.",
+    "Algunos textos largos en tarjetas y detalles pueden saturar visualmente, especialmente en móvil.",
+    "El botón 'Limpiar formulario' podría ser más descriptivo para usuarios menos técnicos (ej. 'Cancelar selección' o 'Quitar archivo').",
+    "El drawer para elegir método de subida no indica claramente que se puede cerrar tocando fuera o deslizando, podría reforzarse.",
+    "La sección de seguimiento con CompliLink y estados de documentos podría ser confusa para usuarios sin contexto técnico."
+  ],
+  "quick_wins": [
+    "Agregar una breve animación o transición suave al cambiar el texto del botón de subir archivo para mejorar percepción de cambio.",
+    "Reducir o dividir el texto explicativo sobre datos estimados/confirmados en párrafos más cortos o con bullets para facilitar lectura.",
+    "Cambiar el texto del botón 'Limpiar formulario' a algo más intuitivo como 'Quitar archivo seleccionado' para mayor claridad.",
+    "Añadir un pequeño texto o icono en el drawer que indique que se puede cerrar tocando fuera o deslizando para mejorar usabilidad móvil.",
+    "Incluir un tooltip o ayuda contextual breve sobre qué significa 'lectura preliminar' y 'orientación inicial' para evitar malentendidos.",
+    "En la sección de seguimiento con CompliLink, usar lenguaje más amigable y menos técnico para explicar estados y acciones recomendadas.",
+    "En la línea de tiempo, considerar usar un diseño más compacto o collapsible en móvil para evitar scroll excesivo."
+  ],
+  "copy_risks": [
+    "El término 'lectura preliminar' puede generar incertidumbre sobre la confiabilidad de la información mostrada.",
+    "Frases como 'conviene revisar con calma' o 'orientación inicial' podrían interpretarse como falta de precisión o seguridad.",
+    "El mensaje 'Helios es el cerebro central' es potente, pero debe evitarse que se perciba como una garantía absoluta o asesoría legal definitiva.",
+    "El texto sobre protección y privacidad es correcto, pero podría reforzarse para evitar dudas sobre el manejo de datos sensibles.",
+    "El uso de términos técnicos como 'modo remoto', 'engineDispatch' o 'CompliLink' sin explicación puede confundir al usuario final."
+  ],
+  "test_gaps": [
+    "No se observan pruebas específicas que validen la experiencia móvil, especialmente el drawer y el botón fijo inferior.",
+    "Faltan tests que verifiquen la correcta actualización y limpieza del formulario de subida tras acciones del usuario.",
+    "No hay pruebas que aseguren la correcta visualización y actualización dinámica de la línea de tiempo con documentos nuevos.",
+    "Sería útil testear la accesibilidad y usabilidad de los elementos interactivos para usuarios con diferentes niveles de habilidad.",
+    "No se detectan pruebas que validen la correcta visualización y cambio de estados en la tarjeta de siguiente documento recomendado."
+  ],
+  "recommended_next_step": "Implementar las quick wins para mejorar claridad y usabilidad, especialmente en móvil y textos explicativos. Añadir tooltips o ayudas contextuales para términos clave y revisar lenguaje para evitar sobrepromesas. Complementar con pruebas específicas para móvil y flujos de subida y visualización dinámica."
+}

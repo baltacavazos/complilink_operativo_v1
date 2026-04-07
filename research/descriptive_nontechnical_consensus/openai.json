@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "content": {
+    "recommended_angle": "Explicar de forma accesible y optimista cómo tres componentes clave se unen para crear una plataforma innovadora que aprovecha la colaboración voluntaria para ofrecer soluciones únicas en el mercado.",
+    "plain_language_explanation": {
+      "complilink": "CompliLink es una plataforma amplia que conecta diferentes productos y servicios relacionados con el cumplimiento normativo, formando un ecosistema donde todo funciona en conjunto para facilitar el trabajo de las personas y empresas.",
+      "helios": "Helios es el cerebro central de todo el sistema; un motor inteligente que procesa y analiza la información que recibe para ofrecer resultados valiosos y mejorar continuamente.",
+      "auditapatron": "AuditaPatron es un producto independiente diseñado para el público general, que permite a las personas subir documentos de forma voluntaria para ayudar a fortalecer el motor Helios y así mejorar el sistema para todos."
+    },
+    "why_it_works": [
+      "Porque combina la inteligencia centralizada de Helios con la participación activa de los usuarios en AuditaPatron, alimentando un ecosistema vivo y en crecimiento dentro de CompliLink.",
+      "Porque ofrece valor real y fácil acceso a través de un producto pensado para el público masivo, lo que genera confianza y uso constante.",
+      "Porque al integrar datos de manera voluntaria, mejora continuamente sus capacidades y se adapta rápidamente a las necesidades del mercado."
+    ],
+    "why_hard_to_copy": [
+      "Porque el motor Helios se fortalece con datos voluntarios únicos que no están disponibles para competidores.",
+      "Porque la plataforma CompliLink crea un ecosistema complejo y conectado que requiere tiempo y recursos para replicar.",
+      "Porque la combinación de productos independientes y centralizados genera una sinergia difícil de imitar sin el conocimiento y la estructura que hemos desarrollado."
+    ],
+    "tone_guidance": [
+      "Optimista y ambicioso, mostrando confianza en el potencial del proyecto.",
+      "Claro y sencillo, evitando tecnicismos que puedan confundir a alguien nuevo.",
+      "Cercano y accesible, para que cualquier persona pueda entender el valor y propósito del proyecto."
+    ],
+    "must_include_phrases": [
+      "ecosistema amplio y conectado",
+      "motor inteligente que aprende y mejora",
+      "participación voluntaria que fortalece el sistema"
+    ],
+    "avoid": [
+      "jerga técnica o términos complicados",
+      "promesas exageradas o poco realistas",
+      "detalles demasiado específicos que pueden abrumar"
+    ],
+    "suggested_structure": [
+      "Introducción general al proyecto y su propósito",
+      "Explicación sencilla de qué es CompliLink",
+      "Descripción clara de Helios y su rol central",
+      "Presentación de AuditaPatron y su relación con los usuarios",
+      "Qué estamos construyendo juntos y por qué tiene sentido",
+      "Conclusión sobre la ventaja competitiva y la dificultad de replicar el sistema"
+    ],
+    "sample_opening_paragraph": "Estamos desarrollando una plataforma única llamada CompliLink, que reúne diferentes productos y servicios para facilitar el cumplimiento normativo de manera sencilla y accesible. En el corazón de esta plataforma está Helios, un motor inteligente que aprende de la información que recibe. Uno de los productos clave, AuditaPatron, invita a las personas a subir documentos voluntariamente, lo que ayuda a que Helios mejore constantemente. Juntos, estos tres elementos forman un ecosistema poderoso con gran potencial en el mercado."
+  }
+}

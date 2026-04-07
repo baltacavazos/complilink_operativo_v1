@@ -387,6 +387,27 @@ function getUploadInsight(documentType: string): UploadInsight {
   }
 }
 
+function getHeliosTimelineRole(documentType: string, opinion?: HeliosOpinionView | null) {
+  if (opinion?.summary) {
+    return opinion.summary;
+  }
+
+  switch (documentType) {
+    case "payroll_receipt":
+      return "Helios compara montos, fechas y deducciones con otros periodos para detectar cambios útiles dentro del expediente.";
+    case "cfdi":
+      return "Helios contrasta lo timbrado fiscalmente con otros comprobantes para entender mejor pagos y diferencias.";
+    case "contract":
+      return "Helios usa este documento como base para comparar lo pactado con lo que realmente ocurrió durante la relación laboral.";
+    case "imss":
+      return "Helios conecta este soporte con altas, bajas y continuidad laboral para reforzar el contexto del caso.";
+    case "evidence":
+      return "Helios suma este archivo como contexto de hechos, instrucciones o fechas para entender mejor la historia completa.";
+    default:
+      return "Helios agrega este archivo al expediente para conectarlo con los demás documentos y reducir partes todavía preliminares.";
+  }
+}
+
 function getEngineStatusCopy(status?: string, reason?: string | null) {
   if (status === "sent") {
     return {
@@ -593,6 +614,29 @@ export default function Auditar() {
       total: dossierTargets.length,
     };
   }, [presentTypes]);
+  const timelineEntries = useMemo(
+    () =>
+      [...documents]
+        .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime())
+        .map((document, index) => {
+          const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
+          const insight = getUploadInsight(document.documentType);
+          const readiness = getDocumentReadiness(document.classificationConfidence);
+
+          return {
+            id: document.documentId,
+            step: index + 1,
+            title: getSimpleDocumentTypeLabel(document.documentType),
+            originalName: document.originalName,
+            contribution: insight.contribution,
+            heliosRole: getHeliosTimelineRole(document.documentType, heliosOpinion),
+            createdAt: document.createdAt,
+            readiness,
+            hasVisibleOpinion: Boolean(heliosOpinion),
+          };
+        }),
+    [documents],
+  );
 
   const engineStatus = getEngineStatusCopy(lastUpload?.engineDispatch?.status, lastUpload?.engineDispatch?.reason);
   const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
@@ -897,7 +941,7 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Microestado de Helios</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de Helios</p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">{heliosStage.title}</h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosStage.description}</p>
                     </div>
@@ -927,7 +971,7 @@ export default function Auditar() {
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Modo actual</p>
                     <p className="mt-2 font-semibold text-slate-950">
-                      {visibleHeliosOpinion ? getHeliosModeLabel(visibleHeliosOpinion.mode) : "Base lista para modo remoto"}
+                      {visibleHeliosOpinion ? getHeliosModeLabel(visibleHeliosOpinion.mode) : "Modo inicial preparado"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">{getHeliosActivationCopy(visibleHeliosOpinion?.mode)}</p>
                   </div>
@@ -1380,6 +1424,68 @@ export default function Auditar() {
               )}
             </div>
 
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Línea de tiempo del expediente</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Cómo Helios fue fortaleciendo tu expediente
+                  </h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                    Documento por documento, aquí ves cómo Helios fue conectando señales para darle más claridad a tu caso.
+                  </p>
+                </div>
+                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  {timelineEntries.length} etapa{timelineEntries.length === 1 ? "" : "s"}
+                </div>
+              </div>
+
+              {timelineEntries.length === 0 ? (
+                <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo Helios empieza a construir tu expediente paso a paso.
+                </div>
+              ) : (
+                <div className="mt-6 space-y-4">
+                  {timelineEntries.map((entry, index) => (
+                    <div key={entry.id} className="flex gap-4">
+                      <div className="flex w-10 shrink-0 flex-col items-center">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
+                            entry.hasVisibleOpinion ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {entry.step}
+                        </div>
+                        {index !== timelineEntries.length - 1 ? <div className="mt-2 w-px flex-1 bg-slate-200" /> : null}
+                      </div>
+
+                      <article className="flex-1 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="font-semibold text-slate-950">{entry.title}</p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">{entry.originalName}</p>
+                            <p className="mt-1 text-xs leading-6 text-slate-500">Incorporado el {formatDate(entry.createdAt)}</p>
+                          </div>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${entry.readiness.classes}`}>{entry.readiness.label}</span>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                          <div className="rounded-[1rem] border border-white bg-white p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Lo que aportó</p>
+                            <p className="mt-2 text-sm leading-7 text-slate-700">{entry.contribution}</p>
+                          </div>
+                          <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Cómo lo aprovechó Helios</p>
+                            <p className="mt-2 text-sm leading-7 text-teal-950">{entry.heliosRole}</p>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -1452,7 +1558,7 @@ export default function Auditar() {
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
                             <span className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}>
-                              {heliosOpinion ? "Helios ya lo interpretó" : "Helios pendiente"}
+                              {heliosOpinion ? "Helios con lectura preliminar" : "Helios pendiente"}
                             </span>
                           </div>
                         </div>
@@ -1566,7 +1672,7 @@ export default function Auditar() {
                     <p className="mt-2 text-sm leading-7 text-teal-900">
                       {heliosDocumentsCount === 0
                         ? "Todavía no hay una lectura jurídica visible de Helios. En cuanto interprete documentos, aquí verás cómo va armando el criterio del expediente."
-                        : `Helios ya interpretó ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y va conectando esa información para construir una lectura cada vez más útil del caso.`}
+                        : `Helios ya dejó una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y va conectando esa información para construir una lectura cada vez más útil del caso.`}
                     </p>
                     {latestPersistedHeliosOpinion ? (
                       <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
@@ -1581,7 +1687,7 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento con CompliLink</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento automático</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -1636,17 +1742,41 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué documento suele ayudar más</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Siguiente documento recomendado</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Siguiente documento recomendado por Helios</h2>
+
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                <p className="font-semibold text-teal-950">
+                <p className="text-sm font-semibold text-teal-900">Lo que más puede ayudarte ahora</p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">
                   {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Tu expediente ya cubre varias piezas clave"}
                 </p>
-                <p className="mt-2 text-sm leading-7 text-teal-900">
+                <p className="mt-2 text-sm leading-7 text-teal-950">
                   {dossierStatus.nextTarget
-                    ? `${dossierStatus.nextTarget.description} ${dossierStatus.nextTarget.benefit}`
-                    : "Si tienes un archivo adicional específico de tu caso, también puede complementar el contexto del expediente."}
+                    ? "Para que Helios entienda mejor tu situación, este es el archivo que más puede ayudarte a continuación."
+                    : "Helios ya tiene una base amplia de documentos. Si tienes otro archivo específico de tu caso, también puede sumar contexto útil."}
                 </p>
               </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                <p className="font-semibold text-slate-950">Por qué este archivo puede ayudarte ahora</p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  {dossierStatus.nextTarget
+                    ? `${dossierStatus.nextTarget.description} ${dossierStatus.nextTarget.benefit}`
+                    : "Helios ya separó varias piezas clave del expediente. Un archivo adicional puede ayudarle a confirmar o contrastar mejor tu historia laboral."}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {visibleHeliosOpinion?.recommendedNextStep ??
+                    "Helios usa cada documento para reducir estimaciones y dejar más partes del expediente en terreno claro."}
+                </p>
+              </div>
+
+              <Button
+                className="mt-4 h-11 w-full rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                onClick={openFilePicker}
+              >
+                {dossierStatus.nextTarget ? "Subir este documento ahora" : "Subir otro documento útil"}
+                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
 
               <div className="mt-4 space-y-3">
                 {dossierTargets.map((item) => {

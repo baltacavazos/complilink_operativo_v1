@@ -55,7 +55,7 @@ describe("Auditapatron homepage content", () => {
     expect(homeSource).not.toContain("Garantizar que CompliLink opere hoy mismo");
   });
 
-  it("ships a functional audit workspace that explains contributions and next useful documents after upload", () => {
+  it("ships a functional audit workspace that explains contributions, next useful documents, and case progression with Helios", () => {
     expect(auditFlowSource).toContain("Tus derechos laborales, claros y protegidos");
     expect(auditFlowSource).toContain("Hoy tu expediente va en:");
     expect(auditFlowSource).toContain("Próximo paso que más puede ayudarte");
@@ -63,9 +63,16 @@ describe("Auditapatron homepage content", () => {
     expect(auditFlowSource).toContain("Subir y revisar documento");
     expect(auditFlowSource).toContain("Siguiente paso sugerido para ti");
     expect(auditFlowSource).toContain("Ya forma parte del expediente.");
-    expect(auditFlowSource).toContain("Microestado de Helios");
+    expect(auditFlowSource).toContain("Estado de Helios");
     expect(auditFlowSource).toContain("Qué hace ahora");
     expect(auditFlowSource).toContain("Cómo interactúas");
-    expect(auditFlowSource).toContain("Base lista para modo remoto");
+    expect(auditFlowSource).toContain("Modo inicial preparado");
+    expect(auditFlowSource).toContain("Siguiente documento recomendado por Helios");
+    expect(auditFlowSource).toContain("Por qué este archivo puede ayudarte ahora");
+    expect(auditFlowSource).toContain("Subir este documento ahora");
+    expect(auditFlowSource).toContain("Línea de tiempo del expediente");
+    expect(auditFlowSource).toContain("Cómo Helios fue fortaleciendo tu expediente");
+    expect(auditFlowSource).toContain("Cómo lo aprovechó Helios");
+    expect(auditFlowSource).toContain("Tu línea de tiempo está esperando.");
   });
 });

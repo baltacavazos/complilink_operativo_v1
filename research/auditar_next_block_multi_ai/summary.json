@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-04-07T19:51:58.692Z",
+  "availableResults": [
+    "openai",
+    "gemini",
+    "grok"
+  ],
+  "failedResults": {}
+}

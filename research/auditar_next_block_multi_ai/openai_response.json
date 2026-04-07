@@ -1,0 +1,59 @@
+{
+  "card": {
+    "title": "Siguiente documento recomendado",
+    "explanation": "Para fortalecer tu expediente, sube este archivo a continuación.",
+    "why_it_helps": "Helios usa esta información para entender mejor tu caso y separar datos confirmados de estimados.",
+    "empty_state": "Por ahora no hay recomendaciones. Sube documentos para que Helios pueda guiarte."
+  },
+  "timeline": {
+    "title": "Progreso del expediente",
+    "intro": "Cada documento que subes ayuda a Helios a fortalecer y aclarar tu caso.",
+    "empty_state": "Aún no hay documentos en tu expediente. Comienza subiendo archivos para ver cómo Helios trabaja por ti.",
+    "stages": [
+      {
+        "label": "Documento recibido",
+        "description": "Helios identifica la información clave en el archivo.",
+        "helios_role": "Helios analiza y clasifica los datos para construir tu expediente."
+      },
+      {
+        "label": "Datos confirmados",
+        "description": "Helios separa la información segura de la que necesita más pruebas.",
+        "helios_role": "Helios marca qué datos ya están claros y cuáles requieren más documentos."
+      },
+      {
+        "label": "Expediente fortalecido",
+        "description": "Con más documentos, Helios mejora la interpretación y guía de tu caso.",
+        "helios_role": "Helios integra toda la información para darte la mejor orientación posible."
+      }
+    ]
+  },
+  "ui_rules": [
+    "Mostrar la tarjeta de siguiente documento solo si hay una recomendación clara.",
+    "En móvil, la tarjeta debe ocupar el ancho completo con texto legible y botones grandes.",
+    "La línea de tiempo debe ser horizontal y deslizable, con iconos simples para cada etapa.",
+    "Usar colores neutros para etapas no completadas y colores cálidos para etapas completadas.",
+    "Separar visualmente datos confirmados y estimados en la línea de tiempo con etiquetas claras.",
+    "No usar jerga técnica ni términos legales complejos en textos visibles al usuario."
+  ],
+  "test_cases": [
+    "Al subir un documento, la tarjeta sugiere correctamente el siguiente archivo recomendado.",
+    "La línea de tiempo actualiza y resalta la etapa correspondiente tras cada documento cargado.",
+    "Cuando no hay documentos, la tarjeta muestra el estado vacío y la línea de tiempo también.",
+    "En dispositivos móviles, la tarjeta y la línea de tiempo son legibles y fáciles de interactuar.",
+    "La explicación en la tarjeta cambia según el tipo de documento recomendado.",
+    "La línea de tiempo distingue claramente entre datos confirmados y estimados."
+  ],
+  "risks": [
+    "Recomendaciones incorrectas si Helios mock no simula bien la lógica real.",
+    "Confusión si la línea de tiempo muestra estados técnicos o poco claros.",
+    "Saturar la pantalla móvil con demasiada información en la tarjeta o línea de tiempo.",
+    "Usuarios interpretan a Helios como garantía absoluta en lugar de guía."
+  ],
+  "implementation_notes": [
+    "Mantener Helios remoto en modo mock; no activar integración real aún.",
+    "Usar textos estáticos o datos mock para la tarjeta y línea de tiempo durante esta fase.",
+    "Diseñar componentes reutilizables para actualizar fácilmente cuando Helios real esté listo.",
+    "Priorizar accesibilidad y tamaños táctiles adecuados para móvil.",
+    "Evitar animaciones complejas que puedan afectar rendimiento en móviles básicos."
+  ]
+}

@@ -171,3 +171,23 @@
 - [x] Diseñar e implementar un microestado visible que indique cuándo Helios está interpretando un documento o fortaleciendo el expediente.
 - [x] Preparar el contrato técnico inicial y la capa base para la futura evolución de Helios a modo remoto sin rehacer la interfaz.
 - [x] Actualizar y ejecutar pruebas Vitest tras la nueva ronda centrada en Helios.
+- [ ] Redactar un documento corto y fácil de entender para el grupo interno con el pitch pendiente y las características acordadas, previa confirmación del usuario.
+- [ ] Redactar un documento corto interno, fácil de entender, sobre las bondades de CompliLink y la genialidad estratégica de AuditaPatron como producto independiente que recopila datos voluntarios para fortalecer Helios y el ecosistema futuro, previa confirmación del usuario.
+- [x] Redactar el documento interno final con tono optimista y fácil de entender, destacando las bondades de CompliLink, a AuditaPatron como hook masivo de información voluntaria y la ventaja de construir un producto difícil de replicar alrededor de Helios.
+- [x] Redactar un documento descriptivo, claro y no técnico para explicar qué son CompliLink, Helios y AuditaPatron, qué estamos construyendo, por qué puede funcionar y por qué sería difícil de copiar para una audiencia sin contexto previo.
+- [ ] Revisar los pendientes abiertos del proyecto y priorizar el siguiente bloque de implementación de mayor impacto para CompliLink, Helios y AuditaPatron.
+- [x] Consensuar con Grok, Gemini y ChatGPT la mejor forma de introducir en /auditar una recomendación priorizada del siguiente mejor documento y una línea de tiempo simple del expediente.
+- [x] Diseñar e implementar en /auditar un módulo de Helios que recomiende el siguiente mejor documento y explique por qué fortalecería el expediente.
+- [x] Diseñar e implementar una línea de tiempo simple del expediente para mostrar cómo Helios interpreta y fortalece el caso documento por documento.
+- [x] Actualizar y ejecutar pruebas Vitest tras esta nueva ronda centrada en la guía activa de Helios dentro del expediente.
+- [x] Diseñar e implementar en /auditar una tarjeta de siguiente mejor documento con recomendación clara y motivo útil para la persona usuaria.
+- [x] Diseñar e implementar en /auditar una línea de tiempo simple del expediente para mostrar cómo Helios va fortaleciendo el caso documento por documento.
+- [x] Ajustar el lenguaje del expediente para que Helios explique progreso, faltantes y siguiente paso sin perder claridad.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la nueva tarjeta de siguiente mejor documento y la línea de tiempo del expediente.
+- [x] Diseñar e implementar en /auditar una tarjeta de siguiente mejor documento con explicación breve de por qué ese archivo fortalece más el expediente.
+- [x] Diseñar e implementar en /auditar una línea de tiempo simple del expediente para mostrar cómo Helios fortalece el caso documento por documento.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la recomendación del siguiente mejor documento y la línea de tiempo simple del expediente.
+- [x] Aplicar una ronda final de pulido de lenguaje en /auditar para reducir tecnicismos y reforzar la naturaleza preliminar de Helios.
+- [x] Validar con pruebas y revisión técnica el pulido final del bloque de siguiente documento y línea de tiempo en /auditar.
+- [ ] Guardar un checkpoint estable con el bloque final de recomendación y línea de tiempo de Helios.
+- [ ] Entregar al usuario el cierre de esta ronda con resumen claro de cambios y siguientes opciones.

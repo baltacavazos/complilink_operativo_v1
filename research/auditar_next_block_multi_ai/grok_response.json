@@ -1,0 +1,53 @@
+{
+  "card": {
+    "title": "Siguiente documento recomendado",
+    "explanation": "Helios sugiere subir tu contrato de trabajo para confirmar fechas clave y detalles de tu empleo.",
+    "why_it_helps": "Esto fortalece el expediente al validar datos iniciales y reducir estimaciones, ayudando a Helios a guiar mejor tu caso.",
+    "empty_state": "Aún no hay sugerencias. Sube tu primer documento para que Helios analice y recomiende el siguiente."
+  },
+  "timeline": {
+    "title": "Línea de tiempo del expediente",
+    "intro": "Aquí ves cómo Helios va fortaleciendo tu caso con cada documento que subes.",
+    "empty_state": "El expediente está vacío. Sube documentos para ver cómo Helios lo construye paso a paso.",
+    "stages": [
+      {
+        "label": "Inicio",
+        "description": "Carga inicial de documentos básicos.",
+        "helios_role": "Helios lee y separa datos confirmados de estimados."
+      },
+      {
+        "label": "Fortalecimiento",
+        "description": "Incorporación de pruebas adicionales.",
+        "helios_role": "Helios interpreta nuevos documentos para refinar el expediente."
+      },
+      {
+        "label": "Análisis completo",
+        "description": "Expediente robusto con menos estimaciones.",
+        "helios_role": "Helios guía hacia acciones recomendadas basadas en el caso fortalecido."
+      }
+    ]
+  },
+  "ui_rules": [
+    "Mobile-first: Tarjeta y timeline deben ser verticales, con scroll mínimo y botones táctiles grandes.",
+    "No técnico: Usa lenguaje simple, evita jerga legal; Helios se presenta como 'guía inteligente' sin prometer resultados absolutos.",
+    "Interactividad: Tarjeta incluye botón 'Subir ahora' que abre el selector de archivos.",
+    "Visuales: Iconos amigables (e.g., flecha para timeline, luz para Helios) en colores suaves para confianza."
+  ],
+  "test_cases": [
+    "Caso vacío: Muestra empty_state en tarjeta y timeline sin errores.",
+    "Caso con documentos: Tarjeta sugiere documento lógico basado en mock (e.g., si hay nómina, sugiere contrato); timeline muestra etapas progresivas.",
+    "Responsive: Verificar en mobile que timeline sea legible sin zoom, y tarjeta ocupe ancho completo.",
+    "Interacción: Subir documento actualiza timeline y tarjeta en tiempo real (usando mock de Helios)."
+  ],
+  "risks": [
+    "Sobrepromesa: Asegurarse que 'fortalece' no implique certeza; usar frases como 'ayuda a Helios a guiar mejor'.",
+    "Dependencia mock: Sin integración remota, sugerencias podrían no ser precisas; validar con datos de prueba estáticos.",
+    "Accesibilidad: En mobile, textos deben ser legibles para usuarios no técnicos; riesgo de confusión si timeline es compleja."
+  ],
+  "implementation_notes": [
+    "Usar componentes React Native para mobile: CardView para tarjeta, FlatList para timeline stages.",
+    "Mock data: Simular sugerencias de Helios basadas en documentos existentes (e.g., si falta contrato, recomendarlo).",
+    "Actualizaciones: Al subir documento, disparar evento local para refrescar UI sin llamadas remotas.",
+    "Idioma: Todo texto en español neutro, accesible para trabajadores latinoamericanos."
+  ]
+}

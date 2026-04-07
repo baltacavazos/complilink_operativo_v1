@@ -1,0 +1,60 @@
+{
+  "card": {
+    "title": "Siguiente paso clave para tu expediente",
+    "explanation": "Para que Helios entienda mejor tu situación, te sugerimos subir tu Contrato de Trabajo.",
+    "why_it_helps": "Este documento es fundamental. Ayuda a Helios a confirmar con precisión tu fecha de inicio, puesto y condiciones laborales, fortaleciendo la base de tu caso y dándole más claridad a tu historia.",
+    "empty_state": "¡Empieza a construir tu expediente! Sube tu primer documento para que Helios pueda empezar a guiarte y sugerirte los siguientes pasos."
+  },
+  "timeline": {
+    "title": "Tu expediente paso a paso con Helios",
+    "intro": "Así es como Helios ha ido construyendo y fortaleciendo tu caso, documento por documento, para que tengas una visión clara de tu progreso y de cómo se va armando tu historia laboral.",
+    "empty_state": "Tu línea de tiempo está esperando. Sube tus documentos para ver cómo Helios los interpreta y construye tu expediente.",
+    "stages": [
+      {
+        "label": "Documento Subido: Contrato de Trabajo",
+        "description": "Has subido tu contrato de trabajo.",
+        "helios_role": "Helios ha leído y extraído las fechas clave de inicio y fin de tu relación laboral, así como tu puesto. Esto ha dado una base sólida a tu historia."
+      },
+      {
+        "label": "Documento Subido: Recibos de Nómina (últimos 3 meses)",
+        "description": "Has añadido tus recibos de nómina de los últimos tres meses.",
+        "helios_role": "Helios ha comparado los montos y periodos de tus recibos, ayudando a confirmar tu salario y la regularidad de tus pagos. Esto fortalece tu perfil económico en el expediente."
+      },
+      {
+        "label": "Documento Subido: Acta de Nacimiento",
+        "description": "Has subido tu acta de nacimiento.",
+        "helios_role": "Helios ha verificado tu identidad y fecha de nacimiento, asegurando que los datos personales en tu expediente sean consistentes y correctos."
+      }
+    ]
+  },
+  "ui_rules": [
+    "La tarjeta de 'siguiente mejor documento' debe ser el primer elemento visible en la pantalla /auditar, con un diseño que invite a la acción (ej. un botón 'Subir documento').",
+    "La línea de tiempo debe ser un componente scrollable o expandible/colapsable, ubicado debajo de la tarjeta de recomendación, para no abrumar al usuario al inicio.",
+    "Utilizar un lenguaje visual claro y no técnico: íconos simples para los documentos, colores que indiquen progreso y claridad.",
+    "Cada 'stage' en la línea de tiempo debe presentarse como una tarjeta o un bloque visualmente diferenciado, con el 'label' como título y el 'description' y 'helios_role' como cuerpo de texto.",
+    "Asegurar que los 'empty states' de ambos componentes sean amigables, informativos y guíen al usuario hacia la acción de subir documentos.",
+    "El texto debe ser de fácil lectura en pantallas móviles, con un tamaño de fuente adecuado y suficiente contraste.",
+    "Implementar un 'esqueleto de carga' o un spinner sutil para simular que Helios está 'pensando' cuando se procesan documentos o se genera una nueva recomendación."
+  ],
+  "test_cases": [
+    "El usuario no técnico comprende inmediatamente qué documento debe subir a continuación y por qué es importante, sin sentir que necesita conocimientos legales.",
+    "La descripción del rol de Helios en la tarjeta y en cada etapa de la línea de tiempo transmite confianza y guía, sin prometer resultados absolutos ni usar jerga técnica.",
+    "El usuario puede seguir el progreso de su expediente en la línea de tiempo de forma intuitiva, entendiendo cómo cada documento 'fortalece' su caso.",
+    "Los estados vacíos de la tarjeta y la línea de tiempo motivan al usuario a interactuar y subir documentos, en lugar de generar frustración o confusión.",
+    "La interfaz es completamente responsive y se ve bien en diferentes tamaños de pantalla móvil, con texto legible y elementos interactivos accesibles al tacto."
+  ],
+  "risks": [
+    "Generar expectativas de certeza absoluta si el lenguaje de Helios no se calibra cuidadosamente, a pesar de las directrices de 'no prometer certeza'.",
+    "La recomendación del 'siguiente mejor documento' podría percibirse como genérica si no se logra la ilusión de personalización, incluso en modo mock.",
+    "El usuario podría sentirse abrumado si la línea de tiempo es demasiado densa o si la información no se presenta de forma digerible, especialmente con muchos documentos.",
+    "Mantener la coherencia del tono de voz de Helios en todas las nuevas interacciones, evitando desviaciones hacia un lenguaje técnico o demasiado formal.",
+    "La dependencia del modo mock de Helios podría llevar a recomendaciones inconsistentes o poco útiles si la lógica subyacente no simula un comportamiento razonable."
+  ],
+  "implementation_notes": [
+    "Para la tarjeta de 'siguiente mejor documento', la recomendación inicial puede ser hardcodeada o basada en una lógica simple (ej. 'si no hay contrato, sugerir contrato'; 'si no hay recibos, sugerir recibos').",
+    "La línea de tiempo debe consumir una lista de eventos/documentos procesados por Helios (incluso si es mock) con sus respectivas descripciones y roles de Helios. Esta lista debe ser fácilmente actualizable.",
+    "Asegurar que los textos de Helios sean fácilmente actualizables a medida que la integración real avance, idealmente desde un CMS o un archivo de configuración centralizado.",
+    "El botón de 'Subir documento' en la tarjeta debe enlazar directamente a la funcionalidad de carga documental existente en /auditar.",
+    "Considerar la paginación o la carga 'lazy' para la línea de tiempo si el número de documentos procesados llega a ser muy alto, para optimizar el rendimiento en móvil."
+  ]
+}

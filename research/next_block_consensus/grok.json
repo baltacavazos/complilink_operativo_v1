@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "model": "grok-4-fast-reasoning",
+  "content": {
+    "recommended_priority": "contract",
+    "why_this_first": "El contrato laboral es la base fundamental de tu expediente, ya que establece los términos de tu relación con el empleador y permite a Helios contextualizar todos los demás documentos para fortalecer tu caso desde el inicio.",
+    "next_best_document_logic": {
+      "title": "Recomendación del siguiente documento",
+      "description": "Helios analiza los documentos subidos y sugiere el siguiente basado en lo que más fortalece tu expediente, explicando por qué es clave para avanzar.",
+      "rules": [
+        "Priorizar documentos base como 'contract' si no existe, ya que dan contexto general.",
+        "Sugerir 'payroll_receipt' o 'cfdi' después para validar pagos y cumplimiento fiscal.",
+        "Recomendar 'imss' o 'settlement' una vez cubiertas las bases, para evidenciar cotizaciones o terminación.",
+        "Usar 'evidence' para casos específicos de irregularidades, y 'other' solo si no encaja en lo anterior.",
+        "Siempre motivar con el impacto: 'Esto hará tu expediente más sólido y te acerca a una resolución favorable'."
+      ],
+      "tone": "Guía amigable y alentadora, como un asesor personal que motiva sin presionar."
+    },
+    "timeline_module": {
+      "title": "Cómo va avanzando tu expediente",
+      "description": "Una vista simple de los pasos que Helios ha procesado, mostrando cómo cada documento fortalece tu caso paso a paso.",
+      "items": [
+        {
+          "label": "Inicio: Sin documentos",
+          "meaning": "Helios espera tus primeros documentos para comenzar a analizar y guiar."
+        },
+        {
+          "label": "Base sólida: Contrato subido",
+          "meaning": "Helios entiende el contexto de tu empleo y prepara el terreno para más evidencia."
+        },
+        {
+          "label": "Evidencia de pagos: Recibos o CFDI",
+          "meaning": "Tu caso se fortalece con pruebas de salarios, listo para validar cumplimiento."
+        },
+        {
+          "label": "Cotizaciones y cierre: IMSS o liquidación",
+          "meaning": "Helios conecta todo, mostrando un expediente robusto para acciones legales."
+        },
+        {
+          "label": "Completo: Todos los documentos",
+          "meaning": "Tu expediente está listo; Helios indica el siguiente paso hacia la resolución."
+        }
+      ]
+    },
+    "copy_suggestions": {
+      "next_step_heading": "Tu próximo paso recomendado",
+      "next_step_explainer": "Sube este documento para que Helios fortalezca tu caso: explica por qué es clave y cómo impacta positivamente.",
+      "timeline_heading": "El progreso de tu expediente",
+      "timeline_explainer": "Mira cómo cada documento que subes hace tu caso más fuerte, guiándote hacia una mejor posición."
+    },
+    "risks_to_avoid": [
+      "Sobrecargar la pantalla con demasiados elementos; mantener solo 3-4 items visibles en la timeline en mobile.",
+      "Usar jerga técnica en explicaciones; todo debe ser lenguaje cotidiano.",
+      "Cambiar el flujo actual de subida de documentos; solo agregar sugerencias contextuales sin interrupciones."
+    ],
+    "implementation_notes": [
+      "Diseñar la timeline como un carrusel horizontal o lista vertical scrollable, con iconos simples para cada etapa (ej. checkmark para completado).",
+      "Integrar la recomendación en el bloque existente 'próximo paso', añadiendo un tooltip o párrafo corto con la explicación de Helios.",
+      "Preparar para modo remoto: usar placeholders para 'subir vía URL' sin alterar el botón principal de cámara/galería.",
+      "Probar en mobile: asegurar que la UX quepa en pantallas pequeñas, con botones grandes y texto legible en 14pt mínimo.",
+      "Incentivar subida: agregar un badge o contador como 'Expediente al 40% - ¡Sube más para llegar al 100%!'."
+    ]
+  },
+  "elapsed_seconds": 9.11
+}

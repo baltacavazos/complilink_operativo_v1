@@ -1,0 +1,73 @@
+{
+  "ok": true,
+  "model": "gemini-2.5-flash",
+  "content": {
+    "recommended_priority": "Recibos de Nómina (o CFDI)",
+    "why_this_first": "Son cruciales para demostrar tus ingresos y el tiempo exacto que trabajaste. Con ellos, Helios puede calcular con precisión lo que te corresponde y fortalecer tu caso legal.",
+    "next_best_document_logic": {
+      "title": "Tu Siguiente Mejor Paso",
+      "description": "Helios analiza tu expediente para sugerirte el documento que más fortalece tu caso en este momento. Cada documento que subes hace tu expediente más robusto.",
+      "rules": [
+        "Priorizar documentos que establecen la relación laboral (ej. contract) si faltan o son incompletos.",
+        "Priorizar documentos que prueban ingresos y antigüedad (ej. payroll_receipt, cfdi) para cubrir periodos faltantes.",
+        "Identificar y solicitar documentos específicos (ej. settlement, evidence) si el expediente indica un evento clave (ej. despido, conflicto).",
+        "Sugerir 'other' solo si no hay documentos específicos relevantes o para complementar pruebas existentes.",
+        "La sugerencia siempre debe ir acompañada de una explicación clara y no técnica del 'porqué' es importante para el caso."
+      ],
+      "tone": "Guía, motivador, claro y práctico."
+    },
+    "timeline_module": {
+      "title": "Tu Expediente Paso a Paso",
+      "description": "Mira cómo Helios construye y fortalece tu caso con cada documento que subes, pieza por pieza. Cada hito representa un avance significativo.",
+      "items": [
+        {
+          "label": "Inicio de Expediente",
+          "meaning": "Comenzaste a construir tu historial laboral en CompliLink."
+        },
+        {
+          "label": "Contrato de Trabajo",
+          "meaning": "Helios confirmó tu relación laboral y condiciones iniciales."
+        },
+        {
+          "label": "Primeros Recibos de Nómina",
+          "meaning": "Helios empezó a calcular tus ingresos y antigüedad."
+        },
+        {
+          "label": "Documentos IMSS",
+          "meaning": "Helios verificó tu registro ante el seguro social."
+        },
+        {
+          "label": "Evidencia Adicional",
+          "meaning": "Helios conectó pruebas clave a tu relato."
+        },
+        {
+          "label": "Expediente Fortalecido",
+          "meaning": "Tu caso tiene más respaldo y claridad para Helios."
+        }
+      ]
+    },
+    "copy_suggestions": {
+      "next_step_heading": "Tu Siguiente Paso Clave",
+      "next_step_explainer": "Helios analizó tu expediente y te sugiere el documento que más lo fortalecerá ahora mismo. ¡Cada documento cuenta!",
+      "timeline_heading": "Tu Expediente Paso a Paso",
+      "timeline_explainer": "Mira cómo Helios construye y fortalece tu caso con cada documento que subes, pieza por pieza."
+    },
+    "risks_to_avoid": [
+      "Sobrecargar la interfaz con demasiada información o opciones complejas.",
+      "Usar lenguaje técnico, legalista o ambiguo que confunda al usuario.",
+      "Generar expectativas falsas sobre la resolución del caso o prometer resultados.",
+      "Crear la sensación de que el usuario está siendo 'evaluado' en lugar de 'guiado' y apoyado.",
+      "Sugerir documentos que el usuario ya subió o que no son relevantes en su contexto actual."
+    ],
+    "implementation_notes": [
+      "La sugerencia del 'siguiente mejor documento' debe ser dinámica y actualizarse inmediatamente al subir un documento.",
+      "La línea de tiempo debe ser generada automáticamente por Helios, mostrando hitos basados en la carga de documentos clave y su impacto en la fuerza del expediente.",
+      "Utilizar un sistema de 'puntos de fuerza' internos en Helios para cada documento, que se refleje en el progreso de la línea de tiempo de forma no técnica.",
+      "Diseñar íconos sencillos y claros para cada tipo documental en la línea de tiempo para una mejor comprensión visual.",
+      "Considerar animaciones sutiles o micro-interacciones para reforzar la sensación de progreso y logro al subir documentos.",
+      "Asegurar que la explicación del 'porqué' sea concisa, directa y claramente relacionada con el beneficio para el expediente del usuario.",
+      "Preparar textos alternativos para cuando no haya un 'siguiente mejor documento' claro (ej. 'Tu expediente ya está muy completo, ¡excelente trabajo!')."
+    ]
+  },
+  "elapsed_seconds": 15.62
+}
