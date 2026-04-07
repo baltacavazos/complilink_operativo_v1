@@ -46,10 +46,10 @@
 - [ ] Preparar una propuesta fiel de recuperación de la página de AuditaPatron antes de implementar cambios mayores
 - [ ] Integrar la base visual y narrativa de AuditaPatron dentro del proyecto actual reutilizando lo ya importado
 - [ ] Simplificar la navegación principal de AuditaPatron para priorizar inicio, auditoría e historial
-- [ ] Recuperar y adaptar la home de AuditaPatron como landing principal del producto
+- [x] Recuperar y adaptar la home de AuditaPatron como landing principal del producto
 - [ ] Recuperar y adaptar el flujo principal de /auditar como núcleo funcional visible
 - [ ] Reposicionar comparación y documentos como funciones secundarias dentro de la experiencia
-- [ ] Validar la implementación recuperada con pruebas y revisión del estado del proyecto
+- [x] Validar la implementación recuperada con pruebas y revisión del estado del proyecto
 - [x] Evaluar si el motor inteligente ya existente en otro chat de Manus puede conectarse o integrarse al proyecto actual de AuditaPatron
 - [x] Definir la vía técnica recomendada para conectar el motor inteligente externo sin romper la base actual de AuditaPatron
 - [x] Redactar un prompt maestro para el otro chat que documente el motor inteligente y reúna todos los requisitos necesarios para integrar AuditaPatron con ese motor
@@ -62,3 +62,10 @@
 - [x] Preparar la configuración segura server-to-server para la integración con el motor inteligente
 - [x] Extender la carga documental existente para dejar listo el envío o preparación del payload hacia el motor
 - [x] Agregar pruebas de backend para validar la preparación del contrato de integración documental
+- [x] Descartar por completo la homepage actual de CompliLink como base visible del producto
+- [x] Reconstruir desde cero la home de AuditaPatron con nueva narrativa, jerarquía y propuesta visual
+- [x] Definir una arquitectura de secciones para AuditaPatron centrada en auditoría laboral, carga documental, evidencia y confianza
+- [x] Validar la nueva home de AuditaPatron visual y técnicamente antes de entregarla
+- [x] Deliberar con ChatGPT, Grok y Gemini la mejor estructura, mensaje y experiencia para la nueva home de AuditaPatron antes de implementarla
+- [x] Redefinir la home de AuditaPatron para que sea lo más llamativa, fácil e intuitiva posible para trabajadores masivos
+- [x] Reposicionar AuditaPatron como herramienta constructiva, protectora y accesible dentro de la nueva narrativa del home

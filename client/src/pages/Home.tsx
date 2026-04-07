@@ -1,1422 +1,818 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
 import {
-  Building2,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
   FileCheck2,
-  Files,
-  Loader2,
+  FileSearch,
+  HeartHandshake,
+  Lock,
+  Menu,
+  Scale,
+  Shield,
   ShieldCheck,
-  TriangleAlert,
-  UploadCloud,
+  Sparkles,
+  Upload,
+  WalletCards,
+  X,
 } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useMemo, useState } from "react";
 
-type CaseStatus =
-  | "all"
-  | "intake"
-  | "analysis"
-  | "conciliation"
-  | "litigation"
-  | "resolved"
-  | "archived";
-
-type FileDraft = {
-  fileName: string;
-  mimeType: string;
-  base64Content: string;
+type TourStep = {
+  id: string;
+  title: string;
+  summary: string;
+  description: string;
+  bullets: string[];
+  accent: string;
+  icon: typeof Upload;
 };
 
-const statusOptions: Array<{ value: CaseStatus; label: string }> = [
-  { value: "all", label: "Todos los estados" },
-  { value: "intake", label: "Intake" },
-  { value: "analysis", label: "Análisis" },
-  { value: "conciliation", label: "Conciliación" },
-  { value: "litigation", label: "Litigio" },
-  { value: "resolved", label: "Resuelto" },
-  { value: "archived", label: "Archivado" },
+const navLinks = [
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#que-revisa", label: "Qué revisa" },
+  { href: "#privacidad", label: "Privacidad" },
+  { href: "#recorrido", label: "Ver recorrido" },
+  { href: "#preguntas", label: "Preguntas" },
 ];
 
-function formatDate(value?: string | Date | null) {
-  if (!value) return "—";
-  const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+const tourSteps: TourStep[] = [
+  {
+    id: "sube",
+    title: "Sube tu recibo o documento",
+    summary: "Solo necesitas tu recibo de nómina, CFDI o constancia.",
+    description:
+      "AuditaPatron está pensado para personas normales, no para especialistas. El primer paso debe sentirse ligero, guiado y sin miedo a equivocarte.",
+    bullets: [
+      "Te explicamos qué archivo sirve y por qué.",
+      "El proceso está pensado para celular.",
+      "No necesitas lenguaje técnico ni trámites previos.",
+    ],
+    accent: "from-emerald-400/20 via-teal-400/10 to-white",
+    icon: Upload,
+  },
+  {
+    id: "revisamos",
+    title: "Te mostramos hallazgos claros",
+    summary: "La información complicada se convierte en mensajes fáciles de entender.",
+    description:
+      "En lugar de soltar términos legales o fiscales difíciles, AuditaPatron te traduce lo importante a riesgos, diferencias y señales que sí puedes comprender rápido.",
+    bullets: [
+      "Explicaciones simples y accionables.",
+      "Prioridad visual para lo urgente.",
+      "Tono protector, no confrontacional.",
+    ],
+    accent: "from-cyan-400/20 via-sky-400/10 to-white",
+    icon: FileSearch,
+  },
+  {
+    id: "proteges",
+    title: "Conservas evidencia y tranquilidad",
+    summary: "Tus documentos alimentan tu expediente de forma segura y trazable.",
+    description:
+      "Cada archivo puede ayudar a detectar patrones, ordenar tu caso y preparar evidencia útil para el futuro, sin perder el control de tu información.",
+    bullets: [
+      "Privacidad por diseño y trazabilidad documental.",
+      "Contexto acumulado para futuras revisiones.",
+      "Base para respaldo técnico y legal.",
+    ],
+    accent: "from-amber-300/20 via-orange-300/10 to-white",
+    icon: ShieldCheck,
+  },
+];
+
+const checks = [
+  {
+    title: "Recibos de nómina",
+    description:
+      "Te ayuda a identificar diferencias, conceptos extraños o montos que ya no te cuadran.",
+    icon: WalletCards,
+  },
+  {
+    title: "CFDI y documentos laborales",
+    description:
+      "Organiza y revisa la información para que no se vuelva un archivo muerto o perdido.",
+    icon: FileCheck2,
+  },
+  {
+    title: "Señales de incumplimiento",
+    description:
+      "Convierte posibles errores o riesgos en alertas entendibles y priorizadas.",
+    icon: FileSearch,
+  },
+  {
+    title: "Tu expediente acumulado",
+    description:
+      "Cada carga fortalece tu contexto documental para futuras auditorías o acciones.",
+    icon: Shield,
+  },
+];
+
+const benefitCards = [
+  {
+    title: "Entiendes tu situación sin lenguaje raro",
+    description:
+      "La plataforma debe explicarte las cosas con palabras cotidianas para que puedas decidir con calma.",
+    icon: Sparkles,
+  },
+  {
+    title: "Te sientes acompañado, no intimidado",
+    description:
+      "El tono es protector y constructivo: primero claridad, después decisión.",
+    icon: HeartHandshake,
+  },
+  {
+    title: "Tu información permanece de tu lado",
+    description:
+      "Privacidad, trazabilidad y resguardo documental como parte central de la experiencia.",
+    icon: Lock,
+  },
+  {
+    title: "Puede servirte hoy y también mañana",
+    description:
+      "Los documentos no se pierden: alimentan un expediente útil para revisiones y respaldo futuro.",
+    icon: Scale,
+  },
+];
+
+const faqs = [
+  {
+    question: "¿AuditaPatron es para demandar a mi empresa?",
+    answer:
+      "No nace desde la confrontación. Primero te ayuda a entender tu situación, ordenar tus documentos y detectar si hay algo que merece atención. La idea es darte claridad y protección para que tomes mejores decisiones.",
+  },
+  {
+    question: "¿Necesito saber de leyes o de nómina para usarlo?",
+    answer:
+      "No. La experiencia está pensada para personas que no dominan lenguaje técnico. La plataforma debe traducir lo complejo a mensajes simples, visuales y accionables.",
+  },
+  {
+    question: "¿Mi información está protegida?",
+    answer:
+      "Sí, la propuesta de AuditaPatron prioriza privacidad, trazabilidad y control documental. Tus archivos no deben quedar como documentos sueltos: se resguardan y pueden alimentar tu expediente de forma segura.",
+  },
+  {
+    question: "¿Qué tipo de archivos puedo reunir aquí?",
+    answer:
+      "Recibos de nómina, CFDI, constancias y otros documentos laborales que ayuden a entender mejor tu caso. La lógica del producto es que cada archivo tenga utilidad real y no se desperdicie.",
+  },
+  {
+    question: "¿Por qué se siente diferente a un despacho o trámite tradicional?",
+    answer:
+      "Porque primero busca darte comprensión y tranquilidad. En vez de empezar con presión o burocracia, te guía paso a paso y te muestra valor desde el inicio.",
+  },
+];
+
+function scrollToId(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function truncate(value: string, max = 18) {
-  return value.length <= max ? value : `${value.slice(0, max)}…`;
-}
+function SiteHeader() {
+  const [open, setOpen] = useState(false);
 
-function getStatusTone(status: string) {
-  if (["litigation", "critical", "open"].includes(status)) {
-    return "bg-rose-100 text-rose-700 border border-rose-200";
-  }
-  if (["analysis", "conciliation", "warning", "pending"].includes(status)) {
-    return "bg-amber-100 text-amber-700 border border-amber-200";
-  }
-  if (["resolved", "verified", "granted", "active"].includes(status)) {
-    return "bg-emerald-100 text-emerald-700 border border-emerald-200";
-  }
-  return "bg-slate-100 text-slate-700 border border-slate-200";
-}
-
-function readFileAsBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () =>
-      reject(reader.error ?? new Error("No se pudo leer el archivo."));
-    reader.readAsDataURL(file);
-  });
-}
-
-function KpiCard({
-  title,
-  value,
-  helper,
-  icon,
-}: {
-  title: string;
-  value: number;
-  helper: string;
-  icon: ReactNode;
-}) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-            {value}
-          </p>
-          <p className="mt-2 text-sm text-slate-500">{helper}</p>
+    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl">
+      <div className="container flex h-16 items-center justify-between gap-4">
+        <a href="#top" className="flex items-center gap-3 text-slate-950">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-[0_14px_30px_-18px_rgba(13,148,136,0.9)]">
+            <Shield className="h-5 w-5" strokeWidth={1.8} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-[-0.02em]">AuditaPatron</p>
+            <p className="text-xs text-slate-500">Claridad laboral para trabajadores</p>
+          </div>
+        </a>
+
+        <nav className="hidden items-center gap-7 md:flex">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="hidden items-center gap-3 md:flex">
+          <Button
+            variant="outline"
+            className="rounded-full border-slate-200 bg-white px-5 text-sm text-slate-700 hover:bg-slate-50"
+            onClick={() => scrollToId("recorrido")}
+          >
+            Ver recorrido
+          </Button>
+          <Button
+            className="rounded-full bg-teal-600 px-5 text-sm text-white hover:bg-teal-700"
+            onClick={() => scrollToId("como-funciona")}
+          >
+            Comienza aquí
+            <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+          </Button>
         </div>
-        <div className="rounded-2xl bg-slate-950 p-3 text-white">{icon}</div>
+
+        <button
+          type="button"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 md:hidden"
+          onClick={() => setOpen((value) => !value)}
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
-    </div>
+
+      {open ? (
+        <div className="border-t border-slate-200 bg-white md:hidden">
+          <div className="container space-y-1 py-4">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="grid gap-3 pt-3">
+              <Button
+                variant="outline"
+                className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                onClick={() => {
+                  setOpen(false);
+                  scrollToId("recorrido");
+                }}
+              >
+                Volver a ver el recorrido
+              </Button>
+              <Button
+                className="h-11 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                onClick={() => {
+                  setOpen(false);
+                  scrollToId("como-funciona");
+                }}
+              >
+                Empezar con calma
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+function HeroSection() {
+  return (
+    <section id="top" className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.16),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] pb-20 pt-12 sm:pb-24 sm:pt-20">
+      <div className="container grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-800">
+            <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+            Diseñado para trabajadores, no para expertos
+          </div>
+
+          <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.02] tracking-[-0.05em] text-slate-950 sm:text-5xl lg:text-[4rem]">
+            Tus derechos laborales,
+            <span className="block text-teal-700">claros y protegidos.</span>
+          </h1>
+
+          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 sm:text-xl">
+            AuditaPatron convierte recibos, CFDI y documentos laborales en claridad.
+            Te ayuda a entender qué está bien, qué puede estar fallando y qué evidencia
+            conviene conservar, con una experiencia amable, privada y fácil de seguir.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button
+              className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
+              onClick={() => scrollToId("recorrido")}
+            >
+              Comienza tu recorrido
+              <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
+              onClick={() => scrollToId("privacidad")}
+            >
+              Conoce cómo te protegemos
+            </Button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-600">
+            {[
+              "100% confidencial",
+              "Hecho para celular",
+              "Lenguaje simple",
+              "Expediente documental útil",
+            ].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-slate-200 bg-white/80 px-4 py-2 shadow-sm"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative">
+          <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-teal-200/50 blur-3xl" />
+          <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_120px_-55px_rgba(15,23,42,0.4)] sm:p-7">
+            <div className="flex items-center justify-between gap-4 rounded-[1.5rem] bg-slate-50 px-4 py-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Estado del acompañamiento
+                </p>
+                <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                  Privado, claro y paso a paso
+                </p>
+              </div>
+              <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                Seguro
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {[
+                {
+                  title: "Subes tu documento",
+                  text: "Recibo, CFDI o archivo laboral con instrucciones claras para que no dudes.",
+                },
+                {
+                  title: "Te explicamos lo importante",
+                  text: "Los hallazgos se muestran con prioridad visual y lenguaje fácil de entender.",
+                },
+                {
+                  title: "Tu expediente crece contigo",
+                  text: "Cada documento puede alimentar contexto útil para futuras revisiones o respaldo.",
+                },
+              ].map((item, index) => (
+                <div
+                  key={item.title}
+                  className="flex gap-4 rounded-[1.4rem] border border-slate-100 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.5)]"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-600 text-sm font-semibold text-white">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900">{item.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-[1.5rem] bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-4 text-white">
+              <p className="text-sm font-semibold">Promesa principal</p>
+              <p className="mt-1 text-sm leading-6 text-teal-50">
+                Que cualquier trabajador pueda entender su situación laboral en minutos,
+                sin sentirse solo, confundido o expuesto.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuickProofSection() {
+  return (
+    <section className="border-y border-slate-200 bg-white py-5">
+      <div className="container flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <p className="text-sm font-medium text-slate-500">
+          Construida para una adopción masiva: claridad inmediata, confianza visible y fricción mínima.
+        </p>
+        <div className="flex flex-wrap gap-3 text-sm text-slate-700">
+          {[
+            "Proceso guiado",
+            "Privacidad por diseño",
+            "Tono constructivo",
+            "Valor documental acumulado",
+          ].map((item) => (
+            <span key={item} className="rounded-full bg-slate-100 px-4 py-2">
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  return (
+    <section id="como-funciona" className="bg-slate-50 py-20 sm:py-24">
+      <div className="container">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Así de fácil
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            La experiencia debe sentirse simple desde el primer minuto.
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            La nueva home se construye para que la persona entienda rápido qué hace la herramienta,
+            cómo la protege y por qué sí vale la pena seguir avanzando.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {[
+            {
+              number: "01",
+              title: "Entiendes sin estudiar leyes",
+              description:
+                "El mensaje central evita tecnicismos y te habla como una herramienta cercana, no como un trámite frío.",
+            },
+            {
+              number: "02",
+              title: "Avanzas con confianza",
+              description:
+                "Cada bloque resuelve una duda distinta: qué subes, qué recibe la plataforma y qué beneficio te entrega.",
+            },
+            {
+              number: "03",
+              title: "Percibes valor de inmediato",
+              description:
+                "La página vende tranquilidad, orden y respaldo, no miedo ni confrontación. Ese es el cambio clave.",
+            },
+          ].map((item) => (
+            <article
+              key={item.number}
+              className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_30px_70px_-50px_rgba(15,23,42,0.4)]"
+            >
+              <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
+                {item.number}
+              </div>
+              <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-base leading-7 text-slate-600">{item.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WhatItChecksSection() {
+  return (
+    <section id="que-revisa" className="bg-white py-20 sm:py-24">
+      <div className="container">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+              Qué puede revisar contigo
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+              No es solo una página bonita: debe prometer utilidad real.
+            </h2>
+          </div>
+          <p className="max-w-xl text-base leading-7 text-slate-600">
+            La narrativa correcta vende una herramienta útil y comprensible. Por eso la home aterriza
+            ejemplos concretos de lo que el trabajador puede ordenar, revisar y proteger.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {checks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article
+                key={item.title}
+                className="group rounded-[2rem] border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-[0_30px_80px_-50px_rgba(13,148,136,0.5)]"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 transition group-hover:bg-teal-600 group-hover:text-white">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+                <h3 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GuidedTourSection() {
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const activeStep = useMemo(() => tourSteps[activeStepIndex], [activeStepIndex]);
+  const ActiveIcon = activeStep.icon;
+
+  return (
+    <section id="recorrido" className="bg-slate-950 py-20 text-white sm:py-24">
+      <div className="container grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-300">
+            Recorrido guiado
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
+            Una primera experiencia informativa, cero intimidante.
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-slate-300">
+            Antes de pedirte cosas, la home debe ayudarte a entender qué va a pasar. Este recorrido
+            resume la lógica correcta: claridad primero, confianza después y acción al final.
+          </p>
+
+          <div className="mt-8 space-y-3">
+            {tourSteps.map((step, index) => (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => setActiveStepIndex(index)}
+                className={`w-full rounded-[1.5rem] border px-5 py-4 text-left transition ${
+                  activeStepIndex === index
+                    ? "border-teal-400 bg-white/10 shadow-[0_25px_60px_-45px_rgba(45,212,191,0.9)]"
+                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{step.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-300">{step.summary}</p>
+                  </div>
+                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.8} />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            className="mt-6 rounded-full border-white/15 bg-transparent px-5 text-white hover:bg-white/10"
+            onClick={() => setActiveStepIndex(0)}
+          >
+            Volver a ver el recorrido
+          </Button>
+        </div>
+
+        <div className={`overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br ${activeStep.accent} p-[1px]`}>
+          <div className="rounded-[calc(2rem-1px)] bg-white px-6 py-6 text-slate-950 sm:px-8 sm:py-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-[0_18px_40px_-24px_rgba(13,148,136,0.9)]">
+                <ActiveIcon className="h-5 w-5" strokeWidth={1.8} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Paso {activeStepIndex + 1}
+                </p>
+                <h3 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                  {activeStep.title}
+                </h3>
+              </div>
+            </div>
+
+            <p className="mt-6 text-lg leading-8 text-slate-600">{activeStep.description}</p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {activeStep.bullets.map((item) => (
+                <div key={item} className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                  <CheckCircle2 className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-[1.5rem] border border-teal-100 bg-teal-50 px-5 py-4 text-sm leading-7 text-teal-900">
+              Lo importante aquí es que la persona sienta que puede entender el proceso antes de tomar cualquier decisión. Esa sensación de control es parte esencial de la conversión.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BenefitGridSection() {
+  return (
+    <section className="bg-white py-20 sm:py-24">
+      <div className="container">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Por qué se siente diferente
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            Una herramienta constructiva vende mejor que una experiencia basada en miedo.
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            La home debe transmitir apoyo, sencillez y utilidad concreta. Esa es la forma correcta de hablarle a las masas sin perder seriedad.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {benefitCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <article
+                key={card.title}
+                className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-[0_24px_70px_-56px_rgba(15,23,42,0.6)]"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                  {card.title}
+                </h3>
+                <p className="mt-3 text-base leading-7 text-slate-600">{card.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PrivacySection() {
+  return (
+    <section id="privacidad" className="bg-gradient-to-b from-white to-teal-50/50 py-20 sm:py-24">
+      <div className="container grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Tu privacidad es parte del producto
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            La confianza no se promete solo con palabras: se diseña.
+          </h2>
+          <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+            AuditaPatron debe hacer que el usuario sienta control. Eso significa una experiencia con tono humano, protección visible y una lógica documental que cuide cada archivo como evidencia útil, no como simple almacenamiento.
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {[
+              "Privacidad visible desde el hero y durante todo el flujo.",
+              "Documentos con trazabilidad y utilidad acumulada.",
+              "Lenguaje que reduce miedo a represalias.",
+              "Promesa clara de acompañamiento y orden.",
+            ].map((item) => (
+              <div key={item} className="flex gap-3 rounded-[1.5rem] border border-teal-100 bg-white p-4">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                <p className="text-sm leading-7 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+          <div className="rounded-[1.6rem] bg-slate-950 p-6 text-white">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-300">
+              Lo que la home debe hacer sentir
+            </p>
+            <div className="mt-5 space-y-4">
+              {[
+                "Estoy entendiendo mi situación sin que me hablen raro.",
+                "No estoy poniendo en riesgo mi información por usar la herramienta.",
+                "Esto me puede servir ahora y también después.",
+              ].map((item) => (
+                <div key={item} className="flex gap-3 rounded-[1.3rem] border border-white/10 bg-white/5 p-4">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-300" strokeWidth={1.8} />
+                  <p className="text-sm leading-7 text-slate-200">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-[1.5rem] bg-teal-50 p-5">
+            <p className="text-sm font-semibold text-teal-800">Principio rector</p>
+            <p className="mt-2 text-sm leading-7 text-teal-900">
+              Cada archivo puede alimentar contexto útil para el motor documental y para el expediente del trabajador, siempre con seguridad, trazabilidad y propósito claro.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  return (
+    <section id="preguntas" className="bg-white py-20 sm:py-24">
+      <div className="container grid gap-10 lg:grid-cols-[0.8fr_1fr]">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Preguntas frecuentes
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            La home también debe resolver objeciones importantes.
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            Si una persona llega con dudas, miedo o desconfianza, aquí debe encontrar respuestas sencillas y tranquilizadoras antes de abandonar la página.
+          </p>
+        </div>
+
+        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 sm:p-6">
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((item, index) => (
+              <AccordionItem
+                key={item.question}
+                value={`item-${index}`}
+                className="rounded-[1.4rem] border border-slate-200 bg-white px-5"
+              >
+                <AccordionTrigger className="text-left text-base font-semibold text-slate-950 hover:no-underline">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="pb-5 text-sm leading-7 text-slate-600">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCtaSection() {
+  return (
+    <section className="bg-slate-950 py-20 text-white sm:py-24">
+      <div className="container">
+        <div className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.22),_transparent_32%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(15,23,42,0.88))] px-6 py-10 sm:px-10 sm:py-12">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-300">
+              Cierre de conversión
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+              Una herramienta útil, humana y fácil de recomendar.
+            </h2>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+              La nueva home de AuditaPatron debe sentirse como una puerta de entrada amable: te orienta, te da tranquilidad y te prepara para revisar tu situación laboral con más claridad.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button
+                className="h-12 rounded-full bg-teal-500 px-7 text-base text-slate-950 hover:bg-teal-400"
+                onClick={() => scrollToId("recorrido")}
+              >
+                Empezar con el recorrido
+                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-12 rounded-full border-white/15 bg-transparent px-7 text-base text-white hover:bg-white/10"
+                onClick={() => scrollToId("preguntas")}
+              >
+                Resolver mis dudas primero
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="bg-white py-8">
+      <div className="container flex flex-col gap-4 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <p>AuditaPatron — claridad laboral con una experiencia simple, privada y útil.</p>
+        <div className="flex flex-wrap gap-4">
+          <a href="#como-funciona" className="transition-colors hover:text-slate-900">
+            Cómo funciona
+          </a>
+          <a href="#privacidad" className="transition-colors hover:text-slate-900">
+            Privacidad
+          </a>
+          <a href="#preguntas" className="transition-colors hover:text-slate-900">
+            Preguntas
+          </a>
+        </div>
+      </div>
+    </footer>
   );
 }
 
 export default function Home() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
-  const utils = trpc.useUtils();
-  const bootstrappedRef = useRef(false);
-
-  const [selectedTenant, setSelectedTenant] = useState("");
-  const [selectedCaseId, setSelectedCaseId] = useState("");
-  const [statusFilter, setStatusFilter] = useState<CaseStatus>("all");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [uploadDraft, setUploadDraft] = useState<FileDraft | null>(null);
-  const [createCaseForm, setCreateCaseForm] = useState({
-    title: "",
-    employeeName: "",
-    employerEntity: "",
-    summary: "",
-    priority: "medium",
-    status: "intake",
-    dueAt: "",
-  });
-  const [workflowForm, setWorkflowForm] = useState({
-    status: "intake",
-    priority: "medium",
-    dueAt: "",
-  });
-  const [consentForm, setConsentForm] = useState({
-    subjectName: "",
-    subjectRole: "",
-    legalBasis: "",
-    status: "pending",
-    notes: "",
-  });
-  const [policyForm, setPolicyForm] = useState({
-    documentId: "",
-    policyType: "visibility",
-    visibilityScope: "case_team",
-    ruleText: "",
-  });
-
-  const bootstrapMutation = trpc.workspace.bootstrap.useMutation({
-    onSuccess: async () => {
-      await Promise.all([
-        utils.workspace.snapshot.invalidate(),
-        utils.tenants.list.invalidate(),
-        utils.dashboard.summary.invalidate(),
-        utils.cases.list.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-    },
-    onError: (error) => {
-      toast.error(
-        error.message || "No se pudo inicializar el workspace operativo.",
-      );
-    },
-  });
-
-  useEffect(() => {
-    if (!isAuthenticated || bootstrappedRef.current || bootstrapMutation.isPending) {
-      return;
-    }
-    bootstrappedRef.current = true;
-    bootstrapMutation.mutate();
-  }, [bootstrapMutation, isAuthenticated]);
-
-  const tenantsQuery = trpc.tenants.list.useQuery(undefined, {
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-  });
-
-  useEffect(() => {
-    if (!selectedTenant && tenantsQuery.data?.[0]?.tenantId) {
-      setSelectedTenant(tenantsQuery.data[0].tenantId);
-    }
-  }, [selectedTenant, tenantsQuery.data]);
-
-  const casesInput = useMemo(
-    () => ({
-      tenantId: selectedTenant || undefined,
-      status: statusFilter === "all" ? undefined : statusFilter,
-      from: fromDate
-        ? new Date(`${fromDate}T00:00:00`).toISOString()
-        : undefined,
-      to: toDate ? new Date(`${toDate}T23:59:59`).toISOString() : undefined,
-    }),
-    [fromDate, selectedTenant, statusFilter, toDate],
-  );
-
-  const casesQuery = trpc.cases.list.useQuery(casesInput, {
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-  });
-
-  useEffect(() => {
-    if (!casesQuery.data?.length) {
-      setSelectedCaseId("");
-      return;
-    }
-
-    const currentExists = casesQuery.data.some(
-      (item) => item.caseId === selectedCaseId,
-    );
-    if (!currentExists) {
-      setSelectedCaseId(casesQuery.data[0]!.caseId);
-    }
-  }, [casesQuery.data, selectedCaseId]);
-
-  const dashboardQuery = trpc.dashboard.summary.useQuery(undefined, {
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-  });
-
-  const detailInput = useMemo(
-    () =>
-      selectedTenant && selectedCaseId
-        ? {
-            tenantId: selectedTenant,
-            caseId: selectedCaseId,
-          }
-        : undefined,
-    [selectedCaseId, selectedTenant],
-  );
-
-  const caseDetailQuery = trpc.cases.detail.useQuery(
-    detailInput as { tenantId: string; caseId: string },
-    {
-      enabled: isAuthenticated && Boolean(detailInput),
-      refetchOnWindowFocus: false,
-    },
-  );
-
-  const auditInput = useMemo(
-    () => ({
-      tenantId: selectedTenant || undefined,
-      caseId: selectedCaseId || undefined,
-      limit: 20,
-    }),
-    [selectedCaseId, selectedTenant],
-  );
-
-  const auditQuery = trpc.audit.list.useQuery(auditInput, {
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-  });
-
-  const createCaseMutation = trpc.cases.create.useMutation({
-    onSuccess: async (createdCase) => {
-      toast.success(`Caso ${createdCase.caseId} creado correctamente.`);
-      setCreateCaseForm({
-        title: "",
-        employeeName: "",
-        employerEntity: "",
-        summary: "",
-        priority: "medium",
-        status: "intake",
-        dueAt: "",
-      });
-      await Promise.all([
-        utils.cases.list.invalidate(),
-        utils.dashboard.summary.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-      setSelectedCaseId(createdCase.caseId);
-    },
-    onError: (error) => toast.error(error.message || "No se pudo crear el caso."),
-  });
-
-  const updateWorkflowMutation = trpc.cases.updateStatus.useMutation({
-    onSuccess: async () => {
-      toast.success("Workflow del expediente actualizado.");
-      await Promise.all([
-        utils.cases.list.invalidate(),
-        utils.cases.detail.invalidate(),
-        utils.dashboard.summary.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-    },
-    onError: (error) =>
-      toast.error(error.message || "No se pudo actualizar el workflow del caso."),
-  });
-
-  const uploadDocumentMutation = trpc.cases.uploadDocument.useMutation({
-    onSuccess: async (result) => {
-      toast.success(`Documento ${result.document.documentId} cargado con hash SHA-256.`);
-      setUploadDraft(null);
-      await Promise.all([
-        utils.cases.detail.invalidate(),
-        utils.cases.list.invalidate(),
-        utils.dashboard.summary.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-    },
-    onError: (error) => toast.error(error.message || "No se pudo cargar el documento."),
-  });
-
-  const createConsentMutation = trpc.consent.create.useMutation({
-    onSuccess: async () => {
-      toast.success("Consentimiento registrado.");
-      setConsentForm({
-        subjectName: "",
-        subjectRole: "",
-        legalBasis: "",
-        status: "pending",
-        notes: "",
-      });
-      await Promise.all([
-        utils.cases.detail.invalidate(),
-        utils.dashboard.summary.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-    },
-    onError: (error) =>
-      toast.error(error.message || "No se pudo registrar el consentimiento."),
-  });
-
-  const createPolicyMutation = trpc.policies.create.useMutation({
-    onSuccess: async () => {
-      toast.success("Política de visibilidad registrada.");
-      setPolicyForm({
-        documentId: "",
-        policyType: "visibility",
-        visibilityScope: "case_team",
-        ruleText: "",
-      });
-      await Promise.all([
-        utils.cases.detail.invalidate(),
-        utils.audit.list.invalidate(),
-      ]);
-    },
-    onError: (error) =>
-      toast.error(error.message || "No se pudo registrar la política."),
-  });
-
-  const caseDetail = caseDetailQuery.data;
-
-  useEffect(() => {
-    if (!caseDetail?.case) return;
-
-    const dueAt = caseDetail.case.dueAt
-      ? new Date(caseDetail.case.dueAt).toISOString().slice(0, 16)
-      : "";
-
-    setWorkflowForm({
-      status: caseDetail.case.status,
-      priority: caseDetail.case.priority,
-      dueAt,
-    });
-  }, [
-    caseDetail?.case.caseId,
-    caseDetail?.case.status,
-    caseDetail?.case.priority,
-    caseDetail?.case.dueAt,
-  ]);
-
-  const kpis = dashboardQuery.data?.totals ?? {
-    activeCases: 0,
-    totalDocuments: 0,
-    openAlerts: 0,
-    pendingConsents: 0,
-  };
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-3">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-sm text-slate-200">
-            Preparando CompliLink Operativo...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(22,163,74,0.14),_transparent_24%),linear-gradient(135deg,_#020617_0%,_#0f172a_45%,_#172554_100%)] text-white">
-        <div className="container flex min-h-screen flex-col justify-between py-8">
-          <header className="flex items-center justify-between rounded-full border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-xl">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-emerald-300">
-                CompliLink
-              </p>
-              <h1 className="text-lg font-semibold">Operativo Laboral MX</h1>
-            </div>
-            <button
-              onClick={() => {
-                window.location.href = getLoginUrl();
-              }}
-              className="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
-            >
-              Ingresar con Manus OAuth
-            </button>
-          </header>
-
-          <main className="grid gap-10 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <section>
-              <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-200">
-                <ShieldCheck className="h-4 w-4" />
-                Gestión laboral multi-tenant con trazabilidad integral
-              </p>
-              <h2 className="mt-6 max-w-4xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Plataforma corporativa para operar expedientes laborales mexicanos de punta a punta.
-              </h2>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                CompliLink centraliza autenticación, casos, intake documental, SHA-256,
-                clasificación básica de CFDI, IMSS y nómina, políticas de visibilidad,
-                consentimientos y auditoría con <strong>tenant_id</strong>, <strong>case_id</strong>
-                y <strong>trace_id</strong> consistentes en todo el flujo.
-              </p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                {[
-                  ["Traceabilidad", "Hash SHA-256, metadata canónica y bitácora auditable"],
-                  ["Acceso estricto", "Controles por tenant y por caso con Manus OAuth"],
-                  ["Escalable", "Contratos preparados para integración futura con Shared Engine"],
-                ].map(([title, description]) => (
-                  <div
-                    key={title}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
-                  >
-                    <p className="font-semibold text-white">{title}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      {description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-[2rem] border border-white/10 bg-white/8 p-6 shadow-2xl backdrop-blur-2xl">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  ["Casos activos", "Análisis, conciliación y litigio con timeline y prioridad"],
-                  ["Documentos", "Carga segura a storage con clasificación preliminar automática"],
-                  ["Consentimiento", "Base legal y visibilidad por documento y expediente"],
-                  ["Auditoría", "Rastro de acciones con trace_id de punta a punta"],
-                ].map(([title, description]) => (
-                  <div
-                    key={title}
-                    className="rounded-3xl border border-white/10 bg-slate-950/35 p-5"
-                  >
-                    <p className="text-sm font-semibold text-emerald-200">{title}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      {description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5 text-sm leading-7 text-emerald-100">
-                Accede para inicializar tu operación, generar un caso piloto, cargar documentos y dejar CompliLink listo para trabajar hoy mismo con expedientes trazables.
-              </div>
-            </section>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
-      <div className="grid min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="border-r border-slate-200 bg-[linear-gradient(180deg,_#081122_0%,_#0f1d38_100%)] px-6 py-6 text-white">
-          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-emerald-300">
-              CompliLink
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-              Operativo Laboral
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Plataforma operativa para expedientes laborales con trazabilidad, documentos, consentimientos y auditoría en contexto corporativo mexicano.
-            </p>
-          </div>
-
-          <nav className="mt-8 space-y-3 text-sm text-slate-300">
-            {[
-              ["Resumen ejecutivo", `${kpis.activeCases} casos activos`],
-              ["Expedientes", `${casesQuery.data?.length ?? 0} casos visibles`],
-              ["Documentos", `${kpis.totalDocuments} documentos procesados`],
-              ["Auditoría", `${auditQuery.data?.length ?? 0} eventos recientes`],
-            ].map(([title, caption]) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3"
-              >
-                <p className="font-medium text-white">{title}</p>
-                <p className="mt-1 text-xs text-slate-400">{caption}</p>
-              </div>
-            ))}
-          </nav>
-
-          <div className="mt-8 rounded-[1.75rem] border border-emerald-400/20 bg-emerald-400/10 p-5 text-sm text-emerald-50">
-            <p className="font-semibold text-emerald-200">Acceso vigente</p>
-            <p className="mt-3 leading-6 text-emerald-50/90">
-              Usuario autenticado: <strong>{user?.name || user?.email || "Usuario"}</strong>.
-              El control se aplica por tenant y por caso desde el backend.
-            </p>
-            <button
-              onClick={logout}
-              className="mt-4 rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </aside>
-
-        <main className="px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-          <section className="rounded-[2rem] bg-[linear-gradient(135deg,_#0f172a_0%,_#14213d_55%,_#1d3557_100%)] px-6 py-6 text-white shadow-[0_24px_70px_-40px_rgba(15,23,42,0.65)] sm:px-8">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-              <div className="max-w-4xl">
-                <p className="text-xs uppercase tracking-[0.35em] text-emerald-300">
-                  CompliLink operativo
-                </p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Operación trazable de casos laborales con gobernanza documental y base canónica.
-                </h2>
-                <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                  Esta vista concentra expedientes activos, intake documental, consentimiento, políticas y auditoría. Cada operación preserva <strong>tenant_id</strong>, <strong>case_id</strong> y <strong>trace_id</strong> para trazabilidad integral y control operativo real desde el primer día.
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:min-w-[520px]">
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
-                    Tenant
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {selectedTenant || "Inicializando"}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
-                    Caso activo
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {selectedCaseId || "Sin selección"}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
-                    Trace
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {truncate(caseDetail?.case.traceId ?? "—", 20)}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
-                    Estado de inicio
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {bootstrapMutation.isPending ? "Configurando" : "Operativo"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-6 grid gap-4 xl:grid-cols-4">
-            <KpiCard
-              title="Casos activos"
-              value={kpis.activeCases}
-              helper="Expedientes abiertos en flujo laboral"
-              icon={<Building2 className="h-5 w-5" />}
-            />
-            <KpiCard
-              title="Documentos procesados"
-              value={kpis.totalDocuments}
-              helper="Archivos con metadatos y huella digital"
-              icon={<Files className="h-5 w-5" />}
-            />
-            <KpiCard
-              title="Alertas operativas"
-              value={kpis.openAlerts}
-              helper="Riesgos abiertos de consentimiento o integridad"
-              icon={<TriangleAlert className="h-5 w-5" />}
-            />
-            <KpiCard
-              title="Consentimientos pendientes"
-              value={kpis.pendingConsents}
-              helper="Elementos con visibilidad o base legal por cerrar"
-              icon={<ShieldCheck className="h-5 w-5" />}
-            />
-          </section>
-
-          <section className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">Casos activos</p>
-                  <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                    Pipeline de expedientes
-                  </h3>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <select
-                    value={selectedTenant}
-                    onChange={(event) => setSelectedTenant(event.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
-                  >
-                    {(tenantsQuery.data ?? []).map((tenant) => (
-                      <option key={tenant.tenantId} value={tenant.tenantId}>
-                        {tenant.displayName}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value as CaseStatus)}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="date"
-                    value={fromDate}
-                    onChange={(event) => setFromDate(event.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
-                  />
-                  <input
-                    type="date"
-                    value={toDate}
-                    onChange={(event) => setToDate(event.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-slate-200">
-                <div className="hidden grid-cols-[180px_1.1fr_140px_120px_180px] gap-4 bg-slate-50 px-5 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 md:grid">
-                  <span>Caso</span>
-                  <span>Resumen</span>
-                  <span>Estatus</span>
-                  <span>Prioridad</span>
-                  <span>Última actividad</span>
-                </div>
-
-                <div className="max-h-[540px] overflow-auto bg-white">
-                  {(casesQuery.data ?? []).map((caseItem) => {
-                    const active = selectedCaseId === caseItem.caseId;
-                    return (
-                      <button
-                        key={caseItem.caseId}
-                        onClick={() => setSelectedCaseId(caseItem.caseId)}
-                        className={`grid w-full gap-3 border-t border-slate-100 px-5 py-4 text-left transition first:border-t-0 md:grid-cols-[180px_1.1fr_140px_120px_180px] ${
-                          active ? "bg-emerald-50/70" : "hover:bg-slate-50"
-                        }`}
-                      >
-                        <div>
-                          <p className="font-semibold text-slate-950">{caseItem.caseId}</p>
-                          <p className="mt-1 text-xs text-slate-500">{caseItem.tenantName}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900">{caseItem.title}</p>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {caseItem.summary || "Sin resumen adicional."}
-                          </p>
-                        </div>
-                        <div>
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusTone(caseItem.status)}`}>
-                            {caseItem.status}
-                          </span>
-                        </div>
-                        <div>
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusTone(caseItem.priority)}`}>
-                            {caseItem.priority}
-                          </span>
-                        </div>
-                        <div className="text-sm text-slate-500">
-                          {formatDate(caseItem.updatedAt)}
-                        </div>
-                      </button>
-                    );
-                  })}
-
-                  {!casesQuery.data?.length ? (
-                    <div className="px-6 py-12 text-center text-sm text-slate-500">
-                      No hay casos visibles con los filtros actuales.
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">Detalle operativo</p>
-              <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                Expediente seleccionado
-              </h3>
-
-              {caseDetailQuery.isLoading ? (
-                <div className="mt-10 flex items-center justify-center text-slate-500">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Cargando expediente...
-                </div>
-              ) : caseDetail?.case ? (
-                <div className="mt-5 space-y-5">
-                  <div className="rounded-[1.75rem] bg-slate-950 px-5 py-5 text-white">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                          {caseDetail.case.caseId}
-                        </p>
-                        <h4 className="mt-2 text-2xl font-semibold">
-                          {caseDetail.case.title}
-                        </h4>
-                        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                          {caseDetail.case.summary || "Sin resumen redactado."}
-                        </p>
-                      </div>
-                      <div className="grid gap-2 text-right text-sm text-slate-300">
-                        <span>
-                          tenant_id: <strong className="text-white">{caseDetail.case.tenantId}</strong>
-                        </span>
-                        <span>
-                          case_id: <strong className="text-white">{caseDetail.case.caseId}</strong>
-                        </span>
-                        <span>
-                          trace_id: <strong className="text-white">{truncate(caseDetail.case.traceId, 28)}</strong>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      ["Colaborador", caseDetail.case.employeeName || "No especificado"],
-                      ["Entidad patronal", caseDetail.case.employerEntity || "No especificada"],
-                      ["Jurisdicción", caseDetail.case.jurisdiction],
-                      ["Vencimiento", formatDate(caseDetail.case.dueAt)],
-                    ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4"
-                      >
-                        <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
-                          {label}
-                        </p>
-                        <p className="mt-2 text-sm font-medium text-slate-950">
-                          {value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">Control de workflow</p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          Ajusta el estado operativo del expediente sin perder trazabilidad.
-                        </p>
-                      </div>
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusTone(workflowForm.status)}`}>
-                        {workflowForm.status}
-                      </span>
-                    </div>
-                    <div className="mt-4 grid gap-3 md:grid-cols-3">
-                      <select
-                        value={workflowForm.status}
-                        onChange={(event) =>
-                          setWorkflowForm((prev) => ({ ...prev, status: event.target.value }))
-                        }
-                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm"
-                      >
-                        {statusOptions
-                          .filter((option) => option.value !== "all")
-                          .map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                      </select>
-                      <select
-                        value={workflowForm.priority}
-                        onChange={(event) =>
-                          setWorkflowForm((prev) => ({ ...prev, priority: event.target.value }))
-                        }
-                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm"
-                      >
-                        <option value="low">Baja</option>
-                        <option value="medium">Media</option>
-                        <option value="high">Alta</option>
-                        <option value="critical">Crítica</option>
-                      </select>
-                      <input
-                        type="datetime-local"
-                        value={workflowForm.dueAt}
-                        onChange={(event) =>
-                          setWorkflowForm((prev) => ({ ...prev, dueAt: event.target.value }))
-                        }
-                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm"
-                      />
-                    </div>
-                    <button
-                      disabled={!selectedTenant || !selectedCaseId || updateWorkflowMutation.isPending}
-                      onClick={() => {
-                        updateWorkflowMutation.mutate({
-                          tenantId: selectedTenant,
-                          caseId: selectedCaseId,
-                          status: workflowForm.status as
-                            | "intake"
-                            | "analysis"
-                            | "conciliation"
-                            | "litigation"
-                            | "resolved"
-                            | "archived",
-                          priority: workflowForm.priority as
-                            | "low"
-                            | "medium"
-                            | "high"
-                            | "critical",
-                          dueAt: workflowForm.dueAt
-                            ? new Date(workflowForm.dueAt).toISOString()
-                            : null,
-                        });
-                      }}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-                    >
-                      {updateWorkflowMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : null}
-                      Actualizar workflow
-                    </button>
-                  </div>
-
-                  <div className="rounded-[1.75rem] border border-slate-200 p-4">
-                    <p className="text-sm font-medium text-slate-900">
-                      Timeline y trazabilidad
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {caseDetail.events.map((event) => (
-                        <div
-                          key={event.id}
-                          className="rounded-3xl border border-slate-100 bg-slate-50 px-4 py-4"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="font-medium text-slate-950">{event.title}</p>
-                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(event.eventType)}`}>
-                              {event.eventType}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
-                            {event.description || "Sin descripción adicional."}
-                          </p>
-                          <p className="mt-2 text-xs text-slate-500">
-                            {formatDate(event.eventAt)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-medium text-slate-900">Alertas operativas</p>
-                      <div className="mt-3 space-y-3">
-                        {caseDetail.alerts.length ? (
-                          caseDetail.alerts.map((alert) => (
-                            <div key={alert.id} className="rounded-3xl bg-white px-4 py-4 shadow-sm">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <p className="font-medium text-slate-950">{alert.title}</p>
-                                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(alert.severity)}`}>
-                                  {alert.severity}
-                                </span>
-                              </div>
-                              <p className="mt-2 text-sm text-slate-600">
-                                {alert.description || "Sin descripción adicional."}
-                              </p>
-                              <p className="mt-2 text-xs text-slate-500">
-                                {formatDate(alert.raisedAt)} · {alert.category}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-sm text-slate-500">No hay alertas abiertas para este expediente.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-medium text-slate-900">Políticas documentales</p>
-                      <div className="mt-3 space-y-3">
-                        {caseDetail.policies.length ? (
-                          caseDetail.policies.map((policy) => (
-                            <div key={policy.id} className="rounded-3xl bg-white px-4 py-4 shadow-sm">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <p className="font-medium text-slate-950">{policy.policyType}</p>
-                                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(policy.status)}`}>
-                                  {policy.status}
-                                </span>
-                              </div>
-                              <p className="mt-2 text-sm text-slate-600">{policy.ruleText}</p>
-                              <p className="mt-2 text-xs text-slate-500">
-                                documento: {policy.documentId} · scope: {policy.visibilityScope}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-sm text-slate-500">No hay políticas registradas todavía para este caso.</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-10 rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                  Selecciona un caso para revisar documentos, consentimientos, políticas y auditoría.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="mt-6 grid gap-6 2xl:grid-cols-[1fr_1fr_1fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">Alta rápida</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
-                Crear nuevo caso
-              </h3>
-              <div className="mt-5 space-y-3">
-                <input
-                  value={createCaseForm.title}
-                  onChange={(e) =>
-                    setCreateCaseForm((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                  placeholder="Ej. Reclamación por despido injustificado"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <input
-                  value={createCaseForm.employeeName}
-                  onChange={(e) =>
-                    setCreateCaseForm((prev) => ({ ...prev, employeeName: e.target.value }))
-                  }
-                  placeholder="Nombre del colaborador"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <input
-                  value={createCaseForm.employerEntity}
-                  onChange={(e) =>
-                    setCreateCaseForm((prev) => ({ ...prev, employerEntity: e.target.value }))
-                  }
-                  placeholder="Entidad patronal"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <textarea
-                  value={createCaseForm.summary}
-                  onChange={(e) =>
-                    setCreateCaseForm((prev) => ({ ...prev, summary: e.target.value }))
-                  }
-                  placeholder="Resumen ejecutivo del asunto"
-                  className="min-h-[104px] w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <select
-                    value={createCaseForm.status}
-                    onChange={(e) =>
-                      setCreateCaseForm((prev) => ({ ...prev, status: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    {statusOptions
-                      .filter((option) => option.value !== "all")
-                      .map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                  </select>
-                  <select
-                    value={createCaseForm.priority}
-                    onChange={(e) =>
-                      setCreateCaseForm((prev) => ({ ...prev, priority: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    <option value="low">Baja</option>
-                    <option value="medium">Media</option>
-                    <option value="high">Alta</option>
-                    <option value="critical">Crítica</option>
-                  </select>
-                  <input
-                    type="datetime-local"
-                    value={createCaseForm.dueAt}
-                    onChange={(e) =>
-                      setCreateCaseForm((prev) => ({ ...prev, dueAt: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  />
-                </div>
-                <button
-                  disabled={!selectedTenant || !createCaseForm.title || createCaseMutation.isPending}
-                  onClick={() => {
-                    createCaseMutation.mutate({
-                      tenantId: selectedTenant,
-                      title: createCaseForm.title,
-                      employeeName: createCaseForm.employeeName || undefined,
-                      employerEntity: createCaseForm.employerEntity || undefined,
-                      summary: createCaseForm.summary || undefined,
-                      status: createCaseForm.status as
-                        | "intake"
-                        | "analysis"
-                        | "conciliation"
-                        | "litigation"
-                        | "resolved"
-                        | "archived",
-                      priority: createCaseForm.priority as
-                        | "low"
-                        | "medium"
-                        | "high"
-                        | "critical",
-                      dueAt: createCaseForm.dueAt
-                        ? new Date(createCaseForm.dueAt).toISOString()
-                        : undefined,
-                    });
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  {createCaseMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  Crear expediente
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">Intake documental</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
-                Subir archivo a storage
-              </h3>
-              <div className="mt-5 space-y-4">
-                <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-center transition hover:border-emerald-400 hover:bg-emerald-50/60">
-                  <UploadCloud className="h-8 w-8 text-slate-500" />
-                  <p className="mt-4 text-sm font-medium text-slate-900">
-                    Arrastra o selecciona un documento
-                  </p>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-                    Se cargará a storage con SHA-256, metadatos canónicos y clasificación preliminar.
-                  </p>
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={async (event) => {
-                      const file = event.target.files?.[0];
-                      if (!file) return;
-                      try {
-                        const base64Content = await readFileAsBase64(file);
-                        setUploadDraft({
-                          fileName: file.name,
-                          mimeType: file.type || "application/octet-stream",
-                          base64Content,
-                        });
-                      } catch (error) {
-                        toast.error(
-                          error instanceof Error
-                            ? error.message
-                            : "No se pudo preparar el archivo.",
-                        );
-                      }
-                    }}
-                  />
-                </label>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <select
-                    value={policyForm.visibilityScope}
-                    onChange={(e) =>
-                      setPolicyForm((prev) => ({ ...prev, visibilityScope: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    <option value="case_team">Visibilidad caso</option>
-                    <option value="tenant_legal">Legal tenant</option>
-                    <option value="tenant_hr">RH tenant</option>
-                    <option value="restricted">Restringido</option>
-                  </select>
-                  <select
-                    value={consentForm.status}
-                    onChange={(e) =>
-                      setConsentForm((prev) => ({ ...prev, status: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    <option value="pending">Consentimiento pendiente</option>
-                    <option value="granted">Consentimiento otorgado</option>
-                    <option value="revoked">Consentimiento revocado</option>
-                    <option value="not_required">No requerido</option>
-                  </select>
-                </div>
-
-                <div className="rounded-3xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                  <p>
-                    <strong>Archivo:</strong> {uploadDraft?.fileName || "Sin archivo cargado"}
-                  </p>
-                  <p className="mt-2">
-                    <strong>Tipo MIME:</strong> {uploadDraft?.mimeType || "—"}
-                  </p>
-                </div>
-
-                <button
-                  disabled={!selectedTenant || !selectedCaseId || !uploadDraft || uploadDocumentMutation.isPending}
-                  onClick={() => {
-                    if (!uploadDraft) return;
-                    uploadDocumentMutation.mutate({
-                      tenantId: selectedTenant,
-                      caseId: selectedCaseId,
-                      fileName: uploadDraft.fileName,
-                      mimeType: uploadDraft.mimeType,
-                      base64Content: uploadDraft.base64Content,
-                      visibility: policyForm.visibilityScope as
-                        | "case_team"
-                        | "tenant_legal"
-                        | "tenant_hr"
-                        | "restricted",
-                      consentStatus: consentForm.status as
-                        | "pending"
-                        | "granted"
-                        | "revoked"
-                        | "not_required",
-                    });
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  {uploadDocumentMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  Registrar documento
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">Cumplimiento documental</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
-                Consentimiento y política
-              </h3>
-              <div className="mt-5 space-y-3">
-                <input
-                  value={consentForm.subjectName}
-                  onChange={(e) =>
-                    setConsentForm((prev) => ({ ...prev, subjectName: e.target.value }))
-                  }
-                  placeholder="Titular o sujeto de datos"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <input
-                  value={consentForm.subjectRole}
-                  onChange={(e) =>
-                    setConsentForm((prev) => ({ ...prev, subjectRole: e.target.value }))
-                  }
-                  placeholder="Rol del sujeto"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <input
-                  value={consentForm.legalBasis}
-                  onChange={(e) =>
-                    setConsentForm((prev) => ({ ...prev, legalBasis: e.target.value }))
-                  }
-                  placeholder="Base legal o fundamento"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <textarea
-                  value={consentForm.notes}
-                  onChange={(e) =>
-                    setConsentForm((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                  placeholder="Notas de consentimiento o visibilidad"
-                  className="min-h-[96px] w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <button
-                  disabled={!selectedTenant || !selectedCaseId || !consentForm.subjectName || createConsentMutation.isPending}
-                  onClick={() => {
-                    createConsentMutation.mutate({
-                      tenantId: selectedTenant,
-                      caseId: selectedCaseId,
-                      subjectName: consentForm.subjectName,
-                      subjectRole: consentForm.subjectRole || undefined,
-                      legalBasis: consentForm.legalBasis || undefined,
-                      status: consentForm.status as
-                        | "pending"
-                        | "granted"
-                        | "revoked"
-                        | "expired"
-                        | "not_required",
-                      notes: consentForm.notes || undefined,
-                    });
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  {createConsentMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  Registrar consentimiento
-                </button>
-
-                <hr className="my-2 border-slate-200" />
-
-                <select
-                  value={policyForm.documentId}
-                  onChange={(e) =>
-                    setPolicyForm((prev) => ({ ...prev, documentId: e.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                >
-                  <option value="">Selecciona un documento del caso</option>
-                  {(caseDetail?.documents ?? []).map((document) => (
-                    <option key={document.documentId} value={document.documentId}>
-                      {document.documentId} · {document.originalName}
-                    </option>
-                  ))}
-                </select>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <select
-                    value={policyForm.policyType}
-                    onChange={(e) =>
-                      setPolicyForm((prev) => ({ ...prev, policyType: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    <option value="visibility">Visibilidad</option>
-                    <option value="retention">Retención</option>
-                    <option value="legal_hold">Legal hold</option>
-                    <option value="access_exception">Excepción de acceso</option>
-                  </select>
-                  <select
-                    value={policyForm.visibilityScope}
-                    onChange={(e) =>
-                      setPolicyForm((prev) => ({ ...prev, visibilityScope: e.target.value }))
-                    }
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                  >
-                    <option value="case_team">Case team</option>
-                    <option value="tenant_legal">Tenant legal</option>
-                    <option value="tenant_hr">Tenant HR</option>
-                    <option value="restricted">Restricted</option>
-                  </select>
-                </div>
-                <textarea
-                  value={policyForm.ruleText}
-                  onChange={(e) =>
-                    setPolicyForm((prev) => ({ ...prev, ruleText: e.target.value }))
-                  }
-                  placeholder="Describe la regla o restricción de visibilidad"
-                  className="min-h-[96px] w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm"
-                />
-                <button
-                  disabled={!selectedTenant || !selectedCaseId || !policyForm.documentId || !policyForm.ruleText || createPolicyMutation.isPending}
-                  onClick={() => {
-                    createPolicyMutation.mutate({
-                      tenantId: selectedTenant,
-                      caseId: selectedCaseId,
-                      documentId: policyForm.documentId,
-                      policyType: policyForm.policyType as
-                        | "visibility"
-                        | "retention"
-                        | "legal_hold"
-                        | "access_exception",
-                      visibilityScope: policyForm.visibilityScope as
-                        | "case_team"
-                        | "tenant_legal"
-                        | "tenant_hr"
-                        | "restricted",
-                      ruleText: policyForm.ruleText,
-                    });
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  {createPolicyMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  Aplicar política
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">
-                Document hub y cumplimiento
-              </p>
-              <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                Documentos y consentimientos del caso
-              </h3>
-              <div className="mt-5 space-y-3">
-                {(caseDetail?.documents ?? []).map((document) => (
-                  <div
-                    key={document.documentId}
-                    className="rounded-[1.5rem] border border-slate-200 p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-slate-950">
-                          {document.originalName}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {document.documentId} · {document.mimeType}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className={`rounded-full px-3 py-1 font-semibold ${getStatusTone(document.documentType)}`}>
-                          {document.documentType}
-                        </span>
-                        <span className={`rounded-full px-3 py-1 font-semibold ${getStatusTone(document.visibility)}`}>
-                          {document.visibility}
-                        </span>
-                        <span className={`rounded-full px-3 py-1 font-semibold ${getStatusTone(document.consentStatus)}`}>
-                          {document.consentStatus}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                      <p>
-                        <strong>SHA-256:</strong> {truncate(document.sha256, 28)}
-                      </p>
-                      <p>
-                        <strong>Storage:</strong> {truncate(document.storageKey, 28)}
-                      </p>
-                      <p>
-                        <strong>Confianza:</strong> {document.classificationConfidence}%
-                      </p>
-                      <p>
-                        <strong>Procesado:</strong> {formatDate(document.processedAt)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {!caseDetail?.documents?.length ? (
-                  <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                    El caso aún no tiene documentos registrados.
-                  </div>
-                ) : null}
-
-                <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-900">
-                    Consentimientos registrados
-                  </p>
-                  <div className="mt-3 space-y-3">
-                    {(caseDetail?.consents ?? []).map((consent) => (
-                      <div key={consent.id} className="rounded-3xl bg-white px-4 py-4 shadow-sm">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium text-slate-950">
-                            {consent.subjectName}
-                          </p>
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(consent.status)}`}>
-                            {consent.status}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-sm text-slate-600">
-                          {consent.legalBasis || "Sin base legal especificada."}
-                        </p>
-                      </div>
-                    ))}
-                    {!caseDetail?.consents?.length ? (
-                      <p className="text-sm text-slate-500">
-                        Todavía no se han registrado consentimientos.
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)]">
-              <p className="text-sm font-medium text-slate-500">Bitácora auditable</p>
-              <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                Rastro reciente de auditoría
-              </h3>
-              <div className="mt-5 space-y-3">
-                {(auditQuery.data ?? []).map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-[1.5rem] border border-slate-200 px-4 py-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-slate-950">{entry.action}</p>
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(entry.entityType)}`}>
-                        {entry.entityType}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">
-                      entity_id: {entry.entityId}
-                    </p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      trace_id: {truncate(entry.traceId, 34)}
-                    </p>
-                    <p className="mt-2 text-xs text-slate-500">
-                      {formatDate(entry.createdAt)}
-                    </p>
-                  </div>
-                ))}
-                {!auditQuery.data?.length ? (
-                  <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                    La auditoría aparecerá aquí conforme se ejecuten acciones del flujo.
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="mt-5 rounded-[1.75rem] bg-slate-950 px-5 py-5 text-white">
-                <p className="text-sm font-semibold">Preparación para Shared Engine</p>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Cada alta de caso, documento y consentimiento genera contratos canónicos listos para consumo futuro por el motor compartido, sin perder consistencia de metadatos ni trazabilidad legal-operativa.
-                </p>
-                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-emerald-200">
-                  <FileCheck2 className="h-4 w-4" />
-                  Canonical contracts ready
-                </div>
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-    </div>
+    <main className="min-h-screen bg-white font-sans text-slate-950">
+      <SiteHeader />
+      <HeroSection />
+      <QuickProofSection />
+      <HowItWorksSection />
+      <WhatItChecksSection />
+      <GuidedTourSection />
+      <BenefitGridSection />
+      <PrivacySection />
+      <FAQSection />
+      <FinalCtaSection />
+      <SiteFooter />
+    </main>
   );
 }
