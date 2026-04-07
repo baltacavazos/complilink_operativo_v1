@@ -2,6 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Drawer,
   DrawerClose,
@@ -52,6 +60,23 @@ type HeliosOpinionView = {
   disclaimer?: string | null;
   mode?: string | null;
   status?: string | null;
+};
+
+type ComparisonDocument = {
+  documentId: string;
+  originalName: string;
+  documentType: string;
+  createdAt: Date | string;
+  heliosOpinion?: unknown;
+};
+
+type HeliosPriorityAlert = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  toneClasses: string;
+  icon: "alert" | "file" | "sparkles";
 };
 
 const dossierTargets: DossierTarget[] = [
@@ -660,16 +685,49 @@ function getComparisonFocus(leftType: string, rightType: string) {
   }
 }
 
+function pickHeliosComparisonPair(documents: ComparisonDocument[]) {
+  const sortedDocuments = [...documents].sort(
+    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+  );
+
+  if (sortedDocuments.length < 2) {
+    return null;
+  }
+
+  const groupedDocuments = new Map<string, ComparisonDocument[]>();
+  sortedDocuments.forEach((document) => {
+    const current = groupedDocuments.get(document.documentType) ?? [];
+    current.push(document);
+    groupedDocuments.set(document.documentType, current);
+  });
+
+  for (const priorityType of ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]) {
+    const matches = groupedDocuments.get(priorityType);
+    if (matches && matches.length >= 2) {
+      return [matches[1], matches[0]] as [ComparisonDocument, ComparisonDocument];
+    }
+  }
+
+  const newestContract = sortedDocuments.find((item) => item.documentType === "contract");
+  const newestPayroll = sortedDocuments.find((item) => item.documentType === "payroll_receipt");
+  const newestCfdi = sortedDocuments.find((item) => item.documentType === "cfdi");
+
+  if (newestContract && newestPayroll) {
+    return [newestContract, newestPayroll] as [ComparisonDocument, ComparisonDocument];
+  }
+
+  if (newestPayroll && newestCfdi) {
+    return [newestPayroll, newestCfdi] as [ComparisonDocument, ComparisonDocument];
+  }
+
+  return [sortedDocuments[1], sortedDocuments[0]] as [ComparisonDocument, ComparisonDocument];
+}
+
 function buildHeliosComparisonCopy(params: {
-  documents: Array<{
-    documentId: string;
-    originalName: string;
-    documentType: string;
-    createdAt: Date | string;
-    heliosOpinion?: unknown;
-  }>;
+  documents: ComparisonDocument[];
   nextTarget?: DossierTarget | null;
   opinion?: HeliosOpinionView | null;
+  selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
 }) {
   const sortedDocuments = [...params.documents].sort(
     (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
@@ -733,35 +791,35 @@ function buildHeliosComparisonCopy(params: {
     } as const;
   }
 
-  const groupedDocuments = new Map<string, typeof sortedDocuments>();
-  sortedDocuments.forEach((document) => {
-    const current = groupedDocuments.get(document.documentType) ?? [];
-    current.push(document);
-    groupedDocuments.set(document.documentType, current);
-  });
-
-  let selectedPair: [typeof sortedDocuments[number], typeof sortedDocuments[number]] | null = null;
-
-  for (const priorityType of ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]) {
-    const matches = groupedDocuments.get(priorityType);
-    if (matches && matches.length >= 2) {
-      selectedPair = [matches[1], matches[0]];
-      break;
-    }
-  }
+  const selectedPair = params.selectedPair ?? pickHeliosComparisonPair(sortedDocuments);
 
   if (!selectedPair) {
-    const newestContract = sortedDocuments.find((item) => item.documentType === "contract");
-    const newestPayroll = sortedDocuments.find((item) => item.documentType === "payroll_receipt");
-    const newestCfdi = sortedDocuments.find((item) => item.documentType === "cfdi");
-
-    if (newestContract && newestPayroll) {
-      selectedPair = [newestContract, newestPayroll];
-    } else if (newestPayroll && newestCfdi) {
-      selectedPair = [newestPayroll, newestCfdi];
-    } else {
-      selectedPair = [sortedDocuments[1], sortedDocuments[0]];
-    }
+    return {
+      badge: "Comparación en preparación",
+      headline: "Helios sigue reuniendo contexto para comparar mejor",
+      supportingText:
+        "Todavía no hay una pareja de documentos suficiente para contrastar cambios con claridad, pero el expediente ya quedó listo para ello en cuanto subas otra pieza útil.",
+      cards: [
+        {
+          title: "Documentos comparados",
+          body: "Todavía no hay una pareja lista para contraste manual o sugerido dentro del expediente.",
+        },
+        {
+          title: "Lo que Helios está contrastando",
+          body: "En cuanto exista una segunda pieza útil, Helios podrá revisar fechas, montos y condiciones lado a lado.",
+        },
+        {
+          title: "Qué puede ayudarte a aclararlo más",
+          body: params.nextTarget
+            ? `Si puedes, sube ${params.nextTarget.label.toLowerCase()} para abrir esta comparación con más contexto.`
+            : "Si tienes un segundo documento relacionado, subirlo permitirá activar la comparación guiada.",
+        },
+      ],
+      guardrail: "Helios te muestra diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+      coverage:
+        "Mientras más documentos conectados tenga Helios, más fácil le resulta separar cambios reales de simples huecos de información.",
+      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
+    } as const;
   }
 
   const [leftDocument, rightDocument] = selectedPair;
@@ -810,6 +868,107 @@ function buildHeliosComparisonCopy(params: {
   } as const;
 }
 
+function buildHeliosPriorityAlerts(params: {
+  documents: ComparisonDocument[];
+  attentionCount: number;
+  selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
+  nextTarget?: DossierTarget | null;
+  opinion?: HeliosOpinionView | null;
+}) {
+  const alerts: HeliosPriorityAlert[] = [];
+
+  if (params.attentionCount > 0) {
+    alerts.push({
+      id: "monitoring-attention",
+      eyebrow: "Prioridad alta",
+      title: "Hay movimientos del seguimiento que conviene revisar pronto",
+      body:
+        params.attentionCount === 1
+          ? "Helios detectó un documento en seguimiento con una señal que merece atención para que el expediente no pierda ritmo."
+          : `Helios detectó ${params.attentionCount} documentos en seguimiento con señales que conviene revisar pronto para no dejar cabos sueltos.`,
+      toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
+      icon: "alert",
+    });
+  }
+
+  const groupedDocuments = new Map<string, ComparisonDocument[]>();
+  params.documents.forEach((document) => {
+    const current = groupedDocuments.get(document.documentType) ?? [];
+    current.push(document);
+    groupedDocuments.set(document.documentType, current);
+  });
+
+  const repeatedGroup = ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]
+    .map((type) => groupedDocuments.get(type))
+    .find((group): group is ComparisonDocument[] => Boolean(group && group.length >= 2));
+
+  if (repeatedGroup) {
+    const label = getSimpleDocumentTypeLabel(repeatedGroup[0].documentType).toLowerCase();
+    const focus = getComparisonFocus(repeatedGroup[0].documentType, repeatedGroup[0].documentType);
+
+    alerts.push({
+      id: "repeated-patterns",
+      eyebrow: "Prioridad media",
+      title: `Ya hay base para detectar cambios repetidos en ${label}`,
+      body: `Tienes ${repeatedGroup.length} ${label} dentro del expediente. Eso le da a Helios una mejor base para revisar ${focus} con más contexto y menos partes preliminares.`,
+      toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
+      icon: "file",
+    });
+  }
+
+  const firstUncertainty = params.opinion?.uncertainties?.find((item) => item?.trim());
+  if (firstUncertainty) {
+    alerts.push({
+      id: "uncertainty",
+      eyebrow: "Prioridad media",
+      title: "Hay un punto que todavía conviene aclarar con calma",
+      body: firstUncertainty,
+      toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
+      icon: "sparkles",
+    });
+  }
+
+  if (alerts.length === 0 && params.selectedPair) {
+    const sameType = params.selectedPair[0].documentType === params.selectedPair[1].documentType;
+    alerts.push({
+      id: "comparison-ready",
+      eyebrow: "Prioridad útil",
+      title: sameType
+        ? "Ya tienes dos documentos listos para una comparación más fina"
+        : "Ya tienes dos piezas que Helios puede cruzar con poco esfuerzo",
+      body: sameType
+        ? "Helios ya puede revisar cambios del mismo tipo de documento y ayudarte a distinguir mejor qué se movió entre periodos."
+        : "Helios ya puede contrastar dos piezas distintas del expediente para conectar mejor la historia del caso.",
+      toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
+      icon: "file",
+    });
+  }
+
+  if (params.nextTarget && alerts.length < 3) {
+    alerts.push({
+      id: "next-target",
+      eyebrow: "Siguiente oportunidad",
+      title: `Subir ${params.nextTarget.label.toLowerCase()} puede destrabar más claridad`,
+      body: `${params.nextTarget.description} ${params.nextTarget.benefit}`,
+      toneClasses: "border-emerald-100 bg-emerald-50 text-emerald-950",
+      icon: "sparkles",
+    });
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({
+      id: "foundation",
+      eyebrow: "Base activa",
+      title: "Helios ya tiene una base útil para seguir ordenando el expediente",
+      body: "Cada documento adicional le da más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
+      toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
+      icon: "sparkles",
+    });
+  }
+
+  return alerts.slice(0, 3);
+}
+
 export default function Auditar() {
   const auth = useAuth();
   const utils = trpc.useUtils();
@@ -825,6 +984,8 @@ export default function Auditar() {
   const [uploadSourceOpen, setUploadSourceOpen] = useState(false);
   const [estimatedAcknowledged, setEstimatedAcknowledged] = useState(false);
   const [timelineExpandedOnMobile, setTimelineExpandedOnMobile] = useState(false);
+  const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
+  const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
   const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -932,6 +1093,11 @@ export default function Auditar() {
     [documents],
   );
 
+  const comparisonDocuments = useMemo(
+    () => [...documents].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
+    [documents],
+  );
+  const automaticComparisonPair = useMemo(() => pickHeliosComparisonPair(documents), [documents]);
   const engineStatus = getEngineStatusCopy(lastUpload?.engineDispatch?.status, lastUpload?.engineDispatch?.reason);
   const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
   const confirmedEntries = useMemo(
@@ -963,11 +1129,48 @@ export default function Auditar() {
     presentTypes,
     opinion: visibleHeliosOpinion,
   });
+  const selectedComparisonLeft = comparisonDocuments.find((item) => item.documentId === selectedComparisonLeftId);
+  const selectedComparisonRight = comparisonDocuments.find((item) => item.documentId === selectedComparisonRightId);
+  const activeComparisonPair =
+    selectedComparisonLeft &&
+    selectedComparisonRight &&
+    selectedComparisonLeft.documentId !== selectedComparisonRight.documentId
+      ? ([selectedComparisonLeft, selectedComparisonRight] as [ComparisonDocument, ComparisonDocument])
+      : automaticComparisonPair;
   const comparisonCopy = buildHeliosComparisonCopy({
     documents,
     nextTarget: dossierStatus.nextTarget,
     opinion: visibleHeliosOpinion,
+    selectedPair: activeComparisonPair ?? undefined,
   });
+  const comparisonSelectionLocked = comparisonDocuments.length < 2;
+  const comparisonSuggestedLabel = automaticComparisonPair
+    ? `${automaticComparisonPair[0].originalName} ↔ ${automaticComparisonPair[1].originalName}`
+    : null;
+  const comparisonAlerts = buildHeliosPriorityAlerts({
+    documents,
+    attentionCount: attentionMonitoringDocuments.length,
+    selectedPair: activeComparisonPair,
+    nextTarget: dossierStatus.nextTarget,
+    opinion: visibleHeliosOpinion,
+  });
+
+  useEffect(() => {
+    const fallbackLeft = automaticComparisonPair?.[0]?.documentId ?? comparisonDocuments[0]?.documentId ?? "";
+    const fallbackRight =
+      automaticComparisonPair?.[1]?.documentId ??
+      comparisonDocuments.find((item) => item.documentId !== fallbackLeft)?.documentId ??
+      "";
+
+    setSelectedComparisonLeftId((current) =>
+      comparisonDocuments.some((item) => item.documentId === current) ? current : fallbackLeft,
+    );
+    setSelectedComparisonRightId((current) =>
+      comparisonDocuments.some((item) => item.documentId === current && item.documentId !== fallbackLeft)
+        ? current
+        : fallbackRight,
+    );
+  }, [automaticComparisonPair, comparisonDocuments]);
 
   useEffect(() => {
     setEstimatedAcknowledged(false);
@@ -1766,12 +1969,12 @@ export default function Auditar() {
                   {timelineEntries.map((entry, index) => (
                     <div
                       key={entry.id}
-                      className={`${index >= timelinePreviewLimit && !timelineExpandedOnMobile ? "hidden sm:flex" : "flex"} gap-4`}
+                      className={`${index >= timelinePreviewLimit && !timelineExpandedOnMobile ? "hidden sm:flex" : "flex"} gap-4 transition-all duration-200`}
                     >
                       <div className="flex w-10 shrink-0 flex-col items-center">
                         <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
-                            entry.hasVisibleOpinion ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-700"
+                          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all duration-200 ${
+                            entry.hasVisibleOpinion ? "bg-teal-600 text-white shadow-sm" : "bg-slate-200 text-slate-700"
                           }`}
                         >
                           {entry.step}
@@ -1779,7 +1982,7 @@ export default function Auditar() {
                         {index !== timelineEntries.length - 1 ? <div className="mt-2 w-px flex-1 bg-slate-200" /> : null}
                       </div>
 
-                      <article className="flex-1 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
+                      <article className="flex-1 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="font-semibold text-slate-950">{entry.title}</p>
@@ -1806,7 +2009,7 @@ export default function Auditar() {
                   {timelineEntries.length > timelinePreviewLimit ? (
                     <button
                       type="button"
-                      className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 sm:hidden"
+                      className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 active:scale-[0.99] sm:hidden"
                       onClick={() => setTimelineExpandedOnMobile((value) => !value)}
                     >
                       {timelineExpandedOnMobile
@@ -2093,29 +2296,133 @@ export default function Auditar() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">Compara tú mismo dos documentos del expediente</p>
+                    <p className="mt-1 text-sm leading-7 text-slate-600">
+                      Si quieres, puedes cambiar la pareja sugerida por Helios para revisar otro contraste sin salir del expediente.
+                    </p>
+                  </div>
+                  {automaticComparisonPair ? (
+                    <Button
+                      variant="outline"
+                      className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        setSelectedComparisonLeftId(automaticComparisonPair[0].documentId);
+                        setSelectedComparisonRightId(automaticComparisonPair[1].documentId);
+                      }}
+                    >
+                      Usar la comparación sugerida
+                    </Button>
+                  ) : null}
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento 1</p>
+                    <Select value={selectedComparisonLeftId} onValueChange={setSelectedComparisonLeftId} disabled={comparisonSelectionLocked}>
+                      <SelectTrigger className="mt-2 h-11 w-full rounded-[1rem] border-slate-200 bg-white">
+                        <SelectValue placeholder="Selecciona un documento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {comparisonDocuments.map((document) => (
+                          <SelectItem
+                            key={document.documentId}
+                            value={document.documentId}
+                            disabled={document.documentId === selectedComparisonRightId}
+                          >
+                            {document.originalName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento 2</p>
+                    <Select value={selectedComparisonRightId} onValueChange={setSelectedComparisonRightId} disabled={comparisonSelectionLocked}>
+                      <SelectTrigger className="mt-2 h-11 w-full rounded-[1rem] border-slate-200 bg-white">
+                        <SelectValue placeholder="Selecciona otro documento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {comparisonDocuments.map((document) => (
+                          <SelectItem
+                            key={document.documentId}
+                            value={document.documentId}
+                            disabled={document.documentId === selectedComparisonLeftId}
+                          >
+                            {document.originalName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {comparisonSelectionLocked ? (
+                  <p className="mt-3 text-xs leading-6 text-slate-500">
+                    Sube al menos dos documentos para activar la comparación manual de Helios.
+                  </p>
+                ) : comparisonSuggestedLabel ? (
+                  <p className="mt-3 text-xs leading-6 text-slate-500">Sugerencia actual de Helios: {comparisonSuggestedLabel}.</p>
+                ) : null}
+              </div>
+
+              <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
                 <p className="text-sm font-semibold text-teal-900">{comparisonCopy.badge}</p>
                 <p className="mt-2 text-xl font-semibold text-slate-950">{comparisonCopy.headline}</p>
                 <p className="mt-2 text-sm leading-7 text-teal-950">{comparisonCopy.supportingText}</p>
               </div>
 
+              <div className="mt-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-teal-700" strokeWidth={1.8} />
+                  <p className="text-sm font-semibold text-slate-950">Alertas priorizadas por Helios</p>
+                </div>
+                <p className="mt-1 text-sm leading-7 text-slate-600">
+                  Helios convierte señales repetidas y puntos sensibles en alertas más fáciles de priorizar.
+                </p>
+                <div className="mt-3 grid gap-3">
+                  {comparisonAlerts.map((alert) => (
+                    <Alert key={alert.id} className={`${alert.toneClasses} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm`}>
+                      {alert.icon === "alert" ? (
+                        <AlertCircle className="h-4 w-4" strokeWidth={1.8} />
+                      ) : alert.icon === "file" ? (
+                        <FileSearch className="h-4 w-4" strokeWidth={1.8} />
+                      ) : (
+                        <Sparkles className="h-4 w-4" strokeWidth={1.8} />
+                      )}
+                      <AlertTitle>{alert.eyebrow}</AlertTitle>
+                      <AlertDescription className="text-current">
+                        <p className="font-semibold text-current">{alert.title}</p>
+                        <p>{alert.body}</p>
+                      </AlertDescription>
+                    </Alert>
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-4 grid gap-3">
                 {comparisonCopy.cards.map((card) => (
-                  <div key={card.title} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                  <div
+                    key={card.title}
+                    className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm"
+                  >
                     <p className="font-semibold text-slate-950">{card.title}</p>
                     <p className="mt-2 text-sm leading-7 text-slate-700">{card.body}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
                 <p className="text-sm font-semibold text-emerald-900">Cómo Helios mejora esta comparación</p>
                 <p className="mt-2 text-sm leading-7 text-emerald-950">{comparisonCopy.coverage}</p>
                 <p className="mt-2 text-xs leading-6 text-emerald-900">{comparisonCopy.guardrail}</p>
               </div>
 
               <Button
-                className="mt-4 h-11 w-full rounded-full bg-slate-900 text-white hover:bg-slate-950"
+                className="mt-4 h-11 w-full rounded-full bg-slate-900 text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-950"
                 onClick={openFilePicker}
               >
                 {comparisonCopy.cta}

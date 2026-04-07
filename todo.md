@@ -202,4 +202,10 @@
 - [x] Hacer más user friendly la explicación de hallazgos, diferencias y siguientes pasos sugeridos por Helios.
 - [x] Reforzar recomendaciones útiles de Helios para que prioricen el siguiente documento o acción más valiosa.
 - [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda prioritaria de mejoras de Helios en /auditar.
-- [ ] Guardar un checkpoint estable con esta nueva iteración prioritaria de Helios.
+- [x] Guardar un checkpoint estable con esta nueva iteración prioritaria de Helios.
+- [x] Contrastar con Grok, Gemini y ChatGPT la mejor implementación de selección manual de documentos para comparar, microinteracciones suaves y alertas priorizadas de Helios en /auditar.
+- [x] Implementar en /auditar un selector manual de dos documentos para comparar dentro del bloque guiado de Helios.
+- [x] Añadir microinteracciones suaves al bloque comparativo de Helios y a la expansión de la línea de tiempo para reforzar claridad sin generar fricción.
+- [x] Convertir hallazgos repetidos o relevantes de Helios en alertas priorizadas con contexto útil y momento visible.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda de mejoras prioritarias de Helios en /auditar.
+- [ ] Guardar un checkpoint estable con esta nueva iteración de Helios centrada en comparación manual, microinteracciones y alertas.

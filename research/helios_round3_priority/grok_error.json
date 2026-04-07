@@ -1,0 +1,4 @@
+{
+  "provider": "grok",
+  "error": "{\n  \"code\": \"The service is currently unavailable\",\n  \"error\": \"Service temporarily unavailable. The model did not respond to this request.\"\n}"
+}

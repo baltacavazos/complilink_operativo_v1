@@ -1,0 +1,15 @@
+[
+  {
+    "provider": "openai",
+    "ok": true
+  },
+  {
+    "provider": "gemini",
+    "ok": true
+  },
+  {
+    "provider": "grok",
+    "ok": false,
+    "error": "{\n  \"code\": \"The service is currently unavailable\",\n  \"error\": \"Service temporarily unavailable. The model did not respond to this request.\"\n}"
+  }
+]

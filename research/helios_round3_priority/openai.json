@@ -1,0 +1,86 @@
+{
+  "summary": "Se mejora el bloque Helios permitiendo selección manual de dos documentos para comparación, se añaden microinteracciones suaves para mejorar la experiencia visual y se priorizan alertas de hallazgos relevantes con contexto claro. Todo manteniendo un diseño minimalista, mobile-first y con un tono humano que incentiva la subida de más documentos para enriquecer el expediente sin sobreprometer resultados.",
+  "ui_priorities": [
+    "Integrar selección manual de documentos en el bloque Helios sin sobrecargar la interfaz",
+    "Implementar microinteracciones sutiles en comparación y línea de tiempo para guiar al usuario",
+    "Mostrar alertas priorizadas con contexto claro y momento visible dentro del flujo",
+    "Mantener lenguaje claro, accesible y evitar términos legales complejos",
+    "Incentivar subida de documentos explicando beneficio para la precisión de Helios"
+  ],
+  "manual_compare": {
+    "interaction_model": "Usuario toca un botón 'Seleccionar documentos' que abre un modal o panel lateral con lista filtrable de documentos; puede elegir exactamente dos para comparar. Confirmación con botón claro para ejecutar comparación.",
+    "default_behavior": "Por defecto se muestra la comparación automática del documento actual con el siguiente recomendado, para no romper flujo ni confundir usuarios menos avanzados.",
+    "mobile_pattern": "Uso de modal full screen con lista scrollable y búsqueda, selección por tap, y botón fijo para confirmar. Diseño táctil y accesible con feedback visual claro.",
+    "fallback_when_few_docs": "Si hay menos de dos documentos disponibles, se muestra mensaje explicativo y CTA para subir más documentos, deshabilitando selección manual.",
+    "recommended_controls": [
+      "Botón 'Seleccionar documentos' visible pero discreto en bloque Helios",
+      "Modal o panel con lista de documentos con miniaturas y fechas",
+      "Checkbox o selección táctil para elegir dos documentos",
+      "Botón 'Comparar' habilitado solo al seleccionar dos documentos",
+      "Botón 'Cancelar' para cerrar selección sin cambios"
+    ]
+  },
+  "microinteractions": [
+    {
+      "target": "bloque de comparación de documentos",
+      "effect": "transición suave de fade-in y slide al cambiar documentos comparados",
+      "rationale": "Ayuda a que el usuario perciba el cambio de contenido sin perder contexto ni sentirse desorientado"
+    },
+    {
+      "target": "línea de tiempo del expediente",
+      "effect": "resalte sutil y animación de pulso al seleccionar un documento o evento",
+      "rationale": "Indica claramente qué elemento está activo o enfocado, mejorando la navegación y comprensión"
+    },
+    {
+      "target": "botones de selección de documentos",
+      "effect": "feedback táctil y visual (color y sombra) al tocar para confirmar selección",
+      "rationale": "Refuerza la acción del usuario y reduce incertidumbre sobre la interacción"
+    }
+  ],
+  "prioritized_alerts": {
+    "logic": "Agrupar hallazgos repetidos o de alta relevancia detectados por Helios, ordenarlos por prioridad (alta, media, baja) y mostrar en tarjetas con contexto claro, fecha y vínculo al documento o sección relacionada para revisión humana.",
+    "cards": [
+      {
+        "title": "Cambios críticos detectados",
+        "when": "Hallazgos que afectan información clave y se repiten en varios documentos",
+        "body": "Helios ha identificado modificaciones importantes que podrían impactar la revisión. Recomendamos verificar estos puntos con detalle.",
+        "priority": "high",
+        "timestamp_pattern": "Hace {n} horas/días"
+      },
+      {
+        "title": "Variaciones relevantes",
+        "when": "Hallazgos que indican diferencias significativas pero no críticas",
+        "body": "Se detectaron cambios que podrían ser relevantes para el expediente. Considere revisarlos para mayor seguridad.",
+        "priority": "medium",
+        "timestamp_pattern": "Hace {n} días"
+      },
+      {
+        "title": "Observaciones menores",
+        "when": "Hallazgos con diferencias leves o poco frecuentes",
+        "body": "Pequeñas variaciones detectadas que pueden no requerir acción inmediata, pero es bueno estar al tanto.",
+        "priority": "low",
+        "timestamp_pattern": "Hace {n} días"
+      }
+    ]
+  },
+  "copy_examples": {
+    "compare_cta": "Selecciona dos documentos para comparar y descubrir qué cambió.",
+    "alert_heading": "Alertas de Helios",
+    "alert_body": "Helios detecta cambios y patrones en tu expediente para ayudarte a enfocarte en lo importante. Recuerda que la revisión final es humana.",
+    "empty_state": "Aún no hay suficientes documentos para comparar. Sube más para que Helios pueda ayudarte mejor."
+  },
+  "implementation_order": [
+    "Añadir selección manual de documentos en bloque Helios con modal móvil",
+    "Mantener comparación automática por defecto para usuarios no avanzados",
+    "Implementar microinteracciones en comparación y línea de tiempo",
+    "Desarrollar sistema de alertas priorizadas con tarjetas contextuales",
+    "Incluir mensajes e incentivos para subir más documentos"
+  ],
+  "risks_to_avoid": [
+    "Sobrecargar la interfaz con opciones o controles innecesarios",
+    "Usar lenguaje técnico o jurídico que confunda al usuario",
+    "Generar falsas expectativas sobre resultados definitivos de Helios",
+    "Hacer que la selección manual sea obligatoria o difícil de usar en móvil",
+    "Ignorar la importancia de mantener la revisión humana final"
+  ]
+}
