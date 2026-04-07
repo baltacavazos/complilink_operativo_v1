@@ -1,0 +1,236 @@
+{
+  "generated_at": "2026-04-05 21:54:27",
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "error": "401 Client Error: Unauthorized for url: https://api.openai.com/v1/chat/completions"
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Proyecto en MVP funcional avanzado, con base sólida para retomar y pulir rápidamente hacia una versión probada con usuarios reales.\",\n  \"estado_inferido\": \"Alpha funcional con frontend React implementado, flujo principal de auditoría operativo, validación SAT real y generación de reportes; huecos en integraciones completas como IMSS pero núcleo usable.\",\n  \"nucleo_v1\": [\n    \"Auditoría de recibo de nómina con upload, análisis y detección de discrepancias\",\n    \"Validación CFDI contra SAT oficial\",\n    \"Generación de reportes PDF con valor probatorio\",\n    \"Modo incógnito y privacidad en todos los flujos\"\n  ],\n  \"que_conservar_tal_cual\": [\n    \"Flujo principal de auditoría en /auditar, incluyendo upload, polling y visualización de resultados\",\n    \"Validación SAT en backend con SOAP real\",\n    \"Generación de PDF para auditorías y quejas PROFEDET\",\n    \"Diseño premium en Home.tsx: hero tipográfico, navbar minimalista y secciones con whitespace generoso\",\n    \"Componentes UI como Toaster, TooltipProvider y ErrorBoundary en App.tsx\"\n  ],\n  \"que_reordenar_o_simplificar\": [\n    \"Navbar en Home: reducir NAV_LINKS a esenciales (eliminar 'Mi Historial' si no autenticado, mover a dashboard post-login)\",\n    \"Secciones en Home: fusionar ValuePropsSection y AdditionalFeaturesSection en una sola grid de features para evitar repetición\",\n    \"IMSSGuidanceSection en PayStubAudit: simplificar pasos a máximo 4, hacer upload de constancia condicional solo si payStubId existe\",\n    \"DiscrepancyCard: colapsar por defecto solo las de severidad baja para reducir sobrecarga visual\"\n  ],\n  \"que_posponer\": [\n    \"Integraciones profundas con IMSS, INFONAVIT y PROFEDET más allá de validación manual asistida\",\n    \"Funcionalidades avanzadas en /comparar como tendencias a largo plazo\",\n    \"Panel admin completo con métricas globales (mantener básico para monitoreo interno)\",\n    \"Recursos educativos extensos en /documentos hasta validar núcleo con usuarios\"\n  ],\n  \"estructura_recomendada_de_paginas\": [\n    {\n      \"ruta\": \"/\",\n      \"rol\": \"Landing premium para atraer y educar usuarios\",\n      \"decision\": \"keep\"\n    },\n    {\n      \"ruta\": \"/auditar\",\n      \"rol\": \"Flujo principal de auditoría de nómina\",\n      \"decision\": \"keep\"\n    },\n    {\n      \"ruta\": \"/historial\",\n      \"rol\": \"Vista de auditorías pasadas con filtros\",\n      \"decision\": \"adapt\"\n    },\n    {\n      \"ruta\": \"/comparar\",\n      \"rol\": \"Comparación de recibos para detectar patrones\",\n      \"decision\": \"adapt\"\n    },\n    {\n      \"ruta\": \"/documentos\",\n      \"rol\": \"Centro legal con documentos y casos\",\n      \"decision\": \"merge\"\n    },\n    {\n      \"ruta\": \"/admin\",\n      \"rol\": \"Dashboard administrativo para métricas y alertas\",\n      \"decision\": \"keep\"\n    }\n  ],\n  \"homepage_recomendada\": {\n    \"mensaje_central\": \"Audita a tu patrón. Protege tus derechos.\",\n    \"secciones\": [\n      \"Hero con tipografía premium y CTAs\",\n      \"Value Props en grid de cards\",\n      \"Cómo Funciona en pasos numerados\",\n      \"Seguridad y Privacidad con features destacadas\",\n      \"Respaldo con stats\",\n      \"FAQ en accordion\"\n    ],\n    \"cta_principal\": \"Comienza tu auditoría\",\n    \"cta_secundario\": \"Conoce más\"\n  },\n  \"flujo_auditar_recomendado\": [\n    \"Subida segura de recibo (PDF/XML/imagen) sin login inicial\",\n    \"Análisis asíncrono con polling y loader premium\",\n    \"Visualización de resultados: badge SAT, nivel de riesgo, lista de discrepancias colapsables\",\n    \"Sección de guía IMSS simplificada con upload opcional\",\n    \"CTA para generar PDF y guardar en historial (requerir login aquí)\",\n    \"Recomendaciones accionables con referencias legales\"\n  ],\n  \"riesgos_si_se_rehace_desde_cero\": [\n    \"Pérdida de momentum y tiempo en recrear flujos funcionales como auditoría y SAT\",\n    \"Inconsistencias en diseño premium ya establecido, rompiendo sensación de claridad\",\n    \"Duplicación de esfuerzo en backend maduro (routers tRPC, schema)\",\n    \"Riesgo de introducir bugs en integraciones probadas como validación CFDI\",\n    \"Dificultad para probar con usuarios reales mañana, ya que lo existente es usable\"\n  ],\n  \"plan_de_recuperacion\": [\n    \"Auditar código existente: revisar App.tsx y rutas para confirmar funcionalidad\",\n    \"Restaurar frontend: deployar React app con rutas actuales, fijar bugs menores en mobile nav\",\n    \"Validar backend: probar endpoints de auditoría, SAT y PDF en entorno local\",\n    \"Simplificar UI: aplicar cambios en Home y PayStubAudit para claridad (e.g., reducir secciones)\",\n    \"Probar end-to-end: simular auditoría completa con datos dummy\",\n    \"Preparar demo: agregar login suave en /auditar y deployar a staging para pruebas usuarios\"\n  ],\n  \"tono_y_diseno\": [\n    \"Empoderador y protector, nunca confrontacional\",\n    \"Premium clarity: whitespace generoso, tipografía Inter, acento teal (#0A7558)\",\n    \"Minimalista: sin decoraciones innecesarias, focus en usabilidad móvil\",\n    \"Confidencial: resaltar modo incógnito en todos los flujos visibles\"\n  ],\n  \"recomendacion_final\": \"Retoma inmediatamente el frontend y backend existentes, simplifica la home y el flujo de auditoría para pruebas rápidas con usuarios; enfócate en pulir el núcleo de nómina antes de expandir integraciones.\"\n}",
+      "parsed": {
+        "veredicto_general": "Proyecto en MVP funcional avanzado, con base sólida para retomar y pulir rápidamente hacia una versión probada con usuarios reales.",
+        "estado_inferido": "Alpha funcional con frontend React implementado, flujo principal de auditoría operativo, validación SAT real y generación de reportes; huecos en integraciones completas como IMSS pero núcleo usable.",
+        "nucleo_v1": [
+          "Auditoría de recibo de nómina con upload, análisis y detección de discrepancias",
+          "Validación CFDI contra SAT oficial",
+          "Generación de reportes PDF con valor probatorio",
+          "Modo incógnito y privacidad en todos los flujos"
+        ],
+        "que_conservar_tal_cual": [
+          "Flujo principal de auditoría en /auditar, incluyendo upload, polling y visualización de resultados",
+          "Validación SAT en backend con SOAP real",
+          "Generación de PDF para auditorías y quejas PROFEDET",
+          "Diseño premium en Home.tsx: hero tipográfico, navbar minimalista y secciones con whitespace generoso",
+          "Componentes UI como Toaster, TooltipProvider y ErrorBoundary en App.tsx"
+        ],
+        "que_reordenar_o_simplificar": [
+          "Navbar en Home: reducir NAV_LINKS a esenciales (eliminar 'Mi Historial' si no autenticado, mover a dashboard post-login)",
+          "Secciones en Home: fusionar ValuePropsSection y AdditionalFeaturesSection en una sola grid de features para evitar repetición",
+          "IMSSGuidanceSection en PayStubAudit: simplificar pasos a máximo 4, hacer upload de constancia condicional solo si payStubId existe",
+          "DiscrepancyCard: colapsar por defecto solo las de severidad baja para reducir sobrecarga visual"
+        ],
+        "que_posponer": [
+          "Integraciones profundas con IMSS, INFONAVIT y PROFEDET más allá de validación manual asistida",
+          "Funcionalidades avanzadas en /comparar como tendencias a largo plazo",
+          "Panel admin completo con métricas globales (mantener básico para monitoreo interno)",
+          "Recursos educativos extensos en /documentos hasta validar núcleo con usuarios"
+        ],
+        "estructura_recomendada_de_paginas": [
+          {
+            "ruta": "/",
+            "rol": "Landing premium para atraer y educar usuarios",
+            "decision": "keep"
+          },
+          {
+            "ruta": "/auditar",
+            "rol": "Flujo principal de auditoría de nómina",
+            "decision": "keep"
+          },
+          {
+            "ruta": "/historial",
+            "rol": "Vista de auditorías pasadas con filtros",
+            "decision": "adapt"
+          },
+          {
+            "ruta": "/comparar",
+            "rol": "Comparación de recibos para detectar patrones",
+            "decision": "adapt"
+          },
+          {
+            "ruta": "/documentos",
+            "rol": "Centro legal con documentos y casos",
+            "decision": "merge"
+          },
+          {
+            "ruta": "/admin",
+            "rol": "Dashboard administrativo para métricas y alertas",
+            "decision": "keep"
+          }
+        ],
+        "homepage_recomendada": {
+          "mensaje_central": "Audita a tu patrón. Protege tus derechos.",
+          "secciones": [
+            "Hero con tipografía premium y CTAs",
+            "Value Props en grid de cards",
+            "Cómo Funciona en pasos numerados",
+            "Seguridad y Privacidad con features destacadas",
+            "Respaldo con stats",
+            "FAQ en accordion"
+          ],
+          "cta_principal": "Comienza tu auditoría",
+          "cta_secundario": "Conoce más"
+        },
+        "flujo_auditar_recomendado": [
+          "Subida segura de recibo (PDF/XML/imagen) sin login inicial",
+          "Análisis asíncrono con polling y loader premium",
+          "Visualización de resultados: badge SAT, nivel de riesgo, lista de discrepancias colapsables",
+          "Sección de guía IMSS simplificada con upload opcional",
+          "CTA para generar PDF y guardar en historial (requerir login aquí)",
+          "Recomendaciones accionables con referencias legales"
+        ],
+        "riesgos_si_se_rehace_desde_cero": [
+          "Pérdida de momentum y tiempo en recrear flujos funcionales como auditoría y SAT",
+          "Inconsistencias en diseño premium ya establecido, rompiendo sensación de claridad",
+          "Duplicación de esfuerzo en backend maduro (routers tRPC, schema)",
+          "Riesgo de introducir bugs en integraciones probadas como validación CFDI",
+          "Dificultad para probar con usuarios reales mañana, ya que lo existente es usable"
+        ],
+        "plan_de_recuperacion": [
+          "Auditar código existente: revisar App.tsx y rutas para confirmar funcionalidad",
+          "Restaurar frontend: deployar React app con rutas actuales, fijar bugs menores en mobile nav",
+          "Validar backend: probar endpoints de auditoría, SAT y PDF en entorno local",
+          "Simplificar UI: aplicar cambios en Home y PayStubAudit para claridad (e.g., reducir secciones)",
+          "Probar end-to-end: simular auditoría completa con datos dummy",
+          "Preparar demo: agregar login suave en /auditar y deployar a staging para pruebas usuarios"
+        ],
+        "tono_y_diseno": [
+          "Empoderador y protector, nunca confrontacional",
+          "Premium clarity: whitespace generoso, tipografía Inter, acento teal (#0A7558)",
+          "Minimalista: sin decoraciones innecesarias, focus en usabilidad móvil",
+          "Confidencial: resaltar modo incógnito en todos los flujos visibles"
+        ],
+        "recomendacion_final": "Retoma inmediatamente el frontend y backend existentes, simplifica la home y el flujo de auditoría para pruebas rápidas con usuarios; enfócate en pulir el núcleo de nómina antes de expandir integraciones."
+      }
+    },
+    "gemini": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"El proyecto AuditaPatron está en un estado de 'alpha funcional' muy prometedor, con un 'wedge' de producto principal ya implementado. La estrategia debe ser de refinamiento y optimización para V1, no de reinicio. Hay una base sólida para construir rápidamente.\",\n  \"estado_inferido\": \"Existe una aplicación React con un diseño 'Premium Clarity' ya aplicado en la Home y la página de auditoría. El backend para la auditoría de recibos de nómina, validación SAT, gestión de documentos y generación de PDFs está modelado y parcialmente implementado. El flujo principal de auditoría de recibos, la visualización de discrepancias con referencias legales y la guía para la verificación IMSS están presentes en el frontend. La documentación estratégica y de marca es robusta. Los módulos de auditoría, validación SAT y centro documental/admin parecen los más maduros.\",\n  \"nucleo_v1\": [\n    \"Auditoría de recibo de nómina (CFDI o imagen) con detección de incumplimientos laborales y de seguridad social.\",\n    \"Validación SAT del CFDI (estado: vigente, cancelado, no encontrado).\",\n    \"Generación de reportes PDF con valor probatorio y referencias legales claras.\",\n    \"Modo Incógnito y privacidad máxima garantizada por diseño.\",\n    \"Guía interactiva para obtener y subir la constancia de semanas cotizadas del IMSS para cruce de datos (SBC, semanas cotizadas).\"\n  ],\n  \"que_conservar_tal_cual\": [\n    \"El diseño 'Premium Clarity' (colores, tipografía Inter, espaciado, componentes UI) de la homepage y la página de auditoría.\",\n    \"La estructura de la aplicación React y sus rutas existentes.\",\n    \"El flujo de carga de archivos y la visualización del estado de la auditoría en PayStubAudit.tsx.\",\n    \"La presentación de discrepancias (tipo, severidad, descripción, referencia legal, recomendación) en PayStubAudit.tsx.\",\n    \"La integración y visualización del estado de validación SAT en PayStubAudit.tsx.\",\n    \"La sección de guía IMSS en PayStubAudit.tsx (estructura y concepto, el contenido puede requerir ajustes finos).\",\n    \"El backend para la auditoría de recibos, validación SAT, generación de PDFs y gestión de documentos.\",\n    \"La narrativa de marca, el tono empoderador y el respaldo de Grupo CVZ.\"\n  ],\n  \"que_reordenar_o_simplificar\": [\n    \"**Navegación Principal**: Simplificar la barra de navegación para V1, priorizando 'Auditar Nómina' y 'Mi Historial'.\",\n    \"**Centro Legal (/documentos)**: Integrar esta funcionalidad dentro de 'Mi Historial' bajo un concepto de 'Mis Casos' o 'Expediente Legal', donde se agrupen los reportes generados y documentos asociados.\",\n    \"**Comparación de Recibos (/comparar)**: Convertirla en una funcionalidad avanzada accesible desde 'Mi Historial' (ej. 'Seleccionar para comparar' varios recibos), en lugar de una ruta de primer nivel en la navegación principal.\",\n    \"**Calculadora de Liquidación (en Home.tsx)**: Moverla a una sección de recursos o herramientas secundarias, fuera del flujo principal de auditoría o la homepage central.\"\n  ],\n  \"que_posponer\": [\n    \"**Admin Dashboard (/admin)**: Es una herramienta interna, no para el usuario final en V1. Mantenerla separada y no visible.\",\n    \"**Integraciones gubernamentales profundas adicionales**: Más allá de la validación SAT y la guía/subida de constancia IMSS, posponer integraciones directas y robustas con INFONAVIT, STPS, PROFEDET para fases posteriores. Mantener la generación de reportes como el 'output' principal para estas autoridades.\",\n    \"**Funcionalidades de 'Shared Engine' o CompliLink**: Mantener el foco exclusivo en AuditaPatron para esta fase.\",\n    \"**Asesoría legal integrada (mencionada en Home.tsx)**: Para V1, la plataforma debe generar la evidencia. La conexión directa con abogados puede ser una fase posterior o un servicio premium.\"\n  ],\n  \"estructura_recomendada_de_paginas\": [\n    {\n      \"ruta\": \"/\",\n      \"rol\": \"Landing Page / Home\",\n      \"decision\": \"keep\"\n    },\n    {\n      \"ruta\": \"/auditar\",\n      \"rol\": \"Flujo Principal de Auditoría\",\n      \"decision\": \"keep\"\n    },\n    {\n      \"ruta\": \"/historial\",\n      \"rol\": \"Historial de Auditorías y Casos\",\n      \"decision\": \"keep\"\n    },\n    {\n      \"ruta\": \"/comparar\",\n      \"rol\": \"Comparación de Recibos\",\n      \"decision\": \"adapt\"\n    },\n    {\n      \"ruta\": \"/documentos\",\n      \"rol\": \"Centro Legal / Documentación\",\n      \"decision\": \"merge\"\n    },\n    {\n      \"ruta\": \"/admin\",\n      \"rol\": \"Panel Administrativo\",\n      \"decision\": \"defer\"\n    },\n    {\n      \"ruta\": \"/404\",\n      \"rol\": \"Página no encontrada\",\n      \"decision\": \"keep\"\n    }\n  ],\n  \"homepage_recomendada\": {\n    \"mensaje_central\": \"Audita a tu patrón. Protege tus derechos. La plataforma que empodera al trabajador mexicano para verificar y defender sus derechos laborales, de forma 100% confidencial y con el respaldo legal de Grupo CVZ.\",\n    \"secciones\": [\n      \"Hero (con mensaje central y CTAs)\",\n      \"Propuestas de Valor (Auditoría automatizada, Modo Incógnito, Reportes probatorios)\",\n      \"Cómo Funciona (4 pasos)\",\n      \"Privacidad y Seguridad (Tu patrón nunca sabrá...)\",\n      \"Respaldo (Grupo CVZ, estadísticas)\",\n      \"Preguntas Frecuentes (FAQ)\",\n      \"Call to Action final\"\n    ],\n    \"cta_principal\": \"Comienza tu auditoría\",\n    \"cta_secundario\": \"Conoce más\"\n  },\n  \"flujo_auditar_recomendado\": [\n    \"**1. Inicio de Auditoría**: Usuario accede a /auditar.\",\n    \"**2. Carga de Documento**: Interfaz de drag & drop o selección de archivo (PDF, XML, imagen de recibo de nómina).\",\n    \"**3. Autenticación (si aplica)**: Si el usuario no está logueado, se le solicita iniciar sesión antes de procesar el archivo.\",\n    \"**4. Procesamiento y Análisis**: El sistema procesa el documento, extrae datos clave y realiza el análisis inicial de incumplimientos.\",\n    \"**5. Validación SAT**: Automáticamente se valida el CFDI con el servicio público del SAT.\",\n    \"**6. Resultados de Auditoría**: Se muestran las discrepancias detectadas (tipo, severidad, descripción, referencia legal, recomendación) de forma clara y priorizada.\",\n    \"**7. Guía IMSS (Opcional)**: Se ofrece la opción de subir la constancia de semanas cotizadas del IMSS para un cruce de datos más profundo, con guía clara sobre cómo obtenerla.\",\n    \"**8. Generación de Reporte**: Botón prominente para 'Generar Reporte PDF' con la evidencia consolidada y referencias legales.\",\n    \"**9. Acciones Sugeridas**: Opciones para guardar el reporte en el historial, ver detalles o preparar para futuras acciones (sin iniciar la acción legal directamente en V1).\"\n  ],\n  \"riesgos_si_se_rehace_desde_cero\": [\n    \"Pérdida de la inversión significativa de tiempo y recursos ya dedicados al desarrollo del frontend y backend.\",\n    \"Retraso sustancial en el lanzamiento de V1, perdiendo la ventana de oportunidad y el momentum del proyecto.\",\n    \"Reintroducción de errores o inconsistencias ya identificadas y potencialmente resueltas en la implementación actual.\",\n    \"Desperdicio del conocimiento técnico y de producto ya adquirido por el equipo de desarrollo.\",\n    \"Desmotivación del equipo al invalidar el trabajo previo y forzar un reinicio.\"\n  ],\n  \"plan_de_recuperacion\": [\n    \"**1. Auditoría Rápida de Código y Dependencias**: Realizar un análisis del estado actual del repositorio (dependencias, versiones, posibles vulnerabilidades) para asegurar un entorno de desarrollo estable y actualizable.\",\n    \"**2. Revisión y Optimización UX/UI del Flujo Principal**: Validar que el flujo de 'Auditar Nómina' sea lo más intuitivo, sencillo y 'premium' posible, eliminando cualquier fricción o confusión.\",\n    \"**3. Priorización del Backlog para V1**: Crear un backlog de desarrollo enfocado exclusivamente en el núcleo funcional y las mejoras de UX/UI necesarias para un lanzamiento creíble de V1.\",\n    \"**4. Pruebas End-to-End del Núcleo**: Asegurar que el flujo completo de auditoría (subida, análisis, validación SAT, guía IMSS opcional, generación de reporte) funcione sin fallas.\",\n    \"**5. Preparación para Pruebas con Usuarios Reales**: Desarrollar un plan de pruebas con usuarios para obtener feedback temprano y validar la propuesta de valor del núcleo V1.\",\n    \"**6. Refinamiento de Contenidos Legales**: Revisar y validar la claridad, precisión y relevancia de las descripciones de discrepancias, referencias legales y recomendaciones.\"\n  ],\n  \"tono_y_diseno\": [\n    \"**Tono**: Empoderador, protector, profesional, confidencial y respaldado por la autoridad legal de Grupo CVZ. Nunca agresivo o confrontacional.\",\n    \"**Diseño**: 'Premium Clarity' (como ya está implementado): superficies blancas, acento en teal (#0A7558), tipografía Inter, amplio espacio en blanco, elementos visuales limpios y modernos. Énfasis en la legibilidad, la facilidad de uso y la sensación de confianza y seguridad.\"\n  ],\n  \"recomendacion_final\": \"La recomendación es clara: no reiniciar. AuditaPatron tiene una base funcional y de diseño sólida. El camino más eficiente y efectivo es capitalizar el trabajo existente, enfocarse en pulir el núcleo de auditoría de nómina para V1, y preparar el producto para pruebas con usuarios reales, manteniendo la promesa de privacidad y el respaldo legal como pilares.\"\n}",
+      "parsed": {
+        "veredicto_general": "El proyecto AuditaPatron está en un estado de 'alpha funcional' muy prometedor, con un 'wedge' de producto principal ya implementado. La estrategia debe ser de refinamiento y optimización para V1, no de reinicio. Hay una base sólida para construir rápidamente.",
+        "estado_inferido": "Existe una aplicación React con un diseño 'Premium Clarity' ya aplicado en la Home y la página de auditoría. El backend para la auditoría de recibos de nómina, validación SAT, gestión de documentos y generación de PDFs está modelado y parcialmente implementado. El flujo principal de auditoría de recibos, la visualización de discrepancias con referencias legales y la guía para la verificación IMSS están presentes en el frontend. La documentación estratégica y de marca es robusta. Los módulos de auditoría, validación SAT y centro documental/admin parecen los más maduros.",
+        "nucleo_v1": [
+          "Auditoría de recibo de nómina (CFDI o imagen) con detección de incumplimientos laborales y de seguridad social.",
+          "Validación SAT del CFDI (estado: vigente, cancelado, no encontrado).",
+          "Generación de reportes PDF con valor probatorio y referencias legales claras.",
+          "Modo Incógnito y privacidad máxima garantizada por diseño.",
+          "Guía interactiva para obtener y subir la constancia de semanas cotizadas del IMSS para cruce de datos (SBC, semanas cotizadas)."
+        ],
+        "que_conservar_tal_cual": [
+          "El diseño 'Premium Clarity' (colores, tipografía Inter, espaciado, componentes UI) de la homepage y la página de auditoría.",
+          "La estructura de la aplicación React y sus rutas existentes.",
+          "El flujo de carga de archivos y la visualización del estado de la auditoría en PayStubAudit.tsx.",
+          "La presentación de discrepancias (tipo, severidad, descripción, referencia legal, recomendación) en PayStubAudit.tsx.",
+          "La integración y visualización del estado de validación SAT en PayStubAudit.tsx.",
+          "La sección de guía IMSS en PayStubAudit.tsx (estructura y concepto, el contenido puede requerir ajustes finos).",
+          "El backend para la auditoría de recibos, validación SAT, generación de PDFs y gestión de documentos.",
+          "La narrativa de marca, el tono empoderador y el respaldo de Grupo CVZ."
+        ],
+        "que_reordenar_o_simplificar": [
+          "**Navegación Principal**: Simplificar la barra de navegación para V1, priorizando 'Auditar Nómina' y 'Mi Historial'.",
+          "**Centro Legal (/documentos)**: Integrar esta funcionalidad dentro de 'Mi Historial' bajo un concepto de 'Mis Casos' o 'Expediente Legal', donde se agrupen los reportes generados y documentos asociados.",
+          "**Comparación de Recibos (/comparar)**: Convertirla en una funcionalidad avanzada accesible desde 'Mi Historial' (ej. 'Seleccionar para comparar' varios recibos), en lugar de una ruta de primer nivel en la navegación principal.",
+          "**Calculadora de Liquidación (en Home.tsx)**: Moverla a una sección de recursos o herramientas secundarias, fuera del flujo principal de auditoría o la homepage central."
+        ],
+        "que_posponer": [
+          "**Admin Dashboard (/admin)**: Es una herramienta interna, no para el usuario final en V1. Mantenerla separada y no visible.",
+          "**Integraciones gubernamentales profundas adicionales**: Más allá de la validación SAT y la guía/subida de constancia IMSS, posponer integraciones directas y robustas con INFONAVIT, STPS, PROFEDET para fases posteriores. Mantener la generación de reportes como el 'output' principal para estas autoridades.",
+          "**Funcionalidades de 'Shared Engine' o CompliLink**: Mantener el foco exclusivo en AuditaPatron para esta fase.",
+          "**Asesoría legal integrada (mencionada en Home.tsx)**: Para V1, la plataforma debe generar la evidencia. La conexión directa con abogados puede ser una fase posterior o un servicio premium."
+        ],
+        "estructura_recomendada_de_paginas": [
+          {
+            "ruta": "/",
+            "rol": "Landing Page / Home",
+            "decision": "keep"
+          },
+          {
+            "ruta": "/auditar",
+            "rol": "Flujo Principal de Auditoría",
+            "decision": "keep"
+          },
+          {
+            "ruta": "/historial",
+            "rol": "Historial de Auditorías y Casos",
+            "decision": "keep"
+          },
+          {
+            "ruta": "/comparar",
+            "rol": "Comparación de Recibos",
+            "decision": "adapt"
+          },
+          {
+            "ruta": "/documentos",
+            "rol": "Centro Legal / Documentación",
+            "decision": "merge"
+          },
+          {
+            "ruta": "/admin",
+            "rol": "Panel Administrativo",
+            "decision": "defer"
+          },
+          {
+            "ruta": "/404",
+            "rol": "Página no encontrada",
+            "decision": "keep"
+          }
+        ],
+        "homepage_recomendada": {
+          "mensaje_central": "Audita a tu patrón. Protege tus derechos. La plataforma que empodera al trabajador mexicano para verificar y defender sus derechos laborales, de forma 100% confidencial y con el respaldo legal de Grupo CVZ.",
+          "secciones": [
+            "Hero (con mensaje central y CTAs)",
+            "Propuestas de Valor (Auditoría automatizada, Modo Incógnito, Reportes probatorios)",
+            "Cómo Funciona (4 pasos)",
+            "Privacidad y Seguridad (Tu patrón nunca sabrá...)",
+            "Respaldo (Grupo CVZ, estadísticas)",
+            "Preguntas Frecuentes (FAQ)",
+            "Call to Action final"
+          ],
+          "cta_principal": "Comienza tu auditoría",
+          "cta_secundario": "Conoce más"
+        },
+        "flujo_auditar_recomendado": [
+          "**1. Inicio de Auditoría**: Usuario accede a /auditar.",
+          "**2. Carga de Documento**: Interfaz de drag & drop o selección de archivo (PDF, XML, imagen de recibo de nómina).",
+          "**3. Autenticación (si aplica)**: Si el usuario no está logueado, se le solicita iniciar sesión antes de procesar el archivo.",
+          "**4. Procesamiento y Análisis**: El sistema procesa el documento, extrae datos clave y realiza el análisis inicial de incumplimientos.",
+          "**5. Validación SAT**: Automáticamente se valida el CFDI con el servicio público del SAT.",
+          "**6. Resultados de Auditoría**: Se muestran las discrepancias detectadas (tipo, severidad, descripción, referencia legal, recomendación) de forma clara y priorizada.",
+          "**7. Guía IMSS (Opcional)**: Se ofrece la opción de subir la constancia de semanas cotizadas del IMSS para un cruce de datos más profundo, con guía clara sobre cómo obtenerla.",
+          "**8. Generación de Reporte**: Botón prominente para 'Generar Reporte PDF' con la evidencia consolidada y referencias legales.",
+          "**9. Acciones Sugeridas**: Opciones para guardar el reporte en el historial, ver detalles o preparar para futuras acciones (sin iniciar la acción legal directamente en V1)."
+        ],
+        "riesgos_si_se_rehace_desde_cero": [
+          "Pérdida de la inversión significativa de tiempo y recursos ya dedicados al desarrollo del frontend y backend.",
+          "Retraso sustancial en el lanzamiento de V1, perdiendo la ventana de oportunidad y el momentum del proyecto.",
+          "Reintroducción de errores o inconsistencias ya identificadas y potencialmente resueltas en la implementación actual.",
+          "Desperdicio del conocimiento técnico y de producto ya adquirido por el equipo de desarrollo.",
+          "Desmotivación del equipo al invalidar el trabajo previo y forzar un reinicio."
+        ],
+        "plan_de_recuperacion": [
+          "**1. Auditoría Rápida de Código y Dependencias**: Realizar un análisis del estado actual del repositorio (dependencias, versiones, posibles vulnerabilidades) para asegurar un entorno de desarrollo estable y actualizable.",
+          "**2. Revisión y Optimización UX/UI del Flujo Principal**: Validar que el flujo de 'Auditar Nómina' sea lo más intuitivo, sencillo y 'premium' posible, eliminando cualquier fricción o confusión.",
+          "**3. Priorización del Backlog para V1**: Crear un backlog de desarrollo enfocado exclusivamente en el núcleo funcional y las mejoras de UX/UI necesarias para un lanzamiento creíble de V1.",
+          "**4. Pruebas End-to-End del Núcleo**: Asegurar que el flujo completo de auditoría (subida, análisis, validación SAT, guía IMSS opcional, generación de reporte) funcione sin fallas.",
+          "**5. Preparación para Pruebas con Usuarios Reales**: Desarrollar un plan de pruebas con usuarios para obtener feedback temprano y validar la propuesta de valor del núcleo V1.",
+          "**6. Refinamiento de Contenidos Legales**: Revisar y validar la claridad, precisión y relevancia de las descripciones de discrepancias, referencias legales y recomendaciones."
+        ],
+        "tono_y_diseno": [
+          "**Tono**: Empoderador, protector, profesional, confidencial y respaldado por la autoridad legal de Grupo CVZ. Nunca agresivo o confrontacional.",
+          "**Diseño**: 'Premium Clarity' (como ya está implementado): superficies blancas, acento en teal (#0A7558), tipografía Inter, amplio espacio en blanco, elementos visuales limpios y modernos. Énfasis en la legibilidad, la facilidad de uso y la sensación de confianza y seguridad."
+        ],
+        "recomendacion_final": "La recomendación es clara: no reiniciar. AuditaPatron tiene una base funcional y de diseño sólida. El camino más eficiente y efectivo es capitalizar el trabajo existente, enfocarse en pulir el núcleo de auditoría de nómina para V1, y preparar el producto para pruebas con usuarios reales, manteniendo la promesa de privacidad y el respaldo legal como pilares."
+      }
+    }
+  }
+}

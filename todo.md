@@ -36,3 +36,29 @@
 - [x] Reducir el alcance del lanzamiento a expedientes, documentos, consentimientos, auditoría y acceso mínimo viable
 - [ ] Preparar solo los servicios mínimos contratables y configuraciones indispensables para operar hoy
 - [x] Posponer la integración con AuditaPatron y demás módulos para una segunda etapa, solo después de que CompliLink quede completamente funcional y estable
+- [ ] Simplificar CompliLink al máximo para que sea intuitivo, limpio, autoexplicativo y con solo lo mínimo indispensable para operar
+- [ ] Consultar a ChatGPT, Grok y Gemini sobre la simplificación extrema de la experiencia antes de implementar cambios
+- [ ] Presentar un plan de cambios priorizado al usuario para aprobación antes de modificar la plataforma
+- [ ] Garantizar que CompliLink opere hoy mismo con los servicios mínimos contratados, priorizando simplicidad extrema, flujo autoexplicativo y mínimo indispensable antes de cualquier rediseño adicional
+- [ ] Pausar temporalmente CompliLink y cualquier frente de plataforma para concentrar el trabajo exclusivamente en AuditaPatron
+- [ ] Identificar el frente inmediato más importante de AuditaPatron antes de proponer o ejecutar cambios mayores
+- [ ] Reconstruir en esta sesión el estado objetivo de la página de AuditaPatron usando todos los documentos subidos y el contexto heredado del chat anterior
+- [ ] Preparar una propuesta fiel de recuperación de la página de AuditaPatron antes de implementar cambios mayores
+- [ ] Integrar la base visual y narrativa de AuditaPatron dentro del proyecto actual reutilizando lo ya importado
+- [ ] Simplificar la navegación principal de AuditaPatron para priorizar inicio, auditoría e historial
+- [ ] Recuperar y adaptar la home de AuditaPatron como landing principal del producto
+- [ ] Recuperar y adaptar el flujo principal de /auditar como núcleo funcional visible
+- [ ] Reposicionar comparación y documentos como funciones secundarias dentro de la experiencia
+- [ ] Validar la implementación recuperada con pruebas y revisión del estado del proyecto
+- [x] Evaluar si el motor inteligente ya existente en otro chat de Manus puede conectarse o integrarse al proyecto actual de AuditaPatron
+- [x] Definir la vía técnica recomendada para conectar el motor inteligente externo sin romper la base actual de AuditaPatron
+- [x] Redactar un prompt maestro para el otro chat que documente el motor inteligente y reúna todos los requisitos necesarios para integrar AuditaPatron con ese motor
+- [x] Incorporar como requisito central de integración que todos los archivos subidos por usuarios de AuditaPatron alimenten el motor inteligente
+- [x] Ajustar el prompt maestro del otro chat para exigir diseño de ingesta documental total, trazable y segura hacia el motor
+- [x] Entregar un prompt final, completo y contextualizado para el otro chat que permita planear la integración de AuditaPatron con el motor inteligente, incluyendo ingesta total de archivos de usuario
+- [x] Revisar el PDF de integración subido por el usuario para extraer arquitectura, interfaces, dependencias y requisitos accionables entre AuditaPatron y el motor inteligente
+- [x] Traducir el contenido del PDF a una propuesta concreta de integración antes de implementar cambios
+- [x] Alinear el contrato documental actual de AuditaPatron con el payload requerido por el motor inteligente
+- [x] Preparar la configuración segura server-to-server para la integración con el motor inteligente
+- [x] Extender la carga documental existente para dejar listo el envío o preparación del payload hacia el motor
+- [x] Agregar pruebas de backend para validar la preparación del contrato de integración documental

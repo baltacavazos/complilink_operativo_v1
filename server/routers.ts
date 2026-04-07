@@ -49,6 +49,7 @@ import {
   DOCUMENT_VISIBILITIES,
   sanitizeFileName,
 } from "./caseContracts";
+import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
 const casePrioritySchema = z.enum(CASE_PRIORITIES);
@@ -355,6 +356,8 @@ export const appRouter = router({
           textHint: input.textHint,
         });
 
+        const processedAt = new Date();
+
         const documentRecord = await addDocumentRecord({
           tenantId: input.tenantId,
           caseId: input.caseId,
@@ -373,7 +376,7 @@ export const appRouter = router({
           consentStatus: input.consentStatus,
           visibility: input.visibility,
           classificationConfidence: classification.classificationConfidence,
-          processedAt: new Date(),
+          processedAt,
         });
 
         await updateDocumentPostProcessing({
@@ -381,7 +384,7 @@ export const appRouter = router({
           documentType: classification.documentType,
           classificationConfidence: classification.classificationConfidence,
           integrityStatus: "verified",
-          processedAt: new Date(),
+          processedAt,
           consentStatus: input.consentStatus,
         });
 
@@ -455,33 +458,57 @@ export const appRouter = router({
           status: "ready",
         });
 
+        const caseContract = buildCanonicalCaseContract({
+          tenantId: detail.case.tenantId,
+          caseId: detail.case.caseId,
+          traceId: detail.case.traceId,
+          title: detail.case.title,
+          status: detail.case.status,
+          priority: detail.case.priority,
+          employeeName: detail.case.employeeName,
+          employerEntity: detail.case.employerEntity,
+          summary: detail.case.summary,
+        });
+
+        const sharedEngineEnvelope = buildSharedEngineEnvelope({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          caseContract,
+          documentContracts: [documentContract],
+        });
+
         await upsertCanonicalContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
           contractType: "shared_engine",
           schemaVersion: "v1",
-          payload: JSON.stringify(
-            buildSharedEngineEnvelope({
-              tenantId: input.tenantId,
-              caseId: input.caseId,
-              traceId: detail.case.traceId,
-              caseContract: buildCanonicalCaseContract({
-                tenantId: detail.case.tenantId,
-                caseId: detail.case.caseId,
-                traceId: detail.case.traceId,
-                title: detail.case.title,
-                status: detail.case.status,
-                priority: detail.case.priority,
-                employeeName: detail.case.employeeName,
-                employerEntity: detail.case.employerEntity,
-                summary: detail.case.summary,
-              }),
-              documentContracts: [documentContract],
-            }),
-          ),
+          payload: JSON.stringify(sharedEngineEnvelope),
           status: "ready",
         });
+
+        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+          caseContract,
+          documentContract,
+          sharedEngineEnvelope,
+          sourceUserId: ctx.user.id,
+          uploadedAt: documentRecord.createdAt ?? processedAt,
+        });
+
+        if (engineDispatch.status !== "sent") {
+          await addOperationalAlert({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            severity: engineDispatch.status === "failed" ? "critical" : "warning",
+            category: "upload_pending",
+            title: "Entrega al motor inteligente pendiente",
+            description: `La entrega documental al motor inteligente no se completó el ${engineDispatch.dispatchedAt}. Estado: ${engineDispatch.status}. Motivo: ${engineDispatch.reason ?? "sin detalle"}.`,
+            status: "open",
+            raisedAt: new Date(engineDispatch.dispatchedAt),
+          });
+        }
 
         await createAuditLog({
           tenantId: input.tenantId,
@@ -495,10 +522,24 @@ export const appRouter = router({
           afterState: documentRecord,
         });
 
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.engine_dispatch",
+          afterState: engineDispatch,
+        });
+
         return {
           document: documentRecord,
           classification,
           documentContract,
+          sharedEngineEnvelope,
+          engineDispatch,
         };
       }),
   }),

@@ -1,0 +1,228 @@
+{
+  "context_summary": "Proyecto actual: /home/ubuntu/complilink_operativo_v1\n\nEstado técnico ya existente:\n- La mutación cases.uploadDocument ya decodifica base64, calcula SHA-256, sube a S3, clasifica el documento y genera contratos canónicos.\n- server/routers.ts ya crea documentContract y shared_engine envelope al subir documentos.\n- server/caseContracts.ts ya tiene computeSha256, classifyMexicanLaborDocument, buildCanonicalDocumentContract y buildSharedEngineEnvelope.\n- drizzle/schema.ts ya tiene case_documents con documentId, storageKey, storageUrl, sha256, documentType, sourceChannel, consentStatus, visibility, processedAt y timestamps.\n\nObjetivo de Fase 1:\n- NO rehacer la plataforma.\n- Reutilizar la tubería documental actual.\n- Dejar lista la integración de AuditaPatron con un motor inteligente externo.\n- Cada archivo subido por usuarios debe alimentar el motor.\n- Preparar comunicación server-to-server segura.\n- Mantener trazabilidad documental completa.\n\nContexto del PDF de integración:\n- Recomienda un webhook POST /api/auditapatron/webhook con HMAC.\n- Recomienda campos mínimos: documentId, fileUrl, fileKey, sha256, mimeType, docType, sourceUserId, auditId/caseId, uploadedAt.\n- Recomienda no exponer secretos al frontend.\n- Recomienda payload versionado y pruebas end-to-end.\n\nNecesidad de decisión inmediata:\nDado el código existente, propone la implementación mínima y más robusta para Fase 1 del lado AuditaPatron. Prioriza reutilización, mínima complejidad y capacidad de arrancar hoy.",
+  "models": {
+    "chatgpt": {
+      "status": "error",
+      "elapsed_seconds": 0.22,
+      "error": "401 Client Error: Unauthorized for url: https://api.openai.com/v1/chat/completions"
+    },
+    "grok": {
+      "status": "ok",
+      "elapsed_seconds": 29.36,
+      "result": {
+        "recommended_scope": "Integrar un webhook outbound en la mutación de subida de documentos existente para enviar payloads a AuditaPatron, reutilizando la tubería de procesamiento y schema actual, asegurando trazabilidad y seguridad server-to-server.",
+        "implementation_shape": "Agregar lógica post-subida en server/routers.ts para construir y enviar un payload versionado via HTTP POST con HMAC, reutilizando funciones de caseContracts.ts para sha256 y clasificación.",
+        "files_to_change": [
+          {
+            "path": "server/routers.ts",
+            "change": "Agregar llamada asíncrona post-subida para construir envelope y enviar a webhook con HMAC.",
+            "priority": "high"
+          },
+          {
+            "path": "server/caseContracts.ts",
+            "change": "Extender buildSharedEngineEnvelope para incluir campos recomendados como mimeType y uploadedAt si no están.",
+            "priority": "medium"
+          },
+          {
+            "path": "drizzle/schema.ts",
+            "change": "No changes needed; reuse existing case_documents schema.",
+            "priority": "low"
+          }
+        ],
+        "schema_strategy": {
+          "choice": "reuse_existing",
+          "reason": "El schema case_documents ya incluye campos como documentId, storageKey, storageUrl, sha256, documentType, que cubren los mínimos recomendados; evita complejidad innecesaria.",
+          "minimum_fields_if_needed": []
+        },
+        "integration_contract": {
+          "transport": "HTTP POST webhook",
+          "direction": "outbound (server-to-AuditaPatron)",
+          "auth": "HMAC signature in header",
+          "event_name": "document_uploaded",
+          "minimum_payload_fields": [
+            "documentId",
+            "fileUrl",
+            "fileKey",
+            "sha256",
+            "mimeType",
+            "docType",
+            "sourceUserId",
+            "auditId",
+            "uploadedAt",
+            "version"
+          ],
+          "idempotency_strategy": "Use sha256 as idempotency key to prevent duplicate processing"
+        },
+        "env_and_secret_strategy": {
+          "needed_envs": [
+            {
+              "key": "AUDITAPATRON_WEBHOOK_URL",
+              "purpose": "URL endpoint for sending payloads",
+              "required": true
+            },
+            {
+              "key": "AUDITAPATRON_HMAC_SECRET",
+              "purpose": "Shared secret for HMAC authentication",
+              "required": true
+            }
+          ],
+          "server_only": [
+            "AUDITAPATRON_HMAC_SECRET",
+            "AUDITAPATRON_WEBHOOK_URL"
+          ]
+        },
+        "testing_strategy": {
+          "unit_tests": [
+            "Test HMAC generation and payload construction",
+            "Test envelope building with existing functions"
+          ],
+          "integration_tests": [
+            "Simulate document upload and verify webhook call with mock server",
+            "End-to-end test with versioned payload"
+          ],
+          "failure_cases": [
+            "Webhook timeout or failure: retry logic",
+            "Invalid HMAC: reject response"
+          ]
+        },
+        "risks": [
+          {
+            "risk": "Secret exposure to frontend",
+            "mitigation": "Store secrets in server-only env vars and never expose in API responses"
+          },
+          {
+            "risk": "Duplicate sends on retries",
+            "mitigation": "Implement idempotency with sha256 check"
+          },
+          {
+            "risk": "Data inconsistency if webhook fails",
+            "mitigation": "Log failures and add async retry queue"
+          }
+        ],
+        "first_patch_order": [
+          "Add env vars to configuration",
+          "Extend buildSharedEngineEnvelope in caseContracts.ts",
+          "Implement webhook send in routers.ts",
+          "Add unit tests",
+          "Run integration tests"
+        ],
+        "verdict": "Implementación mínima, robusta y reutilizadora; lista para desarrollo y pruebas hoy mismo."
+      }
+    },
+    "gemini": {
+      "status": "ok",
+      "elapsed_seconds": 17.61,
+      "result": {
+        "recommended_scope": "Integrar el envío de documentos al motor inteligente externo AuditaPatron mediante un webhook POST con HMAC, reutilizando la tubería documental existente y asegurando trazabilidad.",
+        "implementation_shape": "Extender la función `cases.uploadDocument` para que, tras el procesamiento y almacenamiento S3, construya un payload, lo firme con HMAC y lo envíe a un webhook externo. Se añadirán campos de trazabilidad en la tabla `case_documents`.",
+        "files_to_change": [
+          {
+            "path": "drizzle/schema.ts",
+            "change": "Añadir columnas `external_engine_status` (ENUM: 'PENDING', 'SENT', 'SUCCESS', 'FAILED', 'RETRYING') y `external_engine_document_id` (VARCHAR) a la tabla `case_documents` para trazabilidad del procesamiento externo.",
+            "priority": "high"
+          },
+          {
+            "path": "server/services/auditaPatronIntegrationService.ts",
+            "change": "Nuevo archivo. Contendrá funciones para: 1. Construir el payload del webhook (`buildAuditaPatronWebhookPayload`). 2. Firmar el payload con HMAC-SHA256 (`signHmacSha256`). 3. Enviar la solicitud POST al webhook externo (`sendDocumentToExternalEngine`).",
+            "priority": "high"
+          },
+          {
+            "path": "cases.uploadDocument",
+            "change": "Modificar la lógica para que, después de la subida exitosa a S3, la clasificación y la generación de contratos canónicos, invoque a `auditaPatronIntegrationService.sendDocumentToExternalEngine` con los datos relevantes del documento. Actualizar el campo `external_engine_status` en `case_documents` según el resultado del envío.",
+            "priority": "high"
+          },
+          {
+            "path": "server/caseContracts.ts",
+            "change": "Opcional: Si se considera que `buildAuditaPatronWebhookPayload` es un 'contrato' de datos, podría residir aquí, aunque un nuevo servicio es más adecuado para la lógica de integración completa.",
+            "priority": "low"
+          }
+        ],
+        "schema_strategy": {
+          "choice": "minimal_extension",
+          "reason": "La tabla `case_documents` ya contiene la mayoría de los campos necesarios (`documentId`, `storageKey`, `storageUrl`, `sha256`, `documentType`, timestamps). Solo se necesitan campos adicionales para la trazabilidad del estado de la integración con el motor externo.",
+          "minimum_fields_if_needed": [
+            "external_engine_status",
+            "external_engine_document_id",
+            "external_engine_last_attempt_at",
+            "external_engine_error_message"
+          ]
+        },
+        "integration_contract": {
+          "transport": "HTTP POST",
+          "direction": "AuditaPatron (cliente) -> Motor Externo (servidor)",
+          "auth": "HMAC-SHA256 (Header: X-AuditaPatron-Signature)",
+          "event_name": "document_uploaded_to_engine",
+          "minimum_payload_fields": [
+            "documentId",
+            "fileUrl",
+            "fileKey",
+            "sha256",
+            "mimeType",
+            "docType",
+            "sourceUserId",
+            "caseId",
+            "uploadedAt",
+            "payloadVersion"
+          ],
+          "idempotency_strategy": "El motor externo debe usar `documentId` y `sha256` del payload para garantizar la idempotencia y evitar reprocesamiento de documentos duplicados."
+        },
+        "env_and_secret_strategy": {
+          "needed_envs": [
+            {
+              "key": "AUDITAPATRON_EXTERNAL_ENGINE_WEBHOOK_URL",
+              "purpose": "URL del endpoint del webhook del motor inteligente externo.",
+              "required": true
+            },
+            {
+              "key": "AUDITAPATRON_EXTERNAL_ENGINE_HMAC_SECRET",
+              "purpose": "Clave secreta compartida para firmar y verificar los payloads HMAC.",
+              "required": true
+            }
+          ],
+          "server_only": [
+            "AUDITAPATRON_EXTERNAL_ENGINE_WEBHOOK_URL",
+            "AUDITAPATRON_EXTERNAL_ENGINE_HMAC_SECRET"
+          ]
+        },
+        "testing_strategy": {
+          "unit_tests": [
+            "Test para `buildAuditaPatronWebhookPayload` (verificar estructura y contenido).",
+            "Test para `signHmacSha256` (verificar firma correcta con diferentes payloads y secretos)."
+          ],
+          "integration_tests": [
+            "Test end-to-end: Simular una subida de documento, mockear el motor externo para verificar que el webhook se envía con el payload y la firma HMAC correctos.",
+            "Test de reintentos: Verificar que el sistema reintenta el envío del webhook en caso de fallos temporales del motor externo."
+          ],
+          "failure_cases": [
+            "Motor externo no disponible (timeout/error de red).",
+            "Motor externo devuelve un error HTTP (4xx/5xx).",
+            "Fallo en la generación de la firma HMAC.",
+            "Payload del webhook malformado."
+          ]
+        },
+        "risks": [
+          {
+            "risk": "Fiabilidad y latencia del motor externo.",
+            "mitigation": "Implementar reintentos con backoff exponencial para el envío del webhook. Considerar una cola de mensajes (ej. SQS) para desacoplar el envío si el volumen o la criticidad aumentan en fases futuras. Monitoreo de errores en el envío."
+          },
+          {
+            "risk": "Errores en la implementación de HMAC.",
+            "mitigation": "Pruebas unitarias exhaustivas para la función de firma. Pruebas de integración con un mock del motor externo que verifique la firma. Coordinación con el equipo del motor externo para pruebas end-to-end de la firma."
+          },
+          {
+            "risk": "Pérdida de trazabilidad si el envío del webhook falla permanentemente.",
+            "mitigation": "Asegurar que `external_engine_status` se actualice correctamente en todos los escenarios (éxito, fallo, reintento). Implementar alertas para documentos con `external_engine_status = 'FAILED'` después de todos los reintentos."
+          }
+        ],
+        "first_patch_order": [
+          "1. Actualizar `drizzle/schema.ts` con las nuevas columnas.",
+          "2. Configurar las variables de entorno (`AUDITAPATRON_EXTERNAL_ENGINE_WEBHOOK_URL`, `AUDITAPATRON_EXTERNAL_ENGINE_HMAC_SECRET`).",
+          "3. Crear `server/services/auditaPatronIntegrationService.ts` con las funciones de construcción de payload, firma HMAC y envío HTTP.",
+          "4. Modificar `cases.uploadDocument` para invocar el nuevo servicio y actualizar el estado en la base de datos.",
+          "5. Implementar pruebas unitarias e de integración."
+        ],
+        "verdict": "La propuesta es mínima, robusta y reutiliza la infraestructura existente. Permite arrancar la Fase 1 inmediatamente, garantizando seguridad y trazabilidad. La extensión de esquema es conservadora y la lógica de integración se encapsula en un nuevo servicio, manteniendo la limpieza del código."
+      }
+    }
+  }
+}
