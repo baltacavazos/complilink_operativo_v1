@@ -683,7 +683,7 @@ function PriorityDocumentsSection() {
             Si quieres darle más valor a tu expediente, empieza por los archivos con más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No todos los documentos aportan lo mismo. Estos suelen ser de los más útiles para darte claridad, ordenar mejor tu caso y hacer que el expediente te devuelva una lectura más completa.
+            No todos los documentos aportan lo mismo. Si todavía no los has subido, estos suelen ser de los primeros archivos que más conviene reunir para darte claridad, ordenar mejor tu caso y hacer que el expediente te devuelva una lectura más completa.
           </p>
         </div>
 
@@ -710,12 +710,19 @@ function PriorityDocumentsSection() {
             </article>
           ))}
         </div>
+
+        <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
+          En cuanto entres a <span className="font-semibold">/auditar</span>, estas sugerencias dejan de ser generales y se conectan con los documentos que realmente faltan en tu expediente para que sepas qué te conviene subir primero.
+        </div>
       </div>
     </section>
   );
 }
 
 function MobileOnboardingSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeCard = mobileOnboardingCards[activeIndex] ?? mobileOnboardingCards[0];
+
   return (
     <section className="bg-white py-14 sm:py-16">
       <div className="container mx-auto max-w-6xl">
@@ -732,7 +739,58 @@ function MobileOnboardingSection() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 md:hidden">
+            <article className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
+                  {activeCard.step}
+                </div>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {activeIndex + 1}/{mobileOnboardingCards.length}
+                </span>
+              </div>
+              <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-slate-950">{activeCard.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{activeCard.description}</p>
+            </article>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full border-slate-200 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-45"
+                onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
+                disabled={activeIndex === 0}
+              >
+                <ChevronRight className="mr-2 h-4 w-4 rotate-180" strokeWidth={1.8} />
+                Anterior
+              </Button>
+              <div className="flex items-center gap-2">
+                {mobileOnboardingCards.map((item, index) => (
+                  <button
+                    key={item.step}
+                    type="button"
+                    onClick={() => setActiveIndex(index)}
+                    className={`h-2.5 rounded-full transition-all ${
+                      index === activeIndex ? "w-6 bg-teal-600" : "w-2.5 bg-slate-300"
+                    }`}
+                    aria-label={`Ir al paso ${item.step}`}
+                  />
+                ))}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full border-teal-200 bg-teal-50 px-4 text-sm text-teal-800 hover:bg-teal-100 disabled:opacity-45"
+                onClick={() => setActiveIndex((current) => Math.min(mobileOnboardingCards.length - 1, current + 1))}
+                disabled={activeIndex === mobileOnboardingCards.length - 1}
+              >
+                Siguiente
+                <ChevronRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-8 hidden gap-4 md:grid md:grid-cols-3">
             {mobileOnboardingCards.map((item) => (
               <article key={item.step} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)]">
                 <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">

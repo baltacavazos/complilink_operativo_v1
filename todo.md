@@ -236,3 +236,8 @@
 - [x] Añadir un historial simple de consultas o accesos del expediente para reforzar disponibilidad y trazabilidad percibida.
 - [x] Diseñar un onboarding móvil breve de 2 a 3 pantallas informativas para explicar el valor del expediente y la auditoría en segundos.
 - [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en priorización documental, historial y onboarding móvil.
+- [x] Consultar a Grok, ChatGPT y Gemini la mejor forma de conectar las recomendaciones a los documentos realmente faltantes del usuario.
+- [x] Definir una lógica visible y útil para priorizar recomendaciones documentales según faltantes reales del expediente.
+- [x] Añadir en /auditar un historial simple del expediente con filtros claros y fáciles de usar.
+- [x] Convertir el onboarding móvil en un carrusel reutilizable y fácil de volver a abrir.
+- [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en recomendaciones faltantes, filtros e onboarding reutilizable.

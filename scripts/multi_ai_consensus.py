@@ -11,38 +11,41 @@ PROJECT_PROMPT = r'''Actúa como arquitecto/a senior de producto, UX y sistemas 
 Contexto actual:
 - Existe una home y una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
 - La dirección UX actual busca una experiencia muy simple, confiable, mobile-first y casi mágica.
-- Ya se comunicó mejor el valor del expediente digital 24/7, pero ahora queremos ir un paso más allá.
-- Nueva prioridad: mostrar de forma muy útil qué documentos conviene subir primero para obtener más claridad, más contexto y mejores respuestas para la persona usuaria.
-- Además, esos documentos priorizados también deben ser los que más valor informativo aportan internamente al sistema, pero ESO NO DEBE EXPLICARSE al usuario final. En la interfaz visible solo deben mostrarse beneficios claros para la persona: más claridad, mejor respaldo, más contexto y mejor revisión.
-- La persona usuaria debe sentir que mientras más documentos importantes sube, más completo, útil y ordenado queda su expediente digital.
-- También queremos añadir dos mejoras visibles y simples: un historial ligero de consultas/accesos del expediente para reforzar la idea de disponibilidad y trazabilidad, y un onboarding móvil breve de 2 a 3 pantallas puramente informativas que explique el valor del producto en segundos.
+- Ya existe un módulo inicial de “documentos más útiles por subir”, un historial simple del expediente y un onboarding móvil breve.
+- Ahora queremos una segunda iteración más inteligente: que las recomendaciones visibles se conecten con los documentos realmente faltantes del expediente del usuario, que el historial tenga filtros simples y que el onboarding móvil se vuelva un carrusel reutilizable que pueda reabrirse.
+- La idea es que la persona sienta que el sistema entiende qué le falta, le sugiere exactamente lo que más le conviene subir después y le ahorra desorden.
+- Además, los documentos sugeridos deben seguir priorizando los que mayor valor informativo aportan internamente al sistema, pero ESO NO DEBE EXPLICARSE al usuario final. En la interfaz visible solo deben mostrarse beneficios claros: más claridad, mejor respaldo, más contexto y mejor revisión.
+- La persona usuaria debe sentir que mientras más documentos importantes sube, más completo, útil y ordenado queda su expediente digital, con todo disponible 24/7.
 - Restricciones: no mencionar Helios, no mencionar motor interno, no mencionar enriquecimiento de backend, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
 - Hay que priorizar implementaciones de alto impacto y baja fricción, sin rehacer toda la arquitectura.
 
 Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de Home y /auditar.
 
 Quiero que propongas específicamente:
-1. Qué documentos laborales conviene priorizar como “los más útiles por subir” para dar mejores resultados a la persona usuaria.
-2. Cómo explicar esa priorización sin sonar técnica, manipuladora o invasiva.
-3. Qué copy exacto sugerirías en español para el módulo de documentos recomendados, para el historial simple del expediente y para el onboarding móvil breve.
-4. Cómo implementarlo visualmente en Home y /auditar con la menor fricción posible.
-5. Cómo diseñar el historial simple de consultas/accesos del expediente para reforzar disponibilidad 24/7 y confianza.
-6. Cómo diseñar un onboarding móvil breve de 2 o 3 pantallas, puramente informativo y muy claro.
+1. Cómo conectar recomendaciones documentales con faltantes reales del expediente sin hacer sentir vigilada a la persona usuaria.
+2. Qué lógica simple y visible conviene usar para priorizar documentos faltantes de forma útil y accionable.
+3. Qué filtros simples debería tener el historial del expediente para que sea útil en móvil y genere confianza.
+4. Cómo convertir el onboarding móvil breve en un carrusel reutilizable, claro y fácil de volver a abrir.
+5. Qué copy exacto sugerirías en español para recomendaciones faltantes, filtros del historial y el nuevo carrusel onboarding.
+6. Cómo implementarlo visualmente en Home y /auditar con la menor fricción posible.
 7. Qué NO implementar todavía para evitar complejidad innecesaria.
 
 Devuelve SOLO JSON válido con esta forma exacta:
 {
   "model_positioning": "string",
-  "priority_documents_strategy": {
+  "missing_documents_strategy": {
     "is_good_idea": true,
+    "visible_logic_summary": "string",
     "recommended_document_order": [
       {
         "document_name": "string",
+        "when_to_show": "string",
         "user_value": "string",
-        "why_it_is_high_signal": "string"
+        "priority_reason": "string"
       }
     ],
-    "selection_principles": ["string"]
+    "selection_principles": ["string"],
+    "avoid_logic": ["string"]
   },
   "top_recommendations": [
     {
@@ -65,13 +68,15 @@ Devuelve SOLO JSON válido con esta forma exacta:
     "cta_label": "string"
   },
   "auditar_implementation": {
-    "section_title": "string",
-    "section_supporting": "string",
+    "recommended_documents_title": "string",
+    "recommended_documents_supporting": "string",
     "recommended_documents_microcopy": ["string"],
+    "history_filters_title": "string",
+    "history_filters": ["string"],
     "history_module_microcopy": ["string"],
     "empty_state_message": "string"
   },
-  "mobile_onboarding": {
+  "mobile_onboarding_carousel": {
     "screen_1": {
       "title": "string",
       "supporting": "string"
@@ -84,12 +89,14 @@ Devuelve SOLO JSON válido con esta forma exacta:
       "title": "string",
       "supporting": "string"
     },
-    "entry_point": "string",
-    "replay_option": "string"
+    "entry_points": ["string"],
+    "replay_option": "string",
+    "close_behavior": "string"
   },
   "history_experience": {
     "module_title": "string",
     "module_supporting": "string",
+    "recommended_filters": ["string"],
     "events_to_show": ["string"],
     "trust_signals": ["string"]
   },
@@ -103,9 +110,11 @@ Devuelve SOLO JSON válido con esta forma exacta:
     "recommended_documents_supporting": "string",
     "history_title": "string",
     "history_supporting": "string",
+    "history_filter_label": "string",
     "upload_reassurance": "string",
     "documents_growth_message": "string",
-    "onboarding_intro": "string"
+    "onboarding_intro": "string",
+    "reopen_onboarding_label": "string"
   },
   "do_not_build_yet": ["string"],
   "final_verdict": "string"
