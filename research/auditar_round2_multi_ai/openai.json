@@ -1,0 +1,79 @@
+{
+  "verdict": "approve_direction",
+  "timeline_mobile": {
+    "recommended_pattern": "Collapsible vertical timeline with initial summary and expand/collapse toggle",
+    "why": "Reducir scroll en móvil mejora la experiencia, manteniendo la línea de tiempo visible pero compacta. Un toggle para expandir/colapsar permite al usuario decidir cuándo ver más detalle, sin perder contexto ni información clave. Esto es consistente con el tono claro y protector, evitando saturar la pantalla.",
+    "copy": [
+      "Cómo Helios fue fortaleciendo tu expediente",
+      "Documento por documento, aquí ves cómo Helios fue conectando señales para darle más claridad a tu caso.",
+      "Mostrar más",
+      "Mostrar menos"
+    ],
+    "interaction_notes": [
+      "Por defecto mostrar solo los primeros 3-4 documentos en la línea de tiempo en móvil.",
+      "Agregar botón o enlace 'Mostrar más' para expandir y mostrar todos los documentos.",
+      "Al expandir, cambiar el texto a 'Mostrar menos' para colapsar nuevamente.",
+      "Mantener la estructura visual actual para cada entrada, solo limitar la cantidad visible inicialmente.",
+      "En desktop mantener la línea de tiempo expandida siempre."
+    ]
+  },
+  "tracking_messages": {
+    "recommended_pattern": "Mensajes dinámicos en bloque de seguimiento automático con estados claros y tono humano",
+    "states": [
+      {
+        "state_key": "waiting",
+        "title": "Esperando respuesta automática",
+        "body": "Tu documento ya salió y sigue en espera de respuesta automática. Puedes seguir subiendo documentos mientras tanto."
+      },
+      {
+        "state_key": "attention",
+        "title": "Conviene revisarlo con calma",
+        "body": "Este documento no está perdido, pero la respuesta está tardando más de lo normal. No te preocupes, sigue protegido."
+      },
+      {
+        "state_key": "received",
+        "title": "Respuesta recibida",
+        "body": "CompliLink ya devolvió información para este documento. Puedes revisar los detalles cuando quieras."
+      },
+      {
+        "state_key": "none",
+        "title": "Sin seguimiento automático visible",
+        "body": "Por ahora no hay documentos con seguimiento automático visible en esta parte."
+      }
+    ],
+    "why": "Humanizar el bloque con mensajes claros y distintos según el estado ayuda a que el usuario entienda qué está pasando sin tecnicismos ni incertidumbre. El tono es protector y útil, transmitiendo tranquilidad y guía sin sobreprometer."
+  },
+  "next_document_personalization": {
+    "recommended_pattern": "Personalizar la recomendación usando los documentos ya cargados para sugerir el siguiente más útil",
+    "explanation_formula": "Identificar qué tipos de documentos ya están presentes y cuál es el siguiente tipo más útil para completar el expediente, usando el orden y señales ya visibles (dossierStatus y presentTypes).",
+    "copy": [
+      "Lo que más puede ayudarte ahora",
+      "Para que Helios entienda mejor tu situación, este es el archivo que más puede ayudarte a continuación.",
+      "Tu expediente ya cubre varias piezas clave",
+      "Si tienes otro archivo específico de tu caso, también puede sumar contexto útil."
+    ],
+    "why": "Personalizar la recomendación hace que el usuario sienta que Helios realmente guía el proceso, reforzando la idea de que es el cerebro central. Usar señales ya visibles evita sobrepromesas y mantiene la experiencia simple y clara."
+  },
+  "low_risk_changes": [
+    "Implementar toggle expandible/collapsable para línea de tiempo en móvil sin cambiar estructura base.",
+    "Agregar función para mostrar mensajes dinámicos en bloque de seguimiento automático según estado de documentos.",
+    "Usar datos ya presentes (tipos de documentos cargados) para personalizar texto de recomendación del siguiente documento.",
+    "Mantener tono claro, protector y sin tecnicismos en todos los textos nuevos.",
+    "No modificar lógica de backend ni estados complejos, solo presentación y copy."
+  ],
+  "copy_risks": [
+    "Evitar lenguaje técnico o ambiguo que confunda al usuario no técnico.",
+    "No prometer integración completa o resultados automáticos inmediatos.",
+    "No usar términos legales complicados ni jerga interna.",
+    "No generar expectativas de que Helios es infalible o definitivo.",
+    "Mantener mensajes breves y centrados en la utilidad para el trabajador."
+  ],
+  "test_targets": [
+    "Usuarios móviles verifican que la línea de tiempo se muestra compacta y que el toggle funciona correctamente.",
+    "Usuarios comprueban que los mensajes de seguimiento automático cambian según estado y son claros.",
+    "Usuarios validan que la recomendación del siguiente documento se ajusta a los documentos ya cargados.",
+    "Revisión de consistencia del tono en todos los textos nuevos.",
+    "Pruebas de accesibilidad y usabilidad en móvil para evitar scroll excesivo y confusión."
+  ],
+  "recommended_next_step": "Implementar primero la línea de tiempo expandible en móvil para mejorar la experiencia de navegación, luego añadir mensajes dinámicos en seguimiento automático, y finalmente personalizar la recomendación del siguiente documento usando señales visibles. Validar con pruebas de usuario para asegurar claridad y utilidad."
+}

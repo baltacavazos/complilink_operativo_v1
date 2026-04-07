@@ -1,0 +1,75 @@
+{
+  "verdict": "approve_direction",
+  "timeline_mobile": {
+    "recommended_pattern": "Usar el elemento nativo HTML <details> y <summary> para cada entrada de la línea de tiempo.",
+    "why": "Reduce drásticamente el scroll en móvil, es accesible por defecto y no introduce dependencias ni complejidad de JavaScript. Permite mostrar la información esencial de cada paso y expandir los detalles al tocar.",
+    "copy": [
+      "Paso {entry.step}: {entry.title} ({entry.readiness.label})",
+      "Incorporado el {formatDate(entry.createdAt)}",
+      "Lo que aportó",
+      "Cómo lo aprovechó Helios"
+    ],
+    "interaction_notes": [
+      "En móvil, cada entrada de la línea de tiempo debe estar colapsada por defecto, mostrando solo el 'summary'.",
+      "Al tocar el 'summary', la entrada se expande para mostrar 'Lo que aportó' y 'Cómo lo aprovechó Helios'.",
+      "En desktop, las entradas pueden estar expandidas por defecto para aprovechar el espacio."
+    ]
+  },
+  "tracking_messages": {
+    "recommended_pattern": "Crear una nueva función auxiliar que genere un mensaje principal dinámico para el bloque de 'Seguimiento automático', combinando el resumen de `complilinkMonitoring` con un tono protector y útil de Helios.",
+    "states": [
+      {
+        "state_key": "no_documents",
+        "title": "Helios está listo para el seguimiento automático",
+        "body": "En cuanto subas un documento, Helios lo enviará para seguimiento automático y te mostrará su avance aquí. Tu expediente siempre estará protegido."
+      },
+      {
+        "state_key": "all_received",
+        "title": "Helios ya recibió todas las respuestas automáticas",
+        "body": "Todos tus documentos con seguimiento automático ya fueron procesados. Tu expediente sigue avanzando con claridad y sin demoras."
+      },
+      {
+        "state_key": "some_waiting",
+        "title": "Helios está esperando respuestas automáticas",
+        "body": "Hay {count} documento(s) en espera de respuesta automática. Tu expediente sigue su curso y te avisaremos cuando lleguen. No necesitas hacer nada por ahora."
+      },
+      {
+        "state_key": "attention_needed",
+        "title": "¡Atención! Helios necesita revisar algunas respuestas",
+        "body": "Hay {count} documento(s) cuya respuesta automática está tardando más de lo normal. No se perdió, pero conviene revisarlo con calma. Te mantendremos informado."
+      }
+    ],
+    "why": "Los mensajes actuales son algo genéricos. Un mensaje principal más humano y dinámico, que resuma la situación y anticipe el siguiente paso, reduce la ansiedad del usuario y refuerza la percepción de Helios como un cerebro activo y protector. Esto es especialmente importante para estados de 'atención'."
+  },
+  "next_document_personalization": {
+    "recommended_pattern": "Mejorar la lógica de `dossierStatus.nextTarget` para generar un mensaje más contextualizado, que haga referencia a los documentos ya presentes en el expediente y al rol de Helios.",
+    "explanation_formula": "Si `nextTarget` existe: 'Ya tienes [lista de tipos de documentos presentes, ej. recibos de nómina], pero [nextTarget.label] nos ayudará a [nextTarget.benefit] y a [visibleHeliosOpinion?.recommendedNextStep si existe, o un beneficio genérico de Helios].' Si `nextTarget` no existe: 'Tu expediente ya cubre varias piezas clave. Si tienes otro archivo específico de tu caso, como [ejemplo de evidencia complementaria], Helios puede usarlo para confirmar o contrastar mejor tu historia laboral y reducir partes preliminares.'",
+    "copy": [
+      "Lo que más puede ayudarte ahora",
+      "Tu expediente ya cubre varias piezas clave",
+      "Para que Helios entienda mejor tu situación, este es el archivo que más puede ayudarte a continuación.",
+      "Helios ya tiene una base amplia de documentos. Si tienes otro archivo específico de tu caso, también puede sumar contexto útil.",
+      "Por qué este archivo puede ayudarte ahora",
+      "Helios usa cada documento para reducir estimaciones y dejar más partes del expediente en terreno claro."
+    ],
+    "why": "La recomendación actual es funcional pero genérica. Al personalizar el mensaje con base en los documentos ya cargados y el objetivo de Helios, la sugerencia se siente más inteligente, relevante y útil para el trabajador, reforzando la confianza en el sistema y motivando la acción."
+  },
+  "low_risk_changes": [
+    "Uso de elementos nativos HTML como `<details>` y `<summary>` para la línea de tiempo.",
+    "Creación de nuevas funciones auxiliares para generar mensajes de UX writing, sin modificar la lógica de negocio central.",
+    "Ajuste de cadenas de texto existentes y concatenación de variables para personalizar mensajes.",
+    "No se introducen nuevas librerías ni cambios complejos en el estado de la aplicación."
+  ],
+  "copy_risks": [
+    "Sobre-personalización que pueda sonar repetitiva o incorrecta si los datos subyacentes son insuficientes o ambiguos.",
+    "Mantener un tono consistente (claro, protector, útil, no técnico) en los nuevos mensajes y al integrar las variables.",
+    "Asegurar que las listas de documentos presentes en la fórmula de personalización sean concisas y fáciles de entender."
+  ],
+  "test_targets": [
+    "Comportamiento de la línea de tiempo en dispositivos móviles (colapsado por defecto, expansión al tocar, reducción de scroll).",
+    "Precisión y claridad de los mensajes del bloque de 'Seguimiento automático' para todos los estados (sin documentos, todos recibidos, algunos en espera, algunos en atención).",
+    "Relevancia y personalización de la recomendación del 'Siguiente documento' para diferentes combinaciones de documentos ya cargados y estados del expediente.",
+    "Consistencia del tono de voz de Helios como cerebro central y protector en todas las nuevas interacciones."
+  ],
+  "recommended_next_step": "Implementar las mejoras en una rama de desarrollo, realizar una revisión interna de UX/Producto/Legal y, posteriormente, llevar a cabo pruebas de usuario con trabajadores no técnicos para validar la claridad y utilidad de los cambios."
+}

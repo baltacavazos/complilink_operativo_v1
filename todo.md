@@ -189,5 +189,11 @@
 - [x] Actualizar y ejecutar pruebas Vitest para validar la recomendación del siguiente mejor documento y la línea de tiempo simple del expediente.
 - [x] Aplicar una ronda final de pulido de lenguaje en /auditar para reducir tecnicismos y reforzar la naturaleza preliminar de Helios.
 - [x] Validar con pruebas y revisión técnica el pulido final del bloque de siguiente documento y línea de tiempo en /auditar.
-- [ ] Guardar un checkpoint estable con el bloque final de recomendación y línea de tiempo de Helios.
-- [ ] Entregar al usuario el cierre de esta ronda con resumen claro de cambios y siguientes opciones.
+- [x] Guardar un checkpoint estable con el bloque final de recomendación y línea de tiempo de Helios.
+- [x] Entregar al usuario el cierre de esta ronda con resumen claro de cambios y siguientes opciones.
+- [x] Contrastar con Grok, Gemini y ChatGPT la mejor implementación de una línea de tiempo expandible en móvil, mensajes más humanos en seguimiento automático y una recomendación personalizada del siguiente documento en /auditar.
+- [x] Implementar en /auditar una línea de tiempo expandible o colapsable en móvil para reducir scroll sin perder contexto del expediente.
+- [x] Humanizar los mensajes del bloque de seguimiento automático según estado, demora y avance real del expediente.
+- [x] Personalizar la recomendación del siguiente documento usando señales y hallazgos ya visibles del expediente.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda de mejoras en /auditar.
+- [ ] Guardar un checkpoint estable con esta nueva iteración avanzada de /auditar.

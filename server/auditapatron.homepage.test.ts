@@ -68,11 +68,17 @@ describe("Auditapatron homepage content", () => {
     expect(auditFlowSource).toContain("Cómo interactúas");
     expect(auditFlowSource).toContain("Modo inicial preparado");
     expect(auditFlowSource).toContain("Siguiente documento recomendado por Helios");
-    expect(auditFlowSource).toContain("Por qué este archivo puede ayudarte ahora");
+    expect(auditFlowSource).toContain("Helios recomienda:");
+    expect(auditFlowSource).toContain("Por qué ahora puede ser el archivo más útil");
+    expect(auditFlowSource).toContain("Cómo va creciendo tu expediente");
     expect(auditFlowSource).toContain("Subir este documento ahora");
     expect(auditFlowSource).toContain("Línea de tiempo del expediente");
+    expect(auditFlowSource).toContain("En móvil te mostramos primero lo esencial para reducir scroll.");
+    expect(auditFlowSource).toContain("Mostrar menos");
     expect(auditFlowSource).toContain("Cómo Helios fue fortaleciendo tu expediente");
     expect(auditFlowSource).toContain("Cómo lo aprovechó Helios");
     expect(auditFlowSource).toContain("Tu línea de tiempo está esperando.");
+    expect(auditFlowSource).toContain("Conviene darle un vistazo con calma");
+    expect(auditFlowSource).toContain("En espera, pero avanzando");
   });
 });

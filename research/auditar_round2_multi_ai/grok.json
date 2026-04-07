@@ -1,0 +1,69 @@
+{
+  "verdict": "approve_direction",
+  "timeline_mobile": {
+    "recommended_pattern": "accordion_collapsible",
+    "why": "Reduce scroll en móvil agrupando entradas en secciones colapsables por defecto, expandibles con tap simple; mantiene claridad sin sobrecargar la vista inicial y alinea con Helios como guía central al resaltar contribuciones clave al expandir.",
+    "copy": [
+      "Toca para ver cómo Helios usó este documento",
+      "Aportó: [contribution]",
+      "Helios lo conectó así: [heliosRole]",
+      "Incorporado: [formattedDate]"
+    ],
+    "interaction_notes": [
+      "Entrada colapsada muestra solo título, tipo y badge de readiness; tap expande a detalles sin recargar página.",
+      "En desktop, todas expandidas por defecto para vista amplia; en móvil, colapsadas para priorizar scroll mínimo.",
+      "Añade ícono de flecha para indicar expansibilidad, con animación suave para feedback táctil."
+    ]
+  },
+  "tracking_messages": {
+    "recommended_pattern": "state_based_humanized_cards",
+    "states": [
+      {
+        "state_key": "waiting",
+        "title": "En espera, pero avanzando",
+        "body": "Helios ya envió [documentCount] documento[s] y está esperando respuesta automática. Suele tardar unos minutos; si pasa más tiempo, te avisaremos."
+      },
+      {
+        "state_key": "attention",
+        "title": "Conviene darle un vistazo",
+        "body": "La respuesta para [attentionCount] documento[s] está tardando un poco más. No se perdió nada, Helios lo tiene resguardado y puedes seguir subiendo mientras."
+      },
+      {
+        "state_key": "received",
+        "title": "Respuesta lista y conectada",
+        "body": "Helios ya recibió detalle para [receivedCount] documento[s] y lo sumó al expediente. Ahora puedes ver más claridad en tu línea de tiempo."
+      },
+      {
+        "state_key": "no_pending",
+        "title": "Todo al día por ahora",
+        "body": "No hay respuestas pendientes. Si subes más, Helios las procesará automáticamente y te mantendrá al tanto."
+      }
+    ],
+    "why": "Humaniza el seguimiento variando mensajes por estado (espera, demora, avance), usando tono protector y útil para reducir ansiedad; integra conteos visibles del expediente para sentir progreso real sin tecnicismos."
+  },
+  "next_document_personalization": {
+    "recommended_pattern": "signal_based_suggestion_card",
+    "explanation_formula": "Basado en [presentTypes.length] tipos ya subidos y hallazgos como [keyFinding], Helios recomienda [nextTarget.label] porque [nextTarget.benefit] y ayuda a aclarar [specificUncertainty from visibleHeliosOpinion].",
+    "copy": [
+      "Helios recomienda: [nextTarget.label]",
+      "Por qué ahora: Con lo que ya subiste, esto puede aclarar [personalizedAspect, e.g., 'diferencias en pagos'] y fortalecer tu expediente.",
+      "Sube [nextTarget.label] para que Helios conecte más señales."
+    ],
+    "why": "Personaliza usando señales visibles (tipos presentes, uncertainties de Helios) para recomendar con contexto relevante, aumentando utilidad y confianza; bajo riesgo al basarse en datos ya existentes sin sobreprometer integración profunda."
+  },
+  "low_risk_changes": [
+    "Añadir prop 'isMobile' para condicionar colapsado en timeline, usando media queries existentes.",
+    "Actualizar getHeliosStageCopy para incluir estados humanizados sin alterar lógica de engine.",
+    "Extender dossierStatus con uncertainties de visibleHeliosOpinion para personalización, sin queries nuevas."
+  ],
+  "copy_risks": [
+    "Evitar frases que impliquen certeza absoluta, como 'Helios confirma todo', para no sobreprometer en integración preliminar.",
+    "Mantener tono protector sin alarmar en estados de demora, e.g., no usar 'error' sino 'conviene revisar'."
+  ],
+  "test_targets": [
+    "Scroll reducido en móvil: mide tiempo de scroll antes/después en timeline con 5+ entradas.",
+    "Engagement en recomendaciones: trackea clics en 'Subir recomendado' vs. genérico.",
+    "Comprensión de mensajes: encuesta si usuarios sienten progreso en tracking states."
+  ],
+  "recommended_next_step": "Implementar timeline collapsible en branch feature/mobile-timeline y probar en dispositivo real antes de merge."
+}

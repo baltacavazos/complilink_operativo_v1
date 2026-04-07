@@ -517,6 +517,118 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
   return Object.entries(record ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== "");
 }
 
+function lowercaseFirstLetter(value: string) {
+  if (!value) return value;
+  return `${value.charAt(0).toLowerCase()}${value.slice(1)}`;
+}
+
+function formatListWithConjunction(values: string[]) {
+  const filtered = values.filter(Boolean);
+  if (filtered.length === 0) return "";
+  if (filtered.length === 1) return filtered[0];
+  if (filtered.length === 2) return `${filtered[0]} y ${filtered[1]}`;
+  return `${filtered.slice(0, -1).join(", ")} y ${filtered[filtered.length - 1]}`;
+}
+
+function getPresentDocumentSummary(presentTypes: Set<string>) {
+  const labels = dossierTargets
+    .filter((item) => presentTypes.has(item.type))
+    .map((item) => item.label.toLowerCase());
+
+  return formatListWithConjunction(labels.slice(0, 3));
+}
+
+function getMonitoringOverviewCopy(params: {
+  monitoringDocumentsCount: number;
+  waitingCount: number;
+  attentionCount: number;
+  receivedCount: number;
+}) {
+  if (params.monitoringDocumentsCount === 0) {
+    return {
+      title: "Helios está listo para el seguimiento automático",
+      body: "En cuanto subas un documento, Helios lo moverá por su seguimiento automático y te mostrará aquí cómo va avanzando. Tu expediente seguirá protegido en todo momento.",
+      classes: "border-slate-200 bg-slate-50 text-slate-700",
+    } as const;
+  }
+
+  if (params.attentionCount > 0) {
+    return {
+      title: "Conviene darle un vistazo con calma",
+      body: `Hay ${params.attentionCount} documento${params.attentionCount === 1 ? "" : "s"} cuya respuesta está tardando un poco más de lo normal. No se perdió nada: Helios lo tiene resguardado y puedes seguir subiendo documentos mientras tanto.`,
+      classes: "border-amber-200 bg-amber-50 text-amber-950",
+    } as const;
+  }
+
+  if (params.waitingCount > 0) {
+    return {
+      title: "En espera, pero avanzando",
+      body: `Helios ya está esperando respuesta automática para ${params.waitingCount} documento${params.waitingCount === 1 ? "" : "s"}. Tu expediente sigue avanzando y te avisaremos cuando haya novedades visibles aquí.`,
+      classes: "border-sky-200 bg-sky-50 text-sky-950",
+    } as const;
+  }
+
+  if (params.receivedCount > 0) {
+    return {
+      title: "Todo al día por ahora",
+      body: `Helios ya recibió respuesta automática para ${params.receivedCount} documento${params.receivedCount === 1 ? "" : "s"} y esa información ya forma parte del expediente. Si subes más archivos, el seguimiento continuará en este espacio.`,
+      classes: "border-emerald-100 bg-emerald-50 text-emerald-950",
+    } as const;
+  }
+
+  return {
+    title: "Seguimiento disponible",
+    body: "Helios seguirá mostrándote aquí cualquier avance automático importante del expediente.",
+    classes: "border-slate-200 bg-slate-50 text-slate-700",
+  } as const;
+}
+
+function getPersonalizedNextDocumentCopy(params: {
+  nextTarget?: DossierTarget;
+  presentTypes: Set<string>;
+  opinion?: HeliosOpinionView | null;
+}) {
+  const presentSummary = getPresentDocumentSummary(params.presentTypes);
+  const firstUncertainty = params.opinion?.uncertainties?.find((item) => item?.trim());
+
+  if (params.nextTarget) {
+    return {
+      headline: `Helios recomienda: ${params.nextTarget.label}`,
+      intro: presentSummary
+        ? `Con lo que ya subiste, como ${presentSummary}, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`
+        : `Con tu expediente actual, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`,
+      reasonTitle: "Por qué ahora puede ser el archivo más útil",
+      reasonBody: firstUncertainty
+        ? `${params.nextTarget.description} Además, hoy todavía conviene aclarar algo importante: ${firstUncertainty}`
+        : `${params.nextTarget.description} ${params.nextTarget.benefit}`,
+      followUp:
+        params.opinion?.recommendedNextStep ??
+        "Helios usa cada documento para reducir estimaciones y dejar más partes del expediente en terreno claro.",
+      coverage: presentSummary
+        ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional le da a Helios más contexto para conectar señales con menos partes preliminares.`
+        : "Tu expediente apenas está empezando. Cada documento útil que subas le da a Helios más contexto para orientarte mejor.",
+      cta: "Subir este documento ahora",
+    } as const;
+  }
+
+  return {
+    headline: "Tu expediente ya cubre varias piezas clave",
+    intro: presentSummary
+      ? `Ya subiste ${presentSummary}. Helios ya tiene una base amplia para seguir ordenando tu caso con más contexto.`
+      : "Helios ya tiene una base amplia de documentos para seguir ordenando tu caso con más contexto.",
+    reasonTitle: "Qué puede sumar si tienes otro archivo",
+    reasonBody: firstUncertainty
+      ? `Si cuentas con otro archivo específico de tu caso, puede ayudar a aclarar mejor esto: ${firstUncertainty}`
+      : "Si tienes otro archivo específico de tu caso, también puede ayudar a confirmar o contrastar mejor tu historia laboral.",
+    followUp:
+      params.opinion?.recommendedNextStep ??
+      "Helios sigue usando cada documento para separar lo claro de lo que todavía conviene confirmar.",
+    coverage:
+      "Mientras más documentos útiles incorpores, más crece tu expediente y más contexto tiene Helios para orientarte mejor.",
+    cta: "Subir otro documento útil",
+  } as const;
+}
+
 export default function Auditar() {
   const auth = useAuth();
   const utils = trpc.useUtils();
@@ -531,6 +643,7 @@ export default function Auditar() {
   const [pickerKey, setPickerKey] = useState(0);
   const [uploadSourceOpen, setUploadSourceOpen] = useState(false);
   const [estimatedAcknowledged, setEstimatedAcknowledged] = useState(false);
+  const [timelineExpandedOnMobile, setTimelineExpandedOnMobile] = useState(false);
   const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -656,6 +769,19 @@ export default function Auditar() {
     (item) => item.status === "waiting" || item.status === "attention",
   );
   const attentionMonitoringDocuments = pendingMonitoringDocuments.filter((item) => item.status === "attention");
+  const timelinePreviewLimit = 3;
+  const mobileHiddenTimelineCount = Math.max(0, timelineEntries.length - timelinePreviewLimit);
+  const monitoringOverview = getMonitoringOverviewCopy({
+    monitoringDocumentsCount: monitoringDocuments.length,
+    waitingCount: complilinkMonitoring?.summary.waitingCount ?? 0,
+    attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
+    receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
+  });
+  const nextDocumentCopy = getPersonalizedNextDocumentCopy({
+    nextTarget: dossierStatus.nextTarget ?? undefined,
+    presentTypes,
+    opinion: visibleHeliosOpinion,
+  });
 
   useEffect(() => {
     setEstimatedAcknowledged(false);
@@ -1434,6 +1560,11 @@ export default function Auditar() {
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
                     Documento por documento, aquí ves cómo Helios fue conectando señales para darle más claridad a tu caso.
                   </p>
+                  {timelineEntries.length > timelinePreviewLimit ? (
+                    <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
+                      En móvil te mostramos primero lo esencial para reducir scroll. Si quieres, puedes abrir el resto en cualquier momento.
+                    </p>
+                  ) : null}
                 </div>
                 <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {timelineEntries.length} etapa{timelineEntries.length === 1 ? "" : "s"}
@@ -1447,7 +1578,10 @@ export default function Auditar() {
               ) : (
                 <div className="mt-6 space-y-4">
                   {timelineEntries.map((entry, index) => (
-                    <div key={entry.id} className="flex gap-4">
+                    <div
+                      key={entry.id}
+                      className={`${index >= timelinePreviewLimit && !timelineExpandedOnMobile ? "hidden sm:flex" : "flex"} gap-4`}
+                    >
                       <div className="flex w-10 shrink-0 flex-col items-center">
                         <div
                           className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
@@ -1482,6 +1616,18 @@ export default function Auditar() {
                       </article>
                     </div>
                   ))}
+
+                  {timelineEntries.length > timelinePreviewLimit ? (
+                    <button
+                      type="button"
+                      className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 sm:hidden"
+                      onClick={() => setTimelineExpandedOnMobile((value) => !value)}
+                    >
+                      {timelineExpandedOnMobile
+                        ? "Mostrar menos"
+                        : `Mostrar ${mobileHiddenTimelineCount} etapa${mobileHiddenTimelineCount === 1 ? "" : "s"} más`}
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>
@@ -1512,11 +1658,10 @@ export default function Auditar() {
                 </div>
               </div>
 
-              {attentionMonitoringDocuments.length > 0 ? (
-                <div className="mt-4 rounded-[1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-                  Hay {attentionMonitoringDocuments.length} documento{attentionMonitoringDocuments.length === 1 ? "" : "s"} cuya respuesta está tardando más de lo normal. No se perdió, pero conviene revisarlo.
-                </div>
-              ) : null}
+              <div className={`mt-4 rounded-[1rem] border p-4 text-sm leading-6 ${monitoringOverview.classes}`}>
+                <p className="font-semibold">{monitoringOverview.title}</p>
+                <p className="mt-2">{monitoringOverview.body}</p>
+              </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -1705,22 +1850,31 @@ export default function Auditar() {
                 </div>
               </div>
 
+              <div className={`mt-4 rounded-[1.3rem] border p-4 ${monitoringOverview.classes}`}>
+                <p className="font-semibold">{monitoringOverview.title}</p>
+                <p className="mt-2 text-sm leading-7">{monitoringOverview.body}</p>
+              </div>
+
               {pendingMonitoringDocuments.length === 0 ? (
                 <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
                   {monitoringDocuments.length === 0
-                    ? "Todavía no hay documentos con seguimiento automático visible en esta parte."
-                    : "Por ahora no tienes documentos esperando respuesta automática fuera del tiempo normal."}
+                    ? "Todavía no hay documentos en seguimiento automático visible. En cuanto subas archivos, Helios te mostrará aquí cómo van avanzando."
+                    : "Por ahora no hay respuestas pendientes fuera del tiempo normal. Si subes más archivos, Helios seguirá mostrándote el avance en este mismo espacio."}
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
                   {pendingMonitoringDocuments.map((item) => {
                     const state = getMonitoringStatusCopy(item.status);
+                    const friendlyMessage =
+                      item.status === "attention"
+                        ? "La respuesta está tardando un poco más de lo normal, pero Helios sigue resguardando este documento dentro de tu expediente."
+                        : "Helios ya envió este documento y está esperando la respuesta automática. Mientras llega, puedes seguir fortaleciendo tu expediente con otros archivos.";
                     return (
                       <div key={item.documentId} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <p className="text-sm font-semibold text-slate-950">{item.documentName}</p>
-                            <p className="mt-1 text-sm leading-6 text-slate-600">{item.message}</p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">{friendlyMessage}</p>
                           </div>
                           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${state.classes}`}>{state.label}</span>
                         </div>
@@ -1729,11 +1883,9 @@ export default function Auditar() {
                           {item.respondedAt ? <p>Respondido el {formatDate(item.respondedAt)}</p> : null}
                           {item.responseEvent ? <p>Último movimiento: {getReturnEventLabel(item.responseEvent)}</p> : null}
                         </div>
-                        {item.status === "attention" ? (
-                          <div className="mt-3 rounded-[1rem] border border-amber-200 bg-white p-3 text-sm leading-6 text-amber-950">
-                            Este documento no está perdido, pero sí conviene revisarlo porque la respuesta está tardando más de lo normal.
-                          </div>
-                        ) : null}
+                        <div className="mt-3 rounded-[1rem] border border-white bg-white p-3 text-sm leading-6 text-slate-700">
+                          {item.message}
+                        </div>
                       </div>
                     );
                   })}
@@ -1747,26 +1899,21 @@ export default function Auditar() {
 
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
                 <p className="text-sm font-semibold text-teal-900">Lo que más puede ayudarte ahora</p>
-                <p className="mt-2 text-xl font-semibold text-slate-950">
-                  {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Tu expediente ya cubre varias piezas clave"}
-                </p>
-                <p className="mt-2 text-sm leading-7 text-teal-950">
-                  {dossierStatus.nextTarget
-                    ? "Para que Helios entienda mejor tu situación, este es el archivo que más puede ayudarte a continuación."
-                    : "Helios ya tiene una base amplia de documentos. Si tienes otro archivo específico de tu caso, también puede sumar contexto útil."}
-                </p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">{nextDocumentCopy.headline}</p>
+                <p className="mt-2 text-sm leading-7 text-teal-950">{nextDocumentCopy.intro}</p>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-950">Por qué este archivo puede ayudarte ahora</p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {dossierStatus.nextTarget
-                    ? `${dossierStatus.nextTarget.description} ${dossierStatus.nextTarget.benefit}`
-                    : "Helios ya separó varias piezas clave del expediente. Un archivo adicional puede ayudarle a confirmar o contrastar mejor tu historia laboral."}
-                </p>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
-                  {visibleHeliosOpinion?.recommendedNextStep ??
-                    "Helios usa cada documento para reducir estimaciones y dejar más partes del expediente en terreno claro."}
+                <p className="font-semibold text-slate-950">{nextDocumentCopy.reasonTitle}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">{nextDocumentCopy.reasonBody}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{nextDocumentCopy.followUp}</p>
+              </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
+                <p className="text-sm font-semibold text-emerald-900">Cómo va creciendo tu expediente</p>
+                <p className="mt-2 text-sm leading-7 text-emerald-950">{nextDocumentCopy.coverage}</p>
+                <p className="mt-2 text-xs leading-6 text-emerald-900">
+                  Hoy tu expediente ya cubre {dossierStatus.completed} de {dossierStatus.total} piezas clave.
                 </p>
               </div>
 
@@ -1774,7 +1921,7 @@ export default function Auditar() {
                 className="mt-4 h-11 w-full rounded-full bg-teal-600 text-white hover:bg-teal-700"
                 onClick={openFilePicker}
               >
-                {dossierStatus.nextTarget ? "Subir este documento ahora" : "Subir otro documento útil"}
+                {nextDocumentCopy.cta}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
 
