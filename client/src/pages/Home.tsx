@@ -139,12 +139,12 @@ const faqs = [
   {
     question: "¿Por qué conviene subir más de un documento?",
     answer:
-      "Porque varios documentos dan más contexto. Eso ayuda a ver patrones, diferencias y respaldo acumulado.",
+      "Porque varios documentos dan más contexto. Eso ayuda a ver patrones, diferencias y a construir un expediente digital ordenado, disponible 24/7 cuando lo necesites.",
   },
   {
     question: "¿Mi información está protegida?",
     answer:
-      "Sí. Tus archivos se resguardan con control y se usan para fortalecer tu expediente, no para dejarlos sueltos.",
+      "Sí. Tus archivos se resguardan con control y se usan para fortalecer tu expediente digital, mantenerlo ordenado y dejarlo disponible para ti cuando lo necesites.",
   },
   {
     question: "¿Qué tipo de archivos puedo reunir aquí?",
@@ -191,15 +191,17 @@ function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button
-            variant="outline"
-            className="rounded-full border-slate-200 bg-white px-5 text-sm text-slate-700 hover:bg-slate-50"
+              <Button
+                variant="outline"
+                className="motion-hover-lift rounded-full border-slate-200 bg-white px-5 text-sm text-slate-700 hover:bg-slate-50"
+
             onClick={() => scrollToId("expediente")}
           >
             Ver tu expediente
           </Button>
-          <Button
-            className="rounded-full bg-teal-600 px-5 text-sm text-white hover:bg-teal-700"
+              <Button
+                className="motion-hover-lift rounded-full bg-teal-600 px-5 text-sm text-white hover:bg-teal-700"
+
             onClick={goToAuditFlow}
           >
             Ir a /auditar ahora
@@ -209,7 +211,7 @@ function SiteHeader() {
 
         <div className="flex items-center gap-2 md:hidden">
           <Button
-            className="h-10 rounded-full bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700 sm:px-4 sm:text-sm"
+            className="motion-hover-lift h-10 rounded-full bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700 sm:px-4 sm:text-sm"
             onClick={goToAuditFlow}
           >
             Auditar ahora
@@ -241,7 +243,7 @@ function SiteHeader() {
             <div className="grid gap-3 pt-3">
               <Button
                 variant="outline"
-                className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 onClick={() => {
                   setOpen(false);
                   scrollToId("expediente");
@@ -250,7 +252,7 @@ function SiteHeader() {
                 Ver tu expediente
               </Button>
               <Button
-                className="h-11 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                className="motion-hover-lift h-11 rounded-full bg-teal-600 text-white hover:bg-teal-700"
                 onClick={() => {
                   setOpen(false);
                   goToAuditFlow();
@@ -300,7 +302,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos laborales y recibe una respuesta clara, tranquila y útil para saber si todo está en orden con tu patrón, sin palabras difíciles ni pasos confusos.
+            Sube tus documentos laborales y conviértelos en un expediente digital ordenado, disponible 24/7, para saber si todo está en orden con tu patrón sin palabras difíciles ni pasos confusos.
           </p>
 
           <div
@@ -327,7 +329,7 @@ function HeroSection() {
             className="motion-enter-soft mt-6 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
             style={{ ["--motion-delay" as string]: "380ms" }}
           >
-            {["100% confidencial", "Sin jerga legal", "Separa hechos de suposiciones"].map((item) => (
+             {["100% confidencial", "Expediente digital 24/7", "Todo en un solo lugar"].map((item) => (
               <span
                 key={item}
                 className="motion-hover-lift rounded-full border border-slate-200 bg-white/85 px-4 py-2 shadow-sm"
@@ -351,11 +353,11 @@ function HeroSection() {
                   Fortaleza inicial del expediente
                 </p>
                 <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                  Tu revisión se organiza sola y te devuelve claridad útil
+                  Tu revisión se organiza sola y tu expediente queda listo para ti
                 </p>
               </div>
               <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                Protegido
+                Disponible 24/7
               </div>
             </div>
 
@@ -371,15 +373,15 @@ function HeroSection() {
                 />
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-900">
-                Cada documento suma contexto, mejora la revisión y te ayuda a entender con más claridad qué está bien y qué conviene revisar.
+                Cada documento se guarda en tu expediente digital, suma contexto y te ayuda a tener todo en un solo lugar cuando necesites revisar, respaldarte o volver a consultar.
               </p>
             </div>
 
             <div className="mt-5 space-y-3">
               {[
                 "Sube recibo, contrato o CFDI.",
-                "Te mostramos lo importante con palabras simples.",
-                "Te sugerimos qué documento puede ayudarte después.",
+                "Todo queda ordenado en tu expediente digital.",
+                "Lo tienes disponible 24/7 cuando lo necesites.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -404,8 +406,8 @@ function QuickTrustSection() {
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
           "Sube recibo, CFDI o contrato.",
-          "Ve qué ya está claro.",
-          "Sabe qué conviene reunir después.",
+          "Todo se ordena en tu expediente digital.",
+          "Lo tienes disponible 24/7.",
         ].map((item) => (
           <div
             key={item}
@@ -429,20 +431,20 @@ function ConfidenceMagicSection() {
               Una experiencia simple y confiable
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Tus documentos entran como archivos sueltos y regresan como respuestas útiles.
+              Tus documentos dejan de vivir en folders sueltos y empiezan a trabajar a tu favor.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Tú solo subes lo que ya tienes. AuditaPatron organiza la información, detecta señales relevantes y te devuelve una explicación fácil de entender para que sepas qué revisar con calma.
+              Tú solo subes lo que ya tienes. AuditaPatron ordena la información, la convierte en un expediente digital disponible 24/7 y te devuelve una explicación fácil de entender para que sepas qué revisar con calma.
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {[
               {
-                title: "Ordena lo importante por ti",
+                title: "Todo queda en un solo expediente digital",
                 description:
-                  "Recibos, CFDI, contratos y evidencia se convierten en una revisión más clara y menos fragmentada.",
-                detail: "Cada archivo suma una pieza más para entender mejor tu caso.",
+                  "Recibos, CFDI, contratos y evidencia dejan de vivir en folders separados y empiezan a ordenarse en un mismo lugar.",
+                detail: "Disponible 24/7 para revisar, descargar y volver a usar cuando lo necesites.",
                 icon: Upload,
               },
               {
@@ -453,10 +455,10 @@ function ConfidenceMagicSection() {
                 icon: FileSearch,
               },
               {
-                title: "Te guía con el siguiente mejor paso",
+                title: "Te acompaña si más adelante lo necesitas",
                 description:
-                  "Después de cada revisión, sabes qué documento puede ayudarte más sin aprender procesos técnicos ni cambiar tu forma de uso.",
-                detail: "La persona usuaria solo sube, revisa y avanza.",
+                  "Después de cada revisión, sabes qué documento puede ayudarte más y conservas tu respaldo en un solo lugar si luego necesitas aclarar, reclamar o preparar algo mayor.",
+                detail: "La persona usuaria solo sube, revisa y avanza; el expediente sigue creciendo por detrás.",
                 icon: ShieldCheck,
               },
             ].map((item) => {
@@ -496,7 +498,7 @@ function HowItWorksSection() {
             Entiende tu situación sin complicarte.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            En pocos pasos puedes subir tu documento, ver lo importante y saber qué conviene reunir después.
+            En pocos pasos puedes subir tu documento, ver lo importante y empezar a construir un expediente digital ordenado que siga contigo cuando lo necesites.
           </p>
         </div>
 
@@ -546,17 +548,17 @@ function DossierSection() {
             Tu expediente en crecimiento
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Cada documento útil fortalece tu protección laboral.
+            Cada documento útil se convierte en orden, claridad y respaldo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No se trata de subir por subir. Se trata de reunir piezas que te den más claridad, mejor orden y respaldo útil si después necesitas revisar algo con calma.
+            No se trata de subir por subir. Se trata de reunir piezas que te den más claridad, mejor orden y un expediente digital disponible 24/7 si después necesitas revisar, reclamar o respaldar algo con calma.
           </p>
 
           <div className="mt-6 space-y-3">
             {[
               "Más claridad sobre pagos, deducciones y condiciones laborales.",
-              "Más contexto para comparar lo prometido con lo ocurrido.",
-              "Mejor respaldo documental para futuras revisiones.",
+              "Todo en un solo lugar, sin folders sueltos ni búsquedas eternas.",
+              "Mejor respaldo documental disponible 24/7 para futuras revisiones.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -569,7 +571,7 @@ function DossierSection() {
             className="mt-7 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700"
             onClick={goToAuditFlow}
           >
-            Empezar mi expediente
+            Empezar mi expediente digital
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
           </Button>
         </div>
@@ -712,7 +714,7 @@ function FindingsExamplesSection() {
             Algunos patrones se entienden mejor cuando tu expediente tiene más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Varios documentos juntos ayudan a ver diferencias, repeticiones y señales que un solo archivo puede dejar ocultas.
+            Varios documentos juntos ayudan a ver diferencias, repeticiones y señales que un solo archivo puede dejar ocultas, y además fortalecen un expediente digital que puedes consultar cuando lo necesites.
           </p>
         </div>
 
@@ -720,7 +722,8 @@ function FindingsExamplesSection() {
           {findingsExamples.map((item) => (
             <article
               key={item.title}
-              className="rounded-[1.8rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_24px_70px_-56px_rgba(15,23,42,0.6)]"
+                  className="motion-hover-lift rounded-[1.8rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_24px_70px_-56px_rgba(15,23,42,0.6)]"
+
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
                 <FileSearch className="h-5 w-5" strokeWidth={1.8} />
@@ -749,14 +752,14 @@ function PrivacySection() {
             Tus archivos se resguardan para ayudarte, no para confundirte.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cada documento puede darte más claridad y mejor respaldo, pero siempre con control, resguardo y una experiencia fácil de seguir.
+            Cada documento puede darte más claridad y mejor respaldo, pero siempre con control, resguardo y la tranquilidad de tener tu expediente digital disponible 24/7.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
               "Tus documentos se organizan con propósito.",
               "La explicación es clara y humana.",
-              "Tu expediente gana valor con cada archivo útil.",
+              "Tu expediente queda disponible 24/7 para ti.",
               "La confianza se cuida desde el inicio.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-teal-100 bg-white p-4">
@@ -775,8 +778,8 @@ function PrivacySection() {
             <div className="mt-4 space-y-3">
               {[
                 "Entiendo mejor mi situación.",
-                "Mi información está cuidada.",
-                "Esto puede ayudarme ahora y después.",
+                "Mi información está cuidada y ordenada.",
+                "Tengo mis documentos a la mano cuando los necesite.",
               ].map((item) => (
                 <div key={item} className="flex gap-3 rounded-[1.2rem] border border-white/10 bg-white/5 p-4">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-300" strokeWidth={1.8} />
@@ -790,7 +793,7 @@ function PrivacySection() {
             <div className="flex items-start gap-3">
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-teal-800" strokeWidth={1.8} />
               <p className="text-sm leading-7 text-teal-950">
-                Tus documentos pueden fortalecer tu expediente y tu contexto laboral sin perder trazabilidad ni control.
+                Tus documentos pueden fortalecer tu expediente y tu contexto laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
               </p>
             </div>
           </div>
@@ -852,12 +855,12 @@ function FinalCtaSection() {
               Tu primer documento ya puede darte más claridad.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-              Empieza con lo que ya tienes a la mano y ve fortaleciendo tu expediente paso a paso.
+              Empieza con lo que ya tienes a la mano y ve fortaleciendo un expediente digital que seguirá contigo, ordenado y disponible 24/7.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
-                className="h-12 rounded-full bg-teal-500 px-7 text-base text-slate-950 hover:bg-teal-400"
+                className="motion-hover-lift h-12 rounded-full bg-teal-500 px-7 text-base text-slate-950 hover:bg-teal-400"
                 onClick={goToAuditFlow}
               >
                 Ir a /auditar ahora
@@ -865,7 +868,7 @@ function FinalCtaSection() {
               </Button>
               <Button
                 variant="outline"
-                className="h-12 rounded-full border-white/15 bg-transparent px-7 text-base text-white hover:bg-white/10"
+                className="motion-hover-lift h-12 rounded-full border-white/15 bg-transparent px-7 text-base text-white hover:bg-white/10"
                 onClick={() => scrollToId("preguntas")}
               >
                 Resolver mis dudas primero
@@ -882,7 +885,7 @@ function SiteFooter() {
   return (
     <footer className="bg-white py-8">
       <div className="container flex flex-col gap-4 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-        <p>AuditaPatron — claridad laboral con una experiencia simple, privada y útil.</p>
+        <p>AuditaPatron — claridad laboral con un expediente digital simple, privado y útil.</p>
         <div className="flex flex-wrap gap-4">
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona

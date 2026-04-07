@@ -9,26 +9,30 @@ import requests
 PROJECT_PROMPT = r'''Actúa como arquitecto/a senior de producto, UX y sistemas para AuditaPatron, una plataforma de auditoría documental laboral en México.
 
 Contexto actual:
-- Existe una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
-- La interfaz actual necesita verse más centrada, más estética y más sólida visualmente.
-- En móvil no debe existir riesgo de scroll lateral, desbordes horizontales ni bloques que se sientan anchos o incómodos.
-- La experiencia debe sentirse extremadamente fácil, confiable, amigable y casi mágica: la persona sube documentos y recibe una respuesta útil sin entender motores internos, integraciones ni complejidad técnica.
-- Todo lo que sube la persona usuaria sí alimenta un motor central e integra enriquecimiento desde otras plataformas, pero ESO NO DEBE MENCIONARSE en la experiencia visible. El usuario solo debe ver beneficios claros, calma y utilidad.
-- Prioridad UX: español simple, cero jerga técnica, mucha claridad, mucha confianza, mobile-first, privacidad y consentimiento visibles sin fricción.
-- Restricciones: no exponer credenciales, no pedir pasos técnicos a la persona usuaria, no mencionar Helios ni el motor interno, mantener lenguaje humano y no legalista.
+- Existe una home y una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
+- La dirección UX actual busca una experiencia muy simple, confiable, mobile-first y casi mágica.
+- Ya se avanzó en centrar la interfaz y ocultar la complejidad interna; ahora se quiere reforzar mejor el valor del expediente digital.
+- Hipótesis a evaluar: conviene comunicar que entre más documentos suba la persona, más se ordena y fortalece su expediente digital, evitando tener archivos perdidos en carpetas distintas y dejando todo disponible 24/7 cuando lo necesite.
+- Ese beneficio debe comunicarse con empatía y utilidad práctica, no como táctica manipuladora ni con tono legalista o alarmista.
+- Se puede mencionar que tener documentos ordenados y disponibles ayuda si algún día necesita aclaraciones, trámites, reclamaciones o incluso una demanda, pero sin centrar toda la experiencia en el miedo.
+- Todo lo que sube la persona sí alimenta procesos internos y enriquecimiento de fondo, pero ESO NO DEBE MENCIONARSE en la experiencia visible. El usuario solo debe ver beneficios claros, orden, disponibilidad, confianza y facilidad.
+- También se quiere pulir navegación móvil y microinteracciones suaves en botones, tarjetas, cargas o confirmaciones, sin distraer ni degradar rendimiento.
+- Restricciones: no mencionar Helios, no mencionar motor interno, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
 
-Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de /auditar, enfocadas solo en mejoras visibles y de alto impacto que puedan implementarse sin rehacer toda la arquitectura.
+Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de Home y /auditar, enfocadas solo en mejoras visibles y de alto impacto que puedan implementarse sin rehacer toda la arquitectura.
 
 Quiero que propongas específicamente:
-1. Cómo recentrar visualmente la interfaz y hacerla más estética y equilibrada.
-2. Cómo eliminar cualquier riesgo de scroll lateral móvil o sensación de layout ancho/confuso.
-3. Cómo reescribir la experiencia para que se sienta mágica y útil, ocultando por completo el motor interno.
-4. Qué copy exacto sugerirías en español para títulos, subtítulos y microcopy de una experiencia simple y confiable.
-5. Qué NO implementar todavía para evitar complejidad innecesaria.
+1. Si es buena idea comunicar el valor del expediente digital acumulativo, ordenado y disponible 24/7.
+2. Cuál es la mejor forma de comunicarlo sin sonar manipulador, alarmista ni técnico.
+3. Qué copy exacto sugerirías en español para explicar: orden documental, disponibilidad permanente, respaldo útil y crecimiento del expediente con cada documento.
+4. Cómo implementarlo visualmente en la home y en /auditar con la menor fricción posible.
+5. Qué microinteracciones suaves y qué ajustes de navegación móvil agregarías en esta ronda.
+6. Qué NO implementar todavía para evitar complejidad innecesaria.
 
 Devuelve SOLO JSON válido con esta forma exacta:
 {
   "model_positioning": "string",
+  "is_24_7_dossier_message_a_good_idea": true,
   "top_recommendations": [
     {
       "title": "string",
@@ -37,33 +41,36 @@ Devuelve SOLO JSON válido con esta forma exacta:
       "implementation_effort": "high|medium|low"
     }
   ],
-  "layout_guidance": {
+  "message_strategy": {
     "headline": "string",
     "principles": ["string"],
-    "mobile_risks_to_remove": ["string"],
-    "wow_moments": ["string"]
+    "avoid_phrases": ["string"],
+    "best_user_promises": ["string"]
   },
-  "trust_experience": {
-    "title": "string",
-    "subtitle": "string",
-    "visible_promises": ["string"],
-    "tone_guidance": "string"
-  },
-  "comparison_design": {
-    "title": "string",
-    "subtitle": "string",
-    "left_column_label": "string",
-    "right_column_label": "string",
-    "difference_summary_label": "string",
+  "home_implementation": {
+    "section_title": "string",
+    "section_supporting": "string",
+    "cards_or_points": ["string"],
     "cta_label": "string"
   },
+  "auditar_implementation": {
+    "section_title": "string",
+    "section_supporting": "string",
+    "microcopy": ["string"],
+    "empty_state_message": "string"
+  },
+  "microinteractions_and_mobile": {
+    "microinteractions": ["string"],
+    "mobile_navigation_adjustments": ["string"],
+    "wow_moments": ["string"]
+  },
   "exact_copy": {
-    "hero_headline": "string",
     "hero_supporting": "string",
-    "trust_block_title": "string",
-    "trust_block_supporting": "string",
-    "comparison_headline": "string",
-    "comparison_supporting": "string"
+    "digital_dossier_title": "string",
+    "digital_dossier_supporting": "string",
+    "availability_message": "string",
+    "upload_reassurance": "string",
+    "documents_growth_message": "string"
   },
   "do_not_build_yet": ["string"],
   "final_verdict": "string"

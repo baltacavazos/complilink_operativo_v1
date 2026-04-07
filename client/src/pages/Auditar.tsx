@@ -1372,7 +1372,7 @@ export default function Auditar() {
               Tus derechos laborales, claros y protegidos
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-              Sube tus documentos y recibe una explicación clara, tranquila y útil para saber si todo está en orden con tu patrón, sin tecnicismos ni pasos confusos.
+              Sube tus documentos y conviértelos en un expediente digital ordenado, disponible 24/7, para saber si todo está en orden con tu patrón sin tecnicismos ni pasos confusos.
             </p>
           </div>
 
@@ -1414,7 +1414,7 @@ export default function Auditar() {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
-            <div className="rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente</p>
@@ -1422,19 +1422,19 @@ export default function Auditar() {
                     Hoy tu expediente va en: {dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"} y {dossierStatus.completed} de {dossierStatus.total} tipos útiles para entender mejor tu caso.
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites.
                   </p>
                 </div>
 
-                <div className="w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
+                <div className="motion-hover-lift w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
                   <p className="text-sm font-semibold text-teal-900">Próximo paso que más puede ayudarte</p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
                     {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Ya tienes una base documental muy completa"}
                   </p>
                   <p className="mt-2 text-sm leading-6 text-teal-950">
                     {dossierStatus.nextTarget
-                      ? dossierStatus.nextTarget.benefit
-                      : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil."}
+                      ? `${dossierStatus.nextTarget.benefit} Además, quedará ordenado dentro de tu expediente digital para futuras consultas.`
+                      : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil y quedar disponible dentro de tu expediente digital."}
                   </p>
                 </div>
               </div>
@@ -1502,7 +1502,7 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu revisión</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu expediente</p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">{heliosStage.title}</h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosStage.description}</p>
                     </div>
@@ -1525,7 +1525,7 @@ export default function Auditar() {
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué está pasando ahora</p>
-                    <p className="mt-2 font-semibold text-slate-950">Ordena y revisa por ti</p>
+                    <p className="mt-2 font-semibold text-slate-950">Ordena, resguarda y revisa por ti</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">{heliosStage.detail}</p>
                   </div>
 
@@ -1542,15 +1542,15 @@ export default function Auditar() {
                     <p className="mt-2 font-semibold text-slate-950">Subes, revisas y avanzas</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       {visibleHeliosOpinion
-                        ? "Aquí ves lo que ya quedó claro, lo que sigue en revisión y el siguiente documento que más puede ayudarte, sin pasos técnicos ni menús complicados."
-                        : "Solo necesitas subir un archivo útil. La plataforma lo revisa y te devuelve una guía simple dentro del expediente."}
+                        ? "Aquí ves lo que ya quedó claro, lo que sigue en revisión y el siguiente documento que más puede ayudarte, sin pasos técnicos ni menús complicados, mientras tu expediente sigue creciendo por detrás."
+                        : "Solo necesitas subir un archivo útil. La plataforma lo revisa, lo ordena en tu expediente digital y te devuelve una guía simple dentro del mismo espacio."}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Sube tu documento</p>
@@ -1559,7 +1559,7 @@ export default function Auditar() {
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de subirlo, verás qué ya se entendió, qué conviene revisar y cuál puede ser el siguiente paso más útil.
+                  Después de subirlo, verás qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.
                 </p>
               </div>
 
@@ -1808,7 +1808,7 @@ export default function Auditar() {
                   </div>
 
                   <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
-                    Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro y qué todavía conviene revisar con calma.
+                    Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro, qué todavía conviene revisar con calma y qué ya forma parte de tu expediente digital.
                   </div>
 
                   {lastHeliosOpinion ? (
@@ -1816,7 +1816,7 @@ export default function Auditar() {
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
-                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya tiene una primera lectura útil dentro de tu expediente</h3>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya quedó integrado a tu expediente con una primera lectura útil</h3>
                           <p className="mt-3 text-sm leading-7 text-slate-700">
                             {lastHeliosOpinion.summary ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
                           </p>
@@ -1842,7 +1842,7 @@ export default function Auditar() {
                         <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
                           <p className="font-semibold text-teal-950">Qué conviene hacer después</p>
                           <p className="mt-2 text-sm leading-7 text-teal-900">
-                            {lastHeliosOpinion.recommendedNextStep ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura."}
+                            {lastHeliosOpinion.recommendedNextStep ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
                           </p>
                           {lastHeliosOpinion.recommendedActions?.length ? (
                             <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
@@ -1885,7 +1885,7 @@ export default function Auditar() {
                         <div>
                           <p className="font-semibold">Seguimos esperando la respuesta automática</p>
                           <p className="mt-1">
-                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó o si conviene darle seguimiento con calma.
+                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
                           </p>
                         </div>
                       </div>
@@ -2008,7 +2008,7 @@ export default function Auditar() {
 
               {timelineEntries.length === 0 ? (
                 <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente paso a paso.
+                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente digital paso a paso y cómo todo queda disponible para ti 24/7.
                 </div>
               ) : (
                 <div className="mt-6 space-y-4">
@@ -2394,7 +2394,7 @@ export default function Auditar() {
                 <div>
                     <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">¿Qué cambió aquí?</h2>
                     <p className="mt-2 text-sm leading-7 text-slate-600">
-                      Comparamos documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después.
+                      Comparamos documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después, sin perder de vista que todo queda ordenado en un solo lugar.
                     </p>
 
                 </div>
@@ -2520,7 +2520,7 @@ export default function Auditar() {
                   <p className="text-sm font-semibold text-slate-950">Alertas priorizadas</p>
                 </div>
                 <p className="mt-1 text-sm leading-7 text-slate-600">
-                    Convertimos señales repetidas y puntos sensibles en alertas más fáciles de priorizar.
+                    Convertimos señales repetidas y puntos sensibles en alertas más fáciles de priorizar dentro de un expediente claro, ordenado y siempre disponible para ti.
 
                 </p>
                 <div className="mt-3 grid gap-3">

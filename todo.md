@@ -224,3 +224,9 @@
 - [x] Ocultar por completo en la interfaz cualquier mención al motor interno o a Helios, mostrando solo beneficios claros para la persona usuaria.
 - [x] Reescribir la experiencia de AuditaPatron para que se sienta más amigable, confiable, muy fácil de usar y con efecto de magia útil.
 - [x] Validar con pruebas y revisión técnica la nueva ronda de refinamiento centrada en UX mobile-first y confianza.
+- [x] Consultar a Grok, Gemini y ChatGPT si conviene reforzar en AuditaPatron el valor de un expediente digital acumulativo, ordenado y disponible 24/7.
+- [x] Definir con consenso multi-IA la mejor manera de comunicar que subir más documentos evita desorden en folders y deja evidencia laboral siempre a la mano.
+- [x] Traducir ese consenso en mejoras de copy y jerarquía visual en Home y /auditar.
+- [x] Pulir microinteracciones suaves en botones, cargas y tarjetas sin distraer ni degradar rendimiento.
+- [x] Revisar y mejorar la navegación móvil para que se sienta más clara, compacta y confiable.
+- [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en expediente digital 24/7 y UX.

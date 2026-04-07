@@ -13,6 +13,7 @@ describe("Auditapatron homepage content", () => {
     expect(homeSource).toContain("Diseñado para trabajadores, no para expertos");
     expect(homeSource).toContain("100% confidencial");
     expect(homeSource).toContain("Tu privacidad es parte del producto");
+    expect(homeSource).toContain("Expediente digital 24/7");
     expect(homeSource).toContain("Tu expediente en crecimiento");
     expect(homeSource).not.toContain("Helios es el cerebro central de AuditaPatron");
     expect(homeSource).not.toContain("Helios ordena tu expediente y fortalece tu respaldo");
@@ -21,7 +22,8 @@ describe("Auditapatron homepage content", () => {
   it("includes the dossier-strength explanation and CTA to the real audit route", () => {
     expect(homeSource).toContain("Fortaleza inicial del expediente");
     expect(homeSource).toContain("Claridad acumulada");
-    expect(homeSource).toContain("Tu revisión se organiza sola y te devuelve claridad útil");
+    expect(homeSource).toContain("Tu revisión se organiza sola y tu expediente queda listo para ti");
+    expect(homeSource).toContain("Todo en un solo lugar");
     expect(homeSource).toContain("Ir a /auditar ahora");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
@@ -33,6 +35,7 @@ describe("Auditapatron homepage content", () => {
     expect(homeSource).toContain("Sube tu recibo o documento");
     expect(homeSource).toContain("Te mostramos hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece contigo");
+    expect(homeSource).toContain("Tus documentos dejan de vivir en folders sueltos y empiezan a trabajar a tu favor.");
     expect(homeSource).toContain("Preguntas frecuentes");
     expect(homeSource).not.toContain("CompliLink Operativo");
     expect(homeSource).not.toContain("Garantizar que CompliLink opere hoy mismo");
@@ -41,6 +44,7 @@ describe("Auditapatron homepage content", () => {
   it("ships a friendly audit workspace with clear progress, comparison and alerts without visible internal jargon", () => {
     expect(auditFlowSource).toContain("Tus derechos laborales, claros y protegidos");
     expect(auditFlowSource).toContain("Hoy tu expediente va en:");
+    expect(auditFlowSource).toContain("expediente digital ordenado, disponible 24/7");
     expect(auditFlowSource).toContain("Próximo paso que más puede ayudarte");
     expect(auditFlowSource).toContain("Añade un documento a tu expediente");
     expect(auditFlowSource).toContain("Subir y revisar documento");
@@ -59,6 +63,7 @@ describe("Auditapatron homepage content", () => {
     expect(auditFlowSource).toContain("Alertas priorizadas");
     expect(auditFlowSource).toContain("Línea de tiempo del expediente");
     expect(auditFlowSource).toContain("Cómo se fue fortaleciendo tu expediente");
+    expect(auditFlowSource).toContain("todo queda disponible para ti 24/7");
     expect(auditFlowSource).toContain("Tu línea de tiempo está esperando.");
     expect(auditFlowSource).toContain("Conviene darle un vistazo con calma");
     expect(auditFlowSource).toContain("En espera, pero avanzando");
