@@ -196,4 +196,10 @@
 - [x] Humanizar los mensajes del bloque de seguimiento automático según estado, demora y avance real del expediente.
 - [x] Personalizar la recomendación del siguiente documento usando señales y hallazgos ya visibles del expediente.
 - [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda de mejoras en /auditar.
-- [ ] Guardar un checkpoint estable con esta nueva iteración avanzada de /auditar.
+- [x] Guardar un checkpoint estable con esta nueva iteración avanzada de /auditar.
+- [x] Contrastar con Grok, Gemini y ChatGPT la mejor forma de hacer a Helios más claro, comparativo y accionable dentro de /auditar.
+- [x] Implementar en /auditar un bloque de comparación guiada entre documentos bajo la narrativa de Helios.
+- [x] Hacer más user friendly la explicación de hallazgos, diferencias y siguientes pasos sugeridos por Helios.
+- [x] Reforzar recomendaciones útiles de Helios para que prioricen el siguiente documento o acción más valiosa.
+- [x] Actualizar y ejecutar pruebas Vitest para validar la nueva ronda prioritaria de mejoras de Helios en /auditar.
+- [ ] Guardar un checkpoint estable con esta nueva iteración prioritaria de Helios.

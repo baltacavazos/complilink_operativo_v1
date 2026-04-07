@@ -629,6 +629,187 @@ function getPersonalizedNextDocumentCopy(params: {
   } as const;
 }
 
+function getComparisonFocus(leftType: string, rightType: string) {
+  if (leftType === rightType) {
+    switch (leftType) {
+      case "payroll_receipt":
+        return "montos, deducciones y cambios entre periodos";
+      case "cfdi":
+        return "lo timbrado, los periodos y la consistencia fiscal";
+      case "contract":
+        return "sueldo pactado, puesto y condiciones relevantes";
+      case "imss":
+        return "altas, bajas y continuidad laboral";
+      case "evidence":
+        return "fechas, instrucciones y contexto de los hechos";
+      default:
+        return "fechas, montos y contexto visible";
+    }
+  }
+
+  const pairKey = [leftType, rightType].sort().join(":");
+  switch (pairKey) {
+    case "contract:payroll_receipt":
+      return "lo pactado en el contrato frente a lo que reflejan los recibos";
+    case "cfdi:payroll_receipt":
+      return "lo timbrado frente a lo que aparece en la nómina";
+    case "cfdi:contract":
+      return "las condiciones iniciales frente a los comprobantes fiscales";
+    default:
+      return "fechas, montos y señales útiles entre ambos archivos";
+  }
+}
+
+function buildHeliosComparisonCopy(params: {
+  documents: Array<{
+    documentId: string;
+    originalName: string;
+    documentType: string;
+    createdAt: Date | string;
+    heliosOpinion?: unknown;
+  }>;
+  nextTarget?: DossierTarget | null;
+  opinion?: HeliosOpinionView | null;
+}) {
+  const sortedDocuments = [...params.documents].sort(
+    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+  );
+
+  if (sortedDocuments.length === 0) {
+    return {
+      badge: "Comparación en espera",
+      headline: "Helios comparará tus documentos cuando tengas dos piezas útiles",
+      supportingText:
+        "En cuanto subas documentos relacionados, Helios podrá ponerlos lado a lado y ayudarte a detectar cambios con más claridad.",
+      cards: [
+        {
+          title: "Documentos comparados",
+          body: "Todavía no hay archivos suficientes para una comparación guiada dentro del expediente.",
+        },
+        {
+          title: "Lo que Helios está contrastando",
+          body: "Cuando tengas dos documentos útiles, Helios podrá revisar fechas, montos, condiciones y señales que hoy aún no se pueden cruzar.",
+        },
+        {
+          title: "Qué puede ayudarte a aclararlo más",
+          body: params.nextTarget
+            ? `Puedes empezar con ${params.nextTarget.label.toLowerCase()} para darle a Helios una primera base útil.`
+            : "Puedes empezar con el documento que tengas más a la mano para abrir la comparación después.",
+        },
+      ],
+      guardrail: "Helios te mostrará señales y diferencias útiles, pero siempre como una lectura preliminar y entendible.",
+      coverage:
+        "Mientras más documentos útiles subas, más contexto tendrá Helios para distinguir cambios reales de simples huecos de información.",
+      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir mi primer documento",
+    } as const;
+  }
+
+  if (sortedDocuments.length === 1) {
+    const onlyDocument = sortedDocuments[0];
+    return {
+      badge: "Falta una segunda pieza",
+      headline: "Helios ya tiene una base, pero necesita otro documento para comparar mejor",
+      supportingText: `Por ahora Helios solo tiene ${onlyDocument.originalName}. Si subes otro archivo relacionado, podrá señalar cambios con más claridad y menos partes preliminares.`,
+      cards: [
+        {
+          title: "Documentos comparados",
+          body: `${onlyDocument.originalName} ya forma parte del expediente, pero todavía no hay un segundo documento con el cual contrastarlo.`,
+        },
+        {
+          title: "Lo que Helios está contrastando",
+          body: `En cuanto haya otro ${getSimpleDocumentTypeLabel(onlyDocument.documentType).toLowerCase()} o un archivo relacionado, Helios podrá revisar fechas, montos o condiciones entre ambos.`,
+        },
+        {
+          title: "Qué puede ayudarte a aclararlo más",
+          body: params.nextTarget
+            ? `Si puedes, sube ${params.nextTarget.label.toLowerCase()} para que Helios empiece a conectar mejor esta historia.`
+            : "Si tienes otro documento del mismo periodo o del mismo caso, subirlo puede ayudar mucho a la comparación.",
+        },
+      ],
+      guardrail: "Helios te mostrará señales y diferencias útiles, pero siempre como una lectura preliminar y entendible.",
+      coverage:
+        "Dos documentos bien conectados suelen darle a Helios una base mucho más útil que un archivo aislado.",
+      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar",
+    } as const;
+  }
+
+  const groupedDocuments = new Map<string, typeof sortedDocuments>();
+  sortedDocuments.forEach((document) => {
+    const current = groupedDocuments.get(document.documentType) ?? [];
+    current.push(document);
+    groupedDocuments.set(document.documentType, current);
+  });
+
+  let selectedPair: [typeof sortedDocuments[number], typeof sortedDocuments[number]] | null = null;
+
+  for (const priorityType of ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]) {
+    const matches = groupedDocuments.get(priorityType);
+    if (matches && matches.length >= 2) {
+      selectedPair = [matches[1], matches[0]];
+      break;
+    }
+  }
+
+  if (!selectedPair) {
+    const newestContract = sortedDocuments.find((item) => item.documentType === "contract");
+    const newestPayroll = sortedDocuments.find((item) => item.documentType === "payroll_receipt");
+    const newestCfdi = sortedDocuments.find((item) => item.documentType === "cfdi");
+
+    if (newestContract && newestPayroll) {
+      selectedPair = [newestContract, newestPayroll];
+    } else if (newestPayroll && newestCfdi) {
+      selectedPair = [newestPayroll, newestCfdi];
+    } else {
+      selectedPair = [sortedDocuments[1], sortedDocuments[0]];
+    }
+  }
+
+  const [leftDocument, rightDocument] = selectedPair;
+  const sameType = leftDocument.documentType === rightDocument.documentType;
+  const focus = getComparisonFocus(leftDocument.documentType, rightDocument.documentType);
+  const leftOpinion = asHeliosOpinion(leftDocument.heliosOpinion);
+  const rightOpinion = asHeliosOpinion(rightDocument.heliosOpinion);
+  const firstUncertainty =
+    rightOpinion?.uncertainties?.find((item) => item?.trim()) ??
+    leftOpinion?.uncertainties?.find((item) => item?.trim()) ??
+    params.opinion?.uncertainties?.find((item) => item?.trim());
+  const suggestedStep =
+    rightOpinion?.recommendedNextStep ??
+    leftOpinion?.recommendedNextStep ??
+    params.opinion?.recommendedNextStep ??
+    (params.nextTarget
+      ? `Si puedes, sube ${params.nextTarget.label.toLowerCase()} para aclarar todavía más esta lectura.`
+      : "Si tienes otro archivo relacionado, subirlo puede ayudar a confirmar mejor este contraste.");
+
+  return {
+    badge: sameType ? "Comparación lista" : "Cruce útil disponible",
+    headline: sameType
+      ? `Helios ya puede revisar dos ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()} para buscar cambios útiles`
+      : `Helios ya puede cruzar ${getSimpleDocumentTypeLabel(leftDocument.documentType).toLowerCase()} y ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()}`,
+    supportingText: `Tomó ${leftDocument.originalName} y ${rightDocument.originalName} para revisar ${focus}. Así te da una lectura más clara sin obligarte a comparar todo manualmente.`,
+    cards: [
+      {
+        title: "Documentos comparados",
+        body: `${leftDocument.originalName} (${formatDate(leftDocument.createdAt)}) y ${rightDocument.originalName} (${formatDate(rightDocument.createdAt)}).`,
+      },
+      {
+        title: "Lo que Helios está contrastando",
+        body: sameType
+          ? `Está buscando cambios en ${focus} para que sea más fácil notar qué se movió entre ambos documentos.`
+          : `Está revisando ${focus} para ayudarte a conectar dos piezas distintas del expediente con menos fricción.`,
+      },
+      {
+        title: "Qué puede ayudarte a aclararlo más",
+        body: firstUncertainty ? `Por ahora todavía conviene revisar esto con calma: ${firstUncertainty}` : suggestedStep,
+      },
+    ],
+    guardrail: "Helios te muestra diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+    coverage:
+      "Mientras más documentos conectados tenga Helios, más fácil le resulta distinguir cambios reales de partes que todavía necesitan contexto.",
+    cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
+  } as const;
+}
+
 export default function Auditar() {
   const auth = useAuth();
   const utils = trpc.useUtils();
@@ -780,6 +961,11 @@ export default function Auditar() {
   const nextDocumentCopy = getPersonalizedNextDocumentCopy({
     nextTarget: dossierStatus.nextTarget ?? undefined,
     presentTypes,
+    opinion: visibleHeliosOpinion,
+  });
+  const comparisonCopy = buildHeliosComparisonCopy({
+    documents,
+    nextTarget: dossierStatus.nextTarget,
     opinion: visibleHeliosOpinion,
   });
 
@@ -1891,6 +2077,50 @@ export default function Auditar() {
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Comparación guiada de Helios</p>
+              <div className="mt-2 flex items-start gap-3">
+                <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-2">
+                  <FileSearch className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Helios: ¿Qué cambió aquí?</h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    Helios compara documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
+                <p className="text-sm font-semibold text-teal-900">{comparisonCopy.badge}</p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">{comparisonCopy.headline}</p>
+                <p className="mt-2 text-sm leading-7 text-teal-950">{comparisonCopy.supportingText}</p>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                {comparisonCopy.cards.map((card) => (
+                  <div key={card.title} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                    <p className="font-semibold text-slate-950">{card.title}</p>
+                    <p className="mt-2 text-sm leading-7 text-slate-700">{card.body}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
+                <p className="text-sm font-semibold text-emerald-900">Cómo Helios mejora esta comparación</p>
+                <p className="mt-2 text-sm leading-7 text-emerald-950">{comparisonCopy.coverage}</p>
+                <p className="mt-2 text-xs leading-6 text-emerald-900">{comparisonCopy.guardrail}</p>
+              </div>
+
+              <Button
+                className="mt-4 h-11 w-full rounded-full bg-slate-900 text-white hover:bg-slate-950"
+                onClick={openFilePicker}
+              >
+                {comparisonCopy.cta}
+                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">

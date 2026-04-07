@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-DS7jbXUcyey0uY8bfDOJ6o2n1itOA",
+  "object": "chat.completion",
+  "created": 1775595287,
+  "model": "gpt-4.1-mini-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"product_principles\": [\n    \"Ser claro y simple, sin jerga técnica\",\n    \"Proteger y empoderar a la persona usuaria, no confundirla\",\n    \"Priorizar móvil y minimizar scroll\",\n    \"No prometer conclusiones legales definitivas\",\n    \"Guiar con pasos accionables y realistas\",\n    \"Fomentar la carga de documentos de forma ética y transparente\"\n  ],\n  \"top_priorities\": [\n    {\n      \"name\": \"Bloque de comparación guiada entre documentos\",\n      \"why_it_matters\": \"Ayuda a la persona usuaria a entender diferencias clave entre documentos sin confusión, facilitando decisiones informadas.\",\n      \"implementation_risk\": \"low\",\n      \"expected_user_value\": \"Claridad en hallazgos y diferencias, menor incertidumbre, sensación de control.\"\n    },\n    {\n      \"name\": \"Claridad y humanización de hallazgos\",\n      \"why_it_matters\": \"Explicar hallazgos con lenguaje sencillo y protector reduce ansiedad y mejora comprensión real del expediente.\",\n      \"implementation_risk\": \"low\",\n      \"expected_user_value\": \"Mayor confianza y comprensión, menos dudas o malentendidos.\"\n    },\n    {\n      \"name\": \"Siguiente paso más accionable y útil\",\n      \"why_it_matters\": \"Recomendaciones claras y prácticas motivan a la persona usuaria a avanzar, evitando frustración o estancamiento.\",\n      \"implementation_risk\": \"low\",\n      \"expected_user_value\": \"Sentirse acompañado y saber qué hacer concretamente para mejorar su situación.\"\n    },\n    {\n      \"name\": \"Incentivar carga de documentos de forma ética\",\n      \"why_it_matters\": \"Más documentos mejoran la precisión de Helios y la guía, pero debe ser sin presión ni manipulación, respetando la voluntad del usuario.\",\n      \"implementation_risk\": \"low\",\n      \"expected_user_value\": \"Sentirse respetado y motivado a aportar información útil sin sentirse obligado.\"\n    }\n  ],\n  \"document_comparison_block\": {\n    \"recommended_name\": \"Comparación Clara\",\n    \"purpose\": \"Mostrar diferencias clave entre dos documentos para que la persona usuaria entienda cambios o inconsistencias relevantes.\",\n    \"minimum_viable_inputs\": [\n      \"Documento A (subido previamente)\",\n      \"Documento B (subido previamente o recién cargado)\"\n    ],\n    \"comparison_pairs\": [\n      \"Fechas importantes (inicio, fin, pagos)\",\n      \"Montos o cifras relevantes\",\n      \"Cláusulas o términos destacados\",\n      \"Firmas o validaciones\"\n    ],\n    \"output_cards\": [\n      \"Resumen de diferencias clave con iconos simples\",\n      \"Explicación breve y humana de cada diferencia\",\n      \"Indicador de si la diferencia puede requerir acción\"\n    ],\n    \"sample_copy\": {\n      \"headline\": \"Diferencias entre documentos detectadas\",\n      \"summary\": \"Aquí te mostramos los puntos que cambiaron o no coinciden para que puedas revisarlos con calma.\",\n      \"key_change_label\": \"Cambio importante\",\n      \"next_step\": \"Si algo no coincide, considera subir un documento nuevo o consultar con un experto.\"\n    }\n  },\n  \"friendlier_helios\": {\n    \"microcopy_rules\": [\n      \"Usar lenguaje cercano y empático\",\n      \"Evitar términos técnicos o legales complejos\",\n      \"No afirmar certezas legales, solo posibilidades y sugerencias\",\n      \"Incluir frases que validen la experiencia del usuario\",\n      \"Ser breve y directo para móvil\"\n    ],\n    \"states_to_add_or_refine\": [\n      \"Estado cuando no hay documentos suficientes para comparar\",\n      \"Estado cuando no se detectan diferencias relevantes\",\n      \"Estado cuando se recomienda cargar un documento nuevo\",\n      \"Mensajes de seguimiento que reconozcan el esfuerzo del usuario\"\n    ],\n    \"trust_guardrails\": [\n      \"Recordar que Helios no reemplaza asesoría legal profesional\",\n      \"No usar lenguaje que genere alarma o miedo innecesario\",\n      \"Ser transparente sobre limitaciones de la interpretación\",\n      \"Invitar a consultar fuentes oficiales o expertos si hay dudas\"\n    ]\n  },\n  \"implementation_order\": [\n    \"Mejorar microcopy y estados de Helios para mayor claridad y empatía\",\n    \"Agregar bloque de comparación guiada con inputs mínimos y output claro\",\n    \"Refinar recomendaciones del siguiente paso para ser más concretas y útiles\",\n    \"Incluir mensajes éticos y transparentes para incentivar carga de documentos\"\n  ],\n  \"do_not_do_yet\": [\n    \"Generar conclusiones legales definitivas o diagnósticos cerrados\",\n    \"Cambiar estructura principal de UI o agregar scroll innecesario\",\n    \"Implementar análisis complejos que requieran datos externos no disponibles\",\n    \"Usar lenguaje técnico o intimidante\"\n  ],\n  \"final_recommendation\": \"Priorizar mejoras simples y directas que hagan a Helios más humano, claro y útil, enfocándose en comparación guiada y recomendaciones prácticas sin perder la confianza y protección del usuario.\"\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 612,
+    "completion_tokens": 1053,
+    "total_tokens": 1665,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_09e865cbef"
+}

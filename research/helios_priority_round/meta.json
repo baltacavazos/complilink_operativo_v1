@@ -1,0 +1,9 @@
+{
+  "createdAt": "2026-04-07T20:54:45.686Z",
+  "purpose": "Consulta multi-IA para priorizar la siguiente ronda de mejoras de Helios en /auditar.",
+  "models": {
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-2.5-flash",
+    "grok": "grok-4"
+  }
+}

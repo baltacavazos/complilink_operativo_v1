@@ -1,0 +1,3 @@
+{
+  "error": "Grok devolvió 503: {\"code\":\"The service is currently unavailable\",\"error\":\"Service temporarily unavailable. The model is at capacity and currently cannot serve this request. Please try again later.\"}"
+}

@@ -1,0 +1,95 @@
+{
+  "product_principles": [
+    "Ser claro y simple, sin jerga técnica",
+    "Proteger y empoderar a la persona usuaria, no confundirla",
+    "Priorizar móvil y minimizar scroll",
+    "No prometer conclusiones legales definitivas",
+    "Guiar con pasos accionables y realistas",
+    "Fomentar la carga de documentos de forma ética y transparente"
+  ],
+  "top_priorities": [
+    {
+      "name": "Bloque de comparación guiada entre documentos",
+      "why_it_matters": "Ayuda a la persona usuaria a entender diferencias clave entre documentos sin confusión, facilitando decisiones informadas.",
+      "implementation_risk": "low",
+      "expected_user_value": "Claridad en hallazgos y diferencias, menor incertidumbre, sensación de control."
+    },
+    {
+      "name": "Claridad y humanización de hallazgos",
+      "why_it_matters": "Explicar hallazgos con lenguaje sencillo y protector reduce ansiedad y mejora comprensión real del expediente.",
+      "implementation_risk": "low",
+      "expected_user_value": "Mayor confianza y comprensión, menos dudas o malentendidos."
+    },
+    {
+      "name": "Siguiente paso más accionable y útil",
+      "why_it_matters": "Recomendaciones claras y prácticas motivan a la persona usuaria a avanzar, evitando frustración o estancamiento.",
+      "implementation_risk": "low",
+      "expected_user_value": "Sentirse acompañado y saber qué hacer concretamente para mejorar su situación."
+    },
+    {
+      "name": "Incentivar carga de documentos de forma ética",
+      "why_it_matters": "Más documentos mejoran la precisión de Helios y la guía, pero debe ser sin presión ni manipulación, respetando la voluntad del usuario.",
+      "implementation_risk": "low",
+      "expected_user_value": "Sentirse respetado y motivado a aportar información útil sin sentirse obligado."
+    }
+  ],
+  "document_comparison_block": {
+    "recommended_name": "Comparación Clara",
+    "purpose": "Mostrar diferencias clave entre dos documentos para que la persona usuaria entienda cambios o inconsistencias relevantes.",
+    "minimum_viable_inputs": [
+      "Documento A (subido previamente)",
+      "Documento B (subido previamente o recién cargado)"
+    ],
+    "comparison_pairs": [
+      "Fechas importantes (inicio, fin, pagos)",
+      "Montos o cifras relevantes",
+      "Cláusulas o términos destacados",
+      "Firmas o validaciones"
+    ],
+    "output_cards": [
+      "Resumen de diferencias clave con iconos simples",
+      "Explicación breve y humana de cada diferencia",
+      "Indicador de si la diferencia puede requerir acción"
+    ],
+    "sample_copy": {
+      "headline": "Diferencias entre documentos detectadas",
+      "summary": "Aquí te mostramos los puntos que cambiaron o no coinciden para que puedas revisarlos con calma.",
+      "key_change_label": "Cambio importante",
+      "next_step": "Si algo no coincide, considera subir un documento nuevo o consultar con un experto."
+    }
+  },
+  "friendlier_helios": {
+    "microcopy_rules": [
+      "Usar lenguaje cercano y empático",
+      "Evitar términos técnicos o legales complejos",
+      "No afirmar certezas legales, solo posibilidades y sugerencias",
+      "Incluir frases que validen la experiencia del usuario",
+      "Ser breve y directo para móvil"
+    ],
+    "states_to_add_or_refine": [
+      "Estado cuando no hay documentos suficientes para comparar",
+      "Estado cuando no se detectan diferencias relevantes",
+      "Estado cuando se recomienda cargar un documento nuevo",
+      "Mensajes de seguimiento que reconozcan el esfuerzo del usuario"
+    ],
+    "trust_guardrails": [
+      "Recordar que Helios no reemplaza asesoría legal profesional",
+      "No usar lenguaje que genere alarma o miedo innecesario",
+      "Ser transparente sobre limitaciones de la interpretación",
+      "Invitar a consultar fuentes oficiales o expertos si hay dudas"
+    ]
+  },
+  "implementation_order": [
+    "Mejorar microcopy y estados de Helios para mayor claridad y empatía",
+    "Agregar bloque de comparación guiada con inputs mínimos y output claro",
+    "Refinar recomendaciones del siguiente paso para ser más concretas y útiles",
+    "Incluir mensajes éticos y transparentes para incentivar carga de documentos"
+  ],
+  "do_not_do_yet": [
+    "Generar conclusiones legales definitivas o diagnósticos cerrados",
+    "Cambiar estructura principal de UI o agregar scroll innecesario",
+    "Implementar análisis complejos que requieran datos externos no disponibles",
+    "Usar lenguaje técnico o intimidante"
+  ],
+  "final_recommendation": "Priorizar mejoras simples y directas que hagan a Helios más humano, claro y útil, enfocándose en comparación guiada y recomendaciones prácticas sin perder la confianza y protección del usuario."
+}

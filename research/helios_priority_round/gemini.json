@@ -1,0 +1,85 @@
+{
+  "product_principles": [
+    "Mobile-first: Experiencia fluida y concisa en pantallas pequeñas.",
+    "Claridad radical: Lenguaje simple, sin jerga legal, directo al punto.",
+    "Accionabilidad: Cada hallazgo o sugerencia debe llevar a un paso útil y claro.",
+    "Empatía y protección: Tono humano, que empodere y no alarme al trabajador.",
+    "Ética y transparencia: Incentivar la carga de documentos de forma honesta, sin manipular."
+  ],
+  "top_priorities": [
+    {
+      "name": "Bloque de Comparación Guiada 'Helios: ¿Qué cambió aquí?'",
+      "why_it_matters": "Permite al usuario identificar rápidamente diferencias clave entre documentos similares (ej. recibos de nómina, contratos), lo que es fundamental para entender cambios en sus condiciones laborales y detectar posibles inconsistencias. Reduce la carga cognitiva de comparar manualmente.",
+      "implementation_risk": "low",
+      "expected_user_value": "Alto. Claridad inmediata sobre cambios importantes, empoderando al usuario con información precisa y fácil de digerir."
+    },
+    {
+      "name": "Hallazgos y Siguientes Pasos Más Claros y Accionables",
+      "why_it_matters": "Mejora la comprensión de lo que Helios detecta y qué hacer al respecto. Transforma observaciones en consejos prácticos, reduciendo la frustración y la incertidumbre del usuario. Se enfoca en la utilidad directa para el trabajador.",
+      "implementation_risk": "low",
+      "expected_user_value": "Alto. Mayor confianza en Helios, mejor guía para el usuario y mayor probabilidad de completar acciones recomendadas."
+    },
+    {
+      "name": "Sugerencias Proactivas de Documentos Faltantes o Clave",
+      "why_it_matters": "Guía al usuario para completar su expediente de manera ética y útil. Al identificar proactivamente qué documentos podrían ser relevantes o faltantes, Helios se vuelve un asistente más inteligente y útil, incentivando la carga sin ser manipulador.",
+      "implementation_risk": "low",
+      "expected_user_value": "Medio-Alto. Expedientes más completos, lo que a su vez permite a Helios ofrecer análisis más profundos y precisos."
+    }
+  ],
+  "document_comparison_block": {
+    "recommended_name": "Helios: ¿Qué cambió aquí?",
+    "purpose": "Ayudar al trabajador a entender rápidamente las diferencias significativas entre dos documentos de un mismo tipo (ej. dos recibos de nómina, dos contratos) para identificar variaciones en sus condiciones laborales.",
+    "minimum_viable_inputs": [
+      "Dos documentos del mismo tipo ya cargados en el expediente."
+    ],
+    "comparison_pairs": [
+      "Recibos de nómina (comparar mes a mes o antes/después de un evento)",
+      "Contratos de trabajo (comparar contrato inicial vs. renovación/modificación)",
+      "Finiquitos (comparar propuesta de finiquito vs. finiquito final)"
+    ],
+    "output_cards": [
+      "Tarjeta de 'Cambio Detectado': Destaca un dato específico que varió (ej. salario base, puesto).",
+      "Tarjeta de 'Diferencia Clave': Señala una discrepancia importante (ej. fecha de inicio, tipo de contrato).",
+      "Tarjeta de 'Dato Faltante': Indica si un dato clave está en un documento pero no en el otro."
+    ],
+    "sample_copy": {
+      "headline": "Helios encontró diferencias entre tus recibos de nómina.",
+      "summary": "Comparamos tu recibo de **[Mes A]** con el de **[Mes B]** y notamos esto:",
+      "key_change_label": "Tu salario base cambió de $X a $Y.",
+      "next_step": "Si tienes dudas sobre este cambio, sube más recibos para ver si es un patrón o consulta a un especialista."
+    }
+  },
+  "friendlier_helios": {
+    "microcopy_rules": [
+      "Usa lenguaje directo y en primera persona (Helios te ayuda, Helios encontró).",
+      "Evita la jerga legal. Si es inevitable, explícala brevemente.",
+      "Enfócate en el 'tú' y en el beneficio directo para el usuario.",
+      "Tono protector y empático, nunca alarmista.",
+      "Mensajes concisos, ideales para móvil y poco scroll."
+    ],
+    "states_to_add_or_refine": [
+      "**Documento faltante clave:** 'Helios notó que falta tu [tipo de documento, ej. Contrato inicial]. Subirlo nos ayudará a entender mejor tu expediente.'",
+      "**Posible inconsistencia detectada:** 'Helios encontró una posible diferencia entre [Dato A en Doc 1] y [Dato B en Doc 2]. Te sugerimos revisarlo.'",
+      "**Documento ilegible/incompleto:** 'Parece que tu [tipo de documento] no está completo o es difícil de leer. ¿Puedes subir una versión más clara?'",
+      "**Progreso del expediente:** '¡Excelente! Ya tienes el [X]% de tus documentos clave. Sigue así.'"
+    ],
+    "trust_guardrails": [
+      "Siempre aclarar que Helios es una herramienta de organización y análisis de información, no un asesor legal.",
+      "Usar frases como 'Helios te muestra una observación', 'podría indicar', 'te sugerimos revisar' en lugar de afirmaciones definitivas.",
+      "Recomendar explícitamente la consulta con un especialista legal para decisiones importantes.",
+      "Mantener la objetividad en los hallazgos, presentando los datos tal cual, sin interpretaciones emocionales."
+    ]
+  },
+  "implementation_order": [
+    "1. Refinar microcopy de hallazgos y siguientes pasos existentes para ser más claros y accionables (bajo riesgo, alto impacto).",
+    "2. Implementar la primera versión del bloque 'Helios: ¿Qué cambió aquí?' para recibos de nómina, con la UI de tarjetas de salida (bajo riesgo, alto impacto).",
+    "3. Integrar sugerencias proactivas de documentos faltantes en la línea de tiempo o como una tarjeta de recomendación (bajo riesgo, medio-alto impacto)."
+  ],
+  "do_not_do_yet": [
+    "Generación automática de demandas o documentos legales complejos.",
+    "Interpretaciones jurídicas definitivas o 'dictámenes' legales por parte de Helios.",
+    "Funcionalidades que requieran la integración de nuevas fuentes de datos externas en esta ronda.",
+    "Análisis predictivos complejos sobre el resultado de un caso legal."
+  ],
+  "final_recommendation": "La clave para esta ronda es potenciar la claridad y la acción. Al ofrecer un comparador guiado, mejorar la redacción de los hallazgos y proponer proactivamente la carga de documentos, Helios se transformará en un asistente mucho más inteligente y amigable, empoderando al trabajador con información útil y pasos claros, todo dentro de un marco de bajo riesgo y alto impacto."
+}
