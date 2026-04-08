@@ -411,3 +411,8 @@
 - [x] Compactar mejor los CTAs del hero en móvil para reducir ruido visual y acelerar la decisión
 - [x] Incorporar una prueba social breve debajo del hero para reforzar confianza inmediata
 - [x] Añadir un mini estado visible de documentos subidos y faltantes para hacer más tangible el avance del expediente
+- [x] Revalidar con ChatGPT, Gemini y Grok la mejor solución para que el logo del header móvil no se pierda sobre el fondo oscuro y conserve identidad y legibilidad
+- [x] Rediseñar el lockup del logo en móvil para que gane contraste, tamaño óptico y presencia sin recargar la barra superior
+- [x] Revisar y simplificar el header móvil para que el logo, el CTA principal y el botón de menú convivan sin competir visualmente
+- [x] Convertir la prueba social breve del hero en un formato más convincente y escaneable en móvil
+- [x] Hacer interactivo el mini estado documental para guiar al usuario hacia el siguiente archivo recomendado

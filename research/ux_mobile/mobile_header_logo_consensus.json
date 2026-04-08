@@ -1,0 +1,218 @@
+{
+  "generated_at": "2026-04-08T21:01:57.269577+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir la mejor solución multi-modelo para corregir el logo del header móvil y cerrar las siguientes mejoras del hero con máxima claridad visual."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Ajustes precisos en header y prueba social para claridad y confianza máximas.\",\n  \"consensus_score_0_to_10\": 9,\n  \"main_decision\": \"Simplificar logo a icono en cápsula con borde sutil y redistribuir header para equilibrio visual.\",\n  \"mobile_header_logo\": {\n    \"decision\": \"Usar solo el icono de la marca dentro de una cápsula con borde sutil blanco para mejorar contraste.\",\n    \"recommended_pattern\": \"Icono en cápsula con borde blanco sobre barra oscura, sin texto para evitar saturación.\",\n    \"changes\": [\n      \"Eliminar wordmark para móvil y dejar solo icono en cápsula.\",\n      \"Agregar borde blanco muy fino alrededor de la cápsula para destacar sobre fondo oscuro.\",\n      \"Aumentar tamaño del icono un 20% sin afectar altura total del header.\",\n      \"Mantener fondo oscuro pero sin sombras ni efectos adicionales.\"\n    ],\n    \"why_this_wins\": \"Maximiza legibilidad y presencia de marca sin saturar ni competir con CTA y menú, manteniendo limpieza y rapidez visual.\",\n    \"do_not_do\": [\n      \"No agrandar logo completo indiscriminadamente.\",\n      \"No usar glow o efectos brillantes que distraigan.\",\n      \"No colocar fondo claro detrás del logo que rompa la barra oscura.\"\n    ]\n  },\n  \"mobile_header_balance\": {\n    \"decision\": \"Reducir espacio del CTA y menú para dar más espacio al icono y equilibrar visualmente el header.\",\n    \"changes\": [\n      \"Reducir padding horizontal del botón 'Auditar' para hacerlo más compacto.\",\n      \"Disminuir tamaño del icono del menú hamburguesa ligeramente.\",\n      \"Alinear verticalmente todos los elementos para que el logo no se vea desplazado.\"\n    ],\n    \"target_effect\": \"Que el logo gane presencia sin perder jerarquía ni afectar la claridad del CTA y menú.\"\n  },\n  \"social_proof_upgrade\": {\n    \"decision\": \"Incluir testimonios cortos y numéricos con iconos de usuario para mayor credibilidad y escaneabilidad.\",\n    \"format\": \"Tarjetas horizontales pequeñas con icono, texto breve y número destacado.\",\n    \"copy_examples\": [\n      \"\\\"+500 trabajadores ya auditaron su patrón\\\"\",\n      \"\\\"95% de usuarios recomiendan AuditaPatron\\\"\",\n      \"\\\"Rápido, claro y confiable para mi familia\\\"\"\n    ],\n    \"placement\": \"Justo debajo del hero, antes del CTA principal para reforzar confianza antes de la acción.\"\n  },\n  \"dossier_status_interaction\": {\n    \"decision\": \"Mostrar mini estado documental con barra de progreso y botón para avanzar al siguiente archivo.\",\n    \"example_state\": \"\\\"Archivo 2 de 5 revisado\\\" con barra de progreso visual simple.\",\n    \"interaction_rule\": \"Al tocar el estado, se despliega breve detalle y botón 'Siguiente archivo' para continuar proceso.\",\n    \"changes\": [\n      \"Agregar barra de progreso horizontal simple y clara.\",\n      \"Incluir texto breve del estado actual y siguiente paso.\",\n      \"Hacer el área táctil suficientemente grande para facilitar interacción.\"\n    ]\n  },\n  \"priority_order\": [\n    \"Ajustar logo en header móvil\",\n    \"Redistribuir espacio entre logo, CTA y menú\",\n    \"Mejorar prueba social con testimonios breves\",\n    \"Implementar mini estado documental interactivo\"\n  ],\n  \"changes_now\": [\n    \"Reemplazar logo wordmark por icono en cápsula con borde blanco\",\n    \"Reducir padding del botón 'Auditar' y tamaño menú hamburguesa\",\n    \"Alinear verticalmente elementos del header\",\n    \"Agregar sección de prueba social con tarjetas breves\",\n    \"Incluir barra de progreso y texto en mini estado documental\",\n    \"Hacer interactivo el mini estado con botón 'Siguiente archivo'\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Ajustes precisos en header y prueba social para claridad y confianza máximas.",
+        "consensus_score_0_to_10": 9,
+        "main_decision": "Simplificar logo a icono en cápsula con borde sutil y redistribuir header para equilibrio visual.",
+        "mobile_header_logo": {
+          "decision": "Usar solo el icono de la marca dentro de una cápsula con borde sutil blanco para mejorar contraste.",
+          "recommended_pattern": "Icono en cápsula con borde blanco sobre barra oscura, sin texto para evitar saturación.",
+          "changes": [
+            "Eliminar wordmark para móvil y dejar solo icono en cápsula.",
+            "Agregar borde blanco muy fino alrededor de la cápsula para destacar sobre fondo oscuro.",
+            "Aumentar tamaño del icono un 20% sin afectar altura total del header.",
+            "Mantener fondo oscuro pero sin sombras ni efectos adicionales."
+          ],
+          "why_this_wins": "Maximiza legibilidad y presencia de marca sin saturar ni competir con CTA y menú, manteniendo limpieza y rapidez visual.",
+          "do_not_do": [
+            "No agrandar logo completo indiscriminadamente.",
+            "No usar glow o efectos brillantes que distraigan.",
+            "No colocar fondo claro detrás del logo que rompa la barra oscura."
+          ]
+        },
+        "mobile_header_balance": {
+          "decision": "Reducir espacio del CTA y menú para dar más espacio al icono y equilibrar visualmente el header.",
+          "changes": [
+            "Reducir padding horizontal del botón 'Auditar' para hacerlo más compacto.",
+            "Disminuir tamaño del icono del menú hamburguesa ligeramente.",
+            "Alinear verticalmente todos los elementos para que el logo no se vea desplazado."
+          ],
+          "target_effect": "Que el logo gane presencia sin perder jerarquía ni afectar la claridad del CTA y menú."
+        },
+        "social_proof_upgrade": {
+          "decision": "Incluir testimonios cortos y numéricos con iconos de usuario para mayor credibilidad y escaneabilidad.",
+          "format": "Tarjetas horizontales pequeñas con icono, texto breve y número destacado.",
+          "copy_examples": [
+            "\"+500 trabajadores ya auditaron su patrón\"",
+            "\"95% de usuarios recomiendan AuditaPatron\"",
+            "\"Rápido, claro y confiable para mi familia\""
+          ],
+          "placement": "Justo debajo del hero, antes del CTA principal para reforzar confianza antes de la acción."
+        },
+        "dossier_status_interaction": {
+          "decision": "Mostrar mini estado documental con barra de progreso y botón para avanzar al siguiente archivo.",
+          "example_state": "\"Archivo 2 de 5 revisado\" con barra de progreso visual simple.",
+          "interaction_rule": "Al tocar el estado, se despliega breve detalle y botón 'Siguiente archivo' para continuar proceso.",
+          "changes": [
+            "Agregar barra de progreso horizontal simple y clara.",
+            "Incluir texto breve del estado actual y siguiente paso.",
+            "Hacer el área táctil suficientemente grande para facilitar interacción."
+          ]
+        },
+        "priority_order": [
+          "Ajustar logo en header móvil",
+          "Redistribuir espacio entre logo, CTA y menú",
+          "Mejorar prueba social con testimonios breves",
+          "Implementar mini estado documental interactivo"
+        ],
+        "changes_now": [
+          "Reemplazar logo wordmark por icono en cápsula con borde blanco",
+          "Reducir padding del botón 'Auditar' y tamaño menú hamburguesa",
+          "Alinear verticalmente elementos del header",
+          "Agregar sección de prueba social con tarjetas breves",
+          "Incluir barra de progreso y texto en mini estado documental",
+          "Hacer interactivo el mini estado con botón 'Siguiente archivo'"
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-flash-latest",
+      "raw": "{\n  \"veredicto_general\": \"Optimización de jerarquía visual en el header y refuerzo de autoridad mediante micro-señales de confianza.\",\n  \"consensus_score_0_to_10\": 9.5,\n  \"main_decision\": \"Implementar un 'Brand-First Header' con logo simplificado y una cápsula de prueba social de alta densidad informativa.\",\n  \"mobile_header_logo\": {\n    \"decision\": \"Wordmark simplificado con isotipo integrado en versión negativa de alto contraste.\",\n    \"recommended_pattern\": \"Horizontal Lockup con Safe-Area Óptico\",\n    \"changes\": [\n      \"Eliminar el tagline o detalles minúsculos del logo para la versión móvil\",\n      \"Aumentar la altura del logo a un mínimo de 32px efectivos\",\n      \"Aplicar color blanco puro o 'off-white' para máxima legibilidad sobre fondo oscuro\",\n      \"Ajustar el kerning (espaciado entre letras) para evitar que los caracteres se empasten en pantallas pequeñas\"\n    ],\n    \"why_this_wins\": \"Permite que la marca sea reconocible a 30cm de distancia sin que el usuario tenga que forzar la vista.\",\n    \"do_not_do\": [\n      \"No usar el logo con degradados complejos\",\n      \"No encerrar el logo en un contenedor blanco cuadrado que rompa la fluidez de la barra\",\n      \"No usar la versión vertical del logo\"\n    ]\n  },\n  \"mobile_header_balance\": {\n    \"decision\": \"Redistribución de pesos mediante la regla de tercios asimétricos.\",\n    \"changes\": [\n      \"Asignar 45% del ancho al logo (izquierda), 35% al CTA 'Auditar' y 20% al menú\",\n      \"Reducir el padding interno del botón 'Auditar' para que no compita en masa visual con el logo\",\n      \"Usar un icono de menú (hamburguesa) de trazo fino (1.5px a 2px) para reducir su peso visual\"\n    ],\n    \"target_effect\": \"Estabilidad visual donde el ojo identifica primero quién es (marca) y luego qué hacer (CTA).\"\n  },\n  \"social_proof_upgrade\": {\n    \"decision\": \"Cápsula de confianza compacta (Trust Pill) con validación cuantitativa.\",\n    \"format\": \"Avatar stack con contador dinámico y estrella de calificación\",\n    \"copy_examples\": [\n      \"+15,000 trabajadores auditados\",\n      \"4.9/5 de satisfacción laboral\",\n      \"Protección de datos nivel bancario\"\n    ],\n    \"placement\": \"Inmediatamente debajo del CTA principal del Hero, centrado.\"\n  },\n  \"dossier_status_interaction\": {\n    \"decision\": \"Mini-stepper de progreso con enfoque en 'Siguiente Acción'.\",\n    \"example_state\": \"Expediente: 2 de 3 documentos listos\",\n    \"interaction_rule\": \"Tap-to-reveal con feedback táctil (haptic) que despliega el documento faltante\",\n    \"changes\": [\n      \"Barra de progreso delgada (4px) en color verde marca\",\n      \"Iconografía de 'check' animada al completar\",\n      \"Botón de acción secundaria 'Subir faltante' con estilo ghost\"\n    ]\n  },\n  \"priority_order\": [\n    \"Legibilidad y contraste del logo en header\",\n    \"Equilibrio de pesos en la barra superior\",\n    \"Implementación de Trust Pill (Prueba social)\",\n    \"Interactividad del estado documental\"\n  ],\n  \"changes_now\": [\n    \"Cambiar logo actual por versión simplificada en blanco\",\n    \"Fijar altura de barra superior en 60px para evitar saltos de layout\",\n    \"Reducir tamaño de fuente del botón 'Auditar' en header a 14px\",\n    \"Insertar bloque de avatares de usuarios bajo el botón principal\",\n    \"Añadir un borde inferior sutil (1px, opacidad 10%) a la barra superior para separar del hero\",\n    \"Implementar micro-animación de carga en la barra de progreso del dossier\"\n  ],\n  \"confidence_0_to_100\": 98\n}",
+      "parsed": {
+        "veredicto_general": "Optimización de jerarquía visual en el header y refuerzo de autoridad mediante micro-señales de confianza.",
+        "consensus_score_0_to_10": 9.5,
+        "main_decision": "Implementar un 'Brand-First Header' con logo simplificado y una cápsula de prueba social de alta densidad informativa.",
+        "mobile_header_logo": {
+          "decision": "Wordmark simplificado con isotipo integrado en versión negativa de alto contraste.",
+          "recommended_pattern": "Horizontal Lockup con Safe-Area Óptico",
+          "changes": [
+            "Eliminar el tagline o detalles minúsculos del logo para la versión móvil",
+            "Aumentar la altura del logo a un mínimo de 32px efectivos",
+            "Aplicar color blanco puro o 'off-white' para máxima legibilidad sobre fondo oscuro",
+            "Ajustar el kerning (espaciado entre letras) para evitar que los caracteres se empasten en pantallas pequeñas"
+          ],
+          "why_this_wins": "Permite que la marca sea reconocible a 30cm de distancia sin que el usuario tenga que forzar la vista.",
+          "do_not_do": [
+            "No usar el logo con degradados complejos",
+            "No encerrar el logo en un contenedor blanco cuadrado que rompa la fluidez de la barra",
+            "No usar la versión vertical del logo"
+          ]
+        },
+        "mobile_header_balance": {
+          "decision": "Redistribución de pesos mediante la regla de tercios asimétricos.",
+          "changes": [
+            "Asignar 45% del ancho al logo (izquierda), 35% al CTA 'Auditar' y 20% al menú",
+            "Reducir el padding interno del botón 'Auditar' para que no compita en masa visual con el logo",
+            "Usar un icono de menú (hamburguesa) de trazo fino (1.5px a 2px) para reducir su peso visual"
+          ],
+          "target_effect": "Estabilidad visual donde el ojo identifica primero quién es (marca) y luego qué hacer (CTA)."
+        },
+        "social_proof_upgrade": {
+          "decision": "Cápsula de confianza compacta (Trust Pill) con validación cuantitativa.",
+          "format": "Avatar stack con contador dinámico y estrella de calificación",
+          "copy_examples": [
+            "+15,000 trabajadores auditados",
+            "4.9/5 de satisfacción laboral",
+            "Protección de datos nivel bancario"
+          ],
+          "placement": "Inmediatamente debajo del CTA principal del Hero, centrado."
+        },
+        "dossier_status_interaction": {
+          "decision": "Mini-stepper de progreso con enfoque en 'Siguiente Acción'.",
+          "example_state": "Expediente: 2 de 3 documentos listos",
+          "interaction_rule": "Tap-to-reveal con feedback táctil (haptic) que despliega el documento faltante",
+          "changes": [
+            "Barra de progreso delgada (4px) en color verde marca",
+            "Iconografía de 'check' animada al completar",
+            "Botón de acción secundaria 'Subir faltante' con estilo ghost"
+          ]
+        },
+        "priority_order": [
+          "Legibilidad y contraste del logo en header",
+          "Equilibrio de pesos en la barra superior",
+          "Implementación de Trust Pill (Prueba social)",
+          "Interactividad del estado documental"
+        ],
+        "changes_now": [
+          "Cambiar logo actual por versión simplificada en blanco",
+          "Fijar altura de barra superior en 60px para evitar saltos de layout",
+          "Reducir tamaño de fuente del botón 'Auditar' en header a 14px",
+          "Insertar bloque de avatares de usuarios bajo el botón principal",
+          "Añadir un borde inferior sutil (1px, opacidad 10%) a la barra superior para separar del hero",
+          "Implementar micro-animación de carga en la barra de progreso del dossier"
+        ],
+        "confidence_0_to_100": 98
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Landing sólida, pero header móvil necesita refinamiento para mayor legibilidad y jerarquía.\",\n  \"consensus_score_0_to_10\": 7,\n  \"main_decision\": \"Priorizar lockup horizontal simplificado para logo y redistribución equilibrada del header.\",\n  \"mobile_header_logo\": {\n    \"decision\": \"Lockup horizontal mejorado con wordmark simplificado y borde sutil.\",\n    \"recommended_pattern\": \"Logo centrado en izquierda con padding interno y contraste boost via borde gris claro.\",\n    \"changes\": [\"Aumentar tamaño de fuente del wordmark a 18-20px sin escalar icono\", \"Agregar borde sutil de 1px gris claro alrededor del lockup\", \"Simplificar tipografía a sans-serif bold para 'AuditaPatron'\", \"Ajustar padding izquierdo para evitar recorte en área sacrificada\"],\n    \"why_this_wins\": \"Mejora legibilidad inmediata sin sobrecargar la barra oscura, manteniendo limpieza y jerarquía.\",\n    \"do_not_do\": [\"No agrandar indiscriminadamente para evitar header pesado\", \"No usar glow o sombras que reduzcan velocidad de carga\", \"No cambiar colores de marca por alto contraste forzado\"]\n  },\n  \"mobile_header_balance\": {\n    \"decision\": \"Redistribuir espacio: logo 40%, CTA 30%, menú 30%.\",\n    \"changes\": [\"Mover CTA 'Auditar' al centro-derecha con padding reducido\", \"Reducir icono de menú a 24px y alinear verticalmente\", \"Aumentar espaciado entre elementos a 8-12px para respiración visual\"],\n    \"target_effect\": \"Jerarquía clara donde logo domina izquierda, CTA invita acción sin competir, menú accesible sin clutter.\"\n  },\n  \"social_proof_upgrade\": {\n    \"decision\": \"Convertir en carrusel escaneable de 3-4 testimonios breves con avatares.\",\n    \"format\": \"Tarjetas horizontales swipeables, cada una con foto pequeña, cita corta y nombre/empresa.\",\n    \"copy_examples\": [\"'AuditaPatron me ayudó a reclamar mis derechos en semanas.' - Juan Pérez, Trabajador\", \"'Fácil de usar, resultados confiables.' - María López, Empleada\", \"'Recomendado para todos los trabajadores.' - Carlos Ramírez, Sindicato\"],\n    \"placement\": \"Debajo del hero, en sección dedicada de 200-250px altura para no interferir con CTA principal.\"\n  },\n  \"dossier_status_interaction\": {\n    \"decision\": \"Mini componente interactivo con estados visuales y sugerencia de siguiente paso.\",\n    \"example_state\": \"Barra de progreso con iconos: 'Pendiente' (gris), 'En revisión' (amarillo), 'Completado' (verde).\",\n    \"interaction_rule\": \"Al tocar estado incompleto, mostrar tooltip con 'Sube tu siguiente documento recomendado' y enlace directo.\",\n    \"changes\": [\"Usar toggle simple para expandir/contrair detalles\", \"Limitar a 3 estados max para simplicidad móvil\", \"Agregar animación sutil de fade-in para sugerencias sin distraer\"]\n  },\n  \"priority_order\": [\"Mejorar logo y header balance\", \"Implementar social proof upgrade\", \"Agregar interacción al dossier status\", \"Pruebas de legibilidad en dispositivos reales\"],\n  \"changes_now\": [\"Ajustar lockup logo con borde y tamaño optimizado\", \"Redistribuir header para mejor convivencia\", \"Crear 3 tarjetas de social proof con copy realista\", \"Prototipar estado interactivo del dossier\", \"Verificar contraste en barra oscura\", \"Asegurar carga rápida post-cambios\"],\n  \"confidence_0_to_100\": 92\n}",
+      "parsed": {
+        "veredicto_general": "Landing sólida, pero header móvil necesita refinamiento para mayor legibilidad y jerarquía.",
+        "consensus_score_0_to_10": 7,
+        "main_decision": "Priorizar lockup horizontal simplificado para logo y redistribución equilibrada del header.",
+        "mobile_header_logo": {
+          "decision": "Lockup horizontal mejorado con wordmark simplificado y borde sutil.",
+          "recommended_pattern": "Logo centrado en izquierda con padding interno y contraste boost via borde gris claro.",
+          "changes": [
+            "Aumentar tamaño de fuente del wordmark a 18-20px sin escalar icono",
+            "Agregar borde sutil de 1px gris claro alrededor del lockup",
+            "Simplificar tipografía a sans-serif bold para 'AuditaPatron'",
+            "Ajustar padding izquierdo para evitar recorte en área sacrificada"
+          ],
+          "why_this_wins": "Mejora legibilidad inmediata sin sobrecargar la barra oscura, manteniendo limpieza y jerarquía.",
+          "do_not_do": [
+            "No agrandar indiscriminadamente para evitar header pesado",
+            "No usar glow o sombras que reduzcan velocidad de carga",
+            "No cambiar colores de marca por alto contraste forzado"
+          ]
+        },
+        "mobile_header_balance": {
+          "decision": "Redistribuir espacio: logo 40%, CTA 30%, menú 30%.",
+          "changes": [
+            "Mover CTA 'Auditar' al centro-derecha con padding reducido",
+            "Reducir icono de menú a 24px y alinear verticalmente",
+            "Aumentar espaciado entre elementos a 8-12px para respiración visual"
+          ],
+          "target_effect": "Jerarquía clara donde logo domina izquierda, CTA invita acción sin competir, menú accesible sin clutter."
+        },
+        "social_proof_upgrade": {
+          "decision": "Convertir en carrusel escaneable de 3-4 testimonios breves con avatares.",
+          "format": "Tarjetas horizontales swipeables, cada una con foto pequeña, cita corta y nombre/empresa.",
+          "copy_examples": [
+            "'AuditaPatron me ayudó a reclamar mis derechos en semanas.' - Juan Pérez, Trabajador",
+            "'Fácil de usar, resultados confiables.' - María López, Empleada",
+            "'Recomendado para todos los trabajadores.' - Carlos Ramírez, Sindicato"
+          ],
+          "placement": "Debajo del hero, en sección dedicada de 200-250px altura para no interferir con CTA principal."
+        },
+        "dossier_status_interaction": {
+          "decision": "Mini componente interactivo con estados visuales y sugerencia de siguiente paso.",
+          "example_state": "Barra de progreso con iconos: 'Pendiente' (gris), 'En revisión' (amarillo), 'Completado' (verde).",
+          "interaction_rule": "Al tocar estado incompleto, mostrar tooltip con 'Sube tu siguiente documento recomendado' y enlace directo.",
+          "changes": [
+            "Usar toggle simple para expandir/contrair detalles",
+            "Limitar a 3 estados max para simplicidad móvil",
+            "Agregar animación sutil de fade-in para sugerencias sin distraer"
+          ]
+        },
+        "priority_order": [
+          "Mejorar logo y header balance",
+          "Implementar social proof upgrade",
+          "Agregar interacción al dossier status",
+          "Pruebas de legibilidad en dispositivos reales"
+        ],
+        "changes_now": [
+          "Ajustar lockup logo con borde y tamaño optimizado",
+          "Redistribuir header para mejor convivencia",
+          "Crear 3 tarjetas de social proof con copy realista",
+          "Prototipar estado interactivo del dossier",
+          "Verificar contraste en barra oscura",
+          "Asegurar carga rápida post-cambios"
+        ],
+        "confidence_0_to_100": 92
+      }
+    }
+  }
+}

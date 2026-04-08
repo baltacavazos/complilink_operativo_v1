@@ -220,16 +220,23 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
       <div className="container mx-auto flex h-14 max-w-[1380px] items-center justify-between gap-3 sm:h-[3.6rem] lg:gap-3.5">
-        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 shadow-[0_10px_26px_-18px_rgba(255,255,255,0.75)]">
-            <AuditaPatronLogoIcon className="shrink-0" imageClassName="h-5 w-5 object-contain brightness-0 invert" />
-          </span>
-          <span className="hidden min-w-0 flex-col justify-center sm:flex">
-            <span className="truncate text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white/95 lg:text-[0.84rem]">
-              AUDITAPATRON
+        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-0 flex-1 items-center sm:flex-initial">
+          <AuditaPatronLogoWordmark
+            className="min-w-0 sm:hidden"
+            imageClassName="rounded-full border border-white/14 bg-white/[0.06] px-2.5 py-1.5 shadow-[0_12px_30px_-24px_rgba(255,255,255,0.78)]"
+            subtitleClassName="!text-white text-[0.76rem] tracking-[0.18em]"
+          />
+          <span className="hidden min-w-0 items-center gap-2 sm:inline-flex sm:gap-2.5">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 shadow-[0_10px_26px_-18px_rgba(255,255,255,0.75)]">
+              <AuditaPatronLogoIcon className="shrink-0" imageClassName="h-5 w-5 object-contain brightness-0 invert" />
             </span>
-            <span className="truncate text-[0.58rem] font-medium uppercase tracking-[0.22em] text-slate-300/90 lg:text-[0.64rem]">
-              Revisión laboral clara
+            <span className="min-w-0 flex-col justify-center sm:flex">
+              <span className="truncate text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white/95 lg:text-[0.84rem]">
+                AUDITAPATRON
+              </span>
+              <span className="truncate text-[0.58rem] font-medium uppercase tracking-[0.22em] text-slate-300/90 lg:text-[0.64rem]">
+                Revisión laboral clara
+              </span>
             </span>
           </span>
         </a>
@@ -263,21 +270,21 @@ function SiteHeader() {
           </Button>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <Button
-            className="h-10 rounded-full bg-teal-500 px-4 text-sm font-semibold text-slate-950 hover:bg-teal-400"
+            className="h-9 rounded-full bg-teal-400 px-3.5 text-[0.92rem] font-semibold text-slate-950 hover:bg-teal-300"
             onClick={goToAuditFlow}
           >
             Auditar
           </Button>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/12 bg-white/8 text-white transition hover:bg-white/12"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/12 bg-white/8 text-white transition hover:bg-white/12"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {open ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
           </button>
         </div>
       </div>
@@ -410,26 +417,39 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-4 inline-flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm text-slate-600 lg:justify-start"
+            className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
-            <span className="rounded-full border border-slate-200 bg-white/92 px-3 py-1.5 font-medium text-slate-700 shadow-sm">
-              Pensado con dudas reales sobre recibos, contratos y CFDI.
-            </span>
-          </div>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
+              <div className="flex -space-x-2">
+                {[
+                  "bg-teal-100 text-teal-900",
+                  "bg-sky-100 text-sky-900",
+                  "bg-emerald-100 text-emerald-900",
+                ].map((tone, index) => (
+                  <span
+                    key={tone}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white text-xs font-semibold shadow-sm ${tone}`}
+                  >
+                    {index === 0 ? "R" : index === 1 ? "C" : "N"}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm font-medium leading-6 text-slate-700">
+                Diseñado con dudas reales de trabajadores sobre recibos, contratos y CFDI.
+              </p>
+            </div>
 
-          <div
-            className="motion-enter-soft mt-5 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
-            style={{ ["--motion-delay" as string]: "420ms" }}
-          >
-            {["Expediente privado", "Guía paso a paso", "Recibos, contratos y CFDI"].map((item) => (
-              <span
-                key={item}
-                className="motion-hover-lift rounded-full border border-slate-200 bg-white/90 px-4 py-2 shadow-sm"
-              >
-                {item}
-              </span>
-            ))}
+            <div className="mt-3 flex flex-wrap justify-center gap-2.5 text-sm text-slate-600 lg:justify-start">
+              {["Expediente privado", "Guía paso a paso", "Sin palabras difíciles"].map((item) => (
+                <span
+                  key={item}
+                  className="motion-hover-lift rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-sm"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -483,12 +503,40 @@ function HeroSection() {
               ))}
             </div>
 
-            <div className="mt-5 rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-3.5">
-              <p className="text-sm font-semibold text-teal-900">Tu expediente puede arrancar con 2 documentos subidos y 2 por sumar.</p>
-              <p className="mt-1 text-sm leading-6 text-teal-800">
-                Ejemplo visible: recibo y contrato listos; después puedes completar tu CFDI reciente e identificación para entender mejor qué falta.
+            <button
+              type="button"
+              onClick={goToAuditFlow}
+              className="mt-5 block w-full rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-4 text-left transition hover:bg-teal-100/80"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                    Siguiente paso sugerido
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-teal-950">
+                    Ya tienes recibo y contrato listos; sigue con tu CFDI reciente.
+                  </p>
+                </div>
+                <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                  style={{ width: `${dossierReadiness}%` }}
+                />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
+                  Listos: recibo y contrato
+                </span>
+                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
+                  Siguiente: CFDI reciente
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-teal-800">
+                Toca aquí para continuar con el siguiente archivo recomendado y entender mejor qué te falta.
               </p>
-            </div>
+            </button>
           </div>
         </div>
       </div>
