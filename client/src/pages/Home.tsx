@@ -220,13 +220,18 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
       <div className="container mx-auto flex h-14 max-w-[1380px] items-center justify-between gap-3 sm:h-[3.6rem] lg:gap-3.5">
-        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-0 shrink-0 items-center">
-          <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-8 w-8 object-contain" />
-          <AuditaPatronLogoWordmark
-            className="hidden min-w-0 items-center py-1 pr-1 sm:inline-flex sm:pr-2"
-            imageClassName="max-w-[184px] lg:max-w-[208px] xl:max-w-[232px]"
-            subtitleClassName="text-[0.7rem] tracking-[0.14em] lg:text-[0.78rem] xl:text-[0.82rem]"
-          />
+        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 shadow-[0_10px_26px_-18px_rgba(255,255,255,0.75)]">
+            <AuditaPatronLogoIcon className="shrink-0" imageClassName="h-5 w-5 object-contain brightness-0 invert" />
+          </span>
+          <span className="hidden min-w-0 flex-col justify-center sm:flex">
+            <span className="truncate text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white/95 lg:text-[0.84rem]">
+              AUDITAPATRON
+            </span>
+            <span className="truncate text-[0.58rem] font-medium uppercase tracking-[0.22em] text-slate-300/90 lg:text-[0.64rem]">
+              Revisión laboral clara
+            </span>
+          </span>
         </a>
 
         <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex xl:gap-3">
@@ -385,11 +390,11 @@ function HeroSection() {
           </p>
 
           <div
-            className="motion-enter-soft mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
+            className="motion-enter-soft mt-6 flex w-full max-w-sm flex-col gap-2.5 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
-              className="motion-hover-lift h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
+              className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700 sm:w-auto"
               onClick={goToAuditFlow}
             >
               Auditar mis documentos
@@ -397,7 +402,7 @@ function HeroSection() {
             </Button>
             <Button
               variant="outline"
-              className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
+              className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-transparent hover:text-slate-950 sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:hover:bg-slate-50"
               onClick={() => scrollToId("copiloto")}
             >
               Ver cómo funciona
@@ -405,10 +410,19 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-6 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
-            style={{ ["--motion-delay" as string]: "380ms" }}
+            className="motion-enter-soft mt-4 inline-flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm text-slate-600 lg:justify-start"
+            style={{ ["--motion-delay" as string]: "360ms" }}
           >
-            {["100% confidencial", "Disponible 24/7", "Todo en un solo lugar"].map((item) => (
+            <span className="rounded-full border border-slate-200 bg-white/92 px-3 py-1.5 font-medium text-slate-700 shadow-sm">
+              Pensado con dudas reales sobre recibos, contratos y CFDI.
+            </span>
+          </div>
+
+          <div
+            className="motion-enter-soft mt-5 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
+            style={{ ["--motion-delay" as string]: "420ms" }}
+          >
+            {["Expediente privado", "Guía paso a paso", "Recibos, contratos y CFDI"].map((item) => (
               <span
                 key={item}
                 className="motion-hover-lift rounded-full border border-slate-200 bg-white/90 px-4 py-2 shadow-sm"
@@ -470,9 +484,9 @@ function HeroSection() {
             </div>
 
             <div className="mt-5 rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-3.5">
-              <p className="text-sm font-semibold text-teal-900">Empiezas con un documento y tu expediente crece contigo.</p>
+              <p className="text-sm font-semibold text-teal-900">Tu expediente puede arrancar con 2 documentos subidos y 2 por sumar.</p>
               <p className="mt-1 text-sm leading-6 text-teal-800">
-                La plataforma te dice qué entendió, qué falta confirmar y qué documento puede ayudarte después.
+                Ejemplo visible: recibo y contrato listos; después puedes completar tu CFDI reciente e identificación para entender mejor qué falta.
               </p>
             </div>
           </div>

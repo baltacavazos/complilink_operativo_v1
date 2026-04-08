@@ -1,0 +1,204 @@
+{
+  "generated_at": "2026-04-08T20:50:04.019941+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir la mejor solución multi-modelo para recuperar contraste del logo en el header y afinar claridad inmediata del hero sin rediseñar la landing."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Ajustes sutiles y estratégicos que elevan claridad y confianza sin romper la limpieza actual.\",\n  \"consensus_score_0_to_10\": 9,\n  \"main_decision\": \"Mejorar contraste y presencia del logo con un leve contorno y separación, compactar CTAs con botones secundarios más pequeños, añadir prueba social testimonial breve y mini estado documental simple.\",\n  \"logo_header_solution\": {\n    \"decision\": \"Aplicar un contorno fino blanco o gris claro al logo y aumentar padding lateral para separación del fondo oscuro.\",\n    \"recommended_pattern\": \"Logo con contorno sutil + padding horizontal aumentado en barra oscura.\",\n    \"changes\": [\n      \"Agregar contorno fino blanco o gris claro al logo para mejorar contraste.\",\n      \"Incrementar padding horizontal del logo para evitar sensación de pegado.\",\n      \"Mantener fondo oscuro sin añadir elementos brillosos o cápsulas.\"\n    ],\n    \"why_this_wins\": \"Mejora la visibilidad sin añadir peso visual ni romper la limpieza, mantiene protagonismo del hero.\",\n    \"desktop_rule\": \"Contorno y padding aplicados, sin cambiar tamaño ni fondo del header.\",\n    \"mobile_rule\": \"Mismo tratamiento, asegurando que el logo no se vea comprimido en pantallas pequeñas.\"\n  },\n  \"mobile_cta_compaction\": {\n    \"decision\": \"Reducir tamaño del botón secundario y usar iconografía clara para ahorrar espacio sin perder jerarquía.\",\n    \"changes\": [\n      \"Botón principal con texto completo y tamaño estándar.\",\n      \"Botón secundario más pequeño, solo icono o texto corto.\",\n      \"Reducir márgenes verticales entre botones para compactar.\"\n    ],\n    \"target_effect\": \"Mayor claridad y facilidad de interacción en móvil sin saturar visualmente.\"\n  },\n  \"social_proof_snippet\": {\n    \"decision\": \"Incluir testimonio breve y realista de usuario debajo del hero, con nombre y cargo o contexto laboral.\",\n    \"copy_example\": \"\\\"Gracias a AuditaPatron, mi expediente está siempre al día y sin complicaciones.\\\" – Ana G., trabajadora en CDMX\",\n    \"placement\": \"Justo debajo del titular principal y antes de la tarjeta derecha, con tipografía discreta y color neutro.\"\n  },\n  \"mini_dossier_status\": {\n    \"decision\": \"Mostrar barra de progreso simple con íconos y texto breve indicando documentos subidos y faltantes.\",\n    \"example_state\": \"3 de 5 documentos subidos\",\n    \"changes\": [\n      \"Barra horizontal con segmentos o puntos que indican progreso.\",\n      \"Texto claro y conciso al lado o debajo: '3 de 5 documentos subidos'.\",\n      \"Íconos simples para documentos completados y pendientes, sin colores estridentes.\"\n    ]\n  },\n  \"priority_order\": [\n    \"logo_header_solution\",\n    \"mobile_cta_compaction\",\n    \"social_proof_snippet\",\n    \"mini_dossier_status\"\n  ],\n  \"changes_now\": [\n    \"Agregar contorno fino y aumentar padding del logo en header.\",\n    \"Reducir tamaño y márgenes del botón secundario en móvil.\",\n    \"Insertar testimonio breve y realista debajo del hero.\",\n    \"Implementar barra de progreso documental simple y clara.\",\n    \"Asegurar consistencia tipográfica y colores neutros en nuevos elementos.\",\n    \"Verificar responsividad y legibilidad en todos los dispositivos.\"\n  ],\n  \"do_not_do\": [\n    \"No usar fondos brillosos o cápsulas para el logo.\",\n    \"No aumentar el peso visual del header ni saturar con elementos.\",\n    \"No usar copy exagerado o promesas grandilocuentes.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Ajustes sutiles y estratégicos que elevan claridad y confianza sin romper la limpieza actual.",
+        "consensus_score_0_to_10": 9,
+        "main_decision": "Mejorar contraste y presencia del logo con un leve contorno y separación, compactar CTAs con botones secundarios más pequeños, añadir prueba social testimonial breve y mini estado documental simple.",
+        "logo_header_solution": {
+          "decision": "Aplicar un contorno fino blanco o gris claro al logo y aumentar padding lateral para separación del fondo oscuro.",
+          "recommended_pattern": "Logo con contorno sutil + padding horizontal aumentado en barra oscura.",
+          "changes": [
+            "Agregar contorno fino blanco o gris claro al logo para mejorar contraste.",
+            "Incrementar padding horizontal del logo para evitar sensación de pegado.",
+            "Mantener fondo oscuro sin añadir elementos brillosos o cápsulas."
+          ],
+          "why_this_wins": "Mejora la visibilidad sin añadir peso visual ni romper la limpieza, mantiene protagonismo del hero.",
+          "desktop_rule": "Contorno y padding aplicados, sin cambiar tamaño ni fondo del header.",
+          "mobile_rule": "Mismo tratamiento, asegurando que el logo no se vea comprimido en pantallas pequeñas."
+        },
+        "mobile_cta_compaction": {
+          "decision": "Reducir tamaño del botón secundario y usar iconografía clara para ahorrar espacio sin perder jerarquía.",
+          "changes": [
+            "Botón principal con texto completo y tamaño estándar.",
+            "Botón secundario más pequeño, solo icono o texto corto.",
+            "Reducir márgenes verticales entre botones para compactar."
+          ],
+          "target_effect": "Mayor claridad y facilidad de interacción en móvil sin saturar visualmente."
+        },
+        "social_proof_snippet": {
+          "decision": "Incluir testimonio breve y realista de usuario debajo del hero, con nombre y cargo o contexto laboral.",
+          "copy_example": "\"Gracias a AuditaPatron, mi expediente está siempre al día y sin complicaciones.\" – Ana G., trabajadora en CDMX",
+          "placement": "Justo debajo del titular principal y antes de la tarjeta derecha, con tipografía discreta y color neutro."
+        },
+        "mini_dossier_status": {
+          "decision": "Mostrar barra de progreso simple con íconos y texto breve indicando documentos subidos y faltantes.",
+          "example_state": "3 de 5 documentos subidos",
+          "changes": [
+            "Barra horizontal con segmentos o puntos que indican progreso.",
+            "Texto claro y conciso al lado o debajo: '3 de 5 documentos subidos'.",
+            "Íconos simples para documentos completados y pendientes, sin colores estridentes."
+          ]
+        },
+        "priority_order": [
+          "logo_header_solution",
+          "mobile_cta_compaction",
+          "social_proof_snippet",
+          "mini_dossier_status"
+        ],
+        "changes_now": [
+          "Agregar contorno fino y aumentar padding del logo en header.",
+          "Reducir tamaño y márgenes del botón secundario en móvil.",
+          "Insertar testimonio breve y realista debajo del hero.",
+          "Implementar barra de progreso documental simple y clara.",
+          "Asegurar consistencia tipográfica y colores neutros en nuevos elementos.",
+          "Verificar responsividad y legibilidad en todos los dispositivos."
+        ],
+        "do_not_do": [
+          "No usar fondos brillosos o cápsulas para el logo.",
+          "No aumentar el peso visual del header ni saturar con elementos.",
+          "No usar copy exagerado o promesas grandilocuentes."
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-flash-latest",
+      "raw": "{\n  \"veredicto_general\": \"Refinamiento de alto contraste y tangibilidad inmediata para generar autoridad institucional.\",\n  \"consensus_score_0_to_10\": 9.5,\n  \"main_decision\": \"Implementar una versión del logo en negativo sobre cápsula sutil y un widget de progreso documental que convierta la promesa en un proceso tangible.\",\n  \"logo_header_solution\": {\n    \"decision\": \"Versión monocromática en blanco puro con ajuste de área segura.\",\n    \"recommended_pattern\": \"Logo Lockup Horizontal en negativo (blanco) sin degradados.\",\n    \"changes\": [\n      \"Eliminar versiones en color del logo dentro del header oscuro para evitar vibración visual.\",\n      \"Aplicar un padding óptico de 12px arriba/abajo para que el logo 'respire'.\",\n      \"Ajustar el peso visual del isotipo para que coincida con el grosor de la tipografía del menú.\"\n    ],\n    \"why_this_wins\": \"El blanco sólido sobre fondo oscuro proyecta seriedad legal y máxima legibilidad, eliminando la sensación de 'logo pegado' o de baja calidad.\",\n    \"desktop_rule\": \"Alineación izquierda con 24px de margen; altura máxima de 32px.\",\n    \"mobile_rule\": \"Alineación izquierda; altura máxima de 28px para maximizar espacio vertical del hero.\"\n  },\n  \"mobile_cta_compaction\": {\n    \"decision\": \"Stacking vertical asimétrico para priorizar la acción principal.\",\n    \"changes\": [\n      \"Botón primario (Auditar ahora) a ancho completo con elevación sutil.\",\n      \"Botón secundario (Saber más) transformado en un link de texto con subrayado discreto o botón ghost.\",\n      \"Reducción del gap entre el titular y los botones a 16px.\"\n    ],\n    \"target_effect\": \"Reducir la altura del bloque de acciones para que el usuario vea parte del contenido siguiente sin hacer scroll.\"\n  },\n  \"social_proof_snippet\": {\n    \"decision\": \"Micro-copy de validación masiva y local.\",\n    \"copy_example\": \"Protegiendo a +10,000 trabajadores en México. ★★★★★\",\n    \"placement\": \"Inmediatamente debajo del botón principal del Hero, en gris claro y fuente de 12px.\"\n  },\n  \"mini_dossier_status\": {\n    \"decision\": \"Widget de 'Expediente Vivo' integrado en la tarjeta del Hero.\",\n    \"example_state\": \"Tu expediente: 2 de 4 documentos listos\",\n    \"changes\": [\n      \"Añadir una barra de progreso delgada (4px) en color verde éxito.\",\n      \"Listado de 3 items con micro-iconos (Check verde / Círculo vacío).\",\n      \"Etiqueta de estado: 'Pendiente: Identificación' en color de alerta suave.\"\n    ]\n  },\n  \"priority_order\": [\n    \"Corrección de contraste del logo en header\",\n    \"Compactación de CTAs en vista móvil\",\n    \"Implementación del widget de estado documental\",\n    \"Inserción del snippet de prueba social\"\n  ],\n  \"changes_now\": [\n    \"Cambiar logo a blanco sólido en el header.\",\n    \"Reducir padding vertical del header en móvil.\",\n    \"Ajustar botones móviles a ancho completo (full-width).\",\n    \"Insertar barra de progreso en la tarjeta derecha del hero.\",\n    \"Añadir el texto de confianza debajo del CTA.\",\n    \"Eliminar cualquier sombra pesada en los textos del header.\"\n  ],\n  \"do_not_do\": [\n    \"No usar el logo original en color sobre el fondo oscuro.\",\n    \"No usar botones de diferentes anchos en móvil.\",\n    \"No usar lenguaje técnico o legal complejo en el widget de estado.\"\n  ],\n  \"confidence_0_to_100\": 98\n}",
+      "parsed": {
+        "veredicto_general": "Refinamiento de alto contraste y tangibilidad inmediata para generar autoridad institucional.",
+        "consensus_score_0_to_10": 9.5,
+        "main_decision": "Implementar una versión del logo en negativo sobre cápsula sutil y un widget de progreso documental que convierta la promesa en un proceso tangible.",
+        "logo_header_solution": {
+          "decision": "Versión monocromática en blanco puro con ajuste de área segura.",
+          "recommended_pattern": "Logo Lockup Horizontal en negativo (blanco) sin degradados.",
+          "changes": [
+            "Eliminar versiones en color del logo dentro del header oscuro para evitar vibración visual.",
+            "Aplicar un padding óptico de 12px arriba/abajo para que el logo 'respire'.",
+            "Ajustar el peso visual del isotipo para que coincida con el grosor de la tipografía del menú."
+          ],
+          "why_this_wins": "El blanco sólido sobre fondo oscuro proyecta seriedad legal y máxima legibilidad, eliminando la sensación de 'logo pegado' o de baja calidad.",
+          "desktop_rule": "Alineación izquierda con 24px de margen; altura máxima de 32px.",
+          "mobile_rule": "Alineación izquierda; altura máxima de 28px para maximizar espacio vertical del hero."
+        },
+        "mobile_cta_compaction": {
+          "decision": "Stacking vertical asimétrico para priorizar la acción principal.",
+          "changes": [
+            "Botón primario (Auditar ahora) a ancho completo con elevación sutil.",
+            "Botón secundario (Saber más) transformado en un link de texto con subrayado discreto o botón ghost.",
+            "Reducción del gap entre el titular y los botones a 16px."
+          ],
+          "target_effect": "Reducir la altura del bloque de acciones para que el usuario vea parte del contenido siguiente sin hacer scroll."
+        },
+        "social_proof_snippet": {
+          "decision": "Micro-copy de validación masiva y local.",
+          "copy_example": "Protegiendo a +10,000 trabajadores en México. ★★★★★",
+          "placement": "Inmediatamente debajo del botón principal del Hero, en gris claro y fuente de 12px."
+        },
+        "mini_dossier_status": {
+          "decision": "Widget de 'Expediente Vivo' integrado en la tarjeta del Hero.",
+          "example_state": "Tu expediente: 2 de 4 documentos listos",
+          "changes": [
+            "Añadir una barra de progreso delgada (4px) en color verde éxito.",
+            "Listado de 3 items con micro-iconos (Check verde / Círculo vacío).",
+            "Etiqueta de estado: 'Pendiente: Identificación' en color de alerta suave."
+          ]
+        },
+        "priority_order": [
+          "Corrección de contraste del logo en header",
+          "Compactación de CTAs en vista móvil",
+          "Implementación del widget de estado documental",
+          "Inserción del snippet de prueba social"
+        ],
+        "changes_now": [
+          "Cambiar logo a blanco sólido en el header.",
+          "Reducir padding vertical del header en móvil.",
+          "Ajustar botones móviles a ancho completo (full-width).",
+          "Insertar barra de progreso en la tarjeta derecha del hero.",
+          "Añadir el texto de confianza debajo del CTA.",
+          "Eliminar cualquier sombra pesada en los textos del header."
+        ],
+        "do_not_do": [
+          "No usar el logo original en color sobre el fondo oscuro.",
+          "No usar botones de diferentes anchos en móvil.",
+          "No usar lenguaje técnico o legal complejo en el widget de estado."
+        ],
+        "confidence_0_to_100": 98
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Landing sólida, ajustes mínimos elevan claridad y confianza a nivel elite.\",\n  \"consensus_score_0_to_10\": 8,\n  \"main_decision\": \"Optimizar logo y CTAs para impacto visual inmediato sin alterar estructura.\",\n  \"logo_header_solution\": {\n    \"decision\": \"Aumentar contraste del logo con borde sutil y padding mínimo.\",\n    \"recommended_pattern\": \"Logo blanco con outline gris claro y 4px de separación del borde.\",\n    \"changes\": [\"Aplicar outline de 1px en gris claro al logo\", \"Añadir 4px de padding inferior al logo\", \"Ajustar brillo del logo en +10% para fondo oscuro\"],\n    \"why_this_wins\": \"Mejora visibilidad sin sobrecargar el header, manteniendo limpieza y profesionalismo.\",\n    \"desktop_rule\": \"Logo centrado con outline visible en pantallas >1024px.\",\n    \"mobile_rule\": \"Escalar logo a 80% y mantener outline para no perder definición en <768px.\"\n  },\n  \"mobile_cta_compaction\": {\n    \"decision\": \"Compactar CTAs en stack vertical con botones fijos y texto reducido.\",\n    \"changes\": [\"Reducir altura de botones a 44px\", \"Unificar labels a 1 línea máxima\", \"Añadir spacer de 8px entre CTAs\"],\n    \"target_effect\": \"Facilita taps intuitivos y reduce scroll innecesario en móvil.\"\n  },\n  \"social_proof_snippet\": {\n    \"decision\": \"Snippet testimonial breve y realista de usuario mexicano.\",\n    \"copy_example\": \"\\\"AuditaPatron me ayudó a revisar mi contrato en minutos, todo claro y sin complicaciones. - Juan Pérez, CDMX\\\"\",\n    \"placement\": \"Debajo del hero, en una línea centrada con ícono sutil de check.\"\n  },\n  \"mini_dossier_status\": {\n    \"decision\": \"Barra de progreso simple con contadores de docs.\",\n    \"example_state\": \"3/5 documentos subidos: Contrato ✓, Nómina ✓, Identificación pendiente.\",\n    \"changes\": [\"Usar barra horizontal minimalista de 200px\", \"Mostrar íconos de check/cruz para docs\", \"Posicionar fijo en sidebar derecha, visible post-hero\"]\n  },\n  \"priority_order\": [\"Optimizar logo header\", \"Compactar CTAs móvil\", \"Añadir social proof\", \"Implementar mini dossier\"],\n  \"changes_now\": [\"Ajustar contraste y padding del logo\", \"Compactar botones CTA en móvil\", \"Insertar snippet testimonial debajo hero\", \"Añadir barra de progreso docs en sidebar\", \"Probar visibilidad en dark mode\", \"Verificar jerarquía en mobile viewport\"],\n  \"do_not_do\": [\"No agregar sombras o brillos al logo\", \"No expandir header height\", \"No usar testimonials anónimos o exagerados\", \"No sobrecargar sidebar con animaciones\"],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Landing sólida, ajustes mínimos elevan claridad y confianza a nivel elite.",
+        "consensus_score_0_to_10": 8,
+        "main_decision": "Optimizar logo y CTAs para impacto visual inmediato sin alterar estructura.",
+        "logo_header_solution": {
+          "decision": "Aumentar contraste del logo con borde sutil y padding mínimo.",
+          "recommended_pattern": "Logo blanco con outline gris claro y 4px de separación del borde.",
+          "changes": [
+            "Aplicar outline de 1px en gris claro al logo",
+            "Añadir 4px de padding inferior al logo",
+            "Ajustar brillo del logo en +10% para fondo oscuro"
+          ],
+          "why_this_wins": "Mejora visibilidad sin sobrecargar el header, manteniendo limpieza y profesionalismo.",
+          "desktop_rule": "Logo centrado con outline visible en pantallas >1024px.",
+          "mobile_rule": "Escalar logo a 80% y mantener outline para no perder definición en <768px."
+        },
+        "mobile_cta_compaction": {
+          "decision": "Compactar CTAs en stack vertical con botones fijos y texto reducido.",
+          "changes": [
+            "Reducir altura de botones a 44px",
+            "Unificar labels a 1 línea máxima",
+            "Añadir spacer de 8px entre CTAs"
+          ],
+          "target_effect": "Facilita taps intuitivos y reduce scroll innecesario en móvil."
+        },
+        "social_proof_snippet": {
+          "decision": "Snippet testimonial breve y realista de usuario mexicano.",
+          "copy_example": "\"AuditaPatron me ayudó a revisar mi contrato en minutos, todo claro y sin complicaciones. - Juan Pérez, CDMX\"",
+          "placement": "Debajo del hero, en una línea centrada con ícono sutil de check."
+        },
+        "mini_dossier_status": {
+          "decision": "Barra de progreso simple con contadores de docs.",
+          "example_state": "3/5 documentos subidos: Contrato ✓, Nómina ✓, Identificación pendiente.",
+          "changes": [
+            "Usar barra horizontal minimalista de 200px",
+            "Mostrar íconos de check/cruz para docs",
+            "Posicionar fijo en sidebar derecha, visible post-hero"
+          ]
+        },
+        "priority_order": [
+          "Optimizar logo header",
+          "Compactar CTAs móvil",
+          "Añadir social proof",
+          "Implementar mini dossier"
+        ],
+        "changes_now": [
+          "Ajustar contraste y padding del logo",
+          "Compactar botones CTA en móvil",
+          "Insertar snippet testimonial debajo hero",
+          "Añadir barra de progreso docs en sidebar",
+          "Probar visibilidad en dark mode",
+          "Verificar jerarquía en mobile viewport"
+        ],
+        "do_not_do": [
+          "No agregar sombras o brillos al logo",
+          "No expandir header height",
+          "No usar testimonials anónimos o exagerados",
+          "No sobrecargar sidebar con animaciones"
+        ],
+        "confidence_0_to_100": 95
+      }
+    }
+  }
+}

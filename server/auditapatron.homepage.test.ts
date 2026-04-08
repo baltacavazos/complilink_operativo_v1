@@ -11,9 +11,9 @@ describe("Auditapatron homepage content", () => {
     expect(homeSource).toContain("Tus derechos laborales,");
     expect(homeSource).toContain("claros desde el primer documento que subes.");
     expect(homeSource).toContain("Diseñado para trabajadores, no para expertos");
-    expect(homeSource).toContain("100% confidencial");
+    expect(homeSource).toContain("Expediente privado");
     expect(homeSource).toContain("Tu privacidad es parte del producto");
-    expect(homeSource).toContain("Disponible 24/7");
+    expect(homeSource).toContain("disponible 24/7");
     expect(homeSource).toContain("Tu expediente en crecimiento");
     expect(homeSource).not.toContain("Helios es el cerebro central de AuditaPatron");
     expect(homeSource).not.toContain("Helios ordena tu expediente y fortalece tu respaldo");

@@ -406,3 +406,8 @@
 - [x] Reducir un poco más el peso visual del header para que funcione más como marco que como protagonista
 - [x] Dar más aire entre el bloque izquierdo del hero y la tarjeta derecha para mejorar el balance general
 - [x] Simplificar aún más el bloque superior de la tarjeta derecha para que el porcentaje y el mensaje se entiendan de inmediato
+- [x] Revalidar con ChatGPT, Gemini y Grok la mejor solución para que el logo del header no se pierda sobre el fondo oscuro y conserve presencia sin verse pesado
+- [x] Mejorar el contraste y la legibilidad del logo en el header para que se perciba claramente sobre la barra superior
+- [x] Compactar mejor los CTAs del hero en móvil para reducir ruido visual y acelerar la decisión
+- [x] Incorporar una prueba social breve debajo del hero para reforzar confianza inmediata
+- [x] Añadir un mini estado visible de documentos subidos y faltantes para hacer más tangible el avance del expediente
