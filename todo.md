@@ -272,3 +272,11 @@
 - [x] Incorporar guía visual de bordes para captura móvil con fallback no intrusivo
 - [x] Separar el flujo de /auditar en analizar → confirmar → guardar
 - [x] Validar con pruebas el nuevo flujo de preanálisis y confirmación documental
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor priorización de la siguiente iteración de `/auditar` tras el flujo analizar → confirmar → guardar
+- [x] Evaluar e implementar edición manual de campos detectados antes de confirmar el guardado final
+- [x] Diseñar una recomendación automática del siguiente documento ideal según el expediente actual
+- [x] Diseñar microinteracciones suaves en cámara, vista previa y confirmación para reforzar claridad sin distraer
+- [x] Implementar edición manual de campos críticos detectados dentro de la confirmación previa en /auditar
+- [x] Implementar recomendación automática del siguiente documento ideal según el expediente actual en /auditar
+- [x] Implementar microinteracciones suaves en cámara, vista previa, confirmación y guardado dentro de /auditar
+- [x] Validar con pruebas la iteración completa de edición manual, siguiente documento y microinteracciones

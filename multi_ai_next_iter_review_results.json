@@ -1,0 +1,267 @@
+{
+  "startedAt": "2026-04-08T02:30:50.647Z",
+  "context": {
+    "proyecto": "AuditaPatron / complilink_operativo_v1",
+    "estado_actual": "La app ya tiene flujo analizar → confirmar → guardar en /auditar, con preanálisis temporal, OCR estructurado por tipo documental, pantalla de confirmación previa al guardado y guía visual de captura mobile-first.",
+    "usuarioFinal": "Trabajadores mexicanos con baja alfabetización digital; el flujo debe sentirse claro, humano y usable en celular.",
+    "objetivo": "Definir la mejor siguiente iteración visible en /auditar sin aumentar fricción innecesaria.",
+    "candidatos": [
+      "Permitir edición manual de campos detectados antes de confirmar el guardado final.",
+      "Mostrar una recomendación automática del siguiente mejor documento según el expediente actual.",
+      "Añadir microinteracciones suaves en cámara, vista previa y confirmación para reforzar claridad y sensación de respuesta."
+    ],
+    "restricciones": [
+      "Debe mantenerse mobile-first y sin sobrecarga visual.",
+      "No debe romper el flujo actual ya validado por pruebas.",
+      "La prioridad es claridad, confianza y utilidad real para la persona usuaria.",
+      "La intervención manual debe ser mínima, pero suficiente para corregir errores importantes.",
+      "Si hay recomendaciones de UX, deben ser implementables con riesgo bajo o medio en esta base de código."
+    ],
+    "decision_requerida": "Necesitamos una priorización aplicada a ESTE producto y un alcance recomendado para la siguiente iteración, no ideas genéricas."
+  },
+  "results": {
+    "openai": {
+      "modelo": "gpt-4.1-mini",
+      "veredicto": "B",
+      "resumen_ejecutivo": "Se recomienda combinar la edición manual de campos detectados con microinteracciones suaves en la siguiente iteración. Esto mejora la confianza y claridad sin romper el flujo actual ni sobrecargar al usuario. La recomendación automática del siguiente documento, aunque valiosa, implica mayor complejidad y riesgo, por lo que se deja para iteraciones posteriores. La edición manual permite corregir errores críticos y las microinteracciones refuerzan la usabilidad y sensación de respuesta, alineándose con la baja alfabetización digital y el enfoque mobile-first.",
+      "prioridad": [
+        {
+          "frente": "edicion_manual",
+          "prioridad": 1,
+          "motivo": "Permite corregir errores importantes detectados por OCR, aumentando la confianza y utilidad sin romper el flujo validado."
+        },
+        {
+          "frente": "microinteracciones",
+          "prioridad": 2,
+          "motivo": "Mejora la claridad y sensación de respuesta, reforzando la experiencia sin añadir fricción ni complejidad técnica alta."
+        },
+        {
+          "frente": "siguiente_documento",
+          "prioridad": 3,
+          "motivo": "Requiere lógica adicional y puede aumentar la complejidad, riesgo y carga cognitiva; mejor dejarlo para iteraciones futuras."
+        }
+      ],
+      "alcance_recomendado": {
+        "para_esta_iteracion": [
+          "Integrar edición manual simple y clara de campos detectados antes de confirmar.",
+          "Agregar microinteracciones suaves en cámara, vista previa y confirmación para reforzar feedback visual.",
+          "Mantener el flujo actual sin añadir pasos ni sobrecarga visual."
+        ],
+        "dejar_despues": [
+          "Implementar recomendación automática del siguiente mejor documento.",
+          "Explorar mejoras avanzadas en navegación entre documentos."
+        ]
+      },
+      "diseno_ux": {
+        "edicion_manual": [
+          "Campos editables con etiquetas claras y botones grandes para facilitar corrección.",
+          "Validaciones en tiempo real para evitar errores comunes.",
+          "Indicaciones breves y lenguaje sencillo para usuarios con baja alfabetización digital."
+        ],
+        "siguiente_documento": [
+          "Interfaz discreta que sugiera el siguiente documento sin interrumpir el flujo.",
+          "Opciones para aceptar o ignorar la recomendación fácilmente.",
+          "Visualización compacta para no saturar la pantalla mobile."
+        ],
+        "microinteracciones": [
+          "Animaciones suaves al capturar imagen y al pasar a vista previa.",
+          "Feedback visual claro al confirmar datos o guardar.",
+          "Transiciones fluidas entre pasos para mantener sensación de continuidad."
+        ]
+      },
+      "riesgos": [
+        "Edición manual puede aumentar tiempo de uso si no es intuitiva.",
+        "Microinteracciones mal implementadas pueden afectar rendimiento en dispositivos bajos.",
+        "Recomendación automática puede confundir si no es precisa o clara."
+      ],
+      "guardrails": [
+        "No añadir pasos adicionales que rompan el flujo analizar → confirmar → guardar.",
+        "Mantener interfaz limpia y mobile-first, evitando saturación visual.",
+        "Priorizar claridad y usabilidad para usuarios con baja alfabetización digital."
+      ],
+      "plan_tecnico": [
+        "Paso 1: Analizar campos detectados y definir esquema editable mínimo.",
+        "Paso 2: Diseñar componentes UI para edición manual con validaciones simples.",
+        "Paso 3: Implementar microinteracciones en cámara, vista previa y confirmación.",
+        "Paso 4: Realizar pruebas de usabilidad con usuarios representativos.",
+        "Paso 5: Desplegar iteración y monitorear métricas de uso y errores."
+      ],
+      "microcopy_ejemplo": [
+        "¿Algo no está bien? Toca el campo para corregirlo.",
+        "¡Listo! Ahora confirma para guardar tus datos.",
+        "Capturando... mantén el teléfono estable."
+      ],
+      "puntajes": {
+        "impacto_usuario": 8,
+        "riesgo_implementacion": 4,
+        "claridad": 9,
+        "velocidad_entrega": 7
+      }
+    },
+    "grok": {
+      "modelo": "grok-4",
+      "veredicto": "B",
+      "resumen_ejecutivo": "Para la siguiente iteración de AuditaPatron, recomiendo combinar dos frentes: edición manual y microinteracciones. Esto mejora la corrección de datos y la claridad en el flujo mobile-first sin sobrecarga visual, priorizando usuarios con baja alfabetización digital. Deja la recomendación de documentos para después, enfocándonos en pulir el núcleo actual para mayor confianza y usabilidad. Alcance realista: implementar ediciones simples y animaciones suaves, validando con pruebas rápidas.",
+      "prioridad": [
+        {
+          "frente": "edicion_manual",
+          "prioridad": 1,
+          "motivo": "Corrige errores de OCR directamente, aumentando confianza en el guardado y utilidad para usuarios que necesitan precisión sin fricción extra."
+        },
+        {
+          "frente": "microinteracciones",
+          "prioridad": 2,
+          "motivo": "Refuerza claridad y respuesta en cámara y confirmación, ideal para mobile-first y baja alfabetización, sin alterar el flujo validado."
+        },
+        {
+          "frente": "siguiente_documento",
+          "prioridad": 3,
+          "motivo": "Útil para eficiencia, pero añade complejidad visual; mejor posponer para no sobrecargar la iteración actual."
+        }
+      ],
+      "alcance_recomendado": {
+        "para_esta_iteracion": [
+          "Implementar edición manual en pantalla de confirmación para campos clave.",
+          "Añadir microinteracciones suaves en vista previa y confirmación.",
+          "Validar con pruebas de usabilidad en celular."
+        ],
+        "dejar_despues": [
+          "Recomendación automática de siguiente documento.",
+          "Expansión de ediciones a más campos o integraciones avanzadas."
+        ]
+      },
+      "diseno_ux": {
+        "edicion_manual": [
+          "Botón editable por campo en confirmación, con teclado numérico prioritario.",
+          "Validación en tiempo real para evitar errores comunes.",
+          "Botón 'Deshacer' para revertir cambios fácilmente."
+        ],
+        "siguiente_documento": [
+          "Pop-up no intrusivo post-guardado con sugerencia basada en expediente.",
+          "Ícono visual simple para el documento recomendado.",
+          "Opción de ignorar para mantener flujo lineal."
+        ],
+        "microinteracciones": [
+          "Animación de fade-in para resaltar campos detectados en vista previa.",
+          "Vibración suave al confirmar para feedback táctil.",
+          "Transición fluida de cámara a confirmación con loader circular."
+        ]
+      },
+      "riesgos": [
+        "Sobrecarga visual si las ediciones manuales no se limitan a campos esenciales.",
+        "Retrasos en implementación si microinteracciones afectan rendimiento en dispositivos low-end.",
+        "Confusión en usuarios si las interacciones no se prueban adecuadamente con el público objetivo."
+      ],
+      "guardrails": [
+        "Limitar ediciones a 3-5 campos por documento para mantener simplicidad.",
+        "Asegurar que microinteracciones sean opcionales y no bloqueen el flujo principal.",
+        "Incluir pruebas A/B con usuarios reales para validar claridad antes de deploy."
+      ],
+      "plan_tecnico": [
+        "Analizar código actual en /auditar para identificar hooks de edición.",
+        "Implementar UI editable en pantalla de confirmación con React Native.",
+        "Añadir animaciones con libraries como Animated o Lottie.",
+        "Integrar pruebas unitarias y de usabilidad mobile.",
+        "Deploy y monitoreo post-lanzamiento para feedback."
+      ],
+      "microcopy_ejemplo": [
+        "'Edita este campo si no coincide.'",
+        "'¡Bien! Documento confirmado con éxito.'",
+        "'Sugerencia: Captura el siguiente para completar tu expediente.'"
+      ],
+      "puntajes": {
+        "impacto_usuario": 8,
+        "riesgo_implementacion": 4,
+        "claridad": 9,
+        "velocidad_entrega": 7
+      }
+    },
+    "gemini": {
+      "modelo": "gemini-2.5-flash",
+      "veredicto": "B",
+      "resumen_ejecutivo": "La siguiente iteración debe combinar la edición manual de campos críticos con microinteracciones suaves. Esta estrategia aborda directamente la confianza y utilidad para usuarios con baja alfabetización digital, permitiendo corregir errores de OCR y mejorando la claridad y respuesta del sistema. Priorizamos la precisión y la experiencia fluida en el flujo actual, dejando la recomendación del siguiente documento para una fase posterior.",
+      "prioridad": [
+        {
+          "frente": "edicion_manual",
+          "prioridad": 1,
+          "motivo": "Es fundamental para la confianza y utilidad del usuario. Permite corregir errores de OCR, asegurando la precisión de los datos y validando la intervención humana mínima pero necesaria. Sin esta capacidad, la utilidad del sistema se ve comprometida si los datos detectados son incorrectos, lo cual es crítico para usuarios con baja alfabetización digital."
+        },
+        {
+          "frente": "microinteracciones",
+          "prioridad": 2,
+          "motivo": "Complementa la edición manual y el flujo existente. Mejora la claridad, la sensación de respuesta y la confianza del usuario, especialmente para aquellos con baja alfabetización digital. Reduce la fricción y hace que la aplicación se sienta más robusta y amigable, reforzando la experiencia de captura y confirmación, incluyendo el nuevo proceso de edición."
+        },
+        {
+          "frente": "siguiente_documento",
+          "prioridad": 3,
+          "motivo": "Aunque valiosa para la eficiencia del flujo general del expediente, no es tan crítica como la precisión de los datos o la claridad de la interacción actual. Puede ser implementada en una iteración posterior una vez que la base de confianza y usabilidad del proceso de captura y edición esté consolidada."
+        }
+      ],
+      "alcance_recomendado": {
+        "para_esta_iteracion": [
+          "Implementar edición manual para los 3-5 campos más críticos y propensos a errores de OCR (ej. nombre, CURP, fechas, montos) en la pantalla de confirmación.",
+          "Añadir microinteracciones de feedback visual y háptico en la captura de cámara (ej. vibración suave y destello verde al tomar la foto).",
+          "Mejorar transiciones y estados de carga en la vista previa y pantalla de confirmación (ej. spinner sutil durante el análisis, transiciones fluidas).",
+          "Animación sutil de éxito (ej. checkmark o pulso) y mensaje temporal al guardar el documento."
+        ],
+        "dejar_despues": [
+          "Recomendación automática del siguiente documento.",
+          "Edición manual de campos secundarios o menos críticos.",
+          "Microinteracciones de 'delight' no esenciales para la claridad o confianza.",
+          "Funcionalidades avanzadas de validación o historial de cambios en edición."
+        ]
+      },
+      "diseno_ux": {
+        "edicion_manual": [
+          "Los campos detectados serán presentados en la pantalla de confirmación con un ícono de 'editar' visible y accesible (ej. lápiz).",
+          "Al tocar el ícono, el campo se convierte en un input de texto grande y claro, con teclado numérico o alfanumérico contextual según el tipo de dato.",
+          "Botones 'Guardar cambios' y 'Cancelar' claros y prominentes dentro del modo de edición de campo, o un 'check' para confirmar y 'X' para cancelar.",
+          "Resaltar visualmente los campos que han sido editados manualmente (ej. borde diferente, color de texto) antes de la confirmación final del documento."
+        ],
+        "siguiente_documento": [
+          "(Para futura iteración) Después de guardar, mostrar una tarjeta o banner flotante con el título 'Siguiente documento recomendado: [Tipo de documento]'.",
+          "Incluir un botón 'Capturar [Tipo de documento]' y una opción 'Ver otros documentos' o 'Finalizar' para mantener el control del usuario.",
+          "Utilizar iconos claros y colores distintivos para cada tipo de documento recomendado, facilitando la identificación visual."
+        ],
+        "microinteracciones": [
+          "**Cámara:** Vibración suave y un breve destello verde o animación de 'check' en la pantalla al capturar la imagen exitosamente.",
+          "**Vista previa:** Transición fluida de la imagen capturada a la pantalla de vista previa, con un spinner de carga sutil y centrado durante el proceso de análisis.",
+          "**Confirmación:** Animación de 'check' o 'pulso' en el botón de guardar al finalizar, y un mensaje de éxito temporal y claro (ej. '¡Documento guardado!') en pantalla."
+        ]
+      },
+      "riesgos": [
+        "Sobrecargar la interfaz de confirmación con demasiadas opciones de edición, confundiendo al usuario de baja alfabetización digital y aumentando la fricción.",
+        "Introducir bugs o romper el flujo de guardado existente al integrar la edición manual, lo cual ya ha sido validado.",
+        "Impacto en el rendimiento de la aplicación móvil (ej. lentitud, consumo de batería) si las microinteracciones no están optimizadas o son excesivas.",
+        "Aumento del tiempo de desarrollo y complejidad si el alcance de la edición manual se expande sin control a validaciones complejas o múltiples campos."
+      ],
+      "guardrails": [
+        "Realizar pruebas de usabilidad exhaustivas con el público objetivo para validar la claridad y facilidad de uso de la interfaz de edición, asegurando que no genere confusión.",
+        "Limitar la edición manual a un conjunto muy específico de campos críticos y de alto impacto en esta iteración, priorizando la simplicidad.",
+        "Establecer un presupuesto de rendimiento estricto para las animaciones y transiciones, utilizando técnicas de optimización y pruebas en dispositivos reales.",
+        "Mantener el flujo principal de 'analizar → confirmar → guardar' intacto; la edición debe ser una opción clara y no un paso obligatorio que añada fricción.",
+        "Desarrollo iterativo con revisiones de código y pruebas de regresión continuas para asegurar la estabilidad del flujo existente."
+      ],
+      "plan_tecnico": [
+        "1. Identificar y mapear los campos críticos para edición manual en el backend (API) y frontend (UI).",
+        "2. Desarrollar componentes de UI reutilizables y accesibles para campos editables en la pantalla de confirmación.",
+        "3. Implementar la lógica de actualización de datos en el backend para los campos editados, con validaciones básicas.",
+        "4. Integrar librerías de animación o CSS para las microinteracciones en cámara, vista previa y confirmación, asegurando rendimiento.",
+        "5. Realizar pruebas unitarias, de integración y de rendimiento, seguidas de pruebas de usuario con el público objetivo para validación UX."
+      ],
+      "microcopy_ejemplo": [
+        "¿Necesitas corregir algún dato?",
+        "Toca para editar",
+        "¡Listo! Documento guardado.",
+        "Captura exitosa"
+      ],
+      "puntajes": {
+        "impacto_usuario": 9,
+        "riesgo_implementacion": 6,
+        "claridad": 8,
+        "velocidad_entrega": 7
+      }
+    }
+  },
+  "finishedAt": "2026-04-08T02:32:08.493Z"
+}

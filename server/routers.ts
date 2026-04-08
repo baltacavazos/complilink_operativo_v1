@@ -64,6 +64,23 @@ const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
+const auditarManualOverrideSchema = z.object({
+  key: z.string().min(1).max(80),
+  label: z.string().trim().min(1).max(120).optional(),
+  value: z.string().trim().min(1).max(240),
+});
+
+const auditarEditableFieldKeys = [
+  "workerName",
+  "employerName",
+  "period",
+  "apparentAmount",
+  "apparentEffectiveDate",
+  "employerRfc",
+  "jobTitle",
+] as const;
+
+const auditarEditableFieldKeySet = new Set<string>(auditarEditableFieldKeys);
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
 const complilinkReturnEventNames = new Set([
@@ -93,6 +110,7 @@ function getMetadataDocumentId(metadata: Record<string, unknown> | null) {
 
 type AuditarTargetType = z.infer<typeof auditarTargetTypeSchema>;
 type AuditarCaptureMode = z.infer<typeof auditarCaptureModeSchema>;
+type AuditarManualOverride = z.infer<typeof auditarManualOverrideSchema>;
 type ScanAssistAssessment = {
   readiness: "ready" | "retry" | "manual_review";
   documentPresence: "clear" | "partial" | "uncertain";
@@ -397,6 +415,81 @@ function buildDraftPreviewPayload(payload: AuditarDraftContractPayload) {
     classification: payload.classification,
     preliminaryAnalysis: payload.preliminaryAnalysis,
     scanAssistance: payload.scanAssistance,
+  };
+}
+
+function normalizeManualFieldOverrides(overrides: AuditarManualOverride[] | undefined) {
+  const normalized = new Map<string, AuditarManualOverride>();
+
+  for (const override of overrides ?? []) {
+    const key = override.key.trim();
+    const value = override.value.replace(/\s+/g, " ").trim();
+    const label = override.label?.trim();
+
+    if (!auditarEditableFieldKeySet.has(key) || value.length === 0) {
+      continue;
+    }
+
+    normalized.set(key, {
+      key,
+      label: label && label.length > 0 ? label : humanizeStructuredFieldLabel(key),
+      value: value.slice(0, 240),
+    });
+  }
+
+  return Array.from(normalized.values()).slice(0, 5);
+}
+
+function getRecordStringValue(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function applyManualFieldOverrides(params: {
+  preliminaryAnalysis: DraftPreliminaryAnalysis;
+  overrides: AuditarManualOverride[];
+}): DraftPreliminaryAnalysis {
+  if (params.overrides.length === 0) {
+    return params.preliminaryAnalysis;
+  }
+
+  const confirmedData = { ...params.preliminaryAnalysis.confirmedData };
+  const estimatedData = { ...params.preliminaryAnalysis.estimatedData };
+  const overrideMap = new Map(params.overrides.map((override) => [override.key, override]));
+
+  for (const override of params.overrides) {
+    confirmedData[override.key] = override.value;
+    delete estimatedData[override.key];
+  }
+
+  const overrideLabels = new Set(
+    params.overrides.map((override) => (override.label?.trim() || humanizeStructuredFieldLabel(override.key)).toLowerCase()),
+  );
+
+  const preservedFields = params.preliminaryAnalysis.structuredExtraction.fields.filter((field) => !overrideMap.has(field.key));
+  const overrideFields: StructuredExtractionField[] = params.overrides.map((override) => ({
+    key: override.key,
+    label: override.label?.trim() || humanizeStructuredFieldLabel(override.key),
+    value: override.value,
+    status: "confirmed",
+    confidence: "high",
+  }));
+
+  return {
+    ...params.preliminaryAnalysis,
+    confirmedData,
+    estimatedData,
+    structuredExtraction: {
+      ...params.preliminaryAnalysis.structuredExtraction,
+      fields: [...overrideFields, ...preservedFields].slice(0, 12),
+      missingFields: params.preliminaryAnalysis.structuredExtraction.missingFields
+        .filter((item) => !overrideLabels.has(item.trim().toLowerCase()))
+        .slice(0, 6),
+      reviewNotes: [
+        `Antes de guardar, la persona usuaria confirmó o corrigió ${params.overrides.length} dato${params.overrides.length === 1 ? "" : "s"} clave.`,
+        ...params.preliminaryAnalysis.structuredExtraction.reviewNotes,
+      ].slice(0, 4),
+    },
   };
 }
 
@@ -1067,6 +1160,7 @@ export const appRouter = router({
           visibility: documentVisibilitySchema.default("case_team"),
           consentStatus: documentConsentStatusSchema.default("pending"),
           sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
+          manualOverrides: z.array(auditarManualOverrideSchema).max(5).optional().default([]),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1088,7 +1182,11 @@ export const appRouter = router({
 
         const payload = draft.payload as AuditarDraftContractPayload;
         const classification = payload.classification;
-        const preliminaryAnalysis = payload.preliminaryAnalysis;
+        const manualOverrides = normalizeManualFieldOverrides(input.manualOverrides);
+        const preliminaryAnalysis = applyManualFieldOverrides({
+          preliminaryAnalysis: payload.preliminaryAnalysis,
+          overrides: manualOverrides,
+        });
         const scanAssistance = payload.scanAssistance;
         const processedAt = new Date();
         const documentId = buildDocumentId();
@@ -1157,6 +1255,7 @@ export const appRouter = router({
             expected_document_type: payload.expectedDocumentType ?? null,
             capture_mode: payload.captureMode ?? null,
             scan_assistance: scanAssistance,
+            manual_override_keys: manualOverrides.map((item) => item.key),
           }),
           eventAt: new Date(),
         });
@@ -1242,6 +1341,7 @@ export const appRouter = router({
             estimatedData: preliminaryAnalysis.estimatedData,
             structuredExtraction: preliminaryAnalysis.structuredExtraction,
             extractionTargets: preliminaryAnalysis.extractionTargets,
+            manualOverrides,
             generatedAt: processedAt.toISOString(),
             previewCreatedAt: payload.createdAt,
           }),
@@ -1333,9 +1433,18 @@ export const appRouter = router({
           auditId: detail.case.traceId,
           caseId: detail.case.caseId,
           metadata: {
-            employerRfc: preliminaryAnalysis.estimatedData.employerRfc,
-            workerName: preliminaryAnalysis.estimatedData.workerName,
-            period: preliminaryAnalysis.estimatedData.period,
+            employerRfc:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "employerRfc") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "employerRfc") ??
+              null,
+            workerName:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "workerName") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "workerName") ??
+              null,
+            period:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "period") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
+              null,
             descriptiveDocType: classification.normalizedDocType,
           },
         });
@@ -1399,6 +1508,7 @@ export const appRouter = router({
             draftId: payload.draftId,
             previewCreatedAt: payload.createdAt,
             structuredExtraction: preliminaryAnalysis.structuredExtraction,
+            manualOverrides,
           },
         });
 
@@ -1758,9 +1868,18 @@ export const appRouter = router({
           auditId: detail.case.traceId,
           caseId: detail.case.caseId,
           metadata: {
-            employerRfc: preliminaryAnalysis.estimatedData.employerRfc,
-            workerName: preliminaryAnalysis.estimatedData.workerName,
-            period: preliminaryAnalysis.estimatedData.period,
+            employerRfc:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "employerRfc") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "employerRfc") ??
+              null,
+            workerName:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "workerName") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "workerName") ??
+              null,
+            period:
+              getRecordStringValue(preliminaryAnalysis.confirmedData, "period") ??
+              getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
+              null,
             descriptiveDocType: classification.normalizedDocType,
           },
         });

@@ -145,6 +145,13 @@ type StructuredExtractionView = {
   reviewNotes: string[];
 };
 
+type PreviewEditableFieldView = {
+  key: string;
+  label: string;
+  value: string;
+  source: "confirmed" | "estimated" | "structured";
+};
+
 type DraftPreviewResultView = {
   draftId: string;
   createdAt: string;
@@ -882,6 +889,104 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
   return Object.entries(record ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== "");
 }
 
+const editablePreviewFieldKeys = new Set<string>([
+  "workerName",
+  "employerName",
+  "period",
+  "apparentAmount",
+  "apparentEffectiveDate",
+  "employerRfc",
+  "jobTitle",
+]);
+
+const editablePreviewFieldPriority: Record<PreviewEditableFieldView["source"], number> = {
+  confirmed: 3,
+  estimated: 2,
+  structured: 1,
+};
+
+function normalizeEditableFieldValue(value: unknown) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return String(value);
+  return String(value).trim();
+}
+
+function buildPreviewEditableFields(draft?: DraftPreviewResultView | null) {
+  const fields = new Map<string, PreviewEditableFieldView>();
+
+  const registerField = (key: string, label: string, value: unknown, source: PreviewEditableFieldView["source"]) => {
+    if (!editablePreviewFieldKeys.has(key)) return;
+
+    const normalizedValue = normalizeEditableFieldValue(value);
+    if (!normalizedValue) return;
+
+    const existing = fields.get(key);
+    if (existing && editablePreviewFieldPriority[existing.source] >= editablePreviewFieldPriority[source]) {
+      return;
+    }
+
+    fields.set(key, {
+      key,
+      label: label.trim() || getAnalysisFieldLabel(key),
+      value: normalizedValue,
+      source,
+    });
+  };
+
+  Object.entries(draft?.preliminaryAnalysis?.confirmedData ?? {}).forEach(([key, value]) => {
+    registerField(key, getAnalysisFieldLabel(key), value, "confirmed");
+  });
+
+  Object.entries(draft?.preliminaryAnalysis?.estimatedData ?? {}).forEach(([key, value]) => {
+    registerField(key, getAnalysisFieldLabel(key), value, "estimated");
+  });
+
+  (draft?.preliminaryAnalysis?.structuredExtraction?.fields ?? []).forEach((field) => {
+    registerField(field.key, field.label, field.value, "structured");
+  });
+
+  return Array.from(fields.values()).slice(0, 5);
+}
+
+function buildManualOverridePayload(fields: PreviewEditableFieldView[], values: Record<string, string>) {
+  return fields
+    .map((field) => {
+      const normalizedValue = (values[field.key] ?? field.value).replace(/\s+/g, " ").trim();
+      if (!normalizedValue || normalizedValue === field.value.replace(/\s+/g, " ").trim()) {
+        return null;
+      }
+
+      return {
+        key: field.key,
+        label: field.label,
+        value: normalizedValue,
+      };
+    })
+    .filter((item): item is { key: string; label: string; value: string } => Boolean(item));
+}
+
+function getEditableFieldSupportCopy(key: string) {
+  switch (key) {
+    case "workerName":
+      return "Úsalo si el nombre visible quedó incompleto o con un orden raro.";
+    case "employerName":
+      return "Corrígelo si la razón social no coincide con lo que realmente aparece en el documento.";
+    case "period":
+      return "Ajusta este dato cuando el periodo laboral o de pago se vea cortado o ambiguo.";
+    case "apparentAmount":
+      return "Útil cuando el monto quedó mal separado, con símbolos extra o lectura parcial.";
+    case "apparentEffectiveDate":
+      return "Corrígela si la fecha visible no coincide con la que identificas en el documento.";
+    case "employerRfc":
+      return "Puedes confirmarlo manualmente cuando el RFC se vea borroso o incompleto.";
+    case "jobTitle":
+      return "Ajusta este campo si el puesto aparece abreviado o con lectura poco clara.";
+    default:
+      return "Si este dato no se leyó bien, puedes dejarlo corregido antes de guardar.";
+  }
+}
+
 function lowercaseFirstLetter(value: string) {
   if (!value) return value;
   return `${value.charAt(0).toLowerCase()}${value.slice(1)}`;
@@ -1364,6 +1469,9 @@ export default function Auditar() {
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
   const [pendingDraft, setPendingDraft] = useState<DraftPreviewResultView | null>(null);
+  const [manualFieldValues, setManualFieldValues] = useState<Record<string, string>>({});
+  const [previewStatusFlash, setPreviewStatusFlash] = useState(false);
+  const [saveStatusFlash, setSaveStatusFlash] = useState(false);
   const [lastUpload, setLastUpload] = useState<ConfirmedUploadResultView | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
@@ -1710,13 +1818,113 @@ export default function Auditar() {
     [pendingDraft],
   );
   const previewStructuredExtraction = pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null;
+  const previewEditableFields = useMemo(() => buildPreviewEditableFields(pendingDraft), [pendingDraft]);
+  const manualOverridePayload = useMemo(
+    () => buildManualOverridePayload(previewEditableFields, manualFieldValues),
+    [manualFieldValues, previewEditableFields],
+  );
+  const manualOverrideMap = useMemo(
+    () => new Map<string, string>(manualOverridePayload.map((item) => [item.key, item.value])),
+    [manualOverridePayload],
+  );
+  const previewPresentTypes = useMemo(() => {
+    const nextTypes = new Set(presentTypes);
+    const previewTarget = dossierTargets.find((item) => item.type === pendingDraft?.classification.documentType);
+    if (previewTarget) {
+      nextTypes.add(previewTarget.type);
+    }
+    return nextTypes;
+  }, [pendingDraft, presentTypes]);
+  const previewNextTarget = useMemo(
+    () => dossierTargets.find((item) => !previewPresentTypes.has(item.type)) ?? null,
+    [previewPresentTypes],
+  );
+  const previewNextDocumentCopy = useMemo(
+    () =>
+      getPersonalizedNextDocumentCopy({
+        nextTarget: previewNextTarget ?? undefined,
+        presentTypes: previewPresentTypes,
+        opinion: visibleHeliosOpinion,
+      }),
+    [previewNextTarget, previewPresentTypes, visibleHeliosOpinion],
+  );
+  const previewConfirmedDisplayEntries = useMemo(() => {
+    const entries = previewConfirmedEntries.map(([key, value]) => [key, manualOverrideMap.get(key) ?? value] as [string, unknown]);
+    const seenKeys = new Set(entries.map(([key]) => key));
+
+    previewEditableFields.forEach((field) => {
+      const overrideValue = manualOverrideMap.get(field.key);
+      if (overrideValue && !seenKeys.has(field.key)) {
+        entries.unshift([field.key, overrideValue]);
+        seenKeys.add(field.key);
+      }
+    });
+
+    return entries;
+  }, [manualOverrideMap, previewConfirmedEntries, previewEditableFields]);
+  const previewEstimatedDisplayEntries = useMemo(
+    () => previewEstimatedEntries.filter(([key]) => !manualOverrideMap.has(key)),
+    [manualOverrideMap, previewEstimatedEntries],
+  );
+  const displayPreviewStructuredExtraction = useMemo(() => {
+    if (!previewStructuredExtraction) {
+      return null;
+    }
+
+    const editableLabelByKey = new Map(previewEditableFields.map((field) => [field.key, field.label]));
+    const existingKeys = new Set<string>();
+    const mergedFields = previewStructuredExtraction.fields.map((field) => {
+      existingKeys.add(field.key);
+      const overrideValue = manualOverrideMap.get(field.key);
+      if (!overrideValue) {
+        return field;
+      }
+
+      return {
+        ...field,
+        label: editableLabelByKey.get(field.key) ?? field.label,
+        value: overrideValue,
+        status: "confirmed" as const,
+        confidence: "high" as const,
+      };
+    });
+
+    previewEditableFields.forEach((field) => {
+      const overrideValue = manualOverrideMap.get(field.key);
+      if (overrideValue && !existingKeys.has(field.key)) {
+        mergedFields.unshift({
+          key: field.key,
+          label: field.label,
+          value: overrideValue,
+          status: "confirmed",
+          confidence: "high",
+        });
+      }
+    });
+
+    const overrideLabels = new Set(manualOverridePayload.map((item) => item.label.trim().toLowerCase()));
+
+    return {
+      ...previewStructuredExtraction,
+      fields: mergedFields.slice(0, 12),
+      missingFields: previewStructuredExtraction.missingFields
+        .filter((item) => !overrideLabels.has(item.trim().toLowerCase()))
+        .slice(0, 6),
+      reviewNotes: manualOverridePayload.length
+        ? [
+            `Antes de guardar, revisaste manualmente ${manualOverridePayload.length} dato${manualOverridePayload.length === 1 ? "" : "s"} clave.`,
+            ...previewStructuredExtraction.reviewNotes,
+          ].slice(0, 4)
+        : previewStructuredExtraction.reviewNotes,
+    };
+  }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
   const previewStructuredConfirmedFields = useMemo(
-    () => (previewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
-    [previewStructuredExtraction],
+    () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
+    [displayPreviewStructuredExtraction],
   );
   const previewStructuredEstimatedFields = useMemo(
-    () => (previewStructuredExtraction?.fields ?? []).filter((field) => field.status === "estimated"),
-    [previewStructuredExtraction],
+    () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "estimated"),
+    [displayPreviewStructuredExtraction],
   );
   const previewGuardrails = pendingDraft?.preliminaryAnalysis?.guardrails ?? [];
   const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
@@ -1830,6 +2038,30 @@ export default function Auditar() {
   }, [lastUpload, pendingDraft]);
 
   useEffect(() => {
+    if (!pendingDraft) {
+      setManualFieldValues({});
+      setPreviewStatusFlash(false);
+      return;
+    }
+
+    setManualFieldValues(Object.fromEntries(buildPreviewEditableFields(pendingDraft).map((field) => [field.key, field.value])));
+    setPreviewStatusFlash(true);
+    const timeoutId = window.setTimeout(() => setPreviewStatusFlash(false), 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, [pendingDraft]);
+
+  useEffect(() => {
+    if (!lastUpload) {
+      setSaveStatusFlash(false);
+      return;
+    }
+
+    setSaveStatusFlash(true);
+    const timeoutId = window.setTimeout(() => setSaveStatusFlash(false), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [lastUpload]);
+
+  useEffect(() => {
     if (!selectedRecommendedTargetType) {
       return;
     }
@@ -1906,6 +2138,7 @@ export default function Auditar() {
 
   const restartPreviewFlow = () => {
     setPendingDraft(null);
+    setManualFieldValues({});
     setSelectedFile(null);
     setSelectedCaptureMode(null);
     setSubmitError(null);
@@ -1917,6 +2150,14 @@ export default function Auditar() {
     }
 
     openPreferredPicker();
+  };
+
+  const handleManualFieldChange = (key: string, value: string) => {
+    setManualFieldValues((current) => ({
+      ...current,
+      [key]: value,
+    }));
+    setSubmitError(null);
   };
 
   const handleUpload = async () => {
@@ -1966,10 +2207,12 @@ export default function Auditar() {
         visibility: "tenant_legal",
         consentStatus: "pending",
         sourceChannel: "manual",
+        manualOverrides: manualOverridePayload,
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
       setPendingDraft(null);
+      setManualFieldValues({});
       setSelectedFile(null);
       setSelectedCaptureMode(null);
       setTextHint("");
@@ -2707,6 +2950,24 @@ export default function Auditar() {
                     </div>
                   </div>
 
+                  <div
+                    className={`mt-4 rounded-[1.2rem] border bg-white/90 p-4 transition-all duration-300 ${
+                      previewStatusFlash ? "border-sky-300 shadow-[0_24px_60px_-38px_rgba(14,165,233,0.55)] ring-2 ring-sky-100" : "border-white/80"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className={`mt-1 inline-flex h-2.5 w-2.5 rounded-full ${previewStatusFlash ? "animate-pulse bg-sky-500" : "bg-sky-300"}`} />
+                      <div>
+                        <p className="font-semibold text-slate-950">Vista previa lista para revisión rápida</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-700">
+                          {manualOverridePayload.length
+                            ? `Llevas ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} manual${manualOverridePayload.length === 1 ? "" : "es"} preparado${manualOverridePayload.length === 1 ? "" : "s"} para el guardado final.`
+                            : "Si ves un dato importante mal leído, puedes corregirlo aquí. Es opcional y toma solo unos segundos."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="mt-4 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
                       <p className="font-semibold text-slate-950">{pendingDraft.scanAssistance.friendlyHeadline}</p>
@@ -2734,10 +2995,10 @@ export default function Auditar() {
                     <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
                       <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">Lectura estructurada</p>
                       <h4 className="mt-2 font-semibold text-slate-950">
-                        {previewStructuredExtraction?.headline ?? "Resumen del documento"}
+                        {displayPreviewStructuredExtraction?.headline ?? "Resumen del documento"}
                       </h4>
                       <p className="mt-2 text-sm leading-7 text-slate-700">
-                        {previewStructuredExtraction?.summary ?? pendingDraft.preliminaryAnalysis.summary}
+                        {displayPreviewStructuredExtraction?.summary ?? pendingDraft.preliminaryAnalysis.summary}
                       </p>
                       {previewStructuredConfirmedFields.length || previewStructuredEstimatedFields.length ? (
                         <div className="mt-4 space-y-2">
@@ -2761,21 +3022,99 @@ export default function Auditar() {
                     </div>
                   </div>
 
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4 transition-all duration-300">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-teal-950">Corrige rápido solo lo que sí veas claro</p>
+                          <p className="mt-2 text-sm leading-7 text-teal-900">
+                            Esta revisión es opcional. Solo ajusta los datos que identifiques con claridad para dejar más preciso el guardado final.
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
+                          {manualOverridePayload.length
+                            ? `${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"}`
+                            : "Opcional"}
+                        </span>
+                      </div>
+
+                      {previewEditableFields.length === 0 ? (
+                        <p className="mt-4 text-sm leading-7 text-teal-900">
+                          Esta vista previa no detectó campos prioritarios para corrección manual. Si la foto quedó floja, conviene repetir la captura.
+                        </p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {previewEditableFields.map((field) => {
+                            const currentValue = manualFieldValues[field.key] ?? field.value;
+                            const isEdited = currentValue.trim() !== field.value.trim();
+
+                            return (
+                              <label key={field.key} className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm transition-all duration-300">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">{field.label}</p>
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                      isEdited
+                                        ? "bg-teal-100 text-teal-900"
+                                        : field.source === "confirmed"
+                                          ? "bg-emerald-100 text-emerald-800"
+                                          : "bg-amber-100 text-amber-800"
+                                    }`}
+                                  >
+                                    {isEdited ? "Ajustado" : field.source === "confirmed" ? "Confirmado" : "Sugerido"}
+                                  </span>
+                                </div>
+                                <input
+                                  value={currentValue}
+                                  onChange={(event) => handleManualFieldChange(field.key, event.target.value)}
+                                  placeholder={field.value}
+                                  className="mt-3 h-11 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
+                                />
+                                <p className="mt-2 text-xs leading-5 text-teal-900">{getEditableFieldSupportCopy(field.key)}</p>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-300">
+                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">Sugerencia útil para seguir</p>
+                      <h4 className="mt-2 text-lg font-semibold text-slate-950">{previewNextDocumentCopy.headline}</h4>
+                      <p className="mt-2 text-sm leading-7 text-emerald-950">{previewNextDocumentCopy.intro}</p>
+                      <div className="mt-4 rounded-[1rem] border border-white/80 bg-white p-3">
+                        <p className="text-sm font-semibold text-slate-950">{previewNextDocumentCopy.reasonTitle}</p>
+                        <p className="mt-2 text-sm leading-7 text-slate-700">{previewNextDocumentCopy.reasonBody}</p>
+                        <p className="mt-2 text-xs leading-6 text-slate-500">{previewNextDocumentCopy.coverage}</p>
+                      </div>
+                      {previewNextTarget ? (
+                        <Button
+                          variant="outline"
+                          className="mt-4 h-11 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
+                          onClick={() => focusRecommendedUpload(previewNextTarget.type)}
+                        >
+                          Seguir con esta sugerencia
+                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+
                   <div className="mt-4 grid gap-4 lg:grid-cols-2">
                     <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-semibold text-emerald-950">Lo que ya se ve claro</p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
-                          {previewConfirmedEntries.length} dato{previewConfirmedEntries.length === 1 ? "" : "s"}
+                          {previewConfirmedDisplayEntries.length} dato{previewConfirmedDisplayEntries.length === 1 ? "" : "s"}
                         </span>
                       </div>
-                      {previewConfirmedEntries.length === 0 ? (
+                      {previewConfirmedDisplayEntries.length === 0 ? (
                         <p className="mt-3 text-sm leading-7 text-emerald-900">
                           Todavía no hay suficiente información clara para mostrar datos confirmados en esta vista previa.
                         </p>
                       ) : (
                         <div className="mt-4 space-y-3">
-                          {previewConfirmedEntries.map(([key, value]) => (
+                          {previewConfirmedDisplayEntries.map(([key, value]) => (
                             <div key={key} className="rounded-[1rem] bg-white p-3">
                               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">{getAnalysisFieldLabel(key)}</p>
                               <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
@@ -2789,19 +3128,19 @@ export default function Auditar() {
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-semibold text-amber-950">Lo que conviene revisar</p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
-                          {previewEstimatedEntries.length} dato{previewEstimatedEntries.length === 1 ? "" : "s"}
+                          {previewEstimatedDisplayEntries.length} dato{previewEstimatedDisplayEntries.length === 1 ? "" : "s"}
                         </span>
                       </div>
                       <p className="mt-3 text-sm leading-7 text-amber-900">
                         Tómalos como orientación inicial. Si no te convence la lectura o la foto quedó floja, puedes repetir la captura antes de guardar.
                       </p>
-                      {previewEstimatedEntries.length === 0 ? (
+                      {previewEstimatedDisplayEntries.length === 0 ? (
                         <p className="mt-3 text-sm leading-7 text-amber-900">
                           Por ahora no hay estimaciones adicionales que revisar en esta vista previa.
                         </p>
                       ) : (
                         <div className="mt-4 space-y-3">
-                          {previewEstimatedEntries.map(([key, value]) => (
+                          {previewEstimatedDisplayEntries.map(([key, value]) => (
                             <div key={key} className="rounded-[1rem] bg-white p-3">
                               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">{getAnalysisFieldLabel(key)}</p>
                               <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
@@ -2812,14 +3151,14 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  {previewStructuredExtraction?.missingFields?.length || previewStructuredExtraction?.reviewNotes?.length || previewGuardrails.length ? (
+                  {displayPreviewStructuredExtraction?.missingFields?.length || displayPreviewStructuredExtraction?.reviewNotes?.length || previewGuardrails.length ? (
                     <div className="mt-4 rounded-[1.2rem] border border-white/80 bg-white p-4">
                       <p className="font-semibold text-slate-950">Qué revisar antes de guardar</p>
                       <div className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
-                        {previewStructuredExtraction?.missingFields?.map((item) => (
+                        {displayPreviewStructuredExtraction?.missingFields?.map((item) => (
                           <p key={`missing-${item}`}>• Todavía no se alcanzó a leer con claridad: {item}.</p>
                         ))}
-                        {previewStructuredExtraction?.reviewNotes?.map((item) => (
+                        {displayPreviewStructuredExtraction?.reviewNotes?.map((item) => (
                           <p key={`note-${item}`}>• {item}</p>
                         ))}
                         {previewGuardrails.map((item) => (
@@ -2831,12 +3170,20 @@ export default function Auditar() {
 
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                     <Button
-                      className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
+                      className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
+                        manualOverridePayload.length
+                          ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
+                          : "bg-teal-600 hover:bg-teal-700"
+                      }`}
                       disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
                       onClick={() => void handleConfirmDraft()}
                     >
-                      {confirmDraftMutation.isPending ? "Guardando documento..." : "Confirmar y guardar documento"}
-                      <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                      {confirmDraftMutation.isPending ? "Guardando documento..." : manualOverridePayload.length ? "Guardar y aplicar ajustes" : "Confirmar y guardar documento"}
+                      {confirmDraftMutation.isPending ? (
+                        <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
+                      ) : (
+                        <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                      )}
                     </Button>
                     <Button
                       variant="outline"
@@ -2860,34 +3207,45 @@ export default function Auditar() {
               ) : null}
 
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row">
-                <Button
-                  className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
-                  disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
-                  onClick={() => {
-                    if (pendingDraft) {
-                      void handleConfirmDraft();
-                      return;
-                    }
-                    if (!selectedFile) {
-                      openPreferredPicker();
-                      return;
-                    }
-                    void handleUpload();
-                  }}
-                >
-                  {isProcessingDocument
-                    ? pendingDraft
-                      ? "Guardando documento..."
-                      : "Analizando documento..."
-                    : pendingDraft
-                      ? "Confirmar y guardar documento"
-                      : selectedFile
-                        ? "Analizar antes de guardar"
-                        : activeCaptureMode === "camera"
-                          ? "Tomar foto para continuar"
-                          : "Elegir archivo para continuar"}
-                  <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-                </Button>
+                    <Button
+                      className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
+                        pendingDraft && manualOverridePayload.length
+                          ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
+                          : "bg-teal-600 hover:bg-teal-700"
+                      }`}
+                      disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
+                      onClick={() => {
+                        if (pendingDraft) {
+                          void handleConfirmDraft();
+                          return;
+                        }
+                        if (!selectedFile) {
+                          openPreferredPicker();
+                          return;
+                        }
+                        void handleUpload();
+                      }}
+                    >
+                      {isProcessingDocument
+                        ? pendingDraft
+                          ? "Guardando documento..."
+                          : "Analizando documento..."
+                        : pendingDraft
+                          ? manualOverridePayload.length
+                            ? "Guardar y aplicar ajustes"
+                            : "Confirmar y guardar documento"
+                          : selectedFile
+                            ? "Analizar antes de guardar"
+                            : activeCaptureMode === "camera"
+                              ? "Tomar foto para continuar"
+                              : "Elegir archivo para continuar"}
+                      {isProcessingDocument ? (
+                        <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
+                      ) : (
+                        <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                      )}
+                    </Button>
+
                 <Button
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -2901,6 +3259,18 @@ export default function Auditar() {
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tu último documento</p>
+
+              {saveStatusFlash && lastUpload ? (
+                <div className="mt-4 rounded-[1.3rem] border border-emerald-200 bg-emerald-50 p-4 text-sm leading-7 text-emerald-950 shadow-sm transition-all duration-300">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                    <div>
+                      <p className="font-semibold">Documento guardado y expediente actualizado</p>
+                      <p className="mt-1">La vista previa ya se convirtió en un documento real dentro de tu expediente. Si hiciste ajustes manuales, también quedaron incorporados en este guardado.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               {!lastUpload ? (
                 pendingDraft ? (
@@ -3988,7 +4358,11 @@ export default function Auditar() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden">
         <div className="mx-auto max-w-6xl">
           <Button
-            className="h-14 w-full rounded-[1.2rem] bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
+            className={`h-14 w-full rounded-[1.2rem] text-base font-semibold text-white transition-all duration-300 ${
+              pendingDraft && manualOverridePayload.length
+                ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
+                : "bg-teal-600 hover:bg-teal-700"
+            }`}
             disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
             onClick={() => {
               if (pendingDraft) {
@@ -3996,7 +4370,7 @@ export default function Auditar() {
                 return;
               }
               if (!selectedFile) {
-                setUploadSourceOpen(true);
+                openPreferredPicker();
                 return;
               }
               void handleUpload();
@@ -4007,7 +4381,9 @@ export default function Auditar() {
                 ? "Guardando documento..."
                 : "Analizando documento..."
               : pendingDraft
-                ? "Confirmar y guardar documento"
+                ? manualOverridePayload.length
+                  ? "Guardar y aplicar ajustes"
+                  : "Confirmar y guardar documento"
                 : selectedFile
                   ? "Analizar antes de guardar"
                   : activeCaptureMode === "camera"
@@ -4015,10 +4391,13 @@ export default function Auditar() {
                     : "Elegir archivo para continuar"}
           </Button>
 
+
           <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">
             <p className="min-w-0 flex-1 truncate">
               {pendingDraft
-                ? `Vista previa lista: ${pendingDraft.previewAsset.fileName}`
+                ? manualOverridePayload.length
+                  ? `Vista previa lista: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} preparado${manualOverridePayload.length === 1 ? "" : "s"} antes de guardar.`
+                  : `Vista previa lista: ${pendingDraft.previewAsset.fileName}`
                 : selectedFile
                   ? `Listo para analizar: ${selectedFile.name}`
                   : "Primero elige tu documento desde el celular o tus archivos guardados."}

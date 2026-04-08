@@ -1,0 +1,265 @@
+{
+  "startedAt": "2026-04-08T02:51:50.879Z",
+  "context": {
+    "proyecto": "AuditaPatron / complilink_operativo_v1",
+    "objetivo_validacion": "Validar post-implementación la nueva iteración visible de /auditar antes del cierre técnico.",
+    "implementado": {
+      "flujo_base": "La app ya cuenta con analizar → confirmar → guardar en /auditar.",
+      "nueva_iteracion": [
+        "Edición manual opcional de campos críticos dentro de la confirmación previa al guardado.",
+        "Recomendación automática del siguiente documento ideal dentro de la vista previa.",
+        "Microinteracciones suaves en vista previa, confirmación, guardado y CTAs persistentes.",
+        "El guardado final ya acepta manualOverrides y fusiona esos cambios con el preanálisis antes de persistir."
+      ],
+      "validacion_local": [
+        "TypeScript compila sin errores.",
+        "Vitest pasa: 36 pruebas exitosas.",
+        "La intención UX sigue siendo mobile-first, clara y con baja fricción."
+      ]
+    },
+    "usuario_final": "Trabajadores mexicanos con baja alfabetización digital; el flujo debe sentirse humano, confiable y muy fácil de usar en celular.",
+    "restricciones": [
+      "No aumentar fricción ni convertir la confirmación en un formulario pesado.",
+      "Las microinteracciones deben aportar claridad, no decoración.",
+      "La recomendación del siguiente documento debe sentirse útil y natural, no invasiva.",
+      "La edición manual debe limitarse a campos críticos y opcionales.",
+      "El análisis debe enfocarse en esta implementación específica, no en ideas genéricas."
+    ],
+    "pregunta_central": "¿La iteración implementada quedó bien priorizada y bien aterrizada? ¿Qué refinamientos concretos conviene hacer después sin rehacer el flujo?"
+  },
+  "results": {
+    "openai": {
+      "modelo": "gpt-4.1-mini",
+      "veredicto_general": "aprobado_con_ajustes",
+      "resumen_ejecutivo": "La iteración implementada equilibra bien la necesidad de control manual con la automatización y claridad visual, adecuada para usuarios con baja alfabetización digital. La edición manual está bien limitada a campos críticos, la recomendación del siguiente documento es útil pero debe evitarse que sea invasiva, y las microinteracciones aportan claridad sin distracciones. Sin embargo, se recomienda ajustar la visibilidad y el lenguaje para reforzar la confianza y minimizar cualquier posible fricción en la confirmación.",
+      "evaluacion": {
+        "edicion_manual": {
+          "calificacion": 8,
+          "comentario": "Bien limitada a campos críticos y opcionales, evita sobrecargar al usuario. Es clave mantenerla opcional y contextual para no generar confusión."
+        },
+        "siguiente_documento": {
+          "calificacion": 7,
+          "comentario": "La recomendación automática es útil y natural, pero debe cuidarse que no se perciba como presión o invasión, especialmente para usuarios con baja alfabetización digital."
+        },
+        "microinteracciones": {
+          "calificacion": 9,
+          "comentario": "Microinteracciones suaves aportan claridad y feedback sin ser decorativas, lo que mejora la experiencia móvil y la sensación de control."
+        },
+        "claridad_para_usuario": {
+          "calificacion": 8,
+          "comentario": "El flujo mantiene claridad y baja fricción, pero se puede mejorar el lenguaje y señales visuales para reforzar confianza y comprensión."
+        },
+        "riesgo_de_friccion": {
+          "calificacion": 6,
+          "comentario": "Existe riesgo leve de fricción si la edición manual o la recomendación se perciben como complicadas o invasivas; debe monitorearse y ajustarse."
+        }
+      },
+      "lo_mejor_logrado": [
+        "Edición manual bien acotada y opcional para no saturar al usuario.",
+        "Microinteracciones que aportan feedback claro y natural.",
+        "Recomendación del siguiente documento integrada de forma no invasiva."
+      ],
+      "riesgos_detectados": [
+        "Posible confusión o rechazo a la edición manual si no está suficientemente explicada.",
+        "Recomendación automática puede sentirse presionante si no se maneja con sutileza.",
+        "Microinteracciones podrían distraer si se incrementan o se vuelven demasiado visibles."
+      ],
+      "ajustes_prioritarios": [
+        {
+          "prioridad": 1,
+          "ajuste": "Incluir microcopy explicativo breve y claro para la edición manual, enfatizando que es opcional y para mejorar precisión.",
+          "por_que": "Reduce incertidumbre y mejora la confianza del usuario con baja alfabetización digital."
+        },
+        {
+          "prioridad": 2,
+          "ajuste": "Ajustar la presentación de la recomendación del siguiente documento para que sea más sutil y contextual, evitando sensación de presión.",
+          "por_que": "Minimiza riesgo de rechazo o confusión en usuarios vulnerables."
+        },
+        {
+          "prioridad": 3,
+          "ajuste": "Revisar y limitar la duración y frecuencia de microinteracciones para evitar distracciones o fatiga visual.",
+          "por_que": "Mantiene la experiencia fluida y sin fricción."
+        }
+      ],
+      "guardrails_ux": [
+        "Mantener la edición manual opcional y limitada a campos críticos.",
+        "Microinteracciones deben ser funcionales y no decorativas.",
+        "Recomendación del siguiente documento debe sentirse como ayuda, no imposición."
+      ],
+      "siguiente_iteracion_recomendada": {
+        "enfoque": "Optimización de comunicación y microcopy para reforzar confianza y reducir fricción.",
+        "alcance": [
+          "Pruebas de usabilidad con usuarios reales para validar comprensión.",
+          "Ajustes en microcopy y señales visuales en edición manual y recomendaciones.",
+          "Monitoreo de métricas de abandono y tiempo en confirmación."
+        ],
+        "evitar": [
+          "Agregar formularios o pasos adicionales en confirmación.",
+          "Incrementar la complejidad o cantidad de campos editables.",
+          "Microinteracciones excesivas o decorativas que distraigan."
+        ]
+      },
+      "microcopy_sugerido": [
+        "\"Puedes corregir estos datos si ves algo incorrecto, es opcional y rápido.\"",
+        "\"¿Listo? Guarda para continuar con el siguiente documento recomendado.\"",
+        "\"Toque aquí para confirmar, no te preocupes, puedes editar después si es necesario.\""
+      ],
+      "decision_final": "La iteración está bien priorizada y aterrizada para el usuario objetivo. Con ajustes en comunicación y sutileza en recomendaciones, se logrará una experiencia confiable, clara y de baja fricción sin rehacer el flujo."
+    },
+    "grok": {
+      "modelo": "grok-4",
+      "veredicto_general": "aprobado_con_ajustes",
+      "resumen_ejecutivo": "La iteración de /auditar en AuditaPatron está bien priorizada, enfocándose en edición manual opcional, recomendaciones automáticas y microinteracciones suaves que mejoran la usabilidad para usuarios con baja alfabetización digital. Mantiene un flujo mobile-first de baja fricción, fusionando overrides con preanálisis efectivamente. Sin embargo, hay oportunidades para refinar la claridad en ediciones y recomendaciones para evitar confusiones menores, sin rehacer el flujo base. En general, aterriza bien los objetivos, con validación local sólida.",
+      "evaluacion": {
+        "edicion_manual": {
+          "calificacion": 8,
+          "comentario": "Bien limitada a campos críticos y opcional, reduce fricción al no ser obligatoria, ideal para usuarios inexpertos."
+        },
+        "siguiente_documento": {
+          "calificacion": 9,
+          "comentario": "Recomendación automática se siente útil y natural, guiando al usuario sin invadir, alineada con el flujo humano."
+        },
+        "microinteracciones": {
+          "calificacion": 8,
+          "comentario": "Suaves y enfocadas en claridad, aportan confianza en confirmación y guardado, sin decoración innecesaria."
+        },
+        "claridad_para_usuario": {
+          "calificacion": 9,
+          "comentario": "El diseño mobile-first y persistente en CTAs facilita el uso en celular para trabajadores con baja alfabetización."
+        },
+        "riesgo_de_friccion": {
+          "calificacion": 7,
+          "comentario": "Bajo en general, pero ediciones manuales podrían confundir si no se explican intuitivamente; recomendaciones mitigan bien."
+        }
+      },
+      "lo_mejor_logrado": [
+        "Integración fluida de overrides en guardado, manteniendo el análisis preexistente.",
+        "Recomendación del siguiente documento que se integra naturalmente en la vista previa.",
+        "Microinteracciones que refuerzan confianza sin sobrecargar la interfaz."
+      ],
+      "riesgos_detectados": [
+        "Posible confusión en ediciones manuales para usuarios con baja alfabetización si los campos no son ultra-intuitivos.",
+        "Recomendaciones podrían percibirse como obligatorias si no se comunican como sugerencias.",
+        "Microinteracciones podrían fallar en dispositivos móviles lentos, afectando la percepción de suavidad."
+      ],
+      "ajustes_prioritarios": [
+        {
+          "prioridad": 1,
+          "ajuste": "Agregar tooltips contextuales en campos editables",
+          "por_que": "Mejora claridad para usuarios inexpertos sin aumentar fricción en el flujo principal."
+        },
+        {
+          "prioridad": 2,
+          "ajuste": "Probar A/B la visibilidad de recomendaciones en vista previa",
+          "por_que": "Asegura que se sientan útiles y no invasivas, optimizando para mobile."
+        },
+        {
+          "prioridad": 3,
+          "ajuste": "Optimizar microinteracciones para bajo ancho de banda",
+          "por_que": "Evita percepciones de lentitud en celulares de usuarios en entornos rurales."
+        }
+      ],
+      "guardrails_ux": [
+        "Mantener ediciones como estrictamente opcionales y limitadas a 3-5 campos críticos.",
+        "Asegurar que recomendaciones incluyan opción de 'ignorar' visible y sin penalización.",
+        "Validar microinteracciones en pruebas con usuarios reales para confirmar claridad y no decoración."
+      ],
+      "siguiente_iteracion_recomendada": {
+        "enfoque": "Refinamiento iterativo basado en feedback de usuarios reales, enfocando en métricas de completitud y satisfacción.",
+        "alcance": [
+          "Integrar analytics para medir uso de ediciones manuales",
+          "Explorar personalización de recomendaciones por historial de usuario",
+          "Mejorar accesibilidad con voice-over para baja alfabetización"
+        ],
+        "evitar": [
+          "Agregar más campos editables",
+          "Hacer recomendaciones modales o intrusivas"
+        ]
+      },
+      "microcopy_sugerido": [
+        "Para edición: '¿Quieres cambiar esto? Toca para editar (opcional)'",
+        "Para recomendación: 'Sugerimos auditar esto después: [Documento] – ¿Continuar?'",
+        "Para guardado: 'Guardado exitoso. Tus cambios se aplicaron.'"
+      ],
+      "decision_final": "Aprobar la iteración con ajustes menores para pulir claridad y mitigar riesgos de fricción. Prioriza tooltips y pruebas A/B antes del cierre técnico. Esto fortalece la usabilidad para el usuario final sin alterar el flujo core."
+    },
+    "gemini": {
+      "modelo": "gemini-2.5-flash",
+      "veredicto_general": "aprobado_con_ajustes",
+      "resumen_ejecutivo": "La iteración implementada demuestra una excelente comprensión del usuario final y sus necesidades. La priorización de la edición manual opcional, la recomendación automática y las microinteracciones suaves es acertada, ya que aborda directamente la confianza, la guía y la claridad para usuarios con baja alfabetización digital. Los ajustes se centrarán en la fineza de la ejecución para asegurar que estas potentes funcionalidades se perciban como intuitivas y no intrusivas, consolidando un flujo humano y confiable.",
+      "evaluacion": {
+        "edicion_manual": {
+          "calificacion": 9,
+          "comentario": "Excelente priorización. Permite al usuario final corregir errores o ajustar datos críticos, generando confianza y empoderamiento sin convertir la confirmación en un formulario pesado. La opcionalidad y limitación a campos críticos es clave para usuarios con baja alfabetización digital, evitando sobrecarga cognitiva."
+        },
+        "siguiente_documento": {
+          "calificacion": 8,
+          "comentario": "Muy bien priorizado. Guía al usuario de forma proactiva, reduciendo la fricción y la incertidumbre sobre 'qué hacer después'. Si se implementa de forma no intrusiva y contextual, es un gran aporte a la facilidad de uso y la sensación de acompañamiento, vital para el usuario objetivo."
+        },
+        "microinteracciones": {
+          "calificacion": 9,
+          "comentario": "Crítico para usuarios con baja alfabetización digital. Aportan claridad sobre el estado del sistema y las acciones realizadas, reduciendo la ansiedad y la sensación de '¿funcionó?'. Deben ser sutiles, rápidas y funcionales, no meramente estéticas, para reforzar la fiabilidad."
+        },
+        "claridad_para_usuario": {
+          "calificacion": 8,
+          "comentario": "La suma de las características implementadas apunta a una mayor claridad. La edición manual da control, la recomendación guía y las microinteracciones confirman acciones, todo vital para el usuario objetivo que necesita un flujo predecible y comprensible."
+        },
+        "riesgo_de_friccion": {
+          "calificacion": 7,
+          "comentario": "El riesgo de fricción se gestiona bien al hacer la edición manual opcional y limitada, y al enfatizar microinteracciones suaves y recomendaciones no invasivas. La clave es la ejecución fina para evitar que cualquier novedad se sienta como una carga o un obstáculo."
+        }
+      },
+      "lo_mejor_logrado": [
+        "Empoderamiento del usuario con edición manual controlada, fomentando la confianza en el sistema.",
+        "Reducción significativa de la carga cognitiva y la incertidumbre con la recomendación proactiva del siguiente paso.",
+        "Mejora de la percepción de fiabilidad y respuesta del sistema a través de microinteracciones claras y suaves."
+      ],
+      "riesgos_detectados": [
+        "La edición manual, aunque opcional, podría ser malinterpretada si el UI no es *extremadamente* claro sobre qué es editable y qué no, o si el affordance no es obvio.",
+        "La recomendación del siguiente documento podría sentirse intrusiva o incorrecta si el algoritmo no es preciso o la presentación es demasiado prominente, generando frustración.",
+        "Microinteracciones excesivas, lentas o mal sincronizadas que, en lugar de aclarar, distraigan, ralenticen el flujo o se perciban como fallos."
+      ],
+      "ajustes_prioritarios": [
+        {
+          "prioridad": 1,
+          "ajuste": "Refinar el microcopy y la señalización visual para la edición manual en la confirmación.",
+          "por_que": "Asegurar que el usuario entienda *qué* puede editar, *cómo* y *por qué*, sin generar confusión o miedo a 'romper' algo. Un ícono de lápiz claro y un texto como 'Editar (opcional)' son cruciales."
+        },
+        {
+          "prioridad": 2,
+          "ajuste": "Optimizar la presentación y el timing de la recomendación del siguiente documento.",
+          "por_que": "Debe ser una sugerencia útil y natural, no un mandato. Quizás un '¿Continuar con [Documento X]?' con un CTA claro y una opción visible para 'Ver otros documentos' o 'Saltar', apareciendo en el momento justo."
+        },
+        {
+          "prioridad": 3,
+          "ajuste": "Auditar la velocidad y el timing de todas las microinteracciones implementadas.",
+          "por_que": "Asegurar que sean instantáneas y fluidas, sin retrasos que puedan percibirse como lentitud del sistema o falta de respuesta, lo cual es crítico para la percepción de fiabilidad en usuarios con baja alfabetización digital."
+        }
+      ],
+      "guardrails_ux": [
+        "Priorizar la simplicidad visual y la legibilidad del texto sobre cualquier estética compleja o animaciones superfluas.",
+        "Cada microinteracción debe tener un propósito claro: informar, confirmar o guiar, nunca solo decorar o distraer.",
+        "Las opciones de edición y navegación deben ser explícitas y no requerir inferencia por parte del usuario, usando lenguaje sencillo y directo."
+      ],
+      "siguiente_iteracion_recomendada": {
+        "enfoque": "Optimización de la experiencia de 'primer uso' y 'recuperación de errores' para las nuevas funcionalidades.",
+        "alcance": [
+          "Implementar 'onboarding' o tutoriales contextuales muy breves para las nuevas funcionalidades (edición, recomendación).",
+          "Mejorar el manejo de errores y mensajes de validación para que sean más amigables y explicativos.",
+          "Proveer feedback post-guardado sobre el éxito de la operación y los siguientes pasos claros, reforzando la confianza."
+        ],
+        "evitar": [
+          "Introducir nuevas funcionalidades sin validar la comprensión y el uso efectivo de las actuales por parte del usuario.",
+          "Añadir más campos editables o complejizar la edición manual sin una justificación de usuario muy fuerte y validada."
+        ]
+      },
+      "microcopy_sugerido": [
+        "¿Necesitas cambiar algo? Toca para editar.",
+        "¡Listo! Datos guardados. ¿Quieres seguir con [Siguiente Documento]?",
+        "Sugerencia: [Nombre del Documento]"
+      ],
+      "decision_final": "La iteración es un paso sólido y bien priorizado hacia un producto más confiable y usable para el público objetivo. La combinación de control, guía y feedback es acertada. Los ajustes se centran en la fineza de la ejecución para maximizar la claridad y minimizar cualquier fricción residual, sin alterar la estructura fundamental. Se recomienda proceder con los ajustes prioritarios antes del cierre técnico."
+    }
+  },
+  "finishedAt": "2026-04-08T02:53:06.337Z"
+}
