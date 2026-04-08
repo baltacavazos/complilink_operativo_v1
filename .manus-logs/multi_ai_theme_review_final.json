@@ -1,0 +1,72 @@
+{
+  "results": {
+    "chatgpt": {
+      "palette_strategy": "Crear una paleta complementaria oscura basada en los colores originales azul marino y turquesa, usando tonos profundos y neutros para fondos y acentos, asegurando contraste WCAG AAA para legibilidad en móvil y escritorio.",
+      "logo_strategy": "Mantener el logo original sin QR, adaptando sus colores para modo oscuro con versiones invertidas o con bordes claros para preservar visibilidad y coherencia sin perder identidad.",
+      "toggle_placement": "Ubicar el interruptor de modo oscuro en el header, en la esquina superior derecha, visible y accesible en todas las vistas sin interferir con elementos clave.",
+      "surface_adjustments": [
+        "Header: fondo oscuro con texto y iconos en turquesa claro para contraste y legibilidad.",
+        "Hero: usar imágenes o ilustraciones con filtros oscuros o versiones adaptadas para modo oscuro.",
+        "Dashboard: fondos neutros oscuros con tarjetas y elementos destacados en tonos azul marino y turquesa.",
+        "/auditar: mantener claridad con fondos oscuros y textos blancos o turquesa, asegurando foco en contenido.",
+        "Versión compacta móvil: optimizar espacios con fondos oscuros y tipografía legible, manteniendo consistencia visual."
+      ],
+      "risks": [
+        "Que el modo oscuro se sienta como un 'skin' pegado y no integrado, afectando la percepción premium.",
+        "Pérdida de contraste o legibilidad en dispositivos móviles por elección incorrecta de colores o tamaños."
+      ],
+      "priority_order": [
+        "Header",
+        "Dashboard",
+        "/auditar",
+        "Hero",
+        "Versión compacta móvil"
+      ],
+      "micro_interactions": "Agregar animación sutil al interruptor (deslizamiento suave y cambio de icono) y transición gradual de colores en toda la UI para reforzar sensación nativa y pulida."
+    },
+    "gemini": {
+      "palette_strategy": "Implementar una paleta semántica con variables CSS o clases de Tailwind (`dark:` prefix) que definan colores para fondos, texto, bordes y acentos. Para el modo oscuro, invertir la luminancia de fondos y textos (ej. `#1A1A1A` para fondo principal en lugar de negro puro, y grises claros para texto). Mantener los acentos azul marino/turquesa de la marca, ajustando su saturación/brillo para asegurar legibilidad sobre fondos oscuros. Priorizar contraste (WCAG AA/AAA).",
+      "logo_strategy": "Utilizar un logo SVG. Para el modo oscuro, ajustar dinámicamente el color del 'wordmark AuditaPatron' de azul marino a un gris claro o blanco, manteniendo la lupa y el acento turquesa (si aplica) con ajustes sutiles para que resalte. Esto asegura una integración nativa sin necesidad de cargar múltiples imágenes.",
+      "toggle_placement": "Ubicación en el 'header', en la esquina superior derecha, cerca del avatar del usuario o del icono de configuración. Utilizar un icono claro (sol/luna) para indicar el estado actual y ofrecer un 'tooltip' al pasar el ratón. Asegurar que sea visible y accesible en todas las resoluciones.",
+      "surface_adjustments": [
+        "Header: Fondo oscuro, texto y iconos claros. Logo adaptado. Elementos de navegación con estados hover/active temáticos.",
+        "Dashboard: Fondos de tarjetas y paneles oscurecidos, bordes sutiles. Gráficos y tablas con temas de modo oscuro (ej. líneas más claras, fondos de área de gráfico oscuros). Texto y datos en colores claros.",
+        "/auditar (flujo): Campos de formulario con fondos oscuros y bordes definidos. Etiquetas de texto claras. Elementos interactivos (botones, checkboxes) adaptados al tema oscuro.",
+        "Hero: Fondo oscuro, texto principal claro. Botones de CTA manteniendo el color de acento de la marca pero con texto adaptado. Imágenes o ilustraciones podrían requerir versiones optimizadas para el modo oscuro o superposiciones sutiles."
+      ],
+      "risks": [
+        "Inconsistencia en la aplicación de la paleta: Algunos componentes podrían no adaptarse correctamente, rompiendo la experiencia 'nativa'.",
+        "Problemas de legibilidad: Contraste insuficiente en textos o elementos interactivos, especialmente con los colores de acento de la marca, o gráficos que pierden claridad en modo oscuro."
+      ],
+      "priority_order": [
+        "Header (elementos globales y navegación)",
+        "Dashboard (superficie de uso más frecuente)",
+        "/auditar (flujo crítico de negocio)",
+        "Versión compacta móvil (adaptación responsiva general)"
+      ],
+      "micro_interactions": "Transición suave (fade o slide) al cambiar entre modos claro/oscuro. Estados hover/focus temáticos para botones y enlaces. Spinners y loaders adaptados al tema actual. Notificaciones y toasts que respeten la paleta del modo activo."
+    },
+    "grok": {
+      "palette_strategy": "Crear una paleta dual con Tailwind: modo claro usa fondos blancos con texto azul marino (#003366) y turquesa (#00BFFF); modo oscuro usa fondos grises oscuros (#121212) con texto claro (#E0E0E0) y acentos turquesa invertidos para mantener legibilidad WCAG AA en todas las superficies.",
+      "logo_strategy": "Mantener el logo original (lupa + wordmark AuditaPatron en azul marino/turquesa) en ambos modos; en modo oscuro, invertir colores del lupa a blanco si el fondo es oscuro, asegurando que se integre nativamente sin alteraciones mayores.",
+      "toggle_placement": "Colocar el interruptor en el header, junto al logo o en un ícono de configuración accesible, visible en todas las vistas (header, dashboard, /auditar), con diseño responsivo para móvil (e.g., ícono desplegable).",
+      "surface_adjustments": [
+        "Header: Cambiar fondo a gris oscuro y texto a claro con alto contraste.",
+        "Hero: Ajustar gradientes de fondo a tonos oscuros y resaltar elementos clave con turquesa.",
+        "Dashboard: Modificar cards y tablas para fondos oscuros con bordes sutiles y texto legible.",
+        " /auditar: Optimizar flujo con colores de fondo oscuros y botones de alta visibilidad en versión compacta móvil."
+      ],
+      "risks": [
+        "Pérdida de legibilidad si el contraste no se verifica en todos los dispositivos.",
+        "Inconsistencias en la persistencia de preferencias si no se implementa correctamente el almacenamiento local."
+      ],
+      "priority_order": [
+        "Implementar paleta dual y ajustes de color en Tailwind.",
+        "Ajustar superficies prioritarias como header y dashboard.",
+        "Agregar toggle con persistencia y micro-interacciones."
+      ],
+      "micro_interactions": "Agregar una transición suave (fade de 300ms) al cambiar de modo para que se sienta nativo, usando React state para manejar el toggle sin interrupciones."
+    }
+  },
+  "errors": {}
+}

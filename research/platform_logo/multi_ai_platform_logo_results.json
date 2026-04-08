@@ -1,0 +1,117 @@
+[
+  {
+    "provider": "openai",
+    "result": {
+      "recommended_direction": "Un logo minimalista y tipográfico que combine un wordmark limpio con un ícono de lupa estilizado, sin QR, integrando los colores azul marino y turquesa para transmitir confianza y claridad jurídica, optimizado para legibilidad y adaptabilidad en interfaces móviles.",
+      "logo_architecture": {
+        "wordmark": "Tipografía sans serif moderna, geométrica y de peso medio a semibold, en azul marino para máxima legibilidad y presencia. El texto 'AUDITAPATRON' en mayúsculas para solidez y autoridad.",
+        "lupa_treatment": "Ícono de lupa simplificado, sin detalles internos ni QR, con líneas finas en turquesa para contraste y frescura. La lupa debe ser proporcionalmente pequeña respecto al wordmark, colocada a la izquierda o encima en versiones verticales.",
+        "tagline_usage": "El tagline 'CONOCE TUS DERECHOS' se usa solo en contextos de presentación o landing pages, en tipografía ligera y mayúsculas, en color turquesa o gris oscuro, separado del logo principal para no saturar."
+      },
+      "ui_usage": {
+        "header": "Solo wordmark + lupa pequeña a la izquierda, fondo azul marino o blanco según tema, con suficiente padding para legibilidad y sin tagline.",
+        "hero": "Versión horizontal con wordmark y lupa más grande, tagline opcional debajo en tamaño pequeño, fondo blanco o muy claro para máxima claridad.",
+        "dashboard": "Logo reducido a wordmark solo o lupa pequeña si el espacio es limitado, preferiblemente en azul marino sobre fondo blanco o gris muy claro, sin tagline.",
+        "mobile": "Priorizar el uso del wordmark solo o lupa sola en iconos, manteniendo contraste alto y legibilidad, evitando tagline para no saturar espacios pequeños."
+      },
+      "must_keep": [
+        "Uso de azul marino y turquesa como colores base",
+        "Tipografía sans serif moderna y legible",
+        "Lupa estilizada sin QR ni elementos complejos",
+        "Separación clara entre logo y tagline",
+        "Adaptabilidad para tamaños pequeños y fondos claros u oscuros"
+      ],
+      "should_avoid": [
+        "Uso de QR dentro del logo en plataforma",
+        "Demasiados detalles en el ícono de lupa",
+        "Tipografías serif o decorativas",
+        "Colores que reduzcan contraste o legibilidad",
+        "Colocar tagline junto al logo en espacios reducidos"
+      ],
+      "style_notes": [
+        "El logo debe sentirse nativo al UI, evitando apariencia de imagen pegada",
+        "El equilibrio entre wordmark y lupa debe favorecer la lectura rápida",
+        "El uso del turquesa en la lupa aporta frescura sin perder formalidad",
+        "El tagline es un apoyo comunicacional, no parte del logo principal",
+        "El diseño debe transmitir confianza, claridad jurídica y facilidad de uso"
+      ],
+      "final_verdict": "Adoptar un logo tipográfico con lupa minimalista en azul marino y turquesa, sin QR, que se integre fluidamente en la plataforma mobile-first, garantizando legibilidad y coherencia visual en todos los puntos de contacto digitales."
+    },
+    "raw": "{\n  \"recommended_direction\": \"Un logo minimalista y tipográfico que combine un wordmark limpio con un ícono de lupa estilizado, sin QR, integrando los colores azul marino y turquesa para transmitir confianza y claridad jurídica, optimizado para legibilidad y adaptabilidad en interfaces móviles.\",\n  \"logo_architecture\": {\n    \"wordmark\": \"Tipografía sans serif moderna, geométrica y de peso medio a semibold, en azul marino para máxima legibilidad y presencia. El texto 'AUDITAPATRON' en mayúsculas para solidez y autoridad.\",\n    \"lupa_treatment\": \"Ícono de lupa simplificado, sin detalles internos ni QR, con líneas finas en turquesa para contraste y frescura. La lupa debe ser proporcionalmente pequeña respecto al wordmark, colocada a la izquierda o encima en versiones verticales.\",\n    \"tagline_usage\": \"El tagline 'CONOCE TUS DERECHOS' se usa solo en contextos de presentación o landing pages, en tipografía ligera y mayúsculas, en color turquesa o gris oscuro, separado del logo principal para no saturar.\"\n  },\n  \"ui_usage\": {\n    \"header\": \"Solo wordmark + lupa pequeña a la izquierda, fondo azul marino o blanco según tema, con suficiente padding para legibilidad y sin tagline.\",\n    \"hero\": \"Versión horizontal con wordmark y lupa más grande, tagline opcional debajo en tamaño pequeño, fondo blanco o muy claro para máxima claridad.\",\n    \"dashboard\": \"Logo reducido a wordmark solo o lupa pequeña si el espacio es limitado, preferiblemente en azul marino sobre fondo blanco o gris muy claro, sin tagline.\",\n    \"mobile\": \"Priorizar el uso del wordmark solo o lupa sola en iconos, manteniendo contraste alto y legibilidad, evitando tagline para no saturar espacios pequeños.\"\n  },\n  \"must_keep\": [\n    \"Uso de azul marino y turquesa como colores base\",\n    \"Tipografía sans serif moderna y legible\",\n    \"Lupa estilizada sin QR ni elementos complejos\",\n    \"Separación clara entre logo y tagline\",\n    \"Adaptabilidad para tamaños pequeños y fondos claros u oscuros\"\n  ],\n  \"should_avoid\": [\n    \"Uso de QR dentro del logo en plataforma\",\n    \"Demasiados detalles en el ícono de lupa\",\n    \"Tipografías serif o decorativas\",\n    \"Colores que reduzcan contraste o legibilidad\",\n    \"Colocar tagline junto al logo en espacios reducidos\"\n  ],\n  \"style_notes\": [\n    \"El logo debe sentirse nativo al UI, evitando apariencia de imagen pegada\",\n    \"El equilibrio entre wordmark y lupa debe favorecer la lectura rápida\",\n    \"El uso del turquesa en la lupa aporta frescura sin perder formalidad\",\n    \"El tagline es un apoyo comunicacional, no parte del logo principal\",\n    \"El diseño debe transmitir confianza, claridad jurídica y facilidad de uso\"\n  ],\n  \"final_verdict\": \"Adoptar un logo tipográfico con lupa minimalista en azul marino y turquesa, sin QR, que se integre fluidamente en la plataforma mobile-first, garantizando legibilidad y coherencia visual en todos los puntos de contacto digitales.\"\n}"
+  },
+  {
+    "provider": "gemini",
+    "result": {
+      "recommended_direction": "Minimalista y funcional, con énfasis en la legibilidad y la integración nativa al UI, utilizando una lupa estilizada como ícono distintivo que transmita confianza y claridad jurídica.",
+      "logo_architecture": {
+        "wordmark": "AUDITAPATRON en una tipografía sans-serif moderna, limpia y de peso medio. Priorizar la claridad y la escalabilidad para asegurar legibilidad en todos los tamaños y superficies. Se recomienda capitalización de título o todo en mayúsculas, manteniendo la consistencia.",
+        "lupa_treatment": "Lupa abstracta y simplificada, sin elementos internos como el QR. Debe ser un ícono vectorial fácilmente reconocible y escalable. Puede estar posicionada a la izquierda del wordmark como un isotipo, o integrada sutilmente en una de las letras (ej. la 'O' o 'A') si se logra sin comprometer la legibilidad. El diseño debe ser geométrico, con líneas limpias y un toque de turquesa para destacar.",
+        "tagline_usage": "No incluir el tagline 'CONOCE TUS DERECHOS' en el logo principal de plataforma para mantener la limpieza y legibilidad en espacios reducidos. Reservar el tagline para materiales de marketing, landing pages o secciones hero donde haya espacio suficiente y su mensaje sea relevante, siempre con una jerarquía visual clara."
+      },
+      "ui_usage": {
+        "header": "Versión compacta del logo (isotipo + wordmark o solo isotipo si el espacio es muy limitado) en tamaño reducido, optimizado para legibilidad. Fondo blanco o color claro del UI para contraste. El isotipo debe funcionar como un elemento de marca reconocible por sí solo.",
+        "hero": "Versión completa del logo (isotipo + wordmark) en mayor tamaño, permitiendo un poco más de detalle si el isotipo lo requiere. Puede ir sobre fondos de color (azul marino/turquesa) o imágenes, asegurando siempre alto contraste y espacio negativo adecuado.",
+        "dashboard": "Similar al header, priorizando la legibilidad y la integración visual. Posiblemente una versión monocromática o invertida (blanco sobre azul marino) si el tema del dashboard es oscuro para mantener la coherencia visual.",
+        "mobile": "Esencialmente la versión compacta del header, con el isotipo funcionando como favicon/app icon. El wordmark debe ser legible incluso en pantallas pequeñas. Probar en diferentes resoluciones y orientaciones para garantizar la adaptabilidad y la experiencia de usuario."
+      },
+      "must_keep": [
+        "El nombre 'AUDITAPATRON' como elemento central del wordmark.",
+        "La paleta de colores azul marino y turquesa como base cromática principal.",
+        "El concepto de la lupa como elemento visual distintivo, pero estilizado y simplificado."
+      ],
+      "should_avoid": [
+        "Cualquier elemento gráfico que sugiera un QR funcional o un escáner.",
+        "Diseños recargados, con sombras excesivas, gradientes complejos o efectos 3D que lo hagan parecer publicitario o desactualizado.",
+        "El tagline 'CONOCE TUS DERECHOS' como parte integral del logo de plataforma en el UI.",
+        "Tipografías serif o muy ornamentadas que comprometan la legibilidad en tamaños pequeños y en entornos digitales."
+      ],
+      "style_notes": [
+        "Utilizar una tipografía sans-serif moderna y geométrica para el wordmark, que transmita confianza, profesionalismo y claridad.",
+        "La lupa debe ser un ícono vectorial simple, con líneas limpias y proporciones equilibradas, fácil de reconocer y recordar.",
+        "Priorizar el uso de los colores azul marino y turquesa de forma estratégica, quizás el wordmark en azul marino y un detalle de la lupa en turquesa, o viceversa, para crear contraste y dinamismo sin sobrecargar.",
+        "Asegurar suficiente espacio negativo alrededor del logo para que respire y no se sienta 'pegado' al contenido o a otros elementos de la UI.",
+        "Crear versiones del logo para fondos claros y oscuros (ej. versión invertida en blanco para fondos azul marino) para garantizar su visibilidad en cualquier contexto de UI.",
+        "La relación de tamaño entre el isotipo y el wordmark debe ser armoniosa y consistente en todas las aplicaciones, manteniendo la proporción para evitar distorsiones."
+      ],
+      "final_verdict": "La dirección más efectiva para el logo de plataforma de AUDITAPATRON es un diseño minimalista, elegante y funcional, centrado en un wordmark legible y una lupa icónica y estilizada. Esta aproximación garantiza adaptabilidad, confianza y una integración nativa en la interfaz de usuario mobile-first, evitando elementos publicitarios y priorizando la claridad jurídica y la facilidad de uso."
+    },
+    "raw": "{\n  \"recommended_direction\": \"Minimalista y funcional, con énfasis en la legibilidad y la integración nativa al UI, utilizando una lupa estilizada como ícono distintivo que transmita confianza y claridad jurídica.\",\n  \"logo_architecture\": {\n    \"wordmark\": \"AUDITAPATRON en una tipografía sans-serif moderna, limpia y de peso medio. Priorizar la claridad y la escalabilidad para asegurar legibilidad en todos los tamaños y superficies. Se recomienda capitalización de título o todo en mayúsculas, manteniendo la consistencia.\",\n    \"lupa_treatment\": \"Lupa abstracta y simplificada, sin elementos internos como el QR. Debe ser un ícono vectorial fácilmente reconocible y escalable. Puede estar posicionada a la izquierda del wordmark como un isotipo, o integrada sutilmente en una de las letras (ej. la 'O' o 'A') si se logra sin comprometer la legibilidad. El diseño debe ser geométrico, con líneas limpias y un toque de turquesa para destacar.\",\n    \"tagline_usage\": \"No incluir el tagline 'CONOCE TUS DERECHOS' en el logo principal de plataforma para mantener la limpieza y legibilidad en espacios reducidos. Reservar el tagline para materiales de marketing, landing pages o secciones hero donde haya espacio suficiente y su mensaje sea relevante, siempre con una jerarquía visual clara.\"\n  },\n  \"ui_usage\": {\n    \"header\": \"Versión compacta del logo (isotipo + wordmark o solo isotipo si el espacio es muy limitado) en tamaño reducido, optimizado para legibilidad. Fondo blanco o color claro del UI para contraste. El isotipo debe funcionar como un elemento de marca reconocible por sí solo.\",\n    \"hero\": \"Versión completa del logo (isotipo + wordmark) en mayor tamaño, permitiendo un poco más de detalle si el isotipo lo requiere. Puede ir sobre fondos de color (azul marino/turquesa) o imágenes, asegurando siempre alto contraste y espacio negativo adecuado.\",\n    \"dashboard\": \"Similar al header, priorizando la legibilidad y la integración visual. Posiblemente una versión monocromática o invertida (blanco sobre azul marino) si el tema del dashboard es oscuro para mantener la coherencia visual.\",\n    \"mobile\": \"Esencialmente la versión compacta del header, con el isotipo funcionando como favicon/app icon. El wordmark debe ser legible incluso en pantallas pequeñas. Probar en diferentes resoluciones y orientaciones para garantizar la adaptabilidad y la experiencia de usuario.\"\n  },\n  \"must_keep\": [\n    \"El nombre 'AUDITAPATRON' como elemento central del wordmark.\",\n    \"La paleta de colores azul marino y turquesa como base cromática principal.\",\n    \"El concepto de la lupa como elemento visual distintivo, pero estilizado y simplificado.\"\n  ],\n  \"should_avoid\": [\n    \"Cualquier elemento gráfico que sugiera un QR funcional o un escáner.\",\n    \"Diseños recargados, con sombras excesivas, gradientes complejos o efectos 3D que lo hagan parecer publicitario o desactualizado.\",\n    \"El tagline 'CONOCE TUS DERECHOS' como parte integral del logo de plataforma en el UI.\",\n    \"Tipografías serif o muy ornamentadas que comprometan la legibilidad en tamaños pequeños y en entornos digitales.\"\n  ],\n  \"style_notes\": [\n    \"Utilizar una tipografía sans-serif moderna y geométrica para el wordmark, que transmita confianza, profesionalismo y claridad.\",\n    \"La lupa debe ser un ícono vectorial simple, con líneas limpias y proporciones equilibradas, fácil de reconocer y recordar.\",\n    \"Priorizar el uso de los colores azul marino y turquesa de forma estratégica, quizás el wordmark en azul marino y un detalle de la lupa en turquesa, o viceversa, para crear contraste y dinamismo sin sobrecargar.\",\n    \"Asegurar suficiente espacio negativo alrededor del logo para que respire y no se sienta 'pegado' al contenido o a otros elementos de la UI.\",\n    \"Crear versiones del logo para fondos claros y oscuros (ej. versión invertida en blanco para fondos azul marino) para garantizar su visibilidad en cualquier contexto de UI.\",\n    \"La relación de tamaño entre el isotipo y el wordmark debe ser armoniosa y consistente en todas las aplicaciones, manteniendo la proporción para evitar distorsiones.\"\n  ],\n  \"final_verdict\": \"La dirección más efectiva para el logo de plataforma de AUDITAPATRON es un diseño minimalista, elegante y funcional, centrado en un wordmark legible y una lupa icónica y estilizada. Esta aproximación garantiza adaptabilidad, confianza y una integración nativa en la interfaz de usuario mobile-first, evitando elementos publicitarios y priorizando la claridad jurídica y la facilidad de uso.\"\n}"
+  },
+  {
+    "provider": "grok",
+    "result": {
+      "recommended_direction": "Dirección minimalista y elegante con un wordmark principal integrado a un ícono estilizado de lupa, utilizando colores base (azul marino para texto y turquesa para acento) para transmitir confianza y claridad jurídica. Composición horizontal para legibilidad en UI móvil, con tamaños relativos donde el ícono ocupa el 20-30% del ancho total del logo, sobre fondos claros o neutros para integración nativa.",
+      "logo_architecture": {
+        "wordmark": "Texto 'AUDITAPATRON' en fuente sans-serif personalizada (e.g., similar a Montserrat o Inter), en mayúsculas, color azul marino, peso medium para elegancia y legibilidad.",
+        "lupa_treatment": "Ícono simplificado de lupa como línea limpia y abstracta (sin QR ni detalles realistas), en turquesa, posicionado a la izquierda del wordmark, con proporción 1:1 y stroke delgado para un aspecto moderno y no publicitario.",
+        "tagline_usage": "Tagline 'CONOCE TUS DERECHOS' en fuente sans-serif más ligera y pequeña (60% del tamaño del wordmark), en gris oscuro o turquesa sutil, usado solo en hero y páginas de onboarding, no en elementos UI compactos."
+      },
+      "ui_usage": {
+        "header": "Logo completo (ícono + wordmark) de 32-48px de altura, alineado a la izquierda en header fijo, sobre fondo blanco o turquesa claro; versión solo wordmark para estados colapsados.",
+        "hero": "Logo completo de 64-96px de altura, centrado o alineado, con tagline debajo si aplica, sobre fondo degradado azul marino a turquesa para impacto visual.",
+        "dashboard": "Versión compacta (solo ícono + wordmark abreviado si necesario) de 24-32px, en esquina superior izquierda, sobre superficies blancas o cards neutras para no distraer del contenido.",
+        "mobile": "Escalado responsivo mínimo de 24px de altura, priorizando horizontalidad para pantallas pequeñas; usar SVG para nitidez en retina, evitando fondos que compitan con los colores base."
+      },
+      "must_keep": [
+        "Colores base: azul marino para wordmark y turquesa para ícono.",
+        "Proporciones relativas: ícono no mayor al 30% del ancho total.",
+        "Formato vectorial (SVG) para escalabilidad en UI.",
+        "Legibilidad en tamaños pequeños (mínimo 18px en mobile)."
+      ],
+      "should_avoid": [
+        "Incorporar QR o elementos funcionales en el logo de plataforma.",
+        "Fondos oscuros o texturizados que reduzcan contraste.",
+        "Versiones decorativas o con sombras que lo hagan parecer publicitario.",
+        "Uso del tagline en diálogos o elementos interactivos para no sobrecargar espacio."
+      ],
+      "style_notes": [
+        "Mantener espaciado consistente: 0.5em entre ícono y wordmark.",
+        "Probar legibilidad en mockups mobile-first con herramientas como Figma.",
+        "Integrar con tipografía general de la app para consistencia de marca.",
+        "Versión monocromática en turquesa para modos dark si se implementa."
+      ],
+      "final_verdict": "Esta dirección crea un logo nativo al UI que refuerza la confianza y simplicidad del producto, integrándose seamless en entornos móviles sin distraer del foco en derechos jurídicos."
+    },
+    "raw": "{\n  \"recommended_direction\": \"Dirección minimalista y elegante con un wordmark principal integrado a un ícono estilizado de lupa, utilizando colores base (azul marino para texto y turquesa para acento) para transmitir confianza y claridad jurídica. Composición horizontal para legibilidad en UI móvil, con tamaños relativos donde el ícono ocupa el 20-30% del ancho total del logo, sobre fondos claros o neutros para integración nativa.\",\n  \"logo_architecture\": {\n    \"wordmark\": \"Texto 'AUDITAPATRON' en fuente sans-serif personalizada (e.g., similar a Montserrat o Inter), en mayúsculas, color azul marino, peso medium para elegancia y legibilidad.\",\n    \"lupa_treatment\": \"Ícono simplificado de lupa como línea limpia y abstracta (sin QR ni detalles realistas), en turquesa, posicionado a la izquierda del wordmark, con proporción 1:1 y stroke delgado para un aspecto moderno y no publicitario.\",\n    \"tagline_usage\": \"Tagline 'CONOCE TUS DERECHOS' en fuente sans-serif más ligera y pequeña (60% del tamaño del wordmark), en gris oscuro o turquesa sutil, usado solo en hero y páginas de onboarding, no en elementos UI compactos.\"\n  },\n  \"ui_usage\": {\n    \"header\": \"Logo completo (ícono + wordmark) de 32-48px de altura, alineado a la izquierda en header fijo, sobre fondo blanco o turquesa claro; versión solo wordmark para estados colapsados.\",\n    \"hero\": \"Logo completo de 64-96px de altura, centrado o alineado, con tagline debajo si aplica, sobre fondo degradado azul marino a turquesa para impacto visual.\",\n    \"dashboard\": \"Versión compacta (solo ícono + wordmark abreviado si necesario) de 24-32px, en esquina superior izquierda, sobre superficies blancas o cards neutras para no distraer del contenido.\",\n    \"mobile\": \"Escalado responsivo mínimo de 24px de altura, priorizando horizontalidad para pantallas pequeñas; usar SVG para nitidez en retina, evitando fondos que compitan con los colores base.\"\n  },\n  \"must_keep\": [\n    \"Colores base: azul marino para wordmark y turquesa para ícono.\",\n    \"Proporciones relativas: ícono no mayor al 30% del ancho total.\",\n    \"Formato vectorial (SVG) para escalabilidad en UI.\",\n    \"Legibilidad en tamaños pequeños (mínimo 18px en mobile).\"\n  ],\n  \"should_avoid\": [\n    \"Incorporar QR o elementos funcionales en el logo de plataforma.\",\n    \"Fondos oscuros o texturizados que reduzcan contraste.\",\n    \"Versiones decorativas o con sombras que lo hagan parecer publicitario.\",\n    \"Uso del tagline en diálogos o elementos interactivos para no sobrecargar espacio.\"\n  ],\n  \"style_notes\": [\n    \"Mantener espaciado consistente: 0.5em entre ícono y wordmark.\",\n    \"Probar legibilidad en mockups mobile-first con herramientas como Figma.\",\n    \"Integrar con tipografía general de la app para consistencia de marca.\",\n    \"Versión monocromática en turquesa para modos dark si se implementa.\"\n  ],\n  \"final_verdict\": \"Esta dirección crea un logo nativo al UI que refuerza la confianza y simplicidad del producto, integrándose seamless en entornos móviles sin distraer del foco en derechos jurídicos.\"\n}"
+  }
+]

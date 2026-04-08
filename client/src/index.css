@@ -313,3 +313,162 @@
     }
   }
 }
+
+@layer components {
+  .dark .audita-auditar {
+    --ap-panel-bg: rgba(15, 23, 42, 0.82);
+    --ap-panel-bg-strong: rgba(2, 6, 23, 0.92);
+    --ap-panel-soft: rgba(30, 41, 59, 0.74);
+    --ap-panel-muted: rgba(51, 65, 85, 0.9);
+    --ap-border: rgba(148, 163, 184, 0.16);
+    --ap-border-strong: rgba(148, 163, 184, 0.24);
+    --ap-text-strong: rgb(248 250 252);
+    --ap-text: rgb(226 232 240);
+    --ap-text-muted: rgb(148 163 184);
+    --ap-text-faint: rgb(100 116 139);
+    --ap-teal-bg: rgba(13, 148, 136, 0.17);
+    --ap-teal-bg-strong: rgba(15, 118, 110, 0.24);
+    --ap-teal-border: rgba(45, 212, 191, 0.28);
+    --ap-sky-bg: rgba(14, 165, 233, 0.16);
+    --ap-sky-border: rgba(56, 189, 248, 0.26);
+    --ap-emerald-bg: rgba(16, 185, 129, 0.16);
+    --ap-emerald-border: rgba(52, 211, 153, 0.26);
+    --ap-amber-bg: rgba(245, 158, 11, 0.15);
+    --ap-amber-border: rgba(251, 191, 36, 0.26);
+    color-scheme: dark;
+  }
+
+  .dark .audita-auditar :is(section, article, aside, div, details, summary, label, textarea, select):not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)[class*="bg-white"],
+  .dark .audita-auditar :is(button, a, span):not(.ap-theme-toggle):not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)[class*="bg-white"] {
+    background-color: var(--ap-panel-bg) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-slate-50"] {
+    background-color: var(--ap-panel-soft) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-slate-100"],
+  .dark .audita-auditar [class*="bg-slate-200"] {
+    background-color: var(--ap-panel-muted) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-teal-50"] {
+    background-color: var(--ap-teal-bg) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-sky-50"] {
+    background-color: var(--ap-sky-bg) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-emerald-50"] {
+    background-color: var(--ap-emerald-bg) !important;
+  }
+
+  .dark .audita-auditar [class*="bg-amber-50"] {
+    background-color: var(--ap-amber-bg) !important;
+  }
+
+  .dark .audita-auditar [class*="border-slate-200"],
+  .dark .audita-auditar [class*="border-slate-300"],
+  .dark .audita-auditar [class*="border-white"] {
+    border-color: var(--ap-border) !important;
+  }
+
+  .dark .audita-auditar [class*="border-teal-100"],
+  .dark .audita-auditar [class*="border-teal-200"],
+  .dark .audita-auditar [class*="border-teal-300"] {
+    border-color: var(--ap-teal-border) !important;
+  }
+
+  .dark .audita-auditar [class*="border-sky-100"],
+  .dark .audita-auditar [class*="border-sky-300"] {
+    border-color: var(--ap-sky-border) !important;
+  }
+
+  .dark .audita-auditar [class*="border-emerald-100"],
+  .dark .audita-auditar [class*="border-emerald-200"] {
+    border-color: var(--ap-emerald-border) !important;
+  }
+
+  .dark .audita-auditar [class*="border-amber-200"] {
+    border-color: var(--ap-amber-border) !important;
+  }
+
+  .dark .audita-auditar [class*="text-slate-950"],
+  .dark .audita-auditar [class*="text-slate-900"],
+  .dark .audita-auditar [class*="text-slate-800"] {
+    color: var(--ap-text-strong) !important;
+  }
+
+  .dark .audita-auditar [class*="text-slate-700"],
+  .dark .audita-auditar [class*="text-slate-600"] {
+    color: var(--ap-text) !important;
+  }
+
+  .dark .audita-auditar [class*="text-slate-500"],
+  .dark .audita-auditar [class*="text-slate-400"] {
+    color: var(--ap-text-muted) !important;
+  }
+
+  .dark .audita-auditar [class*="text-teal-950"],
+  .dark .audita-auditar [class*="text-teal-900"] {
+    color: rgb(204 251 241) !important;
+  }
+
+  .dark .audita-auditar [class*="text-teal-800"],
+  .dark .audita-auditar [class*="text-teal-700"] {
+    color: rgb(153 246 228) !important;
+  }
+
+  .dark .audita-auditar [class*="text-emerald-950"],
+  .dark .audita-auditar [class*="text-emerald-900"] {
+    color: rgb(209 250 229) !important;
+  }
+
+  .dark .audita-auditar [class*="text-emerald-800"],
+  .dark .audita-auditar [class*="text-emerald-700"] {
+    color: rgb(134 239 172) !important;
+  }
+
+  .dark .audita-auditar [class*="text-amber-950"],
+  .dark .audita-auditar [class*="text-amber-900"] {
+    color: rgb(254 243 199) !important;
+  }
+
+  .dark .audita-auditar [class*="text-amber-800"],
+  .dark .audita-auditar [class*="text-amber-700"] {
+    color: rgb(253 224 71) !important;
+  }
+
+  .dark .audita-auditar [class*="text-sky-800"],
+  .dark .audita-auditar [class*="text-sky-700"] {
+    color: rgb(125 211 252) !important;
+  }
+
+  .dark .audita-auditar :is(input, textarea, select) {
+    background-color: var(--ap-panel-bg) !important;
+    border-color: var(--ap-border-strong) !important;
+    color: var(--ap-text-strong) !important;
+  }
+
+  .dark .audita-auditar :is(input, textarea, select)::placeholder {
+    color: var(--ap-text-faint) !important;
+  }
+
+  .dark .audita-auditar [class*="shadow-sm"],
+  .dark .audita-auditar [class*="hover:shadow-sm"],
+  .dark .audita-auditar [class*="shadow-[0_35px_100px_-60px"] {
+    box-shadow: 0 24px 70px -44px rgba(2, 6, 23, 0.95) !important;
+  }
+
+  .dark .audita-auditar [class*="ring-sky-100"] {
+    --tw-ring-color: rgba(56, 189, 248, 0.24) !important;
+  }
+
+  .dark .audita-auditar .ap-theme-toggle,
+  .dark .audita-auditar .ap-theme-toggle-track,
+  .dark .audita-auditar .ap-theme-toggle-thumb,
+  .dark .audita-auditar .ap-theme-toggle-label {
+    filter: none !important;
+  }
+}

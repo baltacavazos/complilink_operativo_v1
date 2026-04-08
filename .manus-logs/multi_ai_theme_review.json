@@ -1,0 +1,52 @@
+{
+  "results": {
+    "chatgpt": {
+      "palette_strategy": "Crear una paleta complementaria oscura basada en los tonos azul marino y turquesa originales, usando fondos azul muy oscuro y textos en tonos claros para máxima legibilidad, manteniendo contraste accesible en móvil y escritorio.",
+      "logo_strategy": "Mantener el logo original sin modificaciones para modo oscuro, aplicando versiones en blanco o turquesa claro según fondo para preservar identidad y visibilidad sin incorporar elementos nuevos como QR.",
+      "toggle_placement": "Ubicar el interruptor de modo oscuro en el header, alineado a la derecha junto a otros controles de usuario para visibilidad inmediata y consistencia en todas las vistas.",
+      "surface_adjustments": [
+        "Header: fondo azul muy oscuro con textos y iconos en turquesa claro para contraste y legibilidad.",
+        "Hero: usar degradados sutiles oscuros que mantengan foco en contenido principal sin perder identidad.",
+        "Dashboard: fondos oscuros neutros con acentos en turquesa para destacar datos y controles.",
+        "/auditar: mantener claridad con fondos oscuros y textos blancos, resaltando elementos interactivos en turquesa.",
+        "Versión compacta móvil: optimizar contraste y tamaño de textos e íconos para legibilidad en modo oscuro sin saturar pantalla."
+      ],
+      "risks": [
+        "Que el modo oscuro se perciba como un parche visual y no integrado, afectando la experiencia nativa.",
+        "Pérdida de contraste o legibilidad en dispositivos móviles por falta de ajustes específicos."
+      ],
+      "priority_order": [
+        "Header",
+        "Dashboard",
+        "/auditar",
+        "Hero",
+        "Versión compacta móvil"
+      ],
+      "micro_interactions": "Agregar animación suave al cambiar el interruptor de modo oscuro, con transición gradual de colores en superficies clave para reforzar sensación nativa y premium."
+    },
+    "grok": {
+      "palette_strategy": "Utilizar Tailwind's dark mode para crear una paleta dual: fondos oscuros (negro o gris oscuro) con texto claro (blanco o gris claro) en modo oscuro, manteniendo el azul marino (#003366) y turquesa (#00BFFF) como acentos primarios para preservar la identidad de marca, asegurando un contraste mínimo de 4.5:1 para legibilidad en todos los dispositivos.",
+      "logo_strategy": "Mantener el logo original con lupa y wordmark 'AuditaPatron' en azul marino/turquesa; en modo oscuro, invertir el color del wordmark a blanco para legibilidad sin alterar la forma, evitando cualquier adición de elementos como QR.",
+      "toggle_placement": "Colocar el interruptor en el header, junto al logo o en el menú de navegación, para un acceso rápido y nativo, con un ícono simple (ej. luna/sol) que se integre con el diseño existente.",
+      "surface_adjustments": [
+        "Header: Cambiar fondo a color oscuro con texto claro y acentos de marca para mantener claridad.",
+        "Hero: Ajustar gradientes y fondos a versiones oscuras, preservando elementos clave como botones en turquesa.",
+        "Dashboard: Optimizar cards y tablas con bordes sutiles y texto legible, adaptando a móvil con espaciado reducido.",
+        "Página /auditar: Mejorar legibilidad de flujos y botones en modo oscuro, con enfoque en versiones compactas para dispositivos móviles."
+      ],
+      "risks": [
+        "Reducción de legibilidad si los contrastes no se calibran correctamente en diferentes temas.",
+        "Fallas en la persistencia de preferencias que podrían frustrar a los usuarios en sesiones múltiples."
+      ],
+      "priority_order": [
+        "Implementar el toggle y persistencia primero para el núcleo funcional.",
+        "Ajustar header y hero para impacto inmediato en la experiencia principal.",
+        "Optimizar dashboard y /auditar para superficies clave."
+      ],
+      "micro_interactions": "Agregar una transición suave (fade-in/out de 300ms) al activar el toggle para una sensación premium y nativa, sin sobrecargar el UI."
+    }
+  },
+  "errors": {
+    "gemini": "404 Client Error: Not Found for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBs8nIoJNq0BJxByiA_iPInvnwafnxpq9E"
+  }
+}

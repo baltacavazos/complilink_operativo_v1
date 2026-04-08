@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Building2, LogOut, PanelLeft, ShieldCheck, type LucideIcon } from "lucide-react";
+import { LogOut, PanelLeft, type LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -78,12 +79,10 @@ export default function DashboardLayout({
         <div className="container flex min-h-screen items-center justify-center py-10">
           <div className="w-full max-w-xl rounded-3xl border border-border/60 bg-card/95 p-8 shadow-[0_24px_80px_-30px_rgba(10,22,40,0.35)] backdrop-blur">
             <div className="mb-8 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <ShieldCheck className="h-7 w-7" />
-              </div>
+              <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-border/70 object-cover shadow-[0_18px_40px_-24px_rgba(15,23,42,0.42)]" />
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                  CompliLink Operativo
+                  AuditaPatron · Consola operativa
                 </p>
                 <h1 className="text-2xl font-semibold tracking-tight">Acceso controlado con Manus OAuth</h1>
               </div>
@@ -220,14 +219,10 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="min-w-0 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sidebar-primary/12 text-sidebar-primary">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h2 className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
-                        {title}
-                      </h2>
+                  <div className="flex items-center gap-3">
+                    <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-2xl border border-sidebar-border/70 object-cover shadow-[0_16px_34px_-24px_rgba(15,23,42,0.45)]" />
+                    <div className="min-w-0 space-y-1">
+                      <AuditaPatronLogoWordmark imageClassName="h-8 w-auto max-w-[180px] object-contain" />
                       <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
                     </div>
                   </div>

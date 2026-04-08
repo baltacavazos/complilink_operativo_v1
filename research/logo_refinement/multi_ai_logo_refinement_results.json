@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-04-08T06:27:45.839558+00:00",
+  "task": "logo_refinement_header_hero",
+  "prompt": "Eres un director de marca y producto digital. Necesito una recomendación concreta, ejecutable y minimalista.\n\nContexto del producto:\n- Marca: AuditaPatron.\n- Público: trabajadores, enfoque claro, protector, accesible y mobile-first.\n- Se incorporó un nuevo logotipo en JPG con la leyenda ya embebida: \"AUDITAPATRON / CONOCE TUS DERECHOS\".\n- En una primera integración, el resultado visual mostró estos problemas:\n  1) En el header el logotipo quedó demasiado pequeño y se percibe como miniatura pegada.\n  2) En el hero el logotipo quedó demasiado grande y se ve como una imagen insertada o copy-paste.\n  3) La imagen tiene fondo blanco, así que debe integrarse con más intención en una interfaz también clara.\n- A futuro, la lupa del logotipo deberá contener un QR real que redirija a AuditaPatron, pero esa fase todavía no se activa.\n\nLo que necesito decidir ahora:\n- Cómo integrar mejor la marca en el header.\n- Cómo integrar mejor la marca en el hero.\n- Qué ajustes conviene hacer al componente reusable de branding para soportar variantes limpias y consistentes.\n- Qué NO hacer para evitar que la marca se vea improvisada.\n\nRestricciones:\n- No rediseñar el logotipo desde cero.\n- No activar todavía el QR funcional.\n- Favorecer una solución elegante, sobria, moderna y muy integrada al layout.\n- La respuesta debe ser práctica para implementación inmediata en React + Tailwind.\n\nDevuelve SOLO JSON válido con esta estructura exacta:\n{\n  \"header_strategy\": {\n    \"layout\": \"string\",\n    \"scale\": \"string\",\n    \"container_treatment\": \"string\",\n    \"mobile_behavior\": \"string\"\n  },\n  \"hero_strategy\": {\n    \"placement\": \"string\",\n    \"scale\": \"string\",\n    \"supporting_elements\": \"string\",\n    \"rationale\": \"string\"\n  },\n  \"component_strategy\": {\n    \"recommended_variants\": [\"string\"],\n    \"props_or_api\": [\"string\"],\n    \"implementation_notes\": [\"string\"]\n  },\n  \"avoid\": [\"string\"],\n  \"priority_order\": [\"string\"],\n  \"one_sentence_verdict\": \"string\"\n}",
+  "results": [
+    {
+      "provider": "openai",
+      "ok": true,
+      "model": "gpt-4.1-mini-2025-04-14",
+      "content": {
+        "header_strategy": {
+          "layout": "Colocar el logotipo a la izquierda dentro de un contenedor con padding horizontal y altura fija para mantener consistencia visual.",
+          "scale": "Escalar el logotipo a un tamaño mediano (ej. altura 40-48px) para que sea visible pero no dominante.",
+          "container_treatment": "Usar un fondo transparente o muy claro que contraste sutilmente con el fondo blanco del logo, añadiendo un pequeño borde o sombra sutil para delimitar el área sin romper la limpieza.",
+          "mobile_behavior": "Mantener el tamaño del logo pero reducir el padding lateral para optimizar espacio, asegurando que el logo no se vea comprimido ni demasiado pequeño."
+        },
+        "hero_strategy": {
+          "placement": "Integrar el logotipo en la parte superior izquierda o derecha del hero, evitando que sea el foco central, preferiblemente acompañado de un título o mensaje claro.",
+          "scale": "Reducir el tamaño del logotipo a un nivel secundario (ej. altura 60-80px) para que acompañe sin dominar el hero.",
+          "supporting_elements": "Agregar un fondo o marco sutil (ej. sombra ligera o fondo gris muy claro) para separar el logo blanco del fondo del hero y evitar sensación de imagen pegada.",
+          "rationale": "Esto evita que el logo parezca un elemento insertado o copy-paste, integrándolo visualmente con el contenido y manteniendo jerarquía clara."
+        },
+        "component_strategy": {
+          "recommended_variants": [
+            "headerCompact",
+            "headerExpanded",
+            "heroSecondary",
+            "footerMinimal"
+          ],
+          "props_or_api": [
+            "size: 'small' | 'medium' | 'large'",
+            "backgroundTreatment: 'none' | 'border' | 'shadow'",
+            "placement: 'left' | 'center' | 'right'",
+            "responsivePadding: boolean"
+          ],
+          "implementation_notes": [
+            "Usar imágenes JPG optimizadas con fondo blanco pero siempre incluir un contenedor con tratamiento visual para evitar mezcla directa con fondo blanco de la interfaz.",
+            "Controlar escala y padding vía props para reutilización flexible.",
+            "Evitar usar el logo como imagen de fondo o con filtros CSS que alteren su legibilidad.",
+            "Preparar el componente para futura integración del QR como overlay o elemento interactivo sin alterar el layout base."
+          ]
+        },
+        "avoid": [
+          "No usar el logo demasiado pequeño en header que parezca un icono o miniatura.",
+          "No escalar el logo a tamaño gigante en hero que compita con el contenido principal.",
+          "No colocar el logo sin contenedor o sin tratamiento visual que lo separe del fondo blanco.",
+          "No usar múltiples versiones del logo sin control, lo que genera inconsistencia.",
+          "No activar el QR antes de estar listo para evitar confusión visual."
+        ],
+        "priority_order": [
+          "Ajustar el tamaño y contenedor del logo en el header para visibilidad y limpieza.",
+          "Integrar el logo en el hero con escala y soporte visual que evite sensación de pegado.",
+          "Actualizar el componente reusable con variantes y props para escalabilidad y consistencia.",
+          "Evitar malas prácticas que generen sensación improvisada o poco profesional."
+        ],
+        "one_sentence_verdict": "Optimiza la integración del logo con tamaños proporcionales y contenedores sutiles en header y hero, mientras actualizas el componente reusable para mantener consistencia y evitar apariencia improvisada."
+      }
+    },
+    {
+      "provider": "gemini",
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "content": {
+        "header_strategy": {
+          "layout": "Utilizar un contenedor flexbox con el logotipo alineado a la izquierda, ocupando una porción clara y definida del espacio horizontal.",
+          "scale": "Establecer una altura fija para el logotipo (ej. `h-8` o `h-10` en Tailwind) que garantice legibilidad sin dominar, permitiendo que el ancho se ajuste proporcionalmente (`w-auto`).",
+          "container_treatment": "El fondo del header debe ser `bg-white` o un `bg-gray-50` muy sutil para que el fondo blanco del JPG se fusione limpiamente. Añadir una sombra ligera (`shadow-sm`) para darle profundidad sin peso visual.",
+          "mobile_behavior": "Ajustar la altura del logotipo para pantallas móviles a un tamaño ligeramente menor (ej. `h-7` o `h-8`) para mantener la proporción y no desplazar otros elementos de navegación."
+        },
+        "hero_strategy": {
+          "placement": "El logotipo no debe ser la imagen principal del hero. Colocarlo como un elemento de branding secundario, discretamente en la esquina superior izquierda o derecha del área de contenido del hero, o justo encima del titular principal.",
+          "scale": "Utilizar una escala mayor que en el header, pero aún contenida (ej. `h-12` o `h-16` en Tailwind), para que sea visible pero no abrumador, manteniendo `w-auto`.",
+          "supporting_elements": "El hero debe centrarse en un titular impactante ('Conoce Tus Derechos'), un subtítulo claro, un CTA principal y una imagen o ilustración de fondo relevante que evoque protección, claridad o empoderamiento para los trabajadores. El logotipo complementa, no compite.",
+          "rationale": "El logotipo es un identificador de marca, no el contenido principal. El hero debe comunicar el valor y la propuesta de AuditaPatron de forma inmediata y emocional, con el logotipo reforzando la identidad de manera elegante."
+        },
+        "component_strategy": {
+          "recommended_variants": [
+            "LogoFull: El logotipo JPG completo, con un tamaño por defecto para uso general (ej. en 'Acerca de', pie de página).",
+            "LogoHeader: Variante optimizada para el header, con tamaño y márgenes específicos.",
+            "LogoHero: Variante optimizada para el hero, con un tamaño ligeramente mayor que el header pero bien proporcionado.",
+            "LogoSmall: Variante para contextos de menor jerarquía o espacio reducido (ej. pie de página, avisos legales)."
+          ],
+          "props_or_api": [
+            "`size`: Propiedad que acepte valores como `'header'`, `'hero'`, `'default'`, `'small'` para aplicar las clases de Tailwind predefinidas.",
+            "`className`: Propiedad opcional para permitir la sobreescritura de clases de Tailwind personalizadas en casos específicos.",
+            "`alt`: Propiedad obligatoria para texto alternativo de accesibilidad (ej. 'Logotipo AuditaPatron - Conoce Tus Derechos')."
+          ],
+          "implementation_notes": [
+            "Crear un componente `BrandLogo` en React que envuelva la etiqueta `<img>`.",
+            "Utilizar clases de Tailwind como `h-{size}` y `w-auto` para mantener la proporción de la imagen.",
+            "Asegurar que el contenedor padre del logotipo tenga un `background-color` que se fusione con el blanco del JPG para evitar el efecto de 'caja pegada'.",
+            "Aplicar `object-fit: contain` si es necesario para asegurar que la imagen se ajuste sin recortarse dentro de su contenedor."
+          ]
+        },
+        "avoid": [
+          "Usar el JPG del logotipo como imagen de fondo principal en cualquier sección.",
+          "Estirar o distorsionar el logotipo al escalarlo.",
+          "Colocar el logotipo sobre fondos con patrones o colores muy complejos que dificulten su lectura.",
+          "Intentar extraer o rediseñar el icono de la lupa del JPG para usarlo por separado.",
+          "Crear múltiples archivos de imagen del logotipo para diferentes tamaños; usar CSS para escalar.",
+          "Activar o simular la funcionalidad del QR en la lupa del logotipo en esta fase."
+        ],
+        "priority_order": [
+          "Crear el componente `BrandLogo` con sus variantes de tamaño y props.",
+          "Implementar la integración del logotipo en el header.",
+          "Implementar la integración del logotipo en el hero, asegurando que no sea el elemento visual principal.",
+          "Refinar los estilos y espaciados para asegurar una integración visual coherente y elegante en todo el layout."
+        ],
+        "one_sentence_verdict": "Integra el logotipo de AuditaPatron como una marca limpia y escalada apropiadamente dentro de un layout rico en contenido, utilizando un componente reutilizable para una consistencia impecable."
+      }
+    },
+    {
+      "provider": "grok",
+      "ok": true,
+      "model": "grok-3-mini",
+      "content": {
+        "header_strategy": {
+          "layout": "Use a flex container with items-center and justify-start to align the logo naturally within the header, ensuring it's not isolated but part of the navigation flow.",
+          "scale": "Apply Tailwind classes like 'h-12 md:h-16' to make the logo responsive, scaling up from mobile to desktop without appearing as a miniatura.",
+          "container_treatment": "Wrap the logo in a div with padding (e.g., p-2) and a subtle background or border if needed, but keep it minimal to blend with the clear interface, avoiding any stark white box effect.",
+          "mobile_behavior": "Ensure the logo scales down to 'h-10' on mobile devices using Tailwind's responsive prefixes, maintaining visibility and accessibility without overwhelming the screen."
+        },
+        "hero_strategy": {
+          "placement": "Position the logo at the top of the hero section, integrated as an inline element with the headline text for a cohesive look, using relative positioning if needed.",
+          "scale": "Use 'h-24 md:h-32' to control size based on viewport, preventing it from dominating the hero and appearing as a pasted image.",
+          "supporting_elements": "Pair the logo with concise tagline text or a call-to-action button below it, using neutral colors to maintain a sober aesthetic.",
+          "rationale": "This approach ensures the logo feels like an inherent part of the hero, promoting brand integration while keeping the design modern and mobile-first for the worker audience."
+        },
+        "component_strategy": {
+          "recommended_variants": [
+            "headerVariant",
+            "heroVariant",
+            "defaultVariant"
+          ],
+          "props_or_api": [
+            "size (e.g., 'small', 'medium', 'large')",
+            "variant (e.g., 'header', 'hero')",
+            "className (for custom Tailwind classes)"
+          ],
+          "implementation_notes": [
+            "Create a reusable React component that accepts props for size and variant, using Tailwind classes for styling; ensure the img src is dynamic and add ARIA attributes for accessibility.",
+            "Test responsiveness with media queries in Tailwind to handle different screen sizes.",
+            "Avoid inline styles; use CSS modules or Tailwind utility classes for consistency."
+          ]
+        },
+        "avoid": [
+          "Using fixed pixel sizes like width: 100px as it leads to inconsistent scaling across devices.",
+          "Directly pasting the image without a container or classes, making it look improvised.",
+          "Overcomplicating with animations or effects that distract from the brand's clear and protective focus."
+        ],
+        "priority_order": [
+          "header_strategy",
+          "hero_strategy",
+          "component_strategy"
+        ],
+        "one_sentence_verdict": "Adopt a responsive, Tailwind-based integration for the AuditaPatron logo to achieve a seamless, modern brand presence without redesigning the asset."
+      }
+    }
+  ]
+}

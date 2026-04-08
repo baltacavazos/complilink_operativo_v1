@@ -326,3 +326,51 @@
 - [x] Exponer en `cases.detail` un resumen Helios-first del expediente y de los documentos para `/auditar`
 - [x] Ajustar `/auditar` para presentar el expediente y los documentos con semántica Helios-first y cambios mínimos
 - [x] Ampliar pruebas Vitest de backend y frontend para cubrir la formalización mínima Helios-first del bloque 1
+- [ ] Diseñar un panel de control CEO para consultar y controlar toda la plataforma sin depender de Manus
+- [ ] Definir el alcance operativo del panel CEO: resumen ejecutivo, salud operativa, casos, documentos, alertas, usuarios, tenants e integraciones
+- [ ] Contrastar con ChatGPT, Grok y Gemini la mejor arquitectura funcional y UX para el panel CEO antes de implementarlo
+- [ ] Presentar una propuesta priorizada del panel CEO para aprobación antes de construirlo
+- [ ] Incorporar el nuevo logotipo de AuditaPatron en toda la plataforma como identidad visual principal
+- [ ] Reemplazar las marcas y variantes visuales actuales por el nuevo logotipo en navegación, encabezados y superficies clave
+- [ ] Preparar la base visual y técnica para una futura versión del logotipo con QR funcional dentro de la lupa redirigiendo a Auditapatron
+- [ ] Validar visual y técnicamente la actualización de marca antes del siguiente checkpoint
+- [ ] Refinar la integración del logotipo en el header para mejorar legibilidad, proporción y presencia de marca sin que se vea miniatura pegada
+- [ ] Reequilibrar el hero para que el logotipo se sienta nativo a la composición y no como imagen insertada o copy-paste
+- [ ] Ajustar el componente reutilizable de marca para soportar variantes más limpias, discretas y consistentes entre header, hero y superficies secundarias
+- [ ] Validar técnica y visualmente el refinamiento de branding antes del siguiente checkpoint
+- [ ] Suavizar o reducir el tratamiento de contenedor del logotipo en el hero para que no robe protagonismo ni se sienta como tarjeta separada
+- [ ] Afinar la escala y presencia del logotipo en el header para que conserve legibilidad sin parecer sello o pastilla sobredimensionada
+- [ ] Ajustar la jerarquía visual del bloque superior para que marca, titular y CTA convivan con una integración más natural
+- [ ] Validar técnica y visualmente la segunda iteración de branding antes del siguiente checkpoint
+- [ ] Aumentar ligeramente la presencia del logotipo en el hero hasta un punto intermedio, sin devolverle protagonismo excesivo ni efecto de tarjeta pegada
+- [ ] Ajustar el equilibrio visual entre marca, titular y CTA en el bloque superior para que la identidad gane presencia sin romper la jerarquía
+- [ ] Validar técnica y visualmente la tercera iteración del branding antes del siguiente checkpoint
+- [ ] Aumentar aproximadamente 15% el logotipo en header y hero para darle más presencia sin romper la jerarquía visual
+- [ ] Eliminar la percepción de cuadro blanco detrás del logotipo para que la marca se funda mejor con el fondo del UI
+- [ ] Validar visual y técnicamente el microajuste final del branding antes del cierre
+- [ ] Crear la versión maestra del logotipo de AuditaPatron con QR funcional apuntando a https://auditapatron.mx
+- [ ] Validar que el QR integrado dentro de la lupa conserve contraste, zona de seguridad y escaneabilidad real
+- [ ] Definir la adopción del nuevo logotipo con QR en la plataforma sin romper la identidad visual ya refinada
+- [ ] Redibujar la segunda iteración del logotipo maestro de AuditaPatron con QR funcional apuntando a https://auditapatron.mx, preservando la fuerza del wordmark.
+- [ ] Reequilibrar la composición de la lupa para que el QR se integre de forma elegante y escaneable sin dominar visualmente la marca.
+- [ ] Crear una versión simplificada del logotipo sin QR para tamaños pequeños y usos donde la escaneabilidad no sea viable.
+- [ ] Validar visualmente y por reglas de uso la nueva composición del logotipo con QR antes de adoptarla en la plataforma.
+- [ ] Eliminar la percepción de cuadro sobrepuesto del QR dentro de la lupa manteniendo una integración natural con la geometría circular del isotipo.
+- [ ] Redibujar la máscara y composición del QR para que conserve escaneabilidad sin romper la forma natural de la lupa.
+- [ ] Redibujar la integración del QR para que se perciba más circular y orgánica dentro de la lupa sin comprometer la lectura.
+- [ ] Ajustar la composición del lente para suavizar el borde interior y reducir la sensación de retícula cuadrada.
+- [ ] Generar y validar una nueva propuesta visual del logotipo con QR para presentarla a revisión.
+- [ ] Definir la versión oficial del logo de plataforma de AuditaPatron sin QR funcional para uso interno del producto.
+- [ ] Refinar el componente de marca para que el logo de plataforma se vea limpio, nativo e integrado al UI.
+- [ ] Aplicar y validar la versión oficial del logo de plataforma en header, hero, dashboard y superficies clave.
+- [ ] Conservar la misma base visual del logotipo actual de AuditaPatron para la versión de plataforma.
+- [ ] Eliminar el QR de la lupa en la versión de plataforma sin perder la identidad general del diseño.
+- [ ] Validar que la adaptación mantenga coherencia con header, hero, dashboard y móvil.
+- [x] Agregar una opción de modo oscuro a la plataforma con interruptor visible y comportamiento consistente.
+- [x] Revisar la base actual de temas para adaptar header, hero, dashboard, `/auditar` y superficies principales a claro/oscuro.
+- [x] Ajustar la versión de plataforma del logotipo para que conserve la misma base visual sin QR y funcione bien sobre fondos claros y oscuros.
+- [x] Validar visual y técnicamente el modo oscuro en móvil y escritorio sin romper la experiencia actual.
+- [x] Agregar opción de modo oscuro en AuditaPatron con interruptor visible y persistencia local de preferencia
+- [x] Adaptar home, flujo `/auditar`, diálogos y superficies principales para compatibilidad visual completa en claro y oscuro
+- [x] Ajustar el logotipo de plataforma de AuditaPatron para conservar su base visual sin QR y funcionar bien sobre fondos claros y oscuros
+- [x] Validar modo oscuro con pruebas, revisión técnica y verificación visual antes de entregar el avance
