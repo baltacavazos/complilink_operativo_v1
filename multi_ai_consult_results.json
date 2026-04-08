@@ -1,176 +1,218 @@
 {
-  "prompt": "Actúa como un lead product engineer exigente para una app móvil-first en español para trabajadores en México.\n\nContexto del producto:\n- App: AuditaPatron.\n- Propósito: permitir que una persona suba documentos laborales y construya un expediente digital disponible 24/7.\n- UX obligatoria: extremadamente simple, confiable, centrada, usable por un niño de 10 años o una persona mayor con muy baja alfabetización digital.\n- No exponer al usuario nombres técnicos internos ni complejidad del backend.\n- Pantalla foco: /auditar.\n\nEstado actual de /auditar:\n- Ya existe carga documental.\n- Ya existen recomendaciones conectadas a faltantes reales.\n- Ya existe historial con filtros y persistencia local básica.\n- Ya existe onboarding móvil reutilizable.\n- Ya existe progreso visual por tipo documental.\n- Todo está en español.\n\nNueva iteración aprobada para decidir e implementar:\n1. Añadir escaneo/captura documental asistido por IA con mínima fricción posible.\n2. Persistir el contexto del usuario entre dispositivos, no solo en el navegador local.\n3. Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga.\n4. Añadir una opción visible para reabrir el onboarding informativo.\n\nObjetivo crítico del escaneo:\n- Debe sentirse casi mágico, pero ser robusto.\n- Debe guiar automáticamente al usuario para sacar una foto legible sin exigir conocimientos técnicos.\n- Debe detectar problemas comunes antes de subir: borroso, oscuro, cortado, reflejos, documento incompleto, orientación incorrecta.\n- Debe aplicar la mayor automatización posible: mejora de imagen, recorte, corrección de perspectiva, OCR/lectura, clasificación documental y validación mínima.\n- Debe minimizar pasos manuales y texto para el usuario.\n\nRestricciones técnicas y de UX:\n- Mobile-first.\n- La experiencia debe sentirse más clara, no más pesada.\n- Prioriza robustez real, escalabilidad y calidad percibida, aunque implique usar IA avanzada.\n- Aun así, evita re-arquitecturas innecesarias si puede resolverse de forma elegante y progresiva.\n- La persistencia entre dispositivos puede apoyarse en backend si eso mejora continuidad y confianza.\n- El flujo debe tolerar fallos de red o fotos deficientes con recuperación simple.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"recommended_approach\": \"texto corto\",\n  \"scan_stack\": {\n    \"capture_guidance\": \"texto corto\",\n    \"quality_gate\": \"texto corto\",\n    \"enhancement_pipeline\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"classification_strategy\": \"texto corto\",\n    \"fallback_strategy\": \"texto corto\"\n  },\n  \"continuity_strategy\": {\n    \"choice\": \"server_db | hybrid\",\n    \"why\": \"texto\"\n  },\n  \"user_experience\": {\n    \"first_screen\": \"texto corto\",\n    \"primary_actions\": [\"accion 1\", \"accion 2\", \"accion 3\"],\n    \"onboarding_reentry\": \"texto corto\",\n    \"recommended_doc_preset\": \"texto corto\"\n  },\n  \"backend_strategy\": {\n    \"upload_flow\": \"texto corto\",\n    \"ai_services\": [\"servicio 1\", \"servicio 2\"],\n    \"validation_logic\": [\"regla 1\", \"regla 2\", \"regla 3\"]\n  },\n  \"risks\": [\"riesgo 1\", \"riesgo 2\", \"riesgo 3\"],\n  \"implementation_phases\": [\"fase 1\", \"fase 2\", \"fase 3\"],\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Favorece soluciones elegantes, simples, intuitivas, robustas y fáciles de usar por personas no técnicas.\n- Piensa como cliente exigente obsesionado con fricción mínima y confianza máxima.",
+  "prompt": "Actúa como un lead product engineer exigente para una app móvil-first en español para trabajadores en México.\n\nContexto del producto:\n- App: AuditaPatron.\n- Propósito: permitir que una persona suba documentos laborales y construya un expediente digital disponible 24/7.\n- UX obligatoria: extremadamente simple, confiable, centrada, usable por un niño de 10 años o una persona mayor con muy baja alfabetización digital.\n- No exponer al usuario nombres técnicos internos ni complejidad del backend.\n- Pantalla foco: /auditar.\n\nEstado actual de /auditar:\n- Ya existe carga documental.\n- Ya existen recomendaciones conectadas a faltantes reales.\n- Ya existe historial con filtros y persistencia por usuario.\n- Ya existe continuidad entre dispositivos con estado remoto del flujo.\n- Ya existe onboarding móvil reutilizable.\n- Ya existe progreso visual por tipo documental.\n- Ya existe escaneo asistido por IA con evaluación preliminar de calidad y guía simple.\n- Ya existe preselección del documento recomendado dentro del flujo de carga.\n- Todo está en español.\n\nNueva iteración aprobada para decidir e implementar:\n1. Añadir detección de bordes y encuadre en cámara para ayudar a capturar mejor el documento antes de subirlo.\n2. Añadir OCR estructurado por tipo documental para extraer señales útiles según el documento esperado.\n3. Añadir una pantalla final de confirmación de hallazgos claros, pendientes y siguiente paso recomendado antes de guardar o continuar.\n\nObjetivo crítico:\n- Debe sentirse casi mágico, pero ser robusto.\n- Debe guiar automáticamente al usuario para sacar una foto legible sin exigir conocimientos técnicos.\n- Debe minimizar texto, pasos y decisiones manuales.\n- Debe tolerar fallos de cámara, OCR incompleto o baja confianza sin bloquear el avance.\n- Debe reforzar confianza: mostrar solo hallazgos útiles, qué quedó claro y qué conviene revisar después.\n\nRestricciones técnicas y de UX:\n- Mobile-first.\n- La experiencia debe sentirse más clara, no más pesada.\n- Prioriza robustez real, escalabilidad y calidad percibida, aunque implique usar IA avanzada.\n- Evita re-arquitecturas innecesarias si puede resolverse de forma elegante y progresiva.\n- Si propones OCR, distingue entre extracción útil inmediata y validación posterior más profunda.\n- La pantalla de confirmación debe ser comprensible en menos de 10 segundos.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"recommended_approach\": \"texto corto\",\n  \"camera_guidance\": {\n    \"edge_detection_choice\": \"canvas_guided | cv_assisted | hybrid\",\n    \"why\": \"texto corto\",\n    \"user_feedback\": [\"mensaje 1\", \"mensaje 2\", \"mensaje 3\"],\n    \"fallback\": \"texto corto\"\n  },\n  \"ocr_strategy\": {\n    \"choice\": \"lightweight_first | structured_first | hybrid\",\n    \"why\": \"texto corto\",\n    \"document_specific_outputs\": [\"salida 1\", \"salida 2\", \"salida 3\"],\n    \"confidence_handling\": \"texto corto\"\n  },\n  \"confirmation_screen\": {\n    \"primary_goal\": \"texto corto\",\n    \"must_show\": [\"elemento 1\", \"elemento 2\", \"elemento 3\"],\n    \"must_hide\": [\"elemento 1\", \"elemento 2\"],\n    \"cta_strategy\": \"texto corto\"\n  },\n  \"implementation_strategy\": {\n    \"frontend\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"backend\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"risk_controls\": [\"control 1\", \"control 2\", \"control 3\"]\n  },\n  \"risks\": [\"riesgo 1\", \"riesgo 2\", \"riesgo 3\"],\n  \"implementation_phases\": [\"fase 1\", \"fase 2\", \"fase 3\"],\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Favorece soluciones elegantes, simples, intuitivas, robustas y fáciles de usar por personas no técnicas.\n- Piensa como cliente exigente obsesionado con fricción mínima, confianza máxima y claridad instantánea.",
   "results": [
     {
       "provider": "chatgpt",
       "ok": true,
       "output": {
-        "recommended_approach": "Integrar escaneo asistido por IA con guía visual en tiempo real y persistencia backend para continuidad sin fricción.",
-        "scan_stack": {
-          "capture_guidance": "Indicadores visuales claros y animados para alinear y enfocar el documento sin texto técnico.",
-          "quality_gate": "Detección automática de borrosidad, iluminación, recorte y orientación antes de permitir subir.",
-          "enhancement_pipeline": [
-            "corrección automática de perspectiva y recorte",
-            "ajuste de brillo y contraste para legibilidad",
-            "OCR ligero para validar contenido y tipo documental"
+        "recommended_approach": "Integrar detección de bordes y OCR estructurado con una pantalla final clara y simple para guiar sin fricción.",
+        "camera_guidance": {
+          "edge_detection_choice": "hybrid",
+          "why": "Combina precisión de CV con guía visual en canvas para máxima claridad y robustez en captura.",
+          "user_feedback": [
+            "Ajusta el documento dentro del marco para mejor foto.",
+            "¡Perfecto! Documento bien encuadrado.",
+            "Mueve un poco la cámara para mejorar la captura."
           ],
-          "classification_strategy": "IA en backend que clasifica y valida tipo documental basado en OCR y metadatos de imagen, preseleccionando para el usuario.",
-          "fallback_strategy": "Permitir subir manualmente con opción de repetir captura y mostrar mensajes simples para corregir problemas detectados."
+          "fallback": "Permitir foto manual con aviso de posible baja calidad y opción de reintento."
         },
-        "continuity_strategy": {
+        "ocr_strategy": {
           "choice": "hybrid",
-          "why": "Persistencia principal en backend para continuidad entre dispositivos y sincronización, con cache local para uso offline y rapidez."
-        },
-        "user_experience": {
-          "first_screen": "Pantalla limpia con botón grande para iniciar escaneo y preselección clara del tipo documental recomendado.",
-          "primary_actions": [
-            "Iniciar escaneo asistido",
-            "Subir documento desde galería",
-            "Reabrir onboarding informativo"
+          "why": "Extrae datos clave inmediatamente para feedback rápido y deja validación profunda para backend.",
+          "document_specific_outputs": [
+            "Nombre completo y RFC en recibos de nómina.",
+            "Fechas y montos en contratos laborales.",
+            "Datos de patrón y empleado en constancias."
           ],
-          "onboarding_reentry": "Botón visible y accesible en /auditar para mostrar onboarding resumido y visual sin texto técnico.",
-          "recommended_doc_preset": "Mostrar tipo documental sugerido destacado antes de escanear para evitar confusión."
+          "confidence_handling": "Mostrar solo datos con alta confianza, marcar pendientes para revisión sin bloquear avance."
         },
-        "backend_strategy": {
-          "upload_flow": "Subida optimizada con validación previa en cliente y confirmación final en backend, con reintentos automáticos en fallos.",
-          "ai_services": [
-            "Servicio de análisis y clasificación documental basado en OCR",
-            "Servicio de mejora y validación de imagen"
+        "confirmation_screen": {
+          "primary_goal": "Mostrar hallazgos claros y próximos pasos en menos de 10 segundos para reforzar confianza.",
+          "must_show": [
+            "Datos extraídos con alta confianza.",
+            "Faltantes o pendientes detectados.",
+            "Siguiente paso recomendado claro y simple."
           ],
-          "validation_logic": [
-            "Verificar legibilidad mínima del texto detectado",
-            "Confirmar tipo documental esperado según expediente",
-            "Detectar duplicados y documentos incompletos"
+          "must_hide": [
+            "Términos técnicos o detalles internos.",
+            "Errores o advertencias complejas."
+          ],
+          "cta_strategy": "Botón único con texto claro: 'Guardar y continuar' o 'Revisar después' según confianza."
+        },
+        "implementation_strategy": {
+          "frontend": [
+            "Integrar canvas con guía visual y detección híbrida de bordes.",
+            "Incorporar OCR ligero para extracción inmediata y mostrar resultados en pantalla.",
+            "Diseñar pantalla final minimalista con hallazgos y CTA claros."
+          ],
+          "backend": [
+            "Procesar OCR avanzado para validación profunda y actualización remota del estado.",
+            "Sincronizar hallazgos y estado con frontend para continuidad entre dispositivos.",
+            "Registrar métricas de calidad de captura y OCR para mejora continua."
+          ],
+          "risk_controls": [
+            "Permitir avance con baja confianza para evitar bloqueo.",
+            "Alertas suaves para reintentos sin frustrar al usuario.",
+            "Pruebas de usabilidad con usuarios reales de baja alfabetización digital."
           ]
         },
         "risks": [
-          "Falsos negativos en detección de calidad que bloqueen usuarios sin necesidad",
-          "Dependencia de conexión para persistencia y análisis IA que puede afectar experiencia offline",
-          "Complejidad técnica en integración IA que puede retrasar despliegue"
+          "Falsos positivos o negativos en detección de bordes que confundan al usuario.",
+          "OCR incompleto que genere expectativas erróneas.",
+          "Pantalla final saturada que cause confusión o abandono."
         ],
         "implementation_phases": [
-          "Fase 1: Integrar guía visual y calidad mínima en captura con fallback manual",
-          "Fase 2: Desarrollar backend para persistencia híbrida y clasificación IA básica",
-          "Fase 3: Optimizar IA avanzada para mejora automática y validación robusta"
+          "Fase 1: Prototipo de cámara con detección híbrida y feedback visual simple.",
+          "Fase 2: Integración OCR ligero y extracción de datos clave en frontend.",
+          "Fase 3: Desarrollo y testeo de pantalla final de confirmación con CTA optimizado."
         ],
-        "priority_score": 95
+        "priority_score": 90
       }
     },
     {
       "provider": "grok",
       "ok": true,
       "output": {
-        "recommended_approach": "Integración progresiva de IA para escaneo mágico y persistencia híbrida",
-        "scan_stack": {
-          "capture_guidance": "Overlays visuales intuitivos para alinear documento en cámara",
-          "quality_gate": "Detección en tiempo real de defectos antes de capturar",
-          "enhancement_pipeline": [
-            "Mejora automática de imagen",
-            "Recorte y corrección de perspectiva",
-            "OCR y clasificación"
+        "recommended_approach": "Integración híbrida progresiva con IA para guía mágica y tolerancia a fallos",
+        "camera_guidance": {
+          "edge_detection_choice": "hybrid",
+          "why": "Combina simplicidad canvas con precisión CV para robustez en móviles variados",
+          "user_feedback": [
+            "Alinea el documento en el marco verde",
+            "Mantén la cámara estable",
+            "¡Foto lista! Presiona capturar si no se toma sola"
           ],
-          "classification_strategy": "Modelo IA para identificar tipo basado en contenido y contexto",
-          "fallback_strategy": "Selección manual simple si IA falla, con guía mínima"
+          "fallback": "Modo manual con botón visible si detección falla por luz o movimiento"
         },
-        "continuity_strategy": {
+        "ocr_strategy": {
           "choice": "hybrid",
-          "why": "Combina almacenamiento local para offline con sync en backend para multi-dispositivo"
-        },
-        "user_experience": {
-          "first_screen": "Pantalla /auditar con botón central para escanear recomendado",
-          "primary_actions": [
-            "Escanear documento",
-            "Ver progreso",
-            "Acceder a historial"
+          "why": "Ligero en frontend para rapidez, estructurado en backend para precisión sin bloquear flujo",
+          "document_specific_outputs": [
+            "Nombre del trabajador",
+            "Fecha de emisión",
+            "Monto salarial"
           ],
-          "onboarding_reentry": "Botón visible en menú: 'Ver guía inicial'",
-          "recommended_doc_preset": "Preselección automática del tipo faltante en flujo"
+          "confidence_handling": "Mostrar extracciones altas; sugerir revisión suave para bajas sin detener avance"
         },
-        "backend_strategy": {
-          "upload_flow": "Subida asíncrona con reintentos y feedback simple",
-          "ai_services": [
-            "ML Kit de Google",
-            "Azure Computer Vision"
+        "confirmation_screen": {
+          "primary_goal": "Construir confianza con resumen claro y guía intuitiva en <10s",
+          "must_show": [
+            "Hallazgos claros (ej. nombre extraído)",
+            "Pendientes (ej. firma borrosa)",
+            "Siguiente paso recomendado (ej. subir otro doc)"
           ],
-          "validation_logic": [
-            "Chequeo de legibilidad",
-            "Clasificación por tipo",
-            "Validación contra faltantes"
+          "must_hide": [
+            "Códigos de error técnicos",
+            "Detalles de IA interna"
+          ],
+          "cta_strategy": "Botón principal 'Guardar y Continuar' con secundario 'Revisar Ahora' para minimizar decisiones"
+        },
+        "implementation_strategy": {
+          "frontend": [
+            "Integrar overlay canvas con WebCV para detección híbrida",
+            "Añadir flujo OCR ligero post-captura con feedback visual",
+            "Diseñar pantalla confirmación con íconos y texto mínimo"
+          ],
+          "backend": [
+            "Procesar OCR estructurado por tipo doc en API",
+            "Almacenar extracciones con niveles de confianza",
+            "Sincronizar estado remoto para continuidad entre dispositivos"
+          ],
+          "risk_controls": [
+            "Pruebas en dispositivos low-end y offline",
+            "Monitoreo de tasas de fallo con logs anónimos",
+            "Fallbacks automáticos a modo simple sin IA"
           ]
         },
         "risks": [
-          "Fallas en red afectan escaneo",
-          "Privacidad en procesamiento IA",
-          "Errores en clasificación automática"
+          "Detección imprecisa en baja luz o fondos complejos",
+          "OCR fallido en documentos no estándar o borrosos",
+          "Aumento percibido de complejidad si fallbacks no son intuitivos"
         ],
         "implementation_phases": [
-          "Implementar stack de escaneo IA",
-          "Configurar persistencia híbrida",
-          "Añadir preselección y reentrada onboarding"
+          "Fase 1: Implementar guía cámara y detección híbrida",
+          "Fase 2: Integrar OCR híbrido con manejo de confianza",
+          "Fase 3: Desarrollar y testear pantalla confirmación con UX tests"
         ],
-        "priority_score": 95
+        "priority_score": 90
       }
     },
     {
       "provider": "gemini",
       "ok": true,
       "output": {
-        "recommended_approach": "Implementación de IA robusta y transparente para escaneo documental 'mágico', con persistencia en backend para máxima confianza y continuidad, manteniendo una UX ultra-simple y guiada para usuarios de baja alfabetización digital.",
-        "scan_stack": {
-          "capture_guidance": "Guía visual en tiempo real con bounding box adaptable, indicador de nivel, sugerencias de iluminación (ej. 'Más luz', 'Evita sombras'), y auto-captura inteligente al detectar estabilidad y encuadre óptimo. Feedback háptico sutil.",
-          "quality_gate": "Modelos ML on-device para detección instantánea de borrosidad, oscuridad, reflejos, recorte, orientación incorrecta o documento incompleto ANTES de la captura, con feedback visual claro ('Foto borrosa, intenta de nuevo').",
-          "enhancement_pipeline": [
-            "Corrección de perspectiva y distorsión (client-side)",
-            "Recorte automático inteligente al contorno del documento (client-side)",
-            "Mejora de imagen (brillo, contraste, nitidez, eliminación de ruido) (client-side/server-side)",
-            "OCR avanzado para extracción de texto clave (server-side)",
-            "Clasificación documental inicial (client-side) y final (server-side)",
-            "Validación mínima de contenido (server-side)"
+        "recommended_approach": "Flujo de captura inteligente y validación progresiva con IA, minimizando fricción y maximizando confianza.",
+        "camera_guidance": {
+          "edge_detection_choice": "cv_assisted",
+          "why": "Guía visual en tiempo real con IA para encuadre perfecto, eliminando pasos manuales y garantizando calidad de captura sin exigir conocimientos técnicos.",
+          "user_feedback": [
+            "Acerca el documento",
+            "Centra el documento",
+            "Sostén firme",
+            "¡Listo para capturar!",
+            "Demasiado oscuro/claro"
           ],
-          "classification_strategy": "Híbrida: Clasificación inicial ligera on-device para pre-selección rápida, y re-clasificación/validación robusta en el backend usando OCR y modelos de ML entrenados con documentos laborales mexicanos para alta precisión.",
-          "fallback_strategy": "Permitir re-toma de foto, ajuste manual de recorte/rotación, o carga desde galería. Si la IA falla en clasificación, ofrecer selección manual de tipo documental con sugerencias. Cola de subida asíncrona con reintentos automáticos en caso de fallo de red."
+          "fallback": "Permitir captura manual si la detección falla tras varios intentos, con advertencia suave de posible baja calidad y sugerencia de reintentar."
         },
-        "continuity_strategy": {
-          "choice": "server_db",
-          "why": "La persistencia en base de datos del servidor es crítica para garantizar la continuidad del expediente digital entre dispositivos, la integridad de los datos y la confianza del usuario. El almacenamiento local solo se usará para caché temporal y optimización de rendimiento."
-        },
-        "user_experience": {
-          "first_screen": "Un botón grande y prominente 'Añadir Documento' (con icono de cámara/escáner) en el centro, debajo del progreso visual. Recomendaciones de documentos faltantes claras y accionables. Historial reciente visible de forma concisa.",
-          "primary_actions": [
-            "Añadir Documento (Escaneo IA)",
-            "Ver Recomendaciones Pendientes",
-            "Mi Expediente (Historial completo)",
-            "Ayuda / ¿Cómo funciona?"
+        "ocr_strategy": {
+          "choice": "structured_first",
+          "why": "OCR especializado por tipo documental para extraer datos clave de inmediato, priorizando señales útiles sobre validación exhaustiva inicial y acelerando el flujo del usuario.",
+          "document_specific_outputs": [
+            "Nombre completo (INE)",
+            "CURP (Acta de Nacimiento)",
+            "RFC (Constancia Fiscal)",
+            "Fecha de inicio (Contrato)",
+            "Salario (Recibo de Nómina)"
           ],
-          "onboarding_reentry": "Un botón de 'Ayuda' o '¿Cómo funciona?' visible pero discreto (ej. en la barra superior o como un ítem en un menú de 'Más opciones') que reabre el flujo de onboarding informativo, explicando el valor y uso de la app.",
-          "recommended_doc_preset": "Al iniciar el flujo de 'Añadir Documento', si existe una recomendación fuerte, pre-seleccionar el tipo documental y resaltarlo con un 'Sugerido: [Tipo de Documento]'. Permitir al usuario confirmar o cambiar fácilmente antes de la captura."
+          "confidence_handling": "Si la confianza del OCR es baja para un campo, se marca como 'a revisar' sin bloquear el flujo, priorizando el avance del usuario. Se usa un umbral de confianza adaptable y se permite la edición posterior."
         },
-        "backend_strategy": {
-          "upload_flow": "Subida asíncrona y resumible de documentos, con encriptación de extremo a extremo. Procesamiento en segundo plano de la IA para evitar bloqueos en la UI. Notificaciones claras al usuario sobre el estado de la subida y procesamiento.",
-          "ai_services": [
-            "Google Cloud Vision API (o similar) para OCR de alta precisión",
-            "Servicio de ML personalizado para clasificación documental (ej. TensorFlow/PyTorch)",
-            "Servicio de ML para validación de calidad de imagen y detección de anomalías",
-            "Servicio de ML para extracción de entidades clave (fechas, nombres, RFCs)"
+        "confirmation_screen": {
+          "primary_goal": "Validar rápidamente los hallazgos clave y guiar al siguiente paso sin abrumar al usuario, reforzando la confianza en el proceso.",
+          "must_show": [
+            "Miniatura del documento subido",
+            "Documento: [Tipo de documento]",
+            "Hallazgos claros: [Lista de datos extraídos con alta confianza]",
+            "Pendientes de revisar: [Lista de datos con baja confianza o no encontrados]",
+            "Siguiente paso recomendado: [Ej. 'Sube tu siguiente documento', 'Revisa este dato']"
           ],
-          "validation_logic": [
-            "Coherencia de datos extraídos por OCR (ej. fechas de inicio/fin de contrato)",
-            "Detección de documentos incompletos (ej. INE con una sola cara)",
-            "Validación de formato y legibilidad (ej. texto legible, sin marcas de agua intrusivas)",
-            "Concordancia entre tipo documental clasificado y contenido OCR"
+          "must_hide": [
+            "Puntajes de confianza de OCR",
+            "IDs internos del documento o del proceso",
+            "Errores técnicos de backend",
+            "Opciones de edición de texto OCR"
+          ],
+          "cta_strategy": "Botón principal 'Confirmar y Continuar' o 'Guardar Expediente'. Botón secundario 'Revisar Documento' si hay pendientes críticos. Siempre claro, único y visible."
+        },
+        "implementation_strategy": {
+          "frontend": [
+            "Integrar SDK de CV para detección de bordes y encuadre en tiempo real en la cámara, con superposiciones visuales.",
+            "Desarrollar UI/UX para mensajes de guía de cámara y feedback instantáneo.",
+            "Crear pantalla de confirmación con componentes dinámicos para hallazgos y pendientes, optimizada para lectura rápida.",
+            "Implementar lógica de navegación condicional post-confirmación y manejo de errores amigable."
+          ],
+          "backend": [
+            "Desarrollar microservicio de OCR estructurado por tipo documental (ej. Google Vision API + lógica de reglas de negocio).",
+            "Definir esquemas de datos robustos para cada tipo documental y sus campos clave, incluyendo metadatos de confianza.",
+            "Implementar API para recibir imagen, procesar OCR, devolver hallazgos, confianza y estado de revisión.",
+            "Integrar servicio de persistencia para hallazgos de OCR y estado de revisión, permitiendo validación asíncrona posterior."
+          ],
+          "risk_controls": [
+            "Monitoreo de rendimiento de IA (latencia, precisión, tasa de error) en producción con alertas proactivas.",
+            "Pruebas A/B de la nueva experiencia de cámara y confirmación con métricas de éxito claras (tasa de conversión, tiempo en flujo).",
+            "Mecanismo de feedback rápido para usuarios sobre problemas de captura/OCR, con canal directo a ingeniería.",
+            "Despliegue gradual por regiones o segmentos de usuarios (canary release) para mitigar riesgos."
           ]
         },
         "risks": [
-          "Precisión de la IA en entornos reales con documentos de baja calidad o variaciones regionales (ej. formatos de INE antiguos)",
-          "Rendimiento y latencia de los modelos de IA on-device y server-side en dispositivos de gama baja o con conexiones lentas",
-          "Privacidad y seguridad de los datos sensibles del usuario al ser procesados por IA y almacenados en la nube",
-          "Curva de aprendizaje para el usuario si la guía de captura no es suficientemente intuitiva o la IA falla repetidamente",
-          "Costos operativos de los servicios de IA avanzados a escala"
+          "Falsa sensación de seguridad si el OCR falla silenciosamente en datos críticos, llevando a expedientes incompletos.",
+          "Latencia excesiva en el procesamiento de OCR o CV, afectando la fluidez y la percepción de 'magia'.",
+          "Complejidad de mantener y actualizar modelos de OCR para múltiples tipos de documentos y sus variaciones regionales/temporales.",
+          "Rechazo de usuarios a la automatización si no es 100% precisa o si la guía es confusa, aumentando la fricción."
         ],
         "implementation_phases": [
-          "MVP de Escaneo IA: Captura guiada, recorte/perspectiva, OCR básico, clasificación inicial y subida. Persistencia local temporal.",
-          "Refinamiento de IA y Backend: Mejora de calidad de imagen, clasificación robusta server-side, validación mínima, persistencia en backend y sincronización entre dispositivos.",
-          "Optimización y UX Avanzada: Detección de problemas pre-captura, pre-selección de documentos, re-onboarding, manejo de errores robusto y mejora continua de la IA."
+          "Fase 1: MVP de Detección de Bordes y OCR Básico (1-2 tipos doc clave) con feedback de usuario.",
+          "Fase 2: Expansión de OCR Estructurado a más tipos documentales y desarrollo completo de la Pantalla de Confirmación.",
+          "Fase 3: Optimización de IA, robustez del sistema, monitoreo continuo y mejora iterativa basada en datos reales."
         ],
         "priority_score": 95
       }

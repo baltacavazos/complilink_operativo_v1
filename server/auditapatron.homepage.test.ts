@@ -47,7 +47,9 @@ describe("Auditapatron homepage content", () => {
     expect(auditFlowSource).toContain("expediente digital ordenado, disponible 24/7");
     expect(auditFlowSource).toContain("Próximo paso que más puede ayudarte");
     expect(auditFlowSource).toContain("Añade un documento a tu expediente");
-    expect(auditFlowSource).toContain("Subir y revisar documento");
+    expect(auditFlowSource).toContain("Analizar antes de guardar");
+    expect(auditFlowSource).toContain("Vista previa antes de guardar");
+    expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).toContain("Siguiente paso sugerido para ti");
     expect(auditFlowSource).toContain("Qué está pasando ahora");
     expect(auditFlowSource).toContain("Tipo de revisión");

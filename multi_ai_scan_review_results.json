@@ -1,0 +1,326 @@
+{
+  "startedAt": "2026-04-08T01:52:37.507Z",
+  "context": {
+    "proyecto": "AuditaPatron / complilink_operativo_v1",
+    "objetivo": "Definir la mejor implementación para OCR estructurado por tipo documental, detección de bordes en cámara y pantalla final de confirmación antes de guardar, con fricción mínima y enfoque mobile-first.",
+    "usuarioFinal": "Trabajadores mexicanos con muy baja alfabetización digital; debe servir incluso para un niño de 10 años o una persona mayor humilde.",
+    "restricciones": [
+      "La experiencia debe ser mobile-first y sin scroll lateral.",
+      "La IA no debe bloquear al usuario cuando la clasificación no sea concluyente.",
+      "El motor interno debe quedar oculto; la experiencia visible debe sentirse simple y casi mágica.",
+      "Debe priorizarse fricción mínima, confiabilidad y continuidad entre dispositivos.",
+      "Se debe reutilizar lo que ya existe para evitar regresiones innecesarias."
+    ],
+    "backend_actual_resumen": {
+      "mutacion": "cases.uploadDocument",
+      "input": {
+        "tenantId": "string",
+        "caseId": "string",
+        "fileName": "string",
+        "mimeType": "string",
+        "base64Content": "string",
+        "textHint": "string opcional",
+        "expectedDocumentType": "tipo documental opcional",
+        "captureMode": "camera | file opcional",
+        "visibility": "case_team por default",
+        "consentStatus": "pending por default",
+        "sourceChannel": "manual | email | api | bulk_import"
+      },
+      "comportamiento": [
+        "Decodifica el archivo, lo guarda en storage y calcula SHA-256.",
+        "Clasifica el documento con classifyMexicanLaborDocument.",
+        "Evalúa calidad de captura con analyzeDocumentScanAssist.",
+        "Construye análisis preliminar con buildPreliminaryLaborAnalysis.",
+        "Crea el registro definitivo del documento, eventos, contratos canónicos y opinión de Helios.",
+        "Despacha el documento al motor compartido.",
+        "Retorna document, classification, preliminaryAnalysis, documentContract, sharedEngineEnvelope, heliosOpinion, heliosOpinionContract, engineDispatch y scanAssistance."
+      ],
+      "implicacion": "Hoy el backend guarda y despacha el documento inmediatamente; no existe una fase previa formal de previsualización/confirmación antes de guardar."
+    },
+    "frontend_actual_resumen": {
+      "pagina": "/auditar",
+      "flujo": [
+        "El usuario elige cámara o archivo.",
+        "handleUpload convierte el archivo a base64 y llama una sola vez a uploadDocument.",
+        "Después se renderiza lastUpload con resumen sencillo, scanAssistance, datos claros (confirmedEntries) y datos a revisar (estimatedEntries).",
+        "No existe aún una pantalla previa de confirmación antes de guardar."
+      ]
+    },
+    "iteracion_objetivo": {
+      "ocr_estructurado": "Extraer campos clave según el tipo documental: por ejemplo nómina, CFDI, contrato, IMSS, evidencia, etc., reutilizando el modelo estructurado ya existente si conviene.",
+      "bordes_camara": "Agregar guía visual de bordes en tiempo real durante la captura para ayudar a que la hoja se vea completa, derecha y legible.",
+      "confirmacion_final": "Antes de guardar definitivamente, mostrar al usuario hallazgos clave de forma humana y simple."
+    },
+    "decision_real": "Necesitamos una recomendación aplicada a ESTE codebase, no una respuesta genérica."
+  },
+  "results": {
+    "openai": {
+      "modelo": "gpt-4.1-mini",
+      "veredicto": "B",
+      "resumen_ejecutivo": "Se recomienda introducir un flujo en dos pasos que permita realizar un análisis preliminar y mostrar una pantalla de confirmación antes de guardar el documento. Esto mejora la experiencia del usuario con baja alfabetización digital al ofrecer una revisión clara y simple, reduce errores y evita bloqueos por IA, manteniendo la robustez y reutilización del backend actual.",
+      "porque": [
+        "Permite mostrar resultados OCR estructurado y detección de bordes antes de guardar, mejorando la confianza del usuario.",
+        "Reduce fricción al evitar guardar documentos erróneos o mal capturados, clave para usuarios con baja alfabetización digital.",
+        "Minimiza riesgos de regresión al mantener la mutación uploadDocument para el guardado definitivo, desacoplando análisis y confirmación."
+      ],
+      "diseno_backend": {
+        "cambios_minimos": [
+          "Crear nueva mutación para análisis preliminar (e.g. cases.analyzeDocument) que reciba base64 y devuelva OCR estructurado y evaluación de bordes.",
+          "Mantener cases.uploadDocument sin cambios para guardado definitivo tras confirmación.",
+          "Reutilizar lógica existente de classifyMexicanLaborDocument y buildPreliminaryLaborAnalysis en la nueva mutación."
+        ],
+        "contrato_recomendado": [
+          "cases.analyzeDocument(input: { tenantId, caseId, base64Content, captureMode, expectedDocumentType })",
+          "Retorna { ocrStructuredData, borderDetectionResult, preliminaryAnalysis, scanAssistance }",
+          "cases.uploadDocument(input: { tenantId, caseId, fileName, mimeType, base64Content, ... })",
+          "Retorna datos actuales con guardado definitivo"
+        ],
+        "reutilizacion_modelo_existente": "Se reutiliza el modelo de análisis y clasificación actual para generar OCR estructurado y evaluación de calidad sin guardar, evitando duplicar lógica.",
+        "riesgo_principal": "Duplicación temporal de datos en frontend y posible inconsistencia si el usuario abandona antes de confirmar."
+      },
+      "diseno_frontend": {
+        "flujo_usuario": [
+          "Paso 1: Usuario captura o selecciona documento con guía visual de bordes en cámara en tiempo real.",
+          "Paso 2: Se envía base64 a cases.analyzeDocument para obtener OCR estructurado y evaluación.",
+          "Paso 3: Se muestra pantalla de confirmación con resumen humano y simple de hallazgos clave.",
+          "Paso 4: Usuario confirma para llamar a cases.uploadDocument y guardar definitivamente."
+        ],
+        "pantalla_confirmacion": [
+          "Resumen claro y visual de campos extraídos relevantes según tipo documental.",
+          "Indicadores simples de calidad de captura y bordes detectados.",
+          "Botones de Confirmar o Reintentar captura."
+        ],
+        "microcopy": [
+          "“Revisa que la información sea correcta antes de guardar.”",
+          "“Ajusta la cámara para que el documento se vea completo y derecho.”",
+          "“Si algo no está bien, puedes tomar otra foto sin problema.”"
+        ]
+      },
+      "bordes_en_camara": {
+        "recomendacion": "Implementar detección de bordes en tiempo real usando librería ligera en frontend (e.g. OpenCV.js o ML Kit) para guiar al usuario durante captura.",
+        "nivel": "medio",
+        "estrategia": [
+          "Procesar frames de cámara en tiempo real para detectar bordes y mostrar guía visual.",
+          "Ajustar feedback para que sea simple y no intrusivo, con colores y mensajes claros.",
+          "Permitir captura aunque bordes no sean perfectos para evitar bloqueo."
+        ],
+        "fallback": "Si el dispositivo no soporta detección en tiempo real, mostrar instrucciones estáticas para alinear documento."
+      },
+      "ocr_estructurado": {
+        "campos_por_tipo": [
+          "Nómina: nombre, RFC, periodo, monto, fecha.",
+          "CFDI: emisor, receptor, total, fecha, folio fiscal.",
+          "Contrato: tipo, duración, salario, fecha inicio.",
+          "IMSS: número de seguro, vigencia, empresa.",
+          "Evidencia: descripción, fecha, tipo."
+        ],
+        "cuando_confirmar": [
+          "Cuando el OCR estructurado extrae campos clave con confianza media o alta.",
+          "Cuando la detección de bordes indica buena calidad de captura."
+        ],
+        "cuando_estimar": [
+          "Cuando el OCR tiene baja confianza en algunos campos, mostrar estimaciones para revisión.",
+          "Cuando bordes no son claros, sugerir reintento pero permitir continuar."
+        ]
+      },
+      "plan_iteracion": [
+        "1. Implementar mutación cases.analyzeDocument para análisis preliminar sin guardar.",
+        "2. Integrar detección de bordes en cámara en frontend con feedback visual.",
+        "3. Diseñar y desarrollar pantalla de confirmación con resumen humano y simple.",
+        "4. Modificar flujo frontend para dos pasos: análisis + confirmación + guardado.",
+        "5. Realizar pruebas de usabilidad con usuarios reales y ajustar microcopy y UX."
+      ],
+      "alertas": [
+        "Alertar si la calidad de captura es baja pero permitir continuar.",
+        "Advertir si campos clave no fueron detectados para que usuario revise.",
+        "Notificar errores técnicos en análisis sin bloquear flujo."
+      ],
+      "puntaje": {
+        "friccion": 3,
+        "robustez": 8,
+        "riesgo_implementacion": 4
+      }
+    },
+    "grok": {
+      "modelo": "grok-4",
+      "veredicto": "B",
+      "resumen_ejecutivo": "Recomiendo el flujo en dos pasos (B) para cumplir con la confirmación antes de guardar, minimizando fricción en usuarios de baja alfabetización digital. Introduce un análisis previo sin almacenamiento, reutilizando modelos existentes como classifyMexicanLaborDocument y analyzeDocumentScanAssist. Esto permite revisión mágica y simple, con detección de bordes en cámara para guiar la captura. Equilibra robustez al evitar guardados erróneos, con riesgo moderado de implementación al agregar una mutación temporal, priorizando mobile-first sin bloquear al usuario.",
+      "porque": [
+        "Cumple estrictamente con la iteración: confirmación ANTES de guardar, reduciendo errores en capturas malas.",
+        "Minimiza fricción para usuarios humildes al ofrecer preview 'mágico' sin complejidad visible, reutilizando backend actual.",
+        "Aumenta robustez al separar análisis de guardado, permitiendo correcciones sin regresiones en el flujo existente."
+      ],
+      "diseno_backend": {
+        "cambios_minimos": [
+          "Agregar mutación previewDocument que procesa base64 sin guardar ni despachar, retornando classification, preliminaryAnalysis y scanAssistance.",
+          "Modificar uploadDocument para aceptar un previewId opcional y reutilizar resultados previos si existe."
+        ],
+        "contrato_recomendado": [
+          "previewDocument(input: similar a uploadDocument pero sin tenantId/caseId finales, retorna temp results).",
+          "uploadDocument: agregar flag 'fromPreview' para confirmar y guardar basado en preview."
+        ],
+        "reutilizacion_modelo_existente": "Reutilizar classifyMexicanLaborDocument, analyzeDocumentScanAssist y buildPreliminaryLaborAnalysis en previewDocument para análisis sin almacenamiento.",
+        "riesgo_principal": "Manejo de datos temporales en preview podría exponer privacidad si no se limpia adecuadamente; mitigar con TTL corto."
+      },
+      "diseno_frontend": {
+        "flujo_usuario": [
+          "Usuario captura foto con guía de bordes en cámara.",
+          "Frontend envía a previewDocument para OCR y análisis.",
+          "Mostrar pantalla de confirmación con preview y campos extraídos.",
+          "Usuario confirma; frontend llama uploadDocument para guardar definitivo."
+        ],
+        "pantalla_confirmacion": [
+          "Imagen preview con bordes detectados y campos destacados.",
+          "Lista simple de datos confirmados/estimados en lenguaje humano.",
+          "Botones: 'Sí, guardar' y 'Volver a capturar'."
+        ],
+        "microcopy": [
+          "¡Mira lo que encontramos en tu documento!",
+          "Esto parece correcto: [campo]. ¿Confirmas?",
+          "Si no, toma otra foto fácil."
+        ]
+      },
+      "bordes_en_camara": {
+        "recomendacion": "Integrar detección en tiempo real usando WebRTC y library como jsfeat o opencv.js para overlay guía.",
+        "nivel": "medio",
+        "estrategia": [
+          "Procesar frames de cámara en frontend para detectar bordes y mostrar rectángulo guía.",
+          "Ajustar automáticamente zoom/foco si el documento no encaja.",
+          "No bloquear captura; solo sugerir 'Alinea la hoja'."
+        ],
+        "fallback": "Mostrar mensaje estático 'Coloca el documento completo en el cuadro' si detección falla en dispositivos low-end."
+      },
+      "ocr_estructurado": {
+        "campos_por_tipo": [
+          "Nómina: salario, fecha pago, nombre empleador.",
+          "CFDI: monto total, RFC emisor, fecha emisión.",
+          "Contrato: duración, salario, cláusulas clave."
+        ],
+        "cuando_confirmar": [
+          "Campos con alta confianza (e.g., >90% en classify).",
+          "Datos claros y legibles según scanAssistance."
+        ],
+        "cuando_estimar": [
+          "Campos con confianza media (e.g., borrosos o parciales).",
+          "Clasificación no concluyente; sugerir edición manual simple."
+        ]
+      },
+      "plan_iteracion": [
+        "Implementar mutación previewDocument en backend, reutilizando funciones existentes.",
+        "Actualizar frontend para detección de bordes en cámara usando WebRTC.",
+        "Agregar llamada a previewDocument post-captura y renderizar pantalla de confirmación.",
+        "Integrar OCR estructurado en preview, mapeando campos por tipo.",
+        "Testear flujo completo en mobile, optimizar para low-end devices y deploy."
+      ],
+      "alertas": [
+        "Asegurar que preview no almacene datos permanentes para cumplir privacidad.",
+        "Monitorear performance en mobile; fallback a modo simple si IA demora >2s."
+      ],
+      "puntaje": {
+        "friccion": 2,
+        "robustez": 8,
+        "riesgo_implementacion": 4
+      }
+    },
+    "gemini": {
+      "modelo": "gemini-2.5-flash",
+      "veredicto": "B",
+      "resumen_ejecutivo": "La mejor arquitectura es un flujo en dos pasos (B). Esto permite una pantalla de confirmación ANTES de guardar, crucial para usuarios con baja alfabetización digital. Se introduce una mutación de pre-análisis en el backend que devuelve resultados de OCR y calidad de captura. El frontend usa esta información para una pantalla de revisión interactiva, donde el usuario puede corregir datos o mejorar la captura con guía de bordes en tiempo real. Esto equilibra control del usuario, robustez del sistema y la promesa de una experiencia \"mágica\" al reducir errores post-guardado.",
+      "porque": [
+        "Cumple directamente con el requisito de 'pantalla final de confirmación ANTES de guardar', lo cual es innegociable para la iteración.",
+        "Mejora la experiencia del usuario final (baja alfabetización digital) al darle control y confianza sobre lo que se guarda, reduciendo la fricción cognitiva y la frustración por errores post-guardado.",
+        "Aumenta la robustez y calidad de los datos al permitir correcciones de OCR y mejoras en la captura antes de la persistencia definitiva, minimizando el trabajo de revisión posterior.",
+        "Permite integrar la detección de bordes y el OCR estructurado de forma interactiva, guiando al usuario a obtener una mejor captura y validación de datos."
+      ],
+      "diseno_backend": {
+        "cambios_minimos": [
+          "Crear una nueva mutación `cases.analyzeDocumentDraft` que replique la lógica de pre-análisis de `uploadDocument` (decodificación, almacenamiento temporal, SHA-256, clasificación, calidad, análisis preliminar) pero sin crear el registro definitivo del documento ni despacharlo al motor compartido.",
+          "Modificar `cases.uploadDocument` para aceptar un `draftId` opcional. Si se proporciona, la mutación omitirá los pasos de pre-análisis y procederá directamente a la creación del registro definitivo, eventos, contratos canónicos y despacho, utilizando los datos del draft.",
+          "Implementar un mecanismo de limpieza para drafts abandonados o expirados en el almacenamiento temporal."
+        ],
+        "contrato_recomendado": [
+          "Nueva mutación: `cases.analyzeDocumentDraft(input: DocumentDraftInput)` que retorna `{ draftId: string, classification: ClassificationResult, preliminaryAnalysis: PreliminaryAnalysisResult, scanAssistance: ScanAssistanceResult }`.",
+          "Mutación existente modificada: `cases.uploadDocument(input: UploadDocumentInput, draftId: string opcional, confirmedFields: ConfirmedFieldsInput opcional)` donde `ConfirmedFieldsInput` incluye los datos de OCR validados/corregidos por el usuario y el tipo de documento final."
+        ],
+        "reutilizacion_modelo_existente": "Las funciones internas `classifyMexicanLaborDocument`, `analyzeDocumentScanAssist` y `buildPreliminaryLaborAnalysis` pueden ser reutilizadas directamente por la nueva mutación `cases.analyzeDocumentDraft`. La lógica de 'finalización' de `uploadDocument` (creación de registro, eventos, despacho) puede ser refactorizada en una función común y llamada por ambas mutaciones.",
+        "riesgo_principal": "Gestión del estado de los drafts (almacenamiento temporal, expiración, seguridad). Asegurar la idempotencia y atomocidad entre las llamadas a `analyzeDocumentDraft` y `uploadDocument`."
+      },
+      "diseno_frontend": {
+        "flujo_usuario": [
+          "El usuario elige cámara o archivo para subir un documento.",
+          "**Captura/Selección:** El usuario captura la imagen con la cámara (guiado por la detección de bordes en tiempo real) o selecciona un archivo.",
+          "**Pre-análisis:** El frontend envía el archivo a `cases.analyzeDocumentDraft`. Se muestra un spinner mientras se procesa.",
+          "**Pantalla de Confirmación:** Se renderiza una pantalla con la miniatura del documento, el tipo de documento detectado (con opción a corregir), los campos clave extraídos por OCR (editables) y sugerencias de mejora de calidad (`scanAssistance`).",
+          "**Guardado Final:** El usuario revisa, edita si es necesario, y pulsa 'Confirmar y Guardar'. El frontend envía el `draftId` y los datos confirmados a `cases.uploadDocument`.",
+          "**Resumen Post-Guardado:** Se muestra el resumen final del documento guardado, similar al `lastUpload` actual."
+        ],
+        "pantalla_confirmacion": [
+          "Miniatura del documento capturado/subido.",
+          "Etiqueta 'Tipo de Documento Detectado:' con el valor (ej. 'Nómina') y un botón 'Cambiar' o 'Corregir'.",
+          "Sección 'Datos Clave Extraídos:' con los campos de OCR estructurados por tipo documental, presentados de forma legible y con campos editables.",
+          "Sección 'Sugerencias para Mejorar:' mostrando mensajes basados en `scanAssistance` (ej. 'La imagen está borrosa, ¿quieres volver a tomarla?').",
+          "Botón principal 'Confirmar y Guardar'.",
+          "Botón secundario 'Volver a Capturar' o 'Seleccionar Otro Archivo'."
+        ],
+        "microcopy": [
+          "¡Casi listo! Revisa los datos antes de guardar.",
+          "¿Es un/una [Tipo de Documento Detectado]? (Cambiar)",
+          "Hemos extraído estos datos, ¿son correctos?",
+          "Parece que la imagen está un poco borrosa. ¿Quieres volver a tomarla para una mejor lectura?",
+          "Confirmar y Guardar",
+          "Volver a Capturar"
+        ]
+      },
+      "bordes_en_camara": {
+        "recomendacion": "Implementación en el cliente (frontend) utilizando WebAssembly o librerías JavaScript optimizadas para procesamiento de imágenes en tiempo real (ej. OpenCV.js, TensorFlow.js con modelos ligeros).",
+        "nivel": "medio",
+        "estrategia": [
+          "Utilizar `getUserMedia` para acceder al stream de la cámara y renderizarlo en un elemento `<video>` o `<canvas>`.",
+          "En un bucle `requestAnimationFrame`, procesar cada frame del video en un `<canvas>` oculto para detectar bordes (ej. algoritmo de Canny o un modelo de detección de rectángulos).",
+          "Dibujar un overlay SVG o Canvas sobre el video en tiempo real, mostrando un rectángulo que guía al usuario para alinear el documento. Cambiar el color del rectángulo (ej. rojo a verde) según la calidad de la alineación y la detección de los cuatro bordes.",
+          "Proporcionar feedback visual y auditivo (opcional) cuando el documento esté bien encuadrado y listo para capturar."
+        ],
+        "fallback": "Si la detección de bordes en tiempo real no es compatible con el dispositivo o navegador, o si el rendimiento es bajo, se debe permitir la captura manual sin guía, o mostrar una guía estática simple (ej. un marco punteado) con un mensaje de 'Asegúrate de que el documento llene el marco'."
+      },
+      "ocr_estructurado": {
+        "campos_por_tipo": [
+          "Nómina: Nombre del Empleado, RFC, CURP, Periodo de Pago, Salario Bruto, Salario Neto, Deducciones, Percepciones.",
+          "CFDI: RFC Emisor, RFC Receptor, Folio Fiscal, Fecha de Emisión, Monto Total, Uso de CFDI.",
+          "Contrato Laboral: Nombre del Empleado, Nombre del Empleador, Fecha de Inicio, Tipo de Contrato, Salario Mensual.",
+          "Documento IMSS: Número de Seguridad Social (NSS), Nombre Completo, Fecha de Alta, Tipo de Movimiento.",
+          "Evidencia Fotográfica: Descripción (campo libre), Fecha, Ubicación (si aplica)."
+        ],
+        "cuando_confirmar": [
+          "Cuando la confianza del OCR para un campo clave es baja (por debajo de un umbral predefinido).",
+          "Cuando el tipo de documento detectado por la IA tiene una confianza por debajo de un umbral, ofreciendo al usuario la opción de corregirlo.",
+          "Cuando `scanAssistance` indica problemas de calidad significativos (ej. borroso, incompleto, reflejos).",
+          "Siempre para los campos más críticos que impactan directamente el análisis laboral o la identificación del trabajador."
+        ],
+        "cuando_estimar": [
+          "Cuando la confianza del OCR para un campo es alta (por encima de un umbral) y el campo no es crítico para la validación inicial.",
+          "Cuando el usuario omite la pantalla de confirmación (ej. por timeout o abandono) y el sistema debe proceder con la mejor inferencia posible.",
+          "Para campos secundarios o complementarios que no requieren validación explícita del usuario."
+        ]
+      },
+      "plan_iteracion": [
+        "**Paso 1 (Backend):** Implementar `cases.analyzeDocumentDraft` para el pre-análisis y almacenamiento temporal de drafts.",
+        "**Paso 2 (Frontend):** Desarrollar la funcionalidad de detección de bordes en tiempo real para la cámara y su integración con la captura.",
+        "**Paso 3 (Frontend):** Construir la UI de la pantalla de confirmación, mostrando la miniatura, tipo de documento, campos OCR editables y `scanAssistance`.",
+        "**Paso 4 (Backend):** Modificar `cases.uploadDocument` para aceptar `draftId` y `confirmedFields`, reutilizando la lógica de finalización existente.",
+        "**Paso 5 (Integración y Pruebas):** Conectar el flujo completo frontend-backend, realizar pruebas de rendimiento, seguridad y usabilidad con usuarios reales de baja alfabetización digital."
+      ],
+      "alertas": [
+        "**Latencia del Pre-análisis:** La llamada a `analyzeDocumentDraft` introducirá una latencia. Es crucial optimizar el rendimiento del backend para que esta espera sea mínima y tolerable para el usuario.",
+        "**Gestión de Estado de Drafts:** Implementar una estrategia robusta para la limpieza de drafts incompletos o abandonados para evitar el consumo excesivo de almacenamiento y posibles problemas de seguridad.",
+        "**Complejidad Frontend:** La detección de bordes en tiempo real y la UI de edición de OCR pueden ser exigentes en recursos del dispositivo y complejas de implementar de forma fluida en una app web mobile-first, especialmente en dispositivos de gama baja.",
+        "**Privacidad y Seguridad:** Asegurar que los documentos en estado 'draft' estén protegidos adecuadamente y que el acceso a ellos esté estrictamente controlado hasta su confirmación final."
+      ],
+      "puntaje": {
+        "friccion": 7,
+        "robustez": 9,
+        "riesgo_implementacion": 7
+      }
+    }
+  },
+  "finishedAt": "2026-04-08T01:54:25.080Z"
+}

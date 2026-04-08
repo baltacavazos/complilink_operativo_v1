@@ -256,3 +256,19 @@
 - [x] Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga para reducir fricción y ambigüedad
 - [x] Añadir una opción visible para reabrir el onboarding informativo desde `/auditar` sin interrumpir el flujo principal
 - [x] Diseñar e implementar captura/escaneo documental asistido por IA con validación automática, guía visual y fricción mínima para usuarios con muy baja alfabetización digital
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor arquitectura para detección de bordes en cámara, OCR estructurado por tipo documental y confirmación final sin fricción visible.
+- [x] Implementar detección guiada de bordes y encuadre en cámara dentro de `/auditar`, priorizando una experiencia usable por cualquier perfil de usuario.
+- [x] Incorporar OCR estructurado por tipo documental para extraer señales útiles antes de la revisión preliminar del expediente.
+- [x] Añadir una pantalla final de confirmación de hallazgos claros, pendientes y siguiente paso recomendado antes de guardar o continuar.
+- [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en captura avanzada, OCR y confirmación final.
+- [x] Preanálisis documental temporal antes del guardado definitivo
+- [x] OCR estructurado por tipo documental en flujo de preanálisis
+- [x] Pantalla de confirmación previa al guardado en /auditar
+- [x] Guía visual de bordes en cámara con fallback no intrusivo
+- [x] Integración del flujo analizar → confirmar → guardar en /auditar
+- [x] Pruebas Vitest y validación técnica de la iteración de escaneo avanzado
+- [x] Implementar flujo de preanálisis documental temporal en AuditaPatron antes del guardado final
+- [x] Mostrar OCR estructurado por tipo documental dentro de la confirmación previa en /auditar
+- [x] Incorporar guía visual de bordes para captura móvil con fallback no intrusivo
+- [x] Separar el flujo de /auditar en analizar → confirmar → guardar
+- [x] Validar con pruebas el nuevo flujo de preanálisis y confirmación documental

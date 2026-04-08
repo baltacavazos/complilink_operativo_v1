@@ -129,6 +129,78 @@ type ScanAssistAssessmentView = {
   confidence: number;
 };
 
+type StructuredExtractionFieldView = {
+  key: string;
+  label: string;
+  value: string;
+  status: "confirmed" | "estimated";
+  confidence: "high" | "medium" | "low";
+};
+
+type StructuredExtractionView = {
+  headline: string;
+  summary: string;
+  fields: StructuredExtractionFieldView[];
+  missingFields: string[];
+  reviewNotes: string[];
+};
+
+type DraftPreviewResultView = {
+  draftId: string;
+  createdAt: string;
+  previewAsset: {
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    sha256: string;
+    storageUrl: string;
+    captureMode: AuditarCaptureMode | null;
+    expectedDocumentType: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence" | null;
+  };
+  classification: {
+    documentType: string;
+    normalizedDocType: string;
+    classificationConfidence: number;
+    reviewRecommendation: string;
+    reasons: string[];
+    processingProfile: string;
+    supportsStructuredExtraction: boolean;
+    supportsBenefitEstimation: boolean;
+  };
+  preliminaryAnalysis: {
+    summary: string;
+    processingProfile: string;
+    confirmedData: Record<string, unknown>;
+    estimatedData: Record<string, unknown>;
+    guardrails: string[];
+    extractionTargets: string[];
+    structuredExtraction: StructuredExtractionView;
+  };
+  scanAssistance: ScanAssistAssessmentView;
+};
+
+type ConfirmedUploadResultView = {
+  draftId?: string;
+  classification: {
+    documentType: string;
+    classificationConfidence: number;
+  };
+  preliminaryAnalysis: {
+    summary: string;
+    processingProfile: string;
+    confirmedData: Record<string, unknown>;
+    estimatedData: Record<string, unknown>;
+    guardrails: string[];
+    structuredExtraction?: StructuredExtractionView;
+  };
+  scanAssistance?: ScanAssistAssessmentView;
+  heliosOpinion?: unknown;
+  engineDispatch?: {
+    status?: string | null;
+    reason?: string | null;
+  };
+};
+
 const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
@@ -1271,7 +1343,8 @@ export default function Auditar() {
   const auth = useAuth();
   const utils = trpc.useUtils();
   const bootstrapMutation = trpc.workspace.bootstrap.useMutation();
-  const uploadMutation = trpc.cases.uploadDocument.useMutation();
+  const analyzeDraftMutation = trpc.cases.analyzeDocumentDraft.useMutation();
+  const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
   const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
@@ -1290,7 +1363,8 @@ export default function Auditar() {
   const [selectedCaptureMode, setSelectedCaptureMode] = useState<AuditarCaptureMode | null>(null);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
-  const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
+  const [pendingDraft, setPendingDraft] = useState<DraftPreviewResultView | null>(null);
+  const [lastUpload, setLastUpload] = useState<ConfirmedUploadResultView | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<string | null>(null);
@@ -1505,8 +1579,8 @@ export default function Auditar() {
   const visibleHeliosOpinion = lastHeliosOpinion ?? latestPersistedHeliosOpinion;
   const heliosStage = getHeliosStageCopy({
     opinion: visibleHeliosOpinion,
-    engineStatus: lastUpload?.engineDispatch?.status,
-    engineReason: lastUpload?.engineDispatch?.reason,
+    engineStatus: lastUpload?.engineDispatch?.status ?? undefined,
+    engineReason: lastUpload?.engineDispatch?.reason ?? undefined,
     documentsWithOpinion: heliosDocumentsCount,
   });
   const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
@@ -1554,7 +1628,10 @@ export default function Auditar() {
     [documents],
   );
   const automaticComparisonPair = useMemo(() => pickHeliosComparisonPair(documents), [documents]);
-  const engineStatus = getEngineStatusCopy(lastUpload?.engineDispatch?.status, lastUpload?.engineDispatch?.reason);
+  const engineStatus = getEngineStatusCopy(
+    lastUpload?.engineDispatch?.status ?? undefined,
+    lastUpload?.engineDispatch?.reason ?? undefined,
+  );
   const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
   const confirmedEntries = useMemo(
     () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined),
@@ -1621,6 +1698,27 @@ export default function Auditar() {
       }),
     [preferredCaptureMode, selectedFile, selectedRecommendedTargetType],
   );
+  const isProcessingDocument = analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
+  const previewInsight = pendingDraft ? getUploadInsight(pendingDraft.classification.documentType) : null;
+  const previewReadiness = getDocumentReadiness(pendingDraft?.classification?.classificationConfidence);
+  const previewConfirmedEntries = useMemo(
+    () => getVisibleAnalysisEntries(pendingDraft?.preliminaryAnalysis?.confirmedData),
+    [pendingDraft],
+  );
+  const previewEstimatedEntries = useMemo(
+    () => getVisibleAnalysisEntries(pendingDraft?.preliminaryAnalysis?.estimatedData),
+    [pendingDraft],
+  );
+  const previewStructuredExtraction = pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null;
+  const previewStructuredConfirmedFields = useMemo(
+    () => (previewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
+    [previewStructuredExtraction],
+  );
+  const previewStructuredEstimatedFields = useMemo(
+    () => (previewStructuredExtraction?.fields ?? []).filter((field) => field.status === "estimated"),
+    [previewStructuredExtraction],
+  );
+  const previewGuardrails = pendingDraft?.preliminaryAnalysis?.guardrails ?? [];
   const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
     const documentEntries: DossierHistoryEntry[] = documents.map((document) => ({
       id: `document-${document.documentId}`,
@@ -1729,7 +1827,7 @@ export default function Auditar() {
 
   useEffect(() => {
     setEstimatedAcknowledged(false);
-  }, [lastUpload]);
+  }, [lastUpload, pendingDraft]);
 
   useEffect(() => {
     if (!selectedRecommendedTargetType) {
@@ -1745,6 +1843,7 @@ export default function Auditar() {
   const clearSelectedFile = () => {
     setSelectedFile(null);
     setSelectedCaptureMode(null);
+    setPendingDraft(null);
     setTextHint("");
     setSubmitError(null);
     setPickerKey((value) => value + 1);
@@ -1805,6 +1904,21 @@ export default function Auditar() {
     openPreferredPicker();
   };
 
+  const restartPreviewFlow = () => {
+    setPendingDraft(null);
+    setSelectedFile(null);
+    setSelectedCaptureMode(null);
+    setSubmitError(null);
+    setPickerKey((value) => value + 1);
+
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setUploadSourceOpen(true);
+      return;
+    }
+
+    openPreferredPicker();
+  };
+
   const handleUpload = async () => {
     if (!selectedTenantId || !selectedCaseId || !selectedFile) {
       setSubmitError("Selecciona un expediente y un archivo antes de continuar.");
@@ -1814,7 +1928,7 @@ export default function Auditar() {
     try {
       setSubmitError(null);
       const base64Content = await fileToBase64(selectedFile);
-      const result = await uploadMutation.mutateAsync({
+      const result = await analyzeDraftMutation.mutateAsync({
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         fileName: selectedFile.name,
@@ -1823,12 +1937,39 @@ export default function Auditar() {
         textHint: textHint || undefined,
         expectedDocumentType: selectedRecommendedTargetType ?? undefined,
         captureMode: selectedCaptureMode ?? preferredCaptureMode ?? undefined,
+        sourceChannel: "manual",
+      });
+
+      setPendingDraft(result as DraftPreviewResultView);
+      setLastUpload(null);
+      setSelectedFile(null);
+      setSelectedCaptureMode(null);
+      setTextHint("");
+      setPickerKey((value) => value + 1);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "No fue posible analizar el archivo.");
+    }
+  };
+
+  const handleConfirmDraft = async () => {
+    if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
+      setSubmitError("Primero analiza un documento para revisarlo antes de guardarlo.");
+      return;
+    }
+
+    try {
+      setSubmitError(null);
+      const result = await confirmDraftMutation.mutateAsync({
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        draftId: pendingDraft.draftId,
         visibility: "tenant_legal",
         consentStatus: "pending",
         sourceChannel: "manual",
       });
 
-      setLastUpload(result);
+      setLastUpload(result as ConfirmedUploadResultView);
+      setPendingDraft(null);
       setSelectedFile(null);
       setSelectedCaptureMode(null);
       setTextHint("");
@@ -1839,7 +1980,7 @@ export default function Auditar() {
         utils.cases.detail.invalidate({ tenantId: selectedTenantId, caseId: selectedCaseId }),
       ]);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No fue posible subir el archivo.");
+      setSubmitError(error instanceof Error ? error.message : "No fue posible guardar el documento.");
     }
   };
 
@@ -2302,6 +2443,7 @@ export default function Auditar() {
                     onChange={(event) => {
                       setSelectedTenantId(event.target.value);
                       setSelectedCaseId("");
+                      setPendingDraft(null);
                       setLastUpload(null);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
@@ -2320,6 +2462,7 @@ export default function Auditar() {
                     value={selectedCaseId}
                     onChange={(event) => {
                       setSelectedCaseId(event.target.value);
+                      setPendingDraft(null);
                       setLastUpload(null);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
@@ -2414,6 +2557,33 @@ export default function Auditar() {
                   </div>
                 </div>
 
+                {activeCaptureMode === "camera" ? (
+                  <div className="mt-4 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+                    <div className="rounded-[1.2rem] border border-teal-100 bg-white p-4">
+                      <p className="text-sm font-semibold text-slate-950">Guía visual para encuadrar el documento</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        Usa este marco como referencia al tomar la foto. Intenta que se vean las cuatro esquinas, evita sombras intensas y procura que el texto quede derecho.
+                      </p>
+                      <p className="mt-3 text-xs leading-5 text-slate-500">
+                        Es una ayuda visual ligera. Si tu celular no sigue el borde perfecto, igual puedes continuar mientras el documento se vea completo y legible.
+                      </p>
+                    </div>
+                    <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                      <div className="mx-auto aspect-[4/5] max-w-[220px] rounded-[1.7rem] border border-white/80 bg-white/70 p-4 shadow-inner">
+                        <div className="relative h-full rounded-[1.35rem] border-2 border-dashed border-teal-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(240,253,250,0.75))]">
+                          <div className="absolute left-3 top-3 h-8 w-8 rounded-tl-[1rem] border-l-4 border-t-4 border-teal-500" />
+                          <div className="absolute right-3 top-3 h-8 w-8 rounded-tr-[1rem] border-r-4 border-t-4 border-teal-500" />
+                          <div className="absolute bottom-3 left-3 h-8 w-8 rounded-bl-[1rem] border-b-4 border-l-4 border-teal-500" />
+                          <div className="absolute bottom-3 right-3 h-8 w-8 rounded-br-[1rem] border-b-4 border-r-4 border-teal-500" />
+                          <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700 shadow-sm">
+                            Centra aquí tu documento
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <input
                   ref={cameraInputRef}
                   key={`camera-${pickerKey}`}
@@ -2474,14 +2644,22 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                {selectedFile ? (
+                {pendingDraft ? (
+                  <div className="mt-4 rounded-[1.2rem] border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
+                    <p className="font-semibold">Vista previa lista para confirmarse</p>
+                    <p className="mt-1">{pendingDraft.previewAsset.fileName} · {(pendingDraft.previewAsset.sizeBytes / 1024).toFixed(1)} KB</p>
+                    <p className="mt-2 leading-6">
+                      Este archivo ya fue analizado, pero todavía no se guarda en tu expediente hasta que lo confirmes.
+                    </p>
+                  </div>
+                ) : selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
-                    <p className="font-semibold">Archivo listo para enviarse</p>
+                    <p className="font-semibold">Archivo listo para analizarse</p>
                     <p className="mt-1">{selectedFile.name} · {(selectedFile.size / 1024).toFixed(1)} KB</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre antes de enviarlo.
+                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre antes de analizarlo antes del guardado final.
                   </div>
                 )}
               </div>
@@ -2501,10 +2679,176 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p>
-                    Tu documento queda protegido. Lo que ya se vea con claridad aparecerá como dato confirmado; lo demás se mostrará como estimación para revisarlo con calma.
+                    Tu documento queda protegido. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
                   </p>
                 </div>
               </div>
+
+              {pendingDraft ? (
+                <div className="mt-6 rounded-[1.45rem] border border-sky-200 bg-sky-50 p-5 sm:p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">Vista previa antes de guardar</p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                        Ya analizamos tu documento. Revisa primero lo importante antes de integrarlo a tu expediente.
+                      </h3>
+                      <p className="mt-2 text-sm leading-7 text-slate-700">
+                        Aquí todavía nada reemplaza ni estorba lo que ya tenías bien guardado. Si algo se ve incompleto, puedes repetir la foto o elegir otro archivo.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Tipo: {getSimpleDocumentTypeLabel(pendingDraft.classification.documentType)}
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Revisión: {getProcessingProfileLabel(pendingDraft.preliminaryAnalysis.processingProfile)}
+                      </span>
+                      <span className={`rounded-full px-3 py-1 ${previewReadiness.classes}`}>{previewReadiness.label}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
+                      <p className="font-semibold text-slate-950">{pendingDraft.scanAssistance.friendlyHeadline}</p>
+                      <p className="mt-2 text-sm leading-7 text-slate-700">{pendingDraft.scanAssistance.userGuidance}</p>
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                          Confianza visual {pendingDraft.scanAssistance.confidence}%
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                          {getExpectedTypeAlignmentCopy(pendingDraft.scanAssistance.expectedTypeAlignment)}
+                        </span>
+                        {previewInsight ? (
+                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">{previewInsight.label}</span>
+                        ) : null}
+                      </div>
+                      {pendingDraft.scanAssistance.issues.length ? (
+                        <div className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                          {pendingDraft.scanAssistance.issues.map((item) => (
+                            <p key={item}>• {item}</p>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">Lectura estructurada</p>
+                      <h4 className="mt-2 font-semibold text-slate-950">
+                        {previewStructuredExtraction?.headline ?? "Resumen del documento"}
+                      </h4>
+                      <p className="mt-2 text-sm leading-7 text-slate-700">
+                        {previewStructuredExtraction?.summary ?? pendingDraft.preliminaryAnalysis.summary}
+                      </p>
+                      {previewStructuredConfirmedFields.length || previewStructuredEstimatedFields.length ? (
+                        <div className="mt-4 space-y-2">
+                          {[...previewStructuredConfirmedFields, ...previewStructuredEstimatedFields].slice(0, 6).map((field) => (
+                            <div key={`${field.key}-${field.label}`} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{field.label}</p>
+                                <span
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                    field.status === "confirmed" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                                  }`}
+                                >
+                                  {field.status === "confirmed" ? "Confirmado" : "Estimado"}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">{field.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-emerald-950">Lo que ya se ve claro</p>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
+                          {previewConfirmedEntries.length} dato{previewConfirmedEntries.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      {previewConfirmedEntries.length === 0 ? (
+                        <p className="mt-3 text-sm leading-7 text-emerald-900">
+                          Todavía no hay suficiente información clara para mostrar datos confirmados en esta vista previa.
+                        </p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {previewConfirmedEntries.map(([key, value]) => (
+                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">{getAnalysisFieldLabel(key)}</p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-amber-950">Lo que conviene revisar</p>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                          {previewEstimatedEntries.length} dato{previewEstimatedEntries.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-amber-900">
+                        Tómalos como orientación inicial. Si no te convence la lectura o la foto quedó floja, puedes repetir la captura antes de guardar.
+                      </p>
+                      {previewEstimatedEntries.length === 0 ? (
+                        <p className="mt-3 text-sm leading-7 text-amber-900">
+                          Por ahora no hay estimaciones adicionales que revisar en esta vista previa.
+                        </p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {previewEstimatedEntries.map(([key, value]) => (
+                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">{getAnalysisFieldLabel(key)}</p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {previewStructuredExtraction?.missingFields?.length || previewStructuredExtraction?.reviewNotes?.length || previewGuardrails.length ? (
+                    <div className="mt-4 rounded-[1.2rem] border border-white/80 bg-white p-4">
+                      <p className="font-semibold text-slate-950">Qué revisar antes de guardar</p>
+                      <div className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+                        {previewStructuredExtraction?.missingFields?.map((item) => (
+                          <p key={`missing-${item}`}>• Todavía no se alcanzó a leer con claridad: {item}.</p>
+                        ))}
+                        {previewStructuredExtraction?.reviewNotes?.map((item) => (
+                          <p key={`note-${item}`}>• {item}</p>
+                        ))}
+                        {previewGuardrails.map((item) => (
+                          <p key={`guardrail-${item}`}>• {item}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
+                      disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
+                      onClick={() => void handleConfirmDraft()}
+                    >
+                      {confirmDraftMutation.isPending ? "Guardando documento..." : "Confirmar y guardar documento"}
+                      <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      disabled={isProcessingDocument}
+                      onClick={restartPreviewFlow}
+                    >
+                      Subir otra foto o archivo
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
 
               {submitError ? (
                 <div className="mt-6 rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
@@ -2518,8 +2862,12 @@ export default function Auditar() {
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-white hover:bg-teal-700"
-                  disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
+                  disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
                   onClick={() => {
+                    if (pendingDraft) {
+                      void handleConfirmDraft();
+                      return;
+                    }
                     if (!selectedFile) {
                       openPreferredPicker();
                       return;
@@ -2527,21 +2875,26 @@ export default function Auditar() {
                     void handleUpload();
                   }}
                 >
-                  {uploadMutation.isPending
-                    ? "Subiendo y revisando..."
-                    : selectedFile
-                      ? "Subir y revisar documento"
-                      : activeCaptureMode === "camera"
-                        ? "Tomar foto para continuar"
-                        : "Elegir archivo para continuar"}
+                  {isProcessingDocument
+                    ? pendingDraft
+                      ? "Guardando documento..."
+                      : "Analizando documento..."
+                    : pendingDraft
+                      ? "Confirmar y guardar documento"
+                      : selectedFile
+                        ? "Analizar antes de guardar"
+                        : activeCaptureMode === "camera"
+                          ? "Tomar foto para continuar"
+                          : "Elegir archivo para continuar"}
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  onClick={clearSelectedFile}
+                  onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
+                  disabled={isProcessingDocument}
                 >
-                  Limpiar formulario
+                  {pendingDraft ? "Subir otra foto o archivo" : "Limpiar formulario"}
                 </Button>
               </div>
             </div>
@@ -2550,9 +2903,15 @@ export default function Auditar() {
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tu último documento</p>
 
               {!lastUpload ? (
-                <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Sube un documento para ver qué aportó y cuál es el siguiente paso.
-                </div>
+                pendingDraft ? (
+                  <div className="mt-4 rounded-[1.3rem] border border-sky-200 bg-sky-50 p-5 text-sm leading-7 text-sky-950">
+                    Tu documento ya quedó listo para confirmarse. En cuanto lo guardes, aquí verás el resultado final, el siguiente paso sugerido y el estado de seguimiento automático.
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                    Sube un documento para ver qué aportó y cuál es el siguiente paso.
+                  </div>
+                )
               ) : (
                 <div className="mt-4 space-y-4">
                   <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
@@ -3630,8 +3989,12 @@ export default function Auditar() {
         <div className="mx-auto max-w-6xl">
           <Button
             className="h-14 w-full rounded-[1.2rem] bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
-            disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
+            disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
             onClick={() => {
+              if (pendingDraft) {
+                void handleConfirmDraft();
+                return;
+              }
               if (!selectedFile) {
                 setUploadSourceOpen(true);
                 return;
@@ -3639,22 +4002,30 @@ export default function Auditar() {
               void handleUpload();
             }}
           >
-            {uploadMutation.isPending
-              ? "Subiendo y revisando..."
-              : selectedFile
-                ? "Subir y revisar documento"
-                : activeCaptureMode === "camera"
-                  ? "Tomar foto para continuar"
-                  : "Elegir archivo para continuar"}
+            {isProcessingDocument
+              ? pendingDraft
+                ? "Guardando documento..."
+                : "Analizando documento..."
+              : pendingDraft
+                ? "Confirmar y guardar documento"
+                : selectedFile
+                  ? "Analizar antes de guardar"
+                  : activeCaptureMode === "camera"
+                    ? "Tomar foto para continuar"
+                    : "Elegir archivo para continuar"}
           </Button>
 
           <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">
             <p className="min-w-0 flex-1 truncate">
-              {selectedFile ? `Listo para enviar: ${selectedFile.name}` : "Primero elige tu documento desde el celular o tus archivos guardados."}
+              {pendingDraft
+                ? `Vista previa lista: ${pendingDraft.previewAsset.fileName}`
+                : selectedFile
+                  ? `Listo para analizar: ${selectedFile.name}`
+                  : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
-            {selectedFile ? (
-              <button className="font-semibold text-slate-700" onClick={clearSelectedFile} type="button">
-                Limpiar
+            {pendingDraft || selectedFile ? (
+              <button className="font-semibold text-slate-700" onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile} type="button">
+                {pendingDraft ? "Cambiar" : "Limpiar"}
               </button>
             ) : null}
           </div>

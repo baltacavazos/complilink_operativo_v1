@@ -28,6 +28,7 @@ import {
   updateCaseStatus,
   upsertCanonicalContract,
   addDocumentRecord,
+  getAuditarDraftById,
   updateDocumentPostProcessing,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -101,6 +102,303 @@ type ScanAssistAssessment = {
   expectedTypeAlignment: "match" | "possible" | "uncertain" | "mismatch";
   confidence: number;
 };
+
+type StructuredExtractionField = {
+  key: string;
+  label: string;
+  value: string;
+  status: "confirmed" | "estimated";
+  confidence: "high" | "medium" | "low";
+};
+
+type StructuredExtractionResult = {
+  headline: string;
+  summary: string;
+  fields: StructuredExtractionField[];
+  missingFields: string[];
+  reviewNotes: string[];
+};
+
+type DraftPreliminaryAnalysis = ReturnType<typeof buildPreliminaryLaborAnalysis> & {
+  structuredExtraction: StructuredExtractionResult;
+};
+
+type AuditarDraftContractPayload = {
+  draftId: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  storageKey: string;
+  storageUrl: string;
+  textHint: string | null;
+  expectedDocumentType: AuditarTargetType | null;
+  captureMode: AuditarCaptureMode | null;
+  sourceChannel: "manual" | "email" | "api" | "bulk_import";
+  classification: ReturnType<typeof classifyMexicanLaborDocument>;
+  preliminaryAnalysis: DraftPreliminaryAnalysis;
+  scanAssistance: ScanAssistAssessment;
+  createdAt: string;
+};
+
+function readLlmMessageText(messageContent: unknown) {
+  if (typeof messageContent === "string") {
+    return messageContent;
+  }
+
+  if (Array.isArray(messageContent)) {
+    return messageContent
+      .filter((part): part is { type: "text"; text: string } => Boolean(part) && typeof part === "object" && "type" in part && (part as { type?: string }).type === "text")
+      .map((part) => part.text)
+      .join("\n");
+  }
+
+  return "";
+}
+
+function humanizeStructuredFieldLabel(key: string) {
+  const explicitLabels: Record<string, string> = {
+    fileName: "Archivo",
+    mimeType: "Formato",
+    internalDocumentType: "Tipo de documento",
+    normalizedDocType: "Detalle detectado",
+    processingProfile: "Nivel de revisión",
+    structuredExtractionReady: "Puede leer detalles",
+    benefitEstimationReady: "Puede estimar prestaciones",
+    employerRfc: "RFC visible",
+    period: "Periodo visible",
+    apparentAmount: "Monto visible",
+    apparentEffectiveDate: "Fecha visible",
+    workerName: "Nombre visible de la persona trabajadora",
+    employerName: "Nombre visible del patrón o empresa",
+    jobTitle: "Puesto visible",
+  };
+
+  if (explicitLabels[key]) {
+    return explicitLabels[key];
+  }
+
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/^./, (value) => value.toUpperCase());
+}
+
+function buildStructuredExtractionHeadline(documentType: ReturnType<typeof classifyMexicanLaborDocument>["documentType"]) {
+  switch (documentType) {
+    case "contract":
+      return "Esto es lo más importante que parece decir el contrato";
+    case "settlement":
+      return "Esto es lo más importante que parece decir el pago final";
+    case "payroll_receipt":
+    case "cfdi":
+      return "Esto es lo más importante que parece decir el comprobante de pago";
+    case "imss":
+      return "Esto es lo más importante que parece decir el documento de seguridad social";
+    default:
+      return "Esto es lo más importante que alcanzamos a leer en tu documento";
+  }
+}
+
+function buildStructuredExtractionFallback(params: {
+  classification: ReturnType<typeof classifyMexicanLaborDocument>;
+  preliminaryAnalysis: ReturnType<typeof buildPreliminaryLaborAnalysis>;
+}): StructuredExtractionResult {
+  const confirmedFields = Object.entries(params.preliminaryAnalysis.confirmedData)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .map(([key, value]) => ({
+      key,
+      label: humanizeStructuredFieldLabel(key),
+      value: String(value),
+      status: "confirmed" as const,
+      confidence: "high" as const,
+    }));
+
+  const estimatedFields = Object.entries(params.preliminaryAnalysis.estimatedData)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .map(([key, value]) => ({
+      key,
+      label: humanizeStructuredFieldLabel(key),
+      value: String(value),
+      status: "estimated" as const,
+      confidence: "medium" as const,
+    }));
+
+  const fields = [...confirmedFields, ...estimatedFields].slice(0, 10);
+  const normalizedFieldIndex = new Set(fields.map((field) => `${field.key}|${field.label}`.toLowerCase()));
+  const missingFields = params.preliminaryAnalysis.extractionTargets.filter((target) => {
+    const normalizedTarget = target.toLowerCase();
+    return !Array.from(normalizedFieldIndex).some((entry) => entry.includes(normalizedTarget));
+  });
+
+  return {
+    headline: buildStructuredExtractionHeadline(params.classification.documentType),
+    summary: params.preliminaryAnalysis.summary,
+    fields,
+    missingFields: missingFields.slice(0, 6),
+    reviewNotes: params.preliminaryAnalysis.guardrails.slice(0, 3),
+  };
+}
+
+async function analyzeStructuredDocumentPreview(params: {
+  fileUrl: string;
+  mimeType: string;
+  fileName: string;
+  textHint?: string | null;
+  classification: ReturnType<typeof classifyMexicanLaborDocument>;
+  preliminaryAnalysis: ReturnType<typeof buildPreliminaryLaborAnalysis>;
+}): Promise<StructuredExtractionResult> {
+  const fallback = buildStructuredExtractionFallback({
+    classification: params.classification,
+    preliminaryAnalysis: params.preliminaryAnalysis,
+  });
+
+  const supportsImageVision = params.mimeType.startsWith("image/");
+  const supportsPdfVision = params.mimeType === "application/pdf";
+
+  if (!supportsImageVision && !supportsPdfVision) {
+    return fallback;
+  }
+
+  const targetList = params.preliminaryAnalysis.extractionTargets.join(", ");
+
+  try {
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content:
+            "Eres un extractor documental laboral para México. Solo puedes devolver datos visibles o fuertemente inferibles desde el documento mostrado. Nunca inventes, no des asesoría legal y distingue con claridad lo confirmado de lo estimado.",
+        },
+        {
+          role: "user",
+          content: supportsImageVision
+            ? [
+                {
+                  type: "text",
+                  text: `Analiza este documento laboral y responde exclusivamente con el JSON solicitado. Archivo: ${params.fileName}. Tipo detectado: ${params.classification.normalizedDocType}. Objetivos de extracción: ${targetList}. Resumen preliminar: ${params.preliminaryAnalysis.summary}. Pista adicional: ${params.textHint ?? "sin pista adicional"}. Extrae solo lo visible, marca como confirmed lo claramente visible y como estimated lo ambiguo pero plausible.`,
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: params.fileUrl,
+                    detail: "high",
+                  },
+                },
+              ]
+            : [
+                {
+                  type: "text",
+                  text: `Analiza este PDF laboral y responde exclusivamente con el JSON solicitado. Archivo: ${params.fileName}. Tipo detectado: ${params.classification.normalizedDocType}. Objetivos de extracción: ${targetList}. Resumen preliminar: ${params.preliminaryAnalysis.summary}. Pista adicional: ${params.textHint ?? "sin pista adicional"}. Extrae solo lo visible, marca como confirmed lo claramente visible y como estimated lo ambiguo pero plausible.`,
+                },
+                {
+                  type: "file_url",
+                  file_url: {
+                    url: params.fileUrl,
+                    mime_type: "application/pdf",
+                  },
+                },
+              ],
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "auditar_structured_extraction",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              headline: { type: "string" },
+              summary: { type: "string" },
+              fields: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: { type: "string" },
+                    label: { type: "string" },
+                    value: { type: "string" },
+                    status: { type: "string", enum: ["confirmed", "estimated"] },
+                    confidence: { type: "string", enum: ["high", "medium", "low"] },
+                  },
+                  required: ["key", "label", "value", "status", "confidence"],
+                  additionalProperties: false,
+                },
+              },
+              missingFields: {
+                type: "array",
+                items: { type: "string" },
+              },
+              reviewNotes: {
+                type: "array",
+                items: { type: "string" },
+              },
+            },
+            required: ["headline", "summary", "fields", "missingFields", "reviewNotes"],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+
+    const serialized = readLlmMessageText(response.choices[0]?.message.content);
+    if (!serialized) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(serialized) as StructuredExtractionResult;
+
+    return {
+      headline: typeof parsed.headline === "string" && parsed.headline.trim().length > 0 ? parsed.headline.trim() : fallback.headline,
+      summary: typeof parsed.summary === "string" && parsed.summary.trim().length > 0 ? parsed.summary.trim() : fallback.summary,
+      fields: Array.isArray(parsed.fields)
+        ? parsed.fields
+            .filter((field) => field && typeof field.key === "string" && typeof field.label === "string" && typeof field.value === "string")
+            .map((field): StructuredExtractionField => ({
+              key: field.key.trim(),
+              label: field.label.trim(),
+              value: field.value.trim(),
+              status: field.status === "estimated" ? "estimated" : "confirmed",
+              confidence: field.confidence === "high" ? "high" : field.confidence === "low" ? "low" : "medium",
+            }))
+            .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
+            .slice(0, 12)
+        : fallback.fields,
+      missingFields: Array.isArray(parsed.missingFields)
+        ? parsed.missingFields.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 6)
+        : fallback.missingFields,
+      reviewNotes: Array.isArray(parsed.reviewNotes)
+        ? parsed.reviewNotes.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
+        : fallback.reviewNotes,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function buildDraftId() {
+  return buildDocumentId().replace(/^DOC-/, "DRF-");
+}
+
+function buildDraftPreviewPayload(payload: AuditarDraftContractPayload) {
+  return {
+    draftId: payload.draftId,
+    createdAt: payload.createdAt,
+    previewAsset: {
+      fileName: payload.fileName,
+      mimeType: payload.mimeType,
+      sizeBytes: payload.sizeBytes,
+      sha256: payload.sha256,
+      storageUrl: payload.storageUrl,
+      captureMode: payload.captureMode,
+      expectedDocumentType: payload.expectedDocumentType,
+    },
+    classification: payload.classification,
+    preliminaryAnalysis: payload.preliminaryAnalysis,
+    scanAssistance: payload.scanAssistance,
+  };
+}
 
 function buildExpectedDocumentTypeHint(targetType?: AuditarTargetType) {
   switch (targetType) {
@@ -646,6 +944,517 @@ export const appRouter = router({
 
         return updatedCase;
       }),
+    analyzeDocumentDraft: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          fileName: z.string().min(1).max(255),
+          mimeType: z.string().min(3).max(128),
+          base64Content: z.string().min(10),
+          textHint: z.string().max(5000).optional(),
+          expectedDocumentType: auditarTargetTypeSchema.optional(),
+          captureMode: auditarCaptureModeSchema.optional(),
+          sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+
+        const binary = decodeBase64File(input.base64Content);
+        const sha256 = computeSha256(binary);
+        const draftId = buildDraftId();
+        const safeFileName = sanitizeFileName(input.fileName);
+        const storageKey = buildDocumentStorageKey({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          documentId: draftId,
+          fileName: safeFileName,
+        });
+        const uploaded = await storagePut(storageKey, binary, input.mimeType);
+        const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(input.expectedDocumentType);
+        const enrichedTextHint = [input.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
+        const classification = classifyMexicanLaborDocument({
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          textHint: enrichedTextHint || undefined,
+        });
+        const scanAssistance = await analyzeDocumentScanAssist({
+          fileUrl: uploaded.url,
+          mimeType: input.mimeType,
+          fileName: safeFileName,
+          expectedDocumentType: input.expectedDocumentType,
+          textHint: input.textHint,
+        });
+        const basePreliminaryAnalysis = buildPreliminaryLaborAnalysis({
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          textHint: enrichedTextHint || undefined,
+          classification,
+        });
+        const structuredExtraction = await analyzeStructuredDocumentPreview({
+          fileUrl: uploaded.url,
+          mimeType: input.mimeType,
+          fileName: safeFileName,
+          textHint: enrichedTextHint || undefined,
+          classification,
+          preliminaryAnalysis: basePreliminaryAnalysis,
+        });
+        const preliminaryAnalysis: DraftPreliminaryAnalysis = {
+          ...basePreliminaryAnalysis,
+          structuredExtraction,
+        };
+        const createdAt = new Date();
+
+        const draftPayload: AuditarDraftContractPayload = {
+          draftId,
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          sizeBytes: binary.byteLength,
+          sha256,
+          storageKey: uploaded.key,
+          storageUrl: uploaded.url,
+          textHint: input.textHint ?? null,
+          expectedDocumentType: input.expectedDocumentType ?? null,
+          captureMode: input.captureMode ?? null,
+          sourceChannel: input.sourceChannel,
+          classification,
+          preliminaryAnalysis,
+          scanAssistance,
+          createdAt: createdAt.toISOString(),
+        };
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "classification",
+          schemaVersion: "auditar_preview_v1",
+          payload: JSON.stringify(draftPayload),
+          status: "draft",
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: draftId,
+          action: "document.preview_analyzed",
+          afterState: {
+            draftId,
+            fileName: safeFileName,
+            classification,
+            scanAssistance,
+            captureMode: input.captureMode ?? null,
+            expectedDocumentType: input.expectedDocumentType ?? null,
+          },
+        });
+
+        return buildDraftPreviewPayload(draftPayload);
+      }),
+    confirmDocumentDraft: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          draftId: z.string().min(3),
+          visibility: documentVisibilitySchema.default("case_team"),
+          consentStatus: documentConsentStatusSchema.default("pending"),
+          sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+
+        const draft = await getAuditarDraftById({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          draftId: input.draftId,
+        });
+
+        if (!draft) {
+          throw new Error("La vista previa de este documento ya no está disponible. Súbelo otra vez para revisarlo antes de guardar.");
+        }
+
+        const payload = draft.payload as AuditarDraftContractPayload;
+        const classification = payload.classification;
+        const preliminaryAnalysis = payload.preliminaryAnalysis;
+        const scanAssistance = payload.scanAssistance;
+        const processedAt = new Date();
+        const documentId = buildDocumentId();
+
+        const documentRecord = await addDocumentRecord({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          uploadedByUserId: ctx.user.id,
+          originalName: payload.fileName,
+          mimeType: payload.mimeType,
+          sizeBytes: payload.sizeBytes,
+          storageKey: payload.storageKey,
+          storageUrl: payload.storageUrl,
+          sha256: payload.sha256,
+          documentType: classification.documentType,
+          sourceChannel: input.sourceChannel,
+          integrityStatus: "verified",
+          consentStatus: input.consentStatus,
+          visibility: input.visibility,
+          classificationConfidence: classification.classificationConfidence,
+          processedAt,
+        });
+
+        await updateDocumentPostProcessing({
+          documentId,
+          documentType: classification.documentType,
+          classificationConfidence: classification.classificationConfidence,
+          integrityStatus: "verified",
+          processedAt,
+          consentStatus: input.consentStatus,
+        });
+
+        const documentContract = buildCanonicalDocumentContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          documentType: classification.documentType,
+          sha256: payload.sha256,
+          storageKey: payload.storageKey,
+          storageUrl: payload.storageUrl,
+          visibility: input.visibility,
+          consentStatus: input.consentStatus,
+          classificationConfidence: classification.classificationConfidence,
+          originalName: payload.fileName,
+          mimeType: payload.mimeType,
+          sizeBytes: payload.sizeBytes,
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "document_uploaded",
+          title: "Documento confirmado y guardado",
+          description: `${payload.fileName} fue confirmado después de la vista previa y quedó guardado con clasificación inicial ${classification.documentType}.`,
+          metadata: JSON.stringify({
+            document_id: documentId,
+            draft_id: payload.draftId,
+            sha256: payload.sha256,
+            visibility: input.visibility,
+            classification_confidence: classification.classificationConfidence,
+            expected_document_type: payload.expectedDocumentType ?? null,
+            capture_mode: payload.captureMode ?? null,
+            scan_assistance: scanAssistance,
+          }),
+          eventAt: new Date(),
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "document_classified",
+          title: "Documento clasificado",
+          description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
+          metadata: JSON.stringify({
+            draft_id: payload.draftId,
+            reasons: classification.reasons,
+            normalized_doc_type: classification.normalizedDocType,
+            processing_profile: classification.processingProfile,
+            review_recommendation: classification.reviewRecommendation,
+            supports_structured_extraction: classification.supportsStructuredExtraction,
+            supports_benefit_estimation: classification.supportsBenefitEstimation,
+            expected_document_type: payload.expectedDocumentType ?? null,
+          }),
+          eventAt: new Date(),
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Escaneo asistido evaluó la captura",
+          description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
+          metadata: JSON.stringify({
+            document_id: documentId,
+            draft_id: payload.draftId,
+            readiness: scanAssistance.readiness,
+            document_presence: scanAssistance.documentPresence,
+            expected_type_alignment: scanAssistance.expectedTypeAlignment,
+            confidence: scanAssistance.confidence,
+            issues: scanAssistance.issues,
+            capture_mode: payload.captureMode ?? null,
+          }),
+          eventAt: new Date(),
+        });
+
+        if (input.consentStatus === "pending") {
+          await addOperationalAlert({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            severity: "warning",
+            category: "missing_consent",
+            title: "Documento con consentimiento pendiente",
+            description: `${payload.fileName} requiere cierre de consentimiento o base legal explícita.`,
+            status: "open",
+            raisedAt: new Date(),
+          });
+        }
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "document",
+          schemaVersion: "v1",
+          payload: JSON.stringify(documentContract),
+          status: "ready",
+        });
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "classification",
+          schemaVersion: "v1",
+          payload: JSON.stringify({
+            draftId: payload.draftId,
+            documentId,
+            classification,
+            preliminaryAnalysis,
+            confirmedData: preliminaryAnalysis.confirmedData,
+            estimatedData: preliminaryAnalysis.estimatedData,
+            structuredExtraction: preliminaryAnalysis.structuredExtraction,
+            extractionTargets: preliminaryAnalysis.extractionTargets,
+            generatedAt: processedAt.toISOString(),
+            previewCreatedAt: payload.createdAt,
+          }),
+          status: "ready",
+        });
+
+        const caseContract = buildCanonicalCaseContract({
+          tenantId: detail.case.tenantId,
+          caseId: detail.case.caseId,
+          traceId: detail.case.traceId,
+          title: detail.case.title,
+          status: detail.case.status,
+          priority: detail.case.priority,
+          employeeName: detail.case.employeeName,
+          employerEntity: detail.case.employerEntity,
+          summary: detail.case.summary,
+        });
+
+        const sharedEngineEnvelope = buildSharedEngineEnvelope({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          caseContract,
+          documentContracts: [documentContract],
+        });
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "shared_engine",
+          schemaVersion: "v1",
+          payload: JSON.stringify(sharedEngineEnvelope),
+          status: "ready",
+        });
+
+        const heliosOpinionContract = buildHeliosOpinionContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          documentType: classification.documentType,
+          documentName: payload.fileName,
+          jurisdiction: detail.case.jurisdiction,
+          caseTitle: detail.case.title,
+          preliminaryAnalysis: {
+            confirmedData: preliminaryAnalysis.confirmedData,
+            estimatedData: preliminaryAnalysis.estimatedData,
+            guardrails: preliminaryAnalysis.guardrails,
+          },
+        });
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_v1",
+          payload: JSON.stringify(heliosOpinionContract),
+          status: "ready",
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Helios preparó una opinión inicial",
+          description: heliosOpinionContract.opinion.summary,
+          metadata: JSON.stringify({
+            engine: "helios",
+            document_id: documentId,
+            draft_id: payload.draftId,
+            risk_level: heliosOpinionContract.opinion.riskLevel,
+            confidence_score: heliosOpinionContract.opinion.confidenceScore,
+            generated_at: heliosOpinionContract.opinion.generatedAt,
+          }),
+          eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
+        });
+
+        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+          caseContract,
+          documentContract,
+          sharedEngineEnvelope,
+          sourceUserId: ctx.user.id,
+          uploadedAt: documentRecord.createdAt ?? processedAt,
+          docType: classification.normalizedDocType,
+          auditId: detail.case.traceId,
+          caseId: detail.case.caseId,
+          metadata: {
+            employerRfc: preliminaryAnalysis.estimatedData.employerRfc,
+            workerName: preliminaryAnalysis.estimatedData.workerName,
+            period: preliminaryAnalysis.estimatedData.period,
+            descriptiveDocType: classification.normalizedDocType,
+          },
+        });
+
+        if (engineDispatch.status !== "sent") {
+          await addOperationalAlert({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            severity: engineDispatch.status === "failed" ? "critical" : "warning",
+            category: "upload_pending",
+            title: "Entrega al motor inteligente pendiente",
+            description: `La entrega documental al motor inteligente no se completó el ${engineDispatch.dispatchedAt}. Estado: ${engineDispatch.status}. Motivo: ${engineDispatch.reason ?? "sin detalle"}.`,
+            status: "open",
+            raisedAt: new Date(engineDispatch.dispatchedAt),
+          });
+        } else {
+          await addCaseEvent({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "note_added",
+            title: "Documento enviado a CompliLink",
+            description: "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+            metadata: JSON.stringify({
+              document_id: documentId,
+              draft_id: payload.draftId,
+              stage: "complilink_dispatch",
+              dispatch_status: engineDispatch.status,
+              dispatched_at: engineDispatch.dispatchedAt,
+              attempts: engineDispatch.attempts,
+              http_status: engineDispatch.httpStatus,
+            }),
+            eventAt: new Date(engineDispatch.dispatchedAt),
+          });
+        }
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.upload",
+          afterState: documentRecord,
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.preview_confirmed",
+          afterState: {
+            draftId: payload.draftId,
+            previewCreatedAt: payload.createdAt,
+            structuredExtraction: preliminaryAnalysis.structuredExtraction,
+          },
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.engine_dispatch",
+          afterState: engineDispatch,
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.helios_opinion",
+          afterState: heliosOpinionContract,
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.scan_assist",
+          afterState: {
+            scanAssistance,
+            expectedDocumentType: payload.expectedDocumentType ?? null,
+            captureMode: payload.captureMode ?? null,
+          },
+        });
+
+        return {
+          draftId: payload.draftId,
+          document: documentRecord,
+          classification,
+          preliminaryAnalysis,
+          documentContract,
+          sharedEngineEnvelope,
+          heliosOpinion: heliosOpinionContract.opinion,
+          heliosOpinionContract,
+          engineDispatch,
+          scanAssistance,
+        };
+      }),
     uploadDocument: protectedProcedure
       .input(
         z.object({
@@ -694,12 +1503,24 @@ export const appRouter = router({
           expectedDocumentType: input.expectedDocumentType,
           textHint: input.textHint,
         });
-        const preliminaryAnalysis = buildPreliminaryLaborAnalysis({
+        const basePreliminaryAnalysis = buildPreliminaryLaborAnalysis({
           fileName: safeFileName,
           mimeType: input.mimeType,
           textHint: enrichedTextHint || undefined,
           classification,
         });
+        const structuredExtraction = await analyzeStructuredDocumentPreview({
+          fileUrl: uploaded.url,
+          mimeType: input.mimeType,
+          fileName: safeFileName,
+          textHint: enrichedTextHint || undefined,
+          classification,
+          preliminaryAnalysis: basePreliminaryAnalysis,
+        });
+        const preliminaryAnalysis: DraftPreliminaryAnalysis = {
+          ...basePreliminaryAnalysis,
+          structuredExtraction,
+        };
 
         const processedAt = new Date();
 
@@ -846,6 +1667,7 @@ export const appRouter = router({
             preliminaryAnalysis,
             confirmedData: preliminaryAnalysis.confirmedData,
             estimatedData: preliminaryAnalysis.estimatedData,
+            structuredExtraction: preliminaryAnalysis.structuredExtraction,
             extractionTargets: preliminaryAnalysis.extractionTargets,
             generatedAt: processedAt.toISOString(),
           }),

@@ -451,6 +451,47 @@ export async function upsertCanonicalContract(input: InsertCanonicalContract) {
   await db.insert(canonicalContracts).values(input);
 }
 
+export async function getAuditarDraftById(params: { tenantId: string; caseId: string; draftId: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select({
+      id: canonicalContracts.id,
+      traceId: canonicalContracts.traceId,
+      payload: canonicalContracts.payload,
+      createdAt: canonicalContracts.createdAt,
+      updatedAt: canonicalContracts.updatedAt,
+    })
+    .from(canonicalContracts)
+    .where(
+      and(
+        eq(canonicalContracts.tenantId, params.tenantId),
+        eq(canonicalContracts.caseId, params.caseId),
+        eq(canonicalContracts.contractType, "classification"),
+        eq(canonicalContracts.schemaVersion, "auditar_preview_v1"),
+        eq(canonicalContracts.status, "draft"),
+      ),
+    )
+    .orderBy(desc(canonicalContracts.createdAt))
+    .limit(25);
+
+  for (const row of rows) {
+    const parsed = parseJsonSafely<Record<string, unknown>>(row.payload);
+    if (parsed && parsed.draftId === params.draftId) {
+      return {
+        contractId: row.id,
+        traceId: row.traceId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        payload: parsed,
+      };
+    }
+  }
+
+  return null;
+}
+
 export async function createAuditLog(input: Omit<InsertAuditLog, "afterState" | "beforeState"> & { beforeState?: unknown; afterState?: unknown }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
