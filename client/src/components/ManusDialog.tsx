@@ -64,7 +64,7 @@ export function ManusDialog({
             </div>
           ) : (
             <div className="inline-flex max-w-full items-center justify-center rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white/80 px-4 py-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/80">
-              <AuditaPatronLogoWordmark imageClassName="max-w-[220px]" subtitleClassName="text-[0.7rem] tracking-[0.14em]" />
+              <AuditaPatronLogoWordmark surface="adaptive" imageClassName="max-w-[220px]" subtitleClassName="text-[0.7rem] tracking-[0.14em]" />
             </div>
           )}
 

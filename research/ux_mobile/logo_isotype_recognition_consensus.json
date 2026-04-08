@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-04-08T21:23:16.357496+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir la mejor solución multi-modelo para que la lupa del logo gane reconocimiento inmediato en el header."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Incrementar tamaño y contraste de la lupa con ajustes sutiles para máxima legibilidad en móvil.\",\n  \"consensus_score_0_to_10\": 9,\n  \"main_decision\": \"Aumentar tamaño óptico y contraste del isotipo, simplificar entorno y ajustar distribución del header para destacar la lupa sin recargar.\",\n  \"loupe_isotype_strategy\": {\n    \"decision\": \"Aumentar tamaño óptico del isotipo + mejorar contraste con fondo y contorno limpio.\",\n    \"recommended_pattern\": \"Isotipo más grande, con contorno blanco fino para separar del fondo oscuro, manteniendo colores originales y simplificando detalles internos para legibilidad.\",\n    \"changes\": [\n      \"Incrementar tamaño del isotipo lupa en un 20-30% en móvil.\",\n      \"Agregar un contorno blanco fino alrededor de la lupa para mejorar separación del fondo oscuro.\",\n      \"Simplificar detalles internos de la lupa para evitar pérdida de forma en tamaños pequeños.\",\n      \"Reducir ligeramente el espacio entre lupa y wordmark para cohesión sin saturar.\"\n    ],\n    \"why_this_wins\": \"Mejora inmediata y clara de legibilidad sin alterar identidad ni recargar visualmente, respetando colores y forma original.\",\n    \"do_not_do\": [\n      \"No reducir el wordmark para hacer espacio, pues afecta reconocimiento.\",\n      \"No cambiar colores originales de la lupa.\",\n      \"No añadir sombras o efectos pesados que compliquen lectura.\"\n    ]\n  },\n  \"header_balance\": {\n    \"decision\": \"Redistribuir elementos para dar espacio visual a la lupa sin competir con CTA ni menú.\",\n    \"changes\": [\n      \"Mover menú hamburguesa a extremo derecho con espacio suficiente.\",\n      \"Colocar CTA principal con margen adecuado, evitando cercanía con lupa.\",\n      \"Alinear logo (lupa + wordmark) a la izquierda con espacio respirable.\"\n    ],\n    \"target_effect\": \"Que la lupa tenga espacio visual para destacar y ser reconocida sin interferir con navegación ni llamada a acción.\"\n  },\n  \"desktop_consistency\": {\n    \"decision\": \"Mantener proporciones y contraste similares a móvil, adaptando tamaño para equilibrio visual.\",\n    \"changes\": [\n      \"Escalar isotipo lupa proporcionalmente para desktop, manteniendo contorno blanco.\",\n      \"Mantener separación coherente entre lupa y wordmark.\",\n      \"Preservar distribución horizontal con logo a la izquierda, menú y CTA a la derecha.\"\n    ],\n    \"target_effect\": \"Garantizar reconocimiento uniforme de la marca en todos los dispositivos sin perder jerarquía ni claridad.\"\n  },\n  \"changes_now\": [\n    \"Aumentar tamaño óptico de la lupa en móvil y desktop.\",\n    \"Agregar contorno blanco fino alrededor de la lupa.\",\n    \"Simplificar detalles internos de la lupa para legibilidad.\",\n    \"Ajustar separación entre lupa y wordmark para cohesión.\",\n    \"Redistribuir header para dar espacio a la lupa sin competir con CTA y menú.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Incrementar tamaño y contraste de la lupa con ajustes sutiles para máxima legibilidad en móvil.",
+        "consensus_score_0_to_10": 9,
+        "main_decision": "Aumentar tamaño óptico y contraste del isotipo, simplificar entorno y ajustar distribución del header para destacar la lupa sin recargar.",
+        "loupe_isotype_strategy": {
+          "decision": "Aumentar tamaño óptico del isotipo + mejorar contraste con fondo y contorno limpio.",
+          "recommended_pattern": "Isotipo más grande, con contorno blanco fino para separar del fondo oscuro, manteniendo colores originales y simplificando detalles internos para legibilidad.",
+          "changes": [
+            "Incrementar tamaño del isotipo lupa en un 20-30% en móvil.",
+            "Agregar un contorno blanco fino alrededor de la lupa para mejorar separación del fondo oscuro.",
+            "Simplificar detalles internos de la lupa para evitar pérdida de forma en tamaños pequeños.",
+            "Reducir ligeramente el espacio entre lupa y wordmark para cohesión sin saturar."
+          ],
+          "why_this_wins": "Mejora inmediata y clara de legibilidad sin alterar identidad ni recargar visualmente, respetando colores y forma original.",
+          "do_not_do": [
+            "No reducir el wordmark para hacer espacio, pues afecta reconocimiento.",
+            "No cambiar colores originales de la lupa.",
+            "No añadir sombras o efectos pesados que compliquen lectura."
+          ]
+        },
+        "header_balance": {
+          "decision": "Redistribuir elementos para dar espacio visual a la lupa sin competir con CTA ni menú.",
+          "changes": [
+            "Mover menú hamburguesa a extremo derecho con espacio suficiente.",
+            "Colocar CTA principal con margen adecuado, evitando cercanía con lupa.",
+            "Alinear logo (lupa + wordmark) a la izquierda con espacio respirable."
+          ],
+          "target_effect": "Que la lupa tenga espacio visual para destacar y ser reconocida sin interferir con navegación ni llamada a acción."
+        },
+        "desktop_consistency": {
+          "decision": "Mantener proporciones y contraste similares a móvil, adaptando tamaño para equilibrio visual.",
+          "changes": [
+            "Escalar isotipo lupa proporcionalmente para desktop, manteniendo contorno blanco.",
+            "Mantener separación coherente entre lupa y wordmark.",
+            "Preservar distribución horizontal con logo a la izquierda, menú y CTA a la derecha."
+          ],
+          "target_effect": "Garantizar reconocimiento uniforme de la marca en todos los dispositivos sin perder jerarquía ni claridad."
+        },
+        "changes_now": [
+          "Aumentar tamaño óptico de la lupa en móvil y desktop.",
+          "Agregar contorno blanco fino alrededor de la lupa.",
+          "Simplificar detalles internos de la lupa para legibilidad.",
+          "Ajustar separación entre lupa y wordmark para cohesión.",
+          "Redistribuir header para dar espacio a la lupa sin competir con CTA y menú."
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"veredicto_general\": \"Optimización quirúrgica de la lupa para legibilidad móvil y reconocimiento instantáneo.\",\n  \"consensus_score_0_to_10\": 9,\n  \"main_decision\": \"Aislamiento y realce óptico de la lupa para reconocimiento inmediato en móvil, manteniendo la sobriedad.\",\n  \"loupe_isotype_strategy\": {\n    \"decision\": \"Maximizar el impacto visual de la lupa mediante su aislamiento y un contraste óptimo, sin alterar su forma original.\",\n    \"recommended_pattern\": \"Isotipo de lupa en un contenedor minimalista, con tamaño óptico ampliado y contraste elevado.\",\n    \"changes\": [\n      \"Aislamiento del isotipo de la lupa del wordmark principal en el header móvil.\",\n      \"Incremento del tamaño óptico de la lupa para que ocupe un área visual más prominente sin ser desproporcionada.\",\n      \"Asegurar un contraste máximo de la lupa (azul marino/turquesa) contra el fondo del header, ajustando el fondo si es necesario para realzarla.\",\n      \"Eliminación de elementos gráficos superfluos alrededor de la lupa para una lectura más limpia.\"\n    ],\n    \"why_this_wins\": \"Esta estrategia permite que la lupa sea el punto focal inmediato, facilitando su reconocimiento y memorización en pantallas pequeñas sin sobrecargar el header ni traicionar la identidad original.\",\n    \"do_not_do\": [\n      \"Alterar la forma o los colores originales de la lupa (azul marino/turquesa).\",\n      \"Añadir sombras, brillos o efectos 3D que la hagan pesada o difícil de escalar.\",\n      \"Reducir el tamaño de la lupa para acomodar otros elementos.\"\n    ]\n  },\n  \"header_balance\": {\n    \"decision\": \"Reorganización del header para dar prioridad visual a la lupa y un wordmark conciso, optimizando el espacio para la navegación.\",\n    \"changes\": [\n      \"En móvil, posicionar la lupa aislada a la izquierda, seguida de una versión abreviada del wordmark ('Audita' o 'AuditaPatron' sin el tagline).\",\n      \"Ajustar el padding horizontal del header para dar más 'aire' a la lupa y al wordmark.\",\n      \"Consolidar el menú y CTA en un patrón de navegación eficiente (ej. hamburguesa a la derecha) para liberar espacio central.\"\n    ],\n    \"target_effect\": \"Un header ligero, donde la marca sea instantáneamente reconocible y la navegación sea intuitiva, sin competir por atención.\"\n  },\n  \"desktop_consistency\": {\n    \"decision\": \"Mantener la esencia de la lupa reforzada, permitiendo una versión más completa del lockup en desktop si el espacio lo permite, pero siempre con la lupa como ancla visual.\",\n    \"changes\": [\n      \"En desktop, la lupa puede acompañar al wordmark completo 'AUDITAPATRON' y el tagline 'CONOCE TUS DERECHOS', pero la lupa debe mantener su prominencia óptica.\",\n      \"Asegurar que el tamaño relativo de la lupa en desktop sea proporcionalmente similar a su impacto en móvil, aunque el tamaño absoluto sea mayor.\",\n      \"Utilizar la misma paleta de colores y estilo visual para la lupa en ambas versiones para una coherencia total.\"\n    ],\n    \"target_effect\": \"Reconocimiento unificado de la marca en todos los dispositivos, con la lupa como el elemento distintivo principal.\"\n  },\n  \"changes_now\": [\n    \"Aislar el isotipo de la lupa en el header móvil.\",\n    \"Incrementar el tamaño óptico de la lupa en el header móvil.\",\n    \"Implementar una versión abreviada del wordmark ('Audita' o 'AuditaPatron' sin tagline) junto a la lupa en móvil.\",\n    \"Asegurar el contraste óptimo de la lupa contra el fondo del header en todas las resoluciones.\",\n    \"Revisar el padding y espaciado del header para dar más aire a la lupa y wordmark.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Optimización quirúrgica de la lupa para legibilidad móvil y reconocimiento instantáneo.",
+        "consensus_score_0_to_10": 9,
+        "main_decision": "Aislamiento y realce óptico de la lupa para reconocimiento inmediato en móvil, manteniendo la sobriedad.",
+        "loupe_isotype_strategy": {
+          "decision": "Maximizar el impacto visual de la lupa mediante su aislamiento y un contraste óptimo, sin alterar su forma original.",
+          "recommended_pattern": "Isotipo de lupa en un contenedor minimalista, con tamaño óptico ampliado y contraste elevado.",
+          "changes": [
+            "Aislamiento del isotipo de la lupa del wordmark principal en el header móvil.",
+            "Incremento del tamaño óptico de la lupa para que ocupe un área visual más prominente sin ser desproporcionada.",
+            "Asegurar un contraste máximo de la lupa (azul marino/turquesa) contra el fondo del header, ajustando el fondo si es necesario para realzarla.",
+            "Eliminación de elementos gráficos superfluos alrededor de la lupa para una lectura más limpia."
+          ],
+          "why_this_wins": "Esta estrategia permite que la lupa sea el punto focal inmediato, facilitando su reconocimiento y memorización en pantallas pequeñas sin sobrecargar el header ni traicionar la identidad original.",
+          "do_not_do": [
+            "Alterar la forma o los colores originales de la lupa (azul marino/turquesa).",
+            "Añadir sombras, brillos o efectos 3D que la hagan pesada o difícil de escalar.",
+            "Reducir el tamaño de la lupa para acomodar otros elementos."
+          ]
+        },
+        "header_balance": {
+          "decision": "Reorganización del header para dar prioridad visual a la lupa y un wordmark conciso, optimizando el espacio para la navegación.",
+          "changes": [
+            "En móvil, posicionar la lupa aislada a la izquierda, seguida de una versión abreviada del wordmark ('Audita' o 'AuditaPatron' sin el tagline).",
+            "Ajustar el padding horizontal del header para dar más 'aire' a la lupa y al wordmark.",
+            "Consolidar el menú y CTA en un patrón de navegación eficiente (ej. hamburguesa a la derecha) para liberar espacio central."
+          ],
+          "target_effect": "Un header ligero, donde la marca sea instantáneamente reconocible y la navegación sea intuitiva, sin competir por atención."
+        },
+        "desktop_consistency": {
+          "decision": "Mantener la esencia de la lupa reforzada, permitiendo una versión más completa del lockup en desktop si el espacio lo permite, pero siempre con la lupa como ancla visual.",
+          "changes": [
+            "En desktop, la lupa puede acompañar al wordmark completo 'AUDITAPATRON' y el tagline 'CONOCE TUS DERECHOS', pero la lupa debe mantener su prominencia óptica.",
+            "Asegurar que el tamaño relativo de la lupa en desktop sea proporcionalmente similar a su impacto en móvil, aunque el tamaño absoluto sea mayor.",
+            "Utilizar la misma paleta de colores y estilo visual para la lupa en ambas versiones para una coherencia total."
+          ],
+          "target_effect": "Reconocimiento unificado de la marca en todos los dispositivos, con la lupa como el elemento distintivo principal."
+        },
+        "changes_now": [
+          "Aislar el isotipo de la lupa en el header móvil.",
+          "Incrementar el tamaño óptico de la lupa en el header móvil.",
+          "Implementar una versión abreviada del wordmark ('Audita' o 'AuditaPatron' sin tagline) junto a la lupa en móvil.",
+          "Asegurar el contraste óptimo de la lupa contra el fondo del header en todas las resoluciones.",
+          "Revisar el padding y espaciado del header para dar más aire a la lupa y wordmark."
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Ajustes precisos para visibilidad óptima de la lupa sin sobrecargar el header.\",\n  \"consensus_score_0_to_10\": 9,\n  \"main_decision\": \"Reforzar el isotipo de la lupa con simplificación y contraste, manteniendo fidelidad al original.\",\n  \"loupe_isotype_strategy\": {\n    \"decision\": \"Aumentar tamaño óptico y contraste para reconocimiento inmediato.\",\n    \"recommended_pattern\": \"Lupa simplificada en lockup fiel, con mango turquesa destacado.\",\n    \"changes\": [\"Aumentar tamaño de la lupa en 20% para mejor legibilidad en móvil\", \"Mejorar contraste del mango turquesa contra fondo azul marino\", \"Simplificar líneas internas de la lupa para claridad en tamaños pequeños\", \"Separar ligeramente el isotipo del wordmark para evitar fusión visual\"],\n    \"why_this_wins\": \"Gana claridad y memorabilidad sin alterar la esencia de la marca original.\",\n    \"do_not_do\": [\"No agregar sombras o efectos innecesarios\", \"No cambiar colores base de la lupa\", \"No reducir el wordmark por completo en móvil\"]\n  },\n  \"header_balance\": {\n    \"decision\": \"Redistribuir espacio para priorizar lupa sin competir con CTA.\",\n    \"changes\": [\"Posicionar lupa a la izquierda con padding de 8px\", \"Reducir ancho del menú para ceder espacio al logo\", \"Alinear CTA verde al centro-derecha para equilibrio\"],\n    \"target_effect\": \"Jerarquía clara donde la lupa ancla la identidad de inmediato.\"\n  },\n  \"desktop_consistency\": {\n    \"decision\": \"Mantener lockup completo en desktop, adaptado de móvil.\",\n    \"changes\": [\"Escalar lupa proporcionalmente al wordmark en desktop\", \"Usar el mismo patrón de separación y contraste\", \"Asegurar alineación horizontal idéntica en ambos formatos\"],\n    \"target_effect\": \"Reconocimiento uniforme de la marca en móvil y desktop.\"\n  },\n  \"changes_now\": [\"Aumentar tamaño óptico de la lupa en 20%\", \"Mejorar contraste del mango turquesa\", \"Simplificar líneas de la lupa\", \"Separar isotipo del wordmark\", \"Ajustar padding en header móvil\"],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Ajustes precisos para visibilidad óptima de la lupa sin sobrecargar el header.",
+        "consensus_score_0_to_10": 9,
+        "main_decision": "Reforzar el isotipo de la lupa con simplificación y contraste, manteniendo fidelidad al original.",
+        "loupe_isotype_strategy": {
+          "decision": "Aumentar tamaño óptico y contraste para reconocimiento inmediato.",
+          "recommended_pattern": "Lupa simplificada en lockup fiel, con mango turquesa destacado.",
+          "changes": [
+            "Aumentar tamaño de la lupa en 20% para mejor legibilidad en móvil",
+            "Mejorar contraste del mango turquesa contra fondo azul marino",
+            "Simplificar líneas internas de la lupa para claridad en tamaños pequeños",
+            "Separar ligeramente el isotipo del wordmark para evitar fusión visual"
+          ],
+          "why_this_wins": "Gana claridad y memorabilidad sin alterar la esencia de la marca original.",
+          "do_not_do": [
+            "No agregar sombras o efectos innecesarios",
+            "No cambiar colores base de la lupa",
+            "No reducir el wordmark por completo en móvil"
+          ]
+        },
+        "header_balance": {
+          "decision": "Redistribuir espacio para priorizar lupa sin competir con CTA.",
+          "changes": [
+            "Posicionar lupa a la izquierda con padding de 8px",
+            "Reducir ancho del menú para ceder espacio al logo",
+            "Alinear CTA verde al centro-derecha para equilibrio"
+          ],
+          "target_effect": "Jerarquía clara donde la lupa ancla la identidad de inmediato."
+        },
+        "desktop_consistency": {
+          "decision": "Mantener lockup completo en desktop, adaptado de móvil.",
+          "changes": [
+            "Escalar lupa proporcionalmente al wordmark en desktop",
+            "Usar el mismo patrón de separación y contraste",
+            "Asegurar alineación horizontal idéntica en ambos formatos"
+          ],
+          "target_effect": "Reconocimiento uniforme de la marca en móvil y desktop."
+        },
+        "changes_now": [
+          "Aumentar tamaño óptico de la lupa en 20%",
+          "Mejorar contraste del mango turquesa",
+          "Simplificar líneas de la lupa",
+          "Separar isotipo del wordmark",
+          "Ajustar padding en header móvil"
+        ],
+        "confidence_0_to_100": 95
+      }
+    }
+  }
+}

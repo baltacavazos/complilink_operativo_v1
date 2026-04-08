@@ -219,50 +219,37 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
-      <div className="container mx-auto flex h-14 max-w-[1380px] items-center justify-between gap-3 sm:h-[3.6rem] lg:gap-3.5">
-        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-0 flex-1 items-center sm:flex-initial">
+      <div className="container mx-auto flex h-[3.7rem] max-w-[1380px] items-center justify-between gap-2.5 sm:h-16 lg:gap-3.5">
+        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-[220px] shrink-0 items-center pl-2 sm:min-w-[250px] sm:pl-0 lg:min-w-[290px]">
           <AuditaPatronLogoWordmark
-            className="min-w-0 sm:hidden"
-            imageClassName="rounded-full border border-white/14 bg-white/[0.06] px-2.5 py-1.5 shadow-[0_12px_30px_-24px_rgba(255,255,255,0.78)]"
-            subtitleClassName="!text-white text-[0.76rem] tracking-[0.18em]"
+            surface="dark"
+            className="min-w-0"
+            imageClassName="h-6.5 w-auto max-w-none sm:h-7.5 lg:h-8"
           />
-          <span className="hidden min-w-0 items-center gap-2 sm:inline-flex sm:gap-2.5">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 shadow-[0_10px_26px_-18px_rgba(255,255,255,0.75)]">
-              <AuditaPatronLogoIcon className="shrink-0" imageClassName="h-5 w-5 object-contain brightness-0 invert" />
-            </span>
-            <span className="min-w-0 flex-col justify-center sm:flex">
-              <span className="truncate text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white/95 lg:text-[0.84rem]">
-                AUDITAPATRON
-              </span>
-              <span className="truncate text-[0.58rem] font-medium uppercase tracking-[0.22em] text-slate-300/90 lg:text-[0.64rem]">
-                Revisión laboral clara
-              </span>
-            </span>
-          </span>
         </a>
 
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex xl:gap-3">
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-1.5">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="rounded-full px-3 py-1.5 text-[0.88rem] font-medium text-slate-300/80 transition hover:bg-white/8 hover:text-white"
+              className="rounded-full px-2.25 py-1.5 text-[0.84rem] font-medium text-slate-300/80 transition hover:bg-white/8 hover:text-white"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2 lg:flex xl:gap-2.5">
+        <div className="hidden shrink-0 items-center gap-1.5 lg:flex xl:gap-2">
           <Button
             variant="outline"
-            className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3.5 text-[0.92rem] text-white hover:bg-white/10 xl:px-4"
+            className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
             onClick={() => scrollToId("expediente")}
           >
             Ver tu expediente
           </Button>
           <Button
-            className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3.5 text-[0.92rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-4"
+            className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
             onClick={goToAuditFlow}
           >
             Ir a /auditar ahora
@@ -272,14 +259,14 @@ function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <Button
-            className="h-9 rounded-full bg-teal-400 px-3.5 text-[0.92rem] font-semibold text-slate-950 hover:bg-teal-300"
+            className="h-8.5 rounded-full bg-teal-400 px-3 text-[0.88rem] font-semibold text-slate-950 shadow-[0_14px_28px_-20px_rgba(45,212,191,0.75)] hover:bg-teal-300"
             onClick={goToAuditFlow}
           >
             Auditar
           </Button>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/12 bg-white/8 text-white transition hover:bg-white/12"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:bg-white/10"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
@@ -294,10 +281,7 @@ function SiteHeader() {
           <div className="container mx-auto max-w-6xl space-y-3 py-4">
             <div className="rounded-[1.55rem] border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center justify-between gap-3">
-                <AuditaPatronLogoWordmark
-                  imageClassName="max-w-[190px]"
-                  subtitleClassName="text-[0.72rem] tracking-[0.14em]"
-                />
+                <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
                 <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
                   Claro y móvil
                 </span>

@@ -2528,8 +2528,9 @@ export default function Auditar() {
               Volver al inicio
             </a>
             <div className="mt-4 flex items-center justify-center gap-3 sm:justify-start">
-              <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-11 w-11 object-contain" />
+              <AuditaPatronLogoIcon surface="dark" className="sm:hidden" imageClassName="h-11 w-11 object-contain" />
               <AuditaPatronLogoWordmark
+                surface="dark"
                 className="hidden sm:inline-flex"
                 imageClassName="max-w-[260px]"
                 subtitleClassName="text-[0.82rem] tracking-[0.15em] sm:text-[0.92rem]"
