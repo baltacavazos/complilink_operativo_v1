@@ -219,12 +219,13 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="min-w-0 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-2xl border border-sidebar-border/70 object-contain p-1 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.45)]" />
-                    <div className="min-w-0 space-y-1">
-                      <AuditaPatronLogoWordmark imageClassName="h-8 w-auto max-w-[200px] object-contain" />
-                      <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
-                    </div>
+                  <div className="min-w-0 space-y-2">
+                    <AuditaPatronLogoWordmark
+                      className="inline-flex max-w-full"
+                      imageClassName="max-w-[210px]"
+                      subtitleClassName="text-[0.78rem] tracking-[0.14em]"
+                    />
+                    <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
                   </div>
                   <div className="rounded-2xl border border-sidebar-border/70 bg-background/70 px-3 py-3 text-xs leading-5 text-muted-foreground">
                     Estación de mando para expedientes laborales, visibilidad documental y auditoría integral.

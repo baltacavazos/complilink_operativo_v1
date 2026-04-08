@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AuditaPatronLogo, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -222,16 +222,21 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/88">
-        <div className="container mx-auto flex h-18 max-w-[1380px] items-center justify-between gap-3 lg:gap-4">
-
-        <a href="#top" className="flex shrink-0 items-center text-slate-950 dark:text-slate-50">
+      <div className="container mx-auto flex h-16 max-w-[1380px] items-center justify-between gap-3 sm:h-[4.5rem] lg:gap-5">
+        <a
+          href="#top"
+          aria-label="Ir al inicio de AuditaPatron"
+          className="flex min-w-0 shrink-0 items-center text-slate-950 dark:text-slate-50"
+        >
+          <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-9 w-9 object-contain" />
           <AuditaPatronLogoWordmark
-            className="inline-flex px-0.5 py-0.5 sm:px-1 sm:py-1"
-            imageClassName="h-8 w-auto max-w-[220px] object-contain sm:h-9 lg:h-10 xl:h-11"
+            className="hidden min-w-0 items-center py-1 pr-1 sm:inline-flex sm:pr-2"
+            imageClassName="max-w-[228px] lg:max-w-[276px] xl:max-w-[304px]"
+            subtitleClassName="text-[0.8rem] tracking-[0.14em] lg:text-[0.92rem] xl:text-[1rem]"
           />
         </a>
 
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-5 lg:flex xl:gap-6">
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex xl:gap-5">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -243,19 +248,17 @@ function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2 lg:flex xl:gap-3">
+        <div className="hidden shrink-0 items-center gap-2 lg:flex xl:gap-2.5">
           <ThemeToggle compact minimal />
-              <Button
-                variant="outline"
-                className="motion-hover-lift rounded-full border-slate-200 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50 dark:border-white/12 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900 xl:px-5"
-
+          <Button
+            variant="outline"
+            className="motion-hover-lift rounded-full border-slate-200 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50 dark:border-white/12 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900 xl:px-4.5"
             onClick={() => scrollToId("expediente")}
           >
             Ver tu expediente
           </Button>
-              <Button
-                className="motion-hover-lift rounded-full bg-teal-600 px-4 text-sm text-white hover:bg-teal-700 xl:px-5"
-
+          <Button
+            className="motion-hover-lift rounded-full bg-teal-600 px-4 text-sm text-white hover:bg-teal-700 xl:px-4.5"
             onClick={goToAuditFlow}
           >
             Ir a /auditar ahora
@@ -263,19 +266,14 @@ function SiteHeader() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
-          <ThemeToggle compact minimal className="px-2.5" />
-          <Button
-            className="motion-hover-lift h-10 rounded-full bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700 sm:px-4 sm:text-sm"
-            onClick={goToAuditFlow}
-          >
-            Auditar ahora
-          </Button>
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          <ThemeToggle compact minimal className="shrink-0 px-2" />
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-slate-900"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:bg-slate-900"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -283,19 +281,37 @@ function SiteHeader() {
       </div>
 
       {open ? (
-        <div className="border-t border-slate-200 bg-white transition-colors duration-300 dark:border-white/10 dark:bg-slate-950 md:hidden">
-          <div className="container mx-auto max-w-6xl space-y-1 py-4">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
-              >
-                {link.label}
-              </a>
-            ))}
-            <div className="grid gap-3 pt-3">
+        <div className="border-t border-slate-200 bg-white/98 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/98 md:hidden">
+          <div className="container mx-auto max-w-6xl space-y-3 py-4">
+            <div className="rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-slate-900/80">
+              <div className="flex items-center justify-between gap-3">
+                <AuditaPatronLogoWordmark
+                  imageClassName="max-w-[190px]"
+                  subtitleClassName="text-[0.72rem] tracking-[0.14em]"
+                />
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700 dark:bg-teal-500/12 dark:text-teal-200">
+                  Mobile-first
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                Entra rápido a tu expediente o comienza la revisión desde tu celular, con una navegación simple y clara.
+              </p>
+            </div>
+
+            <div className="grid gap-1">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            <div className="grid gap-3 pt-2">
               <ThemeToggle className="w-full justify-center" />
               <Button
                 variant="outline"
@@ -308,7 +324,7 @@ function SiteHeader() {
                 Ver tu expediente
               </Button>
               <Button
-                className="motion-hover-lift h-11 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                className="motion-hover-lift h-12 rounded-full bg-teal-600 text-white hover:bg-teal-700"
                 onClick={() => {
                   setOpen(false);
                   goToAuditFlow();
@@ -330,9 +346,9 @@ function HeroSection() {
   return (
     <section
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.16),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] pb-14 pt-10 sm:pb-16 sm:pt-14"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.16),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] pb-12 pt-8 sm:pb-16 sm:pt-12 lg:pt-14"
     >
-      <div className="container mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
+      <div className="container mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
             className="motion-enter-soft relative inline-flex"
@@ -342,23 +358,26 @@ function HeroSection() {
             <div className="absolute inset-x-10 top-1/2 h-9 -translate-y-1/2 rounded-full bg-sky-100/45 blur-[44px]" />
             <AuditaPatronLogo
               className="relative inline-flex"
-              imageClassName="h-auto w-full max-w-[360px] object-contain sm:max-w-[436px] lg:max-w-[500px]"
+              imageClassName="h-auto w-full max-w-[280px] object-contain sm:max-w-[360px] lg:max-w-[500px]"
             />
           </div>
           <div
-            className="motion-enter-soft mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-2 text-sm font-medium text-teal-800 sm:px-4"
+            className="motion-enter-soft mt-4 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-1.5 text-xs font-semibold text-teal-800 sm:mt-5 sm:px-4 sm:py-2 sm:text-sm"
             style={{ ["--motion-delay" as string]: "40ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            <span className="sm:hidden">Para trabajadores</span>
+            <span className="sm:hidden">Hecho para trabajadores</span>
             <span className="hidden sm:inline">Diseñado para trabajadores, no para expertos</span>
           </div>
 
           <h1
-            className="motion-enter-soft mt-5 text-balance text-3xl font-semibold leading-[1.02] tracking-[-0.05em] text-slate-950 sm:mt-6 sm:text-5xl lg:text-[3.8rem]"
+            className="motion-enter-soft mt-5 text-balance text-[2.3rem] font-semibold leading-[0.98] tracking-[-0.055em] text-slate-950 sm:mt-6 sm:text-5xl lg:text-[3.8rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
-            <span className="block sm:hidden">Derechos claros y protegidos</span>
+            <span className="block sm:hidden">
+              Tus derechos laborales,
+              <span className="mt-1 block text-teal-700">más claros y mejor protegidos.</span>
+            </span>
             <span className="hidden sm:block">
               Tus derechos laborales,
               <span className="block text-teal-700">claros, protegidos y mejor respaldados.</span>
@@ -369,7 +388,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos laborales y activa un ciclo simple: AuditaPatron los resguarda, Helios encuentra contexto útil y tú recibes una guía laboral clara para saber qué revisar con calma, sin palabras difíciles ni pasos confusos.
+            Sube tus documentos laborales y activa un ciclo simple: AuditaPatron los resguarda, organiza el contexto útil y te devuelve una guía laboral clara para saber qué revisar con calma, sin palabras difíciles ni pasos confusos.
           </p>
 
           <div
@@ -388,7 +407,7 @@ function HeroSection() {
               className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
               onClick={() => scrollToId("copiloto")}
             >
-              Ver cómo Helios te ayuda
+              Ver cómo funciona
             </Button>
           </div>
 
@@ -440,14 +459,14 @@ function HeroSection() {
                 />
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-900">
-                Cada documento se guarda en tu expediente digital, Helios suma contexto útil y la plataforma te devuelve una explicación clara para que sepas qué revisar, qué falta confirmar y qué documento podría ayudarte después.
+                Cada documento se guarda en tu expediente digital, la plataforma suma contexto útil y te devuelve una explicación clara para que sepas qué revisar, qué falta confirmar y qué documento podría ayudarte después.
               </p>
             </div>
 
             <div className="mt-5 space-y-3">
               {[
                 "Subes recibo, contrato o CFDI dentro de tu expediente digital.",
-                "Helios detecta contexto, diferencias y dudas por confirmar.",
+                "La plataforma detecta contexto, diferencias y dudas por confirmar.",
                 "Recibes una guía laboral útil y el siguiente paso sugerido.",
               ].map((item, index) => (
                 <div

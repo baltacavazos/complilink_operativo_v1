@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { AuditaPatronLogo, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { trpc } from "@/lib/trpc";
@@ -2430,7 +2430,14 @@ export default function Auditar() {
       <main className="audita-auditar min-h-screen bg-slate-50 px-4 py-12 text-slate-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/80">
-            <AuditaPatronLogoWordmark imageClassName="h-10 w-auto max-w-[240px] object-contain sm:h-12" />
+            <div className="flex items-center gap-3">
+              <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-10 w-10 object-contain" />
+              <AuditaPatronLogoWordmark
+                className="hidden sm:inline-flex"
+                imageClassName="max-w-[240px]"
+                subtitleClassName="text-[0.82rem] tracking-[0.14em] sm:text-[0.92rem]"
+              />
+            </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu espacio de revisión...</h1>
           </div>
         </div>
@@ -2511,14 +2518,22 @@ export default function Auditar() {
       <main className="audita-auditar min-h-screen bg-slate-50 px-4 py-6 pb-28 text-slate-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50 sm:py-8 sm:pb-10">
 
       <div className="container mx-auto max-w-6xl">
-        <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
               Volver al inicio
             </a>
-            <AuditaPatronLogoWordmark className="mt-4 inline-flex" imageClassName="h-10 w-auto max-w-[240px] object-contain sm:h-12 sm:max-w-[280px]" />
+            <div className="mt-4 flex items-center justify-center gap-3 sm:justify-start">
+              <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-11 w-11 object-contain" />
+              <AuditaPatronLogoWordmark
+                className="hidden sm:inline-flex"
+                imageClassName="max-w-[260px]"
+                subtitleClassName="text-[0.82rem] tracking-[0.15em] sm:text-[0.92rem]"
+              />
+            </div>
             <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">Tu revisión</p>
+
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Tus derechos laborales, claros y protegidos
             </h1>

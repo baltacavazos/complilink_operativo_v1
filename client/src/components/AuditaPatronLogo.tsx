@@ -2,6 +2,8 @@ const FULL_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/
 const WORDMARK_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-wordmark-final_059d1915.png";
 const ICON_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-icon-base_034a1256.png";
 
+const APPBAR_LABEL = "AUDITAPATRON";
+
 type AuditaPatronLogoVariant = "full" | "icon" | "compact";
 
 type AuditaPatronLogoProps = {
@@ -41,6 +43,7 @@ export function AuditaPatronLogo({
       <div
         className={joinClasses("inline-flex items-center justify-center", className)}
         data-brand="auditapatron"
+        data-brand-variant="icon"
         data-qr-ready={futureQrReady ? "true" : "false"}
       >
         <img
@@ -54,20 +57,51 @@ export function AuditaPatronLogo({
     );
   }
 
+  if (isCompact) {
+    return (
+      <div
+        className={joinClasses("inline-flex min-w-0 items-center gap-2.5", className)}
+        data-brand="auditapatron"
+        data-brand-variant="appbar"
+        data-qr-ready={futureQrReady ? "true" : "false"}
+      >
+        <div
+          className={joinClasses(
+            "inline-flex min-w-0 items-center gap-2.5 rounded-full px-0.5 py-0.5",
+            imageClassName,
+          )}
+        >
+          <img
+            src={ICON_LOGO_SRC}
+            alt="AuditaPatron"
+            className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8 lg:h-9 lg:w-9"
+            loading="eager"
+            decoding="async"
+          />
+          <span
+            className={joinClasses(
+              "truncate text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#143c86] leading-none dark:text-slate-50 sm:text-[0.8rem] lg:text-[0.92rem]",
+              subtitleClassName,
+            )}
+          >
+            {APPBAR_LABEL}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={joinClasses("min-w-0", isCompact ? "inline-flex items-center" : "inline-flex flex-col justify-center", className)}
+      className={joinClasses("min-w-0 inline-flex flex-col justify-center", className)}
       data-brand="auditapatron"
+      data-brand-variant="full"
       data-qr-ready={futureQrReady ? "true" : "false"}
     >
       <img
         src={source}
         alt={resolvedShowTagline ? "AuditaPatron - Conoce tus derechos" : "AuditaPatron"}
-        className={joinClasses(
-          isCompact ? "h-8 w-auto max-w-[220px] object-contain" : "h-auto w-full max-w-[420px] object-contain",
-          imageClassName,
-          subtitleClassName,
-        )}
+        className={joinClasses("h-auto w-full max-w-[420px] object-contain", imageClassName, subtitleClassName)}
         loading="eager"
         decoding="async"
       />

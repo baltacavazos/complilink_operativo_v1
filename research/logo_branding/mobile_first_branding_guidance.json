@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-04-08T18:11:42.049140+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir la siguiente ronda de pulido mobile-first del branding y navegación para futura app de iOS y Android."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Priorizar la optimización móvil con foco en claridad y presencia de marca sin saturar.\",\n  \"mobile_first_priorities\": [\n    \"Simplificar y estandarizar la cabecera móvil para mejorar navegación y reconocimiento de marca.\",\n    \"Reducir el tamaño del hero manteniendo el logotipo completo con leyenda para equilibrio visual.\",\n    \"Uniformizar estilos y componentes en pantallas internas para coherencia y preparación app nativa.\"\n  ],\n  \"header_mobile\": {\n    \"logo_rule\": \"Usar la variante compacta del wordmark siempre visible, con tamaño adecuado para no robar espacio.\",\n    \"navigation_rule\": \"Mantener navegación oculta tras menú hamburguesa, accesible y con animación suave.\",\n    \"theme_toggle_rule\": \"Colocar el interruptor de modo oscuro en posición fija y accesible, sin interferir con navegación.\"\n  },\n  \"hero_mobile\": {\n    \"logo_presence\": \"Mostrar el logotipo completo con leyenda solo en hero principal, pero con tamaño reducido y espacio controlado.\",\n    \"copy_hierarchy\": \"Priorizar mensaje claro y directo, con tipografía legible y jerarquía visual definida para no competir con logo.\",\n    \"cta_rule\": \"Ubicar CTA principal justo debajo del copy, visible sin scroll, con diseño destacado pero sin saturar.\"\n  },\n  \"internal_surfaces\": {\n    \"must_align\": [\n      \"Listados y resultados de auditorías\",\n      \"Pantallas de perfil y ajustes\",\n      \"Estados vacíos y mensajes de error\"\n    ],\n    \"empty_states_rule\": \"Utilizar ilustraciones simples con paleta de marca y mensajes empáticos, manteniendo espacio y claridad.\",\n    \"app_readiness_rule\": \"Adoptar componentes reutilizables y estilos consistentes que faciliten transición a app nativa.\"\n  },\n  \"social_metadata\": {\n    \"og_image_strategy\": \"Crear imágenes OG con el logotipo completo sobre fondo azul marino, manteniendo leyenda y lupa visible.\",\n    \"title_rule\": \"Incluir nombre AuditaPatron seguido de un descriptor claro y breve del servicio.\",\n    \"description_rule\": \"Redactar descripciones concisas que refuercen confianza y utilidad para trabajadores mexicanos.\"\n  },\n  \"do_not_do\": [\n    \"No aumentar el tamaño del hero que desplace contenido útil en móvil.\",\n    \"No eliminar el modo oscuro ni su persistencia.\",\n    \"No reintroducir elementos visuales complejos como QR en la lupa.\"\n  ],\n  \"implementation_order\": [\n    \"Estandarizar cabecera móvil con logo compacto, navegación y toggle tema.\",\n    \"Reducir y ajustar hero móvil para equilibrio visual y presencia de marca.\",\n    \"Aplicar estilos y componentes uniformes en pantallas internas clave.\",\n    \"Diseñar y actualizar metadatos sociales para coherencia visual y branding.\"\n  ],\n  \"confidence_0_to_100\": 90\n}",
+      "parsed": {
+        "veredicto_general": "Priorizar la optimización móvil con foco en claridad y presencia de marca sin saturar.",
+        "mobile_first_priorities": [
+          "Simplificar y estandarizar la cabecera móvil para mejorar navegación y reconocimiento de marca.",
+          "Reducir el tamaño del hero manteniendo el logotipo completo con leyenda para equilibrio visual.",
+          "Uniformizar estilos y componentes en pantallas internas para coherencia y preparación app nativa."
+        ],
+        "header_mobile": {
+          "logo_rule": "Usar la variante compacta del wordmark siempre visible, con tamaño adecuado para no robar espacio.",
+          "navigation_rule": "Mantener navegación oculta tras menú hamburguesa, accesible y con animación suave.",
+          "theme_toggle_rule": "Colocar el interruptor de modo oscuro en posición fija y accesible, sin interferir con navegación."
+        },
+        "hero_mobile": {
+          "logo_presence": "Mostrar el logotipo completo con leyenda solo en hero principal, pero con tamaño reducido y espacio controlado.",
+          "copy_hierarchy": "Priorizar mensaje claro y directo, con tipografía legible y jerarquía visual definida para no competir con logo.",
+          "cta_rule": "Ubicar CTA principal justo debajo del copy, visible sin scroll, con diseño destacado pero sin saturar."
+        },
+        "internal_surfaces": {
+          "must_align": [
+            "Listados y resultados de auditorías",
+            "Pantallas de perfil y ajustes",
+            "Estados vacíos y mensajes de error"
+          ],
+          "empty_states_rule": "Utilizar ilustraciones simples con paleta de marca y mensajes empáticos, manteniendo espacio y claridad.",
+          "app_readiness_rule": "Adoptar componentes reutilizables y estilos consistentes que faciliten transición a app nativa."
+        },
+        "social_metadata": {
+          "og_image_strategy": "Crear imágenes OG con el logotipo completo sobre fondo azul marino, manteniendo leyenda y lupa visible.",
+          "title_rule": "Incluir nombre AuditaPatron seguido de un descriptor claro y breve del servicio.",
+          "description_rule": "Redactar descripciones concisas que refuercen confianza y utilidad para trabajadores mexicanos."
+        },
+        "do_not_do": [
+          "No aumentar el tamaño del hero que desplace contenido útil en móvil.",
+          "No eliminar el modo oscuro ni su persistencia.",
+          "No reintroducir elementos visuales complejos como QR en la lupa."
+        ],
+        "implementation_order": [
+          "Estandarizar cabecera móvil con logo compacto, navegación y toggle tema.",
+          "Reducir y ajustar hero móvil para equilibrio visual y presencia de marca.",
+          "Aplicar estilos y componentes uniformes en pantallas internas clave.",
+          "Diseñar y actualizar metadatos sociales para coherencia visual y branding."
+        ],
+        "confidence_0_to_100": 90
+      }
+    },
+    "gemini": {
+      "available": false,
+      "error": "HTTPError: 404 Client Error: Not Found for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=AIzaSyBs8nIoJNq0BJxByiA_iPInvnwafnxpq9E"
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Iteración enfocada en consistencia móvil y branding extendido para preparar la transición a app nativa.\",\n  \"mobile_first_priorities\": [\"Optimizar cabecera para touch y accesibilidad\", \"Reforzar hero con jerarquía clara en pantallas pequeñas\", \"Alinear superficies internas para cohesión visual\"],\n  \"header_mobile\": {\n    \"logo_rule\": \"Usar variante compacta del wordmark en azul marino, centrada o izquierda con padding touch-friendly (mínimo 44px).\",\n    \"navigation_rule\": \"Menú hamburguesa colapsable en esquina superior derecha, con items en overlay lateral para no obstruir contenido.\",\n    \"theme_toggle_rule\": \"Interruptor persistente en esquina superior derecha, icono simple (sol/luna) con animación suave, sin afectar accesibilidad.\"\n  },\n  \"hero_mobile\": {\n    \"logo_presence\": \"Colocar logotipo completo con leyenda centrado en la parte superior, escalado al 80% del ancho para visibilidad sin dominar.\",\n    \"copy_hierarchy\": \"Título principal en H1 grande (24-32px), subtítulo en body text mediano, priorizando legibilidad con contraste alto en modo oscuro.\",\n    \"cta_rule\": \"Botón CTA principal fijo en sticky bottom o centrado debajo del copy, con color turquesa para acción inmediata y sin fricción.\"\n  },\n  \"internal_surfaces\": {\n    \"must_align\": [\"Estados vacíos\", \"Pantallas de carga\", \"Tarjetas de contenido\"],\n    \"empty_states_rule\": \"Incorporar wordmark compacto y lupa como ícono central, con copy motivador en turquesa para transmitir confianza.\",\n    \"app_readiness_rule\": \"Usar patrones nativos simulados: gestos swipe en previews, tipografía sistema (SF Pro para iOS, Roboto para Android) y transiciones fluidas.\"\n  },\n  \"social_metadata\": {\n    \"og_image_strategy\": \"Imagen estática con wordmark completo y lupa en fondo blanco/azul marino, formato 1200x630px, sin texto superpuesto para adaptabilidad.\",\n    \"title_rule\": \"Incluir 'AuditaPatron' al inicio, seguido de descriptor corto (ej: 'AuditaPatron - Conoce tus derechos laborales').\",\n    \"description_rule\": \"Texto de 150-160 caracteres enfocando beneficios: 'Descubre tus derechos como trabajador en México con AuditaPatron. Claridad y confianza en tu bolsillo.'\"\n  },\n  \"do_not_do\": [\"No agregar elementos animados pesados que ralenticen carga móvil\", \"No alterar el modo oscuro persistente\", \"No sobrecargar hero con más de dos CTAs\"],\n  \"implementation_order\": [\"1. Ajustar cabecera móvil y probar en dispositivos reales\", \"2. Refinar hero para jerarquía responsive\", \"3. Extender branding a superficies internas clave\", \"4. Configurar metadatos sociales y validar shares\"],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Iteración enfocada en consistencia móvil y branding extendido para preparar la transición a app nativa.",
+        "mobile_first_priorities": [
+          "Optimizar cabecera para touch y accesibilidad",
+          "Reforzar hero con jerarquía clara en pantallas pequeñas",
+          "Alinear superficies internas para cohesión visual"
+        ],
+        "header_mobile": {
+          "logo_rule": "Usar variante compacta del wordmark en azul marino, centrada o izquierda con padding touch-friendly (mínimo 44px).",
+          "navigation_rule": "Menú hamburguesa colapsable en esquina superior derecha, con items en overlay lateral para no obstruir contenido.",
+          "theme_toggle_rule": "Interruptor persistente en esquina superior derecha, icono simple (sol/luna) con animación suave, sin afectar accesibilidad."
+        },
+        "hero_mobile": {
+          "logo_presence": "Colocar logotipo completo con leyenda centrado en la parte superior, escalado al 80% del ancho para visibilidad sin dominar.",
+          "copy_hierarchy": "Título principal en H1 grande (24-32px), subtítulo en body text mediano, priorizando legibilidad con contraste alto en modo oscuro.",
+          "cta_rule": "Botón CTA principal fijo en sticky bottom o centrado debajo del copy, con color turquesa para acción inmediata y sin fricción."
+        },
+        "internal_surfaces": {
+          "must_align": [
+            "Estados vacíos",
+            "Pantallas de carga",
+            "Tarjetas de contenido"
+          ],
+          "empty_states_rule": "Incorporar wordmark compacto y lupa como ícono central, con copy motivador en turquesa para transmitir confianza.",
+          "app_readiness_rule": "Usar patrones nativos simulados: gestos swipe en previews, tipografía sistema (SF Pro para iOS, Roboto para Android) y transiciones fluidas."
+        },
+        "social_metadata": {
+          "og_image_strategy": "Imagen estática con wordmark completo y lupa en fondo blanco/azul marino, formato 1200x630px, sin texto superpuesto para adaptabilidad.",
+          "title_rule": "Incluir 'AuditaPatron' al inicio, seguido de descriptor corto (ej: 'AuditaPatron - Conoce tus derechos laborales').",
+          "description_rule": "Texto de 150-160 caracteres enfocando beneficios: 'Descubre tus derechos como trabajador en México con AuditaPatron. Claridad y confianza en tu bolsillo.'"
+        },
+        "do_not_do": [
+          "No agregar elementos animados pesados que ralenticen carga móvil",
+          "No alterar el modo oscuro persistente",
+          "No sobrecargar hero con más de dos CTAs"
+        ],
+        "implementation_order": [
+          "1. Ajustar cabecera móvil y probar en dispositivos reales",
+          "2. Refinar hero para jerarquía responsive",
+          "3. Extender branding a superficies internas clave",
+          "4. Configurar metadatos sociales y validar shares"
+        ],
+        "confidence_0_to_100": 95
+      }
+    }
+  }
+}

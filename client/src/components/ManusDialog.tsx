@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { AuditaPatronLogoIcon } from "@/components/AuditaPatronLogo";
+import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,19 +52,21 @@ export function ManusDialog({
       open={onOpenChange ? open : internalOpen}
       onOpenChange={handleOpenChange}
     >
-      <DialogContent className="w-[400px] gap-0 rounded-[20px] border border-[rgba(0,0,0,0.08)] bg-[#f8f8f7] p-0 py-5 text-center shadow-[0px_4px_11px_0px_rgba(0,0,0,0.08)] backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-slate-950 dark:shadow-[0_24px_70px_-38px_rgba(2,6,23,0.95)]">
-        <div className="flex flex-col items-center gap-2 p-5 pt-12">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-colors duration-300 dark:border-white/10 dark:bg-slate-900">
-            {logo ? (
+      <DialogContent className="w-[min(400px,calc(100vw-1.5rem))] gap-0 rounded-[20px] border border-[rgba(0,0,0,0.08)] bg-[#f8f8f7] p-0 py-5 text-center shadow-[0px_4px_11px_0px_rgba(0,0,0,0.08)] backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-slate-950 dark:shadow-[0_24px_70px_-38px_rgba(2,6,23,0.95)]">
+        <div className="flex flex-col items-center gap-3 p-5 pt-10 sm:pt-12">
+          {logo ? (
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-colors duration-300 dark:border-white/10 dark:bg-slate-900">
               <img
                 src={logo}
                 alt="AuditaPatron"
                 className="h-10 w-10 rounded-md object-contain p-0.5"
               />
-            ) : (
-              <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-md object-contain p-0.5" />
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="inline-flex max-w-full items-center justify-center rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white/80 px-4 py-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/80">
+              <AuditaPatronLogoWordmark imageClassName="max-w-[220px]" subtitleClassName="text-[0.7rem] tracking-[0.14em]" />
+            </div>
+          )}
 
           {/* Title and subtitle */}
           {title ? (
@@ -72,7 +74,7 @@ export function ManusDialog({
               {title}
             </DialogTitle>
           ) : null}
-          <DialogDescription className="text-sm leading-5 tracking-[-0.154px] text-[#858481] dark:text-slate-400">
+          <DialogDescription className="max-w-[28ch] text-sm leading-5 tracking-[-0.154px] text-[#858481] dark:text-slate-400">
             Inicia sesión con Manus para continuar dentro de AuditaPatron.
           </DialogDescription>
         </div>

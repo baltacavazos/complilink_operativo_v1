@@ -381,3 +381,14 @@
 - [x] Aplicar el logotipo definitivo en header, hero, `/auditar`, diálogos, copiloto y componentes reutilizables donde aparezca marca
 - [x] Generar y aplicar favicon e iconos de marca derivados del logotipo definitivo en las configuraciones visibles del sitio
 - [x] Validar visual y técnicamente la actualización global del logotipo definitivo antes del siguiente checkpoint
+- [x] Pulir la cabecera y el hero de AuditaPatron con criterio mobile-first para futura app de iOS y Android
+- [x] Ajustar la presencia del logotipo y la navegación en móvil sin romper la jerarquía visual actual
+- [x] Extender el sistema de marca a pantallas internas secundarias y estados vacíos con consistencia cross-platform
+- [x] Añadir metadatos sociales Open Graph y Twitter alineados con la identidad visual definitiva
+- [x] Contrastar con ChatGPT, Gemini y Grok una guía breve de branding y navegación mobile-first antes de implementar la siguiente ronda visual
+- [x] Crear una variante header-safe del logotipo definitivo para cabecera y app bar sin perder la identidad visual aprobada
+- [x] Revisar y corregir todos los usos del logo en header, hero, footer, shells internos y pantallas móviles para que no se vea cortado, invadido o mal proporcionado
+- [x] Validar reglas de uso por tamaño y superficie del logotipo pensando en web, iOS y Android
+- [x] Crear una variante header-safe del logotipo para cabecera y app bar, priorizando legibilidad extrema en web móvil y futura app iOS/Android
+- [x] Revisar y corregir todos los usos del logotipo en header, hero, footer, `/auditar`, dashboard, diálogos y shells tipo app para evitar cortes o proporciones incorrectas
+- [x] Validar visual y técnicamente que ninguna variante del logotipo se vea invadida, recortada o ilegible antes del siguiente checkpoint
