@@ -79,7 +79,7 @@ export default function DashboardLayout({
         <div className="container flex min-h-screen items-center justify-center py-10">
           <div className="w-full max-w-xl rounded-3xl border border-border/60 bg-card/95 p-8 shadow-[0_24px_80px_-30px_rgba(10,22,40,0.35)] backdrop-blur">
             <div className="mb-8 flex items-center gap-4">
-              <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-border/70 object-cover shadow-[0_18px_40px_-24px_rgba(15,23,42,0.42)]" />
+              <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-border/70 object-contain p-1 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.42)]" />
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   AuditaPatron · Consola operativa
@@ -220,9 +220,9 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="min-w-0 space-y-2">
                   <div className="flex items-center gap-3">
-                    <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-2xl border border-sidebar-border/70 object-cover shadow-[0_16px_34px_-24px_rgba(15,23,42,0.45)]" />
+                    <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-2xl border border-sidebar-border/70 object-contain p-1 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.45)]" />
                     <div className="min-w-0 space-y-1">
-                      <AuditaPatronLogoWordmark imageClassName="h-8 w-auto max-w-[180px] object-contain" />
+                      <AuditaPatronLogoWordmark imageClassName="h-8 w-auto max-w-[200px] object-contain" />
                       <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
                     </div>
                   </div>

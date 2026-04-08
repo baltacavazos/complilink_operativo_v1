@@ -362,10 +362,10 @@
 - [ ] Generar y validar una nueva propuesta visual del logotipo con QR para presentarla a revisión.
 - [ ] Definir la versión oficial del logo de plataforma de AuditaPatron sin QR funcional para uso interno del producto.
 - [ ] Refinar el componente de marca para que el logo de plataforma se vea limpio, nativo e integrado al UI.
-- [ ] Aplicar y validar la versión oficial del logo de plataforma en header, hero, dashboard y superficies clave.
-- [ ] Conservar la misma base visual del logotipo actual de AuditaPatron para la versión de plataforma.
-- [ ] Eliminar el QR de la lupa en la versión de plataforma sin perder la identidad general del diseño.
-- [ ] Validar que la adaptación mantenga coherencia con header, hero, dashboard y móvil.
+- [x] Aplicar y validar la versión oficial del logo de plataforma en header, hero, dashboard y superficies clave.
+- [x] Conservar la misma base visual del logotipo actual de AuditaPatron para la versión de plataforma.
+- [x] Eliminar el QR de la lupa en la versión de plataforma sin perder la identidad general del diseño.
+- [x] Validar que la adaptación mantenga coherencia con header, hero, dashboard y móvil.
 - [x] Agregar una opción de modo oscuro a la plataforma con interruptor visible y comportamiento consistente.
 - [x] Revisar la base actual de temas para adaptar header, hero, dashboard, `/auditar` y superficies principales a claro/oscuro.
 - [x] Ajustar la versión de plataforma del logotipo para que conserve la misma base visual sin QR y funcione bien sobre fondos claros y oscuros.
@@ -374,3 +374,10 @@
 - [x] Adaptar home, flujo `/auditar`, diálogos y superficies principales para compatibilidad visual completa en claro y oscuro
 - [x] Ajustar el logotipo de plataforma de AuditaPatron para conservar su base visual sin QR y funcionar bien sobre fondos claros y oscuros
 - [x] Validar modo oscuro con pruebas, revisión técnica y verificación visual antes de entregar el avance
+- [x] Mostrar al usuario una vista previa del logotipo original de la lupa sin QR antes de revertir el branding global
+- [x] Revertir header, hero, `/auditar` y componentes reutilizables al logotipo original de la lupa sin QR tras aprobación del usuario
+- [x] Validar visual y técnicamente la reversión completa del logotipo antes del siguiente checkpoint
+- [x] Adoptar el logotipo definitivo original de AuditaPatron como identidad visual principal en toda la plataforma
+- [x] Aplicar el logotipo definitivo en header, hero, `/auditar`, diálogos, copiloto y componentes reutilizables donde aparezca marca
+- [x] Generar y aplicar favicon e iconos de marca derivados del logotipo definitivo en las configuraciones visibles del sitio
+- [x] Validar visual y técnicamente la actualización global del logotipo definitivo antes del siguiente checkpoint

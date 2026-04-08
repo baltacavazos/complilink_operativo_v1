@@ -1,3 +1,7 @@
+const FULL_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-logo-final_01c8b00a.png";
+const WORDMARK_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-wordmark-final_059d1915.png";
+const ICON_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-icon-base_034a1256.png";
+
 type AuditaPatronLogoVariant = "full" | "icon" | "compact";
 
 type AuditaPatronLogoProps = {
@@ -13,32 +17,11 @@ function joinClasses(...values: Array<string | undefined | false>) {
   return values.filter(Boolean).join(" ");
 }
 
-function LogoMagnifier({ className }: { className?: string }) {
-  return (
-    <span className={joinClasses("relative inline-flex h-5 w-5 shrink-0", className)} aria-hidden="true">
-      <span className="absolute inset-[10%] rounded-full border-[0.16em] border-[#143c86] bg-white/95 dark:border-teal-300 dark:bg-slate-950/90" />
-      <span className="absolute right-[2%] top-[56%] h-[34%] w-[16%] rotate-[-42deg] rounded-full bg-[#63d4d3] shadow-[0_6px_14px_-10px_rgba(45,212,191,0.95)] dark:bg-teal-300" />
-      <span className="absolute left-[31%] top-[31%] h-[10%] w-[10%] rounded-full bg-[#143c86]/18 dark:bg-teal-200/20" />
-      <span className="absolute right-[27%] top-[28%] h-[9%] w-[9%] rounded-full bg-[#143c86]/18 dark:bg-teal-200/18" />
-      <span className="absolute left-[34%] bottom-[29%] h-[9%] w-[9%] rounded-full bg-[#143c86]/14 dark:bg-teal-200/16" />
-    </span>
-  );
-}
-
-function AuditaPatronWordmark({ className }: { className?: string }) {
-  return (
-    <span
-      className={joinClasses(
-        "inline-flex items-end gap-[0.14em] font-black uppercase leading-none text-[#143c86] dark:text-slate-50",
-        className,
-      )}
-      aria-label="AuditaPatron"
-    >
-      <span className="tracking-[-0.085em]">AUDITAPATRON</span>
-      <LogoMagnifier className="mb-[0.08em] h-[0.76em] w-[0.76em]" />
-    </span>
-  );
-}
+export const AUDITAPATRON_LOGO_ASSETS = {
+  full: FULL_LOGO_SRC,
+  wordmark: WORDMARK_LOGO_SRC,
+  icon: ICON_LOGO_SRC,
+} as const;
 
 export function AuditaPatronLogo({
   variant = "full",
@@ -48,9 +31,10 @@ export function AuditaPatronLogo({
   showTagline,
   futureQrReady = false,
 }: AuditaPatronLogoProps) {
-  const resolvedShowTagline = showTagline ?? variant === "full";
   const isIcon = variant === "icon";
   const isCompact = variant === "compact";
+  const resolvedShowTagline = showTagline ?? variant === "full";
+  const source = isIcon ? ICON_LOGO_SRC : resolvedShowTagline ? FULL_LOGO_SRC : WORDMARK_LOGO_SRC;
 
   if (isIcon) {
     return (
@@ -59,14 +43,13 @@ export function AuditaPatronLogo({
         data-brand="auditapatron"
         data-qr-ready={futureQrReady ? "true" : "false"}
       >
-        <span
-          className={joinClasses(
-            "inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_12px_32px_-22px_rgba(15,23,42,0.5)] dark:border-white/10 dark:bg-slate-950/85",
-            imageClassName,
-          )}
-        >
-          <LogoMagnifier className="h-7 w-7" />
-        </span>
+        <img
+          src={source}
+          alt="AuditaPatron"
+          className={joinClasses("h-12 w-12 object-contain", imageClassName)}
+          loading="eager"
+          decoding="async"
+        />
       </div>
     );
   }
@@ -77,30 +60,23 @@ export function AuditaPatronLogo({
       data-brand="auditapatron"
       data-qr-ready={futureQrReady ? "true" : "false"}
     >
-      <AuditaPatronWordmark
+      <img
+        src={source}
+        alt={resolvedShowTagline ? "AuditaPatron - Conoce tus derechos" : "AuditaPatron"}
         className={joinClasses(
-          isCompact
-            ? "text-[1.9rem] sm:text-[2.15rem]"
-            : "text-[2.28rem] sm:text-[3rem] lg:text-[3.45rem]",
+          isCompact ? "h-8 w-auto max-w-[220px] object-contain" : "h-auto w-full max-w-[420px] object-contain",
           imageClassName,
+          subtitleClassName,
         )}
+        loading="eager"
+        decoding="async"
       />
-      {resolvedShowTagline ? (
-        <p
-          className={joinClasses(
-            "mt-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#143c86]/78 dark:text-slate-300 sm:text-[0.82rem]",
-            subtitleClassName,
-          )}
-        >
-          CONOCE TUS DERECHOS
-        </p>
-      ) : null}
     </div>
   );
 }
 
 export function AuditaPatronLogoWordmark(props: Omit<AuditaPatronLogoProps, "variant">) {
-  return <AuditaPatronLogo variant="compact" {...props} />;
+  return <AuditaPatronLogo variant="compact" showTagline={false} {...props} />;
 }
 
 export function AuditaPatronLogoIcon(props: Omit<AuditaPatronLogoProps, "variant" | "showTagline">) {

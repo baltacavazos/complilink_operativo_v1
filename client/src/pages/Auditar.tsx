@@ -2430,7 +2430,7 @@ export default function Auditar() {
       <main className="audita-auditar min-h-screen bg-slate-50 px-4 py-12 text-slate-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/80">
-            <AuditaPatronLogoWordmark imageClassName="text-[1.9rem] sm:text-[2.2rem]" />
+            <AuditaPatronLogoWordmark imageClassName="h-10 w-auto max-w-[240px] object-contain sm:h-12" />
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu espacio de revisión...</h1>
           </div>
         </div>
@@ -2452,7 +2452,7 @@ export default function Auditar() {
 
           <div className="mt-5 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/80 dark:shadow-[0_35px_100px_-60px_rgba(2,6,23,0.9)] lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-              <AuditaPatronLogo className="inline-flex" imageClassName="text-[2.28rem] sm:text-[3rem] lg:text-[3.45rem]" />
+              <AuditaPatronLogo className="inline-flex" imageClassName="h-auto w-full max-w-[320px] object-contain sm:max-w-[388px] lg:max-w-[430px]" />
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800 dark:border-teal-400/25 dark:bg-teal-400/12 dark:text-teal-100">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Para trabajadores, sin lenguaje complicado
@@ -2517,7 +2517,7 @@ export default function Auditar() {
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
               Volver al inicio
             </a>
-            <AuditaPatronLogoWordmark className="mt-4 inline-flex" imageClassName="text-[1.92rem] sm:text-[2.28rem]" />
+            <AuditaPatronLogoWordmark className="mt-4 inline-flex" imageClassName="h-10 w-auto max-w-[240px] object-contain sm:h-12 sm:max-w-[280px]" />
             <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">Tu revisión</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Tus derechos laborales, claros y protegidos

@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { AuditaPatronLogo, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -227,7 +227,7 @@ function SiteHeader() {
         <a href="#top" className="flex shrink-0 items-center text-slate-950 dark:text-slate-50">
           <AuditaPatronLogoWordmark
             className="inline-flex px-0.5 py-0.5 sm:px-1 sm:py-1"
-            imageClassName="text-[1.18rem] sm:text-[1.26rem] lg:text-[1.34rem] xl:text-[1.45rem]"
+            imageClassName="h-8 w-auto max-w-[220px] object-contain sm:h-9 lg:h-10 xl:h-11"
           />
         </a>
 
@@ -340,9 +340,9 @@ function HeroSection() {
           >
             <div className="absolute inset-x-4 bottom-1 h-12 rounded-full bg-teal-100/65 blur-3xl" />
             <div className="absolute inset-x-10 top-1/2 h-9 -translate-y-1/2 rounded-full bg-sky-100/45 blur-[44px]" />
-            <AuditaPatronLogoWordmark
+            <AuditaPatronLogo
               className="relative inline-flex"
-              imageClassName="h-auto w-full max-w-[292px] object-contain mix-blend-multiply sm:max-w-[362px] lg:max-w-[408px]"
+              imageClassName="h-auto w-full max-w-[360px] object-contain sm:max-w-[436px] lg:max-w-[500px]"
             />
           </div>
           <div
@@ -1186,7 +1186,7 @@ function SiteFooter() {
     <footer className="bg-white py-8">
       <div className="container flex flex-col gap-6 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-3">
-          <AuditaPatronLogoWordmark imageClassName="h-10 w-auto max-w-[220px] object-contain" />
+          <AuditaPatronLogo imageClassName="h-auto w-full max-w-[260px] object-contain sm:max-w-[300px]" />
           <p className="max-w-md text-sm leading-6 text-slate-500">
             AuditaPatron te ayuda a conocer tus derechos con un expediente digital simple, privado y útil para revisar tu situación con más claridad.
           </p>

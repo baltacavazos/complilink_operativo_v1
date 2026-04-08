@@ -59,10 +59,10 @@ export function ManusDialog({
               <img
                 src={logo}
                 alt="AuditaPatron"
-                className="h-10 w-10 rounded-md object-cover"
+                className="h-10 w-10 rounded-md object-contain p-0.5"
               />
             ) : (
-              <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-md object-cover" />
+              <AuditaPatronLogoIcon imageClassName="h-10 w-10 rounded-md object-contain p-0.5" />
             )}
           </div>
 

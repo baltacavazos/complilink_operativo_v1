@@ -1,167 +1,156 @@
 {
-  "generated_at": "2026-04-08T06:13:00.242694+00:00",
+  "generated_at": "2026-04-08T17:32:38.472821+00:00",
   "context": {
     "project_name": "complilink_operativo_v1",
     "brand": "AuditaPatron",
-    "goal": "Actualizar toda la identidad visual al nuevo logotipo y preparar la futura versión con QR funcional dentro de la lupa.",
-    "logo_image_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-logo-base_fbaa0e36.jpg"
+    "goal": "Aplicar el logotipo definitivo original con lupa sin QR en toda la plataforma y resolver su uso pequeño para favicon."
   },
   "models": {
     "chatgpt": {
       "available": true,
-      "raw": "{\n  \"veredicto_general\": \"Implementar el nuevo logotipo de forma gradual y consistente, priorizando claridad y confianza sin alterar la estructura actual.\",\n  \"stage1_brand_rollout\": {\n    \"primary_recommendation\": \"Reemplazar el logotipo en las superficies clave manteniendo proporciones y espacio para asegurar legibilidad y coherencia visual.\",\n    \"must_replace_surfaces\": [\"header principal\", \"footer\", \"pantalla de inicio (home)\", \"diálogos modales principales\", \"favicon y pestañas del navegador\"],\n    \"design_rules\": [\n      \"El logotipo debe mantener el color azul marino intenso para el wordmark y el turquesa para la lupa sin alteraciones.\",\n      \"En vistas móviles, usar versiones del logotipo con tamaño adaptado para evitar saturación visual.\",\n      \"No usar el logotipo en fondos que comprometan su legibilidad; preferir fondos claros o neutros.\"\n    ],\n    \"risks\": [\n      \"Sobrecargar interfaces pequeñas con logotipos demasiado grandes o detallados.\",\n      \"Perder legibilidad del subtítulo 'CONOCE TUS DERECHOS' en tamaños reducidos.\",\n      \"Aplicar el logotipo en fondos con bajo contraste que afecten la visibilidad.\"\n    ]\n  },\n  \"stage2_qr_logo\": {\n    \"should_prepare_now\": true,\n    \"preparation_strategy\": \"Mantener el patrón QR dentro de la lupa como elemento gráfico estático y vectorial para facilitar su futura conversión a QR funcional sin alterar la marca actual.\",\n    \"technical_constraints\": [\n      \"El patrón QR debe ser SVG o vector para permitir animación o cambio futuro sin pérdida de calidad.\",\n      \"La lupa debe tener espacio suficiente para incorporar el QR funcional sin afectar el tamaño total del logotipo.\",\n      \"Evitar aplicar filtros o efectos que compliquen la lectura o escaneo del QR futuro.\"\n    ],\n    \"do_not_do_yet\": [\n      \"No convertir el patrón QR en un código QR funcional todavía.\",\n      \"No modificar el tamaño o proporción de la lupa para acomodar el QR funcional.\",\n      \"No usar animaciones o interacciones sobre la lupa que puedan distraer o confundir al usuario.\"\n    ]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Claro, cercano y empático, transmitiendo confianza y conocimiento de derechos laborales.\",\n    \"header_rule\": \"El logotipo debe estar siempre visible y legible, sin competir con elementos de navegación o llamadas a la acción.\",\n    \"hero_rule\": \"El mensaje principal debe complementar el logotipo, reforzando el subtítulo 'CONOCE TUS DERECHOS' con un lenguaje sencillo y directo.\"\n  },\n  \"implementation_priority\": [\n    \"Actualizar header y footer con el nuevo logotipo.\",\n    \"Reemplazar logotipo en la pantalla de inicio y diálogos modales principales.\",\n    \"Ajustar tamaños y espacios para vistas móviles.\",\n    \"Preparar assets SVG vectoriales para futura conversión del QR en la lupa.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "raw": "{\n  \"veredicto_general\": \"Implementar el logotipo definitivo de forma gradual priorizando claridad y consistencia, evitando saturar espacios y manteniendo la legibilidad en todos los dispositivos.\",\n  \"global_rollout\": {\n    \"primary_recommendation\": \"Actualizar primero los espacios de mayor visibilidad y frecuencia de uso, aplicando versiones adaptadas del logo según el contexto y tamaño.\",\n    \"must_replace_surfaces\": [\n      \"Header principal de la plataforma (desktop y móvil)\",\n      \"Página de inicio (hero y footer)\",\n      \"Dashboard y paneles principales de usuario\"\n    ],\n    \"design_rules\": [\n      \"Usar el logotipo completo solo en espacios amplios y visibles (header desktop, home).\",\n      \"En espacios reducidos o componentes pequeños, usar solo la lupa con mango turquesa como ícono.\",\n      \"Mantener siempre el contraste suficiente entre el logo y el fondo para asegurar legibilidad.\"\n    ],\n    \"risks\": [\n      \"Saturar la interfaz con el logo completo en espacios pequeños, perdiendo claridad.\",\n      \"Usar versiones del logo sin contraste adecuado que dificulten la lectura.\",\n      \"Aplicar el logo en superficies poco visibles o irrelevantes, generando ruido visual.\"\n    ]\n  },\n  \"favicon_strategy\": {\n    \"recommended_variant\": \"Usar solo la lupa circular vacía con el mango turquesa como favicon para máxima legibilidad en tamaños pequeños.\",\n    \"small_size_rules\": [\n      \"Simplificar el favicon a la lupa sin texto ni elementos adicionales.\",\n      \"Mantener el color turquesa del mango para diferenciación y reconocimiento.\",\n      \"Asegurar que el favicon tenga buen contraste con el fondo del navegador.\"\n    ],\n    \"do_not_do\": [\n      \"No incluir el texto AUDITAPATRON en el favicon por falta de legibilidad.\",\n      \"No usar la lupa sin el mango turquesa para evitar pérdida de identidad.\",\n      \"No agregar detalles o sombras que compliquen la visualización en tamaños pequeños.\"\n    ]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Claro, cercano, confiable y empático, reflejando apoyo a los derechos laborales.\",\n    \"header_rule\": \"El header debe mostrar el logo completo en desktop y solo el ícono de lupa en móvil para optimizar espacio.\",\n    \"hero_rule\": \"En el hero de la página de inicio, usar el logo completo acompañado de la leyenda 'CONOCE TUS DERECHOS' para reforzar el mensaje.\"\n  },\n  \"implementation_priority\": [\n    \"Actualizar header desktop y móvil con versiones adaptadas del logo.\",\n    \"Incorporar logo completo en la página de inicio (hero y footer).\",\n    \"Reemplazar logo en dashboard y paneles principales con versiones adecuadas.\",\n    \"Actualizar favicon con la lupa y mango turquesa simplificada.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
       "parsed": {
-        "veredicto_general": "Implementar el nuevo logotipo de forma gradual y consistente, priorizando claridad y confianza sin alterar la estructura actual.",
-        "stage1_brand_rollout": {
-          "primary_recommendation": "Reemplazar el logotipo en las superficies clave manteniendo proporciones y espacio para asegurar legibilidad y coherencia visual.",
+        "veredicto_general": "Implementar el logotipo definitivo de forma gradual priorizando claridad y consistencia, evitando saturar espacios y manteniendo la legibilidad en todos los dispositivos.",
+        "global_rollout": {
+          "primary_recommendation": "Actualizar primero los espacios de mayor visibilidad y frecuencia de uso, aplicando versiones adaptadas del logo según el contexto y tamaño.",
           "must_replace_surfaces": [
-            "header principal",
-            "footer",
-            "pantalla de inicio (home)",
-            "diálogos modales principales",
-            "favicon y pestañas del navegador"
+            "Header principal de la plataforma (desktop y móvil)",
+            "Página de inicio (hero y footer)",
+            "Dashboard y paneles principales de usuario"
           ],
           "design_rules": [
-            "El logotipo debe mantener el color azul marino intenso para el wordmark y el turquesa para la lupa sin alteraciones.",
-            "En vistas móviles, usar versiones del logotipo con tamaño adaptado para evitar saturación visual.",
-            "No usar el logotipo en fondos que comprometan su legibilidad; preferir fondos claros o neutros."
+            "Usar el logotipo completo solo en espacios amplios y visibles (header desktop, home).",
+            "En espacios reducidos o componentes pequeños, usar solo la lupa con mango turquesa como ícono.",
+            "Mantener siempre el contraste suficiente entre el logo y el fondo para asegurar legibilidad."
           ],
           "risks": [
-            "Sobrecargar interfaces pequeñas con logotipos demasiado grandes o detallados.",
-            "Perder legibilidad del subtítulo 'CONOCE TUS DERECHOS' en tamaños reducidos.",
-            "Aplicar el logotipo en fondos con bajo contraste que afecten la visibilidad."
+            "Saturar la interfaz con el logo completo en espacios pequeños, perdiendo claridad.",
+            "Usar versiones del logo sin contraste adecuado que dificulten la lectura.",
+            "Aplicar el logo en superficies poco visibles o irrelevantes, generando ruido visual."
           ]
         },
-        "stage2_qr_logo": {
-          "should_prepare_now": true,
-          "preparation_strategy": "Mantener el patrón QR dentro de la lupa como elemento gráfico estático y vectorial para facilitar su futura conversión a QR funcional sin alterar la marca actual.",
-          "technical_constraints": [
-            "El patrón QR debe ser SVG o vector para permitir animación o cambio futuro sin pérdida de calidad.",
-            "La lupa debe tener espacio suficiente para incorporar el QR funcional sin afectar el tamaño total del logotipo.",
-            "Evitar aplicar filtros o efectos que compliquen la lectura o escaneo del QR futuro."
+        "favicon_strategy": {
+          "recommended_variant": "Usar solo la lupa circular vacía con el mango turquesa como favicon para máxima legibilidad en tamaños pequeños.",
+          "small_size_rules": [
+            "Simplificar el favicon a la lupa sin texto ni elementos adicionales.",
+            "Mantener el color turquesa del mango para diferenciación y reconocimiento.",
+            "Asegurar que el favicon tenga buen contraste con el fondo del navegador."
           ],
-          "do_not_do_yet": [
-            "No convertir el patrón QR en un código QR funcional todavía.",
-            "No modificar el tamaño o proporción de la lupa para acomodar el QR funcional.",
-            "No usar animaciones o interacciones sobre la lupa que puedan distraer o confundir al usuario."
+          "do_not_do": [
+            "No incluir el texto AUDITAPATRON en el favicon por falta de legibilidad.",
+            "No usar la lupa sin el mango turquesa para evitar pérdida de identidad.",
+            "No agregar detalles o sombras que compliquen la visualización en tamaños pequeños."
           ]
         },
         "ux_copy_guidance": {
-          "brand_tone": "Claro, cercano y empático, transmitiendo confianza y conocimiento de derechos laborales.",
-          "header_rule": "El logotipo debe estar siempre visible y legible, sin competir con elementos de navegación o llamadas a la acción.",
-          "hero_rule": "El mensaje principal debe complementar el logotipo, reforzando el subtítulo 'CONOCE TUS DERECHOS' con un lenguaje sencillo y directo."
+          "brand_tone": "Claro, cercano, confiable y empático, reflejando apoyo a los derechos laborales.",
+          "header_rule": "El header debe mostrar el logo completo en desktop y solo el ícono de lupa en móvil para optimizar espacio.",
+          "hero_rule": "En el hero de la página de inicio, usar el logo completo acompañado de la leyenda 'CONOCE TUS DERECHOS' para reforzar el mensaje."
         },
         "implementation_priority": [
-          "Actualizar header y footer con el nuevo logotipo.",
-          "Reemplazar logotipo en la pantalla de inicio y diálogos modales principales.",
-          "Ajustar tamaños y espacios para vistas móviles.",
-          "Preparar assets SVG vectoriales para futura conversión del QR en la lupa."
+          "Actualizar header desktop y móvil con versiones adaptadas del logo.",
+          "Incorporar logo completo en la página de inicio (hero y footer).",
+          "Reemplazar logo en dashboard y paneles principales con versiones adecuadas.",
+          "Actualizar favicon con la lupa y mango turquesa simplificada."
         ],
         "confidence_0_to_100": 95
       }
     },
     "gemini": {
       "available": true,
-      "raw": "{\n  \"veredicto_general\": \"Rollout incremental y estratégico del nuevo logotipo, priorizando la claridad y la confianza, sentando bases técnicas para el QR futuro sin activarlo aún.\",\n  \"stage1_brand_rollout\": {\n    \"primary_recommendation\": \"Implementar el nuevo logotipo de forma estratégica en puntos clave de contacto de alta visibilidad, priorizando la legibilidad y la consistencia visual, evitando la saturación de la interfaz.\",\n    \"must_replace_surfaces\": [\n      \"Header principal (desktop y mobile)\",\n      \"Favicon y App Icon (para PWA/mobile)\",\n      \"Pantalla de carga (Splash Screen)\",\n      \"Página de inicio (Hero Section)\",\n      \"Footer de la aplicación\",\n      \"Emails transaccionales y de marketing\"\n    ],\n    \"design_rules\": [\n      \"Header: Usar la versión compacta del logo (wordmark + lupa) o solo la lupa como icono en móvil para espacios reducidos. El subtítulo 'CONOCE TUS DERECHOS' es opcional y solo para espacios amplios.\",\n      \"Home (Hero Section): Usar la versión completa del logo (wordmark + subtítulo) para máxima expresión de marca y claridad del mensaje.\",\n      \"Diálogos/Modales: Usar solo el wordmark o la lupa como elemento decorativo sutil si es necesario, sin el subtítulo para evitar sobrecarga.\",\n      \"Vista móvil: Priorizar la lupa como icono principal y el wordmark en el header, ocultando el subtítulo para optimizar el espacio y la legibilidad.\",\n      \"Elementos pequeños (ej. botones de compartir, avatares): Usar solo la lupa, asegurando que sea reconocible y legible.\",\n      \"Color y Espaciado: Mantener la paleta de azul marino y turquesa del logo y asegurar un área de protección adecuada alrededor de todas sus versiones.\"\n    ],\n    \"risks\": [\n      \"Sobrecarga visual si el logo completo se usa indiscriminadamente en espacios pequeños.\",\n      \"Pérdida de legibilidad del subtítulo o la lupa si no se gestionan bien los tamaños mínimos.\",\n      \"Inconsistencia de marca si no se aplican las reglas de uso de forma estricta.\",\n      \"Impacto en el rendimiento de carga si las imágenes del logo no están optimizadas para web.\"\n    ]\n  },\n  \"stage2_qr_logo\": {\n    \"should_prepare_now\": true,\n    \"preparation_strategy\": \"Diseñar el componente del logo de forma modular. La lupa debe ser un subcomponente independiente que pueda recibir un SVG o una imagen de fondo dinámicamente. Esto permitirá reemplazar el patrón actual por un QR funcional en el futuro sin afectar el resto del wordmark. Considerar un 'data-attribute' o prop para indicar el estado 'QR activo' en el componente.\",\n    \"technical_constraints\": [\n      \"Tamaño mínimo de la lupa: El QR funcional necesitará un tamaño mínimo para ser escaneable, lo que podría limitar el tamaño general del logo en ciertos contextos.\",\n      \"Contraste y legibilidad del QR: Asegurar que el QR tenga suficiente contraste con el fondo de la lupa para garantizar su escaneabilidad.\",\n      \"Rendimiento de carga: Un QR SVG complejo podría impactar el rendimiento si no se optimiza adecuadamente.\",\n      \"Gestión de URLs: Necesidad de una URL estable, corta y dedicada para el QR, que pueda ser actualizada fácilmente.\"\n    ],\n    \"do_not_do_yet\": [\n      \"Activar la funcionalidad de escaneo del QR en la lupa.\",\n      \"Comunicar a los usuarios que la lupa es un QR escaneable.\",\n      \"Optimizar el patrón actual de la lupa para que sea escaneable (no es un QR real todavía).\",\n      \"Cambiar el patrón visual de la lupa por un QR funcional.\"\n    ]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Autoritario pero empático, claro, directo, generador de confianza y empoderamiento. Evitar jerga legal compleja. Tono de servicio y apoyo al trabajador mexicano.\",\n    \"header_rule\": \"Conciso, informativo y orientador. Usar lenguaje que refuerce la acción o la navegación, manteniendo la claridad y la confianza. Ej: 'Mis Trámites', 'Ayuda', 'Iniciar Sesión'.\",\n    \"hero_rule\": \"Impactante, claro y que comunique el valor principal de AuditaPatron de inmediato. Usar un lenguaje que invite a la acción y resuelva una necesidad clara del usuario. Ej: 'Conoce tus derechos laborales. ¡Es tu momento!'\"\n  },\n  \"implementation_priority\": [\n    \"Actualizar el componente del logo en el header principal (desktop y mobile) con la nueva identidad.\",\n    \"Reemplazar el favicon y el icono de la aplicación (PWA/mobile) con la lupa del nuevo logo.\",\n    \"Actualizar el logo en la página de inicio (hero section) con la versión completa.\",\n    \"Revisar y actualizar el logo en el footer y pantallas de carga (splash screen).\",\n    \"Implementar las reglas de uso del logo en diálogos, modales y elementos pequeños.\",\n    \"Asegurar que el componente del logo sea modular y esté técnicamente preparado para la futura integración del QR.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"veredicto_general\": \"Implementación estratégica del logo para maximizar confianza y claridad, priorizando la experiencia móvil y la legibilidad sin sobrecargar la interfaz.\",\n  \"global_rollout\": {\n    \"primary_recommendation\": \"Utilizar el wordmark completo 'AUDITAPATRON' en puntos de entrada y branding principal, y la lupa como icono distintivo en interfaces internas y móviles.\",\n    \"must_replace_surfaces\": [\n      \"Página de Login/Registro\",\n      \"Header principal (desktop y mobile)\",\n      \"Footer global\",\n      \"Pantallas de carga/splash\"\n    ],\n    \"design_rules\": [\n      \"Header (Desktop): Wordmark completo 'AUDITAPATRON' con lupa, en azul marino intenso.\",\n      \"Header (Mobile): Lupa como icono principal (azul marino con mango turquesa), el wordmark solo si el espacio lo permite sin sacrificar UX.\",\n      \"Home/Landing: Wordmark completo prominente en la sección hero, reforzando la marca.\",\n      \"Páginas internas (/auditar, dashboard): Lupa como icono de marca sutil en el header o sidebar, sin el wordmark para mantener el foco en el contenido.\",\n      \"Diálogos/Modales: Evitar el logo; usar solo la lupa si es esencial para la marca de la acción y no distrae.\",\n      \"Componentes pequeños (ej. botones de menú, avatares): Usar solo la lupa (azul marino con mango turquesa).\",\n      \"Mantener un espacio de seguridad claro alrededor del logo y la lupa para asegurar su legibilidad y prominencia.\"\n    ],\n    \"risks\": [\n      \"Sobrecarga visual por uso excesivo del wordmark completo en cada sección.\",\n      \"Pérdida de legibilidad del wordmark o la lupa en tamaños muy pequeños o resoluciones bajas.\",\n      \"Inconsistencia en la aplicación del logo/icono a través de diferentes componentes y vistas.\"\n    ]\n  },\n  \"favicon_strategy\": {\n    \"recommended_variant\": \"La lupa circular vacía (azul marino) con el mango turquesa, sin el wordmark ni el eslogan.\",\n    \"small_size_rules\": [\n      \"Usar solo la lupa, asegurando que el azul marino y el turquesa sean distinguibles.\",\n      \"Optimizar para tamaños de 16x16px, 32x32px y 48x48px, manteniendo la claridad y el contraste.\",\n      \"La lupa debe ser el elemento central y único, sin detalles adicionales.\"\n    ],\n    \"do_not_do\": [\n      \"No intentar incluir el wordmark 'AUDITAPATRON' en el favicon o iconos pequeños.\",\n      \"No añadir el eslogan 'CONOCE TUS DERECHOS' en ningún icono derivado del logo.\",\n      \"No distorsionar la proporción de la lupa ni cambiar sus colores primarios (azul marino y turquesa).\"\n    ]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Claro, directo, empático, informativo y que inspire confianza y empoderamiento al usuario.\",\n    \"header_rule\": \"Titulares concisos que comuniquen el valor o la acción principal de la sección, reforzando la claridad y la confianza.\",\n    \"hero_rule\": \"Mensaje principal que resalte el beneficio clave de AuditaPatron (conocer y defender derechos) y una llamada a la acción clara y directa.\"\n  },\n  \"implementation_priority\": [\n    \"Actualizar logo en componentes globales (Header, Footer, Login/Registro).\",\n    \"Implementar favicon y variantes de icono de lupa para uso en navegación y componentes pequeños.\",\n    \"Aplicar logo completo en Home/Landing y pantallas principales de alto impacto.\",\n    \"Revisar y ajustar el uso del icono de lupa en componentes internos, diálogos y vistas móviles.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
       "parsed": {
-        "veredicto_general": "Rollout incremental y estratégico del nuevo logotipo, priorizando la claridad y la confianza, sentando bases técnicas para el QR futuro sin activarlo aún.",
-        "stage1_brand_rollout": {
-          "primary_recommendation": "Implementar el nuevo logotipo de forma estratégica en puntos clave de contacto de alta visibilidad, priorizando la legibilidad y la consistencia visual, evitando la saturación de la interfaz.",
+        "veredicto_general": "Implementación estratégica del logo para maximizar confianza y claridad, priorizando la experiencia móvil y la legibilidad sin sobrecargar la interfaz.",
+        "global_rollout": {
+          "primary_recommendation": "Utilizar el wordmark completo 'AUDITAPATRON' en puntos de entrada y branding principal, y la lupa como icono distintivo en interfaces internas y móviles.",
           "must_replace_surfaces": [
+            "Página de Login/Registro",
             "Header principal (desktop y mobile)",
-            "Favicon y App Icon (para PWA/mobile)",
-            "Pantalla de carga (Splash Screen)",
-            "Página de inicio (Hero Section)",
-            "Footer de la aplicación",
-            "Emails transaccionales y de marketing"
+            "Footer global",
+            "Pantallas de carga/splash"
           ],
           "design_rules": [
-            "Header: Usar la versión compacta del logo (wordmark + lupa) o solo la lupa como icono en móvil para espacios reducidos. El subtítulo 'CONOCE TUS DERECHOS' es opcional y solo para espacios amplios.",
-            "Home (Hero Section): Usar la versión completa del logo (wordmark + subtítulo) para máxima expresión de marca y claridad del mensaje.",
-            "Diálogos/Modales: Usar solo el wordmark o la lupa como elemento decorativo sutil si es necesario, sin el subtítulo para evitar sobrecarga.",
-            "Vista móvil: Priorizar la lupa como icono principal y el wordmark en el header, ocultando el subtítulo para optimizar el espacio y la legibilidad.",
-            "Elementos pequeños (ej. botones de compartir, avatares): Usar solo la lupa, asegurando que sea reconocible y legible.",
-            "Color y Espaciado: Mantener la paleta de azul marino y turquesa del logo y asegurar un área de protección adecuada alrededor de todas sus versiones."
+            "Header (Desktop): Wordmark completo 'AUDITAPATRON' con lupa, en azul marino intenso.",
+            "Header (Mobile): Lupa como icono principal (azul marino con mango turquesa), el wordmark solo si el espacio lo permite sin sacrificar UX.",
+            "Home/Landing: Wordmark completo prominente en la sección hero, reforzando la marca.",
+            "Páginas internas (/auditar, dashboard): Lupa como icono de marca sutil en el header o sidebar, sin el wordmark para mantener el foco en el contenido.",
+            "Diálogos/Modales: Evitar el logo; usar solo la lupa si es esencial para la marca de la acción y no distrae.",
+            "Componentes pequeños (ej. botones de menú, avatares): Usar solo la lupa (azul marino con mango turquesa).",
+            "Mantener un espacio de seguridad claro alrededor del logo y la lupa para asegurar su legibilidad y prominencia."
           ],
           "risks": [
-            "Sobrecarga visual si el logo completo se usa indiscriminadamente en espacios pequeños.",
-            "Pérdida de legibilidad del subtítulo o la lupa si no se gestionan bien los tamaños mínimos.",
-            "Inconsistencia de marca si no se aplican las reglas de uso de forma estricta.",
-            "Impacto en el rendimiento de carga si las imágenes del logo no están optimizadas para web."
+            "Sobrecarga visual por uso excesivo del wordmark completo en cada sección.",
+            "Pérdida de legibilidad del wordmark o la lupa en tamaños muy pequeños o resoluciones bajas.",
+            "Inconsistencia en la aplicación del logo/icono a través de diferentes componentes y vistas."
           ]
         },
-        "stage2_qr_logo": {
-          "should_prepare_now": true,
-          "preparation_strategy": "Diseñar el componente del logo de forma modular. La lupa debe ser un subcomponente independiente que pueda recibir un SVG o una imagen de fondo dinámicamente. Esto permitirá reemplazar el patrón actual por un QR funcional en el futuro sin afectar el resto del wordmark. Considerar un 'data-attribute' o prop para indicar el estado 'QR activo' en el componente.",
-          "technical_constraints": [
-            "Tamaño mínimo de la lupa: El QR funcional necesitará un tamaño mínimo para ser escaneable, lo que podría limitar el tamaño general del logo en ciertos contextos.",
-            "Contraste y legibilidad del QR: Asegurar que el QR tenga suficiente contraste con el fondo de la lupa para garantizar su escaneabilidad.",
-            "Rendimiento de carga: Un QR SVG complejo podría impactar el rendimiento si no se optimiza adecuadamente.",
-            "Gestión de URLs: Necesidad de una URL estable, corta y dedicada para el QR, que pueda ser actualizada fácilmente."
+        "favicon_strategy": {
+          "recommended_variant": "La lupa circular vacía (azul marino) con el mango turquesa, sin el wordmark ni el eslogan.",
+          "small_size_rules": [
+            "Usar solo la lupa, asegurando que el azul marino y el turquesa sean distinguibles.",
+            "Optimizar para tamaños de 16x16px, 32x32px y 48x48px, manteniendo la claridad y el contraste.",
+            "La lupa debe ser el elemento central y único, sin detalles adicionales."
           ],
-          "do_not_do_yet": [
-            "Activar la funcionalidad de escaneo del QR en la lupa.",
-            "Comunicar a los usuarios que la lupa es un QR escaneable.",
-            "Optimizar el patrón actual de la lupa para que sea escaneable (no es un QR real todavía).",
-            "Cambiar el patrón visual de la lupa por un QR funcional."
+          "do_not_do": [
+            "No intentar incluir el wordmark 'AUDITAPATRON' en el favicon o iconos pequeños.",
+            "No añadir el eslogan 'CONOCE TUS DERECHOS' en ningún icono derivado del logo.",
+            "No distorsionar la proporción de la lupa ni cambiar sus colores primarios (azul marino y turquesa)."
           ]
         },
         "ux_copy_guidance": {
-          "brand_tone": "Autoritario pero empático, claro, directo, generador de confianza y empoderamiento. Evitar jerga legal compleja. Tono de servicio y apoyo al trabajador mexicano.",
-          "header_rule": "Conciso, informativo y orientador. Usar lenguaje que refuerce la acción o la navegación, manteniendo la claridad y la confianza. Ej: 'Mis Trámites', 'Ayuda', 'Iniciar Sesión'.",
-          "hero_rule": "Impactante, claro y que comunique el valor principal de AuditaPatron de inmediato. Usar un lenguaje que invite a la acción y resuelva una necesidad clara del usuario. Ej: 'Conoce tus derechos laborales. ¡Es tu momento!'"
+          "brand_tone": "Claro, directo, empático, informativo y que inspire confianza y empoderamiento al usuario.",
+          "header_rule": "Titulares concisos que comuniquen el valor o la acción principal de la sección, reforzando la claridad y la confianza.",
+          "hero_rule": "Mensaje principal que resalte el beneficio clave de AuditaPatron (conocer y defender derechos) y una llamada a la acción clara y directa."
         },
         "implementation_priority": [
-          "Actualizar el componente del logo en el header principal (desktop y mobile) con la nueva identidad.",
-          "Reemplazar el favicon y el icono de la aplicación (PWA/mobile) con la lupa del nuevo logo.",
-          "Actualizar el logo en la página de inicio (hero section) con la versión completa.",
-          "Revisar y actualizar el logo en el footer y pantallas de carga (splash screen).",
-          "Implementar las reglas de uso del logo en diálogos, modales y elementos pequeños.",
-          "Asegurar que el componente del logo sea modular y esté técnicamente preparado para la futura integración del QR."
+          "Actualizar logo en componentes globales (Header, Footer, Login/Registro).",
+          "Implementar favicon y variantes de icono de lupa para uso en navegación y componentes pequeños.",
+          "Aplicar logo completo en Home/Landing y pantallas principales de alto impacto.",
+          "Revisar y ajustar el uso del icono de lupa en componentes internos, diálogos y vistas móviles."
         ],
         "confidence_0_to_100": 95
       }
     },
     "grok": {
       "available": true,
-      "raw": "{\n  \"veredicto_general\": \"Implementación incremental viable, enfocada en mobile-first para mantener confianza y claridad.\",\n  \"stage1_brand_rollout\": {\n    \"primary_recommendation\": \"Reemplazar logotipo actual por el nuevo en superficies clave, usando SVG para escalabilidad y animaciones sutiles en carga.\",\n    \"must_replace_surfaces\": [\"Header principal\", \"Página de inicio (hero)\", \"Icono de app móvil y favicons\", \"Diálogos de onboarding\"],\n    \"design_rules\": [\"Usar wordmark completo en header y home; versión abreviada con lupa en diálogos y móvil; mantener azul marino como color primario y turquesa solo en lupa; asegurar contraste mínimo 4.5:1 para legibilidad en elementos pequeños.\"],\n    \"risks\": [\"Sobrecarga visual en móvil si no se optimiza tamaño; inconsistencia si no se actualiza en paralelo frontend y backend; pérdida de familiaridad si no se transiciona gradualmente.\"]\n  },\n  \"stage2_qr_logo\": {\n    \"should_prepare_now\": true,\n    \"preparation_strategy\": \"Implementar la lupa como componente SVG modular con placeholder para QR, usando clases CSS para futuras interacciones sin afectar render actual.\",\n    \"technical_constraints\": [\"Mantener patrón QR como imagen estática no escaneable; asegurar que el SVG sea responsive sin distorsión en zoom móvil; integrar con React para swaps dinámicos en futuras builds.\"],\n    \"do_not_do_yet\": [\"No generar QR funcional para evitar redirecciones prematuras; no alterar el patrón visual actual para preservar legibilidad; no agregar scripts de escaneo que rompan compatibilidad.\"]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Confianza empoderadora, clara y accesible, con lenguaje directo para trabajadores mexicanos.\",\n    \"header_rule\": \"Incluir wordmark completo con subtítulo en header fijo, reduciendo a icono lupa en scroll móvil.\",\n    \"hero_rule\": \"Posicionar logotipo centrado en hero con subtítulo visible, acompañado de CTA simple como 'Empieza tu auditoría'.\"\n  },\n  \"implementation_priority\": [\"Actualizar assets SVG en repositorio y deploy inicial en header/home\", \"Optimizar para mobile y probar legibilidad en dispositivos reales\", \"Reemplazar en diálogos y elementos secundarios\", \"Documentar componentes para Stage 2 y QA general\"],\n  \"confidence_0_to_100\": 95\n}",
+      "raw": "{\n  \"veredicto_general\": \"Implementación sólida y escalable del logotipo, priorizando claridad y confianza en entornos móviles.\",\n  \"global_rollout\": {\n    \"primary_recommendation\": \"Aplicar el logotipo de forma consistente en superficies clave, usando versiones simplificadas para espacios reducidos y escalando gradualmente en la plataforma React.\",\n    \"must_replace_surfaces\": [\"Header principal\", \"Página de inicio (hero)\", \"Dashboard de usuario\", \"Favicon y meta icons\"],\n    \"design_rules\": [\"Usar logotipo completo en headers y heroes para impacto visual; versión wordmark solo en diálogos y componentes pequeños; mantener proporciones 1:1 en móvil con padding de 16px; asegurar contraste alto con fondos blancos o grises claros.\"],\n    \"risks\": [\"Sobrecarga visual en vistas móviles si se usa el logotipo completo en todos los componentes; pérdida de legibilidad en tamaños <32px; inconsistencia si no se actualiza el CSS global de Tailwind para colores azul marino (#001F3F) y turquesa (#40E0D0).\"]\n  },\n  \"favicon_strategy\": {\n    \"recommended_variant\": \"Versión simplificada: solo la lupa circular vacía en azul marino con mango turquesa, sin texto, en formato SVG para escalabilidad.\",\n    \"small_size_rules\": [\"Generar variantes en 16x16, 32x32 y 48x48 px; priorizar la lupa como ícono central para reconocimiento inmediato; usar PNG para compatibilidad en navegadores móviles.\"],\n    \"do_not_do\": [\"No incluir texto 'AUDITAPATRON' en favicon por legibilidad en tamaños pequeños; no usar colores degradados que pierdan definición; no ignorar testing en dispositivos Android/iOS para distorsión.\"]\n  },\n  \"ux_copy_guidance\": {\n    \"brand_tone\": \"Confidente, accesible y empoderador, enfocado en derechos laborales con lenguaje claro y directo para trabajadores mexicanos.\",\n    \"header_rule\": \"Integrar logotipo a la izquierda del header con tagline 'CONOCE TUS DERECHOS' debajo en fuente sans-serif 12px, ocultando tagline en móvil <768px.\",\n    \"hero_rule\": \"Colocar logotipo centrado en hero de home con overlay sutil de turquesa; acompañar con copy como 'Audita tu patrón y defiende tus derechos' en negrita azul marino.\"\n  },\n  \"implementation_priority\": [\"1. Actualizar favicon y meta icons en public/index.html.\", \"2. Reemplazar logo en header y hero de home con componente React reutilizable.\", \"3. Aplicar en dashboard y /auditar, probando en móvil con Tailwind responsive.\", \"4. Extender a diálogos, copiloto y componentes pequeños, validando legibilidad.\"],\n  \"confidence_0_to_100\": 95\n}",
       "parsed": {
-        "veredicto_general": "Implementación incremental viable, enfocada en mobile-first para mantener confianza y claridad.",
-        "stage1_brand_rollout": {
-          "primary_recommendation": "Reemplazar logotipo actual por el nuevo en superficies clave, usando SVG para escalabilidad y animaciones sutiles en carga.",
+        "veredicto_general": "Implementación sólida y escalable del logotipo, priorizando claridad y confianza en entornos móviles.",
+        "global_rollout": {
+          "primary_recommendation": "Aplicar el logotipo de forma consistente en superficies clave, usando versiones simplificadas para espacios reducidos y escalando gradualmente en la plataforma React.",
           "must_replace_surfaces": [
             "Header principal",
             "Página de inicio (hero)",
-            "Icono de app móvil y favicons",
-            "Diálogos de onboarding"
+            "Dashboard de usuario",
+            "Favicon y meta icons"
           ],
           "design_rules": [
-            "Usar wordmark completo en header y home; versión abreviada con lupa en diálogos y móvil; mantener azul marino como color primario y turquesa solo en lupa; asegurar contraste mínimo 4.5:1 para legibilidad en elementos pequeños."
+            "Usar logotipo completo en headers y heroes para impacto visual; versión wordmark solo en diálogos y componentes pequeños; mantener proporciones 1:1 en móvil con padding de 16px; asegurar contraste alto con fondos blancos o grises claros."
           ],
           "risks": [
-            "Sobrecarga visual en móvil si no se optimiza tamaño; inconsistencia si no se actualiza en paralelo frontend y backend; pérdida de familiaridad si no se transiciona gradualmente."
+            "Sobrecarga visual en vistas móviles si se usa el logotipo completo en todos los componentes; pérdida de legibilidad en tamaños <32px; inconsistencia si no se actualiza el CSS global de Tailwind para colores azul marino (#001F3F) y turquesa (#40E0D0)."
           ]
         },
-        "stage2_qr_logo": {
-          "should_prepare_now": true,
-          "preparation_strategy": "Implementar la lupa como componente SVG modular con placeholder para QR, usando clases CSS para futuras interacciones sin afectar render actual.",
-          "technical_constraints": [
-            "Mantener patrón QR como imagen estática no escaneable; asegurar que el SVG sea responsive sin distorsión en zoom móvil; integrar con React para swaps dinámicos en futuras builds."
+        "favicon_strategy": {
+          "recommended_variant": "Versión simplificada: solo la lupa circular vacía en azul marino con mango turquesa, sin texto, en formato SVG para escalabilidad.",
+          "small_size_rules": [
+            "Generar variantes en 16x16, 32x32 y 48x48 px; priorizar la lupa como ícono central para reconocimiento inmediato; usar PNG para compatibilidad en navegadores móviles."
           ],
-          "do_not_do_yet": [
-            "No generar QR funcional para evitar redirecciones prematuras; no alterar el patrón visual actual para preservar legibilidad; no agregar scripts de escaneo que rompan compatibilidad."
+          "do_not_do": [
+            "No incluir texto 'AUDITAPATRON' en favicon por legibilidad en tamaños pequeños; no usar colores degradados que pierdan definición; no ignorar testing en dispositivos Android/iOS para distorsión."
           ]
         },
         "ux_copy_guidance": {
-          "brand_tone": "Confianza empoderadora, clara y accesible, con lenguaje directo para trabajadores mexicanos.",
-          "header_rule": "Incluir wordmark completo con subtítulo en header fijo, reduciendo a icono lupa en scroll móvil.",
-          "hero_rule": "Posicionar logotipo centrado en hero con subtítulo visible, acompañado de CTA simple como 'Empieza tu auditoría'."
+          "brand_tone": "Confidente, accesible y empoderador, enfocado en derechos laborales con lenguaje claro y directo para trabajadores mexicanos.",
+          "header_rule": "Integrar logotipo a la izquierda del header con tagline 'CONOCE TUS DERECHOS' debajo en fuente sans-serif 12px, ocultando tagline en móvil <768px.",
+          "hero_rule": "Colocar logotipo centrado en hero de home con overlay sutil de turquesa; acompañar con copy como 'Audita tu patrón y defiende tus derechos' en negrita azul marino."
         },
         "implementation_priority": [
-          "Actualizar assets SVG en repositorio y deploy inicial en header/home",
-          "Optimizar para mobile y probar legibilidad en dispositivos reales",
-          "Reemplazar en diálogos y elementos secundarios",
-          "Documentar componentes para Stage 2 y QA general"
+          "1. Actualizar favicon y meta icons en public/index.html.",
+          "2. Reemplazar logo en header y hero de home con componente React reutilizable.",
+          "3. Aplicar en dashboard y /auditar, probando en móvil con Tailwind responsive.",
+          "4. Extender a diálogos, copiloto y componentes pequeños, validando legibilidad."
         ],
         "confidence_0_to_100": 95
       }
