@@ -125,6 +125,55 @@ function parseJsonSafely<T>(value: string): T | null {
   }
 }
 
+type AuditarViewStateRecord = {
+  historyFilter?: "all" | "document" | "response" | "summary";
+  mobileOnboardingIndex?: number;
+  selectedRecommendedTargetType?: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence" | null;
+  preferredCaptureMode?: "camera" | "file" | null;
+};
+
+function normalizeAuditarViewState(value: unknown): AuditarViewStateRecord {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  const record = value as Record<string, unknown>;
+  const historyFilter =
+    record.historyFilter === "all" ||
+    record.historyFilter === "document" ||
+    record.historyFilter === "response" ||
+    record.historyFilter === "summary"
+      ? (record.historyFilter as AuditarViewStateRecord["historyFilter"])
+      : undefined;
+  const mobileOnboardingIndex =
+    typeof record.mobileOnboardingIndex === "number" && Number.isFinite(record.mobileOnboardingIndex)
+      ? Math.min(Math.max(Math.trunc(record.mobileOnboardingIndex), 0), 2)
+      : undefined;
+  const selectedRecommendedTargetType =
+    record.selectedRecommendedTargetType === null
+      ? null
+      : record.selectedRecommendedTargetType === "payroll_receipt" ||
+          record.selectedRecommendedTargetType === "cfdi" ||
+          record.selectedRecommendedTargetType === "contract" ||
+          record.selectedRecommendedTargetType === "imss" ||
+          record.selectedRecommendedTargetType === "evidence"
+        ? (record.selectedRecommendedTargetType as AuditarViewStateRecord["selectedRecommendedTargetType"])
+        : undefined;
+  const preferredCaptureMode =
+    record.preferredCaptureMode === null
+      ? null
+      : record.preferredCaptureMode === "camera" || record.preferredCaptureMode === "file"
+        ? (record.preferredCaptureMode as AuditarViewStateRecord["preferredCaptureMode"])
+        : undefined;
+
+  return {
+    historyFilter,
+    mobileOnboardingIndex,
+    selectedRecommendedTargetType,
+    preferredCaptureMode,
+  };
+}
+
 function isHeliosOpinionContract(value: unknown): value is HeliosOpinionContract {
   if (!value || typeof value !== "object") return false;
 
@@ -415,6 +464,34 @@ export async function createAuditLog(input: Omit<InsertAuditLog, "afterState" | 
   await db.insert(auditLogs).values(payload);
 }
 
+export async function persistAuditarViewState(params: {
+  userId: number;
+  tenantId: string;
+  caseId: string;
+  traceId: string;
+  viewState: AuditarViewStateRecord;
+}) {
+  await assertCaseAccess(params.userId, params.tenantId, params.caseId);
+
+  const normalizedViewState = normalizeAuditarViewState(params.viewState);
+
+  await createAuditLog({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    traceId: params.traceId,
+    actorUserId: params.userId,
+    entityType: "system",
+    entityId: `auditar_view_state:${params.userId}`,
+    action: "auditar.view_state.upsert",
+    afterState: {
+      viewState: normalizedViewState,
+      persistedAt: new Date().toISOString(),
+    },
+  });
+
+  return normalizedViewState;
+}
+
 export async function listCasesForUser(params: {
   userId: number;
   tenantId?: string;
@@ -486,7 +563,7 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
     throw new Error("Case not found");
   }
 
-  const [events, documents, consents, alerts, policies] = await Promise.all([
+  const [events, documents, consents, alerts, policies, latestAuditarViewStateEntry] = await Promise.all([
     db
       .select()
       .from(caseEvents)
@@ -512,7 +589,25 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
       .from(documentPolicies)
       .where(and(eq(documentPolicies.tenantId, params.tenantId), eq(documentPolicies.caseId, params.caseId)))
       .orderBy(desc(documentPolicies.updatedAt)),
+    db
+      .select({ afterState: auditLogs.afterState })
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.tenantId, params.tenantId),
+          eq(auditLogs.caseId, params.caseId),
+          eq(auditLogs.actorUserId, params.userId),
+          eq(auditLogs.entityType, "system"),
+          eq(auditLogs.action, "auditar.view_state.upsert"),
+        ),
+      )
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(1),
   ]);
+
+  const auditarViewStatePayload = latestAuditarViewStateEntry[0]?.afterState
+    ? parseJsonSafely<{ viewState?: unknown }>(latestAuditarViewStateEntry[0].afterState)
+    : null;
 
   return {
     case: caseRow,
@@ -521,6 +616,7 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
     consents,
     alerts,
     policies,
+    auditarViewState: normalizeAuditarViewState(auditarViewStatePayload?.viewState ?? auditarViewStatePayload),
   };
 }
 

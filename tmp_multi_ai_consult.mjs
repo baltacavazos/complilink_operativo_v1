@@ -4,56 +4,75 @@ const prompt = `Actúa como un lead product engineer exigente para una app móvi
 
 Contexto del producto:
 - App: AuditaPatron.
-- Propósito: permitir que un trabajador suba documentos laborales y construya un expediente digital disponible 24/7.
-- UX obligatoria: muy simple, confiable, centrada, sin scroll lateral en móvil, con sensación de claridad y “wow factor”.
-- No exponer al usuario el motor backend interno ni nombres técnicos internos.
+- Propósito: permitir que una persona suba documentos laborales y construya un expediente digital disponible 24/7.
+- UX obligatoria: extremadamente simple, confiable, centrada, usable por un niño de 10 años o una persona mayor con muy baja alfabetización digital.
+- No exponer al usuario nombres técnicos internos ni complejidad del backend.
 - Pantalla foco: /auditar.
 
 Estado actual de /auditar:
 - Ya existe carga documental.
 - Ya existen recomendaciones conectadas a faltantes reales.
-- Ya existe historial simple con filtros.
+- Ya existe historial con filtros y persistencia local básica.
 - Ya existe onboarding móvil reutilizable.
+- Ya existe progreso visual por tipo documental.
 - Todo está en español.
 
-Siguiente iteración a decidir:
-1. Persistir filtros e historial por usuario entre sesiones.
-2. Mostrar porcentaje de completitud por tipo documental.
-3. Agregar CTA directo desde cada recomendación para subir ese documento específico.
+Nueva iteración aprobada para decidir e implementar:
+1. Añadir escaneo/captura documental asistido por IA con mínima fricción posible.
+2. Persistir el contexto del usuario entre dispositivos, no solo en el navegador local.
+3. Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga.
+4. Añadir una opción visible para reabrir el onboarding informativo.
+
+Objetivo crítico del escaneo:
+- Debe sentirse casi mágico, pero ser robusto.
+- Debe guiar automáticamente al usuario para sacar una foto legible sin exigir conocimientos técnicos.
+- Debe detectar problemas comunes antes de subir: borroso, oscuro, cortado, reflejos, documento incompleto, orientación incorrecta.
+- Debe aplicar la mayor automatización posible: mejora de imagen, recorte, corrección de perspectiva, OCR/lectura, clasificación documental y validación mínima.
+- Debe minimizar pasos manuales y texto para el usuario.
 
 Restricciones técnicas y de UX:
-- No hacer una re-arquitectura grande si el valor visible puede lograrse con una solución simple y robusta.
 - Mobile-first.
-- Debe sentirse más claro, no más pesado.
-- El CTA directo debe reducir fricción real.
-- La persistencia por usuario puede ser local o remota, pero prioriza la mejor relación entre robustez, velocidad de implementación y experiencia percibida.
+- La experiencia debe sentirse más clara, no más pesada.
+- Prioriza robustez real, escalabilidad y calidad percibida, aunque implique usar IA avanzada.
+- Aun así, evita re-arquitecturas innecesarias si puede resolverse de forma elegante y progresiva.
+- La persistencia entre dispositivos puede apoyarse en backend si eso mejora continuidad y confianza.
+- El flujo debe tolerar fallos de red o fotos deficientes con recuperación simple.
 
 Quiero una respuesta ESTRICTA en JSON con esta forma exacta:
 {
   "recommended_approach": "texto corto",
-  "persistence_strategy": {
-    "choice": "local_storage | server_db | hybrid",
+  "scan_stack": {
+    "capture_guidance": "texto corto",
+    "quality_gate": "texto corto",
+    "enhancement_pipeline": ["paso 1", "paso 2", "paso 3"],
+    "classification_strategy": "texto corto",
+    "fallback_strategy": "texto corto"
+  },
+  "continuity_strategy": {
+    "choice": "server_db | hybrid",
     "why": "texto"
   },
-  "completion_ui": {
-    "pattern": "texto corto",
-    "details": ["punto 1", "punto 2", "punto 3"]
+  "user_experience": {
+    "first_screen": "texto corto",
+    "primary_actions": ["accion 1", "accion 2", "accion 3"],
+    "onboarding_reentry": "texto corto",
+    "recommended_doc_preset": "texto corto"
   },
-  "recommendation_cta": {
-    "pattern": "texto corto",
-    "microcopy": "texto",
-    "interaction": "texto"
+  "backend_strategy": {
+    "upload_flow": "texto corto",
+    "ai_services": ["servicio 1", "servicio 2"],
+    "validation_logic": ["regla 1", "regla 2", "regla 3"]
   },
-  "risks": ["riesgo 1", "riesgo 2"],
-  "implementation_notes": ["nota 1", "nota 2", "nota 3"],
+  "risks": ["riesgo 1", "riesgo 2", "riesgo 3"],
+  "implementation_phases": ["fase 1", "fase 2", "fase 3"],
   "priority_score": 0
 }
 
 Reglas adicionales:
 - Responde solo JSON válido.
 - priority_score debe ser un número de 0 a 100.
-- Favorece soluciones elegantes, simples, intuitivas y fáciles de probar.
-- Piensa como cliente exigente, no como programador que quiere complicar.`;
+- Favorece soluciones elegantes, simples, intuitivas, robustas y fáciles de usar por personas no técnicas.
+- Piensa como cliente exigente obsesionado con fricción mínima y confianza máxima.`;
 
 const results = [];
 

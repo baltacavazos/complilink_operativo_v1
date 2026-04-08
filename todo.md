@@ -241,11 +241,18 @@
 - [x] Añadir en /auditar un historial simple del expediente con filtros claros y fáciles de usar.
 - [x] Convertir el onboarding móvil en un carrusel reutilizable y fácil de volver a abrir.
 - [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en recomendaciones faltantes, filtros e onboarding reutilizable.
-- [ ] Consultar a Grok, ChatGPT y Gemini la mejor forma de persistir por usuario el historial del expediente y sus filtros sin añadir fricción visible.
-- [ ] Definir una visualización clara del porcentaje de completitud por tipo documental faltante dentro del expediente.
-- [ ] Añadir CTAs directos para subir cada documento recomendado desde Home y /auditar.
-- [ ] Implementar persistencia del historial y filtros por usuario en la experiencia visible de AuditaPatron.
-- [ ] Validar con pruebas y revisión técnica esta nueva ronda centrada en persistencia personalizada, completitud documental y acciones directas.
+- [x] Consultar a Grok, ChatGPT y Gemini la mejor forma de persistir por usuario el historial del expediente y sus filtros sin añadir fricción visible.
+- [x] Definir una visualización clara del porcentaje de completitud por tipo documental faltante dentro del expediente.
+- [x] Añadir CTAs directos para subir cada documento recomendado desde Home y /auditar.
+- [x] Implementar persistencia del historial y filtros por usuario en la experiencia visible de AuditaPatron.
+- [x] Validar con pruebas y revisión técnica esta nueva ronda centrada en persistencia personalizada, completitud documental y acciones directas.
 - [x] Persistir por usuario en `/auditar` el filtro del historial, el paso del onboarding móvil y el contexto de recomendación seleccionado entre sesiones
 - [x] Mostrar porcentaje de completitud por tipo documental dentro del bloque principal del expediente sin recargar la vista móvil
 - [x] Añadir CTA directo en cada recomendación para abrir el flujo de carga con el documento sugerido ya enfocado
+- [x] Definir una arquitectura de escaneo documental con IA avanzada para AuditaPatron, priorizando robustez extrema y fricción mínima para cualquier perfil de usuario
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor experiencia de escaneo, captura, corrección y validación documental antes de implementar
+- [x] Presentar para aprobación un flujo de escaneo casi sin fricción, usable por personas con muy baja alfabetización digital, antes de ejecutar cambios
+- [x] Persistir entre dispositivos el contexto de `/auditar` del usuario autenticado para que retome su expediente desde cualquier sesión
+- [x] Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga para reducir fricción y ambigüedad
+- [x] Añadir una opción visible para reabrir el onboarding informativo desde `/auditar` sin interrumpir el flujo principal
+- [x] Diseñar e implementar captura/escaneo documental asistido por IA con validación automática, guía visual y fricción mínima para usuarios con muy baja alfabetización digital

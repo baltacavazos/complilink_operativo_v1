@@ -1,112 +1,178 @@
 {
-  "prompt": "Actúa como un lead product engineer exigente para una app móvil-first en español para trabajadores en México.\n\nContexto del producto:\n- App: AuditaPatron.\n- Propósito: permitir que un trabajador suba documentos laborales y construya un expediente digital disponible 24/7.\n- UX obligatoria: muy simple, confiable, centrada, sin scroll lateral en móvil, con sensación de claridad y “wow factor”.\n- No exponer al usuario el motor backend interno ni nombres técnicos internos.\n- Pantalla foco: /auditar.\n\nEstado actual de /auditar:\n- Ya existe carga documental.\n- Ya existen recomendaciones conectadas a faltantes reales.\n- Ya existe historial simple con filtros.\n- Ya existe onboarding móvil reutilizable.\n- Todo está en español.\n\nSiguiente iteración a decidir:\n1. Persistir filtros e historial por usuario entre sesiones.\n2. Mostrar porcentaje de completitud por tipo documental.\n3. Agregar CTA directo desde cada recomendación para subir ese documento específico.\n\nRestricciones técnicas y de UX:\n- No hacer una re-arquitectura grande si el valor visible puede lograrse con una solución simple y robusta.\n- Mobile-first.\n- Debe sentirse más claro, no más pesado.\n- El CTA directo debe reducir fricción real.\n- La persistencia por usuario puede ser local o remota, pero prioriza la mejor relación entre robustez, velocidad de implementación y experiencia percibida.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"recommended_approach\": \"texto corto\",\n  \"persistence_strategy\": {\n    \"choice\": \"local_storage | server_db | hybrid\",\n    \"why\": \"texto\"\n  },\n  \"completion_ui\": {\n    \"pattern\": \"texto corto\",\n    \"details\": [\"punto 1\", \"punto 2\", \"punto 3\"]\n  },\n  \"recommendation_cta\": {\n    \"pattern\": \"texto corto\",\n    \"microcopy\": \"texto\",\n    \"interaction\": \"texto\"\n  },\n  \"risks\": [\"riesgo 1\", \"riesgo 2\"],\n  \"implementation_notes\": [\"nota 1\", \"nota 2\", \"nota 3\"],\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Favorece soluciones elegantes, simples, intuitivas y fáciles de probar.\n- Piensa como cliente exigente, no como programador que quiere complicar.",
+  "prompt": "Actúa como un lead product engineer exigente para una app móvil-first en español para trabajadores en México.\n\nContexto del producto:\n- App: AuditaPatron.\n- Propósito: permitir que una persona suba documentos laborales y construya un expediente digital disponible 24/7.\n- UX obligatoria: extremadamente simple, confiable, centrada, usable por un niño de 10 años o una persona mayor con muy baja alfabetización digital.\n- No exponer al usuario nombres técnicos internos ni complejidad del backend.\n- Pantalla foco: /auditar.\n\nEstado actual de /auditar:\n- Ya existe carga documental.\n- Ya existen recomendaciones conectadas a faltantes reales.\n- Ya existe historial con filtros y persistencia local básica.\n- Ya existe onboarding móvil reutilizable.\n- Ya existe progreso visual por tipo documental.\n- Todo está en español.\n\nNueva iteración aprobada para decidir e implementar:\n1. Añadir escaneo/captura documental asistido por IA con mínima fricción posible.\n2. Persistir el contexto del usuario entre dispositivos, no solo en el navegador local.\n3. Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga.\n4. Añadir una opción visible para reabrir el onboarding informativo.\n\nObjetivo crítico del escaneo:\n- Debe sentirse casi mágico, pero ser robusto.\n- Debe guiar automáticamente al usuario para sacar una foto legible sin exigir conocimientos técnicos.\n- Debe detectar problemas comunes antes de subir: borroso, oscuro, cortado, reflejos, documento incompleto, orientación incorrecta.\n- Debe aplicar la mayor automatización posible: mejora de imagen, recorte, corrección de perspectiva, OCR/lectura, clasificación documental y validación mínima.\n- Debe minimizar pasos manuales y texto para el usuario.\n\nRestricciones técnicas y de UX:\n- Mobile-first.\n- La experiencia debe sentirse más clara, no más pesada.\n- Prioriza robustez real, escalabilidad y calidad percibida, aunque implique usar IA avanzada.\n- Aun así, evita re-arquitecturas innecesarias si puede resolverse de forma elegante y progresiva.\n- La persistencia entre dispositivos puede apoyarse en backend si eso mejora continuidad y confianza.\n- El flujo debe tolerar fallos de red o fotos deficientes con recuperación simple.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"recommended_approach\": \"texto corto\",\n  \"scan_stack\": {\n    \"capture_guidance\": \"texto corto\",\n    \"quality_gate\": \"texto corto\",\n    \"enhancement_pipeline\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"classification_strategy\": \"texto corto\",\n    \"fallback_strategy\": \"texto corto\"\n  },\n  \"continuity_strategy\": {\n    \"choice\": \"server_db | hybrid\",\n    \"why\": \"texto\"\n  },\n  \"user_experience\": {\n    \"first_screen\": \"texto corto\",\n    \"primary_actions\": [\"accion 1\", \"accion 2\", \"accion 3\"],\n    \"onboarding_reentry\": \"texto corto\",\n    \"recommended_doc_preset\": \"texto corto\"\n  },\n  \"backend_strategy\": {\n    \"upload_flow\": \"texto corto\",\n    \"ai_services\": [\"servicio 1\", \"servicio 2\"],\n    \"validation_logic\": [\"regla 1\", \"regla 2\", \"regla 3\"]\n  },\n  \"risks\": [\"riesgo 1\", \"riesgo 2\", \"riesgo 3\"],\n  \"implementation_phases\": [\"fase 1\", \"fase 2\", \"fase 3\"],\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Favorece soluciones elegantes, simples, intuitivas, robustas y fáciles de usar por personas no técnicas.\n- Piensa como cliente exigente obsesionado con fricción mínima y confianza máxima.",
   "results": [
     {
       "provider": "chatgpt",
       "ok": true,
       "output": {
-        "recommended_approach": "Agregar CTA directo en recomendaciones y mostrar porcentaje de completitud, persistiendo filtros localmente",
-        "persistence_strategy": {
-          "choice": "local_storage",
-          "why": "Permite guardar filtros e historial sin complejidad backend, rápido de implementar y con buena experiencia offline, manteniendo simplicidad y velocidad."
+        "recommended_approach": "Integrar escaneo asistido por IA con guía visual en tiempo real y persistencia backend para continuidad sin fricción.",
+        "scan_stack": {
+          "capture_guidance": "Indicadores visuales claros y animados para alinear y enfocar el documento sin texto técnico.",
+          "quality_gate": "Detección automática de borrosidad, iluminación, recorte y orientación antes de permitir subir.",
+          "enhancement_pipeline": [
+            "corrección automática de perspectiva y recorte",
+            "ajuste de brillo y contraste para legibilidad",
+            "OCR ligero para validar contenido y tipo documental"
+          ],
+          "classification_strategy": "IA en backend que clasifica y valida tipo documental basado en OCR y metadatos de imagen, preseleccionando para el usuario.",
+          "fallback_strategy": "Permitir subir manualmente con opción de repetir captura y mostrar mensajes simples para corregir problemas detectados."
         },
-        "completion_ui": {
-          "pattern": "barra de progreso por tipo documental",
-          "details": [
-            "Mostrar porcentaje claro y visual junto al título de cada tipo documental",
-            "Usar colores amigables y consistentes con la marca para indicar avance",
-            "Actualizar dinámicamente al subir documentos para feedback inmediato"
+        "continuity_strategy": {
+          "choice": "hybrid",
+          "why": "Persistencia principal en backend para continuidad entre dispositivos y sincronización, con cache local para uso offline y rapidez."
+        },
+        "user_experience": {
+          "first_screen": "Pantalla limpia con botón grande para iniciar escaneo y preselección clara del tipo documental recomendado.",
+          "primary_actions": [
+            "Iniciar escaneo asistido",
+            "Subir documento desde galería",
+            "Reabrir onboarding informativo"
+          ],
+          "onboarding_reentry": "Botón visible y accesible en /auditar para mostrar onboarding resumido y visual sin texto técnico.",
+          "recommended_doc_preset": "Mostrar tipo documental sugerido destacado antes de escanear para evitar confusión."
+        },
+        "backend_strategy": {
+          "upload_flow": "Subida optimizada con validación previa en cliente y confirmación final en backend, con reintentos automáticos en fallos.",
+          "ai_services": [
+            "Servicio de análisis y clasificación documental basado en OCR",
+            "Servicio de mejora y validación de imagen"
+          ],
+          "validation_logic": [
+            "Verificar legibilidad mínima del texto detectado",
+            "Confirmar tipo documental esperado según expediente",
+            "Detectar duplicados y documentos incompletos"
           ]
         },
-        "recommendation_cta": {
-          "pattern": "botón directo 'Subir ahora' en cada recomendación",
-          "microcopy": "Sube tu documento para completar tu expediente",
-          "interaction": "Al tocar el botón, abrir directamente el selector de archivos enfocado en el tipo documental recomendado, minimizando pasos"
-        },
         "risks": [
-          "Persistencia local puede perderse si el usuario borra datos o cambia dispositivo",
-          "Agregar UI adicional puede saturar la pantalla si no se diseña con claridad",
-          "CTA directo debe evitar confundir al usuario con múltiples flujos de carga"
+          "Falsos negativos en detección de calidad que bloqueen usuarios sin necesidad",
+          "Dependencia de conexión para persistencia y análisis IA que puede afectar experiencia offline",
+          "Complejidad técnica en integración IA que puede retrasar despliegue"
         ],
-        "implementation_notes": [
-          "Reusar componentes existentes para barra de progreso y botones para mantener consistencia",
-          "Testear en dispositivos reales para asegurar que no haya scroll lateral ni saturación visual",
-          "Validar que el CTA directo no rompa el flujo actual de carga documental ni onboarding"
+        "implementation_phases": [
+          "Fase 1: Integrar guía visual y calidad mínima en captura con fallback manual",
+          "Fase 2: Desarrollar backend para persistencia híbrida y clasificación IA básica",
+          "Fase 3: Optimizar IA avanzada para mejora automática y validación robusta"
         ],
-        "priority_score": 85
+        "priority_score": 95
       }
     },
     {
       "provider": "grok",
       "ok": true,
       "output": {
-        "recommended_approach": "Iteración minimalista integrada",
-        "persistence_strategy": {
-          "choice": "hybrid",
-          "why": "Combina velocidad local para acceso inmediato con sincronización remota para robustez entre sesiones y dispositivos, minimizando esfuerzo de implementación y mejorando percepción de fluidez"
+        "recommended_approach": "Integración progresiva de IA para escaneo mágico y persistencia híbrida",
+        "scan_stack": {
+          "capture_guidance": "Overlays visuales intuitivos para alinear documento en cámara",
+          "quality_gate": "Detección en tiempo real de defectos antes de capturar",
+          "enhancement_pipeline": [
+            "Mejora automática de imagen",
+            "Recorte y corrección de perspectiva",
+            "OCR y clasificación"
+          ],
+          "classification_strategy": "Modelo IA para identificar tipo basado en contenido y contexto",
+          "fallback_strategy": "Selección manual simple si IA falla, con guía mínima"
         },
-        "completion_ui": {
-          "pattern": "Barra de progreso lineal por tipo",
-          "details": [
-            "Mostrar porcentaje numérico al lado de cada categoría documental",
-            "Usar colores intuitivos: verde para completado, gris para pendiente",
-            "Integrar en vista principal sin agregar pantallas extras para mantener claridad"
+        "continuity_strategy": {
+          "choice": "hybrid",
+          "why": "Combina almacenamiento local para offline con sync en backend para multi-dispositivo"
+        },
+        "user_experience": {
+          "first_screen": "Pantalla /auditar con botón central para escanear recomendado",
+          "primary_actions": [
+            "Escanear documento",
+            "Ver progreso",
+            "Acceder a historial"
+          ],
+          "onboarding_reentry": "Botón visible en menú: 'Ver guía inicial'",
+          "recommended_doc_preset": "Preselección automática del tipo faltante en flujo"
+        },
+        "backend_strategy": {
+          "upload_flow": "Subida asíncrona con reintentos y feedback simple",
+          "ai_services": [
+            "ML Kit de Google",
+            "Azure Computer Vision"
+          ],
+          "validation_logic": [
+            "Chequeo de legibilidad",
+            "Clasificación por tipo",
+            "Validación contra faltantes"
           ]
         },
-        "recommendation_cta": {
-          "pattern": "Botón inline en recomendación",
-          "microcopy": "Subir este documento",
-          "interaction": "Toca para abrir flujo de carga directo del tipo específico, reduciendo pasos"
-        },
         "risks": [
-          "Posible sobrecarga visual si los elementos no se alinean con el diseño simple",
-          "Dependencia de conexión para sync en hybrid podría frustrar en offline"
+          "Fallas en red afectan escaneo",
+          "Privacidad en procesamiento IA",
+          "Errores en clasificación automática"
         ],
-        "implementation_notes": [
-          "Reutilizar onboarding móvil para guiar persistencia inicial",
-          "Probar en dispositivos low-end para asegurar fluidez mobile-first",
-          "Medir reducción de fricción con A/B testing en recomendaciones"
+        "implementation_phases": [
+          "Implementar stack de escaneo IA",
+          "Configurar persistencia híbrida",
+          "Añadir preselección y reentrada onboarding"
         ],
-        "priority_score": 85
+        "priority_score": 95
       }
     },
     {
       "provider": "gemini",
       "ok": true,
       "output": {
-        "recommended_approach": "Implementación estratégica de usabilidad y visibilidad de progreso.",
-        "persistence_strategy": {
-          "choice": "server_db",
-          "why": "Asegura la consistencia y persistencia de las preferencias del usuario (filtros, historial) entre dispositivos y sesiones. Esto mejora la confiabilidad y la experiencia percibida, siendo una solución robusta y escalable para futuras personalizaciones, sin depender del almacenamiento local volátil."
+        "recommended_approach": "Implementación de IA robusta y transparente para escaneo documental 'mágico', con persistencia en backend para máxima confianza y continuidad, manteniendo una UX ultra-simple y guiada para usuarios de baja alfabetización digital.",
+        "scan_stack": {
+          "capture_guidance": "Guía visual en tiempo real con bounding box adaptable, indicador de nivel, sugerencias de iluminación (ej. 'Más luz', 'Evita sombras'), y auto-captura inteligente al detectar estabilidad y encuadre óptimo. Feedback háptico sutil.",
+          "quality_gate": "Modelos ML on-device para detección instantánea de borrosidad, oscuridad, reflejos, recorte, orientación incorrecta o documento incompleto ANTES de la captura, con feedback visual claro ('Foto borrosa, intenta de nuevo').",
+          "enhancement_pipeline": [
+            "Corrección de perspectiva y distorsión (client-side)",
+            "Recorte automático inteligente al contorno del documento (client-side)",
+            "Mejora de imagen (brillo, contraste, nitidez, eliminación de ruido) (client-side/server-side)",
+            "OCR avanzado para extracción de texto clave (server-side)",
+            "Clasificación documental inicial (client-side) y final (server-side)",
+            "Validación mínima de contenido (server-side)"
+          ],
+          "classification_strategy": "Híbrida: Clasificación inicial ligera on-device para pre-selección rápida, y re-clasificación/validación robusta en el backend usando OCR y modelos de ML entrenados con documentos laborales mexicanos para alta precisión.",
+          "fallback_strategy": "Permitir re-toma de foto, ajuste manual de recorte/rotación, o carga desde galería. Si la IA falla en clasificación, ofrecer selección manual de tipo documental con sugerencias. Cola de subida asíncrona con reintentos automáticos en caso de fallo de red."
         },
-        "completion_ui": {
-          "pattern": "Indicadores de progreso visuales y numéricos por categoría documental.",
-          "details": [
-            "Un anillo de progreso o barra sutil y minimalista en la cabecera de cada sección de tipo documental (e.g., 'Documentos de Identificación', 'Contratos Laborales').",
-            "El porcentaje se calculará sobre los documentos esperados vs. los cargados dentro de esa categoría, mostrando '0%' si no hay documentos esperados o cargados.",
-            "Animación suave y elegante al cargar la pantalla para el 'wow factor', sin sobrecargar visualmente. El diseño debe ser limpio y moderno, integrándose con la estética existente.",
-            "El indicador debe ser interactivo, quizás expandiendo una lista de documentos faltantes al tocarlo, o filtrando la vista para mostrar solo los pendientes de esa categoría."
+        "continuity_strategy": {
+          "choice": "server_db",
+          "why": "La persistencia en base de datos del servidor es crítica para garantizar la continuidad del expediente digital entre dispositivos, la integridad de los datos y la confianza del usuario. El almacenamiento local solo se usará para caché temporal y optimización de rendimiento."
+        },
+        "user_experience": {
+          "first_screen": "Un botón grande y prominente 'Añadir Documento' (con icono de cámara/escáner) en el centro, debajo del progreso visual. Recomendaciones de documentos faltantes claras y accionables. Historial reciente visible de forma concisa.",
+          "primary_actions": [
+            "Añadir Documento (Escaneo IA)",
+            "Ver Recomendaciones Pendientes",
+            "Mi Expediente (Historial completo)",
+            "Ayuda / ¿Cómo funciona?"
+          ],
+          "onboarding_reentry": "Un botón de 'Ayuda' o '¿Cómo funciona?' visible pero discreto (ej. en la barra superior o como un ítem en un menú de 'Más opciones') que reabre el flujo de onboarding informativo, explicando el valor y uso de la app.",
+          "recommended_doc_preset": "Al iniciar el flujo de 'Añadir Documento', si existe una recomendación fuerte, pre-seleccionar el tipo documental y resaltarlo con un 'Sugerido: [Tipo de Documento]'. Permitir al usuario confirmar o cambiar fácilmente antes de la captura."
+        },
+        "backend_strategy": {
+          "upload_flow": "Subida asíncrona y resumible de documentos, con encriptación de extremo a extremo. Procesamiento en segundo plano de la IA para evitar bloqueos en la UI. Notificaciones claras al usuario sobre el estado de la subida y procesamiento.",
+          "ai_services": [
+            "Google Cloud Vision API (o similar) para OCR de alta precisión",
+            "Servicio de ML personalizado para clasificación documental (ej. TensorFlow/PyTorch)",
+            "Servicio de ML para validación de calidad de imagen y detección de anomalías",
+            "Servicio de ML para extracción de entidades clave (fechas, nombres, RFCs)"
+          ],
+          "validation_logic": [
+            "Coherencia de datos extraídos por OCR (ej. fechas de inicio/fin de contrato)",
+            "Detección de documentos incompletos (ej. INE con una sola cara)",
+            "Validación de formato y legibilidad (ej. texto legible, sin marcas de agua intrusivas)",
+            "Concordancia entre tipo documental clasificado y contenido OCR"
           ]
         },
-        "recommendation_cta": {
-          "pattern": "Botón de acción directa contextual e inconfundible.",
-          "microcopy": "Subir [Nombre del Documento]",
-          "interaction": "Dentro de cada tarjeta de recomendación, se integrará un botón claro y prominente. Al tocarlo, el usuario es dirigido directamente al flujo de carga documental existente, con el tipo de documento ya pre-seleccionado o claramente indicado, minimizando drásticamente los pasos y la fricción para el usuario."
-        },
         "risks": [
-          "Sobrecarga visual si los indicadores de progreso no son diseñados con extrema sutileza y minimalismo, afectando la claridad.",
-          "Complejidad en el flujo de carga si el pre-llenado del tipo de documento desde el CTA no es robusto y a prueba de errores.",
-          "Rendimiento de la app si la persistencia de filtros y el historial no se gestionan eficientemente en el backend, resultando en latencia perceptible.",
-          "Cálculo erróneo del porcentaje de completitud si la lógica de 'documentos esperados' no es precisa y adaptable a diferentes perfiles de usuario."
+          "Precisión de la IA en entornos reales con documentos de baja calidad o variaciones regionales (ej. formatos de INE antiguos)",
+          "Rendimiento y latencia de los modelos de IA on-device y server-side en dispositivos de gama baja o con conexiones lentas",
+          "Privacidad y seguridad de los datos sensibles del usuario al ser procesados por IA y almacenados en la nube",
+          "Curva de aprendizaje para el usuario si la guía de captura no es suficientemente intuitiva o la IA falla repetidamente",
+          "Costos operativos de los servicios de IA avanzados a escala"
         ],
-        "implementation_notes": [
-          "Diseñar los indicadores de progreso con un enfoque 'menos es más' para mantener la claridad y el 'wow factor' sin añadir peso visual.",
-          "Reutilizar y adaptar el flujo de carga documental existente para el CTA directo, asegurando que el contexto del documento se pase correctamente y sea validado.",
-          "Implementar la persistencia de filtros y historial vía API RESTful para el backend, garantizando respuestas rápidas y un esquema de datos optimizado.",
-          "Definir claramente la lógica de 'documentos esperados' para cada tipo y categoría, considerando posibles variaciones por perfil de usuario o tipo de empleo.",
-          "Realizar pruebas exhaustivas de usabilidad y rendimiento en dispositivos móviles para validar la reducción de fricción, la percepción de ligereza y la robustez de las nuevas funcionalidades."
+        "implementation_phases": [
+          "MVP de Escaneo IA: Captura guiada, recorte/perspectiva, OCR básico, clasificación inicial y subida. Persistencia local temporal.",
+          "Refinamiento de IA y Backend: Mejora de calidad de imagen, clasificación robusta server-side, validación mínima, persistencia en backend y sincronización entre dispositivos.",
+          "Optimización y UX Avanzada: Detección de problemas pre-captura, pre-selección de documentos, re-onboarding, manejo de errores robusto y mejora continua de la IA."
         ],
-        "priority_score": 92
+        "priority_score": 95
       }
     }
   ]

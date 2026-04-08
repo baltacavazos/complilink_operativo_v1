@@ -117,6 +117,18 @@ type MobileOnboardingStep = {
   description: string;
 };
 
+type AuditarCaptureMode = "camera" | "file";
+
+type ScanAssistAssessmentView = {
+  readiness: "ready" | "retry" | "manual_review";
+  documentPresence: "clear" | "partial" | "uncertain";
+  issues: string[];
+  userGuidance: string;
+  friendlyHeadline: string;
+  expectedTypeAlignment: "match" | "possible" | "uncertain" | "mismatch";
+  confidence: number;
+};
+
 const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
@@ -204,6 +216,7 @@ type AuditarPersistedViewState = {
   historyFilter?: DossierHistoryFilter;
   mobileOnboardingIndex?: number;
   selectedRecommendedTargetType?: DossierTarget["type"] | null;
+  preferredCaptureMode?: AuditarCaptureMode | null;
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
@@ -250,11 +263,18 @@ export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersis
       : isDossierTargetType(record.selectedRecommendedTargetType)
         ? record.selectedRecommendedTargetType
         : undefined;
+  const preferredCaptureMode =
+    record.preferredCaptureMode === null
+      ? null
+      : record.preferredCaptureMode === "camera" || record.preferredCaptureMode === "file"
+        ? (record.preferredCaptureMode as AuditarCaptureMode)
+        : undefined;
 
   return {
     historyFilter,
     mobileOnboardingIndex,
     selectedRecommendedTargetType,
+    preferredCaptureMode,
   };
 }
 
@@ -281,6 +301,83 @@ export function buildDossierTypeProgress(documentTypeCounts: Record<string, numb
       supportingCopy,
     };
   });
+}
+
+function getCaptureModeSupportCopy(value: AuditarCaptureMode | null | undefined) {
+  return value === "camera"
+    ? "Ideal si tu documento está en papel. Abriremos primero la cámara para escanearlo más rápido."
+    : "Ideal si ya tienes un PDF, XML o una foto guardada. Abriremos primero tus archivos para quitar fricción.";
+}
+
+function getScanAssistTone(scanAssist?: ScanAssistAssessmentView | null) {
+  if (!scanAssist) {
+    return {
+      containerClasses: "border-sky-100 bg-sky-50",
+      badgeClasses: "bg-white text-sky-800",
+      badgeLabel: "IA preparada",
+    };
+  }
+
+  if (scanAssist.readiness === "ready") {
+    return {
+      containerClasses: "border-emerald-100 bg-emerald-50",
+      badgeClasses: "bg-white text-emerald-800",
+      badgeLabel: "Captura utilizable",
+    };
+  }
+
+  if (scanAssist.readiness === "retry") {
+    return {
+      containerClasses: "border-amber-200 bg-amber-50",
+      badgeClasses: "bg-white text-amber-800",
+      badgeLabel: "Conviene repetirla",
+    };
+  }
+
+  return {
+    containerClasses: "border-sky-100 bg-sky-50",
+    badgeClasses: "bg-white text-sky-800",
+    badgeLabel: "Revisión guiada",
+  };
+}
+
+function getExpectedTypeAlignmentCopy(value: ScanAssistAssessmentView["expectedTypeAlignment"]) {
+  switch (value) {
+    case "match":
+      return "Coincide bien con el documento esperado";
+    case "possible":
+      return "Podría coincidir con el documento esperado";
+    case "mismatch":
+      return "No parece el documento esperado";
+    default:
+      return "El tipo documental todavía no es concluyente";
+  }
+}
+
+function getSelectedFilePreparationCopy(params: {
+  file: File | null;
+  preferredCaptureMode?: AuditarCaptureMode | null;
+  selectedRecommendedTargetType?: DossierTarget["type"] | null;
+}) {
+  const expectedLabel = params.selectedRecommendedTargetType
+    ? getSimpleDocumentTypeLabel(params.selectedRecommendedTargetType).toLowerCase()
+    : "documento laboral";
+
+  if (!params.file) {
+    return params.preferredCaptureMode === "camera"
+      ? "Cuando tomes la foto, la IA revisará si la hoja se ve completa, derecha y con luz suficiente antes de decirte qué conviene repetir."
+      : `Cuando elijas el archivo, la IA revisará si el ${expectedLabel} parece legible y suficientemente claro para seguir con el análisis.`;
+  }
+
+  if (params.file.type.startsWith("image/")) {
+    return "Al subir la foto revisaremos nitidez, bordes, orientación y si el contenido visible parece suficiente para continuar sin fricción.";
+  }
+
+  if (params.file.type === "application/pdf") {
+    return "Al subir el PDF revisaremos si sus páginas parecen completas, legibles y alineadas con el documento que quieres aportar.";
+  }
+
+  return "Al subir el archivo comprobaremos si este formato puede revisarse automáticamente y te diremos si conviene complementarlo con una foto o PDF más claro.";
 }
 
 const analysisFieldLabels: Record<string, string> = {
@@ -1175,6 +1272,7 @@ export default function Auditar() {
   const utils = trpc.useUtils();
   const bootstrapMutation = trpc.workspace.bootstrap.useMutation();
   const uploadMutation = trpc.cases.uploadDocument.useMutation();
+  const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -1188,14 +1286,18 @@ export default function Auditar() {
   const [historyFilter, setHistoryFilter] = useState<DossierHistoryFilter>("all");
   const [mobileOnboardingIndex, setMobileOnboardingIndex] = useState(0);
   const [selectedRecommendedTargetType, setSelectedRecommendedTargetType] = useState<DossierTarget["type"] | null>(null);
+  const [preferredCaptureMode, setPreferredCaptureMode] = useState<AuditarCaptureMode | null>(null);
+  const [selectedCaptureMode, setSelectedCaptureMode] = useState<AuditarCaptureMode | null>(null);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
   const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
+  const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
+  const syncedRemoteViewStateRef = useRef("");
 
   const auditarPersistenceKey = useMemo(() => {
     if (!auth.user) {
@@ -1231,11 +1333,13 @@ export default function Auditar() {
       setSelectedRecommendedTargetType(
         persistedState.selectedRecommendedTargetType === undefined ? null : persistedState.selectedRecommendedTargetType,
       );
+      setPreferredCaptureMode(persistedState.preferredCaptureMode === undefined ? null : persistedState.preferredCaptureMode);
     } catch {
       window.localStorage.removeItem(auditarPersistenceKey);
       setHistoryFilter("all");
       setMobileOnboardingIndex(0);
       setSelectedRecommendedTargetType(null);
+      setPreferredCaptureMode(null);
     } finally {
       setPersistenceReady(true);
     }
@@ -1252,9 +1356,10 @@ export default function Auditar() {
         historyFilter,
         mobileOnboardingIndex,
         selectedRecommendedTargetType,
+        preferredCaptureMode,
       }),
     );
-  }, [auditarPersistenceKey, historyFilter, mobileOnboardingIndex, persistenceReady, selectedRecommendedTargetType]);
+  }, [auditarPersistenceKey, historyFilter, mobileOnboardingIndex, persistenceReady, preferredCaptureMode, selectedRecommendedTargetType]);
 
   useEffect(() => {
     if (auth.loading || !auth.isAuthenticated || bootstrapStarted) return;
@@ -1280,11 +1385,97 @@ export default function Auditar() {
   });
 
   const caseDetailInput = selectedTenantId && selectedCaseId ? { tenantId: selectedTenantId, caseId: selectedCaseId } : undefined;
+  const currentCaseScopeKey = caseDetailInput ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}` : null;
 
   const caseDetailQuery = trpc.cases.detail.useQuery(caseDetailInput as { tenantId: string; caseId: string }, {
     enabled: auth.isAuthenticated && Boolean(caseDetailInput),
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    setRemoteViewStateReadyKey(null);
+    syncedRemoteViewStateRef.current = "";
+  }, [currentCaseScopeKey]);
+
+  useEffect(() => {
+    if (!currentCaseScopeKey || caseDetailQuery.status !== "success" || remoteViewStateReadyKey === currentCaseScopeKey) {
+      return;
+    }
+
+    const remoteState = sanitizePersistedAuditarViewState(caseDetailQuery.data?.auditarViewState);
+
+    if (remoteState.historyFilter !== undefined) {
+      setHistoryFilter(remoteState.historyFilter);
+    }
+    if (remoteState.mobileOnboardingIndex !== undefined) {
+      setMobileOnboardingIndex(remoteState.mobileOnboardingIndex);
+    }
+    if (remoteState.selectedRecommendedTargetType !== undefined) {
+      setSelectedRecommendedTargetType(remoteState.selectedRecommendedTargetType);
+    }
+    if (remoteState.preferredCaptureMode !== undefined) {
+      setPreferredCaptureMode(remoteState.preferredCaptureMode);
+    }
+
+    syncedRemoteViewStateRef.current = JSON.stringify(remoteState);
+    setRemoteViewStateReadyKey(currentCaseScopeKey);
+  }, [caseDetailQuery.data?.auditarViewState, caseDetailQuery.status, currentCaseScopeKey, remoteViewStateReadyKey]);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !currentCaseScopeKey ||
+      !selectedTenantId ||
+      !selectedCaseId ||
+      !persistenceReady ||
+      remoteViewStateReadyKey !== currentCaseScopeKey
+    ) {
+      return;
+    }
+
+    const serializedViewState = JSON.stringify({
+      historyFilter,
+      mobileOnboardingIndex,
+      selectedRecommendedTargetType,
+      preferredCaptureMode,
+    });
+
+    if (syncedRemoteViewStateRef.current === serializedViewState) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      persistAuditarViewStateMutation.mutate(
+        {
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+          viewState: {
+            historyFilter,
+            mobileOnboardingIndex,
+            selectedRecommendedTargetType,
+            preferredCaptureMode,
+          },
+        },
+        {
+          onSuccess: () => {
+            syncedRemoteViewStateRef.current = serializedViewState;
+          },
+        },
+      );
+    }, 450);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    currentCaseScopeKey,
+    historyFilter,
+    mobileOnboardingIndex,
+    persistenceReady,
+    preferredCaptureMode,
+    remoteViewStateReadyKey,
+    selectedCaseId,
+    selectedRecommendedTargetType,
+    selectedTenantId,
+  ]);
 
   useEffect(() => {
     if (!selectedTenantId && tenantsQuery.data?.[0]?.tenantId) {
@@ -1413,6 +1604,23 @@ export default function Auditar() {
   );
   const visiblePriorityUploadGuides = missingPriorityUploadGuides.length > 0 ? missingPriorityUploadGuides : priorityUploadGuides.slice(0, 2);
   const activeMobileOnboardingStep = mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
+  const activeCaptureMode = selectedCaptureMode ?? preferredCaptureMode ?? "file";
+  const remoteViewStateSyncLabel = !currentCaseScopeKey
+    ? "Elige tu caso para activar continuidad entre dispositivos."
+    : persistAuditarViewStateMutation.isPending
+      ? "Guardando esta vista para cuando vuelvas a entrar..."
+      : remoteViewStateReadyKey === currentCaseScopeKey
+        ? "Tu avance de esta vista se guarda también entre dispositivos."
+        : "Preparando la continuidad entre dispositivos...";
+  const selectedFilePreparationCopy = useMemo(
+    () =>
+      getSelectedFilePreparationCopy({
+        file: selectedFile,
+        preferredCaptureMode,
+        selectedRecommendedTargetType,
+      }),
+    [preferredCaptureMode, selectedFile, selectedRecommendedTargetType],
+  );
   const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
     const documentEntries: DossierHistoryEntry[] = documents.map((document) => ({
       id: `document-${document.documentId}`,
@@ -1536,6 +1744,7 @@ export default function Auditar() {
 
   const clearSelectedFile = () => {
     setSelectedFile(null);
+    setSelectedCaptureMode(null);
     setTextHint("");
     setSubmitError(null);
     setPickerKey((value) => value + 1);
@@ -1553,11 +1762,24 @@ export default function Auditar() {
   };
 
   const openCameraPicker = () => {
+    setPreferredCaptureMode("camera");
+    setSelectedCaptureMode("camera");
     cameraInputRef.current?.click();
   };
 
   const openFilePicker = () => {
+    setPreferredCaptureMode("file");
+    setSelectedCaptureMode("file");
     fileInputRef.current?.click();
+  };
+
+  const openPreferredPicker = () => {
+    if (activeCaptureMode === "camera") {
+      openCameraPicker();
+      return;
+    }
+
+    openFilePicker();
   };
 
   const focusRecommendedUpload = (targetType?: DossierTarget["type"] | null) => {
@@ -1580,7 +1802,7 @@ export default function Auditar() {
       return;
     }
 
-    openFilePicker();
+    openPreferredPicker();
   };
 
   const handleUpload = async () => {
@@ -1599,6 +1821,8 @@ export default function Auditar() {
         mimeType: selectedFile.type || "application/octet-stream",
         base64Content,
         textHint: textHint || undefined,
+        expectedDocumentType: selectedRecommendedTargetType ?? undefined,
+        captureMode: selectedCaptureMode ?? preferredCaptureMode ?? undefined,
         visibility: "tenant_legal",
         consentStatus: "pending",
         sourceChannel: "manual",
@@ -1606,6 +1830,7 @@ export default function Auditar() {
 
       setLastUpload(result);
       setSelectedFile(null);
+      setSelectedCaptureMode(null);
       setTextHint("");
       setPickerKey((value) => value + 1);
 
@@ -1714,18 +1939,33 @@ export default function Auditar() {
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-            onClick={() => {
-              setSubmitError(null);
-              setLastUpload(null);
-              void Promise.all([tenantsQuery.refetch(), casesQuery.refetch(), caseDetailQuery.refetch()]);
-            }}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" strokeWidth={1.8} />
-            Actualizar información
-          </Button>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+              onClick={() => {
+                setSubmitError(null);
+                setLastUpload(null);
+                void Promise.all([tenantsQuery.refetch(), casesQuery.refetch(), caseDetailQuery.refetch()]);
+              }}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" strokeWidth={1.8} />
+              Actualizar información
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+              onClick={() => {
+                setMobileOnboardingIndex(0);
+                uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              Ver guía otra vez
+            </Button>
+            <span className="rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
+              {remoteViewStateSyncLabel}
+            </span>
+          </div>
         </div>
 
         {bootstrapMutation.isPending ? (
@@ -2124,6 +2364,56 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
+                <div className="mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
+                        <FileSearch className="h-5 w-5" strokeWidth={1.8} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-950">Escaneo asistido por IA</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-700">{selectedFilePreparationCopy}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Nitidez y legibilidad</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Bordes y orientación</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Coincidencia con el documento esperado</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-semibold text-slate-950">Abrir primero</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{getCaptureModeSupportCopy(preferredCaptureMode)}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
+                          preferredCaptureMode === "camera"
+                            ? "border-teal-200 bg-teal-50 text-teal-900"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                        onClick={() => setPreferredCaptureMode("camera")}
+                      >
+                        <Camera className="h-4 w-4" strokeWidth={1.8} />
+                        Cámara
+                      </button>
+                      <button
+                        type="button"
+                        className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
+                          preferredCaptureMode === "file" || preferredCaptureMode === null
+                            ? "border-teal-200 bg-teal-50 text-teal-900"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                        onClick={() => setPreferredCaptureMode("file")}
+                      >
+                        <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
+                        Archivo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <input
                   ref={cameraInputRef}
                   key={`camera-${pickerKey}`}
@@ -2159,7 +2449,11 @@ export default function Auditar() {
                   <div className="hidden gap-3 sm:grid sm:grid-cols-2">
                     <Button
                       variant="outline"
-                      className="h-12 rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      className={`h-12 rounded-2xl ${
+                        preferredCaptureMode === "camera"
+                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      }`}
                       onClick={openCameraPicker}
                     >
                       <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -2167,7 +2461,11 @@ export default function Auditar() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="h-12 rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      className={`h-12 rounded-2xl ${
+                        preferredCaptureMode === "file" || preferredCaptureMode === null
+                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      }`}
                       onClick={openFilePicker}
                     >
                       <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -2223,7 +2521,7 @@ export default function Auditar() {
                   disabled={uploadMutation.isPending || !selectedTenantId || !selectedCaseId}
                   onClick={() => {
                     if (!selectedFile) {
-                      openFilePicker();
+                      openPreferredPicker();
                       return;
                     }
                     void handleUpload();
@@ -2233,7 +2531,9 @@ export default function Auditar() {
                     ? "Subiendo y revisando..."
                     : selectedFile
                       ? "Subir y revisar documento"
-                      : "Elegir archivo para continuar"}
+                      : activeCaptureMode === "camera"
+                        ? "Tomar foto para continuar"
+                        : "Elegir archivo para continuar"}
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
@@ -2264,6 +2564,46 @@ export default function Auditar() {
                       </div>
                     </div>
                   </div>
+
+                  {lastUpload?.scanAssistance ? (
+                    <div className={`rounded-[1.3rem] border p-4 ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).containerClasses}`}>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                          <FileSearch className="mt-1 h-5 w-5 shrink-0 text-slate-700" strokeWidth={1.8} />
+                          <div>
+                            <p className="font-semibold text-slate-950">
+                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).friendlyHeadline}
+                            </p>
+                            <p className="mt-1 text-sm leading-7 text-slate-700">
+                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).userGuidance}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeClasses}`}
+                        >
+                          {getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeLabel}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          Confianza visual {(lastUpload.scanAssistance as ScanAssistAssessmentView).confidence}%
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          {getExpectedTypeAlignmentCopy((lastUpload.scanAssistance as ScanAssistAssessmentView).expectedTypeAlignment)}
+                        </span>
+                      </div>
+
+                      {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.length ? (
+                        <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                          {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.map((item) => (
+                            <p key={item}>• {item}</p>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
@@ -3248,12 +3588,16 @@ export default function Auditar() {
           <DrawerHeader className="text-left">
             <DrawerTitle>Elige cómo quieres subir tu documento</DrawerTitle>
             <DrawerDescription>
-              Puedes tomar una foto en ese momento o elegir un archivo que ya tengas guardado en tu celular o computadora.
+              Puedes tomar una foto en ese momento o elegir un archivo que ya tengas guardado en tu celular o computadora. Recordaremos tu opción para la siguiente vez.
             </DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 px-4 pb-2">
             <Button
-              className="h-12 w-full rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
+              className={`h-12 w-full rounded-2xl ${
+                preferredCaptureMode === "camera"
+                  ? "bg-teal-600 text-white hover:bg-teal-700"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
               onClick={openCameraPicker}
             >
               <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -3261,7 +3605,11 @@ export default function Auditar() {
             </Button>
             <Button
               variant="outline"
-              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+              className={`h-12 w-full rounded-2xl ${
+                preferredCaptureMode === "file" || preferredCaptureMode === null
+                  ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+              }`}
               onClick={openFilePicker}
             >
               <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -3295,7 +3643,9 @@ export default function Auditar() {
               ? "Subiendo y revisando..."
               : selectedFile
                 ? "Subir y revisar documento"
-                : "Tomar foto o elegir archivo"}
+                : activeCaptureMode === "camera"
+                  ? "Tomar foto para continuar"
+                  : "Elegir archivo para continuar"}
           </Button>
 
           <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">

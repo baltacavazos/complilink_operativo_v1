@@ -23,6 +23,7 @@ import {
   listCasesForUser,
   listTenantsForUser,
   listVisibleDocuments,
+  persistAuditarViewState,
   seedDemoCaseIfEmpty,
   updateCaseStatus,
   upsertCanonicalContract,
@@ -31,6 +32,7 @@ import {
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { invokeLLM } from "./_core/llm";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storageGet, storagePut } from "./storage";
 import {
@@ -58,6 +60,9 @@ const casePrioritySchema = z.enum(CASE_PRIORITIES);
 const consentStatusSchema = z.enum(CONSENT_STATUSES);
 const documentConsentStatusSchema = z.enum(["pending", "granted", "revoked", "not_required"]);
 const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
+const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
+const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
+const auditarCaptureModeSchema = z.enum(["camera", "file"]);
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
 const complilinkReturnEventNames = new Set([
@@ -83,6 +88,193 @@ function getMetadataDocumentId(metadata: Record<string, unknown> | null) {
   if (typeof metadata.documentId === "string") return metadata.documentId;
   if (typeof metadata.document_id === "string") return metadata.document_id;
   return null;
+}
+
+type AuditarTargetType = z.infer<typeof auditarTargetTypeSchema>;
+type AuditarCaptureMode = z.infer<typeof auditarCaptureModeSchema>;
+type ScanAssistAssessment = {
+  readiness: "ready" | "retry" | "manual_review";
+  documentPresence: "clear" | "partial" | "uncertain";
+  issues: string[];
+  userGuidance: string;
+  friendlyHeadline: string;
+  expectedTypeAlignment: "match" | "possible" | "uncertain" | "mismatch";
+  confidence: number;
+};
+
+function buildExpectedDocumentTypeHint(targetType?: AuditarTargetType) {
+  switch (targetType) {
+    case "payroll_receipt":
+      return "El usuario espera subir un recibo de nómina o comprobante de pago laboral.";
+    case "cfdi":
+      return "El usuario espera subir un CFDI o XML timbrado de nómina.";
+    case "contract":
+      return "El usuario espera subir un contrato laboral o condiciones iniciales de trabajo.";
+    case "imss":
+      return "El usuario espera subir un soporte IMSS, alta, baja o semanas cotizadas.";
+    case "evidence":
+      return "El usuario espera subir evidencia complementaria como chat, correo, captura o documento de apoyo.";
+    default:
+      return "";
+  }
+}
+
+function buildFallbackScanAssist(params: { mimeType: string; expectedDocumentType?: AuditarTargetType }): ScanAssistAssessment {
+  const isImage = params.mimeType.startsWith("image/");
+  return {
+    readiness: isImage ? "manual_review" : "ready",
+    documentPresence: isImage ? "partial" : "uncertain",
+    issues: isImage
+      ? ["La captura necesita una revisión adicional para confirmar nitidez, bordes y legibilidad."]
+      : ["Este formato seguirá su revisión automática sin bloquear tu carga."],
+    userGuidance: isImage
+      ? "Si puedes, toma la foto con más luz, mostrando toda la hoja y evitando sombras para que el análisis sea más claro."
+      : "Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
+    friendlyHeadline: isImage ? "Vamos a ayudarte a revisar si la foto se entiende bien" : "Tu archivo está listo para seguir al análisis",
+    expectedTypeAlignment: params.expectedDocumentType ? "possible" : "uncertain",
+    confidence: isImage ? 55 : 60,
+  };
+}
+
+async function analyzeDocumentScanAssist(params: {
+  fileUrl: string;
+  mimeType: string;
+  fileName: string;
+  expectedDocumentType?: AuditarTargetType;
+  textHint?: string;
+}): Promise<ScanAssistAssessment> {
+  const fallback = buildFallbackScanAssist({
+    mimeType: params.mimeType,
+    expectedDocumentType: params.expectedDocumentType,
+  });
+
+  const supportsImageVision = params.mimeType.startsWith("image/");
+  const supportsPdfVision = params.mimeType === "application/pdf";
+
+  if (!supportsImageVision && !supportsPdfVision) {
+    return fallback;
+  }
+
+  const expectedHint = buildExpectedDocumentTypeHint(params.expectedDocumentType);
+
+  try {
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content:
+            "Eres un asistente experto en escaneo documental laboral. Evalúas si una captura es usable para personas con muy baja alfabetización digital. Debes priorizar instrucciones cortas, humanas y accionables. No des asesoría legal ni inventes contenido no visible.",
+        },
+        {
+          role: "user",
+          content: supportsImageVision
+            ? [
+                {
+                  type: "text",
+                  text: `Analiza esta captura documental. Archivo: ${params.fileName}. Tipo esperado: ${params.expectedDocumentType ?? "no especificado"}. ${expectedHint} Pista adicional: ${params.textHint ?? "sin pista adicional"}. Responde solo con el esquema solicitado, evaluando legibilidad, bordes, orientación, sombras, reflejos, completitud visible y si parece alinearse con el tipo esperado.`,
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: params.fileUrl,
+                    detail: "high",
+                  },
+                },
+              ]
+            : [
+                {
+                  type: "text",
+                  text: `Analiza este PDF documental laboral. Archivo: ${params.fileName}. Tipo esperado: ${params.expectedDocumentType ?? "no especificado"}. ${expectedHint} Pista adicional: ${params.textHint ?? "sin pista adicional"}. Responde solo con el esquema solicitado, evaluando si el documento parece completo, legible y compatible con el tipo esperado.`,
+                },
+                {
+                  type: "file_url",
+                  file_url: {
+                    url: params.fileUrl,
+                    mime_type: "application/pdf",
+                  },
+                },
+              ],
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "scan_assist_assessment",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              readiness: {
+                type: "string",
+                enum: ["ready", "retry", "manual_review"],
+              },
+              documentPresence: {
+                type: "string",
+                enum: ["clear", "partial", "uncertain"],
+              },
+              issues: {
+                type: "array",
+                items: { type: "string" },
+              },
+              userGuidance: { type: "string" },
+              friendlyHeadline: { type: "string" },
+              expectedTypeAlignment: {
+                type: "string",
+                enum: ["match", "possible", "uncertain", "mismatch"],
+              },
+              confidence: {
+                type: "number",
+              },
+            },
+            required: [
+              "readiness",
+              "documentPresence",
+              "issues",
+              "userGuidance",
+              "friendlyHeadline",
+              "expectedTypeAlignment",
+              "confidence",
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+
+    const messageContent = response.choices[0]?.message.content;
+    const serialized =
+      typeof messageContent === "string"
+        ? messageContent
+        : Array.isArray(messageContent)
+          ? messageContent
+              .filter((part): part is { type: "text"; text: string } => part.type === "text")
+              .map((part) => part.text)
+              .join("\n")
+          : "";
+
+    if (!serialized) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(serialized) as ScanAssistAssessment;
+    return {
+      readiness: parsed.readiness,
+      documentPresence: parsed.documentPresence,
+      issues: Array.isArray(parsed.issues) ? parsed.issues.slice(0, 4) : fallback.issues,
+      userGuidance: typeof parsed.userGuidance === "string" && parsed.userGuidance.trim().length > 0 ? parsed.userGuidance.trim() : fallback.userGuidance,
+      friendlyHeadline:
+        typeof parsed.friendlyHeadline === "string" && parsed.friendlyHeadline.trim().length > 0
+          ? parsed.friendlyHeadline.trim()
+          : fallback.friendlyHeadline,
+      expectedTypeAlignment: parsed.expectedTypeAlignment,
+      confidence:
+        typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence)
+          ? Math.min(100, Math.max(0, Math.round(parsed.confidence)))
+          : fallback.confidence,
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 function buildCompliLinkMonitoring(
@@ -249,6 +441,39 @@ export const appRouter = router({
           ...detail,
           documents,
           complilinkMonitoring,
+        };
+      }),
+    persistAuditarViewState: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          viewState: z.object({
+            historyFilter: auditarHistoryFilterSchema.optional(),
+            mobileOnboardingIndex: z.number().int().min(0).max(2).optional(),
+            selectedRecommendedTargetType: auditarTargetTypeSchema.nullable().optional(),
+            preferredCaptureMode: auditarCaptureModeSchema.nullable().optional(),
+          }),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+
+        const viewState = await persistAuditarViewState({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          viewState: input.viewState,
+        });
+
+        return {
+          viewState,
+          persistedAt: new Date().toISOString(),
         };
       }),
     create: protectedProcedure
@@ -430,6 +655,8 @@ export const appRouter = router({
           mimeType: z.string().min(3).max(128),
           base64Content: z.string().min(10),
           textHint: z.string().max(5000).optional(),
+          expectedDocumentType: auditarTargetTypeSchema.optional(),
+          captureMode: auditarCaptureModeSchema.optional(),
           visibility: documentVisibilitySchema.default("case_team"),
           consentStatus: documentConsentStatusSchema.default("pending"),
           sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
@@ -453,15 +680,24 @@ export const appRouter = router({
           fileName: safeFileName,
         });
         const uploaded = await storagePut(storageKey, binary, input.mimeType);
+        const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(input.expectedDocumentType);
+        const enrichedTextHint = [input.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
         const classification = classifyMexicanLaborDocument({
           fileName: safeFileName,
           mimeType: input.mimeType,
+          textHint: enrichedTextHint || undefined,
+        });
+        const scanAssistance = await analyzeDocumentScanAssist({
+          fileUrl: uploaded.url,
+          mimeType: input.mimeType,
+          fileName: safeFileName,
+          expectedDocumentType: input.expectedDocumentType,
           textHint: input.textHint,
         });
         const preliminaryAnalysis = buildPreliminaryLaborAnalysis({
           fileName: safeFileName,
           mimeType: input.mimeType,
-          textHint: input.textHint,
+          textHint: enrichedTextHint || undefined,
           classification,
         });
 
@@ -527,6 +763,9 @@ export const appRouter = router({
             sha256,
             visibility: input.visibility,
             classification_confidence: classification.classificationConfidence,
+            expected_document_type: input.expectedDocumentType ?? null,
+            capture_mode: input.captureMode ?? null,
+            scan_assistance: scanAssistance,
           }),
           eventAt: new Date(),
         });
@@ -546,6 +785,27 @@ export const appRouter = router({
             review_recommendation: classification.reviewRecommendation,
             supports_structured_extraction: classification.supportsStructuredExtraction,
             supports_benefit_estimation: classification.supportsBenefitEstimation,
+            expected_document_type: input.expectedDocumentType ?? null,
+          }),
+          eventAt: new Date(),
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Escaneo asistido evaluó la captura",
+          description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
+          metadata: JSON.stringify({
+            document_id: documentId,
+            readiness: scanAssistance.readiness,
+            document_presence: scanAssistance.documentPresence,
+            expected_type_alignment: scanAssistance.expectedTypeAlignment,
+            confidence: scanAssistance.confidence,
+            issues: scanAssistance.issues,
+            capture_mode: input.captureMode ?? null,
           }),
           eventAt: new Date(),
         });
@@ -752,6 +1012,22 @@ export const appRouter = router({
           afterState: heliosOpinionContract,
         });
 
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.scan_assist",
+          afterState: {
+            scanAssistance,
+            expectedDocumentType: input.expectedDocumentType ?? null,
+            captureMode: input.captureMode ?? null,
+          },
+        });
+
         return {
           document: documentRecord,
           classification,
@@ -761,6 +1037,7 @@ export const appRouter = router({
           heliosOpinion: heliosOpinionContract.opinion,
           heliosOpinionContract,
           engineDispatch,
+          scanAssistance,
         };
       }),
   }),
