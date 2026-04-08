@@ -1,0 +1,239 @@
+{
+  "generated_at": "2026-04-08T20:20:01.566559+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir una iteración fina multi-modelo del hero para reducir el peso del header, maximizar el foco del titular y simplificar la tarjeta derecha."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"El hero debe centrar la atención en el titular, aligerar el header y simplificar la tarjeta derecha para máxima claridad y confianza.\",\n  \"consensus_score_0_to_10\": 8,\n  \"root_problem\": \"Competencia visual entre header, logo y titular que dispersa la atención y sobrecarga la tarjeta derecha.\",\n  \"hero_priority_order\": [\"Destacar el titular principal\", \"Reducir peso visual del header\", \"Simplificar la tarjeta derecha\"],\n  \"header_strategy\": {\n    \"decision\": \"Reducir altura y contraste del header para que no compita con el hero, manteniendo navegación clara.\",\n    \"keep\": [\"logo pequeño en header\", \"menú de navegación principal\"],\n    \"reduce\": [\"altura del header\", \"contraste de fondo (usar gris muy oscuro en vez de negro puro)\", \"padding vertical excesivo\"],\n    \"mobile_rule\": \"Header fijo pero compacto, con solo iconos esenciales visibles para no robar foco.\"\n  },\n  \"headline_strategy\": {\n    \"decision\": \"Convertir el titular en el foco absoluto usando tamaño, peso y espacio, eliminando elementos distractores cercanos.\",\n    \"keep\": [\"mensaje claro y directo del titular\", \"tono cercano y confiable\"],\n    \"change\": [\"reducir tamaño del logo en hero o moverlo fuera del área del titular\", \"aumentar espacio en blanco alrededor del titular\", \"usar tipografía más grande y peso seminegrita o negrita\"],\n    \"why_it_will_land_faster\": \"Ajustes tipográficos y espaciales son rápidos y no requieren rediseño, mejoran foco inmediato.\"\n  },\n  \"right_card_strategy\": {\n    \"decision\": \"Simplificar la tarjeta derecha a 2-3 mensajes clave con iconos claros y eliminar texto redundante.\",\n    \"keep\": [\"uso de iconos para reforzar mensajes\", \"estructura de tarjeta visible y ordenada\"],\n    \"simplify\": [\"eliminar detalles secundarios o técnicos\", \"usar frases cortas y directas\", \"aumentar tamaño de fuente para lectura rápida\"],\n    \"target_message_time_seconds\": \"3-5 segundos para captar el valor principal\"\n  },\n  \"visual_balance_rules\": [\n    \"El header no debe ocupar más del 15% del alto visible en desktop ni en móvil.\",\n    \"El titular debe tener al menos 30% más de peso visual que cualquier otro elemento en el hero.\",\n    \"La tarjeta derecha debe usar espacio y tipografía para facilitar lectura rápida sin saturar.\",\n    \"Mantener espacios en blanco generosos para evitar sensación de agobio visual.\"\n  ],\n  \"changes_now\": [\n    \"Reducir altura y contraste del header inmediatamente.\",\n    \"Disminuir tamaño del logo dentro del hero y aumentar espacio alrededor del titular.\",\n    \"Aumentar tamaño y peso del titular para hacerlo foco absoluto.\",\n    \"Simplificar texto y cantidad de información en la tarjeta derecha.\",\n    \"Ajustar padding y márgenes para mejorar respiración visual.\"\n  ],\n  \"changes_later\": [\n    \"Testear versiones con logo animado o interactivo fuera del área del titular.\",\n    \"Explorar microinteracciones en la tarjeta derecha para reforzar mensajes clave.\"\n  ],\n  \"do_not_do\": [\n    \"No eliminar el header ni la navegación principal.\",\n    \"No cambiar la paleta de colores aprobada ni la identidad visual.\",\n    \"No agregar elementos visuales complejos o animaciones que distraigan.\"\n  ],\n  \"confidence_0_to_100\": 92\n}",
+      "parsed": {
+        "veredicto_general": "El hero debe centrar la atención en el titular, aligerar el header y simplificar la tarjeta derecha para máxima claridad y confianza.",
+        "consensus_score_0_to_10": 8,
+        "root_problem": "Competencia visual entre header, logo y titular que dispersa la atención y sobrecarga la tarjeta derecha.",
+        "hero_priority_order": [
+          "Destacar el titular principal",
+          "Reducir peso visual del header",
+          "Simplificar la tarjeta derecha"
+        ],
+        "header_strategy": {
+          "decision": "Reducir altura y contraste del header para que no compita con el hero, manteniendo navegación clara.",
+          "keep": [
+            "logo pequeño en header",
+            "menú de navegación principal"
+          ],
+          "reduce": [
+            "altura del header",
+            "contraste de fondo (usar gris muy oscuro en vez de negro puro)",
+            "padding vertical excesivo"
+          ],
+          "mobile_rule": "Header fijo pero compacto, con solo iconos esenciales visibles para no robar foco."
+        },
+        "headline_strategy": {
+          "decision": "Convertir el titular en el foco absoluto usando tamaño, peso y espacio, eliminando elementos distractores cercanos.",
+          "keep": [
+            "mensaje claro y directo del titular",
+            "tono cercano y confiable"
+          ],
+          "change": [
+            "reducir tamaño del logo en hero o moverlo fuera del área del titular",
+            "aumentar espacio en blanco alrededor del titular",
+            "usar tipografía más grande y peso seminegrita o negrita"
+          ],
+          "why_it_will_land_faster": "Ajustes tipográficos y espaciales son rápidos y no requieren rediseño, mejoran foco inmediato."
+        },
+        "right_card_strategy": {
+          "decision": "Simplificar la tarjeta derecha a 2-3 mensajes clave con iconos claros y eliminar texto redundante.",
+          "keep": [
+            "uso de iconos para reforzar mensajes",
+            "estructura de tarjeta visible y ordenada"
+          ],
+          "simplify": [
+            "eliminar detalles secundarios o técnicos",
+            "usar frases cortas y directas",
+            "aumentar tamaño de fuente para lectura rápida"
+          ],
+          "target_message_time_seconds": "3-5 segundos para captar el valor principal"
+        },
+        "visual_balance_rules": [
+          "El header no debe ocupar más del 15% del alto visible en desktop ni en móvil.",
+          "El titular debe tener al menos 30% más de peso visual que cualquier otro elemento en el hero.",
+          "La tarjeta derecha debe usar espacio y tipografía para facilitar lectura rápida sin saturar.",
+          "Mantener espacios en blanco generosos para evitar sensación de agobio visual."
+        ],
+        "changes_now": [
+          "Reducir altura y contraste del header inmediatamente.",
+          "Disminuir tamaño del logo dentro del hero y aumentar espacio alrededor del titular.",
+          "Aumentar tamaño y peso del titular para hacerlo foco absoluto.",
+          "Simplificar texto y cantidad de información en la tarjeta derecha.",
+          "Ajustar padding y márgenes para mejorar respiración visual."
+        ],
+        "changes_later": [
+          "Testear versiones con logo animado o interactivo fuera del área del titular.",
+          "Explorar microinteracciones en la tarjeta derecha para reforzar mensajes clave."
+        ],
+        "do_not_do": [
+          "No eliminar el header ni la navegación principal.",
+          "No cambiar la paleta de colores aprobada ni la identidad visual.",
+          "No agregar elementos visuales complejos o animaciones que distraigan."
+        ],
+        "confidence_0_to_100": 92
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-flash-latest",
+      "raw": "{\n  \"veredicto_general\": \"Refinamiento quirúrgico para maximizar la legibilidad y la conversión inmediata mediante la eliminación de ruido visual.\",\n  \"consensus_score_0_to_10\": 9.5,\n  \"root_problem\": \"Sobrecarga cognitiva por competencia visual entre el header, el logo redundante y la densidad de la tarjeta de datos.\",\n  \"hero_priority_order\": [\"Jerarquía tipográfica del titular\", \"Simplificación de la tarjeta de valor\", \"Reducción de peso visual del header\"],\n  \"header_strategy\": {\n    \"decision\": \"Header minimalista 'Ghost' que actúe como marco, no como protagonista.\",\n    \"keep\": [\"Logo pequeño a la izquierda\", \"Botón de acceso/registro\"],\n    \"reduce\": [\"Altura total del header en un 25%\", \"Opacidad del fondo oscuro para suavizar la transición\", \"Grosor de los ítems de navegación\"],\n    \"mobile_rule\": \"Header sticky ultra-compacto con logo y un solo CTA de acción rápida.\"\n  },\n  \"headline_strategy\": {\n    \"decision\": \"Eliminar el logo del cuerpo del hero para que el mensaje sea el único héroe.\",\n    \"keep\": [\"Propuesta de valor central\", \"Subtítulo de confianza\"],\n    \"change\": [\"Eliminar el lockup de logo grande arriba del texto\", \"Aumentar el tamaño de fuente del H1\", \"Ajustar el line-height para mejorar la lectura rápida\"],\n    \"why_it_will_land_faster\": \"Al quitar el logo redundante, el ojo del usuario va directo a la promesa de valor sin distracciones.\"\n  },\n  \"right_card_strategy\": {\n    \"decision\": \"Transformar la tarjeta de un reporte denso a un 'resumen de éxito' visual.\",\n    \"keep\": [\"Monto principal recuperable\", \"Icono de validación/check\"],\n    \"simplify\": [\"Eliminar desglose de filas secundarias\", \"Reducir etiquetas de texto pequeñas\", \"Usar un indicador visual de progreso o confianza simple\"],\n    \"target_message_time_seconds\": \"3 segundos\"\n  },\n  \"visual_balance_rules\": [\n    \"El H1 debe ser el elemento con mayor peso visual de la pantalla\",\n    \"Espaciado negativo (aire) de al menos 64px entre el titular y la tarjeta\",\n    \"La tarjeta derecha debe usar sombras suaves (soft shadows) para flotar sobre el fondo claro\",\n    \"Máximo dos pesos de fuente diferentes en toda la sección hero\"\n  ],\n  \"changes_now\": [\n    \"Reducir altura del header a 64px máximo\",\n    \"Remover el logo que precede al titular principal\",\n    \"Simplificar la tarjeta derecha a 3 puntos de datos clave\",\n    \"Aumentar el contraste del botón principal de acción\",\n    \"Ajustar el padding lateral en mobile para evitar que el texto toque los bordes\"\n  ],\n  \"changes_later\": [\n    \"Implementar micro-animación de conteo numérico en la tarjeta\",\n    \"Añadir esqueletos de carga (skeletons) para transiciones suaves\"\n  ],\n  \"do_not_do\": [\n    \"No añadir más texto explicativo en el hero\",\n    \"No usar más de dos colores vibrantes simultáneamente\",\n    \"No ocultar la navegación principal en desktop\"\n  ],\n  \"confidence_0_to_100\": 98\n}",
+      "parsed": {
+        "veredicto_general": "Refinamiento quirúrgico para maximizar la legibilidad y la conversión inmediata mediante la eliminación de ruido visual.",
+        "consensus_score_0_to_10": 9.5,
+        "root_problem": "Sobrecarga cognitiva por competencia visual entre el header, el logo redundante y la densidad de la tarjeta de datos.",
+        "hero_priority_order": [
+          "Jerarquía tipográfica del titular",
+          "Simplificación de la tarjeta de valor",
+          "Reducción de peso visual del header"
+        ],
+        "header_strategy": {
+          "decision": "Header minimalista 'Ghost' que actúe como marco, no como protagonista.",
+          "keep": [
+            "Logo pequeño a la izquierda",
+            "Botón de acceso/registro"
+          ],
+          "reduce": [
+            "Altura total del header en un 25%",
+            "Opacidad del fondo oscuro para suavizar la transición",
+            "Grosor de los ítems de navegación"
+          ],
+          "mobile_rule": "Header sticky ultra-compacto con logo y un solo CTA de acción rápida."
+        },
+        "headline_strategy": {
+          "decision": "Eliminar el logo del cuerpo del hero para que el mensaje sea el único héroe.",
+          "keep": [
+            "Propuesta de valor central",
+            "Subtítulo de confianza"
+          ],
+          "change": [
+            "Eliminar el lockup de logo grande arriba del texto",
+            "Aumentar el tamaño de fuente del H1",
+            "Ajustar el line-height para mejorar la lectura rápida"
+          ],
+          "why_it_will_land_faster": "Al quitar el logo redundante, el ojo del usuario va directo a la promesa de valor sin distracciones."
+        },
+        "right_card_strategy": {
+          "decision": "Transformar la tarjeta de un reporte denso a un 'resumen de éxito' visual.",
+          "keep": [
+            "Monto principal recuperable",
+            "Icono de validación/check"
+          ],
+          "simplify": [
+            "Eliminar desglose de filas secundarias",
+            "Reducir etiquetas de texto pequeñas",
+            "Usar un indicador visual de progreso o confianza simple"
+          ],
+          "target_message_time_seconds": "3 segundos"
+        },
+        "visual_balance_rules": [
+          "El H1 debe ser el elemento con mayor peso visual de la pantalla",
+          "Espaciado negativo (aire) de al menos 64px entre el titular y la tarjeta",
+          "La tarjeta derecha debe usar sombras suaves (soft shadows) para flotar sobre el fondo claro",
+          "Máximo dos pesos de fuente diferentes en toda la sección hero"
+        ],
+        "changes_now": [
+          "Reducir altura del header a 64px máximo",
+          "Remover el logo que precede al titular principal",
+          "Simplificar la tarjeta derecha a 3 puntos de datos clave",
+          "Aumentar el contraste del botón principal de acción",
+          "Ajustar el padding lateral en mobile para evitar que el texto toque los bordes"
+        ],
+        "changes_later": [
+          "Implementar micro-animación de conteo numérico en la tarjeta",
+          "Añadir esqueletos de carga (skeletons) para transiciones suaves"
+        ],
+        "do_not_do": [
+          "No añadir más texto explicativo en el hero",
+          "No usar más de dos colores vibrantes simultáneamente",
+          "No ocultar la navegación principal en desktop"
+        ],
+        "confidence_0_to_100": 98
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Iteración fina sólida para mayor claridad y confianza inmediata.\",\n  \"consensus_score_0_to_10\": 8,\n  \"root_problem\": \"Sobrecarga visual en header y elementos competidores diluye el foco principal.\",\n  \"hero_priority_order\": [\"Simplificar header para reducir peso\", \"Reforzar titular como foco central\", \"Optimizar tarjeta derecha para mensaje rápido\"],\n  \"header_strategy\": {\n    \"decision\": \"Aligerar visualmente manteniendo funcionalidad esencial.\",\n    \"keep\": [\"Identidad de marca en barra\", \"Navegación básica\"],\n    \"reduce\": [\"Opacidad de fondo oscuro\", \"Tamaño de elementos secundarios\", \"Espaciado vertical\"],\n    \"mobile_rule\": \"Colapsar en menú hamburguesa para priorizar hero en pantallas pequeñas\"\n  },\n  \"headline_strategy\": {\n    \"decision\": \"Hacerla más concisa y prominente para captar atención instantánea.\",\n    \"keep\": [\"Mensaje principal de valor\", \"Tono confiable\"],\n    \"change\": [\"Reducir longitud a 8-10 palabras\", \"Aumentar tamaño y contraste\", \"Integrar logo sutilmente debajo\"],\n    \"why_it_will_land_faster\": \"Se explica en 5 segundos: 'AuditaPatron: Tu aliado simple para derechos laborales'.\"\n  },\n  \"right_card_strategy\": {\n    \"decision\": \"Condensar info a 3 puntos clave para lectura en 3-5 segundos.\",\n    \"keep\": [\"Iconos de valor\", \"Llamado a acción\"],\n    \"simplify\": [\"Eliminar texto secundario\", \"Usar bullets cortos\", \"Reducir altura total\"],\n    \"target_message_time_seconds\": \"3-5 segundos para entender beneficios\"\n  },\n  \"visual_balance_rules\": [\"Header ocupa máximo 10% de viewport\", \"Hero central con 60% de espacio y alto contraste\", \"Tarjeta derecha limitada a 30% ancho, sin solapamientos\", \"Espaciado uniforme para flujo descendente\"],\n  \"changes_now\": [\"Bajar opacidad header al 80%\", \"Mover logo debajo del titular\", \"Reducir texto en tarjeta a 3 bullets\", \"Aumentar padding en hero para respiro\", \"Probar contraste en mobile\"],\n  \"changes_later\": [\"Animaciones sutiles en hero para engagement\", \"Personalización dinámica de tarjeta por usuario\"],\n  \"do_not_do\": [\"No eliminar navegación esencial\", \"No agrandar logo para no competir\", \"No sobrecargar con más colores\"],\n  \"confidence_0_to_100\": 90\n}",
+      "parsed": {
+        "veredicto_general": "Iteración fina sólida para mayor claridad y confianza inmediata.",
+        "consensus_score_0_to_10": 8,
+        "root_problem": "Sobrecarga visual en header y elementos competidores diluye el foco principal.",
+        "hero_priority_order": [
+          "Simplificar header para reducir peso",
+          "Reforzar titular como foco central",
+          "Optimizar tarjeta derecha para mensaje rápido"
+        ],
+        "header_strategy": {
+          "decision": "Aligerar visualmente manteniendo funcionalidad esencial.",
+          "keep": [
+            "Identidad de marca en barra",
+            "Navegación básica"
+          ],
+          "reduce": [
+            "Opacidad de fondo oscuro",
+            "Tamaño de elementos secundarios",
+            "Espaciado vertical"
+          ],
+          "mobile_rule": "Colapsar en menú hamburguesa para priorizar hero en pantallas pequeñas"
+        },
+        "headline_strategy": {
+          "decision": "Hacerla más concisa y prominente para captar atención instantánea.",
+          "keep": [
+            "Mensaje principal de valor",
+            "Tono confiable"
+          ],
+          "change": [
+            "Reducir longitud a 8-10 palabras",
+            "Aumentar tamaño y contraste",
+            "Integrar logo sutilmente debajo"
+          ],
+          "why_it_will_land_faster": "Se explica en 5 segundos: 'AuditaPatron: Tu aliado simple para derechos laborales'."
+        },
+        "right_card_strategy": {
+          "decision": "Condensar info a 3 puntos clave para lectura en 3-5 segundos.",
+          "keep": [
+            "Iconos de valor",
+            "Llamado a acción"
+          ],
+          "simplify": [
+            "Eliminar texto secundario",
+            "Usar bullets cortos",
+            "Reducir altura total"
+          ],
+          "target_message_time_seconds": "3-5 segundos para entender beneficios"
+        },
+        "visual_balance_rules": [
+          "Header ocupa máximo 10% de viewport",
+          "Hero central con 60% de espacio y alto contraste",
+          "Tarjeta derecha limitada a 30% ancho, sin solapamientos",
+          "Espaciado uniforme para flujo descendente"
+        ],
+        "changes_now": [
+          "Bajar opacidad header al 80%",
+          "Mover logo debajo del titular",
+          "Reducir texto en tarjeta a 3 bullets",
+          "Aumentar padding en hero para respiro",
+          "Probar contraste en mobile"
+        ],
+        "changes_later": [
+          "Animaciones sutiles en hero para engagement",
+          "Personalización dinámica de tarjeta por usuario"
+        ],
+        "do_not_do": [
+          "No eliminar navegación esencial",
+          "No agrandar logo para no competir",
+          "No sobrecargar con más colores"
+        ],
+        "confidence_0_to_100": 90
+      }
+    }
+  }
+}

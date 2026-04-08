@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-04-08T20:40:11.794074+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir la microiteración final multi-modelo del hero para bajar aún más el peso del header, mejorar el aire entre columnas y simplificar la tarjeta derecha."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Hero claro, confiable y equilibrado con microajustes para máxima claridad y simplicidad.\",\n  \"consensus_score_0_to_10\": 9,\n  \"micro_goal\": \"Reducir peso visual del header, mejorar aire entre columnas y simplificar lectura del porcentaje en tarjeta derecha.\",\n  \"header_micro_tweaks\": {\n    \"decision\": \"Aligerar el header para que funcione como marco sin robar protagonismo.\",\n    \"changes\": [\n      \"Reducir ligeramente el tamaño de fuente del título principal (5-8%).\",\n      \"Disminuir la opacidad o saturación del color de la barra superior para que sea menos dominante.\",\n      \"Reducir el padding vertical del header para compactar sin perder espacio.\"\n    ],\n    \"desktop_rule\": \"Aplicar reducción de fuente y padding, mantener barra con opacidad al 80%.\",\n    \"mobile_rule\": \"Reducir fuente un poco más para evitar saturación visual, mantener padding compacto.\"\n  },\n  \"spacing_strategy\": {\n    \"decision\": \"Incrementar espacio horizontal entre columna izquierda y tarjeta derecha para mejorar balance visual.\",\n    \"changes\": [\n      \"Agregar un margen horizontal extra de 12-16px entre columnas.\",\n      \"Aumentar padding interno de la tarjeta derecha para que el contenido respire.\",\n      \"Verificar que el espacio no cause scroll horizontal en móviles.\"\n    ],\n    \"target_feeling\": \"Sensación de orden y aire que facilita lectura y reduce sensación de amontonamiento.\"\n  },\n  \"right_card_micro_tweaks\": {\n    \"decision\": \"Simplificar bloque superior para lectura instantánea del porcentaje y mensaje clave.\",\n    \"changes\": [\n      \"Reducir texto explicativo al mínimo indispensable, usar frases muy cortas y directas.\",\n      \"Aumentar tamaño del porcentaje y usar color destacado para foco inmediato.\",\n      \"Eliminar iconos o elementos gráficos secundarios que distraigan.\"\n    ],\n    \"target_message_time_seconds\": \"1.5 segundos para captar el mensaje principal sin esfuerzo.\"\n  },\n  \"priority_order\": [\n    \"header_micro_tweaks\",\n    \"spacing_strategy\",\n    \"right_card_micro_tweaks\"\n  ],\n  \"changes_now\": [\n    \"Reducir tamaño y padding del header para aligerar peso visual.\",\n    \"Aumentar margen horizontal entre columnas para mejorar balance.\",\n    \"Simplificar texto y destacar porcentaje en tarjeta derecha.\",\n    \"Disminuir saturación de barra superior para que sea marco sutil.\",\n    \"Aumentar padding interno de tarjeta para mejor respiración.\"\n  ],\n  \"do_not_do\": [\n    \"No eliminar elementos clave del header o cambiar su estructura.\",\n    \"No reducir demasiado el tamaño del texto que afecte legibilidad.\",\n    \"No modificar la identidad visual ni colores aprobados.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Hero claro, confiable y equilibrado con microajustes para máxima claridad y simplicidad.",
+        "consensus_score_0_to_10": 9,
+        "micro_goal": "Reducir peso visual del header, mejorar aire entre columnas y simplificar lectura del porcentaje en tarjeta derecha.",
+        "header_micro_tweaks": {
+          "decision": "Aligerar el header para que funcione como marco sin robar protagonismo.",
+          "changes": [
+            "Reducir ligeramente el tamaño de fuente del título principal (5-8%).",
+            "Disminuir la opacidad o saturación del color de la barra superior para que sea menos dominante.",
+            "Reducir el padding vertical del header para compactar sin perder espacio."
+          ],
+          "desktop_rule": "Aplicar reducción de fuente y padding, mantener barra con opacidad al 80%.",
+          "mobile_rule": "Reducir fuente un poco más para evitar saturación visual, mantener padding compacto."
+        },
+        "spacing_strategy": {
+          "decision": "Incrementar espacio horizontal entre columna izquierda y tarjeta derecha para mejorar balance visual.",
+          "changes": [
+            "Agregar un margen horizontal extra de 12-16px entre columnas.",
+            "Aumentar padding interno de la tarjeta derecha para que el contenido respire.",
+            "Verificar que el espacio no cause scroll horizontal en móviles."
+          ],
+          "target_feeling": "Sensación de orden y aire que facilita lectura y reduce sensación de amontonamiento."
+        },
+        "right_card_micro_tweaks": {
+          "decision": "Simplificar bloque superior para lectura instantánea del porcentaje y mensaje clave.",
+          "changes": [
+            "Reducir texto explicativo al mínimo indispensable, usar frases muy cortas y directas.",
+            "Aumentar tamaño del porcentaje y usar color destacado para foco inmediato.",
+            "Eliminar iconos o elementos gráficos secundarios que distraigan."
+          ],
+          "target_message_time_seconds": "1.5 segundos para captar el mensaje principal sin esfuerzo."
+        },
+        "priority_order": [
+          "header_micro_tweaks",
+          "spacing_strategy",
+          "right_card_micro_tweaks"
+        ],
+        "changes_now": [
+          "Reducir tamaño y padding del header para aligerar peso visual.",
+          "Aumentar margen horizontal entre columnas para mejorar balance.",
+          "Simplificar texto y destacar porcentaje en tarjeta derecha.",
+          "Disminuir saturación de barra superior para que sea marco sutil.",
+          "Aumentar padding interno de tarjeta para mejor respiración."
+        ],
+        "do_not_do": [
+          "No eliminar elementos clave del header o cambiar su estructura.",
+          "No reducir demasiado el tamaño del texto que afecte legibilidad.",
+          "No modificar la identidad visual ni colores aprobados."
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-flash-latest",
+      "raw": "{\n  \"veredicto_general\": \"Refinamiento quirúrgico para maximizar el espacio negativo y la jerarquía visual inmediata, eliminando fricción cognitiva.\",\n  \"consensus_score_0_to_10\": 9.5,\n  \"micro_goal\": \"Eliminar ruido visual para que el valor del producto sea autoexplicativo en menos de 2 segundos.\",\n  \"header_micro_tweaks\": {\n    \"decision\": \"Reducción de peso visual y altura para actuar como marco sutil.\",\n    \"changes\": [\n      \"Reducir altura total del header a 64px\",\n      \"Bajar opacidad de los enlaces de navegación al 70% (hover 100%)\",\n      \"Sustituir sombra proyectada por un borde inferior de 1px sutil (#E2E8F0)\"\n    ],\n    \"desktop_rule\": \"Sticky con backdrop-filter: blur(8px) para dar profundidad sin saturar.\",\n    \"mobile_rule\": \"Logo alineado a la izquierda y menú compacto para maximizar el área del hero.\"\n  },\n  \"spacing_strategy\": {\n    \"decision\": \"Implementar sistema de espaciado expansivo para generar confianza.\",\n    \"changes\": [\n      \"Aumentar el gap entre la columna de texto y la tarjeta a 64px en desktop\",\n      \"Incrementar el padding superior del hero para separarlo visualmente del header\",\n      \"Alinear la base del bloque de texto con la base de la tarjeta derecha\"\n    ],\n    \"target_feeling\": \"Orden, profesionalismo y calma visual.\"\n  },\n  \"right_card_micro_tweaks\": {\n    \"decision\": \"Simplificación radical del bloque de KPI para lectura instantánea.\",\n    \"changes\": [\n      \"Eliminar etiquetas redundantes como 'Tu resultado' o 'Estado actual'\",\n      \"Aumentar el tamaño del porcentaje principal a 36px con peso SemiBold\",\n      \"Usar un solo color de acento (verde éxito) para el indicador de progreso\"\n    ],\n    \"target_message_time_seconds\": \"1.5\"\n  },\n  \"priority_order\": [\n    \"Simplificación de la tarjeta derecha\",\n    \"Ajuste de gap entre columnas\",\n    \"Aligeramiento del header\"\n  ],\n  \"changes_now\": [\n    \"Reducir altura del header a 64px\",\n    \"Aumentar gap horizontal a 64px\",\n    \"Limpiar el encabezado de la tarjeta de textos secundarios\",\n    \"Ajustar el peso de la fuente del porcentaje en la tarjeta\",\n    \"Suavizar las sombras de la tarjeta para que parezca flotar sutilmente\"\n  ],\n  \"do_not_do\": [\n    \"No cambiar la paleta de colores principal\",\n    \"No eliminar el titular principal que ya funciona\",\n    \"No añadir nuevos elementos gráficos que compitan con la tarjeta\"\n  ],\n  \"confidence_0_to_100\": 98\n}",
+      "parsed": {
+        "veredicto_general": "Refinamiento quirúrgico para maximizar el espacio negativo y la jerarquía visual inmediata, eliminando fricción cognitiva.",
+        "consensus_score_0_to_10": 9.5,
+        "micro_goal": "Eliminar ruido visual para que el valor del producto sea autoexplicativo en menos de 2 segundos.",
+        "header_micro_tweaks": {
+          "decision": "Reducción de peso visual y altura para actuar como marco sutil.",
+          "changes": [
+            "Reducir altura total del header a 64px",
+            "Bajar opacidad de los enlaces de navegación al 70% (hover 100%)",
+            "Sustituir sombra proyectada por un borde inferior de 1px sutil (#E2E8F0)"
+          ],
+          "desktop_rule": "Sticky con backdrop-filter: blur(8px) para dar profundidad sin saturar.",
+          "mobile_rule": "Logo alineado a la izquierda y menú compacto para maximizar el área del hero."
+        },
+        "spacing_strategy": {
+          "decision": "Implementar sistema de espaciado expansivo para generar confianza.",
+          "changes": [
+            "Aumentar el gap entre la columna de texto y la tarjeta a 64px en desktop",
+            "Incrementar el padding superior del hero para separarlo visualmente del header",
+            "Alinear la base del bloque de texto con la base de la tarjeta derecha"
+          ],
+          "target_feeling": "Orden, profesionalismo y calma visual."
+        },
+        "right_card_micro_tweaks": {
+          "decision": "Simplificación radical del bloque de KPI para lectura instantánea.",
+          "changes": [
+            "Eliminar etiquetas redundantes como 'Tu resultado' o 'Estado actual'",
+            "Aumentar el tamaño del porcentaje principal a 36px con peso SemiBold",
+            "Usar un solo color de acento (verde éxito) para el indicador de progreso"
+          ],
+          "target_message_time_seconds": "1.5"
+        },
+        "priority_order": [
+          "Simplificación de la tarjeta derecha",
+          "Ajuste de gap entre columnas",
+          "Aligeramiento del header"
+        ],
+        "changes_now": [
+          "Reducir altura del header a 64px",
+          "Aumentar gap horizontal a 64px",
+          "Limpiar el encabezado de la tarjeta de textos secundarios",
+          "Ajustar el peso de la fuente del porcentaje en la tarjeta",
+          "Suavizar las sombras de la tarjeta para que parezca flotar sutilmente"
+        ],
+        "do_not_do": [
+          "No cambiar la paleta de colores principal",
+          "No eliminar el titular principal que ya funciona",
+          "No añadir nuevos elementos gráficos que compitan con la tarjeta"
+        ],
+        "confidence_0_to_100": 98
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Hero sólido, listo para pulido final que eleve claridad y confianza.\",\n  \"consensus_score_0_to_10\": 8,\n  \"micro_goal\": \"Simplificar visualmente para comprensión instantánea y adopción masiva.\",\n  \"header_micro_tweaks\": {\n    \"decision\": \"Reducir peso visual del header para que enmarque sin dominar.\",\n    \"changes\": [\"Bajar opacidad de fondo a 80%\", \"Reducir altura en 10px\", \"Aumentar padding interno en 4px\"],\n    \"desktop_rule\": \"Mantener ancho completo pero con bordes más suaves.\",\n    \"mobile_rule\": \"Ajustar a 56px de altura fija para pantallas táctiles.\"\n  },\n  \"spacing_strategy\": {\n    \"decision\": \"Aumentar aire entre bloques para mejor balance y respiración visual.\",\n    \"changes\": [\"Agregar 16px de margen derecho a columna izquierda\", \"Aumentar gap vertical entre header y contenido en 8px\", \"Reducir padding interno de tarjeta en 4px para compensar\"],\n    \"target_feeling\": \"Espacioso y ordenado, como un respiro confiable.\"\n  },\n  \"right_card_micro_tweaks\": {\n    \"decision\": \"Simplificar bloque superior para lectura en menos de 2 segundos.\",\n    \"changes\": [\"Unificar porcentaje y mensaje en una sola línea bold\", \"Eliminar iconos secundarios, dejar solo el principal\", \"Aumentar tamaño de fuente del porcentaje en 2px\"],\n    \"target_message_time_seconds\": \"1-2 segundos para comprensión total.\"\n  },\n  \"priority_order\": [\"Simplificar tarjeta derecha\", \"Ajustar espaciado entre bloques\", \"Microajustes al header\"],\n  \"changes_now\": [\"Unificar texto en tarjeta superior\", \"Agregar margen de 16px entre columnas\", \"Bajar opacidad header a 80%\", \"Ajustar altura header en desktop\", \"Optimizar para mobile spacing\"],\n  \"do_not_do\": [\"No cambiar colores de marca\", \"No agregar elementos nuevos\", \"No reducir tamaño de texto principal\"],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Hero sólido, listo para pulido final que eleve claridad y confianza.",
+        "consensus_score_0_to_10": 8,
+        "micro_goal": "Simplificar visualmente para comprensión instantánea y adopción masiva.",
+        "header_micro_tweaks": {
+          "decision": "Reducir peso visual del header para que enmarque sin dominar.",
+          "changes": [
+            "Bajar opacidad de fondo a 80%",
+            "Reducir altura en 10px",
+            "Aumentar padding interno en 4px"
+          ],
+          "desktop_rule": "Mantener ancho completo pero con bordes más suaves.",
+          "mobile_rule": "Ajustar a 56px de altura fija para pantallas táctiles."
+        },
+        "spacing_strategy": {
+          "decision": "Aumentar aire entre bloques para mejor balance y respiración visual.",
+          "changes": [
+            "Agregar 16px de margen derecho a columna izquierda",
+            "Aumentar gap vertical entre header y contenido en 8px",
+            "Reducir padding interno de tarjeta en 4px para compensar"
+          ],
+          "target_feeling": "Espacioso y ordenado, como un respiro confiable."
+        },
+        "right_card_micro_tweaks": {
+          "decision": "Simplificar bloque superior para lectura en menos de 2 segundos.",
+          "changes": [
+            "Unificar porcentaje y mensaje en una sola línea bold",
+            "Eliminar iconos secundarios, dejar solo el principal",
+            "Aumentar tamaño de fuente del porcentaje en 2px"
+          ],
+          "target_message_time_seconds": "1-2 segundos para comprensión total."
+        },
+        "priority_order": [
+          "Simplificar tarjeta derecha",
+          "Ajustar espaciado entre bloques",
+          "Microajustes al header"
+        ],
+        "changes_now": [
+          "Unificar texto en tarjeta superior",
+          "Agregar margen de 16px entre columnas",
+          "Bajar opacidad header a 80%",
+          "Ajustar altura header en desktop",
+          "Optimizar para mobile spacing"
+        ],
+        "do_not_do": [
+          "No cambiar colores de marca",
+          "No agregar elementos nuevos",
+          "No reducir tamaño de texto principal"
+        ],
+        "confidence_0_to_100": 95
+      }
+    }
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-04-08T19:31:55.328787+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "goal": "Definir una propuesta multi-modelo 10/10 para reducir scroll móvil, separar mejor el menú y limitar el modo oscuro a la barra superior."
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"La interfaz necesita reducir scroll y mejorar separación para ser clara y confiable sin perder identidad.\",\n  \"consensus_score_0_to_10\": 7,\n  \"mass_adoption_principle\": \"Simplicidad visual con jerarquía clara y navegación segmentada para que el usuario entienda todo en segundos.\",\n  \"root_causes\": [\n    \"Demasiados bloques de contenido uno tras otro sin compresión ni agrupación clara.\",\n    \"Falta de separación visual fuerte entre secciones del menú que confunde el foco.\",\n    \"La barra superior oscura aislada genera sensación de fragmentación sin cohesión.\"\n  ],\n  \"mobile_scroll_strategy\": {\n    \"keep\": [\"logo visible en top bar\", \"botones de acción principales siempre accesibles\"],\n    \"compress\": [\"resumir textos largos en bullets\", \"colapsar secciones secundarias\", \"usar acordeones para detalles\"],\n    \"reorder\": [\"priorizar contenido clave arriba\", \"mover testimonios o extras al final\", \"agrupar acciones similares juntas\"],\n    \"target_reduction\": \"Reducir scroll al menos un 30% con compresión y reordenamiento sin eliminar contenido.\"\n  },\n  \"menu_separation_strategy\": {\n    \"best_pattern\": \"Separar menú en bloques con fondo blanco y sombras sutiles para delimitar áreas.\",\n    \"background_change\": \"No, porque cambiar todo el fondo genera distracción y rompe continuidad visual.\",\n    \"section_distinction\": [\"uso de líneas divisorias finas\", \"espaciado consistente\", \"tipografía con peso y color diferenciado\"],\n    \"menu_mobile_rule\": \"Menú desplegable con secciones colapsables y feedback visual claro al seleccionar.\",\n    \"active_state\": \"Color de texto y subrayado o barra inferior para indicar sección activa sin cambiar fondo.\"\n  },\n  \"top_bar_theme_strategy\": {\n    \"recommended\": \"Mantener barra superior en modo oscuro con logo y botones en colores claros.\",\n    \"why\": \"Genera foco y sensación de anclaje sin afectar la claridad del resto de la interfaz clara.\",\n    \"implementation_rule\": \"Usar fondo oscuro uniforme solo en top bar, con iconos y texto en blanco o colores de marca.\"\n  },\n  \"most_compelling_direction\": {\n    \"headline_quality\": \"Titulares cortos, directos y con verbo activo que expliquen beneficio inmediato.\",\n    \"ux_feeling\": \"Ligero, ordenado y con navegación que guía sin saturar ni confundir.\",\n    \"why_users_will_get_it_fast\": \"Porque la estructura visual segmentada y el lenguaje claro facilitan comprensión en un vistazo.\"\n  },\n  \"recommended_solution\": {\n    \"summary\": \"Reducir scroll con compresión y reordenamiento, separar menú con líneas y sombras, mantener top bar oscura y usar titulares claros.\",\n    \"changes_now\": [\n      \"Implementar acordeones para secciones secundarias en landing móvil\",\n      \"Agregar líneas divisorias y sombra sutil entre áreas del menú\",\n      \"Mantener barra superior en modo oscuro con logo y botones claros\",\n      \"Resumir textos largos en bullets o frases cortas\",\n      \"Reordenar contenido para priorizar lo más importante arriba\"\n    ],\n    \"changes_later\": [\n      \"Explorar microinteracciones para feedback en menú móvil\",\n      \"Optimizar tipografía para mejor legibilidad en móvil\"\n    ]\n  },\n  \"do_not_do\": [\n    \"No cambiar todo el fondo al cambiar sección\",\n    \"No eliminar contenido importante para reducir scroll\",\n    \"No usar modo oscuro en toda la interfaz\"\n  ],\n  \"confidence_0_to_100\": 90\n}",
+      "parsed": {
+        "veredicto_general": "La interfaz necesita reducir scroll y mejorar separación para ser clara y confiable sin perder identidad.",
+        "consensus_score_0_to_10": 7,
+        "mass_adoption_principle": "Simplicidad visual con jerarquía clara y navegación segmentada para que el usuario entienda todo en segundos.",
+        "root_causes": [
+          "Demasiados bloques de contenido uno tras otro sin compresión ni agrupación clara.",
+          "Falta de separación visual fuerte entre secciones del menú que confunde el foco.",
+          "La barra superior oscura aislada genera sensación de fragmentación sin cohesión."
+        ],
+        "mobile_scroll_strategy": {
+          "keep": [
+            "logo visible en top bar",
+            "botones de acción principales siempre accesibles"
+          ],
+          "compress": [
+            "resumir textos largos en bullets",
+            "colapsar secciones secundarias",
+            "usar acordeones para detalles"
+          ],
+          "reorder": [
+            "priorizar contenido clave arriba",
+            "mover testimonios o extras al final",
+            "agrupar acciones similares juntas"
+          ],
+          "target_reduction": "Reducir scroll al menos un 30% con compresión y reordenamiento sin eliminar contenido."
+        },
+        "menu_separation_strategy": {
+          "best_pattern": "Separar menú en bloques con fondo blanco y sombras sutiles para delimitar áreas.",
+          "background_change": "No, porque cambiar todo el fondo genera distracción y rompe continuidad visual.",
+          "section_distinction": [
+            "uso de líneas divisorias finas",
+            "espaciado consistente",
+            "tipografía con peso y color diferenciado"
+          ],
+          "menu_mobile_rule": "Menú desplegable con secciones colapsables y feedback visual claro al seleccionar.",
+          "active_state": "Color de texto y subrayado o barra inferior para indicar sección activa sin cambiar fondo."
+        },
+        "top_bar_theme_strategy": {
+          "recommended": "Mantener barra superior en modo oscuro con logo y botones en colores claros.",
+          "why": "Genera foco y sensación de anclaje sin afectar la claridad del resto de la interfaz clara.",
+          "implementation_rule": "Usar fondo oscuro uniforme solo en top bar, con iconos y texto en blanco o colores de marca."
+        },
+        "most_compelling_direction": {
+          "headline_quality": "Titulares cortos, directos y con verbo activo que expliquen beneficio inmediato.",
+          "ux_feeling": "Ligero, ordenado y con navegación que guía sin saturar ni confundir.",
+          "why_users_will_get_it_fast": "Porque la estructura visual segmentada y el lenguaje claro facilitan comprensión en un vistazo."
+        },
+        "recommended_solution": {
+          "summary": "Reducir scroll con compresión y reordenamiento, separar menú con líneas y sombras, mantener top bar oscura y usar titulares claros.",
+          "changes_now": [
+            "Implementar acordeones para secciones secundarias en landing móvil",
+            "Agregar líneas divisorias y sombra sutil entre áreas del menú",
+            "Mantener barra superior en modo oscuro con logo y botones claros",
+            "Resumir textos largos en bullets o frases cortas",
+            "Reordenar contenido para priorizar lo más importante arriba"
+          ],
+          "changes_later": [
+            "Explorar microinteracciones para feedback en menú móvil",
+            "Optimizar tipografía para mejor legibilidad en móvil"
+          ]
+        },
+        "do_not_do": [
+          "No cambiar todo el fondo al cambiar sección",
+          "No eliminar contenido importante para reducir scroll",
+          "No usar modo oscuro en toda la interfaz"
+        ],
+        "confidence_0_to_100": 90
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-2.5-pro",
+      "raw": "{\n  \"veredicto_general\": \"La base es sólida, pero la densidad de información y la falta de jerarquía visual frenan la claridad y confianza.\",\n  \"consensus_score_0_to_10\": 6,\n  \"mass_adoption_principle\": \"Claridad es confianza: cada elemento debe justificar su espacio y guiar al usuario sin esfuerzo.\",\n  \"root_causes\": [\n    \"Baja densidad de valor por 'scroll': el usuario avanza mucho para obtener poca información clave.\",\n    \"Falta de jerarquía visual clara: todos los elementos compiten por la atención, creando ruido y fatiga.\",\n    \"Agrupación de contenido por conveniencia técnica en lugar de por intención del usuario.\"\n  ],\n  \"mobile_scroll_strategy\": {\n    \"keep\": [\n      \"La propuesta de valor principal (headline)\",\n      \"El Call-to-Action (CTA) primario\"\n    ],\n    \"compress\": [\n      \"Agrupar testimonios en un carrusel interactivo en lugar de una lista vertical.\",\n      \"Usar 'acordeones' o 'expandibles' para secciones de preguntas frecuentes (FAQ) o detalles secundarios.\",\n      \"Reducir el espaciado vertical excesivo entre secciones que no aportan a la narrativa principal.\"\n    ],\n    \"reorder\": [\n      \"Subir la prueba social (logos, testimonios clave) más cerca del CTA principal.\",\n      \"Mover información legal o de soporte al pie de página, accesible pero no en el flujo principal.\",\n      \"Priorizar la sección 'Cómo funciona' en un formato visual y conciso justo después de la propuesta de valor.\"\n    ],\n    \"target_reduction\": \"Reducir la altura total de la página en móvil en un 30-40% sin perder información crítica.\"\n  },\n  \"menu_separation_strategy\": {\n    \"best_pattern\": \"Navegación por pestañas (Tabs) ancladas en la parte superior, justo debajo de la barra principal.\",\n    \"background_change\": \"No, porque crea una disrupción visual innecesaria y puede afectar la legibilidad; es mejor usar acentos de color sutiles.\",\n    \"section_distinction\": [\n      \"Usar un color de acento único y consistente para los elementos activos de cada sección (íconos, subrayados).\",\n      \"Aplicar un borde superior o un sombreado sutil a la sección activa.\",\n      \"Utilizar encabezados de sección claros y consistentes con tipografía distintiva.\"\n    ],\n    \"menu_mobile_rule\": \"El menú se convierte en un carrusel horizontal de pestañas (scrollable) si hay más de 3-4 opciones, manteniendo la visibilidad del contenido.\",\n    \"active_state\": \"Subrayado grueso con el color de acento de la marca y texto en negrita (bold).\"\n  },\n  \"top_bar_theme_strategy\": {\n    \"recommended\": \"Barra superior en un tono oscuro (casi negro, no negro puro) con el logo y los íconos en blanco o un color de alto contraste.\",\n    \"why\": \"Crea un anclaje visual fuerte en la parte superior, diferencia la navegación global del contenido de la página y da una sensación 'premium' y de enfoque.\",\n    \"implementation_rule\": \"La barra debe tener una sombra sutil o un borde inferior de 1px en un tono ligeramente más claro para separarla limpiamente del contenido blanco de abajo.\"\n  },\n  \"most_compelling_direction\": {\n    \"headline_quality\": \"Directo al grano: 'Tu sueldo, claro y justo.' o un mensaje similar que resuene con la necesidad del usuario.\",\n    \"ux_feeling\": \"Control y simplicidad. Como usar una calculadora bien diseñada: es obvia, rápida y te da la respuesta que buscas sin distracciones.\",\n    \"why_users_will_get_it_fast\": \"Utiliza patrones de diseño universales (tabs, acordeones) que los usuarios ya conocen de otras apps populares, eliminando la curva de aprendizaje.\"\n  },\n  \"recommended_solution\": {\n    \"summary\": \"Transformar la página en un 'dashboard' de una sola vista, usando pestañas para navegar entre secciones clave, con una barra superior oscura que ancla la experiencia.\",\n    \"changes_now\": [\n      \"Implementar la barra de navegación superior oscura con el logo en alto contraste y una separación sutil del contenido.\",\n      \"Reestructurar el contenido principal en un sistema de pestañas (Tabs) anclado debajo de la barra superior.\",\n      \"Comprimir las listas verticales (testimonios, FAQs) en componentes interactivos como carruseles y acordeones.\",\n      \"Revisar y reducir el espaciado vertical entre todos los elementos para aumentar la densidad de información valiosa.\",\n      \"Definir un estado 'activo' claro y consistente para las pestañas y otros elementos de navegación (subrayado + negrita).\"\n    ],\n    \"changes_later\": [\n      \"Explorar micro-interacciones y animaciones sutiles para confirmar acciones y guiar la atención del usuario.\",\n      \"Realizar pruebas A/B con diferentes copys en el CTA principal para optimizar la conversión.\"\n    ]\n  },\n  \"do_not_do\": [\n    \"Cambiar el color de fondo de toda la página al cambiar de sección. Es disruptivo y no aporta claridad.\",\n    \"Añadir más elementos decorativos o animaciones complejas. La prioridad es la velocidad y la simplicidad.\",\n    \"Ocultar el CTA principal. Debe estar siempre visible o a un 'scroll' de distancia como máximo.\"\n  ],\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "veredicto_general": "La base es sólida, pero la densidad de información y la falta de jerarquía visual frenan la claridad y confianza.",
+        "consensus_score_0_to_10": 6,
+        "mass_adoption_principle": "Claridad es confianza: cada elemento debe justificar su espacio y guiar al usuario sin esfuerzo.",
+        "root_causes": [
+          "Baja densidad de valor por 'scroll': el usuario avanza mucho para obtener poca información clave.",
+          "Falta de jerarquía visual clara: todos los elementos compiten por la atención, creando ruido y fatiga.",
+          "Agrupación de contenido por conveniencia técnica en lugar de por intención del usuario."
+        ],
+        "mobile_scroll_strategy": {
+          "keep": [
+            "La propuesta de valor principal (headline)",
+            "El Call-to-Action (CTA) primario"
+          ],
+          "compress": [
+            "Agrupar testimonios en un carrusel interactivo en lugar de una lista vertical.",
+            "Usar 'acordeones' o 'expandibles' para secciones de preguntas frecuentes (FAQ) o detalles secundarios.",
+            "Reducir el espaciado vertical excesivo entre secciones que no aportan a la narrativa principal."
+          ],
+          "reorder": [
+            "Subir la prueba social (logos, testimonios clave) más cerca del CTA principal.",
+            "Mover información legal o de soporte al pie de página, accesible pero no en el flujo principal.",
+            "Priorizar la sección 'Cómo funciona' en un formato visual y conciso justo después de la propuesta de valor."
+          ],
+          "target_reduction": "Reducir la altura total de la página en móvil en un 30-40% sin perder información crítica."
+        },
+        "menu_separation_strategy": {
+          "best_pattern": "Navegación por pestañas (Tabs) ancladas en la parte superior, justo debajo de la barra principal.",
+          "background_change": "No, porque crea una disrupción visual innecesaria y puede afectar la legibilidad; es mejor usar acentos de color sutiles.",
+          "section_distinction": [
+            "Usar un color de acento único y consistente para los elementos activos de cada sección (íconos, subrayados).",
+            "Aplicar un borde superior o un sombreado sutil a la sección activa.",
+            "Utilizar encabezados de sección claros y consistentes con tipografía distintiva."
+          ],
+          "menu_mobile_rule": "El menú se convierte en un carrusel horizontal de pestañas (scrollable) si hay más de 3-4 opciones, manteniendo la visibilidad del contenido.",
+          "active_state": "Subrayado grueso con el color de acento de la marca y texto en negrita (bold)."
+        },
+        "top_bar_theme_strategy": {
+          "recommended": "Barra superior en un tono oscuro (casi negro, no negro puro) con el logo y los íconos en blanco o un color de alto contraste.",
+          "why": "Crea un anclaje visual fuerte en la parte superior, diferencia la navegación global del contenido de la página y da una sensación 'premium' y de enfoque.",
+          "implementation_rule": "La barra debe tener una sombra sutil o un borde inferior de 1px en un tono ligeramente más claro para separarla limpiamente del contenido blanco de abajo."
+        },
+        "most_compelling_direction": {
+          "headline_quality": "Directo al grano: 'Tu sueldo, claro y justo.' o un mensaje similar que resuene con la necesidad del usuario.",
+          "ux_feeling": "Control y simplicidad. Como usar una calculadora bien diseñada: es obvia, rápida y te da la respuesta que buscas sin distracciones.",
+          "why_users_will_get_it_fast": "Utiliza patrones de diseño universales (tabs, acordeones) que los usuarios ya conocen de otras apps populares, eliminando la curva de aprendizaje."
+        },
+        "recommended_solution": {
+          "summary": "Transformar la página en un 'dashboard' de una sola vista, usando pestañas para navegar entre secciones clave, con una barra superior oscura que ancla la experiencia.",
+          "changes_now": [
+            "Implementar la barra de navegación superior oscura con el logo en alto contraste y una separación sutil del contenido.",
+            "Reestructurar el contenido principal en un sistema de pestañas (Tabs) anclado debajo de la barra superior.",
+            "Comprimir las listas verticales (testimonios, FAQs) en componentes interactivos como carruseles y acordeones.",
+            "Revisar y reducir el espaciado vertical entre todos los elementos para aumentar la densidad de información valiosa.",
+            "Definir un estado 'activo' claro y consistente para las pestañas y otros elementos de navegación (subrayado + negrita)."
+          ],
+          "changes_later": [
+            "Explorar micro-interacciones y animaciones sutiles para confirmar acciones y guiar la atención del usuario.",
+            "Realizar pruebas A/B con diferentes copys en el CTA principal para optimizar la conversión."
+          ]
+        },
+        "do_not_do": [
+          "Cambiar el color de fondo de toda la página al cambiar de sección. Es disruptivo y no aporta claridad.",
+          "Añadir más elementos decorativos o animaciones complejas. La prioridad es la velocidad y la simplicidad.",
+          "Ocultar el CTA principal. Debe estar siempre visible o a un 'scroll' de distancia como máximo."
+        ],
+        "confidence_0_to_100": 95
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"veredicto_general\": \"Interfaz sólida pero necesita pulido para mayor fluidez en móvil y separación clara de secciones.\",\n  \"consensus_score_0_to_10\": 7,\n  \"mass_adoption_principle\": \"Simplicidad que genera confianza inmediata, como un amigo confiable que explica todo en segundos.\",\n  \"root_causes\": [\"Contenido denso en la landing que obliga a scroll excesivo en pantallas pequeñas\", \"Falta de jerarquía visual en el menú, haciendo que las secciones se fundan\", \"Contraste inconsistente entre barra oscura y fondo claro, generando desconexión\"],\n  \"mobile_scroll_strategy\": {\n    \"keep\": [\"Logo y headline principal\", \"Llamadas a acción clave\"],\n    \"compress\": [\"Reducir descripciones textuales a bullets cortos\", \"Agrupar testimonios en carrusel horizontal\", \"Minimizar espaciado vertical entre secciones\"],\n    \"reorder\": [\"Mover menú de navegación arriba del fold\", \"Colocar CTA principal justo después del headline\", \"Bajar footer a solo enlaces esenciales\"],\n    \"target_reduction\": \"Reducir scroll en 40% para que quepa en una vista inicial completa\"\n  },\n  \"menu_separation_strategy\": {\n    \"best_pattern\": \"Líneas divisorias sutiles y espaciado consistente entre secciones\",\n    \"background_change\": \"No, porque distrae y complica la percepción de unidad en una app simple\",\n    \"section_distinction\": [\"Usar bordes suaves en cards de menú\", \"Colores de acento leves por sección\", \"Iconos claros y etiquetas en negrita\"],\n    \"menu_mobile_rule\": \"Hamburguesa colapsable con vista de lista vertical, expandible solo al tocar\",\n    \"active_state\": \"Resaltado con color primario y sombra ligera para indicar selección\"\n  },\n  \"top_bar_theme_strategy\": {\n    \"recommended\": \"Mantener oscuro solo en la barra superior con fondo claro en el resto\",\n    \"why\": \"Crea un ancla visual estable que guía la atención sin sobrecargar el contenido principal\",\n    \"implementation_rule\": \"Asegurar transiciones suaves y bordes redondeados en la barra para integración armónica\"\n  },\n  \"most_compelling_direction\": {\n    \"headline_quality\": \"Directo y empático: 'Audita a tu patrón en minutos, con total confianza'\",\n    \"ux_feeling\": \"Ordenado y acogedor, como un asistente personal intuitivo\",\n    \"why_users_will_get_it_fast\": \"Elementos autoexplicativos con iconos universales y texto mínimo que resuelve dudas en el primer vistazo\"\n  },\n  \"recommended_solution\": {\n    \"summary\": \"Cambios incrementales para acortar scroll, separar secciones y armonizar temas, priorizando claridad sobre efectos visuales.\",\n    \"changes_now\": [\"Comprimir secciones de landing con bullets y carruseles\", \"Agregar divisores sutiles en menú para mejor separación\", \"Revertir fondo a claro total, manteniendo barra superior oscura\", \"Reordenar elementos móviles para priorizar CTA arriba\", \"Implementar hamburguesa en menú móvil con estados activos claros\"],\n    \"changes_later\": [\"Probar animaciones suaves en transiciones de menú para iOS/Android\", \"Añadir tooltips contextuales para usuarios primerizos\"]\n  },\n  \"do_not_do\": [\"Cambiar fondos completos por sección, ya que genera confusión\", \"Eliminar texto explicativo clave, podría reducir confianza\", \"Ignorar pruebas en dispositivos reales de bajo costo\"],\n  \"confidence_0_to_100\": 92\n}",
+      "parsed": {
+        "veredicto_general": "Interfaz sólida pero necesita pulido para mayor fluidez en móvil y separación clara de secciones.",
+        "consensus_score_0_to_10": 7,
+        "mass_adoption_principle": "Simplicidad que genera confianza inmediata, como un amigo confiable que explica todo en segundos.",
+        "root_causes": [
+          "Contenido denso en la landing que obliga a scroll excesivo en pantallas pequeñas",
+          "Falta de jerarquía visual en el menú, haciendo que las secciones se fundan",
+          "Contraste inconsistente entre barra oscura y fondo claro, generando desconexión"
+        ],
+        "mobile_scroll_strategy": {
+          "keep": [
+            "Logo y headline principal",
+            "Llamadas a acción clave"
+          ],
+          "compress": [
+            "Reducir descripciones textuales a bullets cortos",
+            "Agrupar testimonios en carrusel horizontal",
+            "Minimizar espaciado vertical entre secciones"
+          ],
+          "reorder": [
+            "Mover menú de navegación arriba del fold",
+            "Colocar CTA principal justo después del headline",
+            "Bajar footer a solo enlaces esenciales"
+          ],
+          "target_reduction": "Reducir scroll en 40% para que quepa en una vista inicial completa"
+        },
+        "menu_separation_strategy": {
+          "best_pattern": "Líneas divisorias sutiles y espaciado consistente entre secciones",
+          "background_change": "No, porque distrae y complica la percepción de unidad en una app simple",
+          "section_distinction": [
+            "Usar bordes suaves en cards de menú",
+            "Colores de acento leves por sección",
+            "Iconos claros y etiquetas en negrita"
+          ],
+          "menu_mobile_rule": "Hamburguesa colapsable con vista de lista vertical, expandible solo al tocar",
+          "active_state": "Resaltado con color primario y sombra ligera para indicar selección"
+        },
+        "top_bar_theme_strategy": {
+          "recommended": "Mantener oscuro solo en la barra superior con fondo claro en el resto",
+          "why": "Crea un ancla visual estable que guía la atención sin sobrecargar el contenido principal",
+          "implementation_rule": "Asegurar transiciones suaves y bordes redondeados en la barra para integración armónica"
+        },
+        "most_compelling_direction": {
+          "headline_quality": "Directo y empático: 'Audita a tu patrón en minutos, con total confianza'",
+          "ux_feeling": "Ordenado y acogedor, como un asistente personal intuitivo",
+          "why_users_will_get_it_fast": "Elementos autoexplicativos con iconos universales y texto mínimo que resuelve dudas en el primer vistazo"
+        },
+        "recommended_solution": {
+          "summary": "Cambios incrementales para acortar scroll, separar secciones y armonizar temas, priorizando claridad sobre efectos visuales.",
+          "changes_now": [
+            "Comprimir secciones de landing con bullets y carruseles",
+            "Agregar divisores sutiles en menú para mejor separación",
+            "Revertir fondo a claro total, manteniendo barra superior oscura",
+            "Reordenar elementos móviles para priorizar CTA arriba",
+            "Implementar hamburguesa en menú móvil con estados activos claros"
+          ],
+          "changes_later": [
+            "Probar animaciones suaves en transiciones de menú para iOS/Android",
+            "Añadir tooltips contextuales para usuarios primerizos"
+          ]
+        },
+        "do_not_do": [
+          "Cambiar fondos completos por sección, ya que genera confusión",
+          "Eliminar texto explicativo clave, podría reducir confianza",
+          "Ignorar pruebas en dispositivos reales de bajo costo"
+        ],
+        "confidence_0_to_100": 92
+      }
+    }
+  }
+}

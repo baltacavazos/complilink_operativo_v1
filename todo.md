@@ -392,3 +392,17 @@
 - [x] Crear una variante header-safe del logotipo para cabecera y app bar, priorizando legibilidad extrema en web móvil y futura app iOS/Android
 - [x] Revisar y corregir todos los usos del logotipo en header, hero, footer, `/auditar`, dashboard, diálogos y shells tipo app para evitar cortes o proporciones incorrectas
 - [x] Validar visual y técnicamente que ninguna variante del logotipo se vea invadida, recortada o ilegible antes del siguiente checkpoint
+- [x] Reducir el scroll percibido en móvil de AuditaPatron con una estructura más compacta y jerarquía más rápida de recorrer
+- [x] Mejorar la separación visual entre áreas del menú y navegación móvil para que cada sección se sienta más clara y distinta
+- [x] Consultar con ChatGPT, Gemini y Grok si conviene usar cambios de fondo, transiciones u otros recursos para marcar mejor los cambios entre áreas o menús
+- [x] Limitar el modo oscuro únicamente a la barra superior horizontal y devolver el resto de la interfaz a tema claro consistente
+- [x] Consolidar una dirección de UI 10/10 orientada a adopción masiva, explicación inmediata y máxima claridad móvil según consenso reforzado de ChatGPT, Gemini y Grok
+- [x] Presentar al usuario una propuesta consensuada de UX móvil y navegación antes de ejecutar cualquier cambio visual
+- [x] Revalidar con ChatGPT, Gemini y Grok la iteración fina del hero para reducir el peso visual del header y acelerar la comprensión de la propuesta
+- [x] Reducir el peso visual de la barra superior para que no compita con el mensaje principal
+- [x] Dar máximo protagonismo al titular principal del hero y limpiar elementos que le resten foco
+- [x] Simplificar la tarjeta derecha del hero para que se entienda en menos segundos
+- [x] Revalidar con ChatGPT, Gemini y Grok la microiteración final del hero para bajar aún más el peso del header y acelerar la comprensión visual
+- [x] Reducir un poco más el peso visual del header para que funcione más como marco que como protagonista
+- [x] Dar más aire entre el bloque izquierdo del hero y la tarjeta derecha para mejorar el balance general
+- [x] Simplificar aún más el bloque superior de la tarjeta derecha para que el porcentaje y el mensaje se entiendan de inmediato
