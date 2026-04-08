@@ -292,3 +292,14 @@
 - [x] Rediseñar la landing para explicar con claridad el ciclo subir documentos → Helios entiende → recibes guía laboral útil.
 - [x] Integrar el copiloto laboral de Helios como módulo adicional con chat contextual, disclaimers y acceso desde la landing y el expediente.
 - [x] Validar TypeScript, Vitest y estado técnico después de esta integración.
+- [x] Corregir el error `Maximum update depth exceeded` al abrir o usar el copiloto laboral en `/auditar`
+- [x] Identificar el bucle de estado o efecto que dispara renders infinitos en la experiencia del asistente
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor corrección del bucle y la mejor forma de extender el copiloto sin reintroducir regresiones
+- [x] Añadir prompts sugeridos más útiles dentro del copiloto laboral por expediente
+- [x] Mostrar sustento documental breve en las respuestas del copiloto cuando exista evidencia visible
+- [x] Incorporar un historial corto de conversación por expediente dentro del copiloto
+- [x] Validar con Vitest, revisión técnica y comprobación funcional la corrección del asistente y estas mejoras
+- [x] Corregir en `/auditar` el bucle de render `Maximum update depth exceeded` del copiloto laboral de Helios al abrir o usar el asistente.
+- [x] Validar con pruebas y revisión técnica que el copiloto de `/auditar` ya no dispara resets infinitos ni errores de React al interactuar con sus botones.
+- [x] Corregir en `/auditar` el bucle de render `Maximum update depth exceeded` del copiloto laboral de Helios al abrir o usar el asistente.
+- [x] Validar con pruebas y revisión técnica que el copiloto de `/auditar` ya no dispara resets infinitos ni errores de React al interactuar con sus botones.

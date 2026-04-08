@@ -4,7 +4,12 @@ vi.mock("@/components/HeliosCopilotSheet", () => ({
   HeliosCopilotSheet: () => null,
 }));
 
-import { buildDossierTypeProgress, buildHeliosPriorityAlerts, sanitizePersistedAuditarViewState } from "./Auditar";
+import {
+  buildDossierTypeProgress,
+  buildHeliosPriorityAlerts,
+  sanitizePersistedAuditarViewState,
+  sanitizePersistedHeliosCopilotMessages,
+} from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
   it("incluye fecha, motivo y acción cuando existe seguimiento con atención", () => {
@@ -127,6 +132,37 @@ describe("sanitizePersistedAuditarViewState", () => {
       mobileOnboardingIndex: 0,
       selectedRecommendedTargetType: undefined,
     });
+  });
+});
+
+describe("sanitizePersistedHeliosCopilotMessages", () => {
+  it("conserva solo mensajes válidos del copiloto y limita el historial persistido", () => {
+    expect(
+      sanitizePersistedHeliosCopilotMessages([
+        { role: "assistant", content: "  Primera lectura útil.  " },
+        { role: "user", content: "¿Qué riesgo ves?" },
+        { role: "system", content: "ignorar" },
+        { role: "assistant", content: "" },
+        { role: "assistant", content: "Segunda respuesta" },
+        { role: "user", content: "Tercera pregunta" },
+        { role: "assistant", content: "Cuarta respuesta" },
+        { role: "user", content: "Quinta pregunta" },
+        { role: "assistant", content: "Sexta respuesta" },
+        { role: "user", content: "Séptima pregunta" },
+      ]),
+    ).toEqual([
+      { role: "assistant", content: "Segunda respuesta" },
+      { role: "user", content: "Tercera pregunta" },
+      { role: "assistant", content: "Cuarta respuesta" },
+      { role: "user", content: "Quinta pregunta" },
+      { role: "assistant", content: "Sexta respuesta" },
+      { role: "user", content: "Séptima pregunta" },
+    ]);
+  });
+
+  it("devuelve arreglo vacío cuando la persistencia no tiene el formato esperado", () => {
+    expect(sanitizePersistedHeliosCopilotMessages({ invalid: true })).toEqual([]);
+    expect(sanitizePersistedHeliosCopilotMessages(null)).toEqual([]);
   });
 });
 

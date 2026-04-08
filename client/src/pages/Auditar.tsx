@@ -358,6 +358,34 @@ export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersis
   };
 }
 
+export function sanitizePersistedHeliosCopilotMessages(value: unknown): HeliosCopilotMessage[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .flatMap((item) => {
+      if (!item || typeof item !== "object") {
+        return [];
+      }
+
+      const record = item as Record<string, unknown>;
+      const role = record.role;
+      const content = record.content;
+
+      if ((role === "user" || role === "assistant") && typeof content === "string" && content.trim().length > 0) {
+        return [{ role, content: content.trim() } satisfies HeliosCopilotMessage];
+      }
+
+      return [];
+    })
+    .slice(-6);
+}
+
+function appendHeliosCopilotMessage(current: HeliosCopilotMessage[], next: HeliosCopilotMessage) {
+  return [...current, next].slice(-6);
+}
+
 export function buildDossierTypeProgress(documentTypeCounts: Record<string, number>) {
   return dossierTargets.map((item) => {
     const count = documentTypeCounts[item.type] ?? 0;
@@ -1572,12 +1600,46 @@ export default function Auditar() {
 
   const caseDetailInput = selectedTenantId && selectedCaseId ? { tenantId: selectedTenantId, caseId: selectedCaseId } : undefined;
   const currentCaseScopeKey = caseDetailInput ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}` : null;
+  const heliosCopilotHistoryStorageKey = useMemo(() => {
+    if (!auditarPersistenceKey || !currentCaseScopeKey) {
+      return null;
+    }
+
+    return `${auditarPersistenceKey}:copilot:${currentCaseScopeKey}`;
+  }, [auditarPersistenceKey, currentCaseScopeKey]);
 
   useEffect(() => {
     setHeliosCopilotOpen(false);
-    setHeliosCopilotMessages([]);
     heliosCopilotMutation.reset();
-  }, [currentCaseScopeKey, heliosCopilotMutation]);
+  }, [currentCaseScopeKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !heliosCopilotHistoryStorageKey) {
+      setHeliosCopilotMessages([]);
+      return;
+    }
+
+    try {
+      const rawValue = window.localStorage.getItem(heliosCopilotHistoryStorageKey);
+      setHeliosCopilotMessages(sanitizePersistedHeliosCopilotMessages(rawValue ? JSON.parse(rawValue) : null));
+    } catch {
+      window.localStorage.removeItem(heliosCopilotHistoryStorageKey);
+      setHeliosCopilotMessages([]);
+    }
+  }, [heliosCopilotHistoryStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !heliosCopilotHistoryStorageKey) {
+      return;
+    }
+
+    if (heliosCopilotMessages.length === 0) {
+      window.localStorage.removeItem(heliosCopilotHistoryStorageKey);
+      return;
+    }
+
+    window.localStorage.setItem(heliosCopilotHistoryStorageKey, JSON.stringify(heliosCopilotMessages.slice(-6)));
+  }, [heliosCopilotHistoryStorageKey, heliosCopilotMessages]);
 
   const caseDetailQuery = trpc.cases.detail.useQuery(caseDetailInput as { tenantId: string; caseId: string }, {
     enabled: auth.isAuthenticated && Boolean(caseDetailInput),
@@ -1731,6 +1793,36 @@ export default function Auditar() {
     () => [{ role: "assistant", content: heliosCopilotIntro }, ...heliosCopilotMessages],
     [heliosCopilotIntro, heliosCopilotMessages],
   );
+  const heliosCopilotSupportingDocuments = useMemo(() => {
+    const prioritizedDocuments = [...documents].sort((left, right) => {
+      const leftHasOpinion = Number(Boolean(asHeliosOpinion(left.heliosOpinion)));
+      const rightHasOpinion = Number(Boolean(asHeliosOpinion(right.heliosOpinion)));
+
+      if (leftHasOpinion !== rightHasOpinion) {
+        return rightHasOpinion - leftHasOpinion;
+      }
+
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    });
+
+    return prioritizedDocuments.slice(0, 3).map((document) => {
+      const opinion = asHeliosOpinion(document.heliosOpinion);
+      const detail = [
+        `Tipo: ${getSimpleDocumentTypeLabel(document.documentType)}.`,
+        opinion?.summary ? `Lectura visible: ${opinion.summary}` : null,
+        opinion?.recommendedNextStep ? `Paso sugerido: ${opinion.recommendedNextStep}` : null,
+        opinion?.uncertainties?.[0] ? `Por confirmar: ${opinion.uncertainties[0]}` : null,
+      ]
+        .filter((item): item is string => Boolean(item))
+        .join(" ");
+
+      return {
+        id: document.documentId,
+        label: document.originalName,
+        detail,
+      };
+    });
+  }, [documents]);
   const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
 
   const dossierStatus = useMemo(() => {
@@ -1960,17 +2052,16 @@ export default function Auditar() {
   }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
   const handleHeliosCopilotSend = (content: string) => {
     if (!selectedTenantId || !selectedCaseId) {
-      setHeliosCopilotMessages((current) => [
-        ...current,
-        {
+      setHeliosCopilotMessages((current) =>
+        appendHeliosCopilotMessage(current, {
           role: "assistant",
           content: "Primero elige un expediente para que pueda responder con el contexto correcto.",
-        },
-      ]);
+        }),
+      );
       return;
     }
 
-    setHeliosCopilotMessages((current) => [...current, { role: "user", content }]);
+    setHeliosCopilotMessages((current) => appendHeliosCopilotMessage(current, { role: "user", content }));
     heliosCopilotMutation.mutate(
       {
         tenantId: selectedTenantId,
@@ -1979,18 +2070,17 @@ export default function Auditar() {
       },
       {
         onSuccess: (response) => {
-          setHeliosCopilotMessages((current) => [...current, { role: "assistant", content: response.answer }]);
+          setHeliosCopilotMessages((current) => appendHeliosCopilotMessage(current, { role: "assistant", content: response.answer }));
         },
         onError: (error) => {
-          setHeliosCopilotMessages((current) => [
-            ...current,
-            {
+          setHeliosCopilotMessages((current) =>
+            appendHeliosCopilotMessage(current, {
               role: "assistant",
               content:
                 error.message ||
                 "No pude responder en este momento. Puedes intentarlo otra vez o seguir fortaleciendo tu expediente con más documentos.",
-            },
-          ]);
+            }),
+          );
         },
       },
     );
@@ -2065,6 +2155,28 @@ export default function Auditar() {
         : dossierHistoryEntries.filter((entry) => entry.category === historyFilter),
     [dossierHistoryEntries, historyFilter],
   );
+  const heliosCopilotHistoryItems = useMemo(() => {
+    const recentConversation = heliosCopilotMessages
+      .filter((message) => message.role === "user" || message.role === "assistant")
+      .slice(-2)
+      .map((message, index) => ({
+        id: `copilot-${index}-${message.role}`,
+        title: message.role === "user" ? "Tu última pregunta al copiloto" : "Última respuesta del copiloto",
+        detail: message.content,
+        timestampLabel: "Ahora",
+      }));
+
+    const recentDossierEntries = dossierHistoryEntries
+      .slice(0, recentConversation.length > 0 ? 2 : 3)
+      .map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        detail: entry.description,
+        timestampLabel: entry.timestamp ? formatDate(entry.timestamp) : null,
+      }));
+
+    return [...recentConversation, ...recentDossierEntries].slice(0, 3);
+  }, [dossierHistoryEntries, heliosCopilotMessages]);
   const selectedComparisonLeft = comparisonDocuments.find((item) => item.documentId === selectedComparisonLeftId);
   const selectedComparisonRight = comparisonDocuments.find((item) => item.documentId === selectedComparisonRightId);
   const activeComparisonPair =
@@ -3939,19 +4051,22 @@ export default function Auditar() {
                     <p className="mt-3 text-xs leading-6 text-teal-900">
                       Haz preguntas rápidas sobre riesgos, documentos faltantes o el siguiente paso útil sin salir de tu expediente.
                     </p>
-                    <HeliosCopilotSheet
-                      open={heliosCopilotOpen}
-                      onOpenChange={setHeliosCopilotOpen}
-                      onSendMessage={handleHeliosCopilotSend}
-                      messages={heliosCopilotConversation}
-                      isLoading={heliosCopilotMutation.isPending}
-                      suggestedPrompts={heliosCopilotSuggestedPrompts}
-                      caseTitle={caseDetailQuery.data?.case.title}
-                      employeeName={caseDetailQuery.data?.case.employeeName}
-                      confidenceScore={heliosCopilotMutation.data?.confidenceScore ?? visibleHeliosOpinion?.confidenceScore ?? null}
-                      disclaimer={heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null}
-                      summary={visibleHeliosOpinion?.summary ?? null}
-                    />
+                      <HeliosCopilotSheet
+                        open={heliosCopilotOpen}
+                        onOpenChange={setHeliosCopilotOpen}
+                        onSendMessage={handleHeliosCopilotSend}
+                        messages={heliosCopilotConversation}
+                        isLoading={heliosCopilotMutation.isPending}
+                        suggestedPrompts={heliosCopilotSuggestedPrompts}
+                        caseTitle={caseDetailQuery.data?.case.title}
+                        employeeName={caseDetailQuery.data?.case.employeeName}
+                        confidenceScore={heliosCopilotMutation.data?.confidenceScore ?? visibleHeliosOpinion?.confidenceScore ?? null}
+                        disclaimer={heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null}
+                        summary={visibleHeliosOpinion?.summary ?? null}
+                        historyItems={heliosCopilotHistoryItems}
+                        supportingDocuments={heliosCopilotSupportingDocuments}
+                      />
+
                   </div>
                 </div>
               </div>

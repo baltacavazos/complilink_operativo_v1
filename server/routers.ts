@@ -848,6 +848,42 @@ function buildHeliosCopilotFallbackAnswer(params: {
   return sections.join("\n\n");
 }
 
+function buildHeliosCopilotSupportingDocuments(params: {
+  documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
+}) {
+  return [...params.documents]
+    .sort((left, right) => {
+      const leftHasOpinion = Number(Boolean(asObjectRecord(left.heliosOpinion)));
+      const rightHasOpinion = Number(Boolean(asObjectRecord(right.heliosOpinion)));
+
+      if (leftHasOpinion !== rightHasOpinion) {
+        return rightHasOpinion - leftHasOpinion;
+      }
+
+      return new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime();
+    })
+    .slice(0, 3)
+    .map((document) => {
+      const opinion = asObjectRecord(document.heliosOpinion);
+      const summary = getOptionalString(opinion?.summary);
+      const nextStep = getOptionalString(opinion?.recommendedNextStep);
+      const uncertainties = getOptionalStringList(opinion?.uncertainties);
+
+      return {
+        id: document.documentId,
+        label: document.originalName,
+        detail: [
+          `Tipo: ${document.documentType}.`,
+          summary ? `Lectura visible: ${summary}` : null,
+          nextStep ? `Paso sugerido: ${nextStep}` : null,
+          uncertainties[0] ? `Por confirmar: ${uncertainties[0]}` : null,
+        ]
+          .filter((item): item is string => Boolean(item))
+          .join(" "),
+      };
+    });
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -973,6 +1009,7 @@ export const appRouter = router({
           opinion: latestOpinion,
           documentsCount: documents.length,
         });
+        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents });
 
         let answer = fallbackAnswer;
 
@@ -1014,6 +1051,7 @@ export const appRouter = router({
             sourceDocumentCount: documents.length,
             confidenceScore,
             suggestedPrompts,
+            supportingDocuments,
           },
         });
 
@@ -1022,6 +1060,7 @@ export const appRouter = router({
           disclaimer,
           confidenceScore,
           suggestedPrompts,
+          supportingDocuments,
           sourceDocumentCount: documents.length,
         };
       }),

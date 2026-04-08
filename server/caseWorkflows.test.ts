@@ -294,14 +294,28 @@ describe("appRouter case workflows", () => {
       disclaimer: "Opinión preliminar asistida por sistema.",
       confidenceScore: 74,
       sourceDocumentCount: 1,
+      supportingDocuments: [
+        expect.objectContaining({
+          id: "DOC-HEL-001",
+          label: "contrato_demo.pdf",
+        }),
+      ],
     });
     expect(result.answer).toContain("Respuesta clara");
     expect(result.suggestedPrompts.length).toBeGreaterThan(0);
+    expect(result.supportingDocuments[0]?.detail).toContain("Lectura visible: Helios generó una lectura preliminar útil del contrato.");
     expect(db.createAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "balt-1",
         caseId: "CASE-BALT-1-DEMO001",
         action: "case.helios_copilot_chat",
+        afterState: expect.objectContaining({
+          supportingDocuments: [
+            expect.objectContaining({
+              id: "DOC-HEL-001",
+            }),
+          ],
+        }),
       }),
     );
   });

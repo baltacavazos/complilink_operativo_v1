@@ -7,9 +7,22 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Sparkles } from "lucide-react";
+import { Clock3, FileText, Sparkles } from "lucide-react";
 
 export type HeliosCopilotMessage = AIChatMessage;
+
+type HeliosCopilotHistoryItem = {
+  id: string;
+  title: string;
+  detail: string;
+  timestampLabel?: string | null;
+};
+
+type HeliosCopilotSupportingDocument = {
+  id: string;
+  label: string;
+  detail: string;
+};
 
 type HeliosCopilotSheetProps = {
   open: boolean;
@@ -23,6 +36,8 @@ type HeliosCopilotSheetProps = {
   confidenceScore?: number | null;
   disclaimer?: string | null;
   summary?: string | null;
+  historyItems?: HeliosCopilotHistoryItem[];
+  supportingDocuments?: HeliosCopilotSupportingDocument[];
 };
 
 export function HeliosCopilotSheet({
@@ -37,7 +52,13 @@ export function HeliosCopilotSheet({
   confidenceScore,
   disclaimer,
   summary,
+  historyItems = [],
+  supportingDocuments = [],
 }: HeliosCopilotSheetProps) {
+  const visibleHistoryItems = historyItems.slice(0, 3);
+  const visibleSupportingDocuments = supportingDocuments.slice(0, 3);
+  const visibleSuggestedPrompts = suggestedPrompts.slice(0, 4);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full border-l border-slate-200 bg-white p-0 sm:max-w-xl">
@@ -70,19 +91,81 @@ export function HeliosCopilotSheet({
                 ) : null}
               </div>
             </div>
+
+            {visibleSuggestedPrompts.length ? (
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Puedes empezar con</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {visibleSuggestedPrompts.map((prompt) => (
+                    <Button
+                      key={prompt}
+                      type="button"
+                      variant="outline"
+                      className="h-auto rounded-full border-slate-200 bg-white px-4 py-2 text-left text-xs leading-5 text-slate-700 hover:bg-slate-50"
+                      onClick={() => onSendMessage(prompt)}
+                    >
+                      {prompt}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </SheetHeader>
 
-          <div className="flex-1 px-4 pb-4 pt-4 sm:px-6">
-            <AIChatBox
-              messages={messages}
-              onSendMessage={onSendMessage}
-              isLoading={isLoading}
-              className="h-full border-slate-200 shadow-none"
-              height="100%"
-              placeholder="Pregúntale a Helios sobre riesgos, pasos sugeridos o dudas de tu expediente"
-              emptyStateMessage="Helios puede explicarte tu expediente con palabras simples y decirte qué conviene revisar primero."
-              suggestedPrompts={suggestedPrompts}
-            />
+          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4 sm:px-6">
+            {visibleHistoryItems.length ? (
+              <div className="mb-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center gap-2">
+                  <Clock3 className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Historial breve de este expediente</p>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {visibleHistoryItems.map((item) => (
+                    <div key={item.id} className="rounded-[1rem] border border-white bg-white p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold text-slate-950">{item.title}</p>
+                        {item.timestampLabel ? (
+                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                            {item.timestampLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {visibleSupportingDocuments.length ? (
+              <div className="mb-4 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-teal-700" strokeWidth={1.8} />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">Sustento documental visible</p>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {visibleSupportingDocuments.map((document) => (
+                    <div key={document.id} className="rounded-[1rem] border border-white/90 bg-white p-3">
+                      <p className="text-sm font-semibold text-slate-950">{document.label}</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">{document.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="min-h-[22rem]">
+              <AIChatBox
+                messages={messages}
+                onSendMessage={onSendMessage}
+                isLoading={isLoading}
+                className="h-full border-slate-200 shadow-none"
+                height="100%"
+                placeholder="Pregúntale a Helios sobre riesgos, pasos sugeridos o dudas de tu expediente"
+                emptyStateMessage="Helios puede explicarte tu expediente con palabras simples y decirte qué conviene revisar primero."
+                suggestedPrompts={[]}
+              />
+            </div>
           </div>
 
           <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
