@@ -741,6 +741,113 @@ function buildCompliLinkMonitoring(
   };
 }
 
+function asObjectRecord(value: unknown) {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+}
+
+function getOptionalString(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getOptionalNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function getOptionalStringList(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map((item) => item.trim())
+    : [];
+}
+
+function buildHeliosCopilotSuggestedPrompts(params: {
+  opinion: Record<string, unknown> | null;
+  documentsCount: number;
+}) {
+  const prompts = [
+    "¿Cuáles son los riesgos principales de mi expediente?",
+    "¿Qué paso práctico me conviene seguir ahora?",
+  ];
+
+  if (params.documentsCount > 0) {
+    prompts.push("Explícame el resumen de mi auditoría en palabras simples.");
+  }
+
+  if (getOptionalString(params.opinion?.recommendedNextStep)) {
+    prompts.push("Explícame por qué recomiendas ese siguiente paso.");
+  }
+
+  if (getOptionalStringList(params.opinion?.uncertainties).length > 0) {
+    prompts.push("¿Qué cosas todavía faltan confirmar en mis documentos?");
+  }
+
+  return Array.from(new Set(prompts)).slice(0, 4);
+}
+
+function buildHeliosCopilotContext(params: {
+  detail: Awaited<ReturnType<typeof getCaseDetailForUser>>;
+  documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
+}) {
+  const caseSummary = {
+    title: params.detail.case.title,
+    employeeName: params.detail.case.employeeName ?? null,
+    employerEntity: params.detail.case.employerEntity ?? null,
+    status: params.detail.case.status,
+    summary: params.detail.case.summary ?? null,
+    openedAt: params.detail.case.openedAt?.toISOString?.() ?? params.detail.case.openedAt,
+    lastActivityAt: params.detail.case.lastActivityAt?.toISOString?.() ?? params.detail.case.lastActivityAt,
+  };
+
+  const documents = params.documents.slice(0, 6).map((document) => {
+    const opinion = asObjectRecord(document.heliosOpinion);
+    return {
+      documentId: document.documentId,
+      originalName: document.originalName,
+      documentType: document.documentType,
+      classificationConfidence: document.classificationConfidence,
+      createdAt: document.createdAt?.toISOString?.() ?? document.createdAt,
+      heliosSummary: getOptionalString(opinion?.summary),
+      legalOpinion: getOptionalString(opinion?.legalOpinion),
+      recommendedNextStep: getOptionalString(opinion?.recommendedNextStep),
+      recommendedActions: getOptionalStringList(opinion?.recommendedActions).slice(0, 4),
+      uncertainties: getOptionalStringList(opinion?.uncertainties).slice(0, 4),
+      riskLevel: getOptionalString(opinion?.riskLevel),
+      confidenceScore: getOptionalNumber(opinion?.confidenceScore),
+    };
+  });
+
+  return JSON.stringify(
+    {
+      case: caseSummary,
+      documents,
+      guidance:
+        "Responde solo con base en este expediente visible. Si algo no aparece aquí, dilo con claridad en vez de asumirlo.",
+    },
+    null,
+    2,
+  );
+}
+
+function buildHeliosCopilotFallbackAnswer(params: {
+  opinion: Record<string, unknown> | null;
+  documentsCount: number;
+}) {
+  if (params.documentsCount === 0) {
+    return "Todavía no veo documentos integrados en este expediente. Si subes primero tu contrato, un recibo de nómina o un CFDI, podré darte una explicación más útil sobre riesgos, diferencias y siguientes pasos.";
+  }
+
+  const summary = getOptionalString(params.opinion?.summary);
+  const nextStep = getOptionalString(params.opinion?.recommendedNextStep);
+  const uncertainties = getOptionalStringList(params.opinion?.uncertainties);
+
+  const sections = [
+    summary ?? "Ya existe una lectura preliminar del expediente, pero todavía hace falta más contexto para responder con mayor precisión.",
+    nextStep ? `Siguiente paso sugerido: ${nextStep}` : null,
+    uncertainties.length > 0 ? `Todavía conviene confirmar: ${uncertainties.slice(0, 2).join("; ")}.` : null,
+  ].filter((item): item is string => Boolean(item));
+
+  return sections.join("\n\n");
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -832,6 +939,90 @@ export const appRouter = router({
           ...detail,
           documents,
           complilinkMonitoring,
+        };
+      }),
+    heliosCopilotChat: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          prompt: z.string().trim().min(3).max(2000),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const documents = await listVisibleDocuments({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const latestOpinion = asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
+        const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
+          opinion: latestOpinion,
+          documentsCount: documents.length,
+        });
+        const disclaimer =
+          getOptionalString(latestOpinion?.disclaimer) ??
+          "Esta respuesta se basa en los documentos visibles del expediente y en lecturas preliminares. No sustituye a un abogado ni constituye asesoría legal vinculante.";
+        const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
+        const fallbackAnswer = buildHeliosCopilotFallbackAnswer({
+          opinion: latestOpinion,
+          documentsCount: documents.length,
+        });
+
+        let answer = fallbackAnswer;
+
+        if (documents.length > 0) {
+          try {
+            const response = await invokeLLM({
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "Eres Helios, el copiloto laboral de AuditaPatron para México. Responde siempre en español claro, práctico y breve. Usa únicamente el contexto del expediente proporcionado. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
+                },
+                {
+                  role: "user",
+                  content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents })}\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves: 1) respuesta clara, 2) lo que sí se sabe, 3) lo que falta confirmar si aplica, 4) siguiente paso útil.`,
+                },
+              ],
+            });
+
+            const candidate = readLlmMessageText(response.choices[0]?.message.content).trim();
+            if (candidate) {
+              answer = candidate;
+            }
+          } catch {
+            answer = fallbackAnswer;
+          }
+        }
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "case",
+          entityId: input.caseId,
+          action: "case.helios_copilot_chat",
+          afterState: {
+            prompt: input.prompt,
+            sourceDocumentCount: documents.length,
+            confidenceScore,
+            suggestedPrompts,
+          },
+        });
+
+        return {
+          answer,
+          disclaimer,
+          confidenceScore,
+          suggestedPrompts,
+          sourceDocumentCount: documents.length,
         };
       }),
     persistAuditarViewState: protectedProcedure

@@ -49,6 +49,7 @@ type MobileOnboardingCard = {
 const navLinks = [
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#expediente", label: "Tu expediente" },
+  { href: "#copiloto", label: "Copiloto laboral" },
   { href: "#hallazgos", label: "Hallazgos" },
   { href: "#privacidad", label: "Privacidad" },
   { href: "#preguntas", label: "Preguntas" },
@@ -355,7 +356,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-lg sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos laborales y conviértelos en un expediente digital ordenado, disponible 24/7, para saber si todo está en orden con tu patrón sin palabras difíciles ni pasos confusos.
+            Sube tus documentos laborales y activa un ciclo simple: AuditaPatron los resguarda, Helios encuentra contexto útil y tú recibes una guía laboral clara para saber qué revisar con calma, sin palabras difíciles ni pasos confusos.
           </p>
 
           <div
@@ -372,9 +373,9 @@ function HeroSection() {
             <Button
               variant="outline"
               className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
-              onClick={() => scrollToId("como-funciona")}
+              onClick={() => scrollToId("copiloto")}
             >
-              Ver cómo funciona
+              Ver cómo Helios te ayuda
             </Button>
           </div>
 
@@ -382,7 +383,7 @@ function HeroSection() {
             className="motion-enter-soft mt-6 flex flex-wrap justify-center gap-3 text-sm text-slate-600 lg:justify-start"
             style={{ ["--motion-delay" as string]: "380ms" }}
           >
-             {["100% confidencial", "Expediente digital 24/7", "Todo en un solo lugar"].map((item) => (
+            {["100% confidencial", "Expediente digital 24/7", "Todo en un solo lugar"].map((item) => (
               <span
                 key={item}
                 className="motion-hover-lift rounded-full border border-slate-200 bg-white/85 px-4 py-2 shadow-sm"
@@ -426,15 +427,15 @@ function HeroSection() {
                 />
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-900">
-                Cada documento se guarda en tu expediente digital, suma contexto y te ayuda a tener todo en un solo lugar cuando necesites revisar, respaldarte o volver a consultar.
+                Cada documento se guarda en tu expediente digital, Helios suma contexto útil y la plataforma te devuelve una explicación clara para que sepas qué revisar, qué falta confirmar y qué documento podría ayudarte después.
               </p>
             </div>
 
             <div className="mt-5 space-y-3">
               {[
-                "Sube recibo, contrato o CFDI.",
-                "Todo queda ordenado en tu expediente digital.",
-                "Lo tienes disponible 24/7 cuando lo necesites.",
+                "Subes recibo, contrato o CFDI dentro de tu expediente digital.",
+                "Helios detecta contexto, diferencias y dudas por confirmar.",
+                "Recibes una guía laboral útil y el siguiente paso sugerido.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -487,31 +488,31 @@ function ConfidenceMagicSection() {
               Tus documentos dejan de vivir en folders sueltos y empiezan a trabajar a tu favor.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Tú solo subes lo que ya tienes. AuditaPatron ordena la información, la convierte en un expediente digital disponible 24/7 y te devuelve una explicación fácil de entender para que sepas qué revisar con calma.
+              Tú solo subes lo que ya tienes. AuditaPatron ordena la información, la convierte en un expediente digital disponible 24/7 y Helios la traduce en señales, comparaciones y siguientes pasos para que sepas qué revisar con calma.
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {[
               {
-                title: "Todo queda en un solo expediente digital",
+                title: "Subes una pieza útil y queda protegida",
                 description:
                   "Recibos, CFDI, contratos y evidencia dejan de vivir en folders separados y empiezan a ordenarse en un mismo lugar.",
-                detail: "Disponible 24/7 para revisar, descargar y volver a usar cuando lo necesites.",
+                detail: "Todo queda dentro de tu expediente digital, disponible 24/7 para revisar, descargar y volver a usar cuando lo necesites.",
                 icon: Upload,
               },
               {
-                title: "Te habla en lenguaje simple",
+                title: "Helios entiende el contexto del expediente",
                 description:
-                  "Te mostramos qué ya está claro, qué sigue en revisión y dónde conviene poner atención primero.",
-                detail: "La interfaz prioriza claridad antes que tecnicismos.",
+                  "Conecta fechas, pagos, documentos relacionados y puntos dudosos para encontrar qué ya está claro y qué todavía conviene tomar con cautela.",
+                detail: "No promete certezas automáticas: organiza señales útiles y te ayuda a interpretar mejor la información visible.",
                 icon: FileSearch,
               },
               {
-                title: "Te acompaña si más adelante lo necesitas",
+                title: "Recibes guía laboral útil",
                 description:
-                  "Después de cada revisión, sabes qué documento puede ayudarte más y conservas tu respaldo en un solo lugar si luego necesitas aclarar, reclamar o preparar algo mayor.",
-                detail: "La persona usuaria solo sube, revisa y avanza; el expediente sigue creciendo por detrás.",
+                  "Ves qué se confirmó, qué parece estimado y cuál puede ser el siguiente documento o paso más útil para fortalecer tu respaldo.",
+                detail: "La persona usuaria solo sube, revisa y avanza; el expediente sigue creciendo por detrás sin sumar complejidad.",
                 icon: ShieldCheck,
               },
             ].map((item) => {
@@ -533,6 +534,103 @@ function ConfidenceMagicSection() {
               );
             })}
           </div>
+
+          <div className="mt-6 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
+            El valor real no es solo guardar archivos. El valor está en que tu expediente se ordena, Helios conecta el contexto y tú recibes una guía que te ayuda a entender mejor tu situación sin dejar de tener todo en un solo lugar.
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CopilotPreviewSection() {
+  return (
+    <section id="copiloto" className="bg-slate-50 py-14 sm:py-16">
+      <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            Copiloto laboral de Helios
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+            Una capa extra para hacer preguntas rápidas sobre tu expediente.
+          </h2>
+          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, Helios puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil sin sacarte del expediente.
+          </p>
+
+          <div className="mt-6 space-y-3">
+            {[
+              "Responde con base en los documentos que ya integraste en tu expediente.",
+              "Usa lenguaje simple para decirte qué ya se entiende y qué sigue siendo preliminar.",
+              "Te ayuda a priorizar el siguiente documento o movimiento más útil sin sustituir asesoría legal formal.",
+            ].map((item) => (
+              <div key={item} className="flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.35)]">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                <p className="text-sm leading-6 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
+            El copiloto es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={goToAuditFlow}>
+              Probar el copiloto en /auditar
+              <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50"
+              onClick={() => scrollToId("preguntas")}
+            >
+              Ver límites y dudas frecuentes
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
+          <div className="flex items-center justify-between gap-4 rounded-[1.4rem] bg-slate-950 px-4 py-3 text-white">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-300">
+                Vista previa del copiloto
+              </p>
+              <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-white">
+                Helios te explica el expediente con palabras simples
+              </p>
+            </div>
+            <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-teal-200">
+              Contexto visible
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tú preguntas</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                “¿Qué riesgo principal ves en mi expediente y qué documento me conviene subir después?”
+              </p>
+            </div>
+            <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Helios responde</p>
+              <p className="mt-2 text-sm leading-6 text-teal-950">
+                “Ya hay señales útiles para revisar pagos y condiciones, pero todavía faltan piezas para confirmarlo con más seguridad. Un contrato o CFDI reciente podría darte más claridad y fortalecer tu expediente.”
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                "Basado en tu expediente",
+                "Lenguaje simple",
+                "Siguiente paso sugerido",
+              ].map((item) => (
+                <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-center text-sm font-medium text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -551,7 +649,7 @@ function HowItWorksSection() {
             Entiende tu situación sin complicarte.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            En pocos pasos puedes subir tu documento, ver lo importante y empezar a construir un expediente digital ordenado que siga contigo cuando lo necesites.
+            En pocos pasos puedes subir tu documento, dejar que Helios conecte el contexto y empezar a construir un expediente digital ordenado que siga contigo cuando lo necesites.
           </p>
         </div>
 
@@ -560,17 +658,17 @@ function HowItWorksSection() {
             {
               number: "01",
               title: "Sube lo que ya tienes",
-              description: "Puedes empezar con un recibo, CFDI, contrato u otro documento laboral útil.",
+              description: "Puedes empezar con un recibo, CFDI, contrato u otro documento laboral útil sin preparar nada antes.",
             },
             {
               number: "02",
-              title: "Recibe una lectura clara",
-              description: "Te explicamos qué detectamos y qué parte todavía conviene tomar con cautela.",
+              title: "Helios entiende lo importante",
+              description: "Ordena señales, separa lo confirmado de lo estimado y te explica con claridad dónde conviene poner atención.",
             },
             {
               number: "03",
-              title: "Sigue fortaleciendo tu respaldo",
-              description: "Cada documento adicional puede dar más contexto y ayudarte a entender mejor tu caso.",
+              title: "Recibes guía útil para avanzar",
+              description: "Cada documento adicional puede dar más contexto, ayudarte a entender mejor tu caso y sugerirte el siguiente paso más útil.",
             },
           ].map((item) => (
             <article
@@ -1098,6 +1196,7 @@ export default function Home() {
       <HeroSection />
       <QuickTrustSection />
       <ConfidenceMagicSection />
+      <CopilotPreviewSection />
       <HowItWorksSection />
       <DossierSection />
       <PriorityDocumentsSection />

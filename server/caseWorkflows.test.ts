@@ -14,15 +14,18 @@ const dbMocks = vi.hoisted(() => ({
   createAuditLog: vi.fn(),
   createCaseRecord: vi.fn(),
   ensureTenantForUser: vi.fn(),
+  getAuditarDraftById: vi.fn(),
   getCaseDetailForUser: vi.fn(),
   getDashboardForUser: vi.fn(),
   getSystemSnapshot: vi.fn(),
+  getVisibleDocumentForUser: vi.fn(),
   grantCaseAccess: vi.fn(),
   listAccessibleUsersByTenant: vi.fn(),
   listAuditTrail: vi.fn(),
   listCasesForUser: vi.fn(),
   listTenantsForUser: vi.fn(),
   listVisibleDocuments: vi.fn(),
+  persistAuditarViewState: vi.fn(),
   seedDemoCaseIfEmpty: vi.fn(),
   updateCaseStatus: vi.fn(),
   updateDocumentPostProcessing: vi.fn(),
@@ -33,10 +36,16 @@ const storageMocks = vi.hoisted(() => ({
   storagePut: vi.fn(),
 }));
 
+const llmMocks = vi.hoisted(() => ({
+  invokeLLM: vi.fn(),
+}));
+
 vi.mock("./db", () => dbMocks);
 vi.mock("./storage", () => storageMocks);
+vi.mock("./_core/llm", () => llmMocks);
 
 import * as db from "./db";
+import { invokeLLM } from "./_core/llm";
 import { appRouter } from "./routers";
 import { storagePut } from "./storage";
 
@@ -152,6 +161,16 @@ describe("appRouter case workflows", () => {
     vi.mocked(db.addOperationalAlert).mockResolvedValue(undefined);
     vi.mocked(db.addConsentRecord).mockResolvedValue(undefined);
     vi.mocked(db.addPolicyRecord).mockResolvedValue(undefined);
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: ya hay señales iniciales en tu expediente.\nLo que sí se sabe: existe contexto preliminar en los documentos visibles.\nLo que falta confirmar: todavía conviene contrastar con más soportes.\nSiguiente paso útil: subir un contrato o CFDI reciente.",
+          },
+        },
+      ],
+    } as never);
   });
 
   it("returns dashboard summary for the authenticated operator", async () => {
@@ -220,6 +239,71 @@ describe("appRouter case workflows", () => {
         recommendedNextStep: "Comparar contra recibos de nómina y CFDI.",
       }),
     });
+  });
+
+  it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-HEL-001",
+        originalName: "contrato_demo.pdf",
+        documentType: "contract",
+        classificationConfidence: 88,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-HEL-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Helios generó una lectura preliminar útil del contrato.",
+          legalOpinion: "La lectura asistida sugiere usar este contrato como base de comparación.",
+          riskLevel: "medium",
+          recommendedNextStep: "Comparar contra recibos de nómina y CFDI.",
+          recommendedActions: ["Subir recibos recientes", "Contrastar salario pactado"],
+          legalFoundations: [],
+          keyFactsUsed: ["Contrato visible"],
+          uncertainties: ["Faltan soportes de pago"],
+          confidenceScore: 74,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      prompt: "¿Qué riesgo principal ves y qué documento conviene subir después?",
+    });
+
+    expect(db.getCaseDetailForUser).toHaveBeenCalledWith({
+      userId: 7,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+    expect(db.listVisibleDocuments).toHaveBeenCalledWith({
+      userId: 7,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+    expect(invokeLLM).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      disclaimer: "Opinión preliminar asistida por sistema.",
+      confidenceScore: 74,
+      sourceDocumentCount: 1,
+    });
+    expect(result.answer).toContain("Respuesta clara");
+    expect(result.suggestedPrompts.length).toBeGreaterThan(0);
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        action: "case.helios_copilot_chat",
+      }),
+    );
   });
 
   it("creates a case with canonical contracts, access grants and audit trail", async () => {

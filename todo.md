@@ -280,3 +280,15 @@
 - [x] Implementar recomendación automática del siguiente documento ideal según el expediente actual en /auditar
 - [x] Implementar microinteracciones suaves en cámara, vista previa, confirmación y guardado dentro de /auditar
 - [x] Validar con pruebas la iteración completa de edición manual, siguiente documento y microinteracciones
+- [x] Contrastar con ChatGPT, Grok y Gemini la viabilidad de presentar en AuditaPatron un copiloto legal laboral alimentado por Helios sin romper el flujo actual
+- [x] Evaluar el mejor copy para dejar más claro en el landing qué valor recibe la persona al subir sus documentos
+- [x] Definir si el copiloto legal existente en CompliLink puede reutilizarse en AuditaPatron como capa extra conectada a Helios
+- [x] Determinar límites de promesa, riesgos de posicionamiento y arquitectura segura para venderlo como "abogado laboral en tu bolsillo" sin sobreprometer
+- [x] Reforzar el landing de AuditaPatron para dejar mucho más claro qué valor recibe la persona al subir sus documentos y cómo Helios convierte esos datos en claridad útil
+- [x] Integrar una primera capa del copiloto laboral de Helios en AuditaPatron como función extra, sin alterar ni reemplazar el flujo actual de `/auditar`
+- [x] Reutilizar el copiloto legal existente de CompliLink a través de Helios con límites de promesa, disclaimers y lenguaje seguro para la persona usuaria
+- [x] Validar con pruebas, revisión técnica y pulido de copy la nueva iteración de landing más copiloto antes del siguiente checkpoint
+
+- [x] Rediseñar la landing para explicar con claridad el ciclo subir documentos → Helios entiende → recibes guía laboral útil.
+- [x] Integrar el copiloto laboral de Helios como módulo adicional con chat contextual, disclaimers y acceso desde la landing y el expediente.
+- [x] Validar TypeScript, Vitest y estado técnico después de esta integración.

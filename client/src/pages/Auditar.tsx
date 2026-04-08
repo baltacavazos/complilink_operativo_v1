@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -1451,6 +1452,7 @@ export default function Auditar() {
   const analyzeDraftMutation = trpc.cases.analyzeDocumentDraft.useMutation();
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
   const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
+  const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -1476,6 +1478,8 @@ export default function Auditar() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<string | null>(null);
+  const [heliosCopilotOpen, setHeliosCopilotOpen] = useState(false);
+  const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<HeliosCopilotMessage[]>([]);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
@@ -1568,6 +1572,12 @@ export default function Auditar() {
 
   const caseDetailInput = selectedTenantId && selectedCaseId ? { tenantId: selectedTenantId, caseId: selectedCaseId } : undefined;
   const currentCaseScopeKey = caseDetailInput ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}` : null;
+
+  useEffect(() => {
+    setHeliosCopilotOpen(false);
+    setHeliosCopilotMessages([]);
+    heliosCopilotMutation.reset();
+  }, [currentCaseScopeKey, heliosCopilotMutation]);
 
   const caseDetailQuery = trpc.cases.detail.useQuery(caseDetailInput as { tenantId: string; caseId: string }, {
     enabled: auth.isAuthenticated && Boolean(caseDetailInput),
@@ -1691,6 +1701,36 @@ export default function Auditar() {
     engineReason: lastUpload?.engineDispatch?.reason ?? undefined,
     documentsWithOpinion: heliosDocumentsCount,
   });
+  const heliosCopilotIntro = useMemo(() => {
+    if (visibleHeliosOpinion?.summary?.trim()) {
+      return `${visibleHeliosOpinion.summary}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
+    }
+
+    if (heliosDocumentsCount === 0) {
+      return "Todavía no hay una lectura visible del expediente. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
+    }
+
+    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de este expediente. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
+  }, [heliosDocumentsCount, visibleHeliosOpinion?.summary]);
+  const heliosCopilotSuggestedPrompts = useMemo(() => {
+    const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
+    const localPrompts = [
+      "¿Qué riesgo principal ves en mi expediente?",
+      visibleHeliosOpinion?.recommendedNextStep
+        ? "Explícame el siguiente paso sugerido con palabras simples."
+        : "¿Qué paso me conviene seguir ahora?",
+      visibleHeliosOpinion?.uncertainties?.length
+        ? "¿Qué puntos todavía faltan confirmar?"
+        : "¿Qué documento me conviene subir después?",
+      "Resúmeme mi situación actual en pocas palabras.",
+    ].filter((item): item is string => Boolean(item));
+
+    return Array.from(new Set([...serverPrompts, ...localPrompts])).slice(0, 4);
+  }, [heliosCopilotMutation.data?.suggestedPrompts, visibleHeliosOpinion?.recommendedNextStep, visibleHeliosOpinion?.uncertainties]);
+  const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
+    () => [{ role: "assistant", content: heliosCopilotIntro }, ...heliosCopilotMessages],
+    [heliosCopilotIntro, heliosCopilotMessages],
+  );
   const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
 
   const dossierStatus = useMemo(() => {
@@ -1918,6 +1958,44 @@ export default function Auditar() {
         : previewStructuredExtraction.reviewNotes,
     };
   }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
+  const handleHeliosCopilotSend = (content: string) => {
+    if (!selectedTenantId || !selectedCaseId) {
+      setHeliosCopilotMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: "Primero elige un expediente para que pueda responder con el contexto correcto.",
+        },
+      ]);
+      return;
+    }
+
+    setHeliosCopilotMessages((current) => [...current, { role: "user", content }]);
+    heliosCopilotMutation.mutate(
+      {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        prompt: content,
+      },
+      {
+        onSuccess: (response) => {
+          setHeliosCopilotMessages((current) => [...current, { role: "assistant", content: response.answer }]);
+        },
+        onError: (error) => {
+          setHeliosCopilotMessages((current) => [
+            ...current,
+            {
+              role: "assistant",
+              content:
+                error.message ||
+                "No pude responder en este momento. Puedes intentarlo otra vez o seguir fortaleciendo tu expediente con más documentos.",
+            },
+          ]);
+        },
+      },
+    );
+  };
+
   const previewStructuredConfirmedFields = useMemo(
     () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
     [displayPreviewStructuredExtraction],
@@ -3841,6 +3919,39 @@ export default function Auditar() {
                         <p className="mt-2 text-xs text-slate-500">Documento: {latestHeliosDocument?.originalName ?? "Sin detalle visible"}</p>
                       </div>
                     ) : null}
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                        onClick={() => setHeliosCopilotOpen(true)}
+                        disabled={!selectedCaseId}
+                      >
+                        Abrir copiloto laboral
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                        onClick={() => uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      >
+                        Subir otro documento
+                      </Button>
+                    </div>
+                    <p className="mt-3 text-xs leading-6 text-teal-900">
+                      Haz preguntas rápidas sobre riesgos, documentos faltantes o el siguiente paso útil sin salir de tu expediente.
+                    </p>
+                    <HeliosCopilotSheet
+                      open={heliosCopilotOpen}
+                      onOpenChange={setHeliosCopilotOpen}
+                      onSendMessage={handleHeliosCopilotSend}
+                      messages={heliosCopilotConversation}
+                      isLoading={heliosCopilotMutation.isPending}
+                      suggestedPrompts={heliosCopilotSuggestedPrompts}
+                      caseTitle={caseDetailQuery.data?.case.title}
+                      employeeName={caseDetailQuery.data?.case.employeeName}
+                      confidenceScore={heliosCopilotMutation.data?.confidenceScore ?? visibleHeliosOpinion?.confidenceScore ?? null}
+                      disclaimer={heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null}
+                      summary={visibleHeliosOpinion?.summary ?? null}
+                    />
                   </div>
                 </div>
               </div>

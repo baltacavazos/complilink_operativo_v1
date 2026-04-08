@@ -1,0 +1,211 @@
+{
+  "startedAt": "2026-04-08T03:04:41.260Z",
+  "context": {
+    "proyecto": "AuditaPatron / complilink_operativo_v1",
+    "estado_actual": {
+      "producto": "AuditaPatron ya permite a la persona subir documentos laborales, analizarlos y consolidar un expediente digital con ayuda del motor Helios.",
+      "flujo_actual": "En /auditar ya existe un flujo analizar → confirmar → guardar, con preanálisis temporal, OCR estructurado, confirmación previa, edición manual opcional, recomendación del siguiente documento y microinteracciones suaves.",
+      "integracion_helios": "Helios ya opera como motor central de interpretación y ya existe un copiloto legal accesible desde la página de CompliLink.",
+      "restriccion": "La nueva propuesta debe ser una capa extra, sin destruir ni rehacer el flujo actual."
+    },
+    "propuesta_a_evaluar": {
+      "landing": "Dejar mucho más claro en el landing qué valor recibe la persona a cambio de subir sus documentos.",
+      "copiloto": "Usar el mismo copiloto legal de CompliLink dentro de AuditaPatron.",
+      "posicionamiento": "Venderlo como “un abogado laboral en tu bolsillo”, alimentado por tus propios datos y dándote consejos sobre tus propios datos.",
+      "arquitectura": "Todo debe entrar y salir del motor Helios."
+    },
+    "usuario_objetivo": "Trabajadores mexicanos con baja alfabetización digital que necesitan claridad, confianza y utilidad concreta en celular.",
+    "preguntas_clave": [
+      "¿Es buena idea de producto y posicionamiento?",
+      "¿Es viable técnicamente como extensión sin romper lo ya construido?",
+      "¿Cómo debería presentarse en landing y producto sin sobreprometer?",
+      "¿Qué riesgos legales, UX y de arquitectura deben cuidarse?",
+      "¿Cuál sería el alcance más seguro para una primera versión?"
+    ],
+    "restricciones": [
+      "No destruir el flujo actual de /auditar.",
+      "No duplicar lógica si Helios ya resuelve inteligencia y copiloto.",
+      "La promesa comercial debe ser potente pero responsable.",
+      "La experiencia debe sentirse simple, humana y mobile-first.",
+      "La recomendación debe enfocarse en una capa extra reutilizable, no en una reescritura total."
+    ]
+  },
+  "results": {
+    "openai": {
+      "modelo": "gpt-4.1-mini",
+      "veredicto_general": "si_con_matices",
+      "resumen_ejecutivo": "Incorporar el copiloto legal de CompliLink como capa extra en AuditaPatron es una propuesta valiosa que potencia la utilidad del expediente digital, especialmente para usuarios con baja alfabetización digital. Sin embargo, el posicionamiento debe matizarse para evitar expectativas irreales. Técnicamente es viable sin alterar el flujo actual, siempre que se mantenga la arquitectura centrada en Helios. La integración debe ser clara, simple y mobile-first, enfatizando la ayuda personalizada sin sobreprometer asesoría legal completa. La primera versión segura debe limitarse a consejos básicos y navegación asistida, dejando funciones avanzadas para iteraciones futuras.",
+      "valor_de_producto": {
+        "calificacion": 8,
+        "comentario": "La propuesta añade valor significativo al ofrecer asesoría personalizada basada en datos propios, aumentando confianza y utilidad para el usuario final."
+      },
+      "posicionamiento": {
+        "frase_propuesta": "Un abogado laboral en tu bolsillo",
+        "evaluacion": "Potente pero arriesgada si no se matiza; puede generar falsas expectativas legales.",
+        "riesgo": "Usuarios pueden interpretar que reciben asesoría legal formal, lo que implica responsabilidad legal y posibles reclamos.",
+        "alternativa_mas_segura": "Tu asistente laboral personalizado, con consejos basados en tus documentos"
+      },
+      "viabilidad_tecnica": {
+        "calificacion": 9,
+        "comentario": "Integrar el copiloto como capa extra reutilizando Helios es factible sin modificar el flujo actual ni duplicar lógica.",
+        "arquitectura_recomendada": [
+          "Mantener Helios como motor central de datos y análisis",
+          "Copiloto como módulo desacoplado que consume y devuelve datos a Helios",
+          "Interfaz móvil simple que se integra en la UI existente sin alterar pasos actuales"
+        ]
+      },
+      "landing": {
+        "que_debe_quedar_claro": [
+          "Subir documentos genera un expediente digital personalizado",
+          "Recibes consejos prácticos basados en tus propios datos",
+          "No es asesoría legal formal, sino apoyo automatizado"
+        ],
+        "mensajes_clave": [
+          "Confianza y claridad para entender tu situación laboral",
+          "Asistencia sencilla y humana en tu celular",
+          "Tus datos, tu control, con ayuda inteligente"
+        ],
+        "evitar": [
+          "Promesas de asesoría legal completa o personalizada por abogado",
+          "Términos técnicos complejos o confusos para el usuario objetivo"
+        ]
+      },
+      "producto": {
+        "como_integrarlo": [
+          "Agregar botón o sección visible para activar el copiloto dentro del flujo /auditar sin interrumpir",
+          "Mostrar consejos contextuales basados en documentos ya subidos",
+          "Permitir interacción sencilla, con lenguaje claro y microinteracciones suaves"
+        ],
+        "primera_version_segura": [
+          "Consejos generales y recomendaciones basadas en análisis Helios",
+          "Explicaciones simples sobre documentos y derechos laborales",
+          "Acceso al copiloto sin funciones de edición o asesoría legal directa"
+        ],
+        "dejar_para_despues": [
+          "Interacciones complejas o personalizadas que requieran interpretación legal profunda",
+          "Integración con abogados humanos o soporte en vivo"
+        ]
+      },
+      "riesgos": {
+        "legales": [
+          "Percepción errónea de asesoría legal formal",
+          "Responsabilidad por consejos incorrectos o malinterpretados"
+        ],
+        "ux": [
+          "Sobrecarga de información para usuarios con baja alfabetización digital",
+          "Confusión si la capa extra no está claramente diferenciada del flujo principal"
+        ],
+        "tecnicos": [
+          "Duplicación accidental de lógica si no se reutiliza Helios correctamente",
+          "Riesgo de afectar performance o estabilidad si se integra mal"
+        ]
+      },
+      "guardrails": [
+        "No alterar ni reemplazar el flujo /auditar existente",
+        "Reutilizar exclusivamente la lógica e inteligencia de Helios y copiloto CompliLink",
+        "Comunicar claramente limitaciones y naturaleza automatizada del copiloto"
+      ],
+      "copy_sugerido_landing": {
+        "headline": "Tu asistente laboral personalizado, con base en tus documentos",
+        "subheadline": "Sube tus papeles, recibe consejos claros y prácticos para entender y proteger tus derechos",
+        "beneficios": [
+          "Confianza y claridad para trabajadores mexicanos",
+          "Ayuda sencilla y humana en tu celular",
+          "Tu expediente digital que te guía paso a paso"
+        ]
+      },
+      "decision_recomendada": "Incorporar el copiloto legal como capa extra en AuditaPatron es una mejora valiosa y viable. Se debe matizar el posicionamiento para evitar falsas expectativas legales y comunicar claramente que es un apoyo automatizado basado en datos propios. La integración técnica debe respetar la arquitectura actual centrada en Helios y no modificar el flujo /auditar. La primera versión debe limitarse a consejos básicos y navegación asistida, dejando funciones avanzadas para iteraciones futuras. Esto maximiza valor y minimiza riesgos legales, UX y técnicos."
+    },
+    "grok": {
+      "modelo": "grok-4",
+      "veredicto_general": "si_con_matices",
+      "resumen_ejecutivo": "Incorporar el copiloto legal de CompliLink como capa extra en AuditaPatron es una idea sólida para potenciar el valor, ofreciendo consejos personalizados basados en datos del expediente vía Helios. Fortalece el posicionamiento como herramienta accesible para trabajadores mexicanos, pero requiere matices en promesas para evitar riesgos legales y sobrepromesas. Técnicamente viable sin alterar flujos existentes, enfocándose en integración modular. La primera versión debe ser simple, mobile-first, con guardrails para precisión y privacidad. Esto añade utilidad concreta sin duplicar lógica, mejorando retención y confianza en usuarios con baja alfabetización digital.",
+      "valor_de_producto": {
+        "calificacion": 8,
+        "comentario": "La idea es fuerte como propuesta de valor, ya que transforma AuditaPatron de un simple gestor de documentos en un asesor personalizado, aumentando utilidad y engagement para usuarios que buscan claridad laboral. Sin embargo, es débil si no se gestionan expectativas, ya que no sustituye a un abogado real."
+      },
+      "posicionamiento": {
+        "frase_propuesta": "Un abogado laboral en tu bolsillo",
+        "evaluacion": "Buen posicionamiento por su simplicidad y atractivo emocional, resonando con usuarios que necesitan ayuda accesible y personalizada.",
+        "riesgo": "Puede sobreprometer expertise legal, generando demandas si los consejos fallan o se malinterpretan.",
+        "alternativa_mas_segura": "Tu asesor laboral inteligente, basado en tus documentos"
+      },
+      "viabilidad_tecnica": {
+        "calificacion": 9,
+        "comentario": "Viable como extensión sin romper flujos existentes, reutilizando Helios para inteligencia y el copiloto de CompliLink. Evita duplicación y se integra modularmente.",
+        "arquitectura_recomendada": [
+          "Entrada/salida exclusiva vía Helios para consistencia",
+          "API wrapper para invocar copiloto desde AuditaPatron sin rehacer UI",
+          "Caché temporal de preanálisis para respuestas rápidas en mobile"
+        ]
+      },
+      "landing": {
+        "que_debe_quedar_claro": [
+          "Sube documentos y obtén consejos personalizados sobre tu situación laboral",
+          "No reemplaza asesoría legal profesional",
+          "Funciona con tus datos para mayor precisión"
+        ],
+        "mensajes_clave": [
+          "Analiza tus documentos laborales al instante",
+          "Recibe recomendaciones basadas en tu expediente",
+          "Simple y seguro en tu celular"
+        ],
+        "evitar": [
+          "Promesas de resultados garantizados",
+          "Comparaciones directas con abogados reales"
+        ]
+      },
+      "producto": {
+        "como_integrarlo": [
+          "Añadir botón de 'Copiloto' post-guardado en /auditar, invocando Helios",
+          "Mantener flujo actual intacto, con copiloto como opt-in después de confirmar expediente",
+          "Interfaz mobile-first con chat simple y microinteracciones suaves"
+        ],
+        "primera_version_segura": [
+          "Limitar a consultas básicas sobre documentos subidos",
+          "Incluir disclaimers en cada respuesta",
+          "Pruebas A/B para usabilidad en usuarios con baja alfabetización"
+        ],
+        "dejar_para_despues": [
+          "Integración con notificaciones push",
+          "Soporte multilingüe avanzado"
+        ]
+      },
+      "riesgos": {
+        "legales": [
+          "Consejos inexactos podrían interpretarse como asesoría legal no autorizada",
+          "Violaciones de privacidad si datos no se manejan correctamente"
+        ],
+        "ux": [
+          "Sobrecarga cognitiva en usuarios con baja alfabetización si interfaz no es intuitiva",
+          "Frustración si respuestas no son claras o útiles"
+        ],
+        "tecnicos": [
+          "Dependencia total de Helios podría causar downtime si falla",
+          "Escalabilidad en mobile si OCR y análisis son pesados"
+        ]
+      },
+      "guardrails": [
+        "Incluir disclaimer en cada interacción: 'Esto no es asesoría legal, consulta a un profesional'",
+        "Limitar alcance a interpretación de documentos subidos, no a escenarios hipotéticos",
+        "Monitoreo de uso para detectar y mitigar sesgos en respuestas de Helios"
+      ],
+      "copy_sugerido_landing": {
+        "headline": "AuditaPatron: Tu asesor laboral inteligente en el bolsillo",
+        "subheadline": "Sube tus documentos y obtén consejos personalizados basados en tu expediente, todo desde tu celular",
+        "beneficios": [
+          "Análisis rápido y preciso de contratos laborales",
+          "Recomendaciones útiles para tu situación real",
+          "Seguro, simple y siempre disponible"
+        ]
+      },
+      "decision_recomendada": "Recomiendo proceder con la integración como capa extra, con matices en posicionamiento para enfatizar 'asesor inteligente' en lugar de 'abogado'. Enfocarse en viabilidad técnica reutilizando Helios, y una primera versión limitada a consultas post-expediente con disclaimers. Esto fortalece el producto sin riesgos mayores, priorizando UX simple para usuarios móviles. Monitorear feedback para iteraciones."
+    },
+    "gemini": {
+      "modelo": "gemini-2.5-flash",
+      "error_parseo": "SyntaxError: Expected ':' after property name in JSON at position 1877 (line 13 column 98)",
+      "respuesta_cruda": "{\n  \"modelo\": \"Estratega de Producto, UX y Arquitectura\",\n  \"veredicto_general\": \"si_con_matices\",\n  \"resumen_ejecutivo\": \"La integración del copiloto legal de CompliLink en AuditaPatron, alimentado por los datos del usuario y Helios, es una propuesta de valor muy potente para el usuario objetivo. Sin embargo, el posicionamiento y la implementación deben ser cuidadosamente matizados para gestionar expectativas, mitigar riesgos legales y de UX, y asegurar una experiencia simple y confiable. Es viable técnicamente como una capa extra, pero requiere guardarraíles claros y una primera versión acotada.\",\n  \"valor_de_producto\": {\n    \"calificacion\": 5,\n    \"comentario\": \"Para trabajadores mexicanos con baja alfabetización digital, la promesa de 'consejos laborales personalizados basados en mis propios documentos' es extremadamente valiosa. Resuelve una necesidad crítica de claridad, confianza y utilidad concreta, empoderándolos con información que de otra manera sería inaccesible o costosa. Es un diferenciador clave que capitaliza el valor del expediente digital ya construido.\"\n  },\n  \"posicionamiento\": {\n    \"frase_propuesta\": \"un abogado laboral en tu bolsillo\",\n    \"evaluacion\": \"Es una frase potente y memorable que resuena con la necesidad de accesibilidad y ayuda. Sin embargo, es de alto riesgo legal y de sobrepromesa. Un 'abogado' implica representación, juicio profesional y responsabilidad legal que una IA no puede ofrecer. Podría generar expectativas irrealistas y problemas de responsabilidad si el consejo es malinterpretado o incorrecto.\",\n    \"riesgo\": \"Responsabilidad legal por consejos incorrectos o malinterpretados, pérdida de confianza del usuario si la IA no cumple la expectativa de 'abogado', confusión sobre el alcance real del servicio.\",\n    \"alternativa_mas_segura\": \"Tu Asistente Laboral Inteligente\", \"Tu Guía Laboral Personalizada\", \"Consejos Laborales Basados en Tus Documentos\", \"Tu Experto Laboral de Bolsillo (impulsado por IA)\". Estas frases enfatizan la ayuda y la inteligencia artificial sin prometer una representación legal.\"\n  },\n  \"viabilidad_tecnica\": {\n    \"calificacion\": 4,\n    \"comentario\": \"La propuesta es altamente viable técnicamente como una capa extra. Dado que Helios ya es el motor central de interpretación y el copiloto ya existe en CompliLink, la integración implica principalmente: 1) Pasar el contexto del expediente digital consolidado de AuditaPatron a Helios/copiloto, 2) Consumir la respuesta del copiloto y presentarla en la UI de AuditaPatron. No requiere rehacer el flujo actual de /auditar, sino añadir una funcionalidad que lo complementa.\",\n    \"arquitectura_recomendada\": [\n      \"Extender la API de Helios para aceptar consultas contextualizadas con el ID del expediente consolidado de AuditaPatron.\",\n      \"Añadir un nuevo módulo en AuditaPatron (o extender uno existente) que actúe como orquestador, enviando las preguntas del usuario y el contexto del expediente a Helios/copiloto.\",\n      \"Implementar una interfaz de usuario en AuditaPatron que permita la interacción con el copiloto, mostrando las respuestas de forma clara y con los disclaimers necesarios.\"\n    ]\n  },\n  \"landing\": {\n    \"que_debe_quedar_claro\": [\n      \"El valor concreto: 'Obtén respuestas claras a tus dudas laborales basadas en tus propios documentos'.\",\n      \"Cómo funciona: 'Sube tus documentos, AuditaPatron los analiza y nuestro asistente inteligente te da consejos'.\",\n      \"Qué NO es: 'No es un abogado humano, es una herramienta de apoyo impulsada por IA'.\",\n      \"La privacidad y seguridad de sus datos.\"\n    ],\n    \"mensajes_clave\": [\n      \"Claridad en tus derechos laborales, al instante.\",\n      \"Respuestas personalizadas, basadas en tus documentos.\",\n      \"Tu guía confiable para entender tu situación laboral.\"\n    ],\n    \"evitar\": [\n      \"Frases que impliquen representación legal o toma de decisiones por parte de la IA.\",\n      \"Jergas técnicas o legales complejas que alejen al usuario objetivo.\"\n    ]\n  },\n  \"producto\": {\n    \"como_integrarlo\": [\n      \"Un botón o sección prominente en la página del expediente consolidado: 'Pregúntale a tu Asistente Laboral'.\",\n      \"Un chat conversacional simple, con prompts predefinidos para guiar al usuario (ej. '¿Cuántos días de vacaciones tengo según mi contrato?', '¿Mi finiquito está bien calculado?').\",\n      \"Las respuestas deben ser concisas, fáciles de entender y siempre acompañadas de un disclaimer claro sobre la naturaleza de la IA.\"\n    ],\n    \"primera_version_segura\": [\n      \"Capacidad de responder preguntas específicas y factuales sobre los documentos ya subidos y analizados por Helios (ej. fechas, montos, cláusulas).\",\n      \"Respuestas basadas estrictamente en la información extraída del expediente, sin inferencias complejas o consejos estratégicos.\",\n      \"Un disclaimer visible y recurrente en cada interacción que aclare que es una IA y no un sustituto de asesoría legal humana.\",\n      \"Focus en preguntas reactivas del usuario, no en consejos proactivos.\"\n    ],\n    \"dejar_para_despues\": [\n      \"Análisis predictivos o proactivos de riesgos laborales.\",\n      \"Generación de documentos legales o cartas.\",\n      \"Interacciones complejas que requieran múltiples turnos de conversación o razonamiento legal profundo.\"\n    ]\n  },\n  \"riesgos\": {\n    \"legales\": [\n      \"Responsabilidad por información incorrecta o malinterpretada por el usuario, llevando a decisiones perjudiciales.\",\n      \"Incumplimiento de regulaciones sobre asesoría legal si el posicionamiento no es claro.\"\n    ],\n    \"ux\": [\n      \"Frustración del usuario si la IA no entiende sus preguntas o da respuestas genéricas.\",\n      \"Pérdida de confianza si las expectativas generadas por el marketing no se cumplen en el producto.\",\n      \"Sobrecarga cognitiva si la interfaz es compleja o las respuestas son ambiguas.\"\n    ],\n    \"tecnicos\": [\n      \"Garantizar la seguridad y privacidad de los datos sensibles del usuario al pasarlos a Helios/copiloto.\",\n      \"Latencia y rendimiento del copiloto al procesar consultas contextualizadas con expedientes grandes.\",\n      \"Manejo de errores y ambigüedades en las preguntas del usuario para evitar respuestas erróneas.\"\n    ]\n  },\n  \"guardrails\": [\n    \"Siempre incluir disclaimers claros y visibles sobre la naturaleza de la IA y sus limitaciones.\",\n    \"Priorizar la simplicidad y la claridad en la interfaz y las respuestas, adaptadas al usuario objetivo.\",\n    \"Enfocarse en la utilidad concreta y la información factual extraída de los documentos, evitando la 'asesoría' legal profunda.\",\n    \"Establecer un proceso de monitoreo y mejora continua de la calidad de las respuestas del copiloto.\"\n  ],\n  \"copy_sugerido_landing\": {\n    \"headline\": \"Tus derechos laborales, claros y a tu alcance.\",\n    \"subheadline\": \"Sube tus documentos y obtén respuestas personalizadas de tu Asistente Laboral Inteligente, basado en tu propio expediente.\",\n    \"beneficios\": [\n      \"Entiende tu contrato, nóminas y finiquito sin complicaciones.\",\n      \"Recibe consejos basados en tus documentos, no en información genérica.\",\n      \"Accede a información clave desde tu celular, cuando la necesites.\"\n    ]\n  },\n  \"decision_recomendada\": \"Recomiendo proceder con la integración del copiloto legal como una capa extra en AuditaPatron. Es una propuesta de valor muy fuerte para el usuario objetivo, siempre y cuando se adopte un posicionamiento responsable (ej. 'Asistente Laboral Inteligente') y se implemente una primera versión segura. Esta versión debe enfocarse en responder preguntas factuales y contextualizadas con los documentos del usuario, con disclaimers claros. La viabilidad técnica es alta, aprovechando la infraestructura existente de Helios y el copiloto de CompliLink, sin romper el flujo actual.\"\n}"
+    }
+  },
+  "finishedAt": "2026-04-08T03:05:56.670Z"
+}

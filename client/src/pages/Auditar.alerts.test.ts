@@ -1,4 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/components/HeliosCopilotSheet", () => ({
+  HeliosCopilotSheet: () => null,
+}));
+
 import { buildDossierTypeProgress, buildHeliosPriorityAlerts, sanitizePersistedAuditarViewState } from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
