@@ -11,41 +11,56 @@ PROJECT_PROMPT = r'''Actúa como arquitecto/a senior de producto, UX y sistemas 
 Contexto actual:
 - Existe una home y una página /auditar donde la persona usuaria sube documentos laborales para revisar si todo con su patrón está en orden.
 - La dirección UX actual busca una experiencia muy simple, confiable, mobile-first y casi mágica.
-- Ya existe un módulo inicial de “documentos más útiles por subir”, un historial simple del expediente y un onboarding móvil breve.
-- Ahora queremos una segunda iteración más inteligente: que las recomendaciones visibles se conecten con los documentos realmente faltantes del expediente del usuario, que el historial tenga filtros simples y que el onboarding móvil se vuelva un carrusel reutilizable que pueda reabrirse.
-- La idea es que la persona sienta que el sistema entiende qué le falta, le sugiere exactamente lo que más le conviene subir después y le ahorra desorden.
-- Además, los documentos sugeridos deben seguir priorizando los que mayor valor informativo aportan internamente al sistema, pero ESO NO DEBE EXPLICARSE al usuario final. En la interfaz visible solo deben mostrarse beneficios claros: más claridad, mejor respaldo, más contexto y mejor revisión.
-- La persona usuaria debe sentir que mientras más documentos importantes sube, más completo, útil y ordenado queda su expediente digital, con todo disponible 24/7.
-- Restricciones: no mencionar Helios, no mencionar motor interno, no mencionar enriquecimiento de backend, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
-- Hay que priorizar implementaciones de alto impacto y baja fricción, sin rehacer toda la arquitectura.
+- Ya existe un módulo de documentos recomendados, un historial simple del expediente con filtros básicos y un onboarding móvil reutilizable.
+- Ahora queremos una siguiente iteración más útil y accionable.
+- Queremos que el historial del expediente y sus filtros se sientan personales y persistentes para cada usuario, sin obligarlo a configurar nada manualmente.
+- Queremos mostrar porcentaje de completitud por tipo documental faltante para que la persona entienda qué tan completo está su expediente sin sentirse juzgada.
+- Queremos que cada documento recomendado tenga un CTA directo y obvio para subir exactamente ese documento desde Home y /auditar.
+- La idea es que la persona sienta que el sistema le ahorra desorden, le muestra qué le falta, le deja todo a la mano 24/7 y le facilita actuar en un toque.
+- Los documentos sugeridos siguen priorizando los que aportan más claridad y mejor respaldo para la revisión, pero ESO NO DEBE EXPLICARSE como lógica interna al usuario final.
+- Restricciones: no mencionar Helios, no mencionar motor interno, no mencionar enriquecimiento backend, no pedir pasos técnicos, no exponer complejidad arquitectónica, mantener español simple y humano.
+- Hay que priorizar implementaciones de alto impacto y baja fricción, evitando sobreingeniería.
 
 Necesito recomendaciones para LA SIGUIENTE ITERACIÓN de Home y /auditar.
 
 Quiero que propongas específicamente:
-1. Cómo conectar recomendaciones documentales con faltantes reales del expediente sin hacer sentir vigilada a la persona usuaria.
-2. Qué lógica simple y visible conviene usar para priorizar documentos faltantes de forma útil y accionable.
-3. Qué filtros simples debería tener el historial del expediente para que sea útil en móvil y genere confianza.
-4. Cómo convertir el onboarding móvil breve en un carrusel reutilizable, claro y fácil de volver a abrir.
-5. Qué copy exacto sugerirías en español para recomendaciones faltantes, filtros del historial y el nuevo carrusel onboarding.
-6. Cómo implementarlo visualmente en Home y /auditar con la menor fricción posible.
-7. Qué NO implementar todavía para evitar complejidad innecesaria.
+1. Cómo persistir el historial del expediente y sus filtros por usuario de forma silenciosa y útil.
+2. Cómo mostrar porcentaje de completitud por tipo documental faltante sin generar ansiedad ni ruido visual.
+3. Cómo diseñar CTAs directos para subir cada documento recomendado desde Home y /auditar.
+4. Qué copy exacto sugieres para persistencia del historial, completitud documental y acciones directas.
+5. Cómo implementarlo visualmente con la menor fricción posible.
+6. Qué NO construir todavía para no meter complejidad innecesaria.
 
 Devuelve SOLO JSON válido con esta forma exacta:
 {
   "model_positioning": "string",
-  "missing_documents_strategy": {
+  "history_persistence": {
+    "is_good_idea": true,
+    "why": "string",
+    "what_to_persist": ["string"],
+    "how_it_should_feel": "string",
+    "avoid_patterns": ["string"]
+  },
+  "completeness_model": {
     "is_good_idea": true,
     "visible_logic_summary": "string",
-    "recommended_document_order": [
+    "scoring_style": "string",
+    "recommended_document_types": [
       {
-        "document_name": "string",
-        "when_to_show": "string",
-        "user_value": "string",
-        "priority_reason": "string"
+        "document_type": "string",
+        "importance_label": "string",
+        "completion_hint": "string",
+        "user_value": "string"
       }
     ],
-    "selection_principles": ["string"],
+    "progress_explainer": ["string"],
     "avoid_logic": ["string"]
+  },
+  "cta_strategy": {
+    "home_cta_pattern": "string",
+    "auditar_cta_pattern": "string",
+    "cta_labels": ["string"],
+    "reassurance_microcopy": ["string"]
   },
   "top_recommendations": [
     {
@@ -55,12 +70,6 @@ Devuelve SOLO JSON válido con esta forma exacta:
       "implementation_effort": "high|medium|low"
     }
   ],
-  "message_strategy": {
-    "headline": "string",
-    "principles": ["string"],
-    "avoid_phrases": ["string"],
-    "best_user_promises": ["string"]
-  },
   "home_implementation": {
     "section_title": "string",
     "section_supporting": "string",
@@ -71,50 +80,28 @@ Devuelve SOLO JSON válido con esta forma exacta:
     "recommended_documents_title": "string",
     "recommended_documents_supporting": "string",
     "recommended_documents_microcopy": ["string"],
-    "history_filters_title": "string",
+    "history_module_title": "string",
+    "history_module_supporting": "string",
     "history_filters": ["string"],
-    "history_module_microcopy": ["string"],
+    "completion_module_title": "string",
+    "completion_module_supporting": "string",
     "empty_state_message": "string"
   },
-  "mobile_onboarding_carousel": {
-    "screen_1": {
-      "title": "string",
-      "supporting": "string"
-    },
-    "screen_2": {
-      "title": "string",
-      "supporting": "string"
-    },
-    "screen_3": {
-      "title": "string",
-      "supporting": "string"
-    },
-    "entry_points": ["string"],
-    "replay_option": "string",
-    "close_behavior": "string"
-  },
-  "history_experience": {
-    "module_title": "string",
-    "module_supporting": "string",
-    "recommended_filters": ["string"],
-    "events_to_show": ["string"],
-    "trust_signals": ["string"]
+  "exact_copy": {
+    "history_saved_label": "string",
+    "history_filter_label": "string",
+    "completion_title": "string",
+    "completion_supporting": "string",
+    "recommended_documents_title": "string",
+    "recommended_documents_supporting": "string",
+    "direct_upload_cta": "string",
+    "secondary_cta": "string",
+    "upload_reassurance": "string"
   },
   "microinteractions_and_mobile": {
     "microinteractions": ["string"],
-    "mobile_navigation_adjustments": ["string"],
+    "mobile_layout_adjustments": ["string"],
     "wow_moments": ["string"]
-  },
-  "exact_copy": {
-    "recommended_documents_title": "string",
-    "recommended_documents_supporting": "string",
-    "history_title": "string",
-    "history_supporting": "string",
-    "history_filter_label": "string",
-    "upload_reassurance": "string",
-    "documents_growth_message": "string",
-    "onboarding_intro": "string",
-    "reopen_onboarding_label": "string"
   },
   "do_not_build_yet": ["string"],
   "final_verdict": "string"

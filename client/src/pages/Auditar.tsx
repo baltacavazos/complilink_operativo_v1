@@ -40,6 +40,7 @@ type DossierTarget = {
   label: string;
   description: string;
   benefit: string;
+  suggestedCount: number;
 };
 
 type UploadInsight = {
@@ -122,30 +123,35 @@ const dossierTargets: DossierTarget[] = [
     label: "Recibos de nómina",
     description: "Ayudan a revisar pagos, deducciones y cambios entre periodos.",
     benefit: "Permiten detectar diferencias y patrones de pago con más claridad.",
+    suggestedCount: 2,
   },
   {
     type: "cfdi",
     label: "CFDI",
     description: "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
     benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
+    suggestedCount: 2,
   },
   {
     type: "contract",
     label: "Contrato o condiciones iniciales",
     description: "Aterrizan sueldo pactado, jornada, prestaciones y condiciones de inicio.",
     benefit: "Ayudan a comparar lo prometido frente a lo realmente ocurrido.",
+    suggestedCount: 1,
   },
   {
     type: "imss",
     label: "Soporte IMSS",
     description: "Refuerza contexto sobre alta, baja, NSS o semanas cotizadas.",
     benefit: "Aporta respaldo sobre seguridad social y relación laboral formal.",
+    suggestedCount: 1,
   },
   {
     type: "evidence",
     label: "Evidencia complementaria",
     description: "Correos, capturas o chats ayudan a explicar fechas, instrucciones y cambios.",
     benefit: "Da contexto adicional cuando un recibo o CFDI por sí solos no bastan.",
+    suggestedCount: 1,
   },
 ];
 
@@ -193,6 +199,89 @@ const mobileOnboardingSteps: MobileOnboardingStep[] = [
     description: "Ves qué ya se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
   },
 ];
+
+type AuditarPersistedViewState = {
+  historyFilter?: DossierHistoryFilter;
+  mobileOnboardingIndex?: number;
+  selectedRecommendedTargetType?: DossierTarget["type"] | null;
+};
+
+function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
+  return dossierTargets.some((item) => item.type === value);
+}
+
+function getRecommendedDocumentHint(targetType: DossierTarget["type"]) {
+  switch (targetType) {
+    case "payroll_receipt":
+      return "Voy a subir recibos de nómina para comparar periodos, pagos y deducciones.";
+    case "cfdi":
+      return "Voy a subir CFDI para contrastar lo timbrado con otros documentos del expediente.";
+    case "contract":
+      return "Voy a subir mi contrato o condiciones iniciales para comparar lo pactado con lo ocurrido.";
+    case "imss":
+      return "Voy a subir soporte IMSS para reforzar fechas y contexto de seguridad social.";
+    case "evidence":
+      return "Voy a subir evidencia complementaria para dar más contexto al expediente.";
+    default:
+      return "Voy a subir un documento laboral útil para fortalecer mi expediente.";
+  }
+}
+
+export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersistedViewState {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  const record = value as Record<string, unknown>;
+  const historyFilter =
+    record.historyFilter === "all" ||
+    record.historyFilter === "document" ||
+    record.historyFilter === "response" ||
+    record.historyFilter === "summary"
+      ? (record.historyFilter as DossierHistoryFilter)
+      : undefined;
+  const mobileOnboardingIndex =
+    typeof record.mobileOnboardingIndex === "number" && Number.isFinite(record.mobileOnboardingIndex)
+      ? Math.min(Math.max(Math.trunc(record.mobileOnboardingIndex), 0), mobileOnboardingSteps.length - 1)
+      : undefined;
+  const selectedRecommendedTargetType =
+    record.selectedRecommendedTargetType === null
+      ? null
+      : isDossierTargetType(record.selectedRecommendedTargetType)
+        ? record.selectedRecommendedTargetType
+        : undefined;
+
+  return {
+    historyFilter,
+    mobileOnboardingIndex,
+    selectedRecommendedTargetType,
+  };
+}
+
+export function buildDossierTypeProgress(documentTypeCounts: Record<string, number>) {
+  return dossierTargets.map((item) => {
+    const count = documentTypeCounts[item.type] ?? 0;
+    const targetCount = item.suggestedCount;
+    const percent = Math.min(100, Math.round((Math.min(count, targetCount) / targetCount) * 100));
+    const coverageLabel = percent === 100 ? "Cubierto" : count > 0 ? "En progreso" : "Pendiente";
+    const supportingCopy =
+      percent === 100
+        ? "Ya tienes base suficiente en este frente para seguir contrastando con mejor contexto."
+        : count > 0
+          ? `Ya subiste ${count} archivo${count === 1 ? "" : "s"} de este tipo. Un poco más de respaldo aquí puede darte una lectura todavía más clara.`
+          : item.benefit;
+
+    return {
+      type: item.type,
+      label: item.label,
+      count,
+      targetCount,
+      percent,
+      coverageLabel,
+      supportingCopy,
+    };
+  });
+}
 
 const analysisFieldLabels: Record<string, string> = {
   fileName: "Archivo",
@@ -1098,12 +1187,74 @@ export default function Auditar() {
   const [timelineExpandedOnMobile, setTimelineExpandedOnMobile] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<DossierHistoryFilter>("all");
   const [mobileOnboardingIndex, setMobileOnboardingIndex] = useState(0);
+  const [selectedRecommendedTargetType, setSelectedRecommendedTargetType] = useState<DossierTarget["type"] | null>(null);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
   const [lastUpload, setLastUpload] = useState<Awaited<ReturnType<typeof uploadMutation.mutateAsync>> | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [persistenceReady, setPersistenceReady] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const auditarPersistenceKey = useMemo(() => {
+    if (!auth.user) {
+      return null;
+    }
+
+    const userRecord = auth.user as Record<string, unknown>;
+    const stableId = ["openId", "id", "userId", "email"].find((key) => {
+      const value = userRecord[key];
+      return typeof value === "string" && value.trim().length > 0;
+    });
+
+    if (!stableId) {
+      return null;
+    }
+
+    return `auditar-view-state:v1:${String(userRecord[stableId])}`;
+  }, [auth.user]);
+
+  useEffect(() => {
+    setPersistenceReady(false);
+
+    if (typeof window === "undefined" || !auditarPersistenceKey) {
+      return;
+    }
+
+    try {
+      const rawValue = window.localStorage.getItem(auditarPersistenceKey);
+      const persistedState = sanitizePersistedAuditarViewState(rawValue ? JSON.parse(rawValue) : null);
+
+      setHistoryFilter(persistedState.historyFilter ?? "all");
+      setMobileOnboardingIndex(persistedState.mobileOnboardingIndex ?? 0);
+      setSelectedRecommendedTargetType(
+        persistedState.selectedRecommendedTargetType === undefined ? null : persistedState.selectedRecommendedTargetType,
+      );
+    } catch {
+      window.localStorage.removeItem(auditarPersistenceKey);
+      setHistoryFilter("all");
+      setMobileOnboardingIndex(0);
+      setSelectedRecommendedTargetType(null);
+    } finally {
+      setPersistenceReady(true);
+    }
+  }, [auditarPersistenceKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !auditarPersistenceKey || !persistenceReady) {
+      return;
+    }
+
+    window.localStorage.setItem(
+      auditarPersistenceKey,
+      JSON.stringify({
+        historyFilter,
+        mobileOnboardingIndex,
+        selectedRecommendedTargetType,
+      }),
+    );
+  }, [auditarPersistenceKey, historyFilter, mobileOnboardingIndex, persistenceReady, selectedRecommendedTargetType]);
 
   useEffect(() => {
     if (auth.loading || !auth.isAuthenticated || bootstrapStarted) return;
@@ -1238,8 +1389,21 @@ export default function Auditar() {
     attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
     receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
   });
+  const documentTypeCounts = useMemo(
+    () =>
+      documents.reduce<Record<string, number>>((counts, document) => {
+        counts[document.documentType] = (counts[document.documentType] ?? 0) + 1;
+        return counts;
+      }, {}),
+    [documents],
+  );
+  const dossierTypeProgress = useMemo(() => buildDossierTypeProgress(documentTypeCounts), [documentTypeCounts]);
+  const effectiveRecommendedTarget = useMemo(
+    () => dossierTargets.find((item) => item.type === selectedRecommendedTargetType) ?? dossierStatus.nextTarget ?? null,
+    [dossierStatus.nextTarget, selectedRecommendedTargetType],
+  );
   const nextDocumentCopy = getPersonalizedNextDocumentCopy({
-    nextTarget: dossierStatus.nextTarget ?? undefined,
+    nextTarget: effectiveRecommendedTarget ?? undefined,
     presentTypes,
     opinion: visibleHeliosOpinion,
   });
@@ -1359,6 +1523,17 @@ export default function Auditar() {
     setEstimatedAcknowledged(false);
   }, [lastUpload]);
 
+  useEffect(() => {
+    if (!selectedRecommendedTargetType) {
+      return;
+    }
+
+    const selectedProgress = dossierTypeProgress.find((item) => item.type === selectedRecommendedTargetType);
+    if (selectedProgress?.percent === 100) {
+      setSelectedRecommendedTargetType(null);
+    }
+  }, [dossierTypeProgress, selectedRecommendedTargetType]);
+
   const clearSelectedFile = () => {
     setSelectedFile(null);
     setTextHint("");
@@ -1370,6 +1545,9 @@ export default function Auditar() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
+    if (file && selectedRecommendedTargetType) {
+      setTextHint((current) => current.trim() || getRecommendedDocumentHint(selectedRecommendedTargetType));
+    }
     setSubmitError(null);
     setUploadSourceOpen(false);
   };
@@ -1380,6 +1558,29 @@ export default function Auditar() {
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const focusRecommendedUpload = (targetType?: DossierTarget["type"] | null) => {
+    const resolvedTargetType = targetType ?? effectiveRecommendedTarget?.type ?? dossierStatus.nextTarget?.type ?? null;
+
+    if (resolvedTargetType) {
+      setSelectedRecommendedTargetType(resolvedTargetType);
+      setTextHint((current) => current.trim() || getRecommendedDocumentHint(resolvedTargetType));
+    }
+
+    setSubmitError(null);
+    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (selectedFile) {
+      return;
+    }
+
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setUploadSourceOpen(true);
+      return;
+    }
+
+    openFilePicker();
   };
 
   const handleUpload = async () => {
@@ -1582,23 +1783,54 @@ export default function Auditar() {
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
                 {dossierTargets.map((item) => {
-                  const isPresent = presentTypes.has(item.type);
+                  const progress = dossierTypeProgress.find((entry) => entry.type === item.type);
+                  const isSelectedRecommendation = item.type === selectedRecommendedTargetType;
+
                   return (
-                    <article key={item.type} className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
+                    <article
+                      key={item.type}
+                      className={`rounded-[1.25rem] border p-4 ${
+                        isSelectedRecommendation ? "border-teal-200 bg-teal-50" : "border-slate-200 bg-slate-50"
+                      }`}
+                    >
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-semibold text-slate-900">{item.label}</p>
                           <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
                         </div>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            isPresent ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
+                        <div className="text-right">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              (progress?.percent ?? 0) === 100
+                                ? "bg-emerald-100 text-emerald-700"
+                                : (progress?.percent ?? 0) > 0
+                                  ? "bg-teal-100 text-teal-800"
+                                  : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {progress?.percent ?? 0}%
+                          </span>
+                          <p className="mt-2 text-xs font-medium text-slate-500">{progress?.coverageLabel}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                        <div
+                          className={`h-full rounded-full ${
+                            (progress?.percent ?? 0) === 100
+                              ? "bg-emerald-500"
+                              : (progress?.percent ?? 0) > 0
+                                ? "bg-teal-500"
+                                : "bg-slate-300"
                           }`}
-                        >
-                          {isPresent ? "Ya está presente" : "Puede ayudar mucho"}
+                          style={{ width: `${progress?.percent ?? 0}%` }}
+                        />
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+                        <p className="leading-6">{progress?.supportingCopy ?? item.benefit}</p>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                          {progress?.count ?? 0}/{progress?.targetCount ?? item.suggestedCount} pieza{(progress?.targetCount ?? item.suggestedCount) === 1 ? "" : "s"} clave
                         </span>
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{item.benefit}</p>
                     </article>
                   );
                 })}
@@ -1638,10 +1870,13 @@ export default function Auditar() {
                 <div className="mt-4 grid gap-3 xl:grid-cols-2">
                   {visiblePriorityUploadGuides.map((item) => {
                     const isPresent = presentTypes.has(item.type);
+                    const isFocused = item.type === selectedRecommendedTargetType;
                     return (
                       <article
                         key={item.type}
-                        className="rounded-[1.2rem] border border-white bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                        className={`rounded-[1.2rem] border bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
+                          isFocused ? "border-teal-200 shadow-sm" : "border-white"
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -1650,16 +1885,24 @@ export default function Auditar() {
                           </div>
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              isPresent ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
+                              isPresent ? "bg-emerald-100 text-emerald-700" : isFocused ? "bg-teal-100 text-teal-800" : "bg-amber-100 text-amber-800"
                             }`}
                           >
-                            {isPresent ? "Ya lo tienes" : "Te falta y conviene subirlo"}
+                            {isPresent ? "Ya lo tienes" : isFocused ? "Enfocado ahora" : "Te falta y conviene subirlo"}
                           </span>
                         </div>
                         <p className="mt-3 text-sm leading-6 text-slate-600">{item.summary}</p>
                         <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
                           {item.value}
                         </div>
+                        <Button
+                          variant="outline"
+                          className="mt-4 h-11 w-full rounded-full border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                          onClick={() => focusRecommendedUpload(item.type)}
+                        >
+                          Subir este documento
+                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                        </Button>
                       </article>
                     );
                   })}
@@ -1850,7 +2093,7 @@ export default function Auditar() {
                 </label>
               </div>
 
-              <div className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5">
+              <div ref={uploadSectionRef} className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
                     <FileUp className="h-5 w-5" strokeWidth={1.8} />
@@ -1860,6 +2103,26 @@ export default function Auditar() {
                     <p className="text-sm text-slate-600">Puede ser foto, PDF, XML u otro archivo laboral útil.</p>
                   </div>
                 </div>
+
+                {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
+                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-semibold">Documento sugerido preparado</p>
+                        <p className="mt-1">
+                          Ahora mismo estamos enfocando {effectiveRecommendedTarget.label.toLowerCase()} para que retomes exactamente esa recomendación al subir tu archivo.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-sm font-semibold text-sky-800 underline-offset-4 hover:underline"
+                        onClick={() => setSelectedRecommendedTargetType(null)}
+                      >
+                        Quitar enfoque
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
 
                 <input
                   ref={cameraInputRef}
@@ -2520,6 +2783,9 @@ export default function Auditar() {
               <p className="mt-2 text-sm leading-7 text-slate-600">
                 Así puedes entender qué pasó recientemente sin buscar entre carpetas, mensajes o varios sistemas distintos.
               </p>
+              <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                El filtro que elijas aquí se conserva en este dispositivo para que retomes tu expediente donde lo dejaste.
+              </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {[
@@ -2912,12 +3178,15 @@ export default function Auditar() {
                 <p className="mt-2 text-sm leading-7 text-emerald-950">{nextDocumentCopy.coverage}</p>
                 <p className="mt-2 text-xs leading-6 text-emerald-900">
                   Hoy tu expediente ya cubre {dossierStatus.completed} de {dossierStatus.total} piezas clave.
+                  {selectedRecommendedTargetType && effectiveRecommendedTarget
+                    ? ` Además, dejamos enfocado ${effectiveRecommendedTarget.label.toLowerCase()} para que retomes esa sugerencia sin empezar de cero.`
+                    : ""}
                 </p>
               </div>
 
               <Button
                 className="mt-4 h-11 w-full rounded-full bg-teal-600 text-white hover:bg-teal-700"
-                onClick={openFilePicker}
+                onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
               >
                 {nextDocumentCopy.cta}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />

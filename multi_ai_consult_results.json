@@ -1,0 +1,113 @@
+{
+  "prompt": "Actúa como un lead product engineer exigente para una app móvil-first en español para trabajadores en México.\n\nContexto del producto:\n- App: AuditaPatron.\n- Propósito: permitir que un trabajador suba documentos laborales y construya un expediente digital disponible 24/7.\n- UX obligatoria: muy simple, confiable, centrada, sin scroll lateral en móvil, con sensación de claridad y “wow factor”.\n- No exponer al usuario el motor backend interno ni nombres técnicos internos.\n- Pantalla foco: /auditar.\n\nEstado actual de /auditar:\n- Ya existe carga documental.\n- Ya existen recomendaciones conectadas a faltantes reales.\n- Ya existe historial simple con filtros.\n- Ya existe onboarding móvil reutilizable.\n- Todo está en español.\n\nSiguiente iteración a decidir:\n1. Persistir filtros e historial por usuario entre sesiones.\n2. Mostrar porcentaje de completitud por tipo documental.\n3. Agregar CTA directo desde cada recomendación para subir ese documento específico.\n\nRestricciones técnicas y de UX:\n- No hacer una re-arquitectura grande si el valor visible puede lograrse con una solución simple y robusta.\n- Mobile-first.\n- Debe sentirse más claro, no más pesado.\n- El CTA directo debe reducir fricción real.\n- La persistencia por usuario puede ser local o remota, pero prioriza la mejor relación entre robustez, velocidad de implementación y experiencia percibida.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"recommended_approach\": \"texto corto\",\n  \"persistence_strategy\": {\n    \"choice\": \"local_storage | server_db | hybrid\",\n    \"why\": \"texto\"\n  },\n  \"completion_ui\": {\n    \"pattern\": \"texto corto\",\n    \"details\": [\"punto 1\", \"punto 2\", \"punto 3\"]\n  },\n  \"recommendation_cta\": {\n    \"pattern\": \"texto corto\",\n    \"microcopy\": \"texto\",\n    \"interaction\": \"texto\"\n  },\n  \"risks\": [\"riesgo 1\", \"riesgo 2\"],\n  \"implementation_notes\": [\"nota 1\", \"nota 2\", \"nota 3\"],\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Favorece soluciones elegantes, simples, intuitivas y fáciles de probar.\n- Piensa como cliente exigente, no como programador que quiere complicar.",
+  "results": [
+    {
+      "provider": "chatgpt",
+      "ok": true,
+      "output": {
+        "recommended_approach": "Agregar CTA directo en recomendaciones y mostrar porcentaje de completitud, persistiendo filtros localmente",
+        "persistence_strategy": {
+          "choice": "local_storage",
+          "why": "Permite guardar filtros e historial sin complejidad backend, rápido de implementar y con buena experiencia offline, manteniendo simplicidad y velocidad."
+        },
+        "completion_ui": {
+          "pattern": "barra de progreso por tipo documental",
+          "details": [
+            "Mostrar porcentaje claro y visual junto al título de cada tipo documental",
+            "Usar colores amigables y consistentes con la marca para indicar avance",
+            "Actualizar dinámicamente al subir documentos para feedback inmediato"
+          ]
+        },
+        "recommendation_cta": {
+          "pattern": "botón directo 'Subir ahora' en cada recomendación",
+          "microcopy": "Sube tu documento para completar tu expediente",
+          "interaction": "Al tocar el botón, abrir directamente el selector de archivos enfocado en el tipo documental recomendado, minimizando pasos"
+        },
+        "risks": [
+          "Persistencia local puede perderse si el usuario borra datos o cambia dispositivo",
+          "Agregar UI adicional puede saturar la pantalla si no se diseña con claridad",
+          "CTA directo debe evitar confundir al usuario con múltiples flujos de carga"
+        ],
+        "implementation_notes": [
+          "Reusar componentes existentes para barra de progreso y botones para mantener consistencia",
+          "Testear en dispositivos reales para asegurar que no haya scroll lateral ni saturación visual",
+          "Validar que el CTA directo no rompa el flujo actual de carga documental ni onboarding"
+        ],
+        "priority_score": 85
+      }
+    },
+    {
+      "provider": "grok",
+      "ok": true,
+      "output": {
+        "recommended_approach": "Iteración minimalista integrada",
+        "persistence_strategy": {
+          "choice": "hybrid",
+          "why": "Combina velocidad local para acceso inmediato con sincronización remota para robustez entre sesiones y dispositivos, minimizando esfuerzo de implementación y mejorando percepción de fluidez"
+        },
+        "completion_ui": {
+          "pattern": "Barra de progreso lineal por tipo",
+          "details": [
+            "Mostrar porcentaje numérico al lado de cada categoría documental",
+            "Usar colores intuitivos: verde para completado, gris para pendiente",
+            "Integrar en vista principal sin agregar pantallas extras para mantener claridad"
+          ]
+        },
+        "recommendation_cta": {
+          "pattern": "Botón inline en recomendación",
+          "microcopy": "Subir este documento",
+          "interaction": "Toca para abrir flujo de carga directo del tipo específico, reduciendo pasos"
+        },
+        "risks": [
+          "Posible sobrecarga visual si los elementos no se alinean con el diseño simple",
+          "Dependencia de conexión para sync en hybrid podría frustrar en offline"
+        ],
+        "implementation_notes": [
+          "Reutilizar onboarding móvil para guiar persistencia inicial",
+          "Probar en dispositivos low-end para asegurar fluidez mobile-first",
+          "Medir reducción de fricción con A/B testing en recomendaciones"
+        ],
+        "priority_score": 85
+      }
+    },
+    {
+      "provider": "gemini",
+      "ok": true,
+      "output": {
+        "recommended_approach": "Implementación estratégica de usabilidad y visibilidad de progreso.",
+        "persistence_strategy": {
+          "choice": "server_db",
+          "why": "Asegura la consistencia y persistencia de las preferencias del usuario (filtros, historial) entre dispositivos y sesiones. Esto mejora la confiabilidad y la experiencia percibida, siendo una solución robusta y escalable para futuras personalizaciones, sin depender del almacenamiento local volátil."
+        },
+        "completion_ui": {
+          "pattern": "Indicadores de progreso visuales y numéricos por categoría documental.",
+          "details": [
+            "Un anillo de progreso o barra sutil y minimalista en la cabecera de cada sección de tipo documental (e.g., 'Documentos de Identificación', 'Contratos Laborales').",
+            "El porcentaje se calculará sobre los documentos esperados vs. los cargados dentro de esa categoría, mostrando '0%' si no hay documentos esperados o cargados.",
+            "Animación suave y elegante al cargar la pantalla para el 'wow factor', sin sobrecargar visualmente. El diseño debe ser limpio y moderno, integrándose con la estética existente.",
+            "El indicador debe ser interactivo, quizás expandiendo una lista de documentos faltantes al tocarlo, o filtrando la vista para mostrar solo los pendientes de esa categoría."
+          ]
+        },
+        "recommendation_cta": {
+          "pattern": "Botón de acción directa contextual e inconfundible.",
+          "microcopy": "Subir [Nombre del Documento]",
+          "interaction": "Dentro de cada tarjeta de recomendación, se integrará un botón claro y prominente. Al tocarlo, el usuario es dirigido directamente al flujo de carga documental existente, con el tipo de documento ya pre-seleccionado o claramente indicado, minimizando drásticamente los pasos y la fricción para el usuario."
+        },
+        "risks": [
+          "Sobrecarga visual si los indicadores de progreso no son diseñados con extrema sutileza y minimalismo, afectando la claridad.",
+          "Complejidad en el flujo de carga si el pre-llenado del tipo de documento desde el CTA no es robusto y a prueba de errores.",
+          "Rendimiento de la app si la persistencia de filtros y el historial no se gestionan eficientemente en el backend, resultando en latencia perceptible.",
+          "Cálculo erróneo del porcentaje de completitud si la lógica de 'documentos esperados' no es precisa y adaptable a diferentes perfiles de usuario."
+        ],
+        "implementation_notes": [
+          "Diseñar los indicadores de progreso con un enfoque 'menos es más' para mantener la claridad y el 'wow factor' sin añadir peso visual.",
+          "Reutilizar y adaptar el flujo de carga documental existente para el CTA directo, asegurando que el contexto del documento se pase correctamente y sea validado.",
+          "Implementar la persistencia de filtros y historial vía API RESTful para el backend, garantizando respuestas rápidas y un esquema de datos optimizado.",
+          "Definir claramente la lógica de 'documentos esperados' para cada tipo y categoría, considerando posibles variaciones por perfil de usuario o tipo de empleo.",
+          "Realizar pruebas exhaustivas de usabilidad y rendimiento en dispositivos móviles para validar la reducción de fricción, la percepción de ligereza y la robustez de las nuevas funcionalidades."
+        ],
+        "priority_score": 92
+      }
+    }
+  ]
+}

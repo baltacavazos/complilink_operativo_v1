@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildHeliosPriorityAlerts } from "./Auditar";
+import { buildDossierTypeProgress, buildHeliosPriorityAlerts, sanitizePersistedAuditarViewState } from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
   it("incluye fecha, motivo y acción cuando existe seguimiento con atención", () => {
@@ -35,6 +35,7 @@ describe("buildHeliosPriorityAlerts", () => {
         label: "CFDI",
         description: "Sirven para contrastar lo timbrado fiscalmente.",
         benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
+        suggestedCount: 2,
       },
       opinion: {
         uncertainties: ["Todavía conviene confirmar el periodo exacto."],
@@ -91,5 +92,64 @@ describe("buildHeliosPriorityAlerts", () => {
       actionLabel: "Puedes abrir la comparación lado a lado para revisar con más calma",
     });
     expect(comparisonReady?.timestampLabel).toContain("2026");
+  });
+});
+
+describe("sanitizePersistedAuditarViewState", () => {
+  it("conserva solo valores válidos y acota el paso móvil dentro del rango permitido", () => {
+    expect(
+      sanitizePersistedAuditarViewState({
+        historyFilter: "response",
+        mobileOnboardingIndex: 99,
+        selectedRecommendedTargetType: "contract",
+      }),
+    ).toEqual({
+      historyFilter: "response",
+      mobileOnboardingIndex: 2,
+      selectedRecommendedTargetType: "contract",
+    });
+  });
+
+  it("descarta filtros o tipos documentales inválidos sin romper el estado", () => {
+    expect(
+      sanitizePersistedAuditarViewState({
+        historyFilter: "invalid",
+        mobileOnboardingIndex: -4,
+        selectedRecommendedTargetType: "unknown",
+      }),
+    ).toEqual({
+      historyFilter: undefined,
+      mobileOnboardingIndex: 0,
+      selectedRecommendedTargetType: undefined,
+    });
+  });
+});
+
+describe("buildDossierTypeProgress", () => {
+  it("calcula el avance por tipo respetando el objetivo sugerido de cada documento", () => {
+    const progress = buildDossierTypeProgress({
+      payroll_receipt: 1,
+      cfdi: 3,
+      contract: 1,
+    });
+
+    expect(progress.find((item) => item.type === "payroll_receipt")).toMatchObject({
+      percent: 50,
+      coverageLabel: "En progreso",
+      count: 1,
+      targetCount: 2,
+    });
+    expect(progress.find((item) => item.type === "cfdi")).toMatchObject({
+      percent: 100,
+      coverageLabel: "Cubierto",
+      count: 3,
+      targetCount: 2,
+    });
+    expect(progress.find((item) => item.type === "evidence")).toMatchObject({
+      percent: 0,
+      coverageLabel: "Pendiente",
+      count: 0,
+      targetCount: 1,
+    });
   });
 });
