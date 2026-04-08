@@ -11,6 +11,8 @@ import {
   classifyMexicanLaborDocument,
   computeSha256,
   decodeBase64File,
+  getHeliosDocumentState,
+  getHeliosExpedienteStage,
   sanitizeFileName,
 } from "./caseContracts";
 
@@ -95,6 +97,74 @@ describe("caseContracts", () => {
         mimeType: "text/plain",
       }).documentType,
     ).toBe("other");
+  });
+
+  it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {
+    expect(
+      getHeliosExpedienteStage({
+        caseStatus: "draft",
+        documentsCount: 0,
+        documentsWithOpinion: 0,
+      }),
+    ).toMatchObject({
+      stage: "intake",
+      stageLabel: "Listo para iniciar",
+    });
+
+    expect(
+      getHeliosExpedienteStage({
+        caseStatus: "analysis",
+        documentsCount: 2,
+        documentsWithOpinion: 0,
+      }),
+    ).toMatchObject({
+      stage: "analysis",
+      stageLabel: "Analizando",
+    });
+
+    expect(
+      getHeliosExpedienteStage({
+        caseStatus: "conciliation",
+        documentsCount: 2,
+        documentsWithOpinion: 1,
+      }),
+    ).toMatchObject({
+      stage: "recommendations",
+      stageLabel: "Con lectura activa",
+    });
+
+    expect(
+      getHeliosDocumentState({
+        documentType: "contract",
+        hasOpinion: true,
+      }),
+    ).toMatchObject({
+      canonicalType: "contrato_laboral",
+      status: "ready",
+      statusLabel: "Lectura lista",
+    });
+
+    expect(
+      getHeliosDocumentState({
+        documentType: "cfdi",
+        hasOpinion: false,
+        processedAt: new Date("2026-04-07T10:00:00.000Z"),
+      }),
+    ).toMatchObject({
+      canonicalType: "cfdi_nomina",
+      status: "analyzing",
+      statusLabel: "Analizando",
+    });
+
+    expect(
+      getHeliosDocumentState({
+        documentType: "evidence",
+        hasOpinion: false,
+      }),
+    ).toMatchObject({
+      status: "pending_ingestion",
+      statusLabel: "Pendiente de lectura",
+    });
   });
 
   it("builds canonical case, document, consent and shared-engine envelopes with traceability fields", () => {

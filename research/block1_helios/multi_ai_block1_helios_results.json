@@ -1,0 +1,251 @@
+{
+  "prompt": "Actúa como principal architect + product engineer para una app laboral mobile-first en español para trabajadores en México.\n\nNecesito que evalúes y propongas la PRIMERA formalización real del bloque 1 Helios-first.\n\nContexto obligatorio:\n- Producto visible: AuditaPatron.\n- Núcleo obligatorio: Helios.\n- Regla crítica: todo el desarrollo futuro debe quedar DENTRO de Helios como sistema central; no se permiten arquitecturas paralelas.\n- UX visible: AuditaPatron sigue siendo la capa de experiencia para la persona usuaria.\n- Página foco: /auditar.\n- Ya existe un flujo funcional de carga documental, preanálisis, confirmación y guardado.\n- Ya existe opinión preliminar de Helios por documento y copiloto contextual.\n- Ya existen tablas y contratos canónicos para casos, documentos, eventos y contratos.\n\nEstado técnico resumido ya implementado:\n- El expediente actual vive sobre labor_cases.\n- Los documentos actuales viven sobre case_documents.\n- Existe canonical_contracts para contratos tipo case, intake, document, classification, consent, audit y shared_engine.\n- cases.uploadDocument ya guarda documento, crea contratos canónicos, genera opinión preliminar de Helios y despacha al motor compartido.\n- cases.detail ya devuelve documentos visibles con heliosOpinion persistida por documento.\n- /auditar ya muestra progreso del expediente, recomendaciones documentales, línea de tiempo simple y copiloto laboral.\n\nRestricción principal del bloque 1:\n- No rehacer desde cero.\n- No crear una segunda arquitectura de expediente/documento paralela a labor_cases y case_documents.\n- Sí formalizar conceptualmente que esos objetos son ya el dominio base de Helios, aunque todavía con naming heredado.\n- Sí introducir únicamente la mínima estructura adicional que haga más claro que Helios opera sobre un expediente laboral personal y sus documentos.\n\nObjetivo de esta ronda:\nDefinir la mejor implementación mínima y segura para que:\n1. el expediente laboral personal quede formalizado como dominio central de Helios,\n2. el documento laboral quede formalizado como unidad canónica de ingestión de Helios,\n3. /auditar opere de forma más explícita como interfaz del expediente Helios y no como motor paralelo,\n4. todo esto ocurra sin romper la UX existente ni inflar demasiado el alcance.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"veredicto_general\": \"texto corto\",\n  \"decision_arquitectonica\": {\n    \"mantener_modelo_actual_como_base\": true,\n    \"por_que\": \"texto corto\",\n    \"cambios_minimos_recomendados\": [\"cambio 1\", \"cambio 2\", \"cambio 3\"]\n  },\n  \"dominio_expediente\": {\n    \"recomendacion\": \"texto corto\",\n    \"campos_o_conceptos_minimos\": [\"item 1\", \"item 2\", \"item 3\"],\n    \"como_presentarlo_en_ui\": \"texto corto\"\n  },\n  \"dominio_documento\": {\n    \"recomendacion\": \"texto corto\",\n    \"campos_o_conceptos_minimos\": [\"item 1\", \"item 2\", \"item 3\"],\n    \"como_presentarlo_en_ui\": \"texto corto\"\n  },\n  \"ingestion_helios_first\": {\n    \"recomendacion\": \"texto corto\",\n    \"pipeline_minimo\": [\"paso 1\", \"paso 2\", \"paso 3\", \"paso 4\"],\n    \"senales_de_que_no_hay_arquitectura_paralela\": [\"senal 1\", \"senal 2\", \"senal 3\"]\n  },\n  \"impacto_en_auditar\": {\n    \"cambios_visibles_minimos\": [\"cambio 1\", \"cambio 2\", \"cambio 3\"],\n    \"evitar\": [\"evitar 1\", \"evitar 2\", \"evitar 3\"]\n  },\n  \"riesgos\": [\"riesgo 1\", \"riesgo 2\", \"riesgo 3\"],\n  \"plan_recomendado_48h\": [\"paso 1\", \"paso 2\", \"paso 3\", \"paso 4\"],\n  \"score_ajuste_bloque_1\": 0\n}\n\nReglas adicionales:\n- Responde solo JSON válido.\n- score_ajuste_bloque_1 debe ser un número de 0 a 100.\n- Prioriza robustez, continuidad, claridad conceptual y mínimo cambio estructural.\n- Piensa como arquitecto exigente que quiere consolidar todo dentro de Helios sin desperdiciar trabajo ya hecho.\n- No propongas una reescritura total.\n- No propongas un nuevo sistema paralelo de expediente o documento.",
+  "context": {
+    "producto": "AuditaPatron / Helios-first",
+    "pagina_foco": "/auditar",
+    "estado_actual": {
+      "expediente_base": "labor_cases ya funciona como expediente laboral base",
+      "documento_base": "case_documents ya funciona como unidad documental base",
+      "persistencia_helios": "canonical_contracts guarda contratos y opinion Helios audit helios_v1 por documento",
+      "flujo_actual": [
+        "carga documental",
+        "preanalisis y confirmacion",
+        "guardado",
+        "opinion preliminar de Helios",
+        "despacho al motor compartido",
+        "consulta contextual por copiloto"
+      ],
+      "restriccion": "consolidar dentro de Helios sin arquitectura paralela"
+    }
+  },
+  "results": {
+    "chatgpt": {
+      "available": true,
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"veredicto_general\": \"Formalizar labor_cases y case_documents como dominios centrales de Helios con mínimos ajustes para claridad y continuidad.\",\n  \"decision_arquitectonica\": {\n    \"mantener_modelo_actual_como_base\": true,\n    \"por_que\": \"El modelo actual ya soporta el flujo crítico y la persistencia necesaria, evitando riesgos y retrabajo.\",\n    \"cambios_minimos_recomendados\": [\n      \"Renombrar conceptualmente labor_cases y case_documents como dominios Helios para claridad interna.\",\n      \"Agregar campos mínimos para marcar explícitamente contexto laboral en labor_cases.\",\n      \"Documentar y formalizar contratos canónicos como núcleo de ingestión y análisis Helios.\"\n    ]\n  },\n  \"dominio_expediente\": {\n    \"recomendacion\": \"Formalizar labor_cases como el expediente laboral personal central de Helios con campos mínimos para contexto y estado.\",\n    \"campos_o_conceptos_minimos\": [\n      \"id_expediente_helios\",\n      \"id_persona_trabajadora\",\n      \"estado_expediente (ej. en_proceso, auditado, cerrado)\",\n      \"fecha_creacion\",\n      \"metadatos_contexto_laboral (tipo_empleo, sector, antiguedad)\"\n    ],\n    \"como_presentarlo_en_ui\": \"Mostrar en /auditar como la vista principal del expediente Helios con progreso y estado claros.\"\n  },\n  \"dominio_documento\": {\n    \"recomendacion\": \"Formalizar case_documents como unidad canónica de ingestión y análisis documental Helios, manteniendo contratos y opiniones asociadas.\",\n    \"campos_o_conceptos_minimos\": [\n      \"id_documento_helios\",\n      \"id_expediente_helios\",\n      \"tipo_documento_laboral\",\n      \"fecha_carga\",\n      \"estado_documento (pendiente, analizado, confirmado)\",\n      \"opinion_helios_preliminar\"\n    ],\n    \"como_presentarlo_en_ui\": \"Integrar documentos en la línea de tiempo y recomendaciones dentro de /auditar sin cambios disruptivos.\"\n  },\n  \"ingestion_helios_first\": {\n    \"recomendacion\": \"Mantener pipeline actual con formalización clara de pasos y contratos canónicos como núcleo de ingestión Helios.\",\n    \"pipeline_minimo\": [\n      \"Carga documental en case_documents\",\n      \"Creación y actualización de contratos canónicos en canonical_contracts\",\n      \"Generación de opinión preliminar Helios por documento\",\n      \"Despacho y consulta contextual desde Helios al motor compartido\"\n    ],\n    \"senales_de_que_no_hay_arquitectura_paralela\": [\n      \"Uso exclusivo de labor_cases y case_documents para expediente y documentos\",\n      \"Persistencia y consulta centralizada en canonical_contracts\",\n      \"Interfaz /auditar como capa UX sobre Helios sin motor paralelo\"\n    ]\n  },\n  \"impacto_en_auditar\": {\n    \"cambios_visibles_minimos\": [\n      \"Mostrar estado y metadatos laborales explícitos en la vista principal del expediente\",\n      \"Clarificar en UI que documentos y opiniones son parte del dominio Helios\",\n      \"Mantener línea de tiempo y copiloto sin cambios disruptivos\"\n    ],\n    \"evitar\": [\n      \"Rehacer flujos existentes de carga y análisis\",\n      \"Crear nuevas estructuras paralelas para expediente o documentos\",\n      \"Cambios UI que confundan al usuario o rompan continuidad\"\n    ]\n  },\n  \"riesgos\": [\n    \"Confusión interna si no se documenta claramente la formalización del dominio\",\n    \"Posible deuda técnica si se agregan campos sin control\",\n    \"Resistencia a cambios conceptuales mínimos en naming heredado\"\n  ],\n  \"plan_recomendado_48h\": [\n    \"Documentar formalmente labor_cases y case_documents como dominios Helios\",\n    \"Agregar campos mínimos en labor_cases para contexto laboral\",\n    \"Actualizar contratos canónicos para reflejar formalización sin cambios disruptivos\",\n    \"Comunicar a equipo y UX que /auditar es interfaz Helios sin motor paralelo\"\n  ],\n  \"score_ajuste_bloque_1\": 85\n}",
+      "parsed": {
+        "veredicto_general": "Formalizar labor_cases y case_documents como dominios centrales de Helios con mínimos ajustes para claridad y continuidad.",
+        "decision_arquitectonica": {
+          "mantener_modelo_actual_como_base": true,
+          "por_que": "El modelo actual ya soporta el flujo crítico y la persistencia necesaria, evitando riesgos y retrabajo.",
+          "cambios_minimos_recomendados": [
+            "Renombrar conceptualmente labor_cases y case_documents como dominios Helios para claridad interna.",
+            "Agregar campos mínimos para marcar explícitamente contexto laboral en labor_cases.",
+            "Documentar y formalizar contratos canónicos como núcleo de ingestión y análisis Helios."
+          ]
+        },
+        "dominio_expediente": {
+          "recomendacion": "Formalizar labor_cases como el expediente laboral personal central de Helios con campos mínimos para contexto y estado.",
+          "campos_o_conceptos_minimos": [
+            "id_expediente_helios",
+            "id_persona_trabajadora",
+            "estado_expediente (ej. en_proceso, auditado, cerrado)",
+            "fecha_creacion",
+            "metadatos_contexto_laboral (tipo_empleo, sector, antiguedad)"
+          ],
+          "como_presentarlo_en_ui": "Mostrar en /auditar como la vista principal del expediente Helios con progreso y estado claros."
+        },
+        "dominio_documento": {
+          "recomendacion": "Formalizar case_documents como unidad canónica de ingestión y análisis documental Helios, manteniendo contratos y opiniones asociadas.",
+          "campos_o_conceptos_minimos": [
+            "id_documento_helios",
+            "id_expediente_helios",
+            "tipo_documento_laboral",
+            "fecha_carga",
+            "estado_documento (pendiente, analizado, confirmado)",
+            "opinion_helios_preliminar"
+          ],
+          "como_presentarlo_en_ui": "Integrar documentos en la línea de tiempo y recomendaciones dentro de /auditar sin cambios disruptivos."
+        },
+        "ingestion_helios_first": {
+          "recomendacion": "Mantener pipeline actual con formalización clara de pasos y contratos canónicos como núcleo de ingestión Helios.",
+          "pipeline_minimo": [
+            "Carga documental en case_documents",
+            "Creación y actualización de contratos canónicos en canonical_contracts",
+            "Generación de opinión preliminar Helios por documento",
+            "Despacho y consulta contextual desde Helios al motor compartido"
+          ],
+          "senales_de_que_no_hay_arquitectura_paralela": [
+            "Uso exclusivo de labor_cases y case_documents para expediente y documentos",
+            "Persistencia y consulta centralizada en canonical_contracts",
+            "Interfaz /auditar como capa UX sobre Helios sin motor paralelo"
+          ]
+        },
+        "impacto_en_auditar": {
+          "cambios_visibles_minimos": [
+            "Mostrar estado y metadatos laborales explícitos en la vista principal del expediente",
+            "Clarificar en UI que documentos y opiniones son parte del dominio Helios",
+            "Mantener línea de tiempo y copiloto sin cambios disruptivos"
+          ],
+          "evitar": [
+            "Rehacer flujos existentes de carga y análisis",
+            "Crear nuevas estructuras paralelas para expediente o documentos",
+            "Cambios UI que confundan al usuario o rompan continuidad"
+          ]
+        },
+        "riesgos": [
+          "Confusión interna si no se documenta claramente la formalización del dominio",
+          "Posible deuda técnica si se agregan campos sin control",
+          "Resistencia a cambios conceptuales mínimos en naming heredado"
+        ],
+        "plan_recomendado_48h": [
+          "Documentar formalmente labor_cases y case_documents como dominios Helios",
+          "Agregar campos mínimos en labor_cases para contexto laboral",
+          "Actualizar contratos canónicos para reflejar formalización sin cambios disruptivos",
+          "Comunicar a equipo y UX que /auditar es interfaz Helios sin motor paralelo"
+        ],
+        "score_ajuste_bloque_1": 85
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"veredicto_general\": \"Aprovechar la base existente es clave para una formalización Helios-first eficiente y segura, consolidando el dominio sin reescrituras.\",\n  \"decision_arquitectonica\": {\n    \"mantener_modelo_actual_como_base\": true,\n    \"por_que\": \"Los modelos `labor_cases` y `case_documents` ya cumplen la función estructural necesaria y albergan datos operativos críticos. Replicarlos sería un desperdicio de esfuerzo y crearía la arquitectura paralela explícitamente prohibida.\",\n    \"cambios_minimos_recomendados\": [\n      \"Introducir un alias conceptual: `labor_cases` es `HeliosExpediente` y `case_documents` es `HeliosDocumento` en la capa de servicios de Helios.\",\n      \"Añadir un campo `helios_status` (ENUM) a `labor_cases` para reflejar el estado del expediente dentro del ciclo de vida de Helios (e.g., 'Intake', 'Analizando', 'Recomendaciones', 'Cerrado').\",\n      \"Añadir un campo `helios_classification` (STRING) a `case_documents` para la clasificación canónica de Helios, si difiere de la clasificación interna original.\",\n      \"Refactorizar los servicios de `cases` y `documents` para que internamente llamen a un `HeliosEngine` o `HeliosService` para operaciones clave, pasando los objetos `labor_cases` y `case_documents` como sus dominios de entrada.\"\n    ]\n  },\n  \"dominio_expediente\": {\n    \"recomendacion\": \"Formalizar `labor_cases` como el `HeliosExpediente` personal, añadiendo metadatos mínimos que lo vinculen explícitamente al ciclo de vida y análisis de Helios, sin duplicar la información central.\",\n    \"campos_o_conceptos_minimos\": [\n      \"`labor_cases.id` (referenciado como `helios_expediente_id` en la lógica de Helios).\",\n      \"`labor_cases.helios_status` (ENUM: 'Intake', 'Analizando', 'Recomendaciones', 'Cerrado').\",\n      \"`labor_cases.last_helios_analysis_at` (TIMESTAMP: última vez que Helios procesó el expediente).\"\n    ],\n    \"como_presentarlo_en_ui\": \"En `/auditar`, renombrar 'Expediente Actual' a 'Tu Expediente Helios'. Mostrar el `helios_status` de forma prominente en la sección de progreso. El copiloto laboral debe referirse explícitamente a 'tu Expediente Helios'.\"\n  },\n  \"dominio_documento\": {\n    \"recomendacion\": \"Formalizar `case_documents` como la `HeliosDocumento` unidad canónica de ingestión, asegurando que cada documento tenga una identidad clara y persistente dentro del ecosistema Helios y que sus metadatos clave sean enriquecidos por Helios.\",\n    \"campos_o_conceptos_minimos\": [\n      \"`case_documents.id` (referenciado como `helios_document_id` en la lógica de Helios).\",\n      \"`case_documents.helios_classification` (STRING: tipo de documento según Helios, e.g., 'ContratoLaboral', 'ReciboNomina').\",\n      \"`case_documents.helios_opinion_summary` (TEXT: resumen de la opinión preliminar de Helios, ya existente).\"\n    ],\n    \"como_presentarlo_en_ui\": \"En `/auditar`, al listar documentos, añadir un ícono o etiqueta 'Analizado por Helios'. Mostrar el `helios_classification` y un resumen conciso de la `helios_opinion_summary` junto a cada documento.\"\n  },\n  \"ingestion_helios_first\": {\n    \"recomendacion\": \"Asegurar que cada documento cargado sea inmediatamente procesado por Helios, utilizando `case_documents` como el objeto de entrada principal y `canonical_contracts` para persistir los resultados del análisis de Helios.\",\n    \"pipeline_minimo\": [\n      \"1. `cases.uploadDocument` recibe el documento y lo guarda en `case_documents`.\",\n      \"2. El `case_document` recién creado se pasa a `HeliosEngine.ingestDocument(case_document)`.\",\n      \"3. `HeliosEngine` realiza preanálisis, clasificación (`helios_classification`), y genera `helios_opinion_summary`.\",\n      \"4. `HeliosEngine` crea/actualiza `canonical_contracts` (tipo `document`, `audit`) con la opinión de Helios y otros artefactos.\",\n      \"5. `HeliosEngine` despacha el documento y su contexto al motor compartido para análisis más profundo.\",\n      \"6. Se actualiza `labor_cases.last_helios_analysis_at` y `labor_cases.helios_status` según el progreso del expediente.\"\n    ],\n    \"senales_de_que_no_hay_arquitectura_paralela\": [\n      \"Todos los nuevos servicios de análisis o procesamiento de documentos operan directamente sobre instancias de `case_documents` o `labor_cases`.\",\n      \"La lógica de negocio central para el análisis laboral reside exclusivamente en `HeliosEngine` o servicios que consumen los objetos de dominio existentes (`labor_cases`, `case_documents`).\",\n      \"No existen tablas o colecciones duplicadas para expedientes o documentos que no sean `labor_cases` y `case_documents`.\"\n    ]\n  },\n  \"impacto_en_auditar\": {\n    \"cambios_visibles_minimos\": [\n      \"Renombrar 'Expediente Actual' a 'Tu Expediente Helios' en el encabezado.\",\n      \"Añadir un 'Estado del Expediente Helios' (basado en `labor_cases.helios_status`) en la sección de progreso del expediente.\",\n      \"En la línea de tiempo, los eventos generados por Helios deben ser claramente identificados como tales.\",\n      \"El 'copiloto laboral' debe referirse explícitamente a 'tu Expediente Helios' y 'tus documentos Helios' en sus interacciones.\"\n    ],\n    \"evitar\": [\n      \"Cambios drásticos en la navegación o estructura general de la página /auditar.\",\n      \"Introducir terminología técnica interna de Helios que no sea relevante o comprensible para el usuario final.\",\n      \"Rehacer componentes de UI que ya funcionan correctamente, solo para 'Helios-ificar' su apariencia sin un beneficio UX claro.\"\n    ]\n  },\n  \"riesgos\": [\n    \"Confusión conceptual si los alias y la nueva terminología no se manejan consistentemente en el código, la documentación y la UI.\",\n    \"Acoplamiento excesivo si `HeliosEngine` empieza a depender demasiado de la estructura interna de `labor_cases` y `case_documents` en lugar de interfaces bien definidas.\",\n    \"Inflar el alcance si se intenta 'Helios-ificar' cada campo o proceso de golpe, en lugar de enfocarse en los puntos de integración clave del Bloque 1.\"\n  ],\n  \"plan_recomendado_48h\": [\n    \"1. Documentar formalmente los alias conceptuales: `labor_cases` -> `HeliosExpediente`, `case_documents` -> `HeliosDocumento`.\",\n    \"2. Implementar los campos `helios_status` en `labor_cases` y `helios_classification` en `case_documents` con valores por defecto o nulos.\",\n    \"3. Refactorizar el servicio `cases.uploadDocument` para que la llamada a Helios sea explícita a `HeliosEngine.ingestDocument`.\",\n    \"4. Actualizar la UI de `/auditar` con los cambios de texto y visualización de `helios_status` y `helios_opinion_summary`.\"\n  ],\n  \"score_ajuste_bloque_1\": 95\n}",
+      "parsed": {
+        "veredicto_general": "Aprovechar la base existente es clave para una formalización Helios-first eficiente y segura, consolidando el dominio sin reescrituras.",
+        "decision_arquitectonica": {
+          "mantener_modelo_actual_como_base": true,
+          "por_que": "Los modelos `labor_cases` y `case_documents` ya cumplen la función estructural necesaria y albergan datos operativos críticos. Replicarlos sería un desperdicio de esfuerzo y crearía la arquitectura paralela explícitamente prohibida.",
+          "cambios_minimos_recomendados": [
+            "Introducir un alias conceptual: `labor_cases` es `HeliosExpediente` y `case_documents` es `HeliosDocumento` en la capa de servicios de Helios.",
+            "Añadir un campo `helios_status` (ENUM) a `labor_cases` para reflejar el estado del expediente dentro del ciclo de vida de Helios (e.g., 'Intake', 'Analizando', 'Recomendaciones', 'Cerrado').",
+            "Añadir un campo `helios_classification` (STRING) a `case_documents` para la clasificación canónica de Helios, si difiere de la clasificación interna original.",
+            "Refactorizar los servicios de `cases` y `documents` para que internamente llamen a un `HeliosEngine` o `HeliosService` para operaciones clave, pasando los objetos `labor_cases` y `case_documents` como sus dominios de entrada."
+          ]
+        },
+        "dominio_expediente": {
+          "recomendacion": "Formalizar `labor_cases` como el `HeliosExpediente` personal, añadiendo metadatos mínimos que lo vinculen explícitamente al ciclo de vida y análisis de Helios, sin duplicar la información central.",
+          "campos_o_conceptos_minimos": [
+            "`labor_cases.id` (referenciado como `helios_expediente_id` en la lógica de Helios).",
+            "`labor_cases.helios_status` (ENUM: 'Intake', 'Analizando', 'Recomendaciones', 'Cerrado').",
+            "`labor_cases.last_helios_analysis_at` (TIMESTAMP: última vez que Helios procesó el expediente)."
+          ],
+          "como_presentarlo_en_ui": "En `/auditar`, renombrar 'Expediente Actual' a 'Tu Expediente Helios'. Mostrar el `helios_status` de forma prominente en la sección de progreso. El copiloto laboral debe referirse explícitamente a 'tu Expediente Helios'."
+        },
+        "dominio_documento": {
+          "recomendacion": "Formalizar `case_documents` como la `HeliosDocumento` unidad canónica de ingestión, asegurando que cada documento tenga una identidad clara y persistente dentro del ecosistema Helios y que sus metadatos clave sean enriquecidos por Helios.",
+          "campos_o_conceptos_minimos": [
+            "`case_documents.id` (referenciado como `helios_document_id` en la lógica de Helios).",
+            "`case_documents.helios_classification` (STRING: tipo de documento según Helios, e.g., 'ContratoLaboral', 'ReciboNomina').",
+            "`case_documents.helios_opinion_summary` (TEXT: resumen de la opinión preliminar de Helios, ya existente)."
+          ],
+          "como_presentarlo_en_ui": "En `/auditar`, al listar documentos, añadir un ícono o etiqueta 'Analizado por Helios'. Mostrar el `helios_classification` y un resumen conciso de la `helios_opinion_summary` junto a cada documento."
+        },
+        "ingestion_helios_first": {
+          "recomendacion": "Asegurar que cada documento cargado sea inmediatamente procesado por Helios, utilizando `case_documents` como el objeto de entrada principal y `canonical_contracts` para persistir los resultados del análisis de Helios.",
+          "pipeline_minimo": [
+            "1. `cases.uploadDocument` recibe el documento y lo guarda en `case_documents`.",
+            "2. El `case_document` recién creado se pasa a `HeliosEngine.ingestDocument(case_document)`.",
+            "3. `HeliosEngine` realiza preanálisis, clasificación (`helios_classification`), y genera `helios_opinion_summary`.",
+            "4. `HeliosEngine` crea/actualiza `canonical_contracts` (tipo `document`, `audit`) con la opinión de Helios y otros artefactos.",
+            "5. `HeliosEngine` despacha el documento y su contexto al motor compartido para análisis más profundo.",
+            "6. Se actualiza `labor_cases.last_helios_analysis_at` y `labor_cases.helios_status` según el progreso del expediente."
+          ],
+          "senales_de_que_no_hay_arquitectura_paralela": [
+            "Todos los nuevos servicios de análisis o procesamiento de documentos operan directamente sobre instancias de `case_documents` o `labor_cases`.",
+            "La lógica de negocio central para el análisis laboral reside exclusivamente en `HeliosEngine` o servicios que consumen los objetos de dominio existentes (`labor_cases`, `case_documents`).",
+            "No existen tablas o colecciones duplicadas para expedientes o documentos que no sean `labor_cases` y `case_documents`."
+          ]
+        },
+        "impacto_en_auditar": {
+          "cambios_visibles_minimos": [
+            "Renombrar 'Expediente Actual' a 'Tu Expediente Helios' en el encabezado.",
+            "Añadir un 'Estado del Expediente Helios' (basado en `labor_cases.helios_status`) en la sección de progreso del expediente.",
+            "En la línea de tiempo, los eventos generados por Helios deben ser claramente identificados como tales.",
+            "El 'copiloto laboral' debe referirse explícitamente a 'tu Expediente Helios' y 'tus documentos Helios' en sus interacciones."
+          ],
+          "evitar": [
+            "Cambios drásticos en la navegación o estructura general de la página /auditar.",
+            "Introducir terminología técnica interna de Helios que no sea relevante o comprensible para el usuario final.",
+            "Rehacer componentes de UI que ya funcionan correctamente, solo para 'Helios-ificar' su apariencia sin un beneficio UX claro."
+          ]
+        },
+        "riesgos": [
+          "Confusión conceptual si los alias y la nueva terminología no se manejan consistentemente en el código, la documentación y la UI.",
+          "Acoplamiento excesivo si `HeliosEngine` empieza a depender demasiado de la estructura interna de `labor_cases` y `case_documents` en lugar de interfaces bien definidas.",
+          "Inflar el alcance si se intenta 'Helios-ificar' cada campo o proceso de golpe, en lugar de enfocarse en los puntos de integración clave del Bloque 1."
+        ],
+        "plan_recomendado_48h": [
+          "1. Documentar formalmente los alias conceptuales: `labor_cases` -> `HeliosExpediente`, `case_documents` -> `HeliosDocumento`.",
+          "2. Implementar los campos `helios_status` en `labor_cases` y `helios_classification` en `case_documents` con valores por defecto o nulos.",
+          "3. Refactorizar el servicio `cases.uploadDocument` para que la llamada a Helios sea explícita a `HeliosEngine.ingestDocument`.",
+          "4. Actualizar la UI de `/auditar` con los cambios de texto y visualización de `helios_status` y `helios_opinion_summary`."
+        ],
+        "score_ajuste_bloque_1": 95
+      }
+    },
+    "grok": {
+      "available": true,
+      "model": "grok-4",
+      "raw": "{\n  \"veredicto_general\": \"Formalización mínima y segura viable\",\n  \"decision_arquitectonica\": {\n    \"mantener_modelo_actual_como_base\": true,\n    \"por_que\": \"Evita reescritura y consolida en Helios existente\",\n    \"cambios_minimos_recomendados\": [\n      \"Agregar metadatos Helios a labor_cases y case_documents\",\n      \"Formalizar canonical_contracts como núcleo de Helios\",\n      \"Ajustar endpoints para referenciar Helios explícitamente\"\n    ]\n  },\n  \"dominio_expediente\": {\n    \"recomendacion\": \"Formalizar labor_cases como HeliosExpediente base\",\n    \"campos_o_conceptos_minimos\": [\n      \"id_caso (heredado)\",\n      \"estado_expediente\",\n      \"helios_metadata (nuevo para claridad)\"\n    ],\n    \"como_presentarlo_en_ui\": \"Etiquetar como 'Expediente Helios' en /auditar\"\n  },\n  \"dominio_documento\": {\n    \"recomendacion\": \"Formalizar case_documents como HeliosDocumento unitario\",\n    \"campos_o_conceptos_minimos\": [\n      \"id_documento (heredado)\",\n      \"helios_opinion (existente)\",\n      \"tipo_ingestion (nuevo para trazabilidad)\"\n    ],\n    \"como_presentarlo_en_ui\": \"Mostrar con badge 'Analizado por Helios'\"\n  },\n  \"ingestion_helios_first\": {\n    \"recomendacion\": \"Integrar ingestion en canonical_contracts como flujo Helios\",\n    \"pipeline_minimo\": [\n      \"Carga y guardado en case_documents\",\n      \"Creación de contratos en canonical_contracts\",\n      \"Generación de opinión Helios\",\n      \"Despacho al motor compartido\"\n    ],\n    \"senales_de_que_no_hay_arquitectura_paralela\": [\n      \"Todo persiste en labor_cases y canonical_contracts\",\n      \"Endpoints despachan solo a Helios\",\n      \"No nuevos modelos fuera de existentes\"\n    ]\n  },\n  \"impacto_en_auditar\": {\n    \"cambios_visibles_minimos\": [\n      \"Agregar labels Helios en progreso y recomendaciones\",\n      \"Actualizar copiloto para referenciar 'Helios Opinion'\",\n      \"Mantener línea de tiempo con metadatos Helios\"\n    ],\n    \"evitar\": [\n      \"Cambios en flujo de carga documental\",\n      \"Nuevas pantallas o rutas paralelas\",\n      \"Modificaciones en UX no esenciales\"\n    ]\n  },\n  \"riesgos\": [\n    \"Inconsistencias en metadatos heredados\",\n    \"Posibles breaks en endpoints existentes\",\n    \"Sobrecarga si metadatos inflan queries\"\n  ],\n  \"plan_recomendado_48h\": [\n    \"Auditar y mapear labor_cases a HeliosExpediente\",\n    \"Agregar campos mínimos en modelos y contratos\",\n    \"Actualizar UI en /auditar con labels Helios\",\n    \"Testear flujo end-to-end sin breaks\"\n  ],\n  \"score_ajuste_bloque_1\": 90\n}",
+      "parsed": {
+        "veredicto_general": "Formalización mínima y segura viable",
+        "decision_arquitectonica": {
+          "mantener_modelo_actual_como_base": true,
+          "por_que": "Evita reescritura y consolida en Helios existente",
+          "cambios_minimos_recomendados": [
+            "Agregar metadatos Helios a labor_cases y case_documents",
+            "Formalizar canonical_contracts como núcleo de Helios",
+            "Ajustar endpoints para referenciar Helios explícitamente"
+          ]
+        },
+        "dominio_expediente": {
+          "recomendacion": "Formalizar labor_cases como HeliosExpediente base",
+          "campos_o_conceptos_minimos": [
+            "id_caso (heredado)",
+            "estado_expediente",
+            "helios_metadata (nuevo para claridad)"
+          ],
+          "como_presentarlo_en_ui": "Etiquetar como 'Expediente Helios' en /auditar"
+        },
+        "dominio_documento": {
+          "recomendacion": "Formalizar case_documents como HeliosDocumento unitario",
+          "campos_o_conceptos_minimos": [
+            "id_documento (heredado)",
+            "helios_opinion (existente)",
+            "tipo_ingestion (nuevo para trazabilidad)"
+          ],
+          "como_presentarlo_en_ui": "Mostrar con badge 'Analizado por Helios'"
+        },
+        "ingestion_helios_first": {
+          "recomendacion": "Integrar ingestion en canonical_contracts como flujo Helios",
+          "pipeline_minimo": [
+            "Carga y guardado en case_documents",
+            "Creación de contratos en canonical_contracts",
+            "Generación de opinión Helios",
+            "Despacho al motor compartido"
+          ],
+          "senales_de_que_no_hay_arquitectura_paralela": [
+            "Todo persiste en labor_cases y canonical_contracts",
+            "Endpoints despachan solo a Helios",
+            "No nuevos modelos fuera de existentes"
+          ]
+        },
+        "impacto_en_auditar": {
+          "cambios_visibles_minimos": [
+            "Agregar labels Helios en progreso y recomendaciones",
+            "Actualizar copiloto para referenciar 'Helios Opinion'",
+            "Mantener línea de tiempo con metadatos Helios"
+          ],
+          "evitar": [
+            "Cambios en flujo de carga documental",
+            "Nuevas pantallas o rutas paralelas",
+            "Modificaciones en UX no esenciales"
+          ]
+        },
+        "riesgos": [
+          "Inconsistencias en metadatos heredados",
+          "Posibles breaks en endpoints existentes",
+          "Sobrecarga si metadatos inflan queries"
+        ],
+        "plan_recomendado_48h": [
+          "Auditar y mapear labor_cases a HeliosExpediente",
+          "Agregar campos mínimos en modelos y contratos",
+          "Actualizar UI en /auditar con labels Helios",
+          "Testear flujo end-to-end sin breaks"
+        ],
+        "score_ajuste_bloque_1": 90
+      }
+    }
+  }
+}

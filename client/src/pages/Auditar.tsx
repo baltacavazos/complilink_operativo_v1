@@ -1746,6 +1746,12 @@ export default function Auditar() {
   }, [casesQuery.data, selectedCaseId]);
 
   const documents = caseDetailQuery.data?.documents ?? [];
+  const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
+  const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
+  const heliosDocumentSnapshotById = useMemo(
+    () => new Map(heliosDocumentSnapshots.map((item) => [item.documentId, item] as const)),
+    [heliosDocumentSnapshots],
+  );
   const lastHeliosOpinion = asHeliosOpinion(lastUpload?.heliosOpinion);
   const heliosDocumentsCount = useMemo(
     () => documents.filter((item) => Boolean(asHeliosOpinion(item.heliosOpinion))).length,
@@ -1765,14 +1771,14 @@ export default function Auditar() {
   });
   const heliosCopilotIntro = useMemo(() => {
     if (visibleHeliosOpinion?.summary?.trim()) {
-      return `${visibleHeliosOpinion.summary}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
+      return `${visibleHeliosOpinion.summary}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende en tu Expediente Helios, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
     }
 
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay una lectura visible del expediente. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
+      return "Todavía no hay una lectura visible de tu Expediente Helios. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
     }
 
-    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de este expediente. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
+    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu Expediente Helios. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
   }, [heliosDocumentsCount, visibleHeliosOpinion?.summary]);
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
@@ -2569,12 +2575,12 @@ export default function Auditar() {
             <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu Expediente Helios</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Hoy tu expediente va en: {dossierStatus.label}
+                    Hoy tu Expediente Helios va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites.
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso dentro de Helios."}
                   </p>
                 </div>
 
@@ -2653,7 +2659,7 @@ export default function Auditar() {
               <div className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu expediente</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu Expediente Helios</p>
                     <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                       Si vas a subir algo más, empieza por los archivos con más contexto.
                     </h3>
@@ -2758,9 +2764,11 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu expediente</p>
-                      <h3 className="mt-2 text-xl font-semibold text-slate-950">{heliosStage.title}</h3>
-                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosStage.description}</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu Expediente Helios</p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                        {heliosExpediente?.stageLabel ? `${heliosStage.title} · ${heliosExpediente.stageLabel}` : heliosStage.title}
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosExpediente?.summary ?? heliosStage.description}</p>
                     </div>
                   </div>
                   <span
@@ -3892,13 +3900,14 @@ export default function Auditar() {
                     const readiness = getDocumentReadiness(document.classificationConfidence);
                     const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
                     const heliosRisk = getHeliosRiskCopy(heliosOpinion?.riskLevel);
+                    const heliosDocument = heliosDocumentSnapshotById.get(document.documentId);
                     return (
                       <article key={document.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                           <div>
                             <p className="font-semibold text-slate-950">{document.originalName}</p>
                             <p className="mt-1 text-sm leading-6 text-slate-600">
-                              Tipo detectado: {getSimpleDocumentTypeLabel(document.documentType)}
+                              Tipo Helios: {heliosDocument?.canonicalLabel ?? getSimpleDocumentTypeLabel(document.documentType)}
                             </p>
                             <p className="mt-1 text-sm leading-6 text-slate-500">Incorporado el {formatDate(document.createdAt)}</p>
                           </div>
@@ -3908,7 +3917,7 @@ export default function Auditar() {
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
                             <span className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}>
-                              {heliosOpinion ? "Lectura preliminar lista" : "Lectura pendiente"}
+                              {heliosDocument?.statusLabel ?? (heliosOpinion ? "Lectura preliminar lista" : "Lectura pendiente")}
                             </span>
                           </div>
                         </div>
@@ -3917,13 +3926,22 @@ export default function Auditar() {
                           {readiness.description}
                         </div>
 
+                        <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-950">
+                          <p className="font-semibold text-teal-950">
+                            {heliosDocument ? `${heliosDocument.canonicalLabel} dentro de tu Expediente Helios` : "Este archivo ya pertenece a tu Expediente Helios"}
+                          </p>
+                          <p className="mt-1">
+                            {heliosDocument?.summary ?? "Helios tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
+                          </p>
+                        </div>
+
                         {heliosOpinion ? (
                           <details className="mt-4 rounded-[1rem] border border-teal-100 bg-white p-4">
                             <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
                               <div>
                                 <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                                  {heliosOpinion.summary ?? "Ya hay una lectura inicial guardada dentro del expediente."}
+                                  {heliosOpinion.summary ?? "Ya hay una lectura inicial guardada dentro de tu Expediente Helios."}
                                 </p>
                               </div>
                               <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -3982,7 +4000,7 @@ export default function Auditar() {
                           </details>
                         ) : (
                           <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
-                            Todavía no hay una lectura visible guardada para este documento dentro del expediente.
+                            Todavía no hay una lectura visible guardada para este HeliosDocumento dentro de tu Expediente Helios.
                           </div>
                         )}
                       </article>
@@ -3995,9 +4013,9 @@ export default function Auditar() {
 
           <aside className="space-y-6">
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente seleccionado</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente Helios seleccionado</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                {caseDetailQuery.data?.case.title ?? "Selecciona un expediente"}
+                {heliosExpediente?.displayName ?? caseDetailQuery.data?.case.title ?? "Selecciona un expediente"}
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
                 <p>
@@ -4012,21 +4030,34 @@ export default function Auditar() {
                   <span className="font-semibold text-slate-900">Estado del caso:</span>{" "}
                   {getCaseStatusLabel(caseDetailQuery.data?.case.status)}
                 </p>
+                <p>
+                  <span className="font-semibold text-slate-900">Etapa Helios:</span>{" "}
+                  {heliosExpediente?.stageLabel ?? "Sin etapa visible"}
+                </p>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <div>
-                    <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
+                    <p className="font-semibold text-teal-950">Tu Expediente Helios se va volviendo más claro con cada documento</p>
                     <p className="mt-2 text-sm leading-7 text-teal-900">
-                      {heliosDocumentsCount === 0
-                        ? "Todavía no hay una lectura visible del expediente. En cuanto se interpreten documentos, aquí verás cómo se va armando una explicación más útil para tu caso."
-                        : `Ya hay una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y esa información se va conectando para construir una explicación cada vez más útil del caso.`}
+                      {heliosExpediente?.summary ??
+                        (heliosDocumentsCount === 0
+                          ? "Todavía no hay una lectura visible del expediente. En cuanto se interpreten documentos, aquí verás cómo se va armando una explicación más útil para tu caso."
+                          : `Ya hay una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y esa información se va conectando para construir una explicación cada vez más útil del caso.`)}
                     </p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        {heliosExpediente?.documentsCount ?? documents.length} documento{(heliosExpediente?.documentsCount ?? documents.length) === 1 ? "" : "s"} en el expediente
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        {heliosExpediente?.documentsWithOpinion ?? heliosDocumentsCount} con lectura visible
+                      </span>
+                    </div>
                     {latestPersistedHeliosOpinion ? (
                       <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
-                        <p className="font-semibold text-slate-950">Última lectura guardada</p>
+                        <p className="font-semibold text-slate-950">Última lectura guardada en Helios</p>
                         <p className="mt-1">{latestPersistedHeliosOpinion.summary}</p>
                         <p className="mt-2 text-xs text-slate-500">Documento: {latestHeliosDocument?.originalName ?? "Sin detalle visible"}</p>
                       </div>

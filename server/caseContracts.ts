@@ -67,6 +67,125 @@ export type PreliminaryLaborAnalysis = {
   guardrails: string[];
 };
 
+export type HeliosExpedienteStage = "intake" | "analysis" | "recommendations" | "closed";
+export type HeliosDocumentStatus = "pending_ingestion" | "analyzing" | "ready";
+
+const HELIOS_CANONICAL_DOCUMENT_TYPES: Record<DocumentType, { canonicalType: string; canonicalLabel: string }> = {
+  payroll_receipt: {
+    canonicalType: "recibo_nomina",
+    canonicalLabel: "Recibo de nómina",
+  },
+  cfdi: {
+    canonicalType: "cfdi_nomina",
+    canonicalLabel: "CFDI de nómina",
+  },
+  imss: {
+    canonicalType: "constancia_imss",
+    canonicalLabel: "Soporte IMSS",
+  },
+  contract: {
+    canonicalType: "contrato_laboral",
+    canonicalLabel: "Contrato laboral",
+  },
+  settlement: {
+    canonicalType: "liquidacion_laboral",
+    canonicalLabel: "Liquidación o finiquito",
+  },
+  evidence: {
+    canonicalType: "evidencia_laboral",
+    canonicalLabel: "Evidencia laboral",
+  },
+  other: {
+    canonicalType: "documento_laboral",
+    canonicalLabel: "Documento laboral",
+  },
+};
+
+export function getHeliosCanonicalDocumentDescriptor(documentType: DocumentType, normalizedDocType?: string | null) {
+  const fallback = HELIOS_CANONICAL_DOCUMENT_TYPES[documentType] ?? HELIOS_CANONICAL_DOCUMENT_TYPES.other;
+  const canonicalType = normalizedDocType?.trim().length ? normalizedDocType.trim() : fallback.canonicalType;
+
+  return {
+    canonicalType,
+    canonicalLabel: fallback.canonicalLabel,
+  };
+}
+
+export function getHeliosExpedienteStage(params: {
+  caseStatus: CaseStatus;
+  documentsCount: number;
+  documentsWithOpinion: number;
+  closedAt?: Date | string | null;
+}) {
+  if (params.closedAt || params.caseStatus === "resolved" || params.caseStatus === "archived") {
+    return {
+      stage: "closed" as const,
+      stageLabel: "Cerrado",
+      summary: "Este expediente ya recorrió su ciclo principal dentro de Helios y conserva su trazabilidad documental para futuras consultas.",
+    };
+  }
+
+  if (
+    params.documentsWithOpinion > 0 ||
+    params.caseStatus === "conciliation" ||
+    params.caseStatus === "litigation"
+  ) {
+    return {
+      stage: "recommendations" as const,
+      stageLabel: "Con lectura activa",
+      summary: "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+    };
+  }
+
+  if (params.documentsCount > 0 || params.caseStatus === "analysis") {
+    return {
+      stage: "analysis" as const,
+      stageLabel: "Analizando",
+      summary: "Helios ya recibió documentos del expediente y está ordenando la información para devolverte una lectura más clara.",
+    };
+  }
+
+  return {
+    stage: "intake" as const,
+    stageLabel: "Listo para iniciar",
+    summary: "Tu expediente Helios ya existe y está listo para empezar a ordenarse en cuanto subas el primer documento laboral útil.",
+  };
+}
+
+export function getHeliosDocumentState(params: {
+  documentType: DocumentType;
+  normalizedDocType?: string | null;
+  hasOpinion: boolean;
+  processedAt?: Date | string | null;
+}) {
+  const descriptor = getHeliosCanonicalDocumentDescriptor(params.documentType, params.normalizedDocType);
+
+  if (params.hasOpinion) {
+    return {
+      ...descriptor,
+      status: "ready" as const,
+      statusLabel: "Lectura lista",
+      summary: "Helios ya integró una lectura preliminar para este documento dentro del expediente.",
+    };
+  }
+
+  if (params.processedAt) {
+    return {
+      ...descriptor,
+      status: "analyzing" as const,
+      statusLabel: "Analizando",
+      summary: "Helios ya clasificó este documento y sigue avanzando con su lectura dentro del expediente.",
+    };
+  }
+
+  return {
+    ...descriptor,
+    status: "pending_ingestion" as const,
+    statusLabel: "Pendiente de lectura",
+    summary: "Este documento ya forma parte del expediente Helios y quedará listo conforme avance su lectura automática.",
+  };
+}
+
 function normalizeText(value: string) {
   return value
     .normalize("NFD")

@@ -41,10 +41,11 @@ describe("Auditapatron homepage content", () => {
     expect(homeSource).not.toContain("Garantizar que CompliLink opere hoy mismo");
   });
 
-  it("ships a friendly audit workspace with clear progress, comparison and alerts without visible internal jargon", () => {
+  it("ships a friendly audit workspace with explicit Helios-first progress, comparison and alerts", () => {
     expect(auditFlowSource).toContain("Tus derechos laborales, claros y protegidos");
-    expect(auditFlowSource).toContain("Hoy tu expediente va en:");
-    expect(auditFlowSource).toContain("expediente digital ordenado, disponible 24/7");
+    expect(auditFlowSource).toContain("Así va tu Expediente Helios");
+    expect(auditFlowSource).toContain("Hoy tu Expediente Helios va en:");
+    expect(auditFlowSource).toContain("Cada archivo que subes se integra a una lectura progresiva del caso dentro de Helios.");
     expect(auditFlowSource).toContain("Próximo paso que más puede ayudarte");
     expect(auditFlowSource).toContain("Añade un documento a tu expediente");
     expect(auditFlowSource).toContain("Analizar antes de guardar");
@@ -69,11 +70,10 @@ describe("Auditapatron homepage content", () => {
     expect(auditFlowSource).toContain("Tu línea de tiempo está esperando.");
     expect(auditFlowSource).toContain("Conviene darle un vistazo con calma");
     expect(auditFlowSource).toContain("En espera, pero avanzando");
-    expect(auditFlowSource).not.toContain("Estado de Helios");
-    expect(auditFlowSource).not.toContain("Comparación guiada de Helios");
-    expect(auditFlowSource).not.toContain("Helios: ¿Qué cambió aquí?");
-    expect(auditFlowSource).not.toContain("Alertas priorizadas por Helios");
-    expect(auditFlowSource).not.toContain("Cómo Helios mejora esta comparación");
-    expect(auditFlowSource).not.toContain("Siguiente documento recomendado por Helios");
+    expect(auditFlowSource).toContain("Estado de tu Expediente Helios");
+    expect(auditFlowSource).toContain("Expediente Helios seleccionado");
+    expect(auditFlowSource).toContain("Tu Expediente Helios se va volviendo más claro con cada documento");
+    expect(auditFlowSource).toContain("Tipo Helios:");
+    expect(auditFlowSource).toContain("dentro de tu Expediente Helios");
   });
 });

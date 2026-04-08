@@ -51,6 +51,8 @@ import {
   CONSENT_STATUSES,
   decodeBase64File,
   DOCUMENT_VISIBILITIES,
+  getHeliosDocumentState,
+  getHeliosExpedienteStage,
   sanitizeFileName,
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
@@ -970,11 +972,48 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const heliosDocumentsCount = documents.filter((item) => Boolean(asObjectRecord(item.heliosOpinion))).length;
+        const heliosExpedienteState = getHeliosExpedienteStage({
+          caseStatus: detail.case.status,
+          documentsCount: documents.length,
+          documentsWithOpinion: heliosDocumentsCount,
+          closedAt: detail.case.closedAt,
+        });
+        const heliosDocuments = documents.map((document) => {
+          const heliosOpinion = asObjectRecord(document.heliosOpinion);
+          const heliosDocumentState = getHeliosDocumentState({
+            documentType: document.documentType,
+            hasOpinion: Boolean(heliosOpinion),
+            processedAt: document.processedAt,
+          });
+
+          return {
+            documentId: document.documentId,
+            heliosDocumentId: document.documentId,
+            heliosExpedienteId: detail.case.caseId,
+            canonicalType: heliosDocumentState.canonicalType,
+            canonicalLabel: heliosDocumentState.canonicalLabel,
+            status: heliosDocumentState.status,
+            statusLabel: heliosDocumentState.statusLabel,
+            summary: getOptionalString(heliosOpinion?.summary) ?? heliosDocumentState.summary,
+            hasOpinion: Boolean(heliosOpinion),
+          };
+        });
         const complilinkMonitoring = buildCompliLinkMonitoring(documents, detail.events);
         return {
           ...detail,
           documents,
           complilinkMonitoring,
+          heliosExpediente: {
+            heliosExpedienteId: detail.case.caseId,
+            displayName: detail.case.employeeName ? `Expediente Helios de ${detail.case.employeeName}` : detail.case.title,
+            stage: heliosExpedienteState.stage,
+            stageLabel: heliosExpedienteState.stageLabel,
+            summary: heliosExpedienteState.summary,
+            documentsCount: documents.length,
+            documentsWithOpinion: heliosDocumentsCount,
+          },
+          heliosDocuments,
         };
       }),
     heliosCopilotChat: protectedProcedure

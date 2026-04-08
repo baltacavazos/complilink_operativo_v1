@@ -239,6 +239,26 @@ describe("appRouter case workflows", () => {
         recommendedNextStep: "Comparar contra recibos de nómina y CFDI.",
       }),
     });
+    expect(result.heliosExpediente).toMatchObject({
+      heliosExpedienteId: "CASE-BALT-1-DEMO001",
+      displayName: "Expediente Helios de María López",
+      stage: "recommendations",
+      stageLabel: "Con lectura activa",
+      documentsCount: 1,
+      documentsWithOpinion: 1,
+    });
+    expect(result.heliosDocuments).toEqual([
+      expect.objectContaining({
+        documentId: "DOC-HEL-001",
+        heliosDocumentId: "DOC-HEL-001",
+        heliosExpedienteId: "CASE-BALT-1-DEMO001",
+        canonicalType: "contrato_laboral",
+        canonicalLabel: "Contrato laboral",
+        status: "ready",
+        statusLabel: "Lectura lista",
+        hasOpinion: true,
+      }),
+    ]);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {

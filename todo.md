@@ -303,3 +303,26 @@
 - [x] Validar con pruebas y revisión técnica que el copiloto de `/auditar` ya no dispara resets infinitos ni errores de React al interactuar con sus botones.
 - [x] Corregir en `/auditar` el bucle de render `Maximum update depth exceeded` del copiloto laboral de Helios al abrir o usar el asistente.
 - [x] Validar con pruebas y revisión técnica que el copiloto de `/auditar` ya no dispara resets infinitos ni errores de React al interactuar con sus botones.
+- [ ] Reorientar la evolución de AuditaPatron para que funcione como capa de experiencia y captación dentro del núcleo único de Helios, sin abrir una arquitectura paralela.
+- [ ] Definir el modelo objetivo donde Helios concentre expediente laboral, lectura estructurada de nómina y documentos, detección de inconsistencias y claridad accionable para trabajadores en México.
+- [ ] Contrastar con ChatGPT, Grok y Gemini la mejor estrategia para absorber esta visión dentro de la evolución natural de Helios sin reemplazar lo ya construido.
+- [ ] Diseñar una hoja de ruta de convergencia producto + datos + experiencia para que todo desarrollo futuro quede dentro de Helios como sistema central.
+- [ ] Presentar para confirmación una propuesta ejecutable del siguiente bloque de implementación Helios-first antes de tocar arquitectura o interfaz.
+- [x] Formalizar dentro de Helios el modelo base de expediente laboral como dominio único para trabajadores.
+- [ ] Formalizar dentro de Helios el modelo base de documento laboral con tipo, fuente, estado y vínculo al expediente.
+- [ ] Definir el contrato mínimo de ingestión documental Helios-first para que `/auditar` opere como interfaz y no como motor paralelo.
+- [x] Reutilizar el flujo actual de `/auditar` conectándolo al nuevo núcleo de expediente y documento en Helios sin romper la experiencia existente.
+- [x] Validar con pruebas y revisión técnica que el bloque 1 Helios-first no introduzca arquitectura paralela ni regresiones.
+- [x] Formalizar dentro de Helios el expediente laboral personal como dominio central reutilizando el modelo canónico existente de caso y documento.
+- [x] Alinear `/auditar` al bloque 1 Helios-first para que opere sobre el núcleo de expediente y documentos de Helios sin arquitectura paralela.
+- [x] Definir el diseño mínimo de ingestión documental Helios-first para que cada carga fortalezca el expediente laboral del trabajador en un solo sistema.
+- [x] Validar con contraste multi-IA, pruebas y revisión técnica la primera formalización Helios-first antes del siguiente checkpoint.
+- [x] Formalizar `labor_cases` como expediente Helios dentro del núcleo actual sin crear arquitectura paralela
+- [x] Formalizar `case_documents` como documento Helios canónico de ingestión dentro del flujo actual
+- [x] Hacer explícito en `/auditar` que opera sobre el expediente Helios con cambios mínimos de UX
+- [x] Validar el bloque 1 Helios-first con pruebas y revisión técnica
+- [x] Formalizar el expediente laboral como `HeliosExpediente` sobre `labor_cases` sin abrir una arquitectura paralela
+- [x] Formalizar el documento laboral como `HeliosDocumento` sobre `case_documents` con estado de ingestión y descriptor canónico visible
+- [x] Exponer en `cases.detail` un resumen Helios-first del expediente y de los documentos para `/auditar`
+- [x] Ajustar `/auditar` para presentar el expediente y los documentos con semántica Helios-first y cambios mínimos
+- [x] Ampliar pruebas Vitest de backend y frontend para cubrir la formalización mínima Helios-first del bloque 1
