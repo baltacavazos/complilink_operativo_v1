@@ -452,3 +452,4 @@
 - [x] Corregir definitivamente el logo del header para que el lockup completo se vea nítido y sin recortes, aumentando la altura útil del header si hace falta
 - [x] Implementar el bloque legal y de consentimiento 2.0 con aviso de privacidad, términos, gate versionado, trazabilidad backend, sección visible de privacidad y ajuste del contexto documental de Helios
 - [x] Documentar con claridad qué parte del flujo de ingesta documental de Helios ya existía y qué parte nueva agrega soporte legal y operativo
+- [x] Sustituir en la interfaz visible de AuditaPatron los nombres abstractos por una variante cálida y comprensible, manteniendo intacta la lógica y el backend

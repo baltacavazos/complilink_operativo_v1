@@ -51,7 +51,7 @@ type MobileOnboardingCard = {
 const navLinks = [
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#expediente", label: "Tu expediente" },
-  { href: "#copiloto", label: "Copiloto" },
+  { href: "#copiloto", label: "Asistente" },
   { href: "#preguntas", label: "Preguntas" },
 ];
 
@@ -629,13 +629,13 @@ function CopilotPreviewSection() {
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Copiloto laboral
+            Asistente laboral
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Una capa extra para hacer preguntas rápidas sobre tu expediente.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cuando ya tienes documentos visibles dentro de AuditaPatron, el copiloto puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil sin sacarte del expediente.
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil sin sacarte del expediente.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -652,12 +652,12 @@ function CopilotPreviewSection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
-            El copiloto es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
+            El asistente laboral es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={goToAuditFlow}>
-              Probar el copiloto en /auditar
+              Probar el asistente en /auditar
               <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
@@ -674,10 +674,10 @@ function CopilotPreviewSection() {
           <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-teal-100 bg-teal-50 px-4 py-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-                Vista previa del copiloto
+                Vista previa del asistente
               </p>
               <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                El copiloto te explica tu expediente con palabras simples
+                El asistente te explica tu expediente con palabras simples
               </p>
             </div>
             <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-700 shadow-sm">
@@ -693,7 +693,7 @@ function CopilotPreviewSection() {
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">El copiloto responde</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">El asistente responde</p>
               <p className="mt-2 text-sm leading-6 text-teal-950">
                 “Ya hay señales útiles para revisar pagos y condiciones, pero todavía faltan piezas para confirmarlo con más seguridad. Un contrato o CFDI reciente podría darte más claridad y fortalecer tu expediente.”
               </p>

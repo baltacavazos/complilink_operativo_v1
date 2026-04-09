@@ -70,7 +70,7 @@ export function HeliosCopilotSheet({
               </div>
               <div className="min-w-0">
                 <SheetTitle className="text-lg tracking-[-0.02em] text-slate-950 dark:text-slate-50">
-                  Copiloto laboral de Helios
+                  Tu asistente laboral
                 </SheetTitle>
                 <SheetDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   Haz preguntas rápidas sobre este expediente y recibe una explicación clara basada en los documentos ya integrados.
@@ -161,8 +161,8 @@ export function HeliosCopilotSheet({
                 isLoading={isLoading}
                 className="h-full border-slate-200 shadow-none dark:border-white/10"
                 height="100%"
-                placeholder="Pregúntale a Helios sobre riesgos, pasos sugeridos o dudas de tu expediente"
-                emptyStateMessage="Helios puede explicarte tu expediente con palabras simples y decirte qué conviene revisar primero."
+                placeholder="Pregunta sobre riesgos, pasos sugeridos o dudas de tu expediente"
+                emptyStateMessage="Tu asistente laboral puede explicarte tu expediente con palabras simples y decirte qué conviene revisar primero."
                 suggestedPrompts={[]}
               />
             </div>

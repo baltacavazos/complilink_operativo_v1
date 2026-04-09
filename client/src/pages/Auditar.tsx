@@ -140,6 +140,23 @@ type StructuredExtractionFieldView = {
   confidence: "high" | "medium" | "low";
 };
 
+function warmVisibleNamingCopy(value?: string | null) {
+  if (!value) return value ?? null;
+
+  return value
+    .replaceAll("copiloto Helios", "asistente laboral")
+    .replaceAll("Copiloto Helios", "Asistente laboral")
+    .replaceAll("copiloto laboral", "asistente laboral")
+    .replaceAll("Copiloto laboral", "Asistente laboral")
+    .replaceAll("Expediente Helios", "expediente laboral")
+    .replaceAll("expediente Helios", "expediente laboral")
+    .replaceAll("HeliosDocumento", "documento")
+    .replaceAll("Estado de Helios", "estado del expediente")
+    .replaceAll("Etapa Helios", "etapa del expediente")
+    .replaceAll("Tipo Helios", "tipo sugerido")
+    .replaceAll("Helios", "tu asistente laboral");
+}
+
 type StructuredExtractionView = {
   headline: string;
   summary: string;
@@ -1781,14 +1798,14 @@ export default function Auditar() {
   });
   const heliosCopilotIntro = useMemo(() => {
     if (visibleHeliosOpinion?.summary?.trim()) {
-      return `${visibleHeliosOpinion.summary}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende en tu Expediente Helios, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
+      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende en tu expediente laboral, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
     }
 
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay una lectura visible de tu Expediente Helios. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
+      return "Todavía no hay una lectura visible de tu expediente laboral. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
     }
 
-    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu Expediente Helios. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
+    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu expediente laboral. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
   }, [heliosDocumentsCount, visibleHeliosOpinion?.summary]);
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
@@ -2111,11 +2128,11 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError("Antes de usar el copiloto Helios, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
+      setLegalGateError("Antes de usar tu asistente laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
       setHeliosCopilotMessages((current) =>
         appendHeliosCopilotMessage(current, {
           role: "assistant",
-          content: "Antes de abrir el copiloto, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
+          content: "Antes de abrir tu asistente laboral, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
         }),
       );
       return;
@@ -2195,7 +2212,7 @@ export default function Auditar() {
             id: "visible-summary",
             title: "Tu resumen del expediente se actualizó",
             description:
-              visibleHeliosOpinion.summary ??
+              warmVisibleNamingCopy(visibleHeliosOpinion.summary) ??
               "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
             tag: "Resumen actualizado",
             category: "summary",
@@ -2221,7 +2238,7 @@ export default function Auditar() {
       .slice(-2)
       .map((message, index) => ({
         id: `copilot-${index}-${message.role}`,
-        title: message.role === "user" ? "Tu última pregunta al copiloto" : "Última respuesta del copiloto",
+        title: message.role === "user" ? "Tu última pregunta al asistente" : "Última respuesta del asistente",
         detail: message.content,
         timestampLabel: "Ahora",
       }));
@@ -2743,7 +2760,7 @@ export default function Auditar() {
                 {acceptLegalPackageMutation.isPending ? "Registrando aceptación..." : LEGAL_GATE_COPY.button}
               </Button>
               <p className="text-sm leading-6 text-slate-600">
-                Mientras este paso esté pendiente, el copiloto Helios y la carga de documentos quedan en pausa para este expediente.
+                Mientras este paso esté pendiente, tu asistente laboral y la carga de documentos quedan en pausa para este expediente.
               </p>
             </div>
           </section>
@@ -2754,12 +2771,12 @@ export default function Auditar() {
             <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu Expediente Helios</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente laboral</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Hoy tu Expediente Helios va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                    Hoy tu expediente laboral va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso dentro de Helios."}
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso dentro de tu expediente."}
                   </p>
                 </div>
 
@@ -2838,7 +2855,7 @@ export default function Auditar() {
               <div className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu Expediente Helios</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu expediente laboral</p>
                     <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                       Si vas a subir algo más, empieza por los archivos con más contexto.
                     </h3>
@@ -2943,7 +2960,7 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu Expediente Helios</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu expediente laboral</p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">
                         {heliosExpediente?.stageLabel ? `${heliosStage.title} · ${heliosExpediente.stageLabel}` : heliosStage.title}
                       </h3>
@@ -3775,7 +3792,7 @@ export default function Auditar() {
                           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya quedó integrado a tu expediente con una primera lectura útil</h3>
                           <p className="mt-3 text-sm leading-7 text-slate-700">
-                            {lastHeliosOpinion.summary ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
+                            {warmVisibleNamingCopy(lastHeliosOpinion.summary) ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -3791,7 +3808,7 @@ export default function Auditar() {
 
                       {lastHeliosOpinion.legalOpinion ? (
                         <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                          {lastHeliosOpinion.legalOpinion}
+                          {warmVisibleNamingCopy(lastHeliosOpinion.legalOpinion)}
                         </div>
                       ) : null}
 
@@ -3799,12 +3816,12 @@ export default function Auditar() {
                         <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
                           <p className="font-semibold text-teal-950">Qué conviene hacer después</p>
                           <p className="mt-2 text-sm leading-7 text-teal-900">
-                            {lastHeliosOpinion.recommendedNextStep ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
+                            {warmVisibleNamingCopy(lastHeliosOpinion.recommendedNextStep) ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
                           </p>
                           {lastHeliosOpinion.recommendedActions?.length ? (
                             <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
                               {lastHeliosOpinion.recommendedActions.map((item) => (
-                                <p key={item}>• {item}</p>
+                                <p key={item}>• {warmVisibleNamingCopy(item)}</p>
                               ))}
                             </div>
                           ) : null}
@@ -3815,7 +3832,7 @@ export default function Auditar() {
                           {lastHeliosOpinion.uncertainties?.length ? (
                             <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
                               {lastHeliosOpinion.uncertainties.map((item) => (
-                                <p key={item}>• {item}</p>
+                                <p key={item}>• {warmVisibleNamingCopy(item)}</p>
                               ))}
                             </div>
                           ) : (
@@ -4086,7 +4103,7 @@ export default function Auditar() {
                           <div>
                             <p className="font-semibold text-slate-950">{document.originalName}</p>
                             <p className="mt-1 text-sm leading-6 text-slate-600">
-                              Tipo Helios: {heliosDocument?.canonicalLabel ?? getSimpleDocumentTypeLabel(document.documentType)}
+                              Tipo sugerido: {heliosDocument?.canonicalLabel ?? getSimpleDocumentTypeLabel(document.documentType)}
                             </p>
                             <p className="mt-1 text-sm leading-6 text-slate-500">Incorporado el {formatDate(document.createdAt)}</p>
                           </div>
@@ -4107,10 +4124,10 @@ export default function Auditar() {
 
                         <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-950">
                           <p className="font-semibold text-teal-950">
-                            {heliosDocument ? `${heliosDocument.canonicalLabel} dentro de tu Expediente Helios` : "Este archivo ya pertenece a tu Expediente Helios"}
+                            {heliosDocument ? `${heliosDocument.canonicalLabel} dentro de tu expediente laboral` : "Este archivo ya pertenece a tu expediente laboral"}
                           </p>
                           <p className="mt-1">
-                            {heliosDocument?.summary ?? "Helios tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
+                              {warmVisibleNamingCopy(heliosDocument?.summary) ?? "Tu asistente laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
                           </p>
                         </div>
 
@@ -4120,7 +4137,7 @@ export default function Auditar() {
                               <div>
                                 <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                                  {heliosOpinion.summary ?? "Ya hay una lectura inicial guardada dentro de tu Expediente Helios."}
+                                  {warmVisibleNamingCopy(heliosOpinion.summary) ?? "Ya hay una lectura inicial guardada dentro de tu expediente laboral."}
                                 </p>
                               </div>
                               <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -4143,7 +4160,7 @@ export default function Auditar() {
                                   {heliosOpinion.recommendedActions?.length ? (
                                     <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
                                       {heliosOpinion.recommendedActions.map((item) => (
-                                        <p key={item}>• {item}</p>
+                                        <p key={item}>• {warmVisibleNamingCopy(item)}</p>
                                       ))}
                                     </div>
                                   ) : null}
@@ -4154,7 +4171,7 @@ export default function Auditar() {
                                   {heliosOpinion.uncertainties?.length ? (
                                     <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
                                       {heliosOpinion.uncertainties.map((item) => (
-                                        <p key={item}>• {item}</p>
+                                        <p key={item}>• {warmVisibleNamingCopy(item)}</p>
                                       ))}
                                     </div>
                                   ) : (
@@ -4179,7 +4196,7 @@ export default function Auditar() {
                           </details>
                         ) : (
                           <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
-                            Todavía no hay una lectura visible guardada para este HeliosDocumento dentro de tu Expediente Helios.
+                            Todavía no hay una lectura visible guardada para este documento dentro de tu expediente laboral.
                           </div>
                         )}
                       </article>
@@ -4192,7 +4209,7 @@ export default function Auditar() {
 
           <aside className="space-y-6">
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente Helios seleccionado</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente laboral seleccionado</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                 {heliosExpediente?.displayName ?? caseDetailQuery.data?.case.title ?? "Selecciona un expediente"}
               </h2>
@@ -4210,7 +4227,7 @@ export default function Auditar() {
                   {getCaseStatusLabel(caseDetailQuery.data?.case.status)}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-900">Etapa Helios:</span>{" "}
+                  <span className="font-semibold text-slate-900">Etapa del expediente:</span>{" "}
                   {heliosExpediente?.stageLabel ?? "Sin etapa visible"}
                 </p>
               </div>
@@ -4219,7 +4236,7 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <div>
-                    <p className="font-semibold text-teal-950">Tu Expediente Helios se va volviendo más claro con cada documento</p>
+                    <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
                     <p className="mt-2 text-sm leading-7 text-teal-900">
                       {heliosExpediente?.summary ??
                         (heliosDocumentsCount === 0
@@ -4236,8 +4253,8 @@ export default function Auditar() {
                     </div>
                     {latestPersistedHeliosOpinion ? (
                       <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
-                        <p className="font-semibold text-slate-950">Última lectura guardada en Helios</p>
-                        <p className="mt-1">{latestPersistedHeliosOpinion.summary}</p>
+                        <p className="font-semibold text-slate-950">Última lectura guardada en tu expediente</p>
+                        <p className="mt-1">{warmVisibleNamingCopy(latestPersistedHeliosOpinion.summary)}</p>
                         <p className="mt-2 text-xs text-slate-500">Documento: {latestHeliosDocument?.originalName ?? "Sin detalle visible"}</p>
                       </div>
                     ) : null}
@@ -4247,7 +4264,7 @@ export default function Auditar() {
                         onClick={() => setHeliosCopilotOpen(true)}
                         disabled={!selectedCaseId || legalGateRequired}
                       >
-                        Abrir copiloto laboral
+                        Abrir tu asistente laboral
                       </Button>
                       <Button
                         type="button"
@@ -4271,8 +4288,8 @@ export default function Auditar() {
                         caseTitle={caseDetailQuery.data?.case.title}
                         employeeName={caseDetailQuery.data?.case.employeeName}
                         confidenceScore={heliosCopilotMutation.data?.confidenceScore ?? visibleHeliosOpinion?.confidenceScore ?? null}
-                        disclaimer={heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null}
-                        summary={visibleHeliosOpinion?.summary ?? null}
+                        disclaimer={warmVisibleNamingCopy(heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null)}
+                        summary={warmVisibleNamingCopy(visibleHeliosOpinion?.summary ?? null)}
                         historyItems={heliosCopilotHistoryItems}
                         supportingDocuments={heliosCopilotSupportingDocuments}
                       />
@@ -4358,7 +4375,7 @@ export default function Auditar() {
                     <p className={`mt-2 text-sm leading-7 ${legalAcceptance?.isAccepted ? "text-emerald-900" : "text-amber-900"}`}>
                       {legalAcceptance?.isAccepted
                         ? `Tu expediente ya registra la aceptación del paquete legal ${legalAcceptance.legalVersion}.`
-                        : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y el copiloto Helios.`}
+                        : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y tu asistente laboral.`}
                     </p>
                   </div>
                   <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">

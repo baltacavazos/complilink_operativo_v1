@@ -168,7 +168,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
               </div>
               <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-teal-300">Marco legal vigente</p>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                Consulta aquí la versión completa de nuestros documentos legales actualizados. Están escritos en español y forman parte del uso regular de AuditaPatron y Helios.
+                Consulta aquí la versión completa de nuestros documentos legales actualizados. Están escritos en español y forman parte del uso regular de AuditaPatron y de tu experiencia de acompañamiento laboral dentro de la plataforma.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-semibold sm:justify-end">
