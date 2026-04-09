@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-DSc9gjI5wZMan0rxUGR64QT7kEBuQ",
+  "object": "chat.completion",
+  "created": 1775712224,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "1. Veredicto: SI, CON MATICES  \n2. Impacto en efecto wow: alto  \n3. Riesgo principal de comunicación en 1 frase: Puede generar desconfianza si no se expresa de manera accesible y comprensible.  \n4. Recomendación de ubicación: subtítulo hero  \n5. Mejor ángulo de copy en 1 o 2 frases, sin sonar a promesa legal absoluta ni a afirmación regulatoria excesiva: \"Verifica de manera sencilla tu alta en IMSS e Infonavit, asegurando que tu bienestar esté cubierto.\"  \n6. Una propuesta de microcopy de máximo 18 palabras: \"Tu seguridad y tranquilidad laboral empiezan aquí: revisa tu estatus en IMSS e Infonavit.\"  ",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 248,
+    "completion_tokens": 158,
+    "total_tokens": 406,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_3743ed1177"
+}

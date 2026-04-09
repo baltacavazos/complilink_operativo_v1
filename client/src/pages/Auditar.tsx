@@ -2547,13 +2547,13 @@ export default function Auditar() {
               <AuditaPatronLogo className="inline-flex" imageClassName="h-auto w-full max-w-[320px] object-contain sm:max-w-[388px] lg:max-w-[430px]" />
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                Para trabajadores, sin lenguaje complicado
+                Hecho para trabajadores, sin lenguaje complicado
               </div>
               <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
                 Tus derechos laborales, claros y protegidos
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Entiende lo importante y avanza con pasos simples.
+                AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles. Además, aquí podrás revisar con más claridad señales sobre IMSS e Infonavit sin pasos confusos.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -2582,9 +2582,9 @@ export default function Auditar() {
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué verás aquí</p>
               <div className="mt-4 space-y-3">
                 {[
-                  "Ve rápido cómo va tu expediente.",
-                  "Sube documentos con pasos simples.",
-                  "Distingue lo confirmado de lo estimado.",
+                  "Ve rápido cómo va creciendo tu expediente.",
+                  "Sube documentos y deja que AuditaPatron los procese.",
+                  "Distingue lo confirmado de lo estimado, incluyendo señales de IMSS e Infonavit.",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 rounded-[1.1rem] border border-white bg-white p-3.5">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -2623,9 +2623,10 @@ export default function Auditar() {
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
               Tus derechos laborales, claros y protegidos
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-              Sube tus documentos y conviértelos en un expediente digital ordenado, disponible 24/7, para saber si todo está en orden con tu patrón sin tecnicismos ni pasos confusos.
-            </p>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
+                AuditaPatron concentra la información que subes, analiza cada documento, lo resguarda en tu expediente digital y te devuelve resultados útiles para entender mejor tu situación laboral, incluyendo señales sobre IMSS e Infonavit, sin tecnicismos ni pasos confusos.
+              </p>
+
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
@@ -2662,7 +2663,7 @@ export default function Auditar() {
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-600">Estamos preparando tu espacio y tu expediente inicial...</p>
+            <p className="text-sm font-medium text-slate-600">Estamos preparando tu espacio y la base inicial de tu expediente...</p>
           </div>
         ) : null}
 
@@ -2776,7 +2777,7 @@ export default function Auditar() {
                     Hoy tu expediente laboral va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso dentro de tu expediente."}
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
                   </p>
                 </div>
 
@@ -2787,8 +2788,9 @@ export default function Auditar() {
                   </p>
                   <p className="mt-2 text-sm leading-6 text-teal-950">
                     {dossierStatus.nextTarget
-                      ? `${dossierStatus.nextTarget.benefit} Además, quedará ordenado dentro de tu expediente digital para futuras consultas.`
-                      : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil y quedar disponible dentro de tu expediente digital."}
+                        ? `${dossierStatus.nextTarget.benefit} Además, quedará ordenado dentro de tu expediente digital para futuras consultas.`
+                        : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil y quedar disponible dentro de tu expediente digital."}
+
                   </p>
                 </div>
               </div>
@@ -2874,8 +2876,8 @@ export default function Auditar() {
                     </p>
                     <p className="mt-1">
                       {missingPriorityUploadGuides.length > 0
-                        ? "Estas recomendaciones ya están ligadas a lo que todavía no aparece en tu expediente, para que no subas archivos de más ni repitas esfuerzos."
-                        : "Si tienes más evidencia específica de tu caso, también puede ayudarte a afinar todavía más la lectura y el respaldo de tu expediente."}
+                        ? "Estas recomendaciones ya están ligadas a lo que todavía hace falta dentro de tu expediente, para que no subas archivos de más ni repitas esfuerzos."
+                        : "Si tienes más evidencia específica de tu caso, también puede ayudar a afinar todavía más la lectura y el respaldo de tu expediente."}
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -2985,7 +2987,7 @@ export default function Auditar() {
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué está pasando ahora</p>
-                    <p className="mt-2 font-semibold text-slate-950">Ordena, resguarda y revisa por ti</p>
+                    <p className="mt-2 font-semibold text-slate-950">Tu expediente se ordena, resguarda y revisa por ti</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">{heliosStage.detail}</p>
                   </div>
 
@@ -3003,7 +3005,7 @@ export default function Auditar() {
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       {visibleHeliosOpinion
                         ? "Aquí ves lo que ya quedó claro, lo que sigue en revisión y el siguiente documento que más puede ayudarte, sin pasos técnicos ni menús complicados, mientras tu expediente sigue creciendo por detrás."
-                        : "Solo necesitas subir un archivo útil. La plataforma lo revisa, lo ordena en tu expediente digital y te devuelve una guía simple dentro del mismo espacio."}
+                        : "Solo necesitas subir un archivo útil. AuditaPatron lo revisa, lo ordena en tu expediente digital y te devuelve una guía simple dentro del mismo espacio."}
                     </p>
                   </div>
                 </div>
@@ -3019,7 +3021,7 @@ export default function Auditar() {
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Después de subirlo, verás qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.
+                  Después de subirlo, AuditaPatron lo analizará para mostrarte qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.
                 </p>
               </div>
 
@@ -3316,7 +3318,7 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <p>
-                    Tu documento queda protegido. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
+                    Tu documento queda protegido dentro del flujo de AuditaPatron. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
                   </p>
                 </div>
               </div>
@@ -3660,7 +3662,7 @@ export default function Auditar() {
                     <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
                     <div>
                       <p className="font-semibold">Documento guardado y expediente actualizado</p>
-                      <p className="mt-1">La vista previa ya se convirtió en un documento real dentro de tu expediente. Si hiciste ajustes manuales, también quedaron incorporados en este guardado.</p>
+                      <p className="mt-1">La vista previa ya se convirtió en un documento real dentro de tu expediente. Si hiciste ajustes manuales, también quedaron incorporados en este guardado para mantener una lectura consistente sobre la misma base documental.</p>
                     </div>
                   </div>
                 </div>
@@ -3673,7 +3675,8 @@ export default function Auditar() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                    Sube un documento para ver qué aportó y cuál es el siguiente paso.
+                      Sube un documento para ver qué aportó y cuál es el siguiente paso.
+
                   </div>
                 )
               ) : (
@@ -3789,8 +3792,9 @@ export default function Auditar() {
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
-                          <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya quedó integrado a tu expediente con una primera lectura útil</h3>
+                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
+                            <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya quedó integrado a tu expediente con una primera lectura útil</h3>
+
                           <p className="mt-3 text-sm leading-7 text-slate-700">
                             {warmVisibleNamingCopy(lastHeliosOpinion.summary) ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
                           </p>
@@ -3967,7 +3971,8 @@ export default function Auditar() {
                     Cómo se fue fortaleciendo tu expediente
                   </h2>
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-                    Documento por documento, aquí ves cómo tu expediente fue conectando señales para darte más claridad sobre tu caso.
+                     Documento por documento, aquí ves cómo se fueron conectando señales para darte más claridad sobre tu caso.
+
                   </p>
                   {timelineEntries.length > timelinePreviewLimit ? (
                     <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
@@ -3982,7 +3987,8 @@ export default function Auditar() {
 
               {timelineEntries.length === 0 ? (
                 <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente digital paso a paso y cómo todo queda disponible para ti 24/7.
+                    Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente digital paso a paso y cómo todo queda disponible para ti 24/7.
+
                 </div>
               ) : (
                 <div className="mt-6 space-y-4">
@@ -4236,7 +4242,8 @@ export default function Auditar() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <div>
-                    <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
+                        <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
+
                     <p className="mt-2 text-sm leading-7 text-teal-900">
                       {heliosExpediente?.summary ??
                         (heliosDocumentsCount === 0
@@ -4276,7 +4283,7 @@ export default function Auditar() {
                       </Button>
                     </div>
                     <p className="mt-3 text-xs leading-6 text-teal-900">
-                      Haz preguntas rápidas sobre riesgos, documentos faltantes o el siguiente paso útil sin salir de tu expediente.
+                      Haz preguntas rápidas sobre riesgos, documentos faltantes o el siguiente paso útil con base en lo que ya se analizó, sin salir de tu expediente.
                     </p>
                       <HeliosCopilotSheet
                         open={heliosCopilotOpen}
@@ -4431,7 +4438,7 @@ export default function Auditar() {
                 <div>
                   <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Así se fortalece tu expediente</h2>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    AuditaPatron recibe tus documentos, los organiza, los contrasta y te devuelve una explicación cada vez más clara y útil.
+                    AuditaPatron recibe tus documentos, los organiza, los contrasta, los resguarda y te devuelve una explicación cada vez más clara y útil.
                   </p>
                 </div>
               </div>
@@ -4439,18 +4446,21 @@ export default function Auditar() {
               <div className="mt-4 grid gap-3 lg:grid-cols-4">
                 <article className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Paso 1</p>
-                  <p className="mt-2 font-semibold text-slate-950">AuditaPatron recibe y protege</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Tu archivo entra a un expediente seguro y queda listo para ordenarse sin que tengas que hacer pasos técnicos extra.
-                  </p>
+                    <p className="mt-2 font-semibold text-slate-950">AuditaPatron recibe y protege</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Tu archivo entra a un expediente seguro, queda resguardado y listo para ordenarse sin que tengas que hacer pasos técnicos extra.
+                    </p>
+
                 </article>
                 <article className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Paso 2</p>
-                  <p className="mt-2 font-semibold text-slate-950">La revisión encuentra contexto útil</p>
-                  <p className="mt-2 text-sm leading-6 text-teal-950">
+                    <p className="mt-2 font-semibold text-slate-950">La revisión encuentra contexto útil</p>
+                    <p className="mt-2 text-sm leading-6 text-teal-950">
+
                     {heliosDocumentsCount === 0
-                      ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar."
-                      : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
+                        ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar, incluyendo señales útiles de IMSS e Infonavit cuando existan en tu expediente."
+                        : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
+
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4">
@@ -4464,7 +4474,8 @@ export default function Auditar() {
                 </article>
                 <article className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Paso 4</p>
-                  <p className="mt-2 font-semibold text-slate-950">Tú recibes una guía más clara</p>
+                    <p className="mt-2 font-semibold text-slate-950">Tú recibes una guía más clara</p>
+
                   <p className="mt-2 text-sm leading-6 text-emerald-950">
                     Las alertas, comparaciones y siguientes documentos sugeridos aparecen en lenguaje simple para ayudarte a decidir con calma.
                   </p>

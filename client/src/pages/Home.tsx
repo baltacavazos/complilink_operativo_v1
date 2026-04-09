@@ -58,40 +58,40 @@ const navLinks = [
 const tourSteps: TourStep[] = [
   {
     id: "sube",
-    title: "Sube tu recibo o documento",
+    title: "Sube tu documento y AuditaPatron lo recibe",
     summary: "Empieza con el archivo que ya tienes a la mano.",
     description:
-      "No necesitas saber de leyes ni de nómina. Tú subes el documento y AuditaPatron te ayuda a entender qué puede aportar.",
+      "No necesitas saber de leyes ni de nómina. Tú subes el documento y AuditaPatron lo analiza, lo resguarda y lo integra a AuditaPatron para empezar a devolverte contexto útil.",
     bullets: [
       "Puedes empezar desde tu celular.",
-      "Te orientamos con lenguaje simple.",
-      "Cada archivo útil suma contexto.",
+      "AuditaPatron procesa el archivo sin pasos técnicos extra.",
+      "Cada archivo útil suma contexto real.",
     ],
     icon: Upload,
   },
   {
     id: "revisamos",
-    title: "Te mostramos hallazgos claros",
+    title: "AuditaPatron te devuelve hallazgos claros",
     summary: "Lo importante aparece primero y sin palabras difíciles.",
     description:
-      "Separas lo confirmado de lo estimado para que entiendas mejor tu situación y sepas qué revisar con más calma.",
+      "AuditaPatron separa lo confirmado de lo estimado para que entiendas mejor tu situación y revises con más claridad pagos, condiciones y señales sobre IMSS e Infonavit.",
     bullets: [
       "Mensajes breves y fáciles de leer.",
       "Lo urgente se ve rápido.",
-      "Te orienta sin asustarte.",
+      "Te orienta sin sonar absoluto.",
     ],
     icon: FileSearch,
   },
   {
     id: "proteges",
-    title: "Tu expediente se fortalece contigo",
+    title: "Tu expediente se fortalece con AuditaPatron",
     summary: "Tus documentos no se quedan sueltos: se convierten en respaldo.",
     description:
-      "Con más documentos útiles, el análisis gana contexto y tu expediente puede ayudarte mejor a ordenar, comparar y respaldar tu caso.",
+      "Con más documentos útiles, AuditaPatron gana contexto para ordenar, comparar, almacenar y devolverte resultados cada vez más útiles dentro de tu expediente.",
     bullets: [
       "Más contexto para entender cambios.",
       "Mejor organización de evidencia.",
-      "Privacidad y control de tus archivos.",
+      "Privacidad, resguardo y control de tus archivos.",
     ],
     icon: ShieldCheck,
   },
@@ -114,8 +114,8 @@ const dossierSignals: DossierSignal[] = [
     status: "faltante",
   },
   {
-    title: "Soporte IMSS o evidencia adicional",
-    description: "Puede reforzar el contexto cuando hay dudas sobre tu relación laboral.",
+    title: "Soporte IMSS, Infonavit o evidencia adicional",
+    description: "Puede reforzar el contexto cuando quieres revisar con más claridad tu alta, aportaciones o continuidad laboral.",
     status: "faltante",
   },
 ];
@@ -155,9 +155,9 @@ const priorityDocuments: PriorityDocument[] = [
     value: "Sirven para comparar lo acordado frente a lo que realmente ocurrió después.",
   },
   {
-    title: "Alta, baja o semanas cotizadas del IMSS",
-    description: "Refuerzan la historia laboral con fechas y señales de seguridad social.",
-    value: "Suman evidencia útil cuando necesitas respaldarte mejor o entender huecos en tu expediente.",
+    title: "Alta, baja, semanas cotizadas del IMSS o constancia de Infonavit",
+    description: "Refuerzan la historia laboral con fechas y señales de seguridad social y vivienda laboral.",
+    value: "Suman evidencia útil cuando quieres revisar con más claridad si tu alta y tus registros laborales están en orden dentro del expediente.",
   },
 ];
 
@@ -169,13 +169,13 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
   },
   {
     step: "02",
-    title: "Todo queda guardado en tu expediente",
-    description: "Después de subirlo, el archivo se ordena en un solo lugar para que no termine perdido entre folders o chats.",
+    title: "AuditaPatron lo analiza y lo guarda en tu expediente",
+    description: "Después de subirlo, AuditaPatron ordena el archivo en un solo lugar para que no termine perdido entre folders o chats.",
   },
   {
     step: "03",
-    title: "Recibes claridad útil y la conservas",
-    description: "Ves qué se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
+    title: "Recibes resultados útiles y los conservas",
+    description: "Ves qué se entendió, qué conviene revisar y mantienes tus documentos y resultados disponibles 24/7 cuando vuelvas a necesitarlos.",
   },
 ];
 
@@ -198,12 +198,12 @@ const faqs = [
   {
     question: "¿Mi información está protegida?",
     answer:
-      "Sí. Tus archivos se resguardan con control y se usan para fortalecer tu expediente digital, mantenerlo ordenado y dejarlo disponible para ti cuando lo necesites.",
+      "Sí. Tus archivos se resguardan con control dentro del flujo de AuditaPatron, se analizan para fortalecer tu expediente digital y se mantienen disponibles para ti cuando los necesites.",
   },
   {
     question: "¿Qué tipo de archivos puedo reunir aquí?",
     answer:
-      "Recibos de nómina, CFDI, contrato, soporte IMSS y otros documentos laborales que ayuden a entender mejor tu caso.",
+      "Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit y otros documentos laborales que ayuden a entender mejor tu caso.",
   },
 ];
 
@@ -389,7 +389,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos, ordénalos en un solo lugar y entiende rápido qué revisar, qué falta y cuál es tu siguiente paso, sin palabras difíciles.
+            Sube tus documentos y deja que AuditaPatron los analice, los resguarde y te devuelva resultados útiles dentro de AuditaPatron. Además, podrás revisar con más claridad si tu alta en IMSS e Infonavit está en orden, sin palabras difíciles.
           </p>
 
           <div
@@ -432,12 +432,12 @@ function HeroSection() {
                 ))}
               </div>
               <p className="text-sm font-medium leading-6 text-slate-700">
-                Diseñado con dudas reales de trabajadores sobre recibos, contratos y CFDI.
+                Diseñado con dudas reales de trabajadores sobre recibos, contratos, CFDI, IMSS e Infonavit.
               </p>
             </div>
 
             <div className="mt-3 flex flex-wrap justify-center gap-2.5 text-sm text-slate-600 lg:justify-start">
-              {["Expediente privado", "Guía paso a paso", "Sin palabras difíciles"].map((item) => (
+              {["Expediente privado", "IMSS e Infonavit con más claridad", "Sin palabras difíciles"].map((item) => (
                 <span
                   key={item}
                   className="motion-hover-lift rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-sm"
@@ -484,9 +484,9 @@ function HeroSection() {
 
             <div className="mt-5 space-y-3">
               {[
-                "Subes tu recibo, contrato o CFDI.",
-                "Ves lo importante sin lenguaje complicado.",
-                "Todo queda ordenado en tu expediente digital.",
+                "Subes tu recibo, contrato, soporte IMSS o constancia de Infonavit.",
+                "AuditaPatron analiza y te devuelve lo importante sin lenguaje complicado.",
+                "Todo queda resguardado en tu expediente digital.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -510,7 +510,7 @@ function HeroSection() {
                     Siguiente paso sugerido
                   </p>
                   <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Ya tienes recibo y contrato listos; sigue con tu CFDI reciente.
+                    Ya tienes recibo y contrato listos; seguir con IMSS, Infonavit o CFDI puede darte todavía más claridad.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -526,7 +526,7 @@ function HeroSection() {
                   Listos: recibo y contrato
                 </span>
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Siguiente: CFDI reciente
+                  Siguiente: IMSS, Infonavit o CFDI
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
@@ -545,9 +545,10 @@ function QuickTrustSection() {
     <section className="border-y border-teal-100/80 bg-[#dbeeee] py-3.5 sm:bg-[#e6f2f1]">
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
-          "Sube recibo, CFDI o contrato.",
-          "Todo se ordena en tu expediente digital.",
-          "Lo tienes disponible 24/7.",
+              "Sube recibo, CFDI, soporte IMSS o constancia de Infonavit.",
+              "AuditaPatron lo analiza y lo ordena en tu expediente digital.",
+              "Tus resultados y archivos quedan disponibles 24/7.",
+
         ].map((item) => (
           <div
             key={item}
@@ -574,31 +575,31 @@ function ConfidenceMagicSection() {
               Tus documentos dejan de vivir en folders sueltos y empiezan a trabajar a tu favor.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Tú solo subes lo que ya tienes. AuditaPatron ordena la información, la convierte en un expediente digital disponible 24/7 y la traduce en señales, comparaciones y siguientes pasos para que sepas qué revisar con calma.
+              Tú solo subes lo que ya tienes. AuditaPatron recibe la información, analiza documentos y señales laborales, los convierte en un expediente digital disponible 24/7 y te devuelve resultados, comparaciones y siguientes pasos para que sepas qué revisar con calma.
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {[
               {
-                title: "Subes una pieza útil y queda protegida",
+                title: "Subes una pieza útil y AuditaPatron la resguarda",
                 description:
-                  "Recibos, CFDI, contratos y evidencia dejan de vivir en folders separados y empiezan a ordenarse en un mismo lugar.",
+                  "Recibos, CFDI, contratos, soportes IMSS, constancias de Infonavit y evidencia dejan de vivir en folders separados y empiezan a ordenarse en un mismo lugar.",
                 detail: "Todo queda dentro de tu expediente digital, disponible 24/7 para revisar, descargar y volver a usar cuando lo necesites.",
                 icon: Upload,
               },
               {
-                title: "La plataforma conecta el contexto del expediente",
+                title: "AuditaPatron conecta el contexto del expediente",
                 description:
-                  "Conecta fechas, pagos, documentos relacionados y puntos dudosos para encontrar qué ya está claro y qué todavía conviene tomar con cautela.",
+                  "Conecta fechas, pagos, documentos relacionados y señales de IMSS e Infonavit para encontrar qué ya está claro y qué todavía conviene tomar con cautela.",
                 detail: "No promete certezas automáticas: organiza señales útiles y te ayuda a interpretar mejor la información visible.",
                 icon: FileSearch,
               },
               {
-                title: "Recibes guía laboral útil",
+                title: "Recibes resultados y guía laboral útil",
                 description:
                   "Ves qué se confirmó, qué parece estimado y cuál puede ser el siguiente documento o paso más útil para fortalecer tu respaldo.",
-                detail: "La persona usuaria solo sube, revisa y avanza; el expediente sigue creciendo por detrás sin sumar complejidad.",
+                detail: "La persona usuaria solo sube, revisa y avanza; AuditaPatron analiza, almacena y sigue enriqueciendo el expediente por detrás sin sumar complejidad.",
                 icon: ShieldCheck,
               },
             ].map((item) => {
@@ -622,7 +623,7 @@ function ConfidenceMagicSection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-            El valor real no es solo guardar archivos. El valor está en que tu expediente se ordena, conecta mejor el contexto y te devuelve una guía que te ayuda a entender tu situación sin dejar de tener todo en un solo lugar.
+            El valor real no es solo guardar archivos. El valor está en que AuditaPatron obtiene, ordena, analiza y resguarda la información para devolverte una guía que te ayuda a entender tu situación, incluyendo señales útiles sobre IMSS e Infonavit, sin dejar de tener todo en un solo lugar.
           </div>
         </div>
       </div>
@@ -636,13 +637,13 @@ function CopilotPreviewSection() {
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Asistente laboral
+            Asistente laboral impulsado por AuditaPatron
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Una capa extra para hacer preguntas rápidas sobre tu expediente.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil sin sacarte del expediente.
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro del expediente.
           </p>
           <p className="mt-4 inline-flex max-w-xl rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm font-medium text-teal-900 shadow-sm">
             Aquí te acompañamos paso a paso para cuidar tus derechos laborales.
@@ -650,7 +651,7 @@ function CopilotPreviewSection() {
 
           <div className="mt-6 space-y-3">
             {[
-              "Responde con base en los documentos que ya integraste en tu expediente.",
+              "Responde con base en los documentos y resultados que AuditaPatron ya integró en tu expediente.",
               "Usa lenguaje simple para decirte qué ya se entiende y qué sigue siendo preliminar.",
               "Te ayuda a priorizar el siguiente documento o movimiento más útil sin sustituir asesoría legal formal.",
             ].map((item) => (
@@ -738,7 +739,7 @@ function HowItWorksSection() {
             Entiende tu situación sin complicarte.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            En pocos pasos puedes subir tu documento, entender lo importante y empezar a construir un expediente digital ordenado que siga contigo cuando lo necesites.
+            En pocos pasos puedes subir tu documento, dejar que AuditaPatron lo analice y empiece a construir un expediente digital ordenado que siga contigo cuando lo necesites.
           </p>
         </div>
 
@@ -751,12 +752,12 @@ function HowItWorksSection() {
             },
             {
               number: "02",
-              title: "La plataforma entiende lo importante",
-              description: "Ordena señales, separa lo confirmado de lo estimado y te explica con claridad dónde conviene poner atención.",
+              title: "AuditaPatron entiende lo importante",
+              description: "Ordena señales, separa lo confirmado de lo estimado y te explica con claridad dónde conviene poner atención, incluso frente a IMSS e Infonavit.",
             },
             {
               number: "03",
-              title: "Recibes guía útil para avanzar",
+              title: "Recibes resultados útiles para avanzar",
               description: "Cada documento adicional puede dar más contexto, ayudarte a entender mejor tu caso y sugerirte el siguiente paso más útil.",
             },
           ].map((item) => (
@@ -791,13 +792,13 @@ function DossierSection() {
             Cada documento útil se convierte en orden, claridad y respaldo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No se trata de subir por subir. Se trata de reunir piezas que te den más claridad, mejor orden y un expediente digital disponible 24/7 si después necesitas revisar, reclamar o respaldar algo con calma.
+            No se trata de subir por subir. Se trata de reunir piezas para que AuditaPatron te dé más claridad, mejor orden y un expediente digital disponible 24/7 si después necesitas revisar, reclamar o respaldar algo con calma.
           </p>
 
           <div className="mt-6 space-y-3">
             {[
               "Más claridad sobre pagos, deducciones y condiciones laborales.",
-              "Todo en un solo lugar, sin folders sueltos ni búsquedas eternas.",
+              "Más contexto para revisar con claridad señales de IMSS e Infonavit.",
               "Mejor respaldo documental disponible 24/7 para futuras revisiones.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
@@ -870,7 +871,7 @@ function PriorityDocumentsSection() {
             Si quieres darle más valor a tu expediente, empieza por los archivos con más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No todos los documentos aportan lo mismo. Si todavía no los has subido, estos suelen ser de los primeros archivos que más conviene reunir para darte claridad, ordenar mejor tu caso y hacer que el expediente te devuelva una lectura más completa.
+            No todos los documentos aportan lo mismo. Si todavía no los has subido, estos suelen ser de los primeros archivos que más conviene reunir para darle a AuditaPatron mejor contexto, ordenar tu caso y hacer que el expediente te devuelva una lectura más completa.
           </p>
         </div>
 
@@ -899,7 +900,7 @@ function PriorityDocumentsSection() {
         </div>
 
         <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos que realmente faltan para que sepas qué te conviene subir primero.
+          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos y señales que AuditaPatron todavía necesita para decirte qué te conviene subir primero.
         </div>
       </div>
     </section>

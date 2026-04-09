@@ -1,0 +1,30 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Aquí tienes la evaluación solicitada:\n\n1.  **Veredicto:** SI\n2.  **Impacto en efecto wow:** alto\n3.  **Riesgo principal de comunicación:** Malinterpretar el alcance de la revisión como una auditoría legal exhaustiva o una validación oficial.\n4.  **Recomendación de ubicación:** subtítulo hero\n5.  **Mejor ángulo de copy:** \"Facilita la comprensión de tu estatus en IMSS e Infonavit, dándote la tranquilidad sobre tu futuro laboral.\"\n6.  **Una propuesta de microcopy:** \"Saber tu estatus en IMSS e Infonavit es fácil. Asegura tu tranquilidad laboral con AuditaPatron.\""
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 224,
+    "candidatesTokenCount": 153,
+    "totalTokenCount": 2556,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 224
+      }
+    ],
+    "thoughtsTokenCount": 2179
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "0zfXaciDM4mw1MkPtpPdsQk"
+}

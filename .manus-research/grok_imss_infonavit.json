@@ -1,0 +1,37 @@
+{
+  "id": "a33dce78-20d4-91ca-95a1-b203a50a3535",
+  "object": "chat.completion",
+  "created": 1775712228,
+  "model": "grok-4-0709",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "1. Veredicto: SI, CON MATICES  \n2. Impacto en efecto wow: alto  \n3. Riesgo principal de comunicación en 1 frase: Podría generar expectativas de resolución legal infalible, exponiendo a la marca a reclamos si los usuarios perciben inexactitudes.  \n4. Recomendación de ubicación: subtítulo hero  \n5. Mejor ángulo de copy en 1 o 2 frases, sin sonar a promesa legal absoluta ni a afirmación regulatoria excesiva: Enfócate en el empoderamiento del trabajador para ganar claridad sobre su situación laboral, destacando la simplicidad de la herramienta como un primer paso amigable hacia la tranquilidad. Esto resalta el valor sin prometer resultados definitivos.  \n6. Una propuesta de microcopy de máximo 18 palabras: Descubre si tu registro en IMSS e Infonavit está en orden, con claridad y sin complicaciones.",
+        "refusal": null
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 922,
+    "completion_tokens": 191,
+    "total_tokens": 1583,
+    "prompt_tokens_details": {
+      "text_tokens": 922,
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "cached_tokens": 676
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 470,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "num_sources_used": 0,
+    "cost_in_usd_ticks": 111600000
+  },
+  "system_fingerprint": "fp_74614d6fcc"
+}

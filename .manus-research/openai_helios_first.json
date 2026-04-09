@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-DScU2tp5aTcFcIeQiN1CnFIm6qjg9",
+  "object": "chat.completion",
+  "created": 1775713486,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "1. Veredicto general sobre este enfoque: sólido con matices.\n\n2. Conviene mostrar ya en la UI pública la función de revisión de alta en IMSS e Infonavit y la transparencia del proceso de análisis de documentos.\n\n3. No conviene prometer resultados definitivos o garantías sobre el estado laboral del usuario en la UI pública.\n\n4. Mejor ubicación para mencionar IMSS e Infonavit: subtítulo hero.\n\n5. Propuesta de copy principal: \"Revisa tu alta en IMSS e Infonavit de manera clara y sencilla con AuditaPatron.\"\n\n6. Propuesta de microcopy de apoyo: \"Nuestros análisis son precisos y buscan empoderarte en tu situación laboral.\"\n\n7. Recomendación arquitectónica:\n   - Establecer un flujo claro donde los usuarios suban documentos directamente a Helios, dejando claro que este motor es el responsable del análisis.\n   - Presentar resultados de manera resumida y accesible, con enlaces a detalles adicionales para evitar sobrecargar la interfaz.\n   - Implementar un sistema de notificaciones para informar a los usuarios cuando sus documentos estén analizados, asegurando una comunicación continua y clara.\n\n8. Riesgo principal de producto o confianza: Existe el riesgo de que los usuarios no perciban la fiabilidad del análisis, lo que puede impactar negativamente en la confianza hacia la plataforma.",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 360,
+    "completion_tokens": 279,
+    "total_tokens": 639,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_b2178a2f2a"
+}

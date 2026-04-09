@@ -1,0 +1,30 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Aquí tienes la evaluación solicitada:\n\n1.  **Veredicto general sobre este enfoque:** Sólido con matices\n2.  **Qué sí conviene mostrar ya en la UI pública, en 2 frases:** AuditaPatron te ayuda a revisar si estás bien dado de alta en IMSS e Infonavit. Obtén claridad sobre tu situación laboral y tus derechos.\n3.  **Qué NO conviene prometer todavía en la UI pública, en 1 frase:** No se debe prometer garantizar la \"verdad absoluta\" de la información oficial, solo su análisis y verificación.\n4.  **Mejor ubicación para mencionar IMSS e Infonavit:** Titular\n5.  **Propuesta de copy principal de máximo 28 palabras:** ¿Estás bien dado de alta en IMSS e Infonavit? AuditaPatron te ayuda a verificar tu situación laboral de forma clara y sencilla. Conoce tus derechos y asegura tu futuro.\n6.  **Propuesta de microcopy de apoyo de máximo 20 palabras:** Sube tus documentos. Nuestro sistema los analiza y te da resultados claros sobre tu estatus. Confianza en tu registro.\n7.  **Recomendación arquitectónica en 3 puntos muy concretos para que Helios sea la fuente de análisis, almacenamiento y resultados sin confundir al usuario:**\n    *   **UX de Carga Transparente:** La interfaz debe comunicar claramente que el usuario *sube* su documento, que AuditaPatron recibe para *procesar*.\n    *   **Proceso Visible:** Muestra un estado de \"Analizando tu documento con nuestro motor\" para reconocer el trabajo de Helios sin nombrarlo directamente.\n    *   **Helios como Fuente de Resultados:** Presenta los resultados generados por Helios como la conclusión del análisis de AuditaPatron, siendo esta la información que se almacena y consulta.\n8.  **Riesgo principal de producto o confianza en 1 frase:** Confundir al usuario sobre si AuditaPatron es la fuente *oficial* de los datos o un *analizador* independiente, creando expectativas irrealistas."
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 328,
+    "candidatesTokenCount": 446,
+    "totalTokenCount": 2167,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 328
+      }
+    ],
+    "thoughtsTokenCount": 1393
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "wzzXabCALZqv_uMPm-GLWA"
+}
