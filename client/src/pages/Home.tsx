@@ -270,14 +270,14 @@ function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <Button
-            className="h-9.5 rounded-full bg-teal-400 px-4 text-[0.85rem] font-semibold text-slate-950 shadow-[0_14px_28px_-20px_rgba(45,212,191,0.75)] hover:bg-teal-300"
+            className="motion-hover-lift h-10 rounded-full bg-teal-400 px-4.5 text-[0.9rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99]"
             onClick={goToAuditFlow}
           >
             {PRIMARY_CTA_LABEL}
           </Button>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:bg-white/10"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
@@ -288,13 +288,13 @@ function SiteHeader() {
       </div>
 
       {open ? (
-        <div className="border-t border-white/8 bg-white md:hidden">
+        <div className="border-t border-white/8 bg-white/98 shadow-[0_28px_60px_-42px_rgba(15,23,42,0.42)] backdrop-blur-sm md:hidden">
           <div className="container mx-auto max-w-6xl space-y-3 py-4">
-            <div className="rounded-[1.55rem] border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
                 <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
                 <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
-                  Claro y móvil
+                  Entrada rápida
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -302,7 +302,7 @@ function SiteHeader() {
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_18px_34px_-28px_rgba(15,23,42,0.18)]">
               <div className="border-b border-slate-200 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                   Explora
@@ -314,7 +314,7 @@ function SiteHeader() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between px-4 py-3.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                    className="flex items-center justify-between px-4 py-4 text-[0.97rem] font-semibold text-slate-700 transition duration-200 ease-out hover:bg-slate-50 hover:text-slate-950"
                   >
                     <span>{link.label}</span>
                     <ArrowRight className="h-4 w-4 text-slate-400" strokeWidth={1.8} />
@@ -323,10 +323,10 @@ function SiteHeader() {
               </div>
             </div>
 
-            <div className="grid gap-3 pt-1">
+            <div className="grid gap-3 border-t border-slate-200/80 pt-3">
               <Button
                 variant="outline"
-                className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 active:scale-[0.99]"
                 onClick={() => {
                   setOpen(false);
                   scrollToId("expediente");
@@ -335,7 +335,7 @@ function SiteHeader() {
                 Ver tu expediente
               </Button>
               <Button
-                className="motion-hover-lift h-12 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
                 onClick={() => {
                   setOpen(false);
                   goToAuditFlow();
@@ -397,7 +397,7 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
-              className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700 sm:w-auto"
+              className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
               onClick={goToAuditFlow}
             >
               {PRIMARY_CTA_LABEL}
@@ -405,7 +405,7 @@ function HeroSection() {
             </Button>
             <Button
               variant="outline"
-              className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-transparent hover:text-slate-950 sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:hover:bg-slate-50"
+              className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
               onClick={() => scrollToId("copiloto")}
             >
               Ver cómo funciona
@@ -453,28 +453,28 @@ function HeroSection() {
           <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-teal-200/50 blur-3xl" />
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
-            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_72px_-56px_rgba(15,23,42,0.28)] sm:p-6"
+            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 sm:p-6"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
-            <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 px-5 py-5">
+            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                     Tu claridad hoy
                   </p>
                   <div className="mt-2 flex items-end gap-3">
-                    <p className="text-[2.7rem] font-semibold tracking-[-0.06em] text-slate-950">{dossierReadiness}%</p>
+                    <p className="text-[2.85rem] font-bold tracking-[-0.065em] text-slate-950">{dossierReadiness}%</p>
                     <span className="mb-1 text-sm font-semibold text-teal-700">Ya puedes empezar</span>
                   </div>
                 </div>
-                <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <div className="rounded-full border border-emerald-200 bg-emerald-100/90 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
                   24/7
                 </div>
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Entiendes rápido qué revisar primero.
               </p>
-              <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
+              <div className="mt-4 h-3 overflow-hidden rounded-full bg-white shadow-inner">
                 <div
                   className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
                   style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
@@ -490,7 +490,7 @@ function HeroSection() {
               ].map((item, index) => (
                 <div
                   key={item}
-                  className="motion-enter-soft flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.42)]"
+                  className="motion-enter-soft flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white/96 p-4 shadow-[0_20px_44px_-34px_rgba(15,23,42,0.34)] transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.38)]"
                   style={{ ["--motion-delay" as string]: `${420 + index * 80}ms` }}
                 >
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -502,7 +502,7 @@ function HeroSection() {
             <button
               type="button"
               onClick={goToAuditFlow}
-              className="mt-5 block w-full rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-4 text-left transition hover:bg-teal-100/80"
+              className="mt-5 block w-full rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-4 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -515,17 +515,17 @@ function HeroSection() {
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/90 shadow-inner">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
                   style={{ width: `${dossierReadiness}%` }}
                 />
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
+                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
                   Listos: recibo y contrato
                 </span>
-                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
+                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
                   Siguiente: CFDI reciente
                 </span>
               </div>

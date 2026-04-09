@@ -22,7 +22,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("ThemeToggle");
     expect(source).toContain("Tus derechos laborales");
     expect(source).toContain("sin palabras difíciles.");
-    expect(source).toContain("Claro y móvil");
+    expect(source).toContain("Entrada rápida");
     expect(source).toContain('label: "Asistente"');
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");

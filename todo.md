@@ -460,3 +460,6 @@
 - [x] Añadir divisores o acentos visuales suaves entre bloques clave de la home para que la lectura se sienta más seccionada sin endurecer el diseño
 - [x] Reforzar ligeramente los fondos por sección en móvil para que la segmentación visual se perciba mejor en pantallas pequeñas
 - [x] Definir y unificar una sola versión final del CTA principal en toda la experiencia visible de la home
+- [x] Dar un poco más de contraste a la tarjeta derecha del hero para que el bloque principal se entienda mejor a primera vista
+- [x] Añadir microanimaciones suaves en botones y cards para que la experiencia se sienta más viva sin perder sobriedad
+- [x] Reforzar la jerarquía visual del menú superior en móvil para que navegación y acción principal se distingan mejor

@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-04-09T04:56:14.063Z",
+  "prompt_summary": {
+    "goal": "Mejorar contraste del hero, microanimaciones suaves y jerarquía móvil del menú superior sin cambiar la lógica.",
+    "current_cta": "Abrir mi expediente"
+  },
+  "providers": {
+    "openai": {
+      "provider": "openai",
+      "ok": true,
+      "model": "gpt-4o-mini",
+      "raw": {
+        "id": "chatcmpl-DSbiXXMaytZRiy8cta4o40ZWEeI4i",
+        "object": "chat.completion",
+        "created": 1775710541,
+        "model": "gpt-4o-mini-2024-07-18",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"hero_card\": {\n    \"summary\": \"Mejorar el contraste y jerarquía visual de la tarjeta derecha del hero.\",\n    \"changes\": [\n      \"Agregar un borde sutil de 1px en color gris oscuro alrededor de la tarjeta.\",\n      \"Aumentar el tamaño de la fuente del título en la tarjeta para destacarlo más.\",\n      \"Incorporar un fondo ligeramente más oscuro o un sombreado suave detrás del contenido de la tarjeta.\"\n    ],\n    \"colors\": [\n      \"#f0f0f0\",\n      \"#d1d1d1\",\n      \"#4a4a4a\"\n    ]\n  },\n  \"microanimations\": {\n    \"summary\": \"Incorporar microanimaciones suaves en botones y cards para una experiencia más dinámica y confiable.\",\n    \"changes\": [\n      \"Implementar un efecto de suavizado al pasar el cursor por encima de los botones, aumentando ligeramente el tamaño.\",\n      \"Agregar un efecto de desvanecimiento al abrir las tarjetas, haciendo que aparezcan suavemente.\",\n      \"Incluir un ligero movimiento de rebote al hacer clic en los botones, para reforzar la acción.\"\n    ],\n    \"timings\": [\n      \"200ms\",\n      \"300ms\",\n      \"150ms\"\n    ]\n  },\n  \"mobile_nav\": {\n    \"summary\": \"Reforzar la jerarquía visual del menú superior en móvil para facilitar la navegación.\",\n    \"changes\": [\n      \"Aumentar el tamaño de la fuente de los elementos del menú para mejorar la legibilidad.\",\n      \"Utilizar un color de fondo más oscuro para el menú que contraste con el contenido principal.\",\n      \"Separar visualmente la acción principal (CTA) del resto del menú mediante un espacio adicional o un divisor sutil.\"\n    ]\n  },\n  \"cta\": {\n    \"label\": \"Abrir mi expediente\",\n    \"reason\": \"Es la acción principal que guía al usuario hacia su objetivo, debe ser clara y accesible.\"\n  },\n  \"guardrails\": [\n    \"Mantener un diseño limpio y no sobrecargar visualmente las secciones.\",\n    \"Asegurar que los cambios no afecten la velocidad de carga de la página.\",\n    \"Probar los cambios con usuarios reales para validar la efectividad de las mejoras.\"\n  ]\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 441,
+          "completion_tokens": 476,
+          "total_tokens": 917,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_8b6cd59583"
+      },
+      "parsed": {
+        "hero_card": {
+          "summary": "Mejorar el contraste y jerarquía visual de la tarjeta derecha del hero.",
+          "changes": [
+            "Agregar un borde sutil de 1px en color gris oscuro alrededor de la tarjeta.",
+            "Aumentar el tamaño de la fuente del título en la tarjeta para destacarlo más.",
+            "Incorporar un fondo ligeramente más oscuro o un sombreado suave detrás del contenido de la tarjeta."
+          ],
+          "colors": [
+            "#f0f0f0",
+            "#d1d1d1",
+            "#4a4a4a"
+          ]
+        },
+        "microanimations": {
+          "summary": "Incorporar microanimaciones suaves en botones y cards para una experiencia más dinámica y confiable.",
+          "changes": [
+            "Implementar un efecto de suavizado al pasar el cursor por encima de los botones, aumentando ligeramente el tamaño.",
+            "Agregar un efecto de desvanecimiento al abrir las tarjetas, haciendo que aparezcan suavemente.",
+            "Incluir un ligero movimiento de rebote al hacer clic en los botones, para reforzar la acción."
+          ],
+          "timings": [
+            "200ms",
+            "300ms",
+            "150ms"
+          ]
+        },
+        "mobile_nav": {
+          "summary": "Reforzar la jerarquía visual del menú superior en móvil para facilitar la navegación.",
+          "changes": [
+            "Aumentar el tamaño de la fuente de los elementos del menú para mejorar la legibilidad.",
+            "Utilizar un color de fondo más oscuro para el menú que contraste con el contenido principal.",
+            "Separar visualmente la acción principal (CTA) del resto del menú mediante un espacio adicional o un divisor sutil."
+          ]
+        },
+        "cta": {
+          "label": "Abrir mi expediente",
+          "reason": "Es la acción principal que guía al usuario hacia su objetivo, debe ser clara y accesible."
+        },
+        "guardrails": [
+          "Mantener un diseño limpio y no sobrecargar visualmente las secciones.",
+          "Asegurar que los cambios no afecten la velocidad de carga de la página.",
+          "Probar los cambios con usuarios reales para validar la efectividad de las mejoras."
+        ]
+      }
+    },
+    "grok": {
+      "provider": "grok",
+      "ok": true,
+      "model": "grok-4",
+      "raw": {
+        "id": "880cff07-381a-9ee1-aa85-a1c1a848028f",
+        "object": "chat.completion",
+        "created": 1775710541,
+        "model": "grok-4-0709",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"hero_card\": {\n    \"summary\": \"Mejorar el contraste y jerarquía de la tarjeta derecha en el hero mediante ajustes sutiles para mayor claridad, manteniendo un diseño ligero y accesible.\",\n    \"changes\": [\n      \"Aumentar el grosor de la fuente en los títulos de la tarjeta a bold (700) para resaltar jerarquía sin agregar peso visual.\",\n      \"Agregar una sombra suave y ligera (box-shadow: 0 2px 4px rgba(0,0,0,0.1)) para diferenciar la tarjeta del fondo menta claro.\",\n      \"Incrementar el padding interno de la tarjeta en 8px para mejorar la legibilidad y el espacio blanco, facilitando la lectura en pantallas pequeñas.\"\n    ],\n    \"colors\": [\n      \"#F0FDFA para fondo de tarjeta, manteniendo armonía con menta claro.\",\n      \"#333333 para texto principal, asegurando alto contraste con fondos claros.\",\n      \"#4CAF50 para acentos en checklist, reforzando calidez y confianza.\"\n    ]\n  },\n  \"microanimations\": {\n    \"summary\": \"Incorporar microanimaciones suaves y sobrias en botones y cards para transmitir confiabilidad, con transiciones fluidas que no distraigan.\",\n    \"changes\": [\n      \"Animación de hover en botones: escala sutil de 1.05 con transición ease-in-out para sensación de respuesta confiable.\",\n      \"Fade-in suave para cards al cargar: opacidad de 0 a 1, mejorando la percepción de progreso sin juguetear.\",\n      \"Animación en checklist: checkmark con stroke suave al completar, reforzando logros de manera calmada.\"\n    ],\n    \"timings\": [\n      \"0.2s para transiciones de hover, manteniendo rapidez y sobriedad.\",\n      \"0.5s para fade-in de cards, permitiendo una carga perceptiva sin prisa.\",\n      \"0.3s para animaciones de checklist, asegurando fluidez accesible.\"\n    ]\n  },\n  \"mobile_nav\": {\n    \"summary\": \"Reforzar la jerarquía visual en el menú superior móvil diferenciando navegación de la acción principal con ajustes claros y simples.\",\n    \"changes\": [\n      \"Aumentar el tamaño del CTA principal 'Abrir mi expediente' a 18px y colocarlo en posición destacada con fondo contrastante.\",\n      \"Usar iconos simples y grandes (24px) para ítems de navegación, con etiquetas cortas para fácil comprensión.\",\n      \"Aplicar un color más oscuro (#222222) a ítems activos del menú para distinguirlos visualmente de opciones secundarias.\"\n    ]\n  },\n  \"cta\": {\n    \"label\": \"Inicia tu expediente ahora\",\n    \"reason\": \"Refuerza calidez y claridad, adaptándose al tono accesible para usuarios con baja alfabetización digital, sin alterar la funcionalidad original.\"\n  },\n  \"guardrails\": [\n    \"Asegurar que todos los cambios cumplan con WCAG 2.1 para accesibilidad, como contraste mínimo de 4.5:1.\",\n    \"Probar animaciones en dispositivos de gama baja para evitar sobrecarga y mantener sobriedad.\",\n    \"Mantener la estructura existente del hero y menú, evitando cualquier adición de nuevas secciones o funcionalidades.\"\n  ]\n}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1124,
+          "completion_tokens": 693,
+          "total_tokens": 2789,
+          "prompt_tokens_details": {
+            "text_tokens": 1124,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 676
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 972,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 268260000
+        },
+        "system_fingerprint": "fp_74614d6fcc"
+      },
+      "parsed": {
+        "hero_card": {
+          "summary": "Mejorar el contraste y jerarquía de la tarjeta derecha en el hero mediante ajustes sutiles para mayor claridad, manteniendo un diseño ligero y accesible.",
+          "changes": [
+            "Aumentar el grosor de la fuente en los títulos de la tarjeta a bold (700) para resaltar jerarquía sin agregar peso visual.",
+            "Agregar una sombra suave y ligera (box-shadow: 0 2px 4px rgba(0,0,0,0.1)) para diferenciar la tarjeta del fondo menta claro.",
+            "Incrementar el padding interno de la tarjeta en 8px para mejorar la legibilidad y el espacio blanco, facilitando la lectura en pantallas pequeñas."
+          ],
+          "colors": [
+            "#F0FDFA para fondo de tarjeta, manteniendo armonía con menta claro.",
+            "#333333 para texto principal, asegurando alto contraste con fondos claros.",
+            "#4CAF50 para acentos en checklist, reforzando calidez y confianza."
+          ]
+        },
+        "microanimations": {
+          "summary": "Incorporar microanimaciones suaves y sobrias en botones y cards para transmitir confiabilidad, con transiciones fluidas que no distraigan.",
+          "changes": [
+            "Animación de hover en botones: escala sutil de 1.05 con transición ease-in-out para sensación de respuesta confiable.",
+            "Fade-in suave para cards al cargar: opacidad de 0 a 1, mejorando la percepción de progreso sin juguetear.",
+            "Animación en checklist: checkmark con stroke suave al completar, reforzando logros de manera calmada."
+          ],
+          "timings": [
+            "0.2s para transiciones de hover, manteniendo rapidez y sobriedad.",
+            "0.5s para fade-in de cards, permitiendo una carga perceptiva sin prisa.",
+            "0.3s para animaciones de checklist, asegurando fluidez accesible."
+          ]
+        },
+        "mobile_nav": {
+          "summary": "Reforzar la jerarquía visual en el menú superior móvil diferenciando navegación de la acción principal con ajustes claros y simples.",
+          "changes": [
+            "Aumentar el tamaño del CTA principal 'Abrir mi expediente' a 18px y colocarlo en posición destacada con fondo contrastante.",
+            "Usar iconos simples y grandes (24px) para ítems de navegación, con etiquetas cortas para fácil comprensión.",
+            "Aplicar un color más oscuro (#222222) a ítems activos del menú para distinguirlos visualmente de opciones secundarias."
+          ]
+        },
+        "cta": {
+          "label": "Inicia tu expediente ahora",
+          "reason": "Refuerza calidez y claridad, adaptándose al tono accesible para usuarios con baja alfabetización digital, sin alterar la funcionalidad original."
+        },
+        "guardrails": [
+          "Asegurar que todos los cambios cumplan con WCAG 2.1 para accesibilidad, como contraste mínimo de 4.5:1.",
+          "Probar animaciones en dispositivos de gama baja para evitar sobrecarga y mantener sobriedad.",
+          "Mantener la estructura existente del hero y menú, evitando cualquier adición de nuevas secciones o funcionalidades."
+        ]
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"hero_card\": {\n    \"summary\": \"Aplicar un fondo sutilmente distinto y un borde ligero a la tarjeta derecha del hero, junto con ajustes tipográficos, para mejorar su distinción y jerarquía visual sin añadir peso.\",\n    \"changes\": [\n      \"Cambiar el fondo de la tarjeta a un blanco roto (#FBFBFB) para que se separe suavemente del fondo menta claro del hero, creando un contraste delicado.\",\n      \"Añadir un borde muy delgado de color gris claro (#E0E0E0) de 1px alrededor de la tarjeta para definir sus límites sin ser intrusivo o pesado.\",\n      \"Aumentar ligeramente el tamaño de fuente de los títulos internos (ej. 'Progreso', 'Siguiente paso') y usar un color de texto más oscuro (#333333) para ellos, manteniendo el texto de detalle en un gris medio para crear jerarquía.\"\n    ],\n    \"colors\": [\n      \"#FBFBFB\",\n      \"#E0E0E0\",\n      \"#333333\"\n    ]\n  },\n  \"microanimations\": {\n    \"summary\": \"Introducir microanimaciones suaves y predecibles en elementos interactivos para ofrecer retroalimentación visual confiable y mejorar la sensación de respuesta sin ser juguetón.\",\n    \"changes\": [\n      \"En botones, aplicar un efecto de hover que oscurezca sutilmente el color de fondo en un 5-7% y un ligero levantamiento (transform: translateY(-1px) con sombra suave) para indicar interactividad.\",\n      \"Al hacer click en botones, implementar una escala muy ligera (0.98x) y rápida de vuelta a 1x para confirmar la interacción de forma discreta y confiable.\",\n      \"Para tarjetas interactivas, un sutil aumento de sombra o un ligero escalado (1.005x) al pasar el cursor para indicar interactividad sin distraer.\"\n    ],\n    \"timings\": [\n      \"0.18s ease-out para efectos de hover en botones y tarjetas.\",\n      \"0.1s ease-in-out para el efecto de click en botones.\",\n      \"0.3s ease-in-out para animaciones de progreso o carga dentro de componentes, asegurando fluidez.\"\n    ]\n  },\n  \"mobile_nav\": {\n    \"summary\": \"Reforzar la jerarquía visual en el menú móvil para que la acción principal y la navegación sean claramente distinguibles y fáciles de usar para todos los usuarios.\",\n    \"changes\": [\n      \"Destacar el CTA 'Abrir mi expediente' dentro del menú móvil con un botón de fondo sólido (color primario de la marca) y texto blanco o de alto contraste, posicionado visiblemente (ej. al inicio o al final del menú desplegado).\",\n      \"Utilizar un tamaño de fuente ligeramente mayor y un peso semibold para los elementos de navegación principales, y añadir un sutil divisor horizontal entre cada elemento para mejorar la legibilidad y separación.\",\n      \"Asegurar que el ícono del menú hamburguesa tenga un contraste óptimo con el header oscuro y que al abrirse, los elementos del menú tengan suficiente espacio vertical (padding) para evitar toques accidentales y facilitar la selección.\"\n    ]\n  },\n  \"cta\": {\n    \"label\": \"Abrir mi expediente\",\n    \"reason\": \"El label es directo, genera una expectativa de servicio personalizado y seguro, y utiliza una terminología familiar en el contexto mexicano para documentos importantes, lo que facilita la comprensión para usuarios con baja alfabetización digital.\"\n  },\n  \"guardrails\": [\n    \"Priorizar la legibilidad y el contraste: Asegurar que todos los textos y elementos interactivos sean fácilmente distinguibles en cualquier condición de luz y para usuarios con diversas capacidades visuales.\",\n    \"Mantener la coherencia visual: Todas las mejoras deben integrarse armónicamente con la estética cálida, clara y sobria ya existente de AuditaPatron, evitando elementos discordantes o que rompan con el tono.\",\n    \"Pruebas de usuario sencillas: Realizar pruebas rápidas con usuarios del perfil objetivo (adultos mayores, personas con baja alfabetización digital) para validar la claridad y facilidad de uso de los cambios propuestos.\"\n  ]\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 460,
+          "candidatesTokenCount": 936,
+          "totalTokenCount": 4158,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 460
+            }
+          ],
+          "thoughtsTokenCount": 2762
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "TDHXabO_OeWo1MkPk5rUuAk"
+      },
+      "parsed": {
+        "hero_card": {
+          "summary": "Aplicar un fondo sutilmente distinto y un borde ligero a la tarjeta derecha del hero, junto con ajustes tipográficos, para mejorar su distinción y jerarquía visual sin añadir peso.",
+          "changes": [
+            "Cambiar el fondo de la tarjeta a un blanco roto (#FBFBFB) para que se separe suavemente del fondo menta claro del hero, creando un contraste delicado.",
+            "Añadir un borde muy delgado de color gris claro (#E0E0E0) de 1px alrededor de la tarjeta para definir sus límites sin ser intrusivo o pesado.",
+            "Aumentar ligeramente el tamaño de fuente de los títulos internos (ej. 'Progreso', 'Siguiente paso') y usar un color de texto más oscuro (#333333) para ellos, manteniendo el texto de detalle en un gris medio para crear jerarquía."
+          ],
+          "colors": [
+            "#FBFBFB",
+            "#E0E0E0",
+            "#333333"
+          ]
+        },
+        "microanimations": {
+          "summary": "Introducir microanimaciones suaves y predecibles en elementos interactivos para ofrecer retroalimentación visual confiable y mejorar la sensación de respuesta sin ser juguetón.",
+          "changes": [
+            "En botones, aplicar un efecto de hover que oscurezca sutilmente el color de fondo en un 5-7% y un ligero levantamiento (transform: translateY(-1px) con sombra suave) para indicar interactividad.",
+            "Al hacer click en botones, implementar una escala muy ligera (0.98x) y rápida de vuelta a 1x para confirmar la interacción de forma discreta y confiable.",
+            "Para tarjetas interactivas, un sutil aumento de sombra o un ligero escalado (1.005x) al pasar el cursor para indicar interactividad sin distraer."
+          ],
+          "timings": [
+            "0.18s ease-out para efectos de hover en botones y tarjetas.",
+            "0.1s ease-in-out para el efecto de click en botones.",
+            "0.3s ease-in-out para animaciones de progreso o carga dentro de componentes, asegurando fluidez."
+          ]
+        },
+        "mobile_nav": {
+          "summary": "Reforzar la jerarquía visual en el menú móvil para que la acción principal y la navegación sean claramente distinguibles y fáciles de usar para todos los usuarios.",
+          "changes": [
+            "Destacar el CTA 'Abrir mi expediente' dentro del menú móvil con un botón de fondo sólido (color primario de la marca) y texto blanco o de alto contraste, posicionado visiblemente (ej. al inicio o al final del menú desplegado).",
+            "Utilizar un tamaño de fuente ligeramente mayor y un peso semibold para los elementos de navegación principales, y añadir un sutil divisor horizontal entre cada elemento para mejorar la legibilidad y separación.",
+            "Asegurar que el ícono del menú hamburguesa tenga un contraste óptimo con el header oscuro y que al abrirse, los elementos del menú tengan suficiente espacio vertical (padding) para evitar toques accidentales y facilitar la selección."
+          ]
+        },
+        "cta": {
+          "label": "Abrir mi expediente",
+          "reason": "El label es directo, genera una expectativa de servicio personalizado y seguro, y utiliza una terminología familiar en el contexto mexicano para documentos importantes, lo que facilita la comprensión para usuarios con baja alfabetización digital."
+        },
+        "guardrails": [
+          "Priorizar la legibilidad y el contraste: Asegurar que todos los textos y elementos interactivos sean fácilmente distinguibles en cualquier condición de luz y para usuarios con diversas capacidades visuales.",
+          "Mantener la coherencia visual: Todas las mejoras deben integrarse armónicamente con la estética cálida, clara y sobria ya existente de AuditaPatron, evitando elementos discordantes o que rompan con el tono.",
+          "Pruebas de usuario sencillas: Realizar pruebas rápidas con usuarios del perfil objetivo (adultos mayores, personas con baja alfabetización digital) para validar la claridad y facilidad de uso de los cambios propuestos."
+        ]
+      }
+    }
+  }
+}
