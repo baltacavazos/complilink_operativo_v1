@@ -24,6 +24,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("sin palabras difíciles.");
     expect(source).toContain("Claro y móvil");
     expect(source).toContain('label: "Asistente"');
+    expect(source).toContain("Comenzar mi revisión");
+    expect(source).toContain("Revisar mis documentos");
+    expect(source).toContain("Entrar con mi asistente");
+    expect(source).toContain("Abrir mi expediente");
+    expect(source).toContain("Aquí te acompañamos paso a paso para cuidar tus derechos laborales.");
+    expect(source).toContain('bg-[#e6f2f1]');
+    expect(source).toContain('bg-[#f4f9f8]');
   });
 
   it("oculta referencias visibles al motor interno en Auditar y usa una variante cálida", () => {

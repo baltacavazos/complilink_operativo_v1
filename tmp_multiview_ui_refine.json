@@ -1,0 +1,103 @@
+{
+  "createdAt": "2026-04-09T04:03:12.886Z",
+  "prompt": "\nContexto: Estoy refinando la landing y la vista principal de AuditaPatron, una herramienta laboral para personas no expertas.\n\nNecesito recomendaciones concretas y prudentes, sin rediseñar la arquitectura ni cambiar lógica:\n1) Un microcopy de confianza para la sección/entrada del asistente, en una sola línea, lenguaje cálido, simple y tranquilizador.\n2) Dos variantes de CTA hacia /auditar, cercanas y claras.\n3) Una recomendación breve de ajuste visual para que las secciones se distingan mejor entre sí. El sitio se percibe demasiado blanco y continuo; quiero subir un poco el tono de los backgrounds, no mucho. Debe seguir viéndose limpio, confiable y moderno.\n4) Una mini guía de color con 4-6 fondos suaves por sección, usando variaciones sutiles entre blanco, teal muy pálido, slate muy claro y tonos apenas perceptibles.\n5) Señala qué errores evitar para que no parezca documento largo ni landing fragmentada en exceso.\n\nRestricciones:\n- No mencionar Helios ni nombres internos.\n- Debe pasar la prueba de una persona de 10 años o una persona mayor con poca familiaridad digital.\n- Responde en español de México.\n- Entrega JSON con esta forma exacta:\n{\n  \"microcopy\": [\"...\", \"...\", \"...\"],\n  \"ctas\": [\"...\", \"...\"],\n  \"visual_strategy\": \"...\",\n  \"section_backgrounds\": [\n    {\"section\":\"hero\",\"color\":\"#...\",\"why\":\"...\"},\n    {\"section\":\"trust_band\",\"color\":\"#...\",\"why\":\"...\"},\n    {\"section\":\"assistant\",\"color\":\"#...\",\"why\":\"...\"},\n    {\"section\":\"faq\",\"color\":\"#...\",\"why\":\"...\"},\n    {\"section\":\"legal_footer\",\"color\":\"#...\",\"why\":\"...\"}\n  ],\n  \"avoid\": [\"...\", \"...\", \"...\"],\n  \"confidence\": \"high|medium|low\"\n}\n",
+  "models": {
+    "openai": {
+      "microcopy": [
+        "Aquí te acompañamos paso a paso para cuidar tus derechos laborales.",
+        "Tu guía sencilla y confiable para entender tu situación laboral.",
+        "Con AuditaPatron, revisa tu empleo sin complicaciones ni estrés."
+      ],
+      "ctas": [
+        "Comenzar mi auditoría",
+        "Revisar mi empleo ahora"
+      ],
+      "visual_strategy": "Para mejorar la separación entre secciones sin perder limpieza ni confianza, utiliza fondos con tonos muy suaves y ligeramente diferenciados, evitando contrastes fuertes. Aplica un cambio sutil en el color de fondo cada sección, usando variantes muy claras que aporten orden visual y una sensación de calidez, sin saturar el diseño.",
+      "section_backgrounds": [
+        {
+          "section": "hero",
+          "color": "#F9FCFB",
+          "why": "Un blanco con un toque muy suave de teal para transmitir frescura y bienvenida sin perder claridad."
+        },
+        {
+          "section": "trust_band",
+          "color": "#E6F2F1",
+          "why": "Un teal pálido para reforzar la confianza y separación, manteniendo un ambiente amable y tranquilo."
+        },
+        {
+          "section": "assistant",
+          "color": "#F5F7F8",
+          "why": "Un blanco con un matiz muy ligero grisáceo para que el asistente destaque sutilmente y se perciba ordenado."
+        },
+        {
+          "section": "faq",
+          "color": "#EEF2F3",
+          "why": "Un slate muy claro que aporta distinción sin romper la armonía y mantiene la lectura cómoda."
+        },
+        {
+          "section": "legal_footer",
+          "color": "#F7FAFA",
+          "why": "Un blanco casi puro con un toque mínimo de teal para cerrar con limpieza y confianza."
+        }
+      ],
+      "avoid": [
+        "No uses fondos completamente blancos en todas las secciones para evitar sensación de monotonía y cansancio visual.",
+        "Evita textos largos o párrafos densos que puedan intimidar a personas con poca experiencia digital.",
+        "No fragmentes demasiado el contenido con demasiadas secciones pequeñas que generen confusión o sensación de landing desordenada."
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "error": {
+        "code": 503,
+        "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+        "status": "UNAVAILABLE"
+      }
+    },
+    "grok": {
+      "microcopy": [
+        "¡Hola! Estoy aquí para guiarte de forma segura y sencilla en tu auditoría.",
+        "Bienvenido, te ayudo con confianza y paso a paso en lo que necesites.",
+        "Relájate, estoy para asistirte de manera cálida y confiable en tu revisión."
+      ],
+      "ctas": [
+        "Empieza tu auditoría ahora",
+        "Audita con confianza aquí"
+      ],
+      "visual_strategy": "Sube un poquito el tono de los fondos con variaciones suaves para que las secciones se noten distintas, pero mantén todo limpio, moderno y fácil de ver, como un flujo natural sin interrupciones fuertes.",
+      "section_backgrounds": [
+        {
+          "section": "hero",
+          "color": "#FFFFFF",
+          "why": "Blanco puro para un inicio fresco y confiable, como una bienvenida abierta."
+        },
+        {
+          "section": "trust_band",
+          "color": "#F0FDFA",
+          "why": "Teal muy pálido para transmitir calma y seguridad, diferenciando sutilmente sin sobrecargar."
+        },
+        {
+          "section": "assistant",
+          "color": "#F8F9FA",
+          "why": "Slate claro para un área interactiva que se sienta accesible y moderna, con un toque de calidez."
+        },
+        {
+          "section": "faq",
+          "color": "#FDFDFD",
+          "why": "Blanco con matiz mínimo para preguntas frecuentes, manteniendo claridad y flujo continuo."
+        },
+        {
+          "section": "legal_footer",
+          "color": "#FAFAFB",
+          "why": "Tono apenas perceptible de gris para el pie legal, asegurando seriedad sin romper la armonía general."
+        }
+      ],
+      "avoid": [
+        "Evitar fondos con contrastes fuertes para no hacer que la página se vea como pedazos separados.",
+        "No usar textos largos o densos que parezcan un documento aburrido en lugar de una herramienta amigable.",
+        "Mantener divisiones suaves entre secciones para no fragmentar la experiencia como si fueran islas aisladas."
+      ],
+      "confidence": "high"
+    }
+  }
+}

@@ -453,3 +453,7 @@
 - [x] Implementar el bloque legal y de consentimiento 2.0 con aviso de privacidad, términos, gate versionado, trazabilidad backend, sección visible de privacidad y ajuste del contexto documental de Helios
 - [x] Documentar con claridad qué parte del flujo de ingesta documental de Helios ya existía y qué parte nueva agrega soporte legal y operativo
 - [x] Sustituir en la interfaz visible de AuditaPatron los nombres abstractos por una variante cálida y comprensible, manteniendo intacta la lógica y el backend
+- [x] Añadir un microcopy de confianza debajo de la sección/entrada del asistente para explicar en una línea qué hace con lenguaje simple y tranquilizador
+- [x] Unificar el tono cálido y comprensible en los textos visibles relacionados con acompañamiento, ayuda y orientación dentro de la experiencia
+- [x] Refinar los CTA hacia /auditar con dos variantes de copy más claras y cercanas, sin alterar la lógica del flujo
+- [x] Subir ligeramente el tono de los backgrounds por sección para que la landing se perciba menos plana, menos blanca y mejor segmentada visualmente

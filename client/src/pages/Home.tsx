@@ -257,7 +257,7 @@ function SiteHeader() {
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
             onClick={goToAuditFlow}
           >
-            Ir a /auditar ahora
+            Comenzar mi revisión
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
           </Button>
         </div>
@@ -267,7 +267,7 @@ function SiteHeader() {
             className="h-8.5 rounded-full bg-teal-400 px-3 text-[0.88rem] font-semibold text-slate-950 shadow-[0_14px_28px_-20px_rgba(45,212,191,0.75)] hover:bg-teal-300"
             onClick={goToAuditFlow}
           >
-            Auditar
+            Empezar
           </Button>
           <button
             type="button"
@@ -335,7 +335,7 @@ function SiteHeader() {
                   goToAuditFlow();
                 }}
               >
-                Ir a /auditar ahora
+                Comenzar mi revisión
               </Button>
             </div>
           </div>
@@ -351,7 +351,7 @@ function HeroSection() {
   return (
     <section
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.16),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] pb-8 pt-7 sm:pb-12 sm:pt-12 lg:pt-16"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-8 pt-7 sm:pb-12 sm:pt-12 lg:pt-16"
     >
       <div className="container mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
@@ -393,7 +393,7 @@ function HeroSection() {
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700 sm:w-auto"
               onClick={goToAuditFlow}
             >
-              Auditar mis documentos
+              Revisar mis documentos
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
@@ -535,7 +535,7 @@ function HeroSection() {
 
 function QuickTrustSection() {
   return (
-    <section className="border-y border-slate-200 bg-white py-3.5">
+    <section className="border-y border-slate-200 bg-[#e6f2f1] py-3.5">
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
           "Sube recibo, CFDI o contrato.",
@@ -544,7 +544,7 @@ function QuickTrustSection() {
         ].map((item) => (
           <div
             key={item}
-            className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+            className="rounded-[1.3rem] border border-slate-200 bg-white/88 px-4 py-3 text-sm font-medium text-slate-700"
           >
             {item}
           </div>
@@ -556,9 +556,9 @@ function QuickTrustSection() {
 
 function ConfidenceMagicSection() {
   return (
-    <section className="bg-white py-12 sm:py-14">
+    <section className="bg-[#f7fbfb] py-12 sm:py-14">
       <div className="container mx-auto max-w-6xl">
-        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f7f7_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
               Una experiencia simple y confiable
@@ -625,7 +625,7 @@ function ConfidenceMagicSection() {
 
 function CopilotPreviewSection() {
   return (
-    <section id="copiloto" className="bg-slate-50 py-14 sm:py-16">
+    <section id="copiloto" className="bg-[#f5f7f8] py-14 sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -636,6 +636,9 @@ function CopilotPreviewSection() {
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil sin sacarte del expediente.
+          </p>
+          <p className="mt-4 inline-flex max-w-xl rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm font-medium text-teal-900 shadow-sm">
+            Aquí te acompañamos paso a paso para cuidar tus derechos laborales.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -657,7 +660,7 @@ function CopilotPreviewSection() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={goToAuditFlow}>
-              Probar el asistente en /auditar
+              Entrar con mi asistente
               <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
@@ -718,7 +721,7 @@ function CopilotPreviewSection() {
 
 function HowItWorksSection() {
   return (
-    <section id="como-funciona" className="bg-slate-50 py-14 sm:py-16">
+    <section id="como-funciona" className="bg-[#f2f5f7] py-14 sm:py-16">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -771,7 +774,7 @@ function HowItWorksSection() {
 
 function DossierSection() {
   return (
-    <section id="expediente" className="bg-white py-14 sm:py-16">
+    <section id="expediente" className="bg-[#f8fbfb] py-14 sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -801,7 +804,7 @@ function DossierSection() {
             className="mt-7 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700"
             onClick={goToAuditFlow}
           >
-            Empezar mi expediente digital
+            Abrir mi expediente
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
           </Button>
         </div>
@@ -850,7 +853,7 @@ function DossierSection() {
 
 function PriorityDocumentsSection() {
   return (
-    <section className="bg-slate-50 py-14 sm:py-16">
+    <section className="bg-[#eef2f3] py-14 sm:py-16">
       <div className="container mx-auto max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -889,7 +892,7 @@ function PriorityDocumentsSection() {
         </div>
 
         <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-          En cuanto entres a <span className="font-semibold">/auditar</span>, estas sugerencias dejan de ser generales y se conectan con los documentos que realmente faltan en tu expediente para que sepas qué te conviene subir primero.
+          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos que realmente faltan para que sepas qué te conviene subir primero.
         </div>
       </div>
     </section>
@@ -901,9 +904,9 @@ function MobileOnboardingSection() {
   const activeCard = mobileOnboardingCards[activeIndex] ?? mobileOnboardingCards[0];
 
   return (
-    <section className="bg-white py-14 sm:py-16">
+    <section className="bg-[#f7fafb] py-14 sm:py-16">
       <div className="container mx-auto max-w-6xl">
-        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
+        <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f6f6_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
               En tu celular se entiende en segundos
@@ -1108,7 +1111,7 @@ function FindingsExamplesSection() {
 
 function PrivacySection() {
   return (
-    <section id="privacidad" className="bg-slate-50 py-14 sm:py-16">
+    <section id="privacidad" className="bg-[#f4f9f8] py-14 sm:py-16">
       <div className="container grid gap-6 lg:grid-cols-[1fr_0.92fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -1208,7 +1211,7 @@ function PrivacySection() {
 
 function FAQSection() {
   return (
-    <section id="preguntas" className="bg-white py-14 sm:py-16">
+    <section id="preguntas" className="bg-[#f7fafb] py-14 sm:py-16">
       <div className="container grid gap-8 lg:grid-cols-[0.8fr_1fr]">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -1247,9 +1250,9 @@ function FAQSection() {
 
 function FinalCtaSection() {
   return (
-    <section className="bg-slate-50 py-14 sm:py-16">
+    <section className="bg-[#f3f7f7] py-14 sm:py-16">
       <div className="container">
-        <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#f8fafc)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
+        <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
               Empieza cuando quieras
@@ -1266,7 +1269,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
                 onClick={goToAuditFlow}
               >
-                Ir a /auditar ahora
+                Abrir mi expediente
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
               <Button
@@ -1286,7 +1289,7 @@ function FinalCtaSection() {
 
 function SiteFooter() {
   return (
-    <footer className="bg-white py-8">
+    <footer className="bg-[#f7faf9] py-8">
       <div className="container flex flex-col gap-6 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-3">
           <AuditaPatronLogoWordmark
@@ -1324,7 +1327,7 @@ function SiteFooter() {
 
 export default function Home() {
   return (
-    <main className="audita-home min-h-screen bg-white font-sans text-slate-950">
+    <main className="audita-home min-h-screen bg-[#f9fcfb] font-sans text-slate-950">
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
