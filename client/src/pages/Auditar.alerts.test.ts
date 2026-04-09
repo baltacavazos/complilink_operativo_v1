@@ -12,6 +12,33 @@ import {
 } from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
+  it("prioriza una alerta de nueva claridad cuando el último documento mejora la lectura del expediente", () => {
+    const alerts = buildHeliosPriorityAlerts({
+      documents: [],
+      attentionCount: 0,
+      monitoringDocuments: [],
+      nextTarget: {
+        type: "imss",
+        label: "Soporte IMSS",
+        description: "Ayuda a conectar altas, bajas o semanas cotizadas.",
+        benefit: "Da más contexto al cruce social del expediente.",
+        suggestedCount: 1,
+      },
+      newClarityNotification: {
+        title: "Tu expediente ganó nueva claridad",
+        message: "Ahora ya se distingue mejor qué soporte social conviene revisar después.",
+        delta: 14,
+      },
+    });
+
+    expect(alerts[0]).toMatchObject({
+      id: "new-clarity",
+      title: "Tu expediente ganó nueva claridad",
+      reasonLabel: "Ganaste 14 puntos de claridad",
+      actionLabel: "Puede ayudarte seguir con soporte imss",
+    });
+  });
+
   it("incluye fecha, motivo y acción cuando existe seguimiento con atención", () => {
     const alerts = buildHeliosPriorityAlerts({
       documents: [

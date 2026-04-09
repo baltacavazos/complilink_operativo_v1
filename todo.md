@@ -472,3 +472,9 @@
 - [x] Convertir el bloque de claridad del expediente en un indicador dinámico ligado al estado real de los documentos y hallazgos del usuario.
 - [x] Añadir una acción única para revalidar IMSS e Infonavit con mínima fricción dentro del flujo de AuditaPatron.
 - [x] Formalizar el contrato técnico interno de Helios para unificar carga documental, análisis, almacenamiento y devolución de resultados en AuditaPatron.
+- [ ] Mostrar un historial simple de revalidaciones IMSS/Infonavit con fecha, resultado y cambio detectado dentro de /auditar.
+- [ ] Añadir una recomendación automática del siguiente documento más útil según el estado actual de IMSS/Infonavit y del expediente.
+- [ ] Incorporar una notificación visible cuando el expediente gane nueva claridad después de subir o revalidar información.
+- [x] Implementar historial visible de revalidaciones IMSS/Infonavit con fecha y cambio detectado en /auditar
+- [x] Implementar recomendación automática del siguiente documento útil según el estado IMSS/Infonavit del expediente
+- [x] Implementar notificación de nueva claridad tras subir un archivo procesado y confirmado en el expediente

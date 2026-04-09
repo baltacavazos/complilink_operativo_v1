@@ -1,0 +1,50 @@
+{
+  "raw": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"product_recommendation\": {\n    \"history_ui\": \"Integrar una sección colapsable 'Historial de Revalidaciones' en /auditar. Mostrar fecha, resultado (ej. 'Sin Cambios', 'Cambios Detectados') y un resumen conciso de los cambios (ej. 'NSS actualizado'). Priorizar la legibilidad en móvil.\",\n    \"next_document_logic\": \"Añadir un componente prominente en /auditar, 'Documento Recomendado', que muestre el nombre y una breve descripción del documento más útil. El backend determinará la recomendación basándose en el estado actual del expediente y la información IMSS/Infonavit.\",\n    \"clarity_notification\": \"Implementar una notificación tipo 'toast' o banner temporal en la parte superior de la pantalla, visible tras una revalidación exitosa o subida de documento, indicando '¡Tu expediente ha ganado claridad!'. Desaparece automáticamente tras unos segundos.\"\n  },\n  \"technical_recommendation\": {\n    \"backend_contract\": \"Extender el endpoint `/auditar` o crear uno nuevo para: 1) Incluir `historial_revalidaciones`: un array de objetos `{ fecha, resultado, cambios_detectados }`. 2) Añadir `documento_recomendado`: un objeto `{ nombre, descripcion, tipo_documento_id }`. 3) Devolver `claridad_anterior` y `claridad_actual` o un flag `claridad_aumento_detectado` en la respuesta de revalidación/subida.\",\n    \"frontend_integration\": \"1) Consumir el nuevo `historial_revalidaciones` para renderizar la lista. 2) Mostrar `documento_recomendado` en un nuevo componente, enlazando al flujo de subida existente. 3) Al detectar `claridad_aumento_detectado` o un cambio positivo en `claridad_actual` vs `claridad_anterior` post-acción, activar la notificación 'toast' y actualizar el indicador dinámico de claridad.\",\n    \"risk_guardrails\": \"1) **Privacidad de Datos**: Asegurar que los `cambios_detectados` sean resúmenes no sensibles. 2) **Rendimiento**: Optimizar la carga del historial (considerar paginación si crece). 3) **Precisión**: Validar rigurosamente la lógica de Helios para las recomendaciones de documentos. 4) **Manejo de Errores**: Implementar estados vacíos o de error para historial y recomendaciones.\"\n  },\n  \"priority_order\": [\n    \"clarity_notification\",\n    \"history_ui\",\n    \"next_document_logic\"\n  ],\n  \"confidence\": \"high\"\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 417,
+      "candidatesTokenCount": 599,
+      "totalTokenCount": 2937,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 417
+        }
+      ],
+      "thoughtsTokenCount": 1921
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "t1TXaevlCcjPjrEP09ziYA"
+  },
+  "parsed": {
+    "product_recommendation": {
+      "history_ui": "Integrar una sección colapsable 'Historial de Revalidaciones' en /auditar. Mostrar fecha, resultado (ej. 'Sin Cambios', 'Cambios Detectados') y un resumen conciso de los cambios (ej. 'NSS actualizado'). Priorizar la legibilidad en móvil.",
+      "next_document_logic": "Añadir un componente prominente en /auditar, 'Documento Recomendado', que muestre el nombre y una breve descripción del documento más útil. El backend determinará la recomendación basándose en el estado actual del expediente y la información IMSS/Infonavit.",
+      "clarity_notification": "Implementar una notificación tipo 'toast' o banner temporal en la parte superior de la pantalla, visible tras una revalidación exitosa o subida de documento, indicando '¡Tu expediente ha ganado claridad!'. Desaparece automáticamente tras unos segundos."
+    },
+    "technical_recommendation": {
+      "backend_contract": "Extender el endpoint `/auditar` o crear uno nuevo para: 1) Incluir `historial_revalidaciones`: un array de objetos `{ fecha, resultado, cambios_detectados }`. 2) Añadir `documento_recomendado`: un objeto `{ nombre, descripcion, tipo_documento_id }`. 3) Devolver `claridad_anterior` y `claridad_actual` o un flag `claridad_aumento_detectado` en la respuesta de revalidación/subida.",
+      "frontend_integration": "1) Consumir el nuevo `historial_revalidaciones` para renderizar la lista. 2) Mostrar `documento_recomendado` en un nuevo componente, enlazando al flujo de subida existente. 3) Al detectar `claridad_aumento_detectado` o un cambio positivo en `claridad_actual` vs `claridad_anterior` post-acción, activar la notificación 'toast' y actualizar el indicador dinámico de claridad.",
+      "risk_guardrails": "1) **Privacidad de Datos**: Asegurar que los `cambios_detectados` sean resúmenes no sensibles. 2) **Rendimiento**: Optimizar la carga del historial (considerar paginación si crece). 3) **Precisión**: Validar rigurosamente la lógica de Helios para las recomendaciones de documentos. 4) **Manejo de Errores**: Implementar estados vacíos o de error para historial y recomendaciones."
+    },
+    "priority_order": [
+      "clarity_notification",
+      "history_ui",
+      "next_document_logic"
+    ],
+    "confidence": "high"
+  }
+}

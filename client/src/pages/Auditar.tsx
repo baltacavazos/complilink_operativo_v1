@@ -226,6 +226,38 @@ type ConfirmedUploadResultView = {
     status?: string | null;
     reason?: string | null;
   };
+  socialSecurityValidation?: {
+    coverageScore?: number;
+    statusLabel?: string | null;
+    summary?: string | null;
+    recommendedNextStep?: string | null;
+    lastRevalidatedAt?: string | null;
+    lastRevalidationSummary?: string | null;
+    revalidationHistory?: Array<{
+      recordedAt: string;
+      summary: string;
+      statusLabel: string;
+      coverageScore?: number | null;
+      recommendedNextStep?: string | null;
+    }>;
+    revalidationCount?: number;
+    hasNewClarity?: boolean;
+    clarityDelta?: number;
+    clarityChangeLabel?: string | null;
+    recommendedDocumentKey?: string | null;
+    recommendedDocumentTitle?: string | null;
+    recommendedDocumentReason?: string | null;
+  };
+  nextSuggestedDocument?: {
+    key: string;
+    title: string;
+    reason: string;
+  } | null;
+  newClarityNotification?: {
+    title: string;
+    message: string;
+    delta: number;
+  } | null;
 };
 
 const dossierTargets: DossierTarget[] = [
@@ -1375,9 +1407,26 @@ export function buildHeliosPriorityAlerts(params: {
   selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
   nextTarget?: DossierTarget | null;
   opinion?: HeliosOpinionView | null;
+  newClarityNotification?: ConfirmedUploadResultView["newClarityNotification"] | null;
 }) {
   const alerts: HeliosPriorityAlert[] = [];
   const latestAttentionDocument = params.monitoringDocuments.find((item) => item.status === "attention");
+
+  if (params.newClarityNotification) {
+    alerts.push({
+      id: "new-clarity",
+      eyebrow: "Novedad útil",
+      title: params.newClarityNotification.title,
+      body: params.newClarityNotification.message,
+      toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
+      icon: "sparkles",
+      reasonLabel:
+        params.newClarityNotification.delta > 0
+          ? `Ganaste ${params.newClarityNotification.delta} punto${params.newClarityNotification.delta === 1 ? "" : "s"} de claridad`
+          : "Tu expediente acaba de ganar contexto útil",
+      actionLabel: params.nextTarget ? `Puede ayudarte seguir con ${params.nextTarget.label.toLowerCase()}` : "Revisa la nueva lectura de tu expediente",
+    });
+  }
 
   if (params.attentionCount > 0) {
     alerts.push({
@@ -1776,6 +1825,8 @@ export default function Auditar() {
   const documents = caseDetailQuery.data?.documents ?? [];
   const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
   const socialSecurityValidation = caseDetailQuery.data?.socialSecurityValidation;
+  const uploadSocialSecurityValidation = lastUpload?.socialSecurityValidation ?? null;
+  const effectiveSocialSecurityValidation = uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () => new Map(heliosDocumentSnapshots.map((item) => [item.documentId, item] as const)),
@@ -1874,17 +1925,31 @@ export default function Auditar() {
       total: dossierTargets.length,
     };
   }, [presentTypes]);
-  const socialSecurityCoveragePercent = socialSecurityValidation?.coverageScore ?? dossierStatus.percent;
-  const socialSecurityStatusLabel = socialSecurityValidation?.statusLabel ?? "Cruce pendiente";
+  const socialSecurityCoveragePercent = effectiveSocialSecurityValidation?.coverageScore ?? dossierStatus.percent;
+  const socialSecurityStatusLabel = effectiveSocialSecurityValidation?.statusLabel ?? "Cruce pendiente";
   const socialSecuritySummary =
-    socialSecurityValidation?.summary ??
+    effectiveSocialSecurityValidation?.summary ??
     "Todavía faltan señales suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
   const socialSecurityRecommendedNextStep =
-    socialSecurityValidation?.recommendedNextStep ??
+    effectiveSocialSecurityValidation?.recommendedNextStep ??
     "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
-  const socialSecurityLastCheckLabel = socialSecurityValidation?.lastRevalidatedAt
-    ? `Última revalidación: ${formatDate(socialSecurityValidation.lastRevalidatedAt)}`
+  const socialSecurityLastCheckLabel = effectiveSocialSecurityValidation?.lastRevalidatedAt
+    ? `Última revalidación: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
     : "Aún no has revalidado este cruce desde tu expediente.";
+  const socialSecurityRevalidationHistory = effectiveSocialSecurityValidation?.revalidationHistory ?? [];
+  const socialSecurityRecommendedDocument = lastUpload?.nextSuggestedDocument
+    ? {
+        title: lastUpload.nextSuggestedDocument.title,
+        reason: lastUpload.nextSuggestedDocument.reason,
+      }
+    : effectiveSocialSecurityValidation?.recommendedDocumentTitle
+      ? {
+          title: effectiveSocialSecurityValidation.recommendedDocumentTitle,
+          reason:
+            effectiveSocialSecurityValidation.recommendedDocumentReason ??
+            "Este documento puede ayudarte a ganar más claridad dentro del expediente.",
+        }
+      : null;
   const timelineEntries = useMemo(
     () =>
       [...documents]
@@ -2313,6 +2378,7 @@ export default function Auditar() {
     selectedPair: activeComparisonPair,
     nextTarget: dossierStatus.nextTarget,
     opinion: visibleHeliosOpinion,
+    newClarityNotification: lastUpload?.newClarityNotification ?? null,
   });
   const comparisonLeftDocument = activeComparisonPair?.[0] ?? null;
   const comparisonRightDocument = activeComparisonPair?.[1] ?? null;
@@ -3054,9 +3120,68 @@ export default function Auditar() {
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cruce IMSS e Infonavit</p>
                     <p className="mt-2 font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {socialSecurityValidation?.lastRevalidationSummary ?? socialSecurityRecommendedNextStep}
+                      {effectiveSocialSecurityValidation?.lastRevalidationSummary ?? socialSecurityRecommendedNextStep}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-slate-500">{socialSecurityLastCheckLabel}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Siguiente documento que más puede ayudarte</p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {socialSecurityRecommendedDocument?.title ?? "Todavía no hay una sugerencia documental específica"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {socialSecurityRecommendedDocument?.reason ?? socialSecurityRecommendedNextStep}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-4 h-11 rounded-full border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                      onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                    >
+                      {socialSecurityRecommendedDocument ? "Preparar esta sugerencia" : "Subir otro documento útil"}
+                      <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                    </Button>
+                  </div>
+
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Historial de revalidaciones</p>
+                        <p className="mt-2 font-semibold text-slate-950">
+                          {socialSecurityRevalidationHistory.length
+                            ? `${socialSecurityRevalidationHistory.length} revalidación${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
+                            : "Todavía no hay revalidaciones guardadas"}
+                        </p>
+                      </div>
+                      {effectiveSocialSecurityValidation?.clarityChangeLabel ? (
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                          {effectiveSocialSecurityValidation.clarityChangeLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {socialSecurityRevalidationHistory.length ? (
+                        socialSecurityRevalidationHistory.map((entry) => (
+                          <div key={`${entry.recordedAt}-${entry.summary}`} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="font-semibold text-slate-900">{entry.statusLabel}</p>
+                              <span className="text-xs font-medium text-slate-500">{formatDate(entry.recordedAt)}</span>
+                            </div>
+                            <p className="mt-2 text-sm leading-6 text-slate-700">{entry.summary}</p>
+                            <p className="mt-2 text-xs leading-5 text-slate-500">
+                              {entry.coverageScore ? `Cobertura estimada: ${entry.coverageScore}%` : "Cobertura registrada en esta revalidación."}
+                              {entry.recommendedNextStep ? ` · ${entry.recommendedNextStep}` : ""}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                          Cuando revalides IMSS e Infonavit desde tu expediente, aquí verás la fecha, el estado y el cambio detectado entre revisiones.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -273,6 +273,9 @@ describe("appRouter case workflows", () => {
       hasImssSignal: false,
       hasInfonavitSignal: false,
       documentsWithOpinion: 1,
+      recommendedDocumentKey: "imss_or_infonavit",
+      recommendedDocumentTitle: "Un soporte de IMSS o una constancia de Infonavit",
+      hasNewClarity: false,
     });
   });
 
@@ -362,8 +365,22 @@ describe("appRouter case workflows", () => {
       documentsWithOpinion: 2,
       lastRevalidatedAt: "2026-04-06T12:00:00.000Z",
       lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
+      recommendedDocumentKey: null,
+      recommendedDocumentTitle: "Cruce base cubierto",
+      recommendedDocumentReason: expect.stringContaining("revalidar"),
+      hasNewClarity: false,
+      clarityDelta: 0,
     });
     expect(result.socialSecurityValidation.coverageScore).toBeGreaterThan(60);
+    expect(result.socialSecurityValidation.revalidationHistory).toEqual([
+      expect.objectContaining({
+        recordedAt: "2026-04-06T12:00:00.000Z",
+        summary: "Cruce confirmado con nuevas señales visibles.",
+        statusLabel: "Revalidación registrada",
+        coverageScore: null,
+        recommendedNextStep: null,
+      }),
+    ]);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {

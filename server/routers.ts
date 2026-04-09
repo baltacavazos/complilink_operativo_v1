@@ -924,11 +924,20 @@ function buildSocialSecurityValidationSummary(params: {
   const imssDocumentsCount = params.documents.filter((item) => item.documentType === "imss").length;
   const infonavitSignalsCount = params.documents.filter((item) => documentMentionsInfonavit(item)).length;
 
-  const lastRevalidation =
-    params.events
-      .map((event) => ({ event, metadata: parseEventMetadata(event.metadata) }))
-      .filter(({ metadata }) => getOptionalString(metadata?.revalidation_scope) === "social_security")
-      .sort((left, right) => new Date(right.event.eventAt).getTime() - new Date(left.event.eventAt).getTime())[0] ?? null;
+  const revalidationHistory = params.events
+    .map((event) => ({ event, metadata: parseEventMetadata(event.metadata) }))
+    .filter(({ metadata }) => getOptionalString(metadata?.revalidation_scope) === "social_security")
+    .sort((left, right) => new Date(right.event.eventAt).getTime() - new Date(left.event.eventAt).getTime())
+    .map(({ event, metadata }) => ({
+      recordedAt: new Date(event.eventAt).toISOString(),
+      summary: getOptionalString(metadata?.summary) ?? event.title,
+      statusLabel: getOptionalString(metadata?.status_label) ?? "Revalidación registrada",
+      coverageScore: getOptionalNumber(metadata?.coverage_score),
+      recommendedNextStep: getOptionalString(metadata?.recommended_next_step),
+    }));
+
+  const lastRevalidation = revalidationHistory[0] ?? null;
+  const lastRecordedCoverage = lastRevalidation?.coverageScore ?? null;
 
   const coverageScore = Math.max(
     18,
@@ -940,6 +949,9 @@ function buildSocialSecurityValidationSummary(params: {
         Math.min(documentsWithOpinion, 3) * 7,
     ),
   );
+
+  const clarityDelta = lastRecordedCoverage === null ? 0 : Math.max(0, coverageScore - lastRecordedCoverage);
+  const hasNewClarity = clarityDelta > 0;
 
   const statusLabel =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
@@ -966,6 +978,40 @@ function buildSocialSecurityValidationSummary(params: {
           ? "Si cuentas con alta, semanas cotizadas o salario registrado ante IMSS, súbelo para cerrar mejor el cruce."
           : "Empieza por un soporte IMSS o un estado de cuenta o constancia relacionada con Infonavit para abrir este cruce.";
 
+  const recommendedDocumentKey =
+    imssDocumentsCount > 0 && infonavitSignalsCount > 0
+      ? null
+      : imssDocumentsCount > 0
+        ? "infonavit"
+        : infonavitSignalsCount > 0
+          ? "imss"
+          : "imss_or_infonavit";
+
+  const recommendedDocumentTitle =
+    recommendedDocumentKey === "infonavit"
+      ? "Estado de cuenta o constancia de Infonavit"
+      : recommendedDocumentKey === "imss"
+        ? "Alta, semanas cotizadas o salario registrado ante IMSS"
+        : recommendedDocumentKey === "imss_or_infonavit"
+          ? "Un soporte de IMSS o una constancia de Infonavit"
+          : "Cruce base cubierto";
+
+  const recommendedDocumentReason =
+    recommendedDocumentKey === null
+      ? "Tu cruce base ya está visible; el siguiente mejor paso es revalidar cuando subas evidencia nueva o quieras confirmar otra vez el estado actual."
+      : recommendedDocumentKey === "infonavit"
+        ? "Ya hay señal suficiente del frente IMSS y el mayor salto de claridad ahora viene de reforzar el lado de Infonavit."
+        : recommendedDocumentKey === "imss"
+          ? "Ya hay señal suficiente del frente Infonavit y el mayor salto de claridad ahora viene de reforzar el lado de IMSS."
+          : "Todavía no hay señales firmes de IMSS e Infonavit, así que cualquiera de esos soportes puede abrir el cruce inicial del expediente.";
+
+  const clarityChangeLabel =
+    lastRecordedCoverage === null
+      ? "Todavía no hay una revalidación registrada para comparar la claridad actual del expediente."
+      : hasNewClarity
+        ? `Tu expediente ganó ${clarityDelta} punto${clarityDelta === 1 ? "" : "s"} de claridad desde la última revalidación.`
+        : "La claridad actual ya está alineada con la última revalidación registrada en tu expediente.";
+
   return {
     coverageScore,
     statusLabel,
@@ -977,8 +1023,16 @@ function buildSocialSecurityValidationSummary(params: {
     hasImssSignal: imssDocumentsCount > 0,
     hasInfonavitSignal: infonavitSignalsCount > 0,
     documentsWithOpinion,
-    lastRevalidatedAt: lastRevalidation ? new Date(lastRevalidation.event.eventAt).toISOString() : null,
-    lastRevalidationSummary: getOptionalString(lastRevalidation?.metadata?.summary),
+    lastRevalidatedAt: lastRevalidation?.recordedAt ?? null,
+    lastRevalidationSummary: lastRevalidation?.summary ?? null,
+    revalidationHistory: revalidationHistory.slice(0, 3),
+    revalidationCount: revalidationHistory.length,
+    hasNewClarity,
+    clarityDelta,
+    clarityChangeLabel,
+    recommendedDocumentKey,
+    recommendedDocumentTitle,
+    recommendedDocumentReason,
   };
 }
 
@@ -1395,6 +1449,13 @@ export const appRouter = router({
           statusLabel: socialSecurityValidation.statusLabel,
           coverageScore: socialSecurityValidation.coverageScore,
           recommendedNextStep: socialSecurityValidation.recommendedNextStep,
+          recommendedDocument: {
+            key: socialSecurityValidation.recommendedDocumentKey,
+            title: socialSecurityValidation.recommendedDocumentTitle,
+            reason: socialSecurityValidation.recommendedDocumentReason,
+          },
+          hasNewClarity: socialSecurityValidation.hasNewClarity,
+          clarityDelta: socialSecurityValidation.clarityDelta,
           signals: {
             imssDocumentsCount: socialSecurityValidation.imssDocumentsCount,
             infonavitSignalsCount: socialSecurityValidation.infonavitSignalsCount,
@@ -1424,10 +1485,16 @@ export const appRouter = router({
             engine: "helios",
             revalidation_scope: "social_security",
             summary: socialSecurityValidation.summary,
+            status_label: socialSecurityValidation.statusLabel,
             coverage_score: socialSecurityValidation.coverageScore,
             imss_documents_count: socialSecurityValidation.imssDocumentsCount,
             infonavit_signals_count: socialSecurityValidation.infonavitSignalsCount,
             recommended_next_step: socialSecurityValidation.recommendedNextStep,
+            recommended_document_key: socialSecurityValidation.recommendedDocumentKey,
+            recommended_document_title: socialSecurityValidation.recommendedDocumentTitle,
+            recommended_document_reason: socialSecurityValidation.recommendedDocumentReason,
+            has_new_clarity: socialSecurityValidation.hasNewClarity,
+            clarity_delta: socialSecurityValidation.clarityDelta,
             generated_at: recordedAt.toISOString(),
           }),
           eventAt: recordedAt,
@@ -2168,6 +2235,16 @@ export const appRouter = router({
           },
         });
 
+        const refreshedDocuments = await listVisibleDocuments({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const socialSecurityValidation = buildSocialSecurityValidationSummary({
+          documents: refreshedDocuments,
+          events: detail.events,
+        });
+
         return {
           draftId: payload.draftId,
           document: documentRecord,
@@ -2179,6 +2256,22 @@ export const appRouter = router({
           heliosOpinionContract,
           engineDispatch,
           scanAssistance,
+          socialSecurityValidation,
+          nextSuggestedDocument:
+            socialSecurityValidation.recommendedDocumentKey === null
+              ? null
+              : {
+                  key: socialSecurityValidation.recommendedDocumentKey,
+                  title: socialSecurityValidation.recommendedDocumentTitle,
+                  reason: socialSecurityValidation.recommendedDocumentReason,
+                },
+          newClarityNotification: socialSecurityValidation.hasNewClarity
+            ? {
+                title: "Tu expediente ganó nueva claridad",
+                message: socialSecurityValidation.clarityChangeLabel,
+                delta: socialSecurityValidation.clarityDelta,
+              }
+            : null,
         };
       }),
     uploadDocument: protectedProcedure

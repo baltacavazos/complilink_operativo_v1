@@ -1,0 +1,60 @@
+{
+  "created_at": 1775719589,
+  "prompt": "Contexto del producto:\n- Plataforma: AuditaPatron.\n- Marca visible al usuario final: solo AuditaPatron.\n- Helios permanece como arquitectura interna y núcleo del ecosistema.\n- Ya existe una pantalla /auditar con expediente, indicador dinámico de claridad y una acción única de revalidación IMSS/Infonavit.\n- Toda la información del usuario y todos los documentos deben ser obtenidos, analizados, almacenados y devueltos por Helios como núcleo.\n\nNueva iteración aprobada por el usuario:\n1. Mostrar un historial simple de revalidaciones IMSS/Infonavit con fecha, resultado y cambio detectado dentro de /auditar.\n2. Añadir una recomendación automática del siguiente documento más útil según el estado actual de IMSS/Infonavit y del expediente.\n3. Incorporar una notificación visible cuando el expediente gane nueva claridad después de subir o revalidar información.\n\nNecesito una respuesta práctica y breve para implementar en un producto real. Responde en JSON válido con esta estructura exacta:\n{\n  \"product_recommendation\": {\n    \"history_ui\": \"string\",\n    \"next_document_logic\": \"string\",\n    \"clarity_notification\": \"string\"\n  },\n  \"technical_recommendation\": {\n    \"backend_contract\": \"string\",\n    \"frontend_integration\": \"string\",\n    \"risk_guardrails\": \"string\"\n  },\n  \"priority_order\": [\"string\", \"string\", \"string\"],\n  \"confidence\": \"high|medium|low\"\n}\n\nCondiciones:\n- No expongas Helios en el copy público.\n- Propón la solución con menor fricción posible.\n- Prioriza reutilizar el flujo actual y evitar arquitecturas paralelas.\n- Considera mobile-first.",
+  "models": {
+    "openai": {
+      "product_recommendation": {
+        "history_ui": "Agregar una sección desplegable simple en /auditar que liste las revalidaciones previas con columnas: fecha, resultado (aprobado/rechazado) y cambio detectado, usando el mismo estilo y espacio actual para no recargar la pantalla.",
+        "next_document_logic": "Implementar un algoritmo en backend que, basado en el último estado de IMSS/Infonavit y análisis del expediente, devuelva el documento con mayor impacto para mejorar claridad; mostrar esta recomendación como un banner o tarjeta destacada en /auditar.",
+        "clarity_notification": "Mostrar un toast o banner temporal y visible en /auditar cuando se detecte un aumento en claridad tras subir o revalidar información, con mensaje breve y opción para cerrar."
+      },
+      "technical_recommendation": {
+        "backend_contract": "Extender el endpoint actual de /auditar para incluir un array con historial de revalidaciones y un campo con la recomendación del siguiente documento, calculados y almacenados en núcleo; también enviar un flag de cambio de claridad tras cada acción.",
+        "frontend_integration": "Reutilizar la pantalla /auditar para renderizar el historial y la recomendación usando datos del mismo endpoint; implementar notificaciones basadas en flag de claridad sin crear rutas nuevas ni modales complejos.",
+        "risk_guardrails": "Validar que el historial no exponga datos sensibles fuera del contexto; controlar que la recomendación no sugiera documentos redundantes; asegurar que la notificación no interrumpa flujos críticos ni afecte performance en móviles."
+      },
+      "priority_order": [
+        "history_ui",
+        "clarity_notification",
+        "next_document_logic"
+      ],
+      "confidence": "high"
+    },
+    "grok": {
+      "product_recommendation": {
+        "history_ui": "En la pantalla /auditar, agrega una sección dedicada al final de la vista principal, como una lista compacta y scrollable (mobile-first) que muestre el historial de revalidaciones IMSS/Infonavit, incluyendo fecha, resultado y cambio detectado, utilizando tarjetas simples para facilitar la lectura en dispositivos móviles.",
+        "next_document_logic": "Basado en el estado actual del expediente, implementa una recomendación automática al final de la revisión, sugiriendo el siguiente documento más útil (por ejemplo, 'Sube tu recibo de sueldo') derivada del análisis interno, presentada como un botón o card destacado para guiar al usuario sin interrumpir el flujo.",
+        "clarity_notification": "Muestra una notificación temporal en la pantalla /auditar, como un toast o banner en la parte superior (mobile-first), que aparezca inmediatamente después de subir o revalidar información cuando el indicador de claridad aumente, con un mensaje como '¡Excelente! Tu expediente es más claro ahora'."
+      },
+      "technical_recommendation": {
+        "backend_contract": "Extiende las API existentes de AuditaPatron para incluir endpoints que consulten el núcleo interno por historial de revalidaciones, recomendaciones de documentos y actualizaciones de claridad, asegurando que todas las solicitudes incluyan autenticación y devuelvan datos en formato JSON ligero para minimizar latencia.",
+        "frontend_integration": "Reutiliza el componente actual de /auditar en la app mobile-first; agrega el historial como una subvista dinámica, la recomendación como un hook de estado, y la notificación usando bibliotecas como React Native Toast para notificaciones no intrusivas, sin alterar el flujo principal.",
+        "risk_guardrails": "Implementa validaciones en el frontend y backend para verificar integridad de datos y autenticación, asegúrate de que el núcleo interno maneje todo el procesamiento de documentos para mantener la privacidad, y agrega logs para monitoreo de errores sin exponer detalles internos."
+      },
+      "priority_order": [
+        "Implementar history_ui en /auditar",
+        "Añadir next_document_logic al flujo existente",
+        "Incorporar clarity_notification para feedback inmediato"
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "product_recommendation": {
+        "history_ui": "Integrar una sección colapsable 'Historial de Revalidaciones' en /auditar. Mostrar fecha, resultado (ej. 'Sin Cambios', 'Cambios Detectados') y un resumen conciso de los cambios (ej. 'NSS actualizado'). Priorizar la legibilidad en móvil.",
+        "next_document_logic": "Añadir un componente prominente en /auditar, 'Documento Recomendado', que muestre el nombre y una breve descripción del documento más útil. El backend determinará la recomendación basándose en el estado actual del expediente y la información IMSS/Infonavit.",
+        "clarity_notification": "Implementar una notificación tipo 'toast' o banner temporal en la parte superior de la pantalla, visible tras una revalidación exitosa o subida de documento, indicando '¡Tu expediente ha ganado claridad!'. Desaparece automáticamente tras unos segundos."
+      },
+      "technical_recommendation": {
+        "backend_contract": "Extender el endpoint `/auditar` o crear uno nuevo para: 1) Incluir `historial_revalidaciones`: un array de objetos `{ fecha, resultado, cambios_detectados }`. 2) Añadir `documento_recomendado`: un objeto `{ nombre, descripcion, tipo_documento_id }`. 3) Devolver `claridad_anterior` y `claridad_actual` o un flag `claridad_aumento_detectado` en la respuesta de revalidación/subida.",
+        "frontend_integration": "1) Consumir el nuevo `historial_revalidaciones` para renderizar la lista. 2) Mostrar `documento_recomendado` en un nuevo componente, enlazando al flujo de subida existente. 3) Al detectar `claridad_aumento_detectado` o un cambio positivo en `claridad_actual` vs `claridad_anterior` post-acción, activar la notificación 'toast' y actualizar el indicador dinámico de claridad.",
+        "risk_guardrails": "1) **Privacidad de Datos**: Asegurar que los `cambios_detectados` sean resúmenes no sensibles. 2) **Rendimiento**: Optimizar la carga del historial (considerar paginación si crece). 3) **Precisión**: Validar rigurosamente la lógica de Helios para las recomendaciones de documentos. 4) **Manejo de Errores**: Implementar estados vacíos o de error para historial y recomendaciones."
+      },
+      "priority_order": [
+        "clarity_notification",
+        "history_ui",
+        "next_document_logic"
+      ],
+      "confidence": "high"
+    }
+  }
+}
