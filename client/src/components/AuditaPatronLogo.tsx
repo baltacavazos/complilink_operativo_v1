@@ -3,7 +3,8 @@ import * as React from "react";
 const FULL_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-logo-final_01c8b00a.png";
 const WORDMARK_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-wordmark-final_059d1915.png";
 const ICON_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-icon-base_034a1256.png";
-const HEADER_LOCKUP_DARK_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/header-lockup-dark_d4bd47cd.png";
+const HEADER_LOCKUP_LIGHT_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/header-lockup-light_3758f303.png";
+const HEADER_LOCKUP_DARK_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/header-lockup-dark_6fe9c4c8.png";
 
 type AuditaPatronLogoVariant = "full" | "icon" | "compact";
 type AuditaPatronLogoSurface = "light" | "dark" | "adaptive";
@@ -24,13 +25,14 @@ function joinClasses(...values: Array<string | undefined | false>) {
 
 const darkSurfaceImageTreatment = "brightness-0 invert saturate-0 contrast-[1.08] drop-shadow-[0_8px_18px_rgba(255,255,255,0.12)]";
 const adaptiveSurfaceImageTreatment = "dark:brightness-0 dark:invert dark:saturate-0 dark:contrast-[1.08] dark:drop-shadow-[0_8px_18px_rgba(255,255,255,0.12)]";
-const compactLightImageClassName = "h-5 w-auto max-w-[148px] shrink-0 object-contain sm:h-6 sm:max-w-[172px] lg:h-7 lg:max-w-[198px]";
-const compactDarkImageClassName = "h-5.5 w-auto max-w-[182px] shrink-0 object-contain drop-shadow-[0_8px_18px_rgba(255,255,255,0.08)] sm:h-6.5 sm:max-w-[214px] lg:h-7 lg:max-w-[248px]";
+const compactLightImageClassName = "block h-5 w-auto shrink-0 object-contain sm:h-6 lg:h-7";
+const compactDarkImageClassName = "block h-6 w-auto shrink-0 object-contain drop-shadow-[0_8px_18px_rgba(255,255,255,0.08)] sm:h-7 lg:h-8";
 
 export const AUDITAPATRON_LOGO_ASSETS = {
   full: FULL_LOGO_SRC,
   wordmark: WORDMARK_LOGO_SRC,
   icon: ICON_LOGO_SRC,
+  headerLight: HEADER_LOCKUP_LIGHT_SRC,
   headerDark: HEADER_LOCKUP_DARK_SRC,
 } as const;
 
@@ -86,7 +88,7 @@ export function AuditaPatronLogo({
           data-qr-ready={futureQrReady ? "true" : "false"}
         >
           <img
-            src={WORDMARK_LOGO_SRC}
+            src={HEADER_LOCKUP_LIGHT_SRC}
             alt="AuditaPatron"
             className={joinClasses(compactLightImageClassName, "dark:hidden", imageClassName, subtitleClassName)}
             loading="eager"
@@ -112,7 +114,7 @@ export function AuditaPatronLogo({
         data-qr-ready={futureQrReady ? "true" : "false"}
       >
         <img
-          src={isDarkSurface ? HEADER_LOCKUP_DARK_SRC : WORDMARK_LOGO_SRC}
+          src={isDarkSurface ? HEADER_LOCKUP_DARK_SRC : HEADER_LOCKUP_LIGHT_SRC}
           alt="AuditaPatron"
           className={joinClasses(
             isDarkSurface ? compactDarkImageClassName : compactLightImageClassName,

@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogo } from "./AuditaPatronLogo";
 
 describe("AuditaPatronLogo", () => {
-  it("expone los activos finales esperados para logo, wordmark, icono y lockup dark de header", () => {
+  it("expone los activos finales esperados para logo, wordmark, icono y lockups de header", () => {
     expect(AUDITAPATRON_LOGO_ASSETS.full).toContain("auditapatron-logo-final_");
     expect(AUDITAPATRON_LOGO_ASSETS.wordmark).toContain("auditapatron-wordmark-final_");
     expect(AUDITAPATRON_LOGO_ASSETS.icon).toContain("auditapatron-icon-base_");
+    expect(AUDITAPATRON_LOGO_ASSETS.headerLight).toContain("header-lockup-light_");
     expect(AUDITAPATRON_LOGO_ASSETS.headerDark).toContain("header-lockup-dark_");
   });
 
@@ -27,6 +28,8 @@ describe("AuditaPatronLogo", () => {
     expect(element.props["data-brand-surface"]).toBe("dark");
     expect(image.props.src).toBe(AUDITAPATRON_LOGO_ASSETS.headerDark);
     expect(image.props.className).toContain("drop-shadow");
+    expect(image.props.className).toContain("h-6");
+    expect(image.props.className).not.toContain("max-w-[");
   });
 
   it("resuelve la variante adaptativa con un wordmark claro y otro para dark mode", () => {
@@ -35,7 +38,7 @@ describe("AuditaPatronLogo", () => {
 
     expect(Array.isArray(images)).toBe(true);
     expect(images).toHaveLength(2);
-    expect(images[0].props.src).toBe(AUDITAPATRON_LOGO_ASSETS.wordmark);
+    expect(images[0].props.src).toBe(AUDITAPATRON_LOGO_ASSETS.headerLight);
     expect(images[0].props.className).toContain("dark:hidden");
     expect(images[1].props.src).toBe(AUDITAPATRON_LOGO_ASSETS.headerDark);
     expect(images[1].props.className).toContain("dark:block");

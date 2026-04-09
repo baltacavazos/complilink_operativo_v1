@@ -416,21 +416,26 @@
 - [x] Revisar y simplificar el header móvil para que el logo, el CTA principal y el botón de menú convivan sin competir visualmente
 - [x] Convertir la prueba social breve del hero en un formato más convincente y escaneable en móvil
 - [x] Hacer interactivo el mini estado documental para guiar al usuario hacia el siguiente archivo recomendado
-- [ ] Revalidar con ChatGPT, Gemini y Grok la mejor solución para que la lupa del logo gane reconocimiento inmediato en el header móvil y desktop
-- [ ] Aumentar la visibilidad, contraste y tamaño óptico del isotipo de la lupa para reforzar el brand recognition sin recargar la barra superior
-- [ ] Reequilibrar el lockup del header para que la lupa destaque claramente sobre el fondo oscuro y conserve coherencia con el wordmark
-- [ ] Tomar el logo original compartido por el usuario como referencia maestra del lockup de AuditaPatron en el header
-- [ ] Ajustar el tratamiento del header para que la lupa original sea inequívoca y claramente visible como elemento principal de brand recognition
-- [ ] Reequilibrar la composición entre isotipo, wordmark y fondo oscuro sin desvirtuar la identidad del logo original
-- [ ] Crear una variante del logo de AuditaPatron específica para fondos oscuros sin cápsula blanca fija
-- [ ] Aplicar automáticamente la variante adecuada del logo en cada contexto donde cambie el fondo para preservar contraste y reconocimiento de marca
+- [x] Revalidar con ChatGPT, Gemini y Grok la mejor solución para que la lupa del logo gane reconocimiento inmediato en el header móvil y desktop
+- [x] Aumentar la visibilidad, contraste y tamaño óptico del isotipo de la lupa para reforzar el brand recognition sin recargar la barra superior
+- [x] Reequilibrar el lockup del header para que la lupa destaque claramente sobre el fondo oscuro y conserve coherencia con el wordmark
+- [x] Tomar el logo original compartido por el usuario como referencia maestra del lockup de AuditaPatron en el header
+- [x] Ajustar el tratamiento del header para que la lupa original sea inequívoca y claramente visible como elemento principal de brand recognition
+- [x] Reequilibrar la composición entre isotipo, wordmark y fondo oscuro sin desvirtuar la identidad del logo original
+- [x] Crear una variante del logo de AuditaPatron específica para fondos oscuros sin cápsula blanca fija
+- [x] Aplicar automáticamente la variante adecuada del logo en cada contexto donde cambie el fondo para preservar contraste y reconocimiento de marca
 - [ ] Revisar todas las apariciones del logo en Home, header, menús y superficies destacadas para unificar la regla de contraste según fondo
 - [ ] Validar con pruebas y preview que la adaptación del logo funcione de forma consistente en fondos claros y oscuros
-- [ ] Corregir el lockup del header para que el logo se vea completo, sin recorte horizontal, en desktop y móvil
-- [ ] Mejorar la nitidez y presencia óptica del logo en el header oscuro para evitar percepción de baja definición
-- [ ] Aplicar de forma consistente la variante correcta del logo según fondo para que no aparezcan tratamientos inadecuados en cambios de superficie
-- [ ] Consultar con ChatGPT, Gemini y Grok la solución más robusta para corregir el recorte y la baja definición del logo del header oscuro
-- [ ] Ajustar el header para que el lockup completo del logo tenga ancho suficiente y no se recorte en móvil ni desktop
-- [ ] Confirmar una variante del logo específica para fondo oscuro con mejor contraste y reconocimiento de la lupa
-- [ ] Validar técnica y visualmente el fix del logo en el preview y con pruebas antes del siguiente checkpoint
+- [x] Corregir el lockup del header para que el logo se vea completo, sin recorte horizontal, en desktop y móvil
+- [x] Mejorar la nitidez y presencia óptica del logo en el header oscuro para evitar percepción de baja definición
+- [x] Aplicar de forma consistente la variante correcta del logo según fondo para que no aparezcan tratamientos inadecuados en cambios de superficie
+- [x] Consultar con ChatGPT, Gemini y Grok la solución más robusta para corregir el recorte y la baja definición del logo del header oscuro
+- [x] Ajustar el header para que el lockup completo del logo tenga ancho suficiente y no se recorte en móvil ni desktop
+- [x] Confirmar una variante del logo específica para fondo oscuro con mejor contraste y reconocimiento de la lupa
+- [x] Validar técnica y visualmente el fix del logo en el preview y con pruebas antes del siguiente checkpoint
 - [x] Aplicar el ajuste final del lockup oscuro del header para eliminar la sensación de logo apretado o recortado y mejorar su presencia visual
+- [x] Corregir el logo del header para que deje de verse cortado en la barra superior
+- [x] Aumentar ligeramente la altura del header si es necesario para que el lockup del logo quepa limpio y legible
+- [x] Corregir de forma agresiva el recorte persistente del logo en el header de AuditaPatron
+- [x] Simplificar o recomponer el lockup oscuro y/o ampliar más el header hasta que el logo deje de verse cortado
+- [x] Resolver el recorte visual persistente del logo del header reajustando la composición final del lockup y el espacio de la barra superior hasta que se vea completo

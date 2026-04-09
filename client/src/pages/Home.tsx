@@ -219,12 +219,12 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
-      <div className="container mx-auto flex h-[3.7rem] max-w-[1380px] items-center justify-between gap-2.5 sm:h-16 lg:gap-3.5">
-        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-[220px] shrink-0 items-center pl-2 sm:min-w-[250px] sm:pl-0 lg:min-w-[290px]">
+      <div className="container mx-auto flex h-[4.55rem] max-w-[1380px] items-center justify-between gap-1.5 sm:h-[5rem] lg:gap-3">
+        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-[220px] shrink-0 items-center pl-1 sm:min-w-[310px] sm:pl-0 lg:min-w-[410px]">
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="h-6.5 w-auto max-w-none sm:h-7.5 lg:h-8"
+            imageClassName="!h-8 w-auto max-w-none sm:!h-9 lg:!h-[2.7rem]"
           />
         </a>
 
