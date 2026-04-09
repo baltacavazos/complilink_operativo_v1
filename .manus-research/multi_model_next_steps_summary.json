@@ -1,0 +1,20 @@
+{
+  "openai_next_steps.json": {
+    "ok": true,
+    "provider": "openai",
+    "model": "gpt-4.1-mini-2025-04-14",
+    "error": null
+  },
+  "gemini_next_steps.json": {
+    "ok": false,
+    "provider": "gemini_next_steps.json",
+    "model": null,
+    "error": "503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBs8nIoJNq0BJxByiA_iPInvnwafnxpq9E"
+  },
+  "grok_next_steps.json": {
+    "ok": true,
+    "provider": "grok",
+    "model": "grok-4-0709",
+    "error": null
+  }
+}

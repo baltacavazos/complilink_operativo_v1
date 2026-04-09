@@ -894,6 +894,94 @@ function getOptionalStringList(value: unknown) {
     : [];
 }
 
+function documentMentionsInfonavit(document: {
+  documentType: string;
+  originalName?: string | null;
+  heliosOpinion?: unknown;
+}) {
+  const heliosOpinion = asObjectRecord(document.heliosOpinion);
+  const searchableText = [
+    document.originalName ?? "",
+    getOptionalString(heliosOpinion?.summary) ?? "",
+    getOptionalString(heliosOpinion?.legalOpinion) ?? "",
+    JSON.stringify(heliosOpinion?.rawPayload ?? {}),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return searchableText.includes("infonavit");
+}
+
+function buildSocialSecurityValidationSummary(params: {
+  documents: Array<{
+    documentType: string;
+    originalName?: string | null;
+    heliosOpinion?: unknown;
+  }>;
+  events: Array<{ title: string; metadata: string | null; eventAt: Date | string }>;
+}) {
+  const documentsWithOpinion = params.documents.filter((item) => Boolean(asObjectRecord(item.heliosOpinion))).length;
+  const imssDocumentsCount = params.documents.filter((item) => item.documentType === "imss").length;
+  const infonavitSignalsCount = params.documents.filter((item) => documentMentionsInfonavit(item)).length;
+
+  const lastRevalidation =
+    params.events
+      .map((event) => ({ event, metadata: parseEventMetadata(event.metadata) }))
+      .filter(({ metadata }) => getOptionalString(metadata?.revalidation_scope) === "social_security")
+      .sort((left, right) => new Date(right.event.eventAt).getTime() - new Date(left.event.eventAt).getTime())[0] ?? null;
+
+  const coverageScore = Math.max(
+    18,
+    Math.min(
+      98,
+      (imssDocumentsCount > 0 ? 38 : 0) +
+        (infonavitSignalsCount > 0 ? 32 : 0) +
+        Math.min(params.documents.length, 4) * 6 +
+        Math.min(documentsWithOpinion, 3) * 7,
+    ),
+  );
+
+  const statusLabel =
+    imssDocumentsCount > 0 && infonavitSignalsCount > 0
+      ? "Cruce visible listo"
+      : imssDocumentsCount > 0 || infonavitSignalsCount > 0
+        ? "Cruce parcial"
+        : "Cruce pendiente";
+
+  const summary =
+    imssDocumentsCount > 0 && infonavitSignalsCount > 0
+      ? "Ya hay señales visibles de IMSS e Infonavit dentro del expediente y puedes revalidarlas sin salir de AuditaPatron."
+      : imssDocumentsCount > 0
+        ? "Ya hay señales visibles de IMSS, pero todavía conviene reforzar o confirmar el frente de Infonavit dentro del expediente."
+        : infonavitSignalsCount > 0
+          ? "Ya hay señales visibles de Infonavit, pero todavía conviene reforzar o confirmar el frente de IMSS dentro del expediente."
+          : "Todavía faltan señales suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
+
+  const recommendedNextStep =
+    imssDocumentsCount > 0 && infonavitSignalsCount > 0
+      ? "Puedes revalidar cuando subas un documento nuevo o cuando quieras confirmar de nuevo tus señales de seguridad social."
+      : imssDocumentsCount > 0
+        ? "Si cuentas con un estado de cuenta o constancia relacionada con Infonavit, súbela para cerrar mejor el cruce."
+        : infonavitSignalsCount > 0
+          ? "Si cuentas con alta, semanas cotizadas o salario registrado ante IMSS, súbelo para cerrar mejor el cruce."
+          : "Empieza por un soporte IMSS o un estado de cuenta o constancia relacionada con Infonavit para abrir este cruce.";
+
+  return {
+    coverageScore,
+    statusLabel,
+    summary,
+    recommendedNextStep,
+    actionLabel: "Revalidar IMSS e Infonavit",
+    imssDocumentsCount,
+    infonavitSignalsCount,
+    hasImssSignal: imssDocumentsCount > 0,
+    hasInfonavitSignal: infonavitSignalsCount > 0,
+    documentsWithOpinion,
+    lastRevalidatedAt: lastRevalidation ? new Date(lastRevalidation.event.eventAt).toISOString() : null,
+    lastRevalidationSummary: getOptionalString(lastRevalidation?.metadata?.summary),
+  };
+}
+
 function buildHeliosCopilotSuggestedPrompts(params: {
   opinion: Record<string, unknown> | null;
   documentsCount: number;
@@ -1148,6 +1236,10 @@ export const appRouter = router({
             hasOpinion: Boolean(heliosOpinion),
           };
         });
+        const socialSecurityValidation = buildSocialSecurityValidationSummary({
+          documents,
+          events: detail.events,
+        });
         const complilinkMonitoring = buildCompliLinkMonitoring(documents, detail.events);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         return {
@@ -1173,6 +1265,7 @@ export const appRouter = router({
             documentsWithOpinion: heliosDocumentsCount,
           },
           heliosDocuments,
+          socialSecurityValidation,
         };
       }),
     heliosCopilotChat: protectedProcedure
@@ -1265,6 +1358,96 @@ export const appRouter = router({
           suggestedPrompts,
           supportingDocuments,
           sourceDocumentCount: documents.length,
+        };
+      }),
+    revalidateSocialSecurity: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const documents = await listVisibleDocuments({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const socialSecurityValidation = buildSocialSecurityValidationSummary({
+          documents,
+          events: detail.events,
+        });
+        const recordedAt = new Date();
+        const revalidationContract = {
+          engine: "helios" as const,
+          scope: "social_security" as const,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          generatedAt: recordedAt.toISOString(),
+          status: socialSecurityValidation.hasImssSignal || socialSecurityValidation.hasInfonavitSignal ? "completed" : "partial",
+          summary: socialSecurityValidation.summary,
+          statusLabel: socialSecurityValidation.statusLabel,
+          coverageScore: socialSecurityValidation.coverageScore,
+          recommendedNextStep: socialSecurityValidation.recommendedNextStep,
+          signals: {
+            imssDocumentsCount: socialSecurityValidation.imssDocumentsCount,
+            infonavitSignalsCount: socialSecurityValidation.infonavitSignalsCount,
+            documentsWithOpinion: socialSecurityValidation.documentsWithOpinion,
+          },
+        };
+
+        await upsertCanonicalContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_social_security_v1",
+          payload: JSON.stringify(revalidationContract),
+          status: "ready",
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Revalidación IMSS/Infonavit actualizada",
+          description: socialSecurityValidation.summary,
+          metadata: JSON.stringify({
+            engine: "helios",
+            revalidation_scope: "social_security",
+            summary: socialSecurityValidation.summary,
+            coverage_score: socialSecurityValidation.coverageScore,
+            imss_documents_count: socialSecurityValidation.imssDocumentsCount,
+            infonavit_signals_count: socialSecurityValidation.infonavitSignalsCount,
+            recommended_next_step: socialSecurityValidation.recommendedNextStep,
+            generated_at: recordedAt.toISOString(),
+          }),
+          eventAt: recordedAt,
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "case",
+          entityId: input.caseId,
+          action: "case.revalidate_social_security",
+          afterState: revalidationContract,
+        });
+
+        return {
+          ...socialSecurityValidation,
+          lastRevalidatedAt: recordedAt.toISOString(),
+          lastRevalidationSummary: socialSecurityValidation.summary,
         };
       }),
     persistAuditarViewState: protectedProcedure

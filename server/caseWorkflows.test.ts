@@ -267,6 +267,103 @@ describe("appRouter case workflows", () => {
     });
     expect(result.legalAcceptance.documents).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
+    expect(result.socialSecurityValidation).toMatchObject({
+      statusLabel: "Cruce pendiente",
+      actionLabel: "Revalidar IMSS e Infonavit",
+      hasImssSignal: false,
+      hasInfonavitSignal: false,
+      documentsWithOpinion: 1,
+    });
+  });
+
+  it("returns case detail with dynamic IMSS and Infonavit signals from the expediente", async () => {
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      ...demoCaseDetail,
+      events: [
+        {
+          title: "Revalidación IMSS/Infonavit actualizada",
+          metadata: JSON.stringify({
+            revalidation_scope: "social_security",
+            summary: "Cruce confirmado con nuevas señales visibles.",
+          }),
+          eventAt: new Date("2026-04-06T12:00:00.000Z"),
+        },
+      ],
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-IMSS-001",
+        originalName: "alta_imss.pdf",
+        documentType: "imss",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-IMSS-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Constancia IMSS con semanas cotizadas visibles.",
+          legalOpinion: "La constancia ayuda a validar continuidad y salario registrado.",
+          riskLevel: "low",
+          recommendedNextStep: "Contrastar con soportes de Infonavit.",
+          recommendedActions: ["Subir soporte Infonavit"],
+          legalFoundations: [],
+          keyFactsUsed: ["Alta IMSS"],
+          uncertainties: [],
+          confidenceScore: 86,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+      {
+        documentId: "DOC-INF-001",
+        originalName: "estado_infonavit.pdf",
+        documentType: "bank_statement",
+        classificationConfidence: 84,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T11:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-INF-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Estado con referencias útiles de Infonavit.",
+          legalOpinion: "Hay señales suficientes para contrastar vivienda y seguridad social.",
+          riskLevel: "medium",
+          recommendedNextStep: "Mantener la revalidación al subir nuevos soportes.",
+          recommendedActions: ["Subir recibo reciente"],
+          legalFoundations: [],
+          keyFactsUsed: ["Referencia Infonavit"],
+          uncertainties: [],
+          confidenceScore: 79,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T11:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.detail({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(result.socialSecurityValidation).toMatchObject({
+      statusLabel: "Cruce visible listo",
+      hasImssSignal: true,
+      hasInfonavitSignal: true,
+      imssDocumentsCount: 1,
+      infonavitSignalsCount: 1,
+      documentsWithOpinion: 2,
+      lastRevalidatedAt: "2026-04-06T12:00:00.000Z",
+      lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
+    });
+    expect(result.socialSecurityValidation.coverageScore).toBeGreaterThan(60);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {
@@ -344,6 +441,121 @@ describe("appRouter case workflows", () => {
             }),
           ],
         }),
+      }),
+    );
+  });
+
+  it("revalidates IMSS and Infonavit with a Helios audit contract and traceable evidence", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-IMSS-001",
+        originalName: "alta_imss.pdf",
+        documentType: "imss",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-IMSS-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Constancia IMSS con semanas cotizadas visibles.",
+          legalOpinion: "La constancia ayuda a validar continuidad y salario registrado.",
+          riskLevel: "low",
+          recommendedNextStep: "Contrastar con soportes de Infonavit.",
+          recommendedActions: ["Subir soporte Infonavit"],
+          legalFoundations: [],
+          keyFactsUsed: ["Alta IMSS"],
+          uncertainties: [],
+          confidenceScore: 86,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+      {
+        documentId: "DOC-INF-001",
+        originalName: "estado_infonavit.pdf",
+        documentType: "bank_statement",
+        classificationConfidence: 84,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T11:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-INF-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Estado con referencias útiles de Infonavit.",
+          legalOpinion: "Hay señales suficientes para contrastar vivienda y seguridad social.",
+          riskLevel: "medium",
+          recommendedNextStep: "Mantener la revalidación al subir nuevos soportes.",
+          recommendedActions: ["Subir recibo reciente"],
+          legalFoundations: [],
+          keyFactsUsed: ["Referencia Infonavit"],
+          uncertainties: [],
+          confidenceScore: 79,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T11:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.revalidateSocialSecurity({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(result).toMatchObject({
+      statusLabel: "Cruce visible listo",
+      actionLabel: "Revalidar IMSS e Infonavit",
+      hasImssSignal: true,
+      hasInfonavitSignal: true,
+      imssDocumentsCount: 1,
+      infonavitSignalsCount: 1,
+      documentsWithOpinion: 2,
+      lastRevalidationSummary: "Ya hay señales visibles de IMSS e Infonavit dentro del expediente y puedes revalidarlas sin salir de AuditaPatron.",
+    });
+    expect(result.coverageScore).toBeGreaterThan(60);
+    expect(result.lastRevalidatedAt).toMatch(/^2026-/);
+
+    expect(db.upsertCanonicalContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        contractType: "audit",
+        schemaVersion: "helios_social_security_v1",
+        status: "ready",
+      }),
+    );
+
+    const revalidationContract = JSON.parse(String(vi.mocked(db.upsertCanonicalContract).mock.calls[0]?.[0]?.payload));
+    expect(revalidationContract).toMatchObject({
+      engine: "helios",
+      scope: "social_security",
+      status: "completed",
+      statusLabel: "Cruce visible listo",
+      signals: {
+        imssDocumentsCount: 1,
+        infonavitSignalsCount: 1,
+        documentsWithOpinion: 2,
+      },
+    });
+
+    expect(db.addCaseEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "note_added",
+        title: "Revalidación IMSS/Infonavit actualizada",
+      }),
+    );
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "case.revalidate_social_security",
+        entityType: "case",
+        entityId: "CASE-BALT-1-DEMO001",
       }),
     );
   });

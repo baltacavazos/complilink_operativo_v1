@@ -1500,6 +1500,7 @@ export default function Auditar() {
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
   const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
   const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
+  const revalidateSocialSecurityMutation = trpc.cases.revalidateSocialSecurity.useMutation();
   const acceptLegalPackageMutation = trpc.consent.acceptLegalPackage.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
@@ -1774,6 +1775,7 @@ export default function Auditar() {
   const legalGateRequired = Boolean(caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted);
   const documents = caseDetailQuery.data?.documents ?? [];
   const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
+  const socialSecurityValidation = caseDetailQuery.data?.socialSecurityValidation;
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () => new Map(heliosDocumentSnapshots.map((item) => [item.documentId, item] as const)),
@@ -1872,6 +1874,17 @@ export default function Auditar() {
       total: dossierTargets.length,
     };
   }, [presentTypes]);
+  const socialSecurityCoveragePercent = socialSecurityValidation?.coverageScore ?? dossierStatus.percent;
+  const socialSecurityStatusLabel = socialSecurityValidation?.statusLabel ?? "Cruce pendiente";
+  const socialSecuritySummary =
+    socialSecurityValidation?.summary ??
+    "Todavía faltan señales suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
+  const socialSecurityRecommendedNextStep =
+    socialSecurityValidation?.recommendedNextStep ??
+    "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
+  const socialSecurityLastCheckLabel = socialSecurityValidation?.lastRevalidatedAt
+    ? `Última revalidación: ${formatDate(socialSecurityValidation.lastRevalidatedAt)}`
+    : "Aún no has revalidado este cruce desde tu expediente.";
   const timelineEntries = useMemo(
     () =>
       [...documents]
@@ -2113,6 +2126,27 @@ export default function Auditar() {
       await caseDetailQuery.refetch();
     } catch (error) {
       setLegalGateError(error instanceof Error ? error.message : "No fue posible registrar tu aceptación legal.");
+    }
+  };
+
+  const handleRevalidateSocialSecurity = async () => {
+    if (!caseDetailInput) {
+      setSubmitError("Primero elige un expediente para revalidar IMSS e Infonavit.");
+      return;
+    }
+
+    if (legalGateRequired) {
+      setLegalGateError("Antes de revalidar IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
+      return;
+    }
+
+    try {
+      setSubmitError(null);
+      setLegalGateError(null);
+      await revalidateSocialSecurityMutation.mutateAsync(caseDetailInput);
+      await Promise.all([utils.cases.detail.invalidate(caseDetailInput), caseDetailQuery.refetch()]);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "No fue posible revalidar IMSS e Infonavit en este momento.");
     }
   };
 
@@ -2635,6 +2669,17 @@ export default function Auditar() {
             </span>
             <Button
               variant="outline"
+              className="rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25"
+              onClick={() => {
+                void handleRevalidateSocialSecurity();
+              }}
+              disabled={!caseDetailInput || revalidateSocialSecurityMutation.isPending}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`} strokeWidth={1.8} />
+              {revalidateSocialSecurityMutation.isPending ? "Revalidando IMSS e Infonavit..." : "Revalidar IMSS e Infonavit"}
+            </Button>
+            <Button
+              variant="outline"
               className="rounded-full border-white/12 bg-white/8 text-white hover:bg-white/12"
               onClick={() => {
                 setSubmitError(null);
@@ -2643,7 +2688,7 @@ export default function Auditar() {
               }}
             >
               <RefreshCw className="mr-2 h-4 w-4" strokeWidth={1.8} />
-              Actualizar información
+              Actualizar vista
             </Button>
             <Button
               variant="outline"
@@ -2777,26 +2822,32 @@ export default function Auditar() {
                     Hoy tu expediente laboral va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un expediente digital que puedes volver a consultar cuando lo necesites. {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. {socialSecuritySummary} {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
                   </p>
                 </div>
 
                 <div className="motion-hover-lift w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
-                  <p className="text-sm font-semibold text-teal-900">Próximo paso que más puede ayudarte</p>
-                  <p className="mt-2 text-base font-semibold text-slate-950">
-                    {dossierStatus.nextTarget ? dossierStatus.nextTarget.label : "Ya tienes una base documental muy completa"}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-teal-950">
-                    {dossierStatus.nextTarget
-                        ? `${dossierStatus.nextTarget.benefit} Además, quedará ordenado dentro de tu expediente digital para futuras consultas.`
-                        : "Si tienes algún archivo adicional específico de tu caso, también puede sumar contexto útil y quedar disponible dentro de tu expediente digital."}
-
-                  </p>
+                  <p className="text-sm font-semibold text-teal-900">Cruce IMSS e Infonavit hoy</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
+                  <p className="mt-2 text-sm leading-6 text-teal-950">{socialSecurityRecommendedNextStep}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900">
+                    <span className="rounded-full bg-white px-3 py-1">
+                      {socialSecurityValidation?.imssDocumentsCount ?? 0} señal{(socialSecurityValidation?.imssDocumentsCount ?? 0) === 1 ? "" : "es"} IMSS
+                    </span>
+                    <span className="rounded-full bg-white px-3 py-1">
+                      {socialSecurityValidation?.infonavitSignalsCount ?? 0} señal{(socialSecurityValidation?.infonavitSignalsCount ?? 0) === 1 ? "" : "es"} Infonavit
+                    </span>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-teal-900">{socialSecurityLastCheckLabel}</p>
                 </div>
               </div>
 
               <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{ width: `${dossierStatus.percent}%` }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{ width: `${socialSecurityCoveragePercent}%` }} />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs font-semibold text-slate-500">
+                <span>Claridad actual del expediente</span>
+                <span>{socialSecurityCoveragePercent}%</span>
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
@@ -3000,13 +3051,12 @@ export default function Auditar() {
                   </div>
 
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué tienes que hacer</p>
-                    <p className="mt-2 font-semibold text-slate-950">Subes, revisas y avanzas</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cruce IMSS e Infonavit</p>
+                    <p className="mt-2 font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {visibleHeliosOpinion
-                        ? "Aquí ves lo que ya quedó claro, lo que sigue en revisión y el siguiente documento que más puede ayudarte, sin pasos técnicos ni menús complicados, mientras tu expediente sigue creciendo por detrás."
-                        : "Solo necesitas subir un archivo útil. AuditaPatron lo revisa, lo ordena en tu expediente digital y te devuelve una guía simple dentro del mismo espacio."}
+                      {socialSecurityValidation?.lastRevalidationSummary ?? socialSecurityRecommendedNextStep}
                     </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">{socialSecurityLastCheckLabel}</p>
                   </div>
                 </div>
               </div>

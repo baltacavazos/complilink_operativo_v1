@@ -465,7 +465,10 @@
 - [x] Reforzar la jerarquía visual del menú superior en móvil para que navegación y acción principal se distingan mejor
 - [x] Evaluar por consenso multi-modelo si conviene destacar en la landing que AuditaPatron ayuda a revisar si la persona está bien dada de alta en IMSS e Infonavit, y preparar su incorporación visible en la UI si se aprueba.
 - [x] Implementar en la home una mención clara y prudente de que AuditaPatron ayuda a revisar si el alta en IMSS e Infonavit está en orden.
-- [ ] Reforzar la arquitectura Helios-first para que la información del usuario y los documentos subidos sean analizados, almacenados y devueltos mediante Helios como núcleo del ecosistema.
+- [x] Reforzar la arquitectura Helios-first para que la información del usuario y los documentos subidos sean analizados, almacenados y devueltos mediante Helios como núcleo del ecosistema.
 - [x] Retirar la mención visible de Helios del frontend público, conservar el refuerzo de IMSS e Infonavit y mantener Helios solo como arquitectura interna.
 - [x] Ocultar la marca Helios en el copy público de AuditaPatron, manteniendo Helios como arquitectura interna y reforzando la claridad sobre IMSS e Infonavit.
 - [x] Actualizar y validar las pruebas de homepage y /auditar para reflejar la separación entre AuditaPatron visible y Helios interno.
+- [x] Convertir el bloque de claridad del expediente en un indicador dinámico ligado al estado real de los documentos y hallazgos del usuario.
+- [x] Añadir una acción única para revalidar IMSS e Infonavit con mínima fricción dentro del flujo de AuditaPatron.
+- [x] Formalizar el contrato técnico interno de Helios para unificar carga documental, análisis, almacenamiento y devolución de resultados en AuditaPatron.

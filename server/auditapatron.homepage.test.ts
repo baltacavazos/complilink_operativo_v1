@@ -35,20 +35,19 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
   });
 
-  it("ships an audit workspace aligned with the public AuditaPatron narrative while preserving IMSS and Infonavit clarity", () => {
+  it("ships an audit workspace with dynamic expediente clarity and revalidation for IMSS and Infonavit", () => {
     expect(auditFlowSource).toContain("Hecho para trabajadores, sin lenguaje complicado");
     expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
-    expect(auditFlowSource).toContain("Ve rápido cómo va creciendo tu expediente.");
-    expect(auditFlowSource).toContain("Distingue lo confirmado de lo estimado, incluyendo señales de IMSS e Infonavit.");
-    expect(auditFlowSource).toContain("Tu expediente se ordena, resguarda y revisa por ti");
-    expect(auditFlowSource).toContain("AuditaPatron recibe y protege");
-    expect(auditFlowSource).toContain("La revisión encuentra contexto útil");
-    expect(auditFlowSource).toContain("Cada documento nuevo fortalece tu expediente, y cada retorno útil de la revisión automática ayuda a afinar la lectura del caso.");
+    expect(auditFlowSource).toContain("Así va tu expediente laboral");
+    expect(auditFlowSource).toContain("un indicador vivo que se ajusta con señales reales del expediente");
+    expect(auditFlowSource).toContain("Cruce IMSS e Infonavit hoy");
+    expect(auditFlowSource).toContain("Claridad actual del expediente");
+    expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
+    expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
+    expect(auditFlowSource).toContain("AuditaPatron concentra la información que subes, analiza cada documento, lo resguarda en tu expediente digital y te devuelve resultados útiles para entender mejor tu situación laboral, incluyendo señales sobre IMSS e Infonavit");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");
-    expect(auditFlowSource).not.toContain("Helios recibe y protege");
-    expect(auditFlowSource).not.toContain("Tú recibes una guía más clara desde Helios");
     expect(auditFlowSource).not.toContain("CompliLink Operativo");
   });
 });

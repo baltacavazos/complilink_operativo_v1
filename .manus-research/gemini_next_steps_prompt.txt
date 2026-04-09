@@ -1,0 +1,23 @@
+Eres un consultor principal de producto y arquitectura para AuditaPatron, una plataforma laboral para trabajadores en México.
+
+Contexto obligatorio:
+- La marca visible al usuario final debe ser AuditaPatron.
+- Helios debe permanecer como arquitectura y motor interno, no como marca pública.
+- El usuario quiere tres mejoras inmediatas:
+  1. Convertir el bloque de claridad del expediente en un indicador dinámico ligado al estado real de los documentos y hallazgos del usuario.
+  2. Añadir una sola acción para revalidar IMSS e Infonavit con mínima fricción.
+  3. Formalizar el contrato técnico interno de Helios para que toda carga documental, análisis, almacenamiento y devolución de resultados pasen por Helios como núcleo.
+- El producto debe sentirse simple, confiable, claro, mobile-first y con efecto wow, sin lenguaje técnico para el usuario final.
+- No debe prometer validación oficial absoluta ni resultados legales definitivos.
+
+Tu tarea:
+1. Propón la mejor solución de producto visible para los 3 frentes.
+2. Explica la lógica de arquitectura mínima viable para implementarlo sin romper el sistema actual.
+3. Señala riesgos o errores que debo evitar.
+4. Prioriza el orden de implementación recomendado.
+5. Escribe 3 bloques claros con estos encabezados exactos:
+   - CONSENSO_DE_PRODUCTO
+   - CONSENSO_DE_ARQUITECTURA
+   - RIESGOS_Y_PRIORIDAD
+
+Escribe en español, de forma concreta pero profunda.
