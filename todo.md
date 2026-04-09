@@ -439,3 +439,16 @@
 - [x] Corregir de forma agresiva el recorte persistente del logo en el header de AuditaPatron
 - [x] Simplificar o recomponer el lockup oscuro y/o ampliar más el header hasta que el logo deje de verse cortado
 - [x] Resolver el recorte visual persistente del logo del header reajustando la composición final del lockup y el espacio de la barra superior hasta que se vea completo
+- [ ] Revisar y aplicar el contenido del archivo adjunto Pasted_content_02.txt en AuditaPatron, extrayendo sus cambios y llevándolos al proyecto con validación final
+- [x] Actualizar el Aviso de Privacidad Integral de AuditaPatron a versión 2.0 con estructura completa, finalidades, ARCO, transferencias y redacción legal en español mexicano
+- [x] Actualizar los Términos y Condiciones de Uso de AuditaPatron a versión 2.0 con definiciones, licencia de datos, obras derivadas, límites de responsabilidad y jurisdicción
+- [x] Diseñar e implementar un gate de aceptación legal versionado para primer acceso y para nuevas versiones documentales
+- [ ] Registrar en backend los consentimientos legales con userId, tipo, versión, timestamp, IP y user-agent, incluyendo revocación con periodo de gracia
+- [x] Incorporar una experiencia discreta de privacidad con links legales en footer y sección Configuración > Privacidad con consentimientos y derechos ARCO
+- [x] Actualizar el contexto base de Helios, Copiloto Legal y motor de análisis con capacidades de privacidad, consentimiento y ciclo de datos del ecosistema CVZ
+- [x] Contrastar con ChatGPT, Gemini y Grok el enfoque de implementación legal y de consentimiento antes de modificar el proyecto
+- [x] Validar con pruebas y revisión técnica los cambios legales, de consentimiento y de experiencia de privacidad antes del siguiente checkpoint
+- [x] Ejecutar de punta a punta el paquete legal 2.0 aprobado: Aviso de Privacidad, Términos, aceptación versionada, trazabilidad de consentimientos, experiencia de privacidad y ajustes del contexto Helios
+- [x] Corregir definitivamente el logo del header para que el lockup completo se vea nítido y sin recortes, aumentando la altura útil del header si hace falta
+- [x] Implementar el bloque legal y de consentimiento 2.0 con aviso de privacidad, términos, gate versionado, trazabilidad backend, sección visible de privacidad y ajuste del contexto documental de Helios
+- [x] Documentar con claridad qué parte del flujo de ingesta documental de Helios ya existía y qué parte nueva agrega soporte legal y operativo

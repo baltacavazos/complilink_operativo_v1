@@ -46,6 +46,7 @@ vi.mock("./_core/llm", () => llmMocks);
 
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
+import { LEGAL_ACCEPTANCE_VERSION, LEGAL_CONSENT_TYPES, LEGAL_DOCUMENTS, LEGAL_VERSION } from "@shared/legal";
 import { appRouter } from "./routers";
 import { storagePut } from "./storage";
 
@@ -259,6 +260,13 @@ describe("appRouter case workflows", () => {
         hasOpinion: true,
       }),
     ]);
+    expect(result.legalAcceptance).toMatchObject({
+      acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+      legalVersion: LEGAL_VERSION,
+      isAccepted: false,
+    });
+    expect(result.legalAcceptance.documents).toHaveLength(LEGAL_DOCUMENTS.length);
+    expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {
@@ -529,6 +537,64 @@ describe("appRouter case workflows", () => {
       expect.objectContaining({
         action: "consent.create",
         entityType: "consent",
+      }),
+    );
+  });
+
+  it("accepts the legal package with versioned consent evidence and audit trail", async () => {
+    vi.mocked(db.addConsentRecord).mockImplementation(async (input) => ({
+      id: 800,
+      ...input,
+    }) as never);
+
+    const baseContext = createProtectedContext();
+    const caller = appRouter.createCaller({
+      ...baseContext,
+      req: {
+        protocol: "https",
+        headers: {
+          "x-forwarded-for": "203.0.113.9",
+          "user-agent": "Vitest Legal Gate",
+        },
+      } as TrpcContext["req"],
+    });
+
+    const result = await caller.consent.acceptLegalPackage({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      accepted: true,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      alreadyAccepted: false,
+      acceptance: {
+        acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+        legalVersion: LEGAL_VERSION,
+        isAccepted: true,
+      },
+    });
+    expect(result.acceptance.documents).toHaveLength(LEGAL_DOCUMENTS.length);
+    expect(result.acceptance.missingDocuments).toHaveLength(0);
+    expect(db.addConsentRecord).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
+    expect(vi.mocked(db.addConsentRecord).mock.calls.map((call) => call[0]?.legalBasis)).toEqual(
+      LEGAL_CONSENT_TYPES.map((type) => `legal_package:${LEGAL_ACCEPTANCE_VERSION}:${type}`),
+    );
+    expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
+    expect(db.addCaseEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: `Paquete legal ${LEGAL_VERSION} aceptado`,
+      }),
+    );
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "consent.legal_package_accept",
+        entityId: `CASE-BALT-1-DEMO001:legal_package:${LEGAL_ACCEPTANCE_VERSION}`,
+        afterState: expect.objectContaining({
+          legalVersion: LEGAL_VERSION,
+          clientIp: "203.0.113.9",
+          userAgent: "Vitest Legal Gate",
+        }),
       }),
     );
   });

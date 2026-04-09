@@ -25,8 +25,8 @@ function joinClasses(...values: Array<string | undefined | false>) {
 
 const darkSurfaceImageTreatment = "brightness-0 invert saturate-0 contrast-[1.08] drop-shadow-[0_8px_18px_rgba(255,255,255,0.12)]";
 const adaptiveSurfaceImageTreatment = "dark:brightness-0 dark:invert dark:saturate-0 dark:contrast-[1.08] dark:drop-shadow-[0_8px_18px_rgba(255,255,255,0.12)]";
-const compactLightImageClassName = "block h-5 w-auto shrink-0 object-contain sm:h-6 lg:h-7";
-const compactDarkImageClassName = "block h-6 w-auto shrink-0 object-contain drop-shadow-[0_8px_18px_rgba(255,255,255,0.08)] sm:h-7 lg:h-8";
+const compactLightImageClassName = "block h-5 w-auto max-w-full shrink-0 object-contain sm:h-6 lg:h-7";
+const compactDarkImageClassName = "block h-6 w-auto max-w-full shrink-0 object-contain drop-shadow-[0_8px_18px_rgba(255,255,255,0.08)] sm:h-7 lg:h-8";
 
 export const AUDITAPATRON_LOGO_ASSETS = {
   full: FULL_LOGO_SRC,
@@ -81,7 +81,7 @@ export function AuditaPatronLogo({
     if (isAdaptiveSurface) {
       return (
         <div
-          className={joinClasses("inline-flex min-w-0 items-center", className)}
+          className={joinClasses("inline-flex min-w-0 max-w-full items-center overflow-visible", className)}
           data-brand="auditapatron"
           data-brand-variant="appbar"
           data-brand-surface={surface}

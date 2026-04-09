@@ -1,0 +1,174 @@
+{
+  "generatedAt": "2026-04-09T02:01:31.856Z",
+  "prompt": "Eres un auditor técnico-legal de producto digital. Evalúa esta solicitud de implementación para una app mexicana llamada AuditaPatron. Necesito una respuesta compacta en JSON válido con esta forma exacta:\n{\n  \"model_view\": \"string\",\n  \"must_do\": [\"string\"],\n  \"risk_flags\": [\"string\"],\n  \"implementation_order\": [\"string\"],\n  \"ui_notes\": [\"string\"],\n  \"backend_notes\": [\"string\"],\n  \"testing_notes\": [\"string\"],\n  \"copy_adjustments\": [\"string\"]\n}\n\nContexto del cambio:\n1) Corregir el header: el lockup/logo oscuro del header está recortado. Hay que arreglar el componente de marca y/o sus clases para que no se corte en desktop y móvil.\n2) Implementar paquete legal 2.0 con textos en español jurídico accesible para México:\n- Aviso de Privacidad Integral v2.0\n- Términos y Condiciones v2.0\n- Gate de aceptación discreto cuando el usuario entra por primera vez o cuando cambia la versión legal\n- Registro automático de consentimientos: privacy_policy, terms_of_service, data_processing, ai_training, cross_platform_sharing\n- Guardar trazabilidad de versión, timestamp, IP y user-agent\n- Revocación con periodo de gracia de 5 días hábiles\n- Footer discreto con links legales\n- Gestión de privacidad y derechos ARCO dentro de Configuración > Privacidad\n3) Actualizar el contexto que recibe Helios para que mencione explícitamente: cifrado AES-256-GCM, LFPDPPP v2.0, derechos ARCO, consentimiento versionado, revocación con gracia de 5 días hábiles, ecosistema Helios/CompliLink, MFA/TOTP, rate limiting, invalidación JWT y audit trail.\n\nDame recomendaciones concretas, priorizadas y prudentes. No redactes los documentos completos; enfócate en implementación, riesgos y pruebas.",
+  "views": {
+    "openai": {
+      "model_view": "Priorizar corrección visual del header para evitar mala impresión, seguido de implementación segura y conforme del paquete legal 2.0, y finalmente actualización técnica del contexto Helios para asegurar trazabilidad y cumplimiento normativo.",
+      "must_do": [
+        "Corregir el lockup/logo oscuro en header para que no se recorte en desktop y móvil, verificando estilos CSS y contenedores responsivos.",
+        "Implementar el paquete legal 2.0 con textos jurídicos en español mexicano, asegurando que el gate de aceptación sea discreto y solo aparezca en primera visita o cambio de versión legal.",
+        "Registrar automáticamente todos los consentimientos indicados con versión, timestamp, IP y user-agent para trazabilidad completa.",
+        "Implementar revocación de consentimientos con periodo de gracia de 5 días hábiles, validando que no se afecte la experiencia usuario ni el cumplimiento legal.",
+        "Agregar footer discreto con links legales visibles pero no intrusivos.",
+        "Incluir en Configuración > Privacidad la gestión completa de derechos ARCO y opciones de privacidad.",
+        "Actualizar el contexto que recibe Helios para incluir explícitamente cifrado AES-256-GCM, LFPDPPP v2.0, derechos ARCO, consentimiento versionado, revocación con gracia, ecosistema Helios/CompliLink, MFA/TOTP, rate limiting, invalidación JWT y audit trail."
+      ],
+      "risk_flags": [
+        "Recorte del logo puede afectar percepción profesional y confianza del usuario.",
+        "Gate de aceptación mal implementado puede generar rechazo legal o mala experiencia si es intrusivo o no respeta versiones.",
+        "Falta de registro detallado de consentimientos puede invalidar cumplimiento con LFPDPPP y auditorías futuras.",
+        "Revocación sin periodo de gracia puede causar problemas legales o técnicos en procesamiento de datos.",
+        "Actualización del contexto Helios sin pruebas rigurosas puede generar fallos en seguridad o pérdida de trazabilidad.",
+        "No validar correctamente MFA/TOTP, rate limiting o invalidación JWT puede exponer la app a ataques o accesos indebidos."
+      ],
+      "implementation_order": [
+        "Corregir header y lockup/logo para evitar recortes visuales.",
+        "Implementar gate de aceptación discreto y registro automático de consentimientos con trazabilidad.",
+        "Desarrollar revocación con periodo de gracia y footer legal discreto.",
+        "Agregar gestión de privacidad y derechos ARCO en Configuración.",
+        "Actualizar contexto Helios con todos los elementos técnicos y de seguridad indicados.",
+        "Realizar pruebas integrales de seguridad, usabilidad y cumplimiento legal."
+      ],
+      "ui_notes": [
+        "Asegurar que el logo en header se muestre completo y centrado en todas resoluciones.",
+        "Gate de aceptación debe ser discreto, no bloquear navegación y respetar UX/UI estándar.",
+        "Footer legal debe ser visible pero no invasivo, con tipografía legible y accesible.",
+        "Sección de Privacidad en Configuración debe ser clara, con opciones fáciles de entender y modificar.",
+        "Mensajes y textos legales deben usar lenguaje jurídico accesible y adaptado a usuarios mexicanos."
+      ],
+      "backend_notes": [
+        "Implementar almacenamiento seguro y cifrado de consentimientos con versión, timestamp, IP y user-agent.",
+        "Gestionar revocación con lógica de periodo de gracia y actualización de estado en base de datos.",
+        "Actualizar contexto Helios para incluir cifrado AES-256-GCM y demás parámetros técnicos indicados.",
+        "Asegurar integración con MFA/TOTP, rate limiting e invalidación JWT para robustez en seguridad.",
+        "Mantener audit trail completo para todas acciones relacionadas con consentimiento y privacidad."
+      ],
+      "testing_notes": [
+        "Verificar visualización correcta del logo en múltiples dispositivos y navegadores.",
+        "Testear gate de aceptación para que aparezca solo en condiciones correctas y registre consentimientos correctamente.",
+        "Simular revocación de consentimientos y validar periodo de gracia y efectos posteriores.",
+        "Probar footer legal en diferentes resoluciones y accesibilidad.",
+        "Validar gestión de derechos ARCO en Configuración con casos de uso reales.",
+        "Realizar pruebas de seguridad para MFA/TOTP, rate limiting, invalidación JWT y cifrado AES-256-GCM.",
+        "Auditoría funcional y legal para asegurar cumplimiento con LFPDPPP v2.0 y normativas mexicanas."
+      ],
+      "copy_adjustments": [
+        "Actualizar textos legales con versión 2.0 en español jurídico mexicano, evitando ambigüedades.",
+        "Redactar mensajes del gate de aceptación con lenguaje claro, breve y formal.",
+        "Incluir explicaciones accesibles en sección de Privacidad para derechos ARCO y opciones de revocación.",
+        "Footer legal debe contener links actualizados y textos breves que remitan a documentos completos.",
+        "Contexto Helios debe documentar claramente términos técnicos y legales para desarrolladores y auditores."
+      ]
+    },
+    "gemini": {
+      "model_view": "Esta solicitud aborda una actualización crítica de cumplimiento legal y mejora de la experiencia de usuario para AuditaPatron. La implementación del Paquete Legal 2.0 es fundamental para la protección de datos personales en México (LFPDPPP) y la transparencia con el usuario. La corrección del header y la actualización del contexto de Helios son mejoras técnicas y de seguridad importantes.",
+      "must_do": [
+        "Corregir el componente de marca/logo del header para asegurar visualización correcta en desktop y móvil.",
+        "Implementar Aviso de Privacidad Integral v2.0 y Términos y Condiciones v2.0 con textos en español jurídico accesible para México.",
+        "Desarrollar un 'gate' de aceptación discreto para nuevos usuarios o cambios en la versión legal.",
+        "Implementar registro automático e inmutable de consentimientos para: privacy_policy, terms_of_service, data_processing, ai_training, cross_platform_sharing.",
+        "Guardar trazabilidad completa de cada consentimiento: versión, timestamp, IP y user-agent.",
+        "Implementar funcionalidad de revocación de consentimiento con un periodo de gracia de 5 días hábiles.",
+        "Añadir un footer discreto con enlaces directos a los documentos legales actualizados.",
+        "Desarrollar la gestión de privacidad y derechos ARCO (Acceso, Rectificación, Cancelación, Oposición) dentro de 'Configuración > Privacidad'.",
+        "Actualizar el contexto que recibe Helios para incluir explícitamente: cifrado AES-256-GCM, LFPDPPP v2.0, derechos ARCO, consentimiento versionado, revocación con gracia de 5 días hábiles, ecosistema Helios/CompliLink, MFA/TOTP, rate limiting, invalidación JWT y audit trail."
+      ],
+      "risk_flags": [
+        "Riesgo legal alto: Implementación incorrecta o incompleta de LFPDPPP, derechos ARCO o gestión de consentimientos puede resultar en multas y sanciones.",
+        "Riesgo de UX: Un 'gate' de aceptación intrusivo o una gestión ARCO compleja pueden deteriorar la experiencia del usuario.",
+        "Riesgo de seguridad y privacidad: Almacenamiento inadecuado de IP, user-agent o datos de consentimiento; vulnerabilidades en la gestión ARCO.",
+        "Riesgo de integridad de datos: Fallos en el registro inmutable y versionado de consentimientos y revocaciones.",
+        "Riesgo de comunicación: Textos legales no suficientemente 'accesibles' o que generen confusión al usuario.",
+        "Riesgo técnico: Complejidad en la integración de la revocación con gracia y la gestión ARCO, especialmente si no hay un sistema robusto de gestión de identidades y consentimientos (CIAM)."
+      ],
+      "implementation_order": [
+        "1. Corrección del header (UI/UX inmediata).",
+        "2. Finalización y aprobación de los textos legales (Aviso de Privacidad v2.0, T&C v2.0).",
+        "3. Implementación del 'gate' de aceptación discreto y los enlaces legales en el footer.",
+        "4. Desarrollo del sistema de registro automático de consentimientos con trazabilidad (versión, timestamp, IP, user-agent).",
+        "5. Actualización del contexto de Helios con todos los términos especificados.",
+        "6. Implementación de la funcionalidad de revocación de consentimiento con periodo de gracia.",
+        "7. Desarrollo de la sección de gestión de privacidad y derechos ARCO en 'Configuración > Privacidad'."
+      ],
+      "ui_notes": [
+        "Header: Asegurar que el logo se adapte correctamente a diferentes resoluciones y dispositivos (responsive design).",
+        "Gate de aceptación: Diseñar un modal o banner no intrusivo, con lenguaje claro y un CTA explícito para aceptar. Considerar un enlace 'Más información' a los documentos completos.",
+        "Footer: Los enlaces legales deben ser discretos pero fácilmente identificables y accesibles.",
+        "Gestión ARCO: Diseñar una interfaz clara y guiada para que el usuario pueda ejercer sus derechos. Proporcionar confirmaciones visuales y por correo electrónico de las solicitudes.",
+        "Textos legales: Validar con UX writers que el 'español jurídico accesible' sea comprensible para el usuario promedio sin comprometer la precisión legal."
+      ],
+      "backend_notes": [
+        "Consentimientos: Implementar un esquema de base de datos inmutable para el registro de consentimientos, asegurando que cada entrada sea única y contenga todos los datos de trazabilidad. Considerar un hash de la versión del documento legal para verificar su integridad.",
+        "Revocación: Desarrollar la lógica para gestionar el estado del consentimiento (activo, revocado, en gracia) y el contador de 5 días hábiles. Implementar un mecanismo de notificación al usuario y al sistema interno.",
+        "Derechos ARCO: Crear endpoints seguros para la gestión de solicitudes ARCO. Asegurar que el acceso a los datos personales para estas solicitudes esté estrictamente controlado y auditado. Implementar un workflow para el procesamiento de estas solicitudes.",
+        "Helios: Asegurar que la actualización del contexto se realice a través de un mecanismo seguro y versionado. Monitorear la correcta recepción e interpretación de los nuevos términos por parte de Helios.",
+        "Seguridad: Validar que el cifrado AES-256-GCM se aplique correctamente a los datos sensibles. Confirmar la correcta implementación y funcionamiento de MFA/TOTP, rate limiting, invalidación JWT y el audit trail para todas las operaciones críticas."
+      ],
+      "testing_notes": [
+        "Funcional: Probar el header en múltiples dispositivos y navegadores. Validar el flujo completo del 'gate' de aceptación (primer usuario, usuario existente con nueva versión legal, aceptación/rechazo). Probar el registro de todos los tipos de consentimiento con datos de trazabilidad correctos. Verificar el flujo de revocación y el periodo de gracia. Probar todas las funcionalidades de los derechos ARCO (solicitud, procesamiento, notificación).",
+        "Legal: Realizar una revisión exhaustiva por parte de un experto legal para asegurar el cumplimiento total con LFPDPPP y la correcta implementación de los derechos ARCO y la gestión de consentimientos.",
+        "Seguridad: Realizar pruebas de penetración y auditorías de seguridad sobre el almacenamiento de consentimientos, la gestión ARCO y la comunicación con Helios. Verificar la robustez de MFA/TOTP, rate limiting, invalidación JWT y el audit trail.",
+        "Integridad de datos: Verificar que los registros de consentimiento sean inmutables y que la información de trazabilidad (versión, timestamp, IP, user-agent) sea precisa y completa.",
+        "UX: Realizar pruebas de usabilidad para el 'gate' de aceptación y la sección de gestión ARCO para asegurar que sean intuitivos y claros para el usuario."
+      ],
+      "copy_adjustments": [
+        "Revisión y aprobación final de los textos del Aviso de Privacidad Integral v2.0 y Términos y Condiciones v2.0 por parte del equipo legal y de UX para asegurar 'español jurídico accesible'.",
+        "Textos del 'gate' de aceptación: Deben ser concisos, claros y legalmente válidos, con un llamado a la acción inequívoco.",
+        "Mensajes de confirmación: Para la aceptación de consentimientos, solicitudes ARCO y revocaciones, deben ser claros y transparentes.",
+        "Contexto de Helios: Asegurar que la terminología utilizada sea precisa y consistente con la documentación interna y los estándares de seguridad."
+      ]
+    },
+    "grok": {
+      "model_view": "Evaluación técnica-legal priorizando cumplimiento LFPDPPP v2.0, accesibilidad y trazabilidad en AuditaPatron, con enfoque en correcciones UI y actualizaciones legales sin interrupciones operativas.",
+      "must_do": [
+        "Corregir recorte del logo en header ajustando clases CSS para responsive design en desktop y móvil.",
+        "Implementar gate de aceptación inicial con checkboxes para consentimientos específicos (privacy_policy, terms_of_service, data_processing, ai_training, cross_platform_sharing).",
+        "Registrar automáticamente consentimientos con versión, timestamp, IP y user-agent en base de datos segura.",
+        "Incluir revocación de consentimientos con período de gracia de 5 días hábiles, notificando al usuario vía email.",
+        "Actualizar contexto de Helios para incluir menciones explícitas a AES-256-GCM, LFPDPPP v2.0, ARCO, consentimiento versionado y revocación.",
+        "Añadir links legales en footer y sección ARCO en Configuración > Privacidad."
+      ],
+      "risk_flags": [
+        "No cumplimiento con LFPDPPP si no se versiona correctamente el consentimiento, riesgo de multas INAI.",
+        "Exposición de datos por falta de cifrado en trazabilidad (IP/user-agent), violar GDPR-like en México.",
+        "Interrupción UX si gate no es discreto, potencial abandono de usuarios.",
+        "Falta de audit trail en revocaciones podría invalidar trazabilidad legal.",
+        "Actualización incompleta de Helios podría generar inconsistencias en ecosistema CompliLink."
+      ],
+      "implementation_order": [
+        "1. Corregir header y logo para estabilidad UI inmediata.",
+        "2. Desarrollar backend para registro y trazabilidad de consentimientos con AES-256-GCM.",
+        "3. Implementar gate de aceptación y revocación en frontend/backend.",
+        "4. Integrar textos legales v2.0 (Aviso Privacidad y Términos) sin redacción completa, usando placeholders.",
+        "5. Actualizar contexto Helios y añadir footer/links ARCO.",
+        "6. Configurar MFA/TOTP y rate limiting para accesos sensibles."
+      ],
+      "ui_notes": [
+        "Asegurar gate como modal no intrusivo con scrollable content y botón 'Aceptar' prominente.",
+        "Footer fijo con links a PDFs legales, responsive para móvil.",
+        "Sección Privacidad en Configuración con toggles para revocación y visualización de historial consentimientos.",
+        "Usar español jurídico accesible: evitar jerga, términos claros como 'derechos ARCO' explicados."
+      ],
+      "backend_notes": [
+        "Almacenar consentimientos en tabla dedicada con campos: user_id, version, consents_json, timestamp, ip, user_agent, hashed con AES-256-GCM.",
+        "Implementar endpoint para revocación que marque inactivo tras 5 días hábiles, calculando con zona horaria México (UTC-6).",
+        "Actualizar prompts de Helios via API para incluir cláusulas legales explícitas, validando con audit trail.",
+        "Integrar invalidación JWT en revocaciones y rate limiting (e.g., 5 intentos/hora por IP)."
+      ],
+      "testing_notes": [
+        "Probar header en Chrome/Firefox/Safari desktop y iOS/Android móvil para recortes.",
+        "Simular gate en primera visita y cambio versión, verificando storage local y backend log.",
+        "Test revocación: confirmar gracia de 5 días con mocks de timestamp, email notification y persistencia datos.",
+        "Validar trazabilidad: queries para IP/user-agent masked, cumplimiento ARCO (acceso/cancelación).",
+        "E2E para Helios: input contexto actualizado, output menciona elementos legales sin fugas."
+      ],
+      "copy_adjustments": [
+        "Usar placeholders para textos v2.0: e.g., '[INSERT AVISO PRIVACIDAD LFPDPPP v2.0]' en gate y links.",
+        "Ajustar labels consentimientos: 'Acepto procesamiento de datos conforme LFPDPPP' para claridad.",
+        "Footer: 'Aviso de Privacidad | Términos y Condiciones | Derechos ARCO' con tooltips breves.",
+        "En Privacidad: 'Revocar consentimiento (efecto en 5 días hábiles)' con warning modal."
+      ]
+    }
+  },
+  "errors": {}
+}

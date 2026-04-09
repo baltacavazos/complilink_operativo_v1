@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type TourStep = {
   id: string;
@@ -220,11 +221,15 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
       <div className="container mx-auto flex h-[4.55rem] max-w-[1380px] items-center justify-between gap-1.5 sm:h-[5rem] lg:gap-3">
-        <a href="#top" aria-label="Ir al inicio de AuditaPatron" className="flex min-w-[220px] shrink-0 items-center pl-1 sm:min-w-[310px] sm:pl-0 lg:min-w-[410px]">
+        <a
+          href="#top"
+          aria-label="Ir al inicio de AuditaPatron"
+          className="flex min-w-0 shrink-0 items-center pl-1 sm:pl-0 lg:max-w-[420px]"
+        >
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="!h-8 w-auto max-w-none sm:!h-9 lg:!h-[2.7rem]"
+            imageClassName="!h-9 w-auto max-w-[min(56vw,18rem)] object-contain sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
           />
         </a>
 
@@ -1129,6 +1134,27 @@ function PrivacySection() {
               </div>
             ))}
           </div>
+
+          <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Centro de privacidad</p>
+            <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">{PRIVACY_CENTER_COPY.title}</h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">{PRIVACY_CENTER_COPY.intro}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {PRIVACY_CENTER_COPY.rightsSummary.map((item) => (
+                <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-sm leading-7 text-slate-600">{PRIVACY_CENTER_COPY.revocationNotice}</p>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Para derechos ARCO o revocación, escríbenos a{" "}
+              <a className="font-semibold text-slate-900 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>
+                {LEGAL_CONTACT_EMAIL}
+              </a>
+              .
+            </p>
+          </div>
         </div>
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
@@ -1153,9 +1179,25 @@ function PrivacySection() {
           <div className="mt-4 rounded-[1.4rem] bg-teal-50 p-5">
             <div className="flex items-start gap-3">
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-teal-800" strokeWidth={1.8} />
-              <p className="text-sm leading-7 text-teal-950">
-                Tus documentos pueden fortalecer tu expediente y tu contexto laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
-              </p>
+              <div>
+                <p className="text-sm leading-7 text-teal-950">
+                  Tus documentos pueden fortalecer tu expediente y tu contexto laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {LEGAL_DOCUMENTS.map((document) => (
+                    <a
+                      key={document.slug}
+                      href={document.route}
+                      className="rounded-full border border-white bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-teal-900 transition hover:border-teal-200 hover:bg-teal-100"
+                    >
+                      {document.shortTitle}
+                    </a>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs leading-6 text-teal-900">
+                  Versión legal vigente: {LEGAL_VERSION}. La aceptación completa se solicita de forma natural cuando entras a tu expediente.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1265,6 +1307,14 @@ function SiteFooter() {
           </a>
           <a href="#privacidad" className="transition-colors hover:text-slate-900">
             Privacidad
+          </a>
+          {LEGAL_DOCUMENTS.map((document) => (
+            <a key={document.slug} href={document.route} className="transition-colors hover:text-slate-900">
+              {document.shortTitle}
+            </a>
+          ))}
+          <a href={`mailto:${LEGAL_CONTACT_EMAIL}`} className="transition-colors hover:text-slate-900">
+            Derechos ARCO
           </a>
         </div>
       </div>

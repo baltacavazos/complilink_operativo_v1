@@ -36,6 +36,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_GATE_COPY, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type DossierTarget = {
   type: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence";
@@ -1482,6 +1483,7 @@ export default function Auditar() {
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
   const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
   const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
+  const acceptLegalPackageMutation = trpc.consent.acceptLegalPackage.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -1509,6 +1511,8 @@ export default function Auditar() {
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<string | null>(null);
   const [heliosCopilotOpen, setHeliosCopilotOpen] = useState(false);
   const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<HeliosCopilotMessage[]>([]);
+  const [legalGateChecked, setLegalGateChecked] = useState(false);
+  const [legalGateError, setLegalGateError] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
@@ -1746,6 +1750,11 @@ export default function Auditar() {
     }
   }, [casesQuery.data, selectedCaseId]);
 
+  const legalAcceptance = caseDetailQuery.data?.legalAcceptance;
+  const legalAcceptanceDocuments = legalAcceptance?.documents ?? [];
+  const acceptedLegalDocumentsCount = legalAcceptanceDocuments.filter((document) => document.accepted).length;
+  const legalPendingDocuments = legalAcceptance?.missingDocuments ?? [];
+  const legalGateRequired = Boolean(caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted);
   const documents = caseDetailQuery.data?.documents ?? [];
   const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
@@ -1904,6 +1913,11 @@ export default function Auditar() {
     attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
     receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
   });
+
+  useEffect(() => {
+    setLegalGateChecked(false);
+    setLegalGateError(null);
+  }, [currentCaseScopeKey, legalAcceptance?.isAccepted]);
   const documentTypeCounts = useMemo(
     () =>
       documents.reduce<Record<string, number>>((counts, document) => {
@@ -2057,12 +2071,51 @@ export default function Auditar() {
         : previewStructuredExtraction.reviewNotes,
     };
   }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
+  const handleAcceptLegalPackage = async () => {
+    if (!caseDetailInput) {
+      return;
+    }
+
+    if (!legalGateChecked) {
+      setLegalGateError("Confirma la casilla para registrar tu aceptación y continuar con el expediente.");
+      return;
+    }
+
+    try {
+      setLegalGateError(null);
+      setSubmitError(null);
+      await acceptLegalPackageMutation.mutateAsync({
+        ...caseDetailInput,
+        accepted: true,
+      });
+      setLegalGateChecked(false);
+      await Promise.all([
+        utils.cases.detail.invalidate(caseDetailInput),
+        utils.consent.status.invalidate(caseDetailInput),
+      ]);
+      await caseDetailQuery.refetch();
+    } catch (error) {
+      setLegalGateError(error instanceof Error ? error.message : "No fue posible registrar tu aceptación legal.");
+    }
+  };
+
   const handleHeliosCopilotSend = (content: string) => {
     if (!selectedTenantId || !selectedCaseId) {
       setHeliosCopilotMessages((current) =>
         appendHeliosCopilotMessage(current, {
           role: "assistant",
           content: "Primero elige un expediente para que pueda responder con el contexto correcto.",
+        }),
+      );
+      return;
+    }
+
+    if (legalGateRequired) {
+      setLegalGateError("Antes de usar el copiloto Helios, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
+      setHeliosCopilotMessages((current) =>
+        appendHeliosCopilotMessage(current, {
+          role: "assistant",
+          content: "Antes de abrir el copiloto, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
         }),
       );
       return;
@@ -2363,6 +2416,12 @@ export default function Auditar() {
       return;
     }
 
+    if (legalGateRequired) {
+      setLegalGateError("Para subir documentos y fortalecer tu expediente, primero acepta el paquete legal vigente.");
+      setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
+      return;
+    }
+
     try {
       setSubmitError(null);
       const base64Content = await fileToBase64(selectedFile);
@@ -2392,6 +2451,12 @@ export default function Auditar() {
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
       setSubmitError("Primero analiza un documento para revisarlo antes de guardarlo.");
+      return;
+    }
+
+    if (legalGateRequired) {
+      setLegalGateError("Antes de guardar documentos en tu expediente, acepta el paquete legal vigente.");
+      setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
       return;
     }
 
@@ -2531,8 +2596,8 @@ export default function Auditar() {
               <AuditaPatronLogoIcon surface="dark" className="sm:hidden" imageClassName="h-11 w-11 object-contain" />
               <AuditaPatronLogoWordmark
                 surface="dark"
-                className="hidden sm:inline-flex"
-                imageClassName="max-w-[260px]"
+                className="hidden max-w-full sm:inline-flex"
+                imageClassName="h-auto w-auto max-w-[290px] object-contain"
                 subtitleClassName="text-[0.82rem] tracking-[0.15em] sm:text-[0.92rem]"
               />
             </div>
@@ -2592,12 +2657,96 @@ export default function Auditar() {
               className="mt-4 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
               onClick={() => {
                 setBootstrapStarted(false);
-                bootstrapMutation.reset();
               }}
             >
-              Reintentar
+              Reintentar preparación
             </Button>
           </div>
+        ) : null}
+
+        {legalGateRequired ? (
+          <section className="mt-6 rounded-[1.75rem] border border-amber-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-900">
+                  <Lock className="h-4 w-4" strokeWidth={1.8} />
+                  Gate legal activo
+                </div>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950">{LEGAL_GATE_COPY.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-700">{LEGAL_GATE_COPY.body}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{LEGAL_GATE_COPY.subtext}</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                <p className="font-semibold text-slate-950">Progreso legal</p>
+                <p className="mt-2">
+                  {acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.
+                </p>
+                <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 lg:grid-cols-2">
+              {LEGAL_DOCUMENTS.map((document) => {
+                const status = legalAcceptanceDocuments.find((item) => item.slug === document.slug);
+                const accepted = status?.accepted ?? false;
+                return (
+                  <div key={document.slug} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-950">{document.fullTitle}</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                          Versión {document.version} · Vigencia {document.effectiveDate}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${accepted ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}>
+                        {accepted ? "Aceptado" : "Pendiente"}
+                      </span>
+                    </div>
+                    <a
+                      href={document.route}
+                      className="mt-3 inline-flex text-sm font-semibold text-slate-900 underline underline-offset-4"
+                    >
+                      Revisar documento
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+
+            <label className="mt-5 flex items-start gap-3 rounded-[1.2rem] border border-slate-200 bg-white p-4">
+              <input
+                type="checkbox"
+                checked={legalGateChecked}
+                onChange={(event) => {
+                  setLegalGateChecked(event.target.checked);
+                  if (event.target.checked) {
+                    setLegalGateError(null);
+                  }
+                }}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+              />
+              <span className="text-sm leading-7 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+            </label>
+
+            {legalGateError ? (
+              <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900">
+                {legalGateError}
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Button
+                className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                onClick={() => void handleAcceptLegalPackage()}
+                disabled={acceptLegalPackageMutation.isPending}
+              >
+                {acceptLegalPackageMutation.isPending ? "Registrando aceptación..." : LEGAL_GATE_COPY.button}
+              </Button>
+              <p className="text-sm leading-6 text-slate-600">
+                Mientras este paso esté pendiente, el copiloto Helios y la carga de documentos quedan en pausa para este expediente.
+              </p>
+            </div>
+          </section>
         ) : null}
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
@@ -4096,7 +4245,7 @@ export default function Auditar() {
                       <Button
                         className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
                         onClick={() => setHeliosCopilotOpen(true)}
-                        disabled={!selectedCaseId}
+                        disabled={!selectedCaseId || legalGateRequired}
                       >
                         Abrir copiloto laboral
                       </Button>
@@ -4190,6 +4339,69 @@ export default function Auditar() {
                     </article>
                   ))
                 )}
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Privacidad y consentimiento</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Marco legal visible para tu expediente</h2>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                {PRIVACY_CENTER_COPY.intro} La versión vigente que aplica hoy en AuditaPatron es {LEGAL_VERSION}.
+              </p>
+
+              <div className={`mt-4 rounded-[1.2rem] border p-4 ${legalAcceptance?.isAccepted ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className={`text-sm font-semibold ${legalAcceptance?.isAccepted ? "text-emerald-950" : "text-amber-950"}`}>
+                      {legalAcceptance?.isAccepted ? "Aceptación versionada al día" : "Aceptación legal pendiente"}
+                    </p>
+                    <p className={`mt-2 text-sm leading-7 ${legalAcceptance?.isAccepted ? "text-emerald-900" : "text-amber-900"}`}>
+                      {legalAcceptance?.isAccepted
+                        ? `Tu expediente ya registra la aceptación del paquete legal ${legalAcceptance.legalVersion}.`
+                        : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y el copiloto Helios.`}
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">
+                    {acceptedLegalDocumentsCount}/{legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} aceptados
+                  </div>
+                </div>
+                {legalAcceptance?.acceptedAt ? (
+                  <p className={`mt-3 text-xs uppercase tracking-[0.12em] ${legalAcceptance?.isAccepted ? "text-emerald-800" : "text-amber-800"}`}>
+                    Última aceptación registrada: {formatDate(legalAcceptance.acceptedAt)}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {PRIVACY_CENTER_COPY.rightsSummary.map((item) => (
+                  <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                <p className="text-sm font-semibold text-teal-950">Revocación y derechos ARCO</p>
+                <p className="mt-2 text-sm leading-7 text-teal-900">{PRIVACY_CENTER_COPY.revocationNotice}</p>
+                <p className="mt-3 text-sm leading-7 text-teal-900">
+                  Si quieres ejercer derechos ARCO o pedir apoyo, escríbenos a{" "}
+                  <a className="font-semibold underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>
+                    {LEGAL_CONTACT_EMAIL}
+                  </a>
+                  .
+                </p>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {LEGAL_DOCUMENTS.map((document) => (
+                  <a
+                    key={document.slug}
+                    href={document.route}
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+                  >
+                    {document.shortTitle}
+                  </a>
+                ))}
               </div>
             </div>
 

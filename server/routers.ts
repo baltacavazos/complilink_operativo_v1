@@ -57,6 +57,18 @@ import {
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { buildHeliosOpinionContract } from "./heliosIntegrationService";
+import {
+  HELIOS_CONTEXT_NOTE,
+  LEGAL_ACCEPTANCE_VERSION,
+  LEGAL_CONTACT_EMAIL,
+  LEGAL_CONSENT_TYPES,
+  LEGAL_DOCUMENTS,
+  LEGAL_EFFECTIVE_DATE,
+  LEGAL_GATE_COPY,
+  LEGAL_VERSION,
+  getLegalConsentLabel,
+  type LegalConsentType,
+} from "@shared/legal";
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
 const casePrioritySchema = z.enum(CASE_PRIORITIES);
@@ -108,6 +120,127 @@ function getMetadataDocumentId(metadata: Record<string, unknown> | null) {
   if (typeof metadata.documentId === "string") return metadata.documentId;
   if (typeof metadata.document_id === "string") return metadata.document_id;
   return null;
+}
+
+const legalRequiredConsentTypes = ["privacy_policy", "terms_of_service"] as const satisfies LegalConsentType[];
+
+type LegalConsentSummarySource = {
+  legalBasis: string | null;
+  status: string;
+  notes?: string | null;
+  grantedAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+  createdAt?: Date | string | null;
+};
+
+function getHeaderValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value.find((item) => item.trim().length > 0)?.trim() ?? null;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return null;
+}
+
+function getClientIp(req: { headers: Record<string, unknown>; ip?: string | null }) {
+  const forwarded = getHeaderValue(req.headers["x-forwarded-for"] as string | string[] | undefined);
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim() ?? forwarded;
+  }
+
+  return req.ip?.trim() ? req.ip.trim() : null;
+}
+
+function getUserAgent(req: { headers: Record<string, unknown> }) {
+  return getHeaderValue(req.headers["user-agent"] as string | string[] | undefined);
+}
+
+function buildLegalConsentBasis(type: LegalConsentType) {
+  return `legal_package:${LEGAL_ACCEPTANCE_VERSION}:${type}`;
+}
+
+function getLegalConsentTypeFromBasis(legalBasis: string | null | undefined) {
+  if (!legalBasis) return null;
+
+  const prefix = `legal_package:${LEGAL_ACCEPTANCE_VERSION}:`;
+  if (!legalBasis.startsWith(prefix)) return null;
+
+  const candidate = legalBasis.slice(prefix.length);
+  return LEGAL_CONSENT_TYPES.find((item) => item === candidate) ?? null;
+}
+
+function getLegalDocumentRouteByConsentType(type: LegalConsentType) {
+  return LEGAL_DOCUMENTS.find((document) => document.consentType === type)?.route ?? null;
+}
+
+function buildLegalAcceptanceSummary(consents: LegalConsentSummarySource[]) {
+  const latestByType = new Map<LegalConsentType, { status: string; recordedAt: string | null }>();
+
+  for (const consent of consents) {
+    const consentType = getLegalConsentTypeFromBasis(consent.legalBasis);
+    if (!consentType) continue;
+
+    const recordedAtValue = consent.updatedAt ?? consent.grantedAt ?? consent.createdAt ?? null;
+    const recordedAt = recordedAtValue ? new Date(recordedAtValue).toISOString() : null;
+    const previous = latestByType.get(consentType);
+    const previousTime = previous?.recordedAt ? new Date(previous.recordedAt).getTime() : -1;
+    const currentTime = recordedAt ? new Date(recordedAt).getTime() : 0;
+
+    if (!previous || currentTime >= previousTime) {
+      latestByType.set(consentType, {
+        status: consent.status,
+        recordedAt,
+      });
+    }
+  }
+
+  const missingConsentTypes = legalRequiredConsentTypes.filter((type) => latestByType.get(type)?.status !== "granted");
+  const acceptedAt = legalRequiredConsentTypes
+    .map((type) => latestByType.get(type)?.recordedAt ?? null)
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .at(-1) ?? null;
+
+  return {
+    acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+    legalVersion: LEGAL_VERSION,
+    effectiveDate: LEGAL_EFFECTIVE_DATE,
+    isAccepted: missingConsentTypes.length === 0,
+    acceptedAt,
+    missingConsentTypes,
+    missingDocuments: LEGAL_DOCUMENTS.filter((document) => missingConsentTypes.includes(document.consentType)).map((document) => ({
+      slug: document.slug,
+      route: document.route,
+      shortTitle: document.shortTitle,
+    })),
+    gate: LEGAL_GATE_COPY,
+    contactEmail: LEGAL_CONTACT_EMAIL,
+    documents: LEGAL_DOCUMENTS.map((document) => ({
+      slug: document.slug,
+      route: document.route,
+      shortTitle: document.shortTitle,
+      fullTitle: document.fullTitle,
+      version: document.version,
+      effectiveDate: document.effectiveDate,
+      consentType: document.consentType,
+      accepted: latestByType.get(document.consentType)?.status === "granted",
+      acceptedAt: latestByType.get(document.consentType)?.recordedAt ?? null,
+    })),
+    consentStatusByType: Object.fromEntries(
+      LEGAL_CONSENT_TYPES.map((type) => [
+        type,
+        {
+          label: getLegalConsentLabel(type),
+          status: latestByType.get(type)?.status ?? "pending",
+          acceptedAt: latestByType.get(type)?.recordedAt ?? null,
+          route: getLegalDocumentRouteByConsentType(type),
+        },
+      ]),
+    ),
+  };
 }
 
 type AuditarTargetType = z.infer<typeof auditarTargetTypeSchema>;
@@ -907,7 +1040,23 @@ export const appRouter = router({
       });
       await seedDemoCaseIfEmpty(ctx.user.id);
       const snapshot = await getSystemSnapshot(ctx.user.id);
-      return { tenant, snapshot };
+      return {
+        tenant,
+        snapshot,
+        legal: {
+          acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+          legalVersion: LEGAL_VERSION,
+          effectiveDate: LEGAL_EFFECTIVE_DATE,
+          documents: LEGAL_DOCUMENTS.map((document) => ({
+            slug: document.slug,
+            route: document.route,
+            shortTitle: document.shortTitle,
+            fullTitle: document.fullTitle,
+            version: document.version,
+            effectiveDate: document.effectiveDate,
+          })),
+        },
+      };
     }),
     snapshot: protectedProcedure.query(async ({ ctx }) => {
       return getSystemSnapshot(ctx.user.id);
@@ -1000,10 +1149,20 @@ export const appRouter = router({
           };
         });
         const complilinkMonitoring = buildCompliLinkMonitoring(documents, detail.events);
+        const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         return {
           ...detail,
           documents,
           complilinkMonitoring,
+          legalAcceptance,
+          legalDocuments: LEGAL_DOCUMENTS.map((document) => ({
+            slug: document.slug,
+            route: document.route,
+            shortTitle: document.shortTitle,
+            fullTitle: document.fullTitle,
+            version: document.version,
+            effectiveDate: document.effectiveDate,
+          })),
           heliosExpediente: {
             heliosExpedienteId: detail.case.caseId,
             displayName: detail.case.employeeName ? `Expediente Helios de ${detail.case.employeeName}` : detail.case.title,
@@ -1036,13 +1195,14 @@ export const appRouter = router({
           caseId: input.caseId,
         });
         const latestOpinion = asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
+        const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
           documentsCount: documents.length,
         });
         const disclaimer =
           getOptionalString(latestOpinion?.disclaimer) ??
-          "Esta respuesta se basa en los documentos visibles del expediente y en lecturas preliminares. No sustituye a un abogado ni constituye asesoría legal vinculante.";
+          `Esta respuesta se basa en los documentos visibles del expediente y en el marco operativo vigente de AuditaPatron ${LEGAL_VERSION}. No sustituye asesoría profesional vinculante.`;
         const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
         const fallbackAnswer = buildHeliosCopilotFallbackAnswer({
           opinion: latestOpinion,
@@ -1059,11 +1219,15 @@ export const appRouter = router({
                 {
                   role: "system",
                   content:
-                    "Eres Helios, el copiloto laboral de AuditaPatron para México. Responde siempre en español claro, práctico y breve. Usa únicamente el contexto del expediente proporcionado. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
+                    "Eres Helios, el copiloto laboral de AuditaPatron para México. Responde siempre en español claro, práctico y breve. Usa únicamente el contexto del expediente proporcionado. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Reconoce derechos ARCO, revocación y límites del expediente digital cuando sea pertinente. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
                 },
                 {
                   role: "user",
-                  content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents })}\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves: 1) respuesta clara, 2) lo que sí se sabe, 3) lo que falta confirmar si aplica, 4) siguiente paso útil.`,
+                  content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents })}\n\nMarco operativo y legal:\n${HELIOS_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    legalAcceptance.isAccepted
+                      ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
+                      : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
+                  }.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves: 1) respuesta clara, 2) lo que sí se sabe, 3) lo que falta confirmar si aplica, 4) siguiente paso útil.`,
                 },
               ],
             });
@@ -2302,6 +2466,176 @@ export const appRouter = router({
       }),
   }),
   consent: router({
+    status: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+        }),
+      )
+      .query(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+
+        return buildLegalAcceptanceSummary(detail.consents);
+      }),
+    acceptLegalPackage: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          accepted: z.literal(true),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const currentAcceptance = buildLegalAcceptanceSummary(detail.consents);
+
+        if (currentAcceptance.isAccepted) {
+          return {
+            success: true,
+            alreadyAccepted: true,
+            acceptance: currentAcceptance,
+          };
+        }
+
+        const acceptedAt = new Date();
+        const subjectName = ctx.user.name ?? ctx.user.email ?? `Usuario ${ctx.user.id}`;
+        const subjectRole = "platform_user";
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
+
+        const legalRecords = LEGAL_CONSENT_TYPES.map((consentType) => {
+          const relatedDocument = LEGAL_DOCUMENTS.find((document) => document.consentType === consentType);
+          const isSecondaryPurpose = consentType === "ai_training";
+
+          return {
+            consentType,
+            documentId: undefined,
+            subjectName,
+            subjectRole,
+            legalBasis: buildLegalConsentBasis(consentType),
+            status: "granted" as const,
+            notes: JSON.stringify({
+              acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+              legalVersion: LEGAL_VERSION,
+              effectiveDate: LEGAL_EFFECTIVE_DATE,
+              consentType,
+              consentLabel: getLegalConsentLabel(consentType),
+              documentSlug: relatedDocument?.slug ?? null,
+              documentRoute: relatedDocument?.route ?? null,
+              clientIp,
+              userAgent,
+              actorUserId: ctx.user.id,
+              actorEmail: ctx.user.email ?? null,
+              source: "auditar_gate_v2",
+              treatmentMode: isSecondaryPurpose ? "opt_out_available" : "required_for_service",
+            }),
+            grantedAt: acceptedAt,
+            createdAt: acceptedAt,
+            updatedAt: acceptedAt,
+          };
+        });
+
+        for (const record of legalRecords) {
+          await addConsentRecord({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId: record.documentId,
+            subjectName: record.subjectName,
+            subjectRole: record.subjectRole,
+            legalBasis: record.legalBasis,
+            status: record.status,
+            notes: record.notes,
+            grantedAt: record.grantedAt,
+          });
+
+          const consentContract = {
+            ...buildCanonicalConsentContract({
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              traceId: detail.case.traceId,
+              documentId: record.documentId,
+              subjectName: record.subjectName,
+              status: record.status,
+              legalBasis: record.legalBasis,
+            }),
+            schema_version: LEGAL_ACCEPTANCE_VERSION,
+            legal_version: LEGAL_VERSION,
+            effective_date: LEGAL_EFFECTIVE_DATE,
+            consent_type: record.consentType,
+            consent_label: getLegalConsentLabel(record.consentType),
+            document_route: getLegalDocumentRouteByConsentType(record.consentType),
+            accepted_at: acceptedAt.toISOString(),
+            accepted_from_ip: clientIp,
+            accepted_user_agent: userAgent,
+            actor_user_id: ctx.user.id,
+            actor_email: ctx.user.email ?? null,
+          };
+
+          await upsertCanonicalContract({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "consent",
+            schemaVersion: LEGAL_ACCEPTANCE_VERSION,
+            payload: JSON.stringify(consentContract),
+            status: "ready",
+          });
+        }
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "consent_updated",
+          title: `Paquete legal ${LEGAL_VERSION} aceptado`,
+          description: `${subjectName} aceptó el Aviso de Privacidad Integral y los Términos y Condiciones vigentes para continuar en el expediente digital.`,
+          metadata: JSON.stringify({
+            acceptance_version: LEGAL_ACCEPTANCE_VERSION,
+            legal_version: LEGAL_VERSION,
+            consent_types: LEGAL_CONSENT_TYPES,
+            client_ip: clientIp,
+            user_agent: userAgent,
+          }),
+          eventAt: acceptedAt,
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "consent",
+          entityId: `${input.caseId}:legal_package:${LEGAL_ACCEPTANCE_VERSION}`,
+          action: "consent.legal_package_accept",
+          afterState: {
+            acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+            legalVersion: LEGAL_VERSION,
+            effectiveDate: LEGAL_EFFECTIVE_DATE,
+            acceptedAt: acceptedAt.toISOString(),
+            clientIp,
+            userAgent,
+            consentTypes: LEGAL_CONSENT_TYPES,
+            requiredConsentTypes: legalRequiredConsentTypes,
+          },
+        });
+
+        return {
+          success: true,
+          alreadyAccepted: false,
+          acceptance: buildLegalAcceptanceSummary([...detail.consents, ...legalRecords]),
+        };
+      }),
     create: protectedProcedure
       .input(
         z.object({
