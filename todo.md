@@ -457,3 +457,6 @@
 - [x] Unificar el tono cálido y comprensible en los textos visibles relacionados con acompañamiento, ayuda y orientación dentro de la experiencia
 - [x] Refinar los CTA hacia /auditar con dos variantes de copy más claras y cercanas, sin alterar la lógica del flujo
 - [x] Subir ligeramente el tono de los backgrounds por sección para que la landing se perciba menos plana, menos blanca y mejor segmentada visualmente
+- [x] Añadir divisores o acentos visuales suaves entre bloques clave de la home para que la lectura se sienta más seccionada sin endurecer el diseño
+- [x] Reforzar ligeramente los fondos por sección en móvil para que la segmentación visual se perciba mejor en pantallas pequeñas
+- [x] Definir y unificar una sola versión final del CTA principal en toda la experiencia visible de la home

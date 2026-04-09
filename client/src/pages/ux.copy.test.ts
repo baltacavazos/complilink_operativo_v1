@@ -24,13 +24,16 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("sin palabras difíciles.");
     expect(source).toContain("Claro y móvil");
     expect(source).toContain('label: "Asistente"');
-    expect(source).toContain("Comenzar mi revisión");
-    expect(source).toContain("Revisar mis documentos");
-    expect(source).toContain("Entrar con mi asistente");
+    expect(source).not.toContain("Comenzar mi revisión");
+    expect(source).not.toContain("Revisar mis documentos");
+    expect(source).not.toContain("Entrar con mi asistente");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Abrir mi expediente"');
     expect(source).toContain("Abrir mi expediente");
     expect(source).toContain("Aquí te acompañamos paso a paso para cuidar tus derechos laborales.");
-    expect(source).toContain('bg-[#e6f2f1]');
-    expect(source).toContain('bg-[#f4f9f8]');
+    expect(source).toContain("SectionDivider");
+    expect(source).toContain('bg-[#dbeeee]');
+    expect(source).toContain('bg-[#eef6f5]');
+    expect(source).toContain('bg-[#eaf5f3]');
   });
 
   it("oculta referencias visibles al motor interno en Auditar y usa una variante cálida", () => {

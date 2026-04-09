@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-04-09T04:31:14.651Z",
+  "openai": {
+    "cta_final": "Revisar mis documentos",
+    "cta_rationale": "Un solo CTA claro y consistente ayuda a los usuarios a entender fácilmente la acción que deben tomar.",
+    "section_dividers": [
+      "Líneas sutiles de separación entre secciones usando 'border-t border-slate-200' para un toque suave.",
+      "Uso de espacios adicionales (padding) entre secciones para crear una separación visual sin divisores gráficos.",
+      "Sombras ligeras en secciones clave para diferenciarlas sutilmente."
+    ],
+    "mobile_background_strategy": [
+      "Aumentar la opacidad de los fondos en móvil usando clases como 'bg-opacity-90' para mayor contraste.",
+      "Utilizar un fondo ligeramente más oscuro en secciones clave para mejorar la legibilidad en pantallas pequeñas.",
+      "Incorporar un degradado suave en el fondo de secciones importantes para crear un efecto visual más atractivo."
+    ],
+    "do_not_do": [
+      "Evitar el uso de colores demasiado brillantes que puedan resultar molestos en pantallas pequeñas.",
+      "No agregar múltiples versiones del CTA, lo que podría confundir a los usuarios.",
+      "Evitar el uso de divisores gráficos demasiado pesados que puedan romper la fluidez visual del diseño."
+    ],
+    "implementation_notes": [
+      "Actualizar el componente de botón en 'FinalCtaSection' para que use el nuevo CTA 'Revisar mis documentos'.",
+      "Agregar clases de Tailwind para los divisores en secciones clave en 'HeroSection', 'DossierSection', y 'PriorityDocumentsSection'.",
+      "Modificar las clases de fondo en secciones móviles en 'HeroSection' y 'PrivacySection' para aplicar la nueva estrategia de fondo."
+    ]
+  },
+  "grok": {
+    "cta_final": "Empieza tu revisión ahora",
+    "cta_rationale": "Versión unificada que invita a la acción con calidez y urgencia suave, reutilizable en todos los CTAs principales para consistencia y confianza.",
+    "section_dividers": [
+      "Usar bordes suaves con Tailwind 'border-b border-slate-100/50' entre secciones, con padding vertical de 2-4rem para separación natural.",
+      "Añadir gradientes lineales sutiles como 'bg-gradient-to-b from-transparent to-slate-50/20' en el fondo de cada sección para transiciones suaves.",
+      "Incorporar iconos minimalistas (ej. lucide-react ChevronDown) con opacidad 0.3 y animación fade-in para acentos visuales no intrusivos.",
+      "Aplicar sombras suaves 'shadow-[0_4px_12px_-8px_rgba(0,0,0,0.05)]' en el borde inferior de bloques clave para profundidad ligera.",
+      "Usar divisores horizontales con 'hr' estilizado como 'border-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent' para segmentación elegante.",
+      "Agregar espaciado variable con 'my-6 md:my-8' y un fondo de patrón sutil como dots o waves en baja opacidad para diferenciar bloques sin sobrecarga."
+    ],
+    "mobile_background_strategy": [
+      "Aumentar intensidad en mobile con media queries: '@media (max-width: 640px) { .section-bg { background-color: rgba(20,184,166,0.24); } }' para fondos teal más perceptibles.",
+      "Usar gradientes ajustados en mobile: 'bg-[radial-gradient(circle_at_top,_rgba(45,212,191,0.28),_transparent_50%)]' para mayor contraste sin saturación excesiva.",
+      "Aplicar opacidad dinámica: 'bg-opacity-30 md:bg-opacity-20' en clases Tailwind para fondos más intensos en pantallas pequeñas.",
+      "Incorporar fondos lineales con mayor saturación: 'bg-gradient-to-b from-teal-50/90 to-teal-100/90' solo en mobile para mejor legibilidad de secciones.",
+      "Ajustar colores HSL en Tailwind config para mobile: aumentar saturación de 16% a 24% en fondos clave via CSS variables.",
+      "Agregar patrones sutiles como 'background-image: url(/subtle-pattern.png); background-opacity: 0.15;' en mobile para segmentación visual mejorada."
+    ],
+    "do_not_do": [
+      "Evitar bordes duros o colores fuertes que hagan la página parecer un formulario oficial o intimidante.",
+      "No sobrecargar con exceso de blanco puro; mantener fondos suaves para no dar impresión de documento largo y vacío.",
+      "No usar lenguaje técnico en copy de CTAs o secciones, como 'iniciar auditoría' en vez de algo cálido.",
+      "Evitar cambios en flujos como agregar nuevos componentes que alteren la navegación existente.",
+      "No aplicar animaciones pesadas que ralenticen la carga en mobile, manteniendo todo sutil y performante.",
+      "Evitar inconsistencias en CTAs; no mezclar variaciones como 'Empezar' y 'Comenzar' en la misma página."
+    ],
+    "implementation_notes": [
+      "En HeroSection, reemplazar todos los Button con onClick={goToAuditFlow} por el cta_final unificado, agregando 'className=\"consistent-cta\"' para reutilización.",
+      "Agregar divisores: en el return de cada section principal (ej. HeroSection), insertar <div className=\"divider-soft my-4 border-b border-slate-100/50\" /> entre bloques clave.",
+      "Para mobile backgrounds: envolver secciones con <div className=\"section-bg bg-[radial-gradient(...)] sm:bg-opacity-20 bg-opacity-30\"> y ajustar via Tailwind.",
+      "Buscar y unificar CTAs: grep 'Button' en Home.tsx y estandarizar texto a cta_final, asegurando icono ArrowRight consistente.",
+      "Añadir acentos: en secciones como HowItWorksSection, agregar después de cada article un <hr className=\"h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent my-4\" />.",
+      "Notas generales: Usar useMediaQuery para mobile-specific classes en Home.tsx, como 'const isMobile = useMediaQuery({ maxWidth: 640 });' y aplicar clases condicionales."
+    ]
+  },
+  "gemini": {
+    "cta_final": "Abrir mi expediente",
+    "cta_rationale": "Es el más cálido, directo y consistente con la promesa de construir un 'expediente digital'. Implica acceso a un espacio personal y organizado, alineándose con el valor central del producto de AuditaPatron.",
+    "section_dividers": [
+      "Añadir un div con `className=\"h-px bg-gradient-to-r from-teal-100 via-slate-50 to-sky-100 my-16\"` entre secciones de contenido principal para una separación sutil y elegante.",
+      "Para la `QuickTrustSection`, ajustar la clase de borde a `border-y border-teal-100/70` para un acento de color suave en la transición.",
+      "Aplicar `shadow-[inset_0_12px_24px_-18px_rgba(15,23,42,0.04)]` al contenedor principal de secciones con fondos claros y bordes (ej. `ConfidenceMagicSection`, `MobileOnboardingSection`) para un efecto de 'papel levantado' sutil.",
+      "En la `GuidedTourSection` (fondo oscuro), añadir un `border-t border-white/15` para una transición más suave desde la sección anterior.",
+      "Utilizar `divide-y divide-slate-100` o `divide-teal-50` en listas de contenido (como FAQs o bullets) para una separación interna suave y consistente."
+    ],
+    "mobile_background_strategy": [
+      "Incrementar la saturación de los fondos claros en mobile: Para secciones con fondos muy sutiles (ej. `ConfidenceMagicSection`, `DossierSection`, `FAQSection`), añadir `sm:bg-slate-50` o `sm:bg-teal-50` al elemento `section` para un color base más perceptible.",
+      "Acentuar los fondos con tonos de color en mobile: Para secciones como `QuickTrustSection` (`bg-[#e6f2f1]`), usar `sm:bg-teal-100/60` para hacer el tono verde-azulado más evidente.",
+      "Simplificar gradientes complejos en mobile: Para `HeroSection` y `FinalCtaSection`, modificar las clases de fondo para que en `sm:` usen un `linear-gradient` más simple o un color sólido ligeramente más intenso (ej. `sm:bg-gradient-to-b from-teal-50/50 to-white` para el Hero).",
+      "Añadir un `border-b` de color suave para separar secciones en mobile: En secciones alternas, añadir `sm:border-b sm:border-teal-100/70` para una línea de separación suave y con un toque de color.",
+      "Aumentar la opacidad de los fondos `bg-white/xx` en mobile: Donde se usan fondos blancos con opacidad (ej. `HeroSection` en el bloque de 'Tu claridad hoy'), usar `sm:bg-white/95` para que el contenido resalte más."
+    ],
+    "do_not_do": [
+      "Evitar lenguaje técnico, legalista o jerga de nómina que pueda intimidar o confundir a la persona usuaria.",
+      "No crear bloques de texto largos y densos; priorizar la información en fragmentos pequeños, bullet points o listas fáciles de escanear.",
+      "No usar colores de alto contraste, saturados o agresivos que puedan generar tensión o desconfianza en la interfaz.",
+      "Evitar iconos, ilustraciones o metáforas visuales que sugieran conflicto, burocracia o complejidad legal.",
+      "No sobrecargar la interfaz con demasiados CTAs, enlaces o opciones que diluyan la acción principal y generen fatiga de decisión.",
+      "No dar la sensación de un 'formulario' o 'proceso burocrático' al subir documentos; el flujo debe sentirse guiado, simple y de apoyo."
+    ],
+    "implementation_notes": [
+      "Centralizar el CTA principal: Auditar y modificar todos los `Button` que inician el flujo principal para usar el texto final 'Abrir mi expediente' y la función `goToAuditFlow`.",
+      "Crear un componente `SectionSeparator`: Implementar un componente `<SectionSeparator className=\"my-16\" />` que encapsule el divisor horizontal con gradiente y colocarlo entre las secciones principales de `Home.tsx`.",
+      "Ajustar fondos de sección con variantes `sm:`: En las etiquetas `<section>` o `div` contenedores principales de las secciones con fondos claros, añadir clases de Tailwind con el prefijo `sm:` para aplicar los colores de fondo más intensos o saturados propuestos.",
+      "Aplicar sombras internas sutiles: Añadir la clase `shadow-[inset_0_12px_24px_-18px_rgba(15,23,42,0.04)]` directamente al `className` de los `div` que envuelven el contenido de las secciones claras.",
+      "Revisar el `HeroSection` y `FinalCtaSection` para simplificar gradientes en mobile: Modificar las clases de fondo de estos `<section>` para que en `sm:` utilicen un `linear-gradient` o color sólido más directo y perceptible.",
+      "Asegurar la consistencia de estilos para el CTA principal: Auditar y ajustar las clases de Tailwind de todos los botones 'Abrir mi expediente' para que tengan el mismo estilo visual (`bg-teal-600 px-7 text-base text-white hover:bg-teal-700`)."
+    ]
+  }
+}

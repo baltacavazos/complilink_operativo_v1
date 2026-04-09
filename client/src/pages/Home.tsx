@@ -211,8 +211,14 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+const PRIMARY_CTA_LABEL = "Abrir mi expediente";
+
 function goToAuditFlow() {
   window.location.href = "/auditar";
+}
+
+function SectionDivider() {
+  return <div aria-hidden="true" className="mx-auto h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-teal-100 to-transparent" />;
 }
 
 function SiteHeader() {
@@ -257,17 +263,17 @@ function SiteHeader() {
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
             onClick={goToAuditFlow}
           >
-            Comenzar mi revisión
+            {PRIMARY_CTA_LABEL}
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
           </Button>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <Button
-            className="h-8.5 rounded-full bg-teal-400 px-3 text-[0.88rem] font-semibold text-slate-950 shadow-[0_14px_28px_-20px_rgba(45,212,191,0.75)] hover:bg-teal-300"
+            className="h-9.5 rounded-full bg-teal-400 px-4 text-[0.85rem] font-semibold text-slate-950 shadow-[0_14px_28px_-20px_rgba(45,212,191,0.75)] hover:bg-teal-300"
             onClick={goToAuditFlow}
           >
-            Empezar
+            {PRIMARY_CTA_LABEL}
           </Button>
           <button
             type="button"
@@ -335,7 +341,7 @@ function SiteHeader() {
                   goToAuditFlow();
                 }}
               >
-                Comenzar mi revisión
+                {PRIMARY_CTA_LABEL}
               </Button>
             </div>
           </div>
@@ -353,7 +359,8 @@ function HeroSection() {
       id="top"
       className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-8 pt-7 sm:pb-12 sm:pt-12 lg:pt-16"
     >
-      <div className="container mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
+      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
             className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/88 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.4)] sm:px-4 sm:py-2 sm:text-xs"
@@ -393,7 +400,7 @@ function HeroSection() {
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700 sm:w-auto"
               onClick={goToAuditFlow}
             >
-              Revisar mis documentos
+              {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
@@ -535,7 +542,7 @@ function HeroSection() {
 
 function QuickTrustSection() {
   return (
-    <section className="border-y border-slate-200 bg-[#e6f2f1] py-3.5">
+    <section className="border-y border-teal-100/80 bg-[#dbeeee] py-3.5 sm:bg-[#e6f2f1]">
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
           "Sube recibo, CFDI o contrato.",
@@ -556,7 +563,7 @@ function QuickTrustSection() {
 
 function ConfidenceMagicSection() {
   return (
-    <section className="bg-[#f7fbfb] py-12 sm:py-14">
+    <section className="bg-[#edf7f6] py-12 sm:bg-[#f7fbfb] sm:py-14">
       <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f7f7_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
@@ -625,7 +632,7 @@ function ConfidenceMagicSection() {
 
 function CopilotPreviewSection() {
   return (
-    <section id="copiloto" className="bg-[#f5f7f8] py-14 sm:py-16">
+    <section id="copiloto" className="bg-[#edf4f5] py-14 sm:bg-[#f5f7f8] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -660,7 +667,7 @@ function CopilotPreviewSection() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={goToAuditFlow}>
-              Entrar con mi asistente
+              {PRIMARY_CTA_LABEL}
               <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
@@ -774,7 +781,7 @@ function HowItWorksSection() {
 
 function DossierSection() {
   return (
-    <section id="expediente" className="bg-[#f8fbfb] py-14 sm:py-16">
+    <section id="expediente" className="bg-[#eef6f5] py-14 sm:bg-[#f8fbfb] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -804,7 +811,7 @@ function DossierSection() {
             className="mt-7 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700"
             onClick={goToAuditFlow}
           >
-            Abrir mi expediente
+            {PRIMARY_CTA_LABEL}
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
           </Button>
         </div>
@@ -853,7 +860,7 @@ function DossierSection() {
 
 function PriorityDocumentsSection() {
   return (
-    <section className="bg-[#eef2f3] py-14 sm:py-16">
+    <section className="bg-[#e7eff0] py-14 sm:bg-[#eef2f3] sm:py-16">
       <div className="container mx-auto max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -904,7 +911,7 @@ function MobileOnboardingSection() {
   const activeCard = mobileOnboardingCards[activeIndex] ?? mobileOnboardingCards[0];
 
   return (
-    <section className="bg-[#f7fafb] py-14 sm:py-16">
+    <section className="bg-[#edf4f6] py-14 sm:bg-[#f7fafb] sm:py-16">
       <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f6f6_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
@@ -1073,7 +1080,7 @@ function GuidedTourSection() {
 
 function FindingsExamplesSection() {
   return (
-    <section id="hallazgos" className="bg-white py-14 sm:py-16">
+    <section id="hallazgos" className="bg-[#f3f8f8] py-14 sm:bg-white sm:py-16">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -1111,7 +1118,7 @@ function FindingsExamplesSection() {
 
 function PrivacySection() {
   return (
-    <section id="privacidad" className="bg-[#f4f9f8] py-14 sm:py-16">
+    <section id="privacidad" className="bg-[#eaf5f3] py-14 sm:bg-[#f4f9f8] sm:py-16">
       <div className="container grid gap-6 lg:grid-cols-[1fr_0.92fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -1250,7 +1257,7 @@ function FAQSection() {
 
 function FinalCtaSection() {
   return (
-    <section className="bg-[#f3f7f7] py-14 sm:py-16">
+    <section className="bg-[#e8f1f0] py-14 sm:bg-[#f3f7f7] sm:py-16">
       <div className="container">
         <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
           <div className="max-w-3xl">
@@ -1266,10 +1273,10 @@ function FinalCtaSection() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
-                className="motion-hover-lift h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
+                className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700"
                 onClick={goToAuditFlow}
               >
-                Abrir mi expediente
+                {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
               <Button
@@ -1331,12 +1338,19 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
+      <SectionDivider />
       <HowItWorksSection />
+      <SectionDivider />
       <DossierSection />
+      <SectionDivider />
       <PriorityDocumentsSection />
+      <SectionDivider />
       <CopilotPreviewSection />
+      <SectionDivider />
       <PrivacySection />
+      <SectionDivider />
       <FAQSection />
+      <SectionDivider />
       <FinalCtaSection />
       <SiteFooter />
     </main>
