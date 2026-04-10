@@ -1,0 +1,179 @@
+{
+  "source_pdf": "/home/ubuntu/upload/Prompt_de_extracción_técnica_desde_el_chat_de_Auditapatrón.pdf",
+  "source_txt": "/home/ubuntu/complilink_operativo_v1/.manus-ai/auditapatron_transfer_prompt_source.txt",
+  "providers_ok": {
+    "openai": true,
+    "grok": true,
+    "gemini": false
+  },
+  "available_parsed": {
+    "openai": {
+      "title": "Paquete de transferencia técnica para reconstrucción de CompliLink con integración Auditapatrón",
+      "objective": "Proveer un paquete técnico exhaustivo y sin ambigüedades para reconstruir el proyecto CompliLink, preservando su arquitectura, flujos críticos, y la integración con Auditapatrón, garantizando continuidad técnica y mínima pérdida de conocimiento.",
+      "what_this_pdf_is_for": "Este PDF contiene un prompt detallado para extraer información técnica precisa desde Auditapatrón, junto con hechos verificados del proyecto CompliLink, con el fin de facilitar la reconstrucción del producto y su integración con Auditapatrón en otro entorno o chat.",
+      "verified_facts": [
+        "El proyecto web actual se denomina complilink_operativo_v1.",
+        "El stack base verificado es React 19, Tailwind 4, Express 4, tRPC 11, Drizzle ORM, Manus OAuth y base de datos.",
+        "Las rutas visibles y publicadas incluyen home, /auditar y documentos legales.",
+        "El dominio final validado manualmente es https://compliapp-cgpjc3da.manus.space.",
+        "Se ha validado endurecimiento de idempotencia persistente en aceptación legal.",
+        "Se ha validado lectura operativa mínima del embudo.",
+        "Se ha validado login, /auditar y páginas legales bajo el dominio final.",
+        "El principio de producto es diseño extremadamente intuitivo, limpio, mínimo y autoexplicativo.",
+        "Auditapatrón aporta información documental valiosa que alimenta el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón."
+      ],
+      "reconstruction_scope": [
+        "Reconstrucción completa del frontend con React 19 y Tailwind 4.",
+        "Reconstrucción del backend con Express 4 y tRPC 11.",
+        "Implementación de la base de datos con Drizzle ORM.",
+        "Integración de autenticación con Manus OAuth.",
+        "Recreación de rutas y superficies visibles: home, /auditar, documentos legales.",
+        "Implementación de flujos de aceptación legal con idempotencia persistente.",
+        "Integración con Auditapatrón para consumo de información documental.",
+        "Garantizar diseño UI/UX intuitivo, limpio y autoexplicativo.",
+        "Mantener dominio final validado y configuraciones de entorno."
+      ],
+      "architecture": {
+        "frontend": "React 19 con Tailwind 4 para estilos, enfocado en diseño limpio, intuitivo y mínimo.",
+        "backend": "Express 4 con tRPC 11 para APIs tipadas y comunicación eficiente entre frontend y backend.",
+        "database": "Drizzle ORM para gestión de base de datos relacional, esquema y consultas.",
+        "auth": "Manus OAuth para autenticación y autorización segura de usuarios.",
+        "integration_role_of_auditapatron": "Auditapatrón funciona como proveedor externo de información documental valiosa que alimenta el motor de CompliLink, manteniendo identidad y lógica separadas para preservar independencia y escalabilidad."
+      },
+      "critical_flows": [
+        {
+          "name": "Flujo de aceptación legal con idempotencia persistente",
+          "summary": "Proceso donde el usuario acepta términos legales, garantizando que la aceptación se registre una única vez y se mantenga persistente para auditoría.",
+          "priority": "alta"
+        },
+        {
+          "name": "Login y autenticación de usuarios",
+          "summary": "Validación de credenciales mediante Manus OAuth para acceso seguro a la plataforma.",
+          "priority": "alta"
+        },
+        {
+          "name": "Consulta y visualización de documentos legales",
+          "summary": "Acceso a documentos legales publicados desde la interfaz, asegurando disponibilidad y correcta presentación.",
+          "priority": "media"
+        },
+        {
+          "name": "Integración con Auditapatrón para alimentación documental",
+          "summary": "Recepción y procesamiento de información documental proveniente de Auditapatrón para alimentar el motor de CompliLink sin perder identidad propia.",
+          "priority": "alta"
+        },
+        {
+          "name": "Navegación y uso del módulo /auditar",
+          "summary": "Interacción del usuario con la funcionalidad de auditoría dentro de CompliLink, incluyendo carga y revisión de documentos.",
+          "priority": "alta"
+        }
+      ],
+      "required_modules": [
+        "Módulo de autenticación Manus OAuth",
+        "Módulo frontend React con Tailwind para UI",
+        "Módulo backend Express + tRPC para APIs",
+        "Módulo ORM Drizzle para base de datos",
+        "Módulo de integración con Auditapatrón",
+        "Módulo de gestión de documentos legales",
+        "Módulo de auditoría y aceptación legal"
+      ],
+      "required_contracts": [
+        "API REST o tRPC para autenticación y autorización con Manus OAuth",
+        "API para consumo de datos documentales desde Auditapatrón",
+        "Contratos de idempotencia para aceptación legal",
+        "Endpoints para rutas públicas: home, /auditar, documentos legales",
+        "Eventos o webhooks para sincronización con Auditapatrón (NO DEFINIDO EN ESTE CHAT)"
+      ],
+      "migration_order": [
+        "1. Configurar entorno base con React 19, Tailwind 4, Express 4, tRPC 11 y Drizzle ORM.",
+        "2. Implementar autenticación Manus OAuth y validar login.",
+        "3. Reconstruir rutas públicas: home, /auditar, documentos legales.",
+        "4. Implementar flujos de aceptación legal con idempotencia persistente.",
+        "5. Integrar consumo de información documental desde Auditapatrón.",
+        "6. Validar funcionalidad completa bajo dominio final https://compliapp-cgpjc3da.manus.space.",
+        "7. Realizar pruebas de compatibilidad y endurecimiento de seguridad.",
+        "8. Desplegar en producción y monitorear."
+      ],
+      "unknowns": [
+        "Detalles exactos de contratos API entre Auditapatrón y CompliLink (endpoints, payloads, autenticación).",
+        "Eventos o webhooks específicos para sincronización documental.",
+        "Modelo de datos detallado y entidades específicas usadas en integración.",
+        "Reglas de negocio completas y criterios de decisión para interpretación documental.",
+        "Roles y permisos detallados dentro de CompliLink y Auditapatrón.",
+        "Estados y transiciones de objetos clave en el sistema.",
+        "Componentes reutilizables específicos y su ubicación actual.",
+        "Deuda técnica y riesgos específicos detectados en la integración."
+      ],
+      "prompt_for_other_chat": "Actúa como auditor técnico y analista de continuidad del proyecto Auditapatrón. Tu tarea es extraer únicamente lo ya definido en este chat sobre Auditapatrón para generar un paquete de transferencia técnica que permita reconstruir la integración con CompliLink. Entrega la respuesta en español, en Markdown, siguiendo exactamente esta estructura: \n\n# Paquete de transferencia técnica Auditapatrón → Helios/CompliLink\n\n1. Resumen ejecutivo: Qué es Auditapatrón, qué problema resuelve, qué partes le pertenecen y cómo se conecta con Helios.\n2. Frontera funcional exacta: Tabla con dominios funcionales y a qué sistema pertenecen (Auditapatrón, Helios, CompliLink).\n3. Flujos operativos end-to-end definidos: Nombre, disparador, actor, pasos, entradas, salidas, sistema que decide y almacena, dependencia con Helios.\n4. Modelo de datos y entidades mencionadas: Tabla con entidad, descripción, campos, relaciones, sistema dueño y nivel de certeza.\n5. Taxonomía documental y fuentes de datos: Documento, quién lo sube, para qué sirve, dónde se almacena, quién lo interpreta, valor para Auditapatrón y CompliLink.\n6. Contratos e integraciones: APIs (nombre, productor, consumidor, método, ruta, autenticación, payloads), eventos/webhooks (nombre, emisor, consumidor, cuándo ocurre, payload, idempotencia, acción esperada), dependencias con Helios anterior.\n7. Reglas de negocio y criterios de decisión: Tabla con regla, descripción, sistema responsable, impacto y nivel de certeza.\n8. Roles, permisos y actores: Tabla con actor, capacidades, restricciones y notas.\n9. Estados y transiciones: Tabla con objeto, estados, transiciones, evento que dispara cambio y persistencia.\n10. Componentes reutilizables o rescatables: Tabla con componente, ubicación, reutilizable sí/no/parcial, adaptación necesaria y riesgo.\n11. Deuda técnica, ambigüedades y riesgos detectados: Tabla con tema, riesgo, consecuencia y qué falta definir.\n12. Recomendación de migración hacia nuevo Helios: Estrategia en fases, qué conservar temporalmente, qué mover primero, qué validar antes de conectar CompliLink, pruebas obligatorias.\n13. Apéndice A: artefactos literales (nombres exactos de módulos, eventos, endpoints, tablas, documentos, labels).\n14. Apéndice B: JSON de interoperabilidad mínima con estructura exacta.\n\nReglas: No inventar componentes ni contratos, separar hechos de inferencias, conservar nombres literales, priorizar precisión técnica, no resumir demasiado, entregar exhaustividad."
+    },
+    "grok": {
+      "title": "Paquete de Reconstrucción Técnica para CompliLink",
+      "objective": "Facilitar la reconstrucción del proyecto CompliLink con base en hechos verificados y la integración con Auditapatrón, minimizando ambigüedades y priorizando continuidad técnica.",
+      "what_this_pdf_is_for": "Este PDF contiene un prompt diseñado para extraer información técnica detallada de Auditapatrón desde otro chat, con el propósito de integrarla al ecosistema de CompliLink y Helios. No es un documento final, sino una guía para obtener datos críticos de integración.",
+      "verified_facts": [
+        "Proyecto web actual: complilink_operativo_v1.",
+        "Stack base verificado: React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + Manus OAuth + base de datos.",
+        "Rutas y superficies visibles verificadas: home publicada, /auditar, documentos legales publicados.",
+        "Dominio final validado: https://compliapp-cgpjc3da.manus.space.",
+        "Trabajo reciente validado: endurecimiento de idempotencia persistente en aceptación legal; lectura operativa mínima del embudo; validación de login, /auditar y páginas legales bajo el dominio final.",
+        "Principio de producto para CompliLink: diseño extremadamente intuitivo, limpio, mínimo y autoexplicativo.",
+        "Principio de integración: Auditapatrón aporta información documental valiosa que debe alimentar el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón."
+      ],
+      "reconstruction_scope": [
+        "Reconstruir CompliLink como una aplicación web funcional basada en el stack verificado.",
+        "Integrar información documental de Auditapatrón sin fusionar identidades de producto.",
+        "Validar y conservar rutas críticas como /auditar y páginas legales.",
+        "Garantizar idempotencia en procesos legales y operativos.",
+        "Mantener un diseño intuitivo y minimalista en la interfaz de usuario."
+      ],
+      "architecture": {
+        "frontend": "React 19 con Tailwind 4 para un diseño limpio y responsive, priorizando minimalismo e intuición en la UI.",
+        "backend": "Express 4 con tRPC 11 para manejar lógica de negocio y comunicación con el frontend de forma tipada y eficiente.",
+        "database": "Drizzle ORM para gestión de base de datos, tipo de base de datos no especificado en hechos verificados (pendiente de definir).",
+        "auth": "Manus OAuth para autenticación segura y validación de usuarios.",
+        "integration_role_of_auditapatron": "Auditapatrón actúa como proveedor de información documental valiosa que alimenta el motor de decisión y análisis de CompliLink, sin compartir identidad de producto."
+      },
+      "critical_flows": [
+        {
+          "name": "Login de usuario",
+          "summary": "Autenticación de usuarios mediante Manus OAuth para acceder a rutas protegidas como /auditar.",
+          "priority": "alta"
+        },
+        {
+          "name": "Auditoría de documentos",
+          "summary": "Proceso en la ruta /auditar para revisar y validar documentos legales, integrando datos de Auditapatrón.",
+          "priority": "alta"
+        },
+        {
+          "name": "Aceptación legal idempotente",
+          "summary": "Garantizar que las aceptaciones legales sean persistentes y no se dupliquen mediante mecanismos de idempotencia.",
+          "priority": "media"
+        }
+      ],
+      "required_modules": [
+        "Módulo de autenticación con Manus OAuth.",
+        "Módulo de auditoría para la ruta /auditar.",
+        "Módulo de visualización de documentos legales.",
+        "Módulo de integración con Auditapatrón para consumo de datos documentales."
+      ],
+      "required_contracts": [
+        "Contrato de API o eventos para consumir datos documentales de Auditapatrón (pendiente de definición tras extracción).",
+        "Contrato de autenticación con Manus OAuth para validar usuarios."
+      ],
+      "migration_order": [
+        "Configurar dominio final y stack base (React 19, Express 4, tRPC 11, Drizzle ORM).",
+        "Implementar autenticación con Manus OAuth y validar login.",
+        "Reconstruir rutas críticas: home, /auditar y páginas legales.",
+        "Integrar datos de Auditapatrón mediante contratos definidos tras extracción.",
+        "Validar idempotencia en procesos legales y operativos."
+      ],
+      "unknowns": [
+        "Tipo específico de base de datos usada con Drizzle ORM.",
+        "Detalles de APIs, eventos o webhooks para integración con Auditapatrón.",
+        "Modelo de datos exacto y entidades persistentes en CompliLink.",
+        "Flujos operativos detallados más allá de login y auditoría.",
+        "Dependencias específicas con Helios o versiones anteriores."
+      ],
+      "prompt_for_other_chat": "Actúa como auditor técnico y analista de continuidad del proyecto Auditapatrón. Tu tarea es extraer únicamente lo ya definido en este chat sobre Auditapatrón para crear un paquete de transferencia técnica que facilite la integración con CompliLink y Helios. Sigue estrictamente la estructura proporcionada en el prompt original (secciones 1 a 14, incluyendo tablas y JSON de interoperabilidad mínima). Entrega la respuesta en español, en Markdown, priorizando precisión técnica y exhaustividad. No inventes componentes ni contratos; si algo no está claro, indícalo como 'NO DEFINIDO EN ESTE CHAT'. Separa hechos de inferencias y marca estas últimas como 'INFERENCIA DE ALTA CONFIANZA' o 'INFERENCIA DE BAJA CONFIANZA'. Conserva literalmente cualquier nombre exacto ya usado. Una vez generada la respuesta, la usaré para reconstruir CompliLink integrando los datos documentales de Auditapatrón."
+    }
+  }
+}

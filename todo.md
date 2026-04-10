@@ -498,3 +498,6 @@
 - [x] Añadir una lectura operativa mínima del embudo sobre la analítica ya instrumentada para detectar caídas entre home, expediente, aceptación legal y subida documental
 - [x] Añadir una lectura operativa mínima del embudo para identificar caídas reales de conversión
 - [x] Ejecutar una ronda de validación en login, /auditar y páginas legales bajo el dominio final
+- [x] Revisar el PDF de reconstrucción de CompliLink y extraer requisitos, arquitectura y dependencias accionables para reutilizarlos en otro chat
+- [x] Sintetizar la información extraída en un prompt o brief operativo que acelere la reconstrucción de CompliLink
+- [x] Convertir el brief o prompt de reconstrucción de CompliLink a PDF para compartirlo en el otro chat

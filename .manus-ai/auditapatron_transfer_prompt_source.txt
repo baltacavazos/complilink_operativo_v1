@@ -1,0 +1,199 @@
+Prompt de extracción técnica desde el chat
+de Auditapatrón
+
+Copia y pega exactamente el siguiente prompt en el otro chat para recuperar la
+información que necesito de Auditapatrón con la mayor precisión posible.
+Markdown
+
+Actúa como **auditor técnico y analista de continuidad** del proyecto Auditapat
+Tu tarea es **extraer únicamente lo ya definido en este chat** sobre Auditapatró
+Necesito un paquete de transferencia técnica para reconstruir una integración co
+Entrega la respuesta en **español**, en **Markdown**, y siguiendo **exactamente
+# Paquete de transferencia técnica Auditapatrón → Helios/CompliLink
+## 1. Resumen ejecutivo
+Redacta un resumen de máximo 12 líneas explicando:
+- Qué es Auditapatrón dentro del ecosistema.
+- Qué problema resuelve.
+- Qué partes le pertenecen a Auditapatrón y cuáles no.
+- Cómo se conectaba o debía conectarse con Helios.
+## 2. Frontera funcional exacta
+Construye una tabla con estas columnas:
+- `Dominio funcional`
+- `Pertenece a Auditapatrón`
+- `Pertenece a Helios`
+- `Pertenece a CompliLink`
+- `Notas`
+Incluye todos los dominios que aparezcan en el chat, por ejemplo si existen: ca
+## 3. Flujos operativos end-to-end ya definidos
+Describe paso a paso los flujos que realmente hayan quedado definidos en el cha
+- `Nombre del flujo`
+- `Disparador`
+- `Actor principal`
+- `Pasos numerados`
+- `Entradas`
+- `Salidas`
+- `Sistema que decide`
+- `Sistema que almacena`
+- `Dependencia con Helios`
+
+Incluye especialmente cualquier flujo relacionado con:
+- subida de documentos
+- interpretación de documentos
+- consultas legales/laborales
+- expedientes
+- auditoría o revisión de proveedores
+- generación de resultados
+- retroalimentación del usuario
+## 4. Modelo de datos y entidades mencionadas
+Construye una tabla con todas las entidades, objetos, tablas o conceptos persis
+Columnas:
+- `Entidad`
+- `Descripción funcional`
+- `Campos mencionados o inferibles con alta confianza`
+- `Relaciones`
+- `Sistema dueño (Auditapatrón / Helios / CompliLink / Compartido)`
+- `Nivel de certeza (alto/medio/bajo)`
+Si el chat menciona documentos, expedientes, usuarios, proveedores, hallazgos, v
+## 5. Taxonomía documental y fuentes de datos
+Haz una tabla con:
+- `Documento o fuente`
+- `Quién lo sube o genera`
+- `Para qué sirve`
+- `Dónde debería almacenarse`
+- `Quién lo interpreta`
+- `Qué valor agrega a Auditapatrón`
+- `Qué valor agrega a CompliLink`
+Incluye cualquier referencia a IMSS, INFONAVIT, SAT, REPSE, ICSOE, SISUB u otras
+## 6. Contratos e integraciones ya definidos
+Este es el bloque más importante.
+Documenta TODO lo que el chat haya definido o sugerido sobre integración entre s
+### 6.1 APIs
+Para cada API, endpoint o interacción entre sistemas, entrega una tabla con:
+- `Nombre`
+- `Productor`
+- `Consumidor`
+- `Método`
+- `Ruta o identificador`
+- `Autenticación`
+
+- `Payload request`
+- `Payload response`
+- `Observaciones`
+### 6.2 Eventos / webhooks
+Para cada evento o webhook, entrega una tabla con:
+- `Nombre exacto del evento`
+- `Quién lo emite`
+- `Quién lo consume`
+- `Cuándo ocurre`
+- `Campos del payload`
+- `Regla de idempotencia`
+- `Acción esperada del consumidor`
+### 6.3 Dependencias con el Helios anterior
+Explica claramente:
+- qué hacía el Helios anterior para Auditapatrón,
+- qué dependencias existían,
+- qué habría que conservar por compatibilidad,
+- qué se puede rediseñar.
+Si hay nombres exactos de eventos, endpoints, payloads, claves, estados o identi
+## 7. Reglas de negocio y criterios de decisión
+Lista todas las reglas de negocio que aparezcan en el chat, por ejemplo:
+- qué determina un resultado,
+- qué documentos son prioritarios,
+- cómo se interpreta el valor de los documentos,
+- qué acciones dependen de qué señales,
+- qué debe ver el usuario,
+- qué debe recordar Helios.
+Usa tabla con columnas:
+- `Regla`
+- `Descripción`
+- `Sistema responsable`
+- `Impacto`
+- `Nivel de certeza`
+## 8. Roles, permisos y actores
+Tabla con:
+- `Actor`
+- `Capacidades`
+- `Restricciones`
+- `Notas`
+Incluye si existen referencias a usuario normal, usuario master, cliente, admini
+
+## 9. Estados y transiciones
+Si el chat define estatus o ciclos de vida, documenta una tabla con:
+- `Objeto`
+- `Estados`
+- `Transiciones`
+- `Evento que dispara el cambio`
+- `Persistencia`
+## 10. Componentes reutilizables o rescatables
+Identifica todo lo que pueda reutilizarse sin reconstruir desde cero.
+Tabla:
+- `Componente / módulo / lógica / contrato`
+- `Dónde vive hoy`
+- `Se puede reutilizar tal cual (sí/no/parcial)`
+- `Qué adaptación necesita`
+- `Riesgo de reutilización`
+## 11. Deuda técnica, ambigüedades y riesgos detectados en el chat
+Haz una tabla con:
+- `Tema`
+- `Riesgo`
+- `Consecuencia para la integración`
+- `Qué falta definir`
+## 12. Recomendación de migración hacia el nuevo Helios
+Con base solo en lo dicho en el chat, redacta:
+1. una estrategia de migración en fases,
+2. qué conservar temporalmente,
+3. qué mover primero al nuevo Helios,
+4. qué validar antes de conectar CompliLink,
+5. qué pruebas de compatibilidad serían obligatorias.
+## 13. Apéndice A: artefactos literales
+Si en el chat existen nombres exactos, pégalos sin reinterpretarlos:
+- nombres de módulos
+- nombres de eventos
+- nombres de endpoints
+- nombres de tablas o entidades
+- nombres de documentos
+- labels de UI
+- frases de producto relevantes
+## 14. Apéndice B: JSON de interoperabilidad mínima
+Entrega un JSON final con esta estructura exacta, llenando solo con información
+```json
+{
+
+"auditapatron": {
+"owned_domains": [],
+"key_flows": [],
+"documents": [],
+"roles": []
+},
+"helios": {
+"owned_domains": [],
+"stores": [],
+"interprets": [],
+"events": [],
+"apis": []
+},
+"complilink": {
+"owned_domains": [],
+"consumes_from_helios": [],
+"emits_to_helios": []
+},
+"integration_gaps": [],
+"migration_risks": [],
+"unknowns": []
+}
+
+Reglas obligatorias:
+1. No inventes componentes ni contratos.
+2. Si algo no está claro, escribe NO DEFINIDO EN ESTE CHAT .
+3. Separa claramente hechos vs inferencias.
+4. Si haces una inferencia, márcala como INFERENCIA DE ALTA CONFIANZA o INFERENCIA DE
+BAJA CONFIANZA .
+5. Conserva literalmente cualquier nombre exacto ya usado.
+6. Prioriza precisión técnica sobre redacción bonita.
+7. No resumas demasiado; prefiero exhaustividad.
+Plain Text
+
+## Uso recomendado
+Cuando me compartas la respuesta generada por ese otro chat, yo la convertiré en
+
+

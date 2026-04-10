@@ -1,0 +1,131 @@
+{
+  "status_code": 200,
+  "raw": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"title\": \"Paquete de Continuidad Técnica para la Reconstrucción de CompliLink\",\n  \"objective\": \"Reconstruir el proyecto CompliLink (complilink_operativo_v1) con la menor ambigüedad posible, asegurando la continuidad técnica y la preparación para la integración con Auditapatrón.\",\n  \"what_this_pdf_is_for\": \"Este documento consolida los hechos verificados del proyecto CompliLink y el prompt para extraer información técnica de Auditapatrón, con el fin de facilitar la reconstrucción de CompliLink en un entorno nuevo.\",\n  \"verified_facts\": [\n    \"Proyecto web actual: complilink_operativo_v1.\",\n    \"Stack base verificado del proyecto: React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + Manus OAuth + base de datos.\",\n    \"Rutas y superficies visibles verificadas: home publicada, /auditar, documentos legales publicados.\",\n    \"Dominio final validado manualmente en esta iteración: https://compliapp-cgpjc3da.manus.space .\",\n    \"Trabajo reciente ya validado: endurecimiento de idempotencia persistente en aceptación legal; lectura operativa mínima del embudo; validación de login, /auditar y páginas legales bajo el dominio final.\",\n    \"Principio de producto recordado para CompliLink: diseño extremadamente intuitivo, limpio, mínimo y autoexplicativo.\",\n    \"Principio de integración recordado: Auditapatrón aporta información documental valiosa que debe alimentar el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón.\"\n  ],\n  \"reconstruction_scope\": [\n    \"Reconstrucción del proyecto web `complilink_operativo_v1`.\",\n    \"Implementación del stack tecnológico verificado: React 19, Tailwind 4, Express 4, tRPC 11, Drizzle ORM, Manus OAuth y base de datos.\",\n    \"Restauración de las rutas y superficies visibles: home, `/auditar`, y documentos legales publicados.\",\n    \"Configuración del dominio final validado: `https://compliapp-cgpjc3da.manus.space`.\",\n    \"Reimplementación del endurecimiento de idempotencia persistente en aceptación legal.\",\n    \"Reimplementación de la lectura operativa mínima del embudo.\",\n    \"Validación de las funcionalidades de login, `/auditar` y páginas legales.\",\n    \"Adherencia al principio de producto: diseño intuitivo, limpio, mínimo y autoexplicativo.\",\n    \"Preparación para la integración con Auditapatrón, asegurando que CompliLink pueda consumir información documental valiosa manteniendo su identidad separada.\"\n  ],\n  \"architecture\": {\n    \"frontend\": \"React 19 + Tailwind 4\",\n    \"backend\": \"Express 4 + tRPC 11\",\n    \"database\": \"Drizzle ORM + base de datos (tipo específico desconocido)\",\n    \"auth\": \"Manus OAuth\",\n    \"integration_role_of_auditapatron\": \"Aportar información documental valiosa para alimentar el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón.\"\n  },\n  \"critical_flows\": [\n    {\n      \"name\": \"Login de Usuario\",\n      \"summary\": \"Validación del acceso de usuarios al sistema CompliLink.\",\n      \"priority\": \"alta\"\n    },\n    {\n      \"name\": \"Navegación a Home\",\n      \"summary\": \"Acceso a la página principal publicada de CompliLink.\",\n      \"priority\": \"alta\"\n    },\n    {\n      \"name\": \"Acceso a la Sección /auditar\",\n      \"summary\": \"Navegación y visualización de la sección de auditoría.\",\n      \"priority\": \"alta\"\n    },\n    {\n      \"name\": \"Acceso a Documentos Legales\",\n      \"summary\": \"Visualización de documentos legales publicados.\",\n      \"priority\": \"alta\"\n    },\n    {\n      \"name\": \"Aceptación Legal con Idempotencia\",\n      \"summary\": \"Proceso de aceptación de documentos legales con garantía de idempotencia persistente.\",\n      \"priority\": \"alta\"\n    },\n    {\n      \"name\": \"Lectura Operativa Mínima del Embudo\",\n      \"summary\": \"Visualización de un resumen operativo mínimo del progreso o estado de un embudo.\",\n      \"priority\": \"media\"\n    }\n  ],\n  \"required_modules\": [\n    \"React 19\",\n    \"Tailwind 4\",\n    \"Express 4\",\n    \"tRPC 11\",\n    \"Drizzle ORM\",\n    \"Manus OAuth\"\n  ],\n  \"required_contracts\": [\n    \"Contrato de Autenticación (Manus OAuth)\",\n    \"Contrato de Aceptación Legal (con idempotencia persistente)\",\n    \"Contrato de Integración Documental con Auditapatrón (detalles por definir en otro chat)\"\n  ],\n  \"migration_order\": [\n    \"1. Configuración del entorno de desarrollo y despliegue.\",\n    \"2. Instalación y configuración del stack base (React 19, Tailwind 4, Express 4, tRPC 11, Drizzle ORM, Base de Datos).\",\n    \"3. Implementación del sistema de autenticación con Manus OAuth.\",\n    \"4. Reconstrucción de las rutas y superficies visibles principales: home, /auditar, documentos legales.\",\n    \"5. Reimplementación de la lógica de endurecimiento de idempotencia persistente en aceptación legal.\",\n    \"6. Reimplementación de la lógica de lectura operativa mínima del embudo.\",\n    \"7. Preparación de los puntos de extensión para la futura integración con Auditapatrón.\"\n  ],\n  \"unknowns\": [\n    \"Tipo específico de la base de datos utilizada con Drizzle ORM.\",\n    \"Esquema de base de datos detallado para CompliLink.\",\n    \"Detalles completos de los contratos de 'aceptación legal' y 'lectura operativa mínima del embudo'.\",\n    \"Detalles exactos de la integración con Auditapatrón (APIs, eventos, modelos de datos, flujos funcionales, reglas de negocio, etc.).\",\n    \"La relación y dependencias con el 'Helios anterior' mencionado en el prompt para Auditapatrón.\",\n    \"La estrategia de migración específica desde la perspectiva de Auditapatrón hacia CompliLink/Helios.\",\n    \"La definición de 'Helios' en relación con CompliLink.\"\n  ],\n  \"prompt_for_other_chat\": \"Actúa como **auditor técnico y analista de continuidad** del proyecto Auditapat\\nTu tarea es **extraer únicamente lo ya definido en este chat** sobre Auditapatró\\nNecesito un paquete de transferencia técnica para reconstruir una integración co\\nEntrega la respuesta en **español**, en **Markdown**, y siguiendo **exactamente\\n# Paquete de transferencia técnica Auditapatrón → Helios/CompliLink\\n## 1. Resumen ejecutivo\\nRedacta un resumen de máximo 12 líneas explicando:\\n- Qué es Auditapatrón dentro del ecosistema.\\n- Qué problema resuelve.\\n- Qué partes le pertenecen a Auditapatrón y cuáles no.\\n- Cómo se conectaba o debía conectarse con Helios.\\n## 2. Frontera funcional exacta\\nConstruye una tabla con estas columnas:\\n- `Dominio funcional`\\n- `Pertenece a Auditapatrón`\\n- `Pertenece a Helios`\\n- `Pertenece a CompliLink`\\n- `Notas`\\nIncluye todos los dominios que aparezcan en el chat, por ejemplo si existen: ca\\n## 3. Flujos operativos end-to-end ya definidos\\nDescribe paso a paso los flujos que realmente hayan quedado definidos en el cha\\n- `Nombre del flujo`\\n- `Disparador`\\n- `Actor principal`\\n- `Pasos numerados`\\n- `Entradas`\\n- `Salidas`\\n- `Sistema que decide`\\n- `Sistema que almacena`\\n- `Dependencia con Helios`\\n\\nIncluye especialmente cualquier flujo relacionado con:\\n- subida de documentos\\n- interpretación de documentos\\n- consultas legales/laborales\\n- expedientes\\n- auditoría o revisión de proveedores\\n- generación de resultados\\n- retroalimentación del usuario\\n## 4. Modelo de datos y entidades mencionadas\\nConstruye una tabla con todas las entidades, objetos, tablas o conceptos persis\\nColumnas:\\n- `Entidad`\\n- `Descripción funcional`\\n- `Campos mencionados o inferibles con alta confianza`\\n- `Relaciones`\\n- `Sistema dueño (Auditapatrón / Helios / CompliLink / Compartido)`\\n- `Nivel de certeza (alto/medio/bajo)`\\nSi el chat menciona documentos, expedientes, usuarios, proveedores, hallazgos, v\\n## 5. Taxonomía documental y fuentes de datos\\nHaz una tabla con:\\n- `Documento o fuente`\\n- `Quién lo sube o genera`\\n- `Para qué sirve`\\n- `Dónde debería almacenarse`\\n- `Quién lo interpreta`\\n- `Qué valor agrega a Auditapatrón`\\n- `Qué valor agrega a CompliLink`\\nIncluye cualquier referencia a IMSS, INFONAVIT, SAT, REPSE, ICSOE, SISUB u otras\\n## 6. Contratos e integraciones ya definidos\\nEste es el bloque más importante.\\nDocumenta TODO lo que el chat haya definido o sugerido sobre integración entre s\\n### 6.1 APIs\\nPara cada API, endpoint o interacción entre sistemas, entrega una tabla con:\\n- `Nombre`\\n- `Productor`\\n- `Consumidor`\\n- `Método`\\n- `Ruta o identificador`\\n- `Autenticación`\\n\\n- `Payload request`\\n- `Payload response`\\n- `Observaciones`\\n### 6.2 Eventos / webhooks\\nPara cada evento o webhook, entrega una tabla con:\\n- `Nombre exacto del evento`\\n- `Quién lo emite`\\n- `Quién lo consume`\\n- `Cuándo ocurre`\\n- `Campos del payload`\\n- `Regla de idempotencia`\\n- `Acción esperada del consumidor`\\n### 6.3 Dependencias con el Helios anterior\\nExplica claramente:\\n- qué hacía el Helios anterior para Auditapatrón,\\n- qué dependencias existían,\\n- qué habría que conservar por compatibilidad,\\n- qué se puede rediseñar.\\nSi hay nombres exactos de eventos, endpoints, payloads, claves, estados o identi\\n## 7. Reglas de negocio y criterios de decisión\\nLista todas las reglas de negocio que aparezcan en el chat, por ejemplo:\\n- qué determina un resultado,\\n- qué documentos son prioritarios,\\n- cómo se interpreta el valor de los documentos,\\n- qué acciones dependen de qué señales,\\n- qué debe ver el usuario,\\n- qué debe recordar Helios.\\nUsa tabla con columnas:\\n- `Regla`\\n- `Descripción`\\n- `Sistema responsable`\\n- `Impacto`\\n- `Nivel de certeza`\\n## 8. Roles, permisos y actores\\nTabla con:\\n- `Actor`\\n- `Capacidades`\\n- `Restricciones`\\n- `Notas`\\nIncluye si existen referencias a usuario normal, usuario master, cliente, admini\\n\\n## 9. Estados y transiciones\\nSi el chat define estatus o ciclos de vida, documenta una tabla con:\\n- `Objeto`\\n- `Estados`\\n- `Transiciones`\\n- `Evento que dispara el cambio`\\n- `Persistencia`\\n## 10. Componentes reutilizables o rescatables\\nIdentifica todo lo que pueda reutilizarse sin reconstruir desde cero.\\nTabla:\\n- `Componente / módulo / lógica / contrato`\\n- `Dónde vive hoy`\\n- `Se puede reutilizar tal cual (sí/no/parcial)`\\n- `Qué adaptación necesita`\\n- `Riesgo de reutilización`\\n## 11. Deuda técnica, ambigüedades y riesgos detectados en el chat\\nHaz una tabla con:\\n- `Tema`\\n- `Riesgo`\\n- `Consecuencia para la integración`\\n- `Qué falta definir`\\n## 12. Recomendación de migración hacia el nuevo Helios\\nCon base solo en lo dicho en el chat, redacta:\\n1. una estrategia de migración en fases,\\n2. qué conservar temporalmente,\\n3. qué mover primero al nuevo Helios,\\n4. qué validar antes de conectar CompliLink,\\n5. qué pruebas de compatibilidad serían obligatorias.\\n## 13. Apéndice A: artefactos literales\\nSi en el chat existen nombres exactos, pégalos sin reinterpretarlos:\\n- nombres de módulos\\n- nombres de eventos\\n- nombres de endpoints\\n- nombres de tablas o entidades\\n- nombres de documentos\\n- labels de UI\\n- frases de producto relevantes\\n## 14. Apéndice B: JSON de interoperabilidad mínima\\nEntrega un JSON final con esta estructura exacta, llenando solo con información\\n\\n```json\\n{\\n\\\"auditapatron\\\": {\\n\\\"owned_domains\\\": [],\\n\\\"key_flows\\\": [],\\n\\\"documents\\\": [],\\n\\\"roles\\\": []\\n},\\n\\\"helios\\\": {\\n\\\"owned_domains\\\": [],\\n\\\"stores\\\": [],\\n\\\"interprets\\\": [],\\n\\\"events\\\": [],\\n\\\"apis\\\": []\\n},\\n\\\"complilink\\\": {\\n\\\"owned_domains\\\": [],\\n\\\"consumes_from_helios\\\": [],\\n\\\"emits_to_helios\\\": []\\n},\\n\\\"integration_gaps\\\": [],\\n\\\"migration_risks\\\": [],\\n\\\"unknowns\\\": []\\n}\\n```\\n\\nReglas obligatorias:\\n1. No inventes componentes ni contratos.\\n2. Si algo no está claro, escribe NO DEFINIDO EN ESTE CHAT .\\n3. Separa claramente hechos vs inferencias.\\n4. Si haces una inferencia, márcala como INFERENCIA DE ALTA CONFIANZA o INFERENCIA DE\\nBAJA CONFIANZA .\\n5. Conserva literalmente cualquier nombre exacto ya usado.\\n6. Prioriza precisión técnica sobre redacción bonita.\\n7. No resumas demasiado; prefiero exhaustividad.\\nPlain Text\"\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 2409,
+      "candidatesTokenCount": 3313,
+      "totalTokenCount": 11427,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 2409
+        }
+      ],
+      "thoughtsTokenCount": 5705
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "hjXZaZD4MN6zjMcPxeKV2Aw"
+  },
+  "parsed": {
+    "title": "Paquete de Continuidad Técnica para la Reconstrucción de CompliLink",
+    "objective": "Reconstruir el proyecto CompliLink (complilink_operativo_v1) con la menor ambigüedad posible, asegurando la continuidad técnica y la preparación para la integración con Auditapatrón.",
+    "what_this_pdf_is_for": "Este documento consolida los hechos verificados del proyecto CompliLink y el prompt para extraer información técnica de Auditapatrón, con el fin de facilitar la reconstrucción de CompliLink en un entorno nuevo.",
+    "verified_facts": [
+      "Proyecto web actual: complilink_operativo_v1.",
+      "Stack base verificado del proyecto: React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + Manus OAuth + base de datos.",
+      "Rutas y superficies visibles verificadas: home publicada, /auditar, documentos legales publicados.",
+      "Dominio final validado manualmente en esta iteración: https://compliapp-cgpjc3da.manus.space .",
+      "Trabajo reciente ya validado: endurecimiento de idempotencia persistente en aceptación legal; lectura operativa mínima del embudo; validación de login, /auditar y páginas legales bajo el dominio final.",
+      "Principio de producto recordado para CompliLink: diseño extremadamente intuitivo, limpio, mínimo y autoexplicativo.",
+      "Principio de integración recordado: Auditapatrón aporta información documental valiosa que debe alimentar el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón."
+    ],
+    "reconstruction_scope": [
+      "Reconstrucción del proyecto web `complilink_operativo_v1`.",
+      "Implementación del stack tecnológico verificado: React 19, Tailwind 4, Express 4, tRPC 11, Drizzle ORM, Manus OAuth y base de datos.",
+      "Restauración de las rutas y superficies visibles: home, `/auditar`, y documentos legales publicados.",
+      "Configuración del dominio final validado: `https://compliapp-cgpjc3da.manus.space`.",
+      "Reimplementación del endurecimiento de idempotencia persistente en aceptación legal.",
+      "Reimplementación de la lectura operativa mínima del embudo.",
+      "Validación de las funcionalidades de login, `/auditar` y páginas legales.",
+      "Adherencia al principio de producto: diseño intuitivo, limpio, mínimo y autoexplicativo.",
+      "Preparación para la integración con Auditapatrón, asegurando que CompliLink pueda consumir información documental valiosa manteniendo su identidad separada."
+    ],
+    "architecture": {
+      "frontend": "React 19 + Tailwind 4",
+      "backend": "Express 4 + tRPC 11",
+      "database": "Drizzle ORM + base de datos (tipo específico desconocido)",
+      "auth": "Manus OAuth",
+      "integration_role_of_auditapatron": "Aportar información documental valiosa para alimentar el motor de CompliLink, manteniendo identidad separada del producto Auditapatrón."
+    },
+    "critical_flows": [
+      {
+        "name": "Login de Usuario",
+        "summary": "Validación del acceso de usuarios al sistema CompliLink.",
+        "priority": "alta"
+      },
+      {
+        "name": "Navegación a Home",
+        "summary": "Acceso a la página principal publicada de CompliLink.",
+        "priority": "alta"
+      },
+      {
+        "name": "Acceso a la Sección /auditar",
+        "summary": "Navegación y visualización de la sección de auditoría.",
+        "priority": "alta"
+      },
+      {
+        "name": "Acceso a Documentos Legales",
+        "summary": "Visualización de documentos legales publicados.",
+        "priority": "alta"
+      },
+      {
+        "name": "Aceptación Legal con Idempotencia",
+        "summary": "Proceso de aceptación de documentos legales con garantía de idempotencia persistente.",
+        "priority": "alta"
+      },
+      {
+        "name": "Lectura Operativa Mínima del Embudo",
+        "summary": "Visualización de un resumen operativo mínimo del progreso o estado de un embudo.",
+        "priority": "media"
+      }
+    ],
+    "required_modules": [
+      "React 19",
+      "Tailwind 4",
+      "Express 4",
+      "tRPC 11",
+      "Drizzle ORM",
+      "Manus OAuth"
+    ],
+    "required_contracts": [
+      "Contrato de Autenticación (Manus OAuth)",
+      "Contrato de Aceptación Legal (con idempotencia persistente)",
+      "Contrato de Integración Documental con Auditapatrón (detalles por definir en otro chat)"
+    ],
+    "migration_order": [
+      "1. Configuración del entorno de desarrollo y despliegue.",
+      "2. Instalación y configuración del stack base (React 19, Tailwind 4, Express 4, tRPC 11, Drizzle ORM, Base de Datos).",
+      "3. Implementación del sistema de autenticación con Manus OAuth.",
+      "4. Reconstrucción de las rutas y superficies visibles principales: home, /auditar, documentos legales.",
+      "5. Reimplementación de la lógica de endurecimiento de idempotencia persistente en aceptación legal.",
+      "6. Reimplementación de la lógica de lectura operativa mínima del embudo.",
+      "7. Preparación de los puntos de extensión para la futura integración con Auditapatrón."
+    ],
+    "unknowns": [
+      "Tipo específico de la base de datos utilizada con Drizzle ORM.",
+      "Esquema de base de datos detallado para CompliLink.",
+      "Detalles completos de los contratos de 'aceptación legal' y 'lectura operativa mínima del embudo'.",
+      "Detalles exactos de la integración con Auditapatrón (APIs, eventos, modelos de datos, flujos funcionales, reglas de negocio, etc.).",
+      "La relación y dependencias con el 'Helios anterior' mencionado en el prompt para Auditapatrón.",
+      "La estrategia de migración específica desde la perspectiva de Auditapatrón hacia CompliLink/Helios.",
+      "La definición de 'Helios' en relación con CompliLink."
+    ],
+    "prompt_for_other_chat": "Actúa como **auditor técnico y analista de continuidad** del proyecto Auditapat\nTu tarea es **extraer únicamente lo ya definido en este chat** sobre Auditapatró\nNecesito un paquete de transferencia técnica para reconstruir una integración co\nEntrega la respuesta en **español**, en **Markdown**, y siguiendo **exactamente\n# Paquete de transferencia técnica Auditapatrón → Helios/CompliLink\n## 1. Resumen ejecutivo\nRedacta un resumen de máximo 12 líneas explicando:\n- Qué es Auditapatrón dentro del ecosistema.\n- Qué problema resuelve.\n- Qué partes le pertenecen a Auditapatrón y cuáles no.\n- Cómo se conectaba o debía conectarse con Helios.\n## 2. Frontera funcional exacta\nConstruye una tabla con estas columnas:\n- `Dominio funcional`\n- `Pertenece a Auditapatrón`\n- `Pertenece a Helios`\n- `Pertenece a CompliLink`\n- `Notas`\nIncluye todos los dominios que aparezcan en el chat, por ejemplo si existen: ca\n## 3. Flujos operativos end-to-end ya definidos\nDescribe paso a paso los flujos que realmente hayan quedado definidos en el cha\n- `Nombre del flujo`\n- `Disparador`\n- `Actor principal`\n- `Pasos numerados`\n- `Entradas`\n- `Salidas`\n- `Sistema que decide`\n- `Sistema que almacena`\n- `Dependencia con Helios`\n\nIncluye especialmente cualquier flujo relacionado con:\n- subida de documentos\n- interpretación de documentos\n- consultas legales/laborales\n- expedientes\n- auditoría o revisión de proveedores\n- generación de resultados\n- retroalimentación del usuario\n## 4. Modelo de datos y entidades mencionadas\nConstruye una tabla con todas las entidades, objetos, tablas o conceptos persis\nColumnas:\n- `Entidad`\n- `Descripción funcional`\n- `Campos mencionados o inferibles con alta confianza`\n- `Relaciones`\n- `Sistema dueño (Auditapatrón / Helios / CompliLink / Compartido)`\n- `Nivel de certeza (alto/medio/bajo)`\nSi el chat menciona documentos, expedientes, usuarios, proveedores, hallazgos, v\n## 5. Taxonomía documental y fuentes de datos\nHaz una tabla con:\n- `Documento o fuente`\n- `Quién lo sube o genera`\n- `Para qué sirve`\n- `Dónde debería almacenarse`\n- `Quién lo interpreta`\n- `Qué valor agrega a Auditapatrón`\n- `Qué valor agrega a CompliLink`\nIncluye cualquier referencia a IMSS, INFONAVIT, SAT, REPSE, ICSOE, SISUB u otras\n## 6. Contratos e integraciones ya definidos\nEste es el bloque más importante.\nDocumenta TODO lo que el chat haya definido o sugerido sobre integración entre s\n### 6.1 APIs\nPara cada API, endpoint o interacción entre sistemas, entrega una tabla con:\n- `Nombre`\n- `Productor`\n- `Consumidor`\n- `Método`\n- `Ruta o identificador`\n- `Autenticación`\n\n- `Payload request`\n- `Payload response`\n- `Observaciones`\n### 6.2 Eventos / webhooks\nPara cada evento o webhook, entrega una tabla con:\n- `Nombre exacto del evento`\n- `Quién lo emite`\n- `Quién lo consume`\n- `Cuándo ocurre`\n- `Campos del payload`\n- `Regla de idempotencia`\n- `Acción esperada del consumidor`\n### 6.3 Dependencias con el Helios anterior\nExplica claramente:\n- qué hacía el Helios anterior para Auditapatrón,\n- qué dependencias existían,\n- qué habría que conservar por compatibilidad,\n- qué se puede rediseñar.\nSi hay nombres exactos de eventos, endpoints, payloads, claves, estados o identi\n## 7. Reglas de negocio y criterios de decisión\nLista todas las reglas de negocio que aparezcan en el chat, por ejemplo:\n- qué determina un resultado,\n- qué documentos son prioritarios,\n- cómo se interpreta el valor de los documentos,\n- qué acciones dependen de qué señales,\n- qué debe ver el usuario,\n- qué debe recordar Helios.\nUsa tabla con columnas:\n- `Regla`\n- `Descripción`\n- `Sistema responsable`\n- `Impacto`\n- `Nivel de certeza`\n## 8. Roles, permisos y actores\nTabla con:\n- `Actor`\n- `Capacidades`\n- `Restricciones`\n- `Notas`\nIncluye si existen referencias a usuario normal, usuario master, cliente, admini\n\n## 9. Estados y transiciones\nSi el chat define estatus o ciclos de vida, documenta una tabla con:\n- `Objeto`\n- `Estados`\n- `Transiciones`\n- `Evento que dispara el cambio`\n- `Persistencia`\n## 10. Componentes reutilizables o rescatables\nIdentifica todo lo que pueda reutilizarse sin reconstruir desde cero.\nTabla:\n- `Componente / módulo / lógica / contrato`\n- `Dónde vive hoy`\n- `Se puede reutilizar tal cual (sí/no/parcial)`\n- `Qué adaptación necesita`\n- `Riesgo de reutilización`\n## 11. Deuda técnica, ambigüedades y riesgos detectados en el chat\nHaz una tabla con:\n- `Tema`\n- `Riesgo`\n- `Consecuencia para la integración`\n- `Qué falta definir`\n## 12. Recomendación de migración hacia el nuevo Helios\nCon base solo en lo dicho en el chat, redacta:\n1. una estrategia de migración en fases,\n2. qué conservar temporalmente,\n3. qué mover primero al nuevo Helios,\n4. qué validar antes de conectar CompliLink,\n5. qué pruebas de compatibilidad serían obligatorias.\n## 13. Apéndice A: artefactos literales\nSi en el chat existen nombres exactos, pégalos sin reinterpretarlos:\n- nombres de módulos\n- nombres de eventos\n- nombres de endpoints\n- nombres de tablas o entidades\n- nombres de documentos\n- labels de UI\n- frases de producto relevantes\n## 14. Apéndice B: JSON de interoperabilidad mínima\nEntrega un JSON final con esta estructura exacta, llenando solo con información\n\n```json\n{\n\"auditapatron\": {\n\"owned_domains\": [],\n\"key_flows\": [],\n\"documents\": [],\n\"roles\": []\n},\n\"helios\": {\n\"owned_domains\": [],\n\"stores\": [],\n\"interprets\": [],\n\"events\": [],\n\"apis\": []\n},\n\"complilink\": {\n\"owned_domains\": [],\n\"consumes_from_helios\": [],\n\"emits_to_helios\": []\n},\n\"integration_gaps\": [],\n\"migration_risks\": [],\n\"unknowns\": []\n}\n```\n\nReglas obligatorias:\n1. No inventes componentes ni contratos.\n2. Si algo no está claro, escribe NO DEFINIDO EN ESTE CHAT .\n3. Separa claramente hechos vs inferencias.\n4. Si haces una inferencia, márcala como INFERENCIA DE ALTA CONFIANZA o INFERENCIA DE\nBAJA CONFIANZA .\n5. Conserva literalmente cualquier nombre exacto ya usado.\n6. Prioriza precisión técnica sobre redacción bonita.\n7. No resumas demasiado; prefiero exhaustividad.\nPlain Text"
+  },
+  "ok": true,
+  "provider": "gemini"
+}
