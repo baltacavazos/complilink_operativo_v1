@@ -1,0 +1,235 @@
+{
+  "openai": {
+    "top_bottlenecks": [
+      {
+        "id": "redundant_queries",
+        "area": "db",
+        "why": "queries repetitivas en getCaseDetailForUser y validaciones de drafts",
+        "impact": "high",
+        "probability": "high",
+        "first_fix": "cachear resultados de getCaseDetailForUser por tenantId y caseId"
+      },
+      {
+        "id": "duplicate_processing",
+        "area": "auditar",
+        "why": "posibilidad de reintentos y cargas simultáneas que generan trabajo duplicado",
+        "impact": "high",
+        "probability": "medium",
+        "first_fix": "implementar un sistema de deduplicación en el helper de carga de documentos"
+      },
+      {
+        "id": "concurrency_issues",
+        "area": "db",
+        "why": "concurrencia en confirmación de drafts puede causar duplicados",
+        "impact": "medium",
+        "probability": "high",
+        "first_fix": "usar withDatabaseLock en confirmDocumentDraft para asegurar exclusividad"
+      },
+      {
+        "id": "high_cpu_memory",
+        "area": "auditar",
+        "why": "procesamiento intensivo de base64 y hashing en analyzeDocumentDraft",
+        "impact": "medium",
+        "probability": "medium",
+        "first_fix": "optimizar computeSha256 usando un algoritmo más eficiente o reducir tamaño de archivos"
+      },
+      {
+        "id": "s3_latency",
+        "area": "storage",
+        "why": "latencia en S3 puede afectar tiempos de respuesta en carga de documentos",
+        "impact": "medium",
+        "probability": "medium",
+        "first_fix": "implementar un sistema de pre-carga o almacenamiento en caché de documentos en S3"
+      }
+    ],
+    "guardrails_now": [
+      {
+        "name": "deduplication_helper",
+        "scope": "/auditar",
+        "implementation": "agregar lógica para verificar si un documento ya fue procesado antes de continuar",
+        "expected_benefit": "reducir carga de trabajo y evitar duplicados en procesamiento"
+      },
+      {
+        "name": "lock_on_confirm",
+        "scope": "confirmDocumentDraft",
+        "implementation": "usar withDatabaseLock para asegurar que solo un proceso confirme un draft a la vez",
+        "expected_benefit": "evitar confirmaciones duplicadas de drafts"
+      }
+    ],
+    "metrics_to_add": [
+      {
+        "name": "document_processing_time",
+        "where": "analyzeDocumentDraft",
+        "reason": "medir el tiempo total de procesamiento para identificar cuellos de botella"
+      },
+      {
+        "name": "s3_upload_time",
+        "where": "storagePut",
+        "reason": "evaluar la latencia en la carga de documentos a S3"
+      }
+    ],
+    "tests_to_add": [
+      {
+        "name": "deduplication_logic_test",
+        "type": "unit",
+        "reason": "asegurar que la lógica de deduplicación funcione correctamente"
+      },
+      {
+        "name": "concurrency_test",
+        "type": "load-ish",
+        "reason": "evaluar el comportamiento bajo carga concurrente en confirmDocumentDraft"
+      }
+    ],
+    "sequencing": {
+      "first": "implementar deduplicación en carga de documentos y optimizar queries repetitivas",
+      "second": "usar locks en confirmDocumentDraft y optimizar procesamiento de base64",
+      "third": "mejorar latencia de S3 y agregar métricas de rendimiento"
+    }
+  },
+  "grok": {
+    "top_bottlenecks": [
+      {
+        "id": "dup_queries",
+        "area": "db",
+        "why": "getCaseDetailForUser se llama múltiples veces en analyzeDocumentDraft y confirmDocumentDraft, causando queries repetitivas bajo carga concurrente",
+        "impact": "medium",
+        "probability": "high",
+        "first_fix": "Cachear resultado de getCaseDetailForUser en memoria local por request usando un Map temporal"
+      },
+      {
+        "id": "draft_dup",
+        "area": "auditar",
+        "why": "Confirmación duplicada de drafts por double clicks o reintentos, llevando a contratos duplicados y writes extras",
+        "impact": "high",
+        "probability": "medium",
+        "first_fix": "En assertAuditarDraftNotAlreadyConfirmed, agregar chequeo de estado 'confirmed' en el draft antes de proceder"
+      },
+      {
+        "id": "case_concurr",
+        "area": "auditar",
+        "why": "Múltiples uploads/confirmaciones simultáneas por caso sin locks, causando race conditions en eventos y contratos",
+        "impact": "critical",
+        "probability": "high",
+        "first_fix": "Envolver confirmDocumentDraft en withDatabaseLock usando lockKey basado en caseId"
+      },
+      {
+        "id": "cpu_base64",
+        "area": "other",
+        "why": "decodeBase64File y computeSha256 consumen CPU/memoria en picos de uploads concurrentes con archivos grandes",
+        "impact": "medium",
+        "probability": "high",
+        "first_fix": "Limitar tamaño de base64 en validate input y procesar en chunks para hashing"
+      },
+      {
+        "id": "latencia_ext",
+        "area": "integration",
+        "why": "Llamadas a classifyMexicanLaborDocument, analyzeDocumentScanAssist y sendDocumentToAuditaPatronEngine introducen latencia variable, bloqueando flujos síncronos",
+        "impact": "high",
+        "probability": "high",
+        "first_fix": "Hacer analyzeDocumentScanAssist y analyzeStructuredDocumentPreview asíncronos con promesas, retornando draft inmediatamente"
+      },
+      {
+        "id": "write_explosion",
+        "area": "db",
+        "why": "Múltiples upsertCanonicalContract, addCaseEvent y createAuditLog por documento causan picos de writes en MySQL/TiDB bajo miles de usuarios",
+        "impact": "high",
+        "probability": "medium",
+        "first_fix": "Batch-ear upserts y logs en una sola transacción donde sea posible"
+      },
+      {
+        "id": "ceo_export",
+        "area": "ceo",
+        "why": "Exports de snapshots agregados pueden saturar DB con queries complejas si múltiples CEOs exportan simultáneamente, a pesar de blindaje stale",
+        "impact": "medium",
+        "probability": "low",
+        "first_fix": "Agregar rate limit simple por tenantId en la ruta de export, usando un contador en memoria"
+      },
+      {
+        "id": "auth_overhead",
+        "area": "auth",
+        "why": "assertCaseWriteAccess y chequeos por tenant/case se repiten, agregando overhead en flujos multi-tenant con alta concurrencia",
+        "impact": "low",
+        "probability": "medium",
+        "first_fix": "Resolver auth una vez al inicio del request y pasar como contexto en tRPC"
+      }
+    ],
+    "guardrails_now": [
+      {
+        "name": "lock_confirm",
+        "scope": "confirmDocumentDraft",
+        "implementation": "Envolver la lógica principal en withDatabaseLock(lockKey=`case:${caseId}:confirm`, timeoutSeconds=5), ajustando mensaje de error a 'Operación en progreso, intente de nuevo'",
+        "expected_benefit": "Previene race conditions y duplicados en confirmaciones concurrentes por caso"
+      },
+      {
+        "name": "dedup_draft",
+        "scope": "assertAuditarDraftNotAlreadyConfirmed",
+        "implementation": "Agregar query para chequear si existe contrato con mismo draftId y status 'confirmed', rechazar si sí",
+        "expected_benefit": "Evita trabajo duplicado y writes extras de double clicks sin necesitar Redis"
+      },
+      {
+        "name": "rate_upload",
+        "scope": "uploadDocument y analyzeDocumentDraft",
+        "implementation": "Implementar rate limit por userId usando un Map en memoria con timestamps, limitando a 5 por minuto",
+        "expected_benefit": "Reduce presión de CPU y DB en picos de uploads masivos sin infraestructura extra"
+      },
+      {
+        "name": "async_preview",
+        "scope": "analyzeDocumentDraft",
+        "implementation": "Mover analyzeDocumentScanAssist y analyzeStructuredDocumentPreview a una promesa background, upsert draft inicial síncrono y notificar completion via websocket si disponible",
+        "expected_benefit": "Reduce latencia percibida en preview sin cambio estructural, como quick win antes de colas"
+      }
+    ],
+    "metrics_to_add": [
+      {
+        "name": "draft_confirm_time",
+        "where": "En confirmDocumentDraft, medir duración total y por paso con console.time",
+        "reason": "Identifica latencias en writes y integraciones bajo carga"
+      },
+      {
+        "name": "lock_contention",
+        "where": "En withDatabaseLock, contar fallos de adquisición y loggear",
+        "reason": "Detecta alta concurrencia por caso y ajusta timeouts"
+      },
+      {
+        "name": "write_count_per_doc",
+        "where": "En uploadDocument y confirmDocumentDraft, contar upserts/events/logs por llamada",
+        "reason": "Monitorea explosión de writes para optimizar batching"
+      },
+      {
+        "name": "cpu_hash_peak",
+        "where": "En computeSha256, medir uso de memoria antes/después con process.memoryUsage",
+        "reason": "Cuantifica impacto de base64 en memoria bajo concurrencia"
+      }
+    ],
+    "tests_to_add": [
+      {
+        "name": "concurrent_confirm",
+        "type": "integration",
+        "reason": "Simula race conditions en confirmDocumentDraft para verificar locks previenen duplicados"
+      },
+      {
+        "name": "draft_dedup",
+        "type": "unit",
+        "reason": "Asegura assertAuditarDraftNotAlreadyConfirmed rechaza confirmaciones repetidas"
+      },
+      {
+        "name": "load_uploads",
+        "type": "load-ish",
+        "reason": "Prueba 100 uploads concurrentes para medir degradación en CPU y latencia S3"
+      },
+      {
+        "name": "auth_cache",
+        "type": "unit",
+        "reason": "Verifica que chequeos de auth no se repitan innecesariamente en un request"
+      }
+    ],
+    "sequencing": {
+      "first": "Implementar locks y deduplicación en flujos de auditar para manejar concurrencia inmediata",
+      "second": "Agregar rate limiting y batching de writes para reducir presión en DB y CPU",
+      "third": "Instrumentar metrics y tests para validar mejoras y monitorear bajo carga"
+    }
+  },
+  "gemini": {
+    "error": "gemini-1.5-flash: HTTPError: 404 Client Error: Not Found for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDtDt2jVnsUl8lKWU5gRdQ1APvRIBYKUcI"
+  }
+}

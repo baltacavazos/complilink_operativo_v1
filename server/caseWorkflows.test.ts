@@ -3,6 +3,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
   addCaseEvent: vi.fn(),
+  addCaseEvents: vi.fn(),
   addConsentRecord: vi.fn(),
   addDocumentRecord: vi.fn(),
   addOperationalAlert: vi.fn(),
@@ -15,6 +16,7 @@ const dbMocks = vi.hoisted(() => ({
   buildCaseId: vi.fn(),
   buildTraceId: vi.fn(),
   createAuditLog: vi.fn(),
+  createAuditLogs: vi.fn(),
   createCaseRecord: vi.fn(),
   ensureTenantForUser: vi.fn(),
   findAuditLogEntry: vi.fn(),
@@ -36,6 +38,7 @@ const dbMocks = vi.hoisted(() => ({
   updateCaseStatus: vi.fn(),
   updateDocumentPostProcessing: vi.fn(),
   upsertCanonicalContract: vi.fn(),
+  upsertCanonicalContracts: vi.fn(),
   withDatabaseLock: vi.fn(),
 }));
 
@@ -60,7 +63,7 @@ import {
   LEGAL_DOCUMENTS,
   LEGAL_VERSION,
 } from "@shared/legal";
-import { appRouter } from "./routers";
+import { appRouter, resetAuditarRuntimeGuardsForTests } from "./routers";
 import { storagePut } from "./storage";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
@@ -120,6 +123,7 @@ const demoCaseDetail = {
 describe("appRouter case workflows", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetAuditarRuntimeGuardsForTests();
 
     vi.mocked(db.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
     vi.mocked(db.seedDemoCaseIfEmpty).mockResolvedValue(undefined);
@@ -210,9 +214,12 @@ describe("appRouter case workflows", () => {
       url: "https://cdn.example.com/demo-key.pdf",
     });
     vi.mocked(db.addCaseEvent).mockResolvedValue(undefined);
+    vi.mocked(db.addCaseEvents).mockResolvedValue(undefined);
     vi.mocked(db.grantCaseAccess).mockResolvedValue(undefined);
     vi.mocked(db.upsertCanonicalContract).mockResolvedValue(undefined);
+    vi.mocked(db.upsertCanonicalContracts).mockResolvedValue(undefined);
     vi.mocked(db.createAuditLog).mockResolvedValue(undefined);
+    vi.mocked(db.createAuditLogs).mockResolvedValue(undefined);
     vi.mocked(db.findAuditLogEntry).mockResolvedValue(null);
     vi.mocked(db.listCanonicalContractsByType).mockResolvedValue([]);
     vi.mocked(db.updateDocumentPostProcessing).mockResolvedValue(undefined);
@@ -796,7 +803,7 @@ describe("appRouter case workflows", () => {
       caseId: "CASE-BALT-1-DEMO001",
       fileName: "recibo_nomina_abril.pdf",
       mimeType: "application/pdf",
-      base64Content: "data:application/pdf;base64,SG9sYSBDb21wbGlMaW5r",
+      base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
       visibility: "tenant_legal",
       consentStatus: "pending",
       sourceChannel: "manual",
@@ -822,7 +829,8 @@ describe("appRouter case workflows", () => {
       }),
     );
 
-    const uploadContracts = vi.mocked(db.upsertCanonicalContract).mock.calls.map((call) => call[0]);
+    expect(db.upsertCanonicalContracts).toHaveBeenCalledTimes(1);
+    const uploadContracts = vi.mocked(db.upsertCanonicalContracts).mock.calls[0]?.[0] ?? [];
     expect(uploadContracts.map((contract) => contract?.contractType)).toEqual([
       "document",
       "classification",
@@ -844,10 +852,659 @@ describe("appRouter case workflows", () => {
       status: "completed",
     });
 
-    const auditActions = vi.mocked(db.createAuditLog).mock.calls.map((call) => call[0]?.action);
+    expect(db.createAuditLogs).toHaveBeenCalledTimes(1);
+    const auditActions = vi.mocked(db.createAuditLogs).mock.calls[0]?.[0]?.map((entry) => entry?.action) ?? [];
     expect(auditActions).toEqual(
       expect.arrayContaining(["document.upload", "document.engine_dispatch", "document.helios_opinion"]),
     );
+  });
+
+  it("rate limits burst uploads on the heavy Auditar endpoint", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 71,
+        openId: "auditar-rate-upload",
+        email: "rate-upload@complilink.mx",
+      }),
+    );
+
+    const baseInput = {
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      mimeType: "application/pdf",
+      base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      visibility: "tenant_legal" as const,
+      consentStatus: "pending" as const,
+      sourceChannel: "manual" as const,
+    };
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await caller.cases.uploadDocument({
+        ...baseInput,
+        fileName: `burst_upload_${attempt}.pdf`,
+      });
+    }
+
+    await expect(
+      caller.cases.uploadDocument({
+        ...baseInput,
+        fileName: "burst_upload_blocked.pdf",
+      }),
+    ).rejects.toThrow(/demasiados intentos seguidos en Auditar/i);
+
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        action: "document.guardrail_rejected",
+        entityType: "system",
+        entityId: "document:CASE-BALT-1-DEMO001:burst_upload_blocked.pdf",
+        afterState: expect.objectContaining({
+          mutation: "uploadDocument",
+          reason: "rate_limited",
+        }),
+      }),
+    );
+    expect(storagePut).toHaveBeenCalledTimes(4);
+    expect(db.getCaseDetailForUser).toHaveBeenCalledTimes(4);
+  });
+
+  it("deduplicates immediate repeated uploads of the same Auditar file", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 74,
+        openId: "auditar-dedup-upload",
+        email: "dedup-upload@complilink.mx",
+      }),
+    );
+
+    const repeatedInput = {
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      fileName: "duplicado_nomina.pdf",
+      mimeType: "application/pdf",
+      base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      visibility: "tenant_legal" as const,
+      consentStatus: "pending" as const,
+      sourceChannel: "manual" as const,
+    };
+
+    await caller.cases.uploadDocument(repeatedInput);
+
+    await expect(caller.cases.uploadDocument(repeatedInput)).rejects.toThrow(
+      /mismo archivo en Auditar/i,
+    );
+
+    expect(storagePut).toHaveBeenCalledTimes(1);
+    expect(db.addDocumentRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it("rate limits burst draft analysis on the Auditar preview endpoint", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 73,
+        openId: "auditar-rate-preview",
+        email: "rate-preview@complilink.mx",
+      }),
+    );
+
+    const baseInput = {
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      mimeType: "application/pdf",
+      base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      sourceChannel: "manual" as const,
+    };
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await caller.cases.analyzeDocumentDraft({
+        ...baseInput,
+        fileName: `preview_burst_${attempt}.pdf`,
+      });
+    }
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        ...baseInput,
+        fileName: "preview_burst_blocked.pdf",
+      }),
+    ).rejects.toThrow(/demasiados intentos seguidos en Auditar/i);
+
+    expect(storagePut).toHaveBeenCalledTimes(4);
+    expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(4);
+  });
+
+  it("deduplicates immediate repeated draft analysis for the same Auditar file", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 75,
+        openId: "auditar-dedup-preview",
+        email: "dedup-preview@complilink.mx",
+      }),
+    );
+
+    const repeatedInput = {
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      fileName: "vista_previa_repetida.pdf",
+      mimeType: "application/pdf",
+      base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      sourceChannel: "manual" as const,
+    };
+
+    await caller.cases.analyzeDocumentDraft(repeatedInput);
+
+    await expect(caller.cases.analyzeDocumentDraft(repeatedInput)).rejects.toThrow(
+      /mismo archivo en Auditar/i,
+    );
+
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        action: "document.guardrail_rejected",
+        entityType: "system",
+        entityId: "draft:CASE-BALT-1-DEMO001:vista_previa_repetida.pdf",
+        afterState: expect.objectContaining({
+          mutation: "analyzeDocumentDraft",
+          reason: "duplicate_submission",
+        }),
+      }),
+    );
+    expect(storagePut).toHaveBeenCalledTimes(1);
+    expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects unsupported files in the Auditar preview before storage", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "respaldo.zip",
+        mimeType: "application/zip",
+        base64Content: "data:application/zip;base64,SG9sYQ==",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/PDF|JPG|PNG|WEBP/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects upload payloads whose real binary signature does not match the declared MIME type", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "nomina_camuflada.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,iVBORw0KGgpQTkdEQVRB",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/contenido real del archivo no coincide con el tipo declarado/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects preview payloads whose real binary signature does not match the declared MIME type", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "vista_camuflada.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,iVBORw0KGgpQTkdEQVRB",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/contenido real del archivo no coincide con el tipo declarado/i);
+
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        action: "document.guardrail_rejected",
+        entityType: "system",
+        entityId: "draft:CASE-BALT-1-DEMO001:vista_camuflada.pdf",
+        afterState: expect.objectContaining({
+          mutation: "analyzeDocumentDraft",
+          reason: "invalid_upload",
+        }),
+      }),
+    );
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+  });
+
+  it("rejects excessively long file names before the heavy Auditar upload work starts", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+    const longFileName = `${"a".repeat(170)}.pdf`;
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: longFileName,
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/nombre del archivo es demasiado largo/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects excessively long file names before the Auditar preview starts", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+    const longFileName = `${"vista_previa_".repeat(14)}.pdf`;
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: longFileName,
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/nombre del archivo es demasiado largo/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+  });
+
+  it("fails upload authorization before any heavy Auditar work starts", async () => {
+    vi.mocked(db.assertCaseWriteAccess).mockRejectedValueOnce(new Error("FORBIDDEN"));
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "nomina_privada.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/FORBIDDEN/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.getCaseDetailForUser).not.toHaveBeenCalled();
+  });
+
+  it("fails preview authorization before any heavy Auditar analysis starts", async () => {
+    vi.mocked(db.assertCaseWriteAccess).mockRejectedValueOnce(new Error("FORBIDDEN"));
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "vista_privada.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/FORBIDDEN/i);
+
+    expect(storagePut).not.toHaveBeenCalled();
+    expect(db.getCaseDetailForUser).not.toHaveBeenCalled();
+  });
+
+  it("fails draft confirmation authorization before acquiring the Auditar database lock", async () => {
+    vi.mocked(db.assertCaseWriteAccess).mockRejectedValueOnce(new Error("FORBIDDEN"));
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.confirmDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        draftId: "DRF-FORBIDDEN-001",
+      }),
+    ).rejects.toThrow(/FORBIDDEN/i);
+
+    expect(db.withDatabaseLock).not.toHaveBeenCalled();
+    expect(db.getAuditarDraftById).not.toHaveBeenCalled();
+  });
+
+  it("blocks confirming an expired Auditar preview", async () => {
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue({
+      contractId: 91,
+      traceId: "trace.balt-1.CASE-BALT-1-DEMO001",
+      createdAt: new Date("2026-04-05T08:00:00.000Z"),
+      updatedAt: new Date("2026-04-05T08:00:00.000Z"),
+      payload: {
+        draftId: "DRF-EXPIRED-001",
+        createdAt: "2026-04-05T08:00:00.000Z",
+      },
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.confirmDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        draftId: "DRF-EXPIRED-001",
+      }),
+    ).rejects.toThrow(/expiró|Súbelo otra vez/i);
+
+    expect(db.withDatabaseLock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lockKey: "auditar-confirm:balt-1:CASE-BALT-1-DEMO001:DRF-EXPIRED-001",
+        timeoutSeconds: 12,
+        action: expect.any(Function),
+      }),
+    );
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("blocks confirming the same Auditar preview twice", async () => {
+    const freshDraftCreatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue({
+      contractId: 92,
+      traceId: "trace.balt-1.CASE-BALT-1-DEMO001",
+      createdAt: new Date(freshDraftCreatedAt),
+      updatedAt: new Date(freshDraftCreatedAt),
+      payload: {
+        draftId: "DRF-DUPLICATE-001",
+        createdAt: freshDraftCreatedAt,
+      },
+    } as never);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValue([
+      {
+        id: 701,
+        payload: JSON.stringify({
+          draftId: "DRF-DUPLICATE-001",
+          documentId: "DOC-EXISTING-001",
+        }),
+        createdAt: new Date("2026-04-08T10:10:00.000Z"),
+        updatedAt: new Date("2026-04-08T10:10:00.000Z"),
+        status: "ready",
+        schemaVersion: "v1",
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.confirmDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        draftId: "DRF-DUPLICATE-001",
+      }),
+    ).rejects.toThrow(/ya fue confirmada/i);
+
+    expect(db.withDatabaseLock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lockKey: "auditar-confirm:balt-1:CASE-BALT-1-DEMO001:DRF-DUPLICATE-001",
+        timeoutSeconds: 12,
+        action: expect.any(Function),
+      }),
+    );
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("rate limits repeated preview confirmations before taking the database lock", async () => {
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue({
+      contractId: 93,
+      traceId: "trace.balt-1.CASE-BALT-1-DEMO001",
+      createdAt: new Date("2026-04-05T08:00:00.000Z"),
+      updatedAt: new Date("2026-04-05T08:00:00.000Z"),
+      payload: {
+        draftId: "DRF-RATE-CONFIRM-001",
+        createdAt: "2026-04-05T08:00:00.000Z",
+      },
+    } as never);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 72,
+        openId: "auditar-rate-confirm",
+        email: "rate-confirm@complilink.mx",
+      }),
+    );
+
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      await expect(
+        caller.cases.confirmDocumentDraft({
+          tenantId: "balt-1",
+          caseId: "CASE-BALT-1-DEMO001",
+          draftId: "DRF-RATE-CONFIRM-001",
+        }),
+      ).rejects.toThrow(/expiró|Súbelo otra vez/i);
+    }
+
+    await expect(
+      caller.cases.confirmDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        draftId: "DRF-RATE-CONFIRM-001",
+      }),
+    ).rejects.toThrow(/demasiados intentos seguidos en Auditar/i);
+
+    expect(db.withDatabaseLock).toHaveBeenCalledTimes(8);
+  });
+
+  it("confirms an Auditar preview with lock plus batched contracts, events and audit logs", async () => {
+    const freshDraftCreatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue({
+      id: 410,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-001",
+      createdAt: new Date(freshDraftCreatedAt),
+      payload: {
+        draftId: "DRF-CONFIRM-001",
+        createdAt: freshDraftCreatedAt,
+        fileName: "constancia_imss.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 123456,
+        storageKey: "complilink/balt-1/DRF-CONFIRM-001.pdf",
+        storageUrl: "https://cdn.example.com/DRF-CONFIRM-001.pdf",
+        sha256: "a".repeat(64),
+        expectedDocumentType: "constancia_imss",
+        captureMode: "manual_upload",
+        classification: {
+          documentType: "imss_record",
+          classificationConfidence: 0.91,
+          normalizedDocType: "constancia_imss",
+          reasons: ["Se detectaron semanas cotizadas y datos patronales."],
+          processingProfile: "structured",
+          reviewRecommendation: "auto_accept",
+          supportsStructuredExtraction: true,
+          supportsBenefitEstimation: true,
+        },
+        preliminaryAnalysis: {
+          confirmedData: {
+            workerName: "María López",
+            employerRfc: "ABC010101AAA",
+            period: "2026-03",
+          },
+          estimatedData: {},
+          structuredExtraction: {
+            nss: "12345678901",
+          },
+          extractionTargets: ["nss", "employerRfc"],
+          guardrails: [],
+        },
+        scanAssistance: {
+          friendlyHeadline: "Captura utilizable",
+          userGuidance: "La captura es legible y puede pasar a resguardo.",
+          readiness: "ready",
+          documentPresence: "present",
+          expectedTypeAlignment: "match",
+          confidence: 0.94,
+          issues: [],
+        },
+      },
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.confirmDocumentDraft({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-001",
+      visibility: "case_team",
+      consentStatus: "granted",
+      sourceChannel: "manual",
+    });
+
+    expect(db.withDatabaseLock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lockKey: "auditar-confirm:balt-1:CASE-BALT-1-DEMO001:DRF-CONFIRM-001",
+        timeoutSeconds: 12,
+        action: expect.any(Function),
+      }),
+    );
+    expect(db.addDocumentRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        originalName: "constancia_imss.pdf",
+        documentType: "imss_record",
+        consentStatus: "granted",
+        visibility: "case_team",
+        integrityStatus: "verified",
+      }),
+    );
+    expect(db.upsertCanonicalContracts).toHaveBeenCalledTimes(1);
+    const confirmContracts = vi.mocked(db.upsertCanonicalContracts).mock.calls[0]?.[0] ?? [];
+    expect(confirmContracts.map((contract) => contract?.contractType)).toEqual([
+      "document",
+      "classification",
+      "shared_engine",
+      "audit",
+    ]);
+
+    expect(db.addCaseEvents).toHaveBeenCalledTimes(1);
+    const confirmEvents = vi.mocked(db.addCaseEvents).mock.calls[0]?.[0] ?? [];
+    expect(confirmEvents.map((event) => event?.title)).toEqual(
+      expect.arrayContaining([
+        "Documento confirmado y guardado",
+        "Documento clasificado",
+        "Escaneo asistido evaluó la captura",
+        "Helios preparó una opinión inicial",
+      ]),
+    );
+
+    expect(db.createAuditLogs).toHaveBeenCalledTimes(1);
+    const confirmAuditActions = vi.mocked(db.createAuditLogs).mock.calls[0]?.[0]?.map((entry) => entry?.action) ?? [];
+    expect(confirmAuditActions).toEqual(
+      expect.arrayContaining([
+        "document.upload",
+        "document.preview_confirmed",
+        "document.engine_dispatch",
+        "document.helios_opinion",
+        "document.scan_assist",
+      ]),
+    );
+    expect(result.document.originalName).toBe("constancia_imss.pdf");
+    expect(result.document.sha256).toHaveLength(64);
+    expect(result.heliosOpinion).toMatchObject({
+      status: "completed",
+      mode: "mock",
+    });
+  });
+
+  it("deduplicates an immediate repeated confirmation of the same Auditar draft after success", async () => {
+    const freshDraftCreatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue({
+      id: 411,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-DEDUP-001",
+      createdAt: new Date(freshDraftCreatedAt),
+      payload: {
+        draftId: "DRF-CONFIRM-DEDUP-001",
+        createdAt: freshDraftCreatedAt,
+        fileName: "constancia_imss.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 123456,
+        storageKey: "complilink/balt-1/DRF-CONFIRM-DEDUP-001.pdf",
+        storageUrl: "https://cdn.example.com/DRF-CONFIRM-DEDUP-001.pdf",
+        sha256: "b".repeat(64),
+        expectedDocumentType: "constancia_imss",
+        captureMode: "manual_upload",
+        classification: {
+          documentType: "imss_record",
+          classificationConfidence: 0.91,
+          normalizedDocType: "constancia_imss",
+          reasons: ["Se detectaron semanas cotizadas y datos patronales."],
+          processingProfile: "structured",
+          reviewRecommendation: "auto_accept",
+          supportsStructuredExtraction: true,
+          supportsBenefitEstimation: true,
+        },
+        preliminaryAnalysis: {
+          confirmedData: {
+            workerName: "María López",
+            employerRfc: "ABC010101AAA",
+            period: "2026-03",
+          },
+          estimatedData: {},
+          structuredExtraction: {
+            nss: "12345678901",
+          },
+          extractionTargets: ["nss", "employerRfc"],
+          guardrails: [],
+        },
+        scanAssistance: {
+          friendlyHeadline: "Captura utilizable",
+          userGuidance: "La captura es legible y puede pasar a resguardo.",
+          readiness: "ready",
+          documentPresence: "present",
+          expectedTypeAlignment: "match",
+          confidence: 0.94,
+          issues: [],
+        },
+      },
+    } as never);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 76,
+        openId: "auditar-dedup-confirm",
+        email: "dedup-confirm@complilink.mx",
+      }),
+    );
+
+    const repeatedInput = {
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-DEDUP-001",
+      visibility: "case_team" as const,
+      consentStatus: "granted" as const,
+      sourceChannel: "manual" as const,
+    };
+
+    await caller.cases.confirmDocumentDraft(repeatedInput);
+
+    await expect(caller.cases.confirmDocumentDraft(repeatedInput)).rejects.toThrow(
+      /confirmación documental ya está en curso|se procesó hace instantes/i,
+    );
+
+    expect(db.withDatabaseLock).toHaveBeenCalledTimes(1);
+    expect(db.addDocumentRecord).toHaveBeenCalledTimes(1);
   });
 
   it("creates consent records with canonical contract and audit evidence", async () => {

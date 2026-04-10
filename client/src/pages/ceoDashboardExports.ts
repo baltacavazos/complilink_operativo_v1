@@ -97,6 +97,8 @@ type CeoExportTable = {
   rows: string[][];
 };
 
+const CEO_EXPORT_MAX_CELL_LENGTH = 240;
+
 export type CeoPdfModel = {
   title: string;
   filename: string;
@@ -112,8 +114,45 @@ type BuildExportArgs = {
   exportedAt?: Date;
 };
 
+export type CeoExportGuardInput = {
+  hasSnapshot: boolean;
+  isRefreshing: boolean;
+  isSnapshotStale: boolean;
+  hasSnapshotError: boolean;
+};
+
+export function getCeoExportBlockReason({
+  hasSnapshot,
+  isRefreshing,
+  isSnapshotStale,
+  hasSnapshotError,
+}: CeoExportGuardInput) {
+  if (!hasSnapshot) {
+    return "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.";
+  }
+  if (isRefreshing) {
+    return "La consola está refrescando la vista ejecutiva. Espera a que termine antes de exportar.";
+  }
+  if (hasSnapshotError) {
+    return "La vista ejecutiva tuvo un problema al cargar. Refresca antes de generar un reporte.";
+  }
+  if (isSnapshotStale) {
+    return "La vista ejecutiva quedó desactualizada. Refresca el panel antes de exportar para evitar reportes obsoletos.";
+  }
+
+  return null;
+}
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("es-MX").format(value ?? 0);
+}
+
+function clampExportText(value: string) {
+  if (value.length <= CEO_EXPORT_MAX_CELL_LENGTH) {
+    return value;
+  }
+
+  return `${value.slice(0, CEO_EXPORT_MAX_CELL_LENGTH - 1).trimEnd()}…`;
 }
 
 function formatDateTime(value: Date | string | null | undefined) {
@@ -129,14 +168,31 @@ function formatDateTime(value: Date | string | null | undefined) {
 
 function sanitizeCell(value: unknown) {
   if (typeof value === "number") return String(value);
-  if (typeof value === "string") return value.trim().length > 0 ? value : "—";
+  if (typeof value === "string") {
+    const normalized = value.replace(/\r\n/g, "\n").replace(/[\r\n\t]+/g, " ").replace(/\s{2,}/g, " ").trim();
+    return normalized.length > 0 ? clampExportText(normalized) : "—";
+  }
   if (value instanceof Date) return formatDateTime(value);
   if (value === null || value === undefined) return "—";
-  return String(value);
+  return clampExportText(String(value));
+}
+
+function sanitizeCsvCell(value: unknown) {
+  const normalized = sanitizeCell(value)
+    .replace(/\r\n/g, "\n")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (/^[=+\-@]/.test(normalized)) {
+    return `'${normalized}`;
+  }
+
+  return normalized;
 }
 
 function escapeCsv(value: unknown) {
-  const sanitized = sanitizeCell(value).replaceAll('"', '""');
+  const sanitized = sanitizeCsvCell(value).replaceAll('"', '""');
   return `"${sanitized}"`;
 }
 
@@ -244,16 +300,21 @@ export function buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel
   const currentSection = getCeoSectionLabel(section);
   const filename = buildFilename(section, "pdf", exportedAt);
   const filtersLabel = appliedFilters.length > 0 ? appliedFilters.join(" | ") : "Sin filtros activos";
+  const tables = buildCeoExportTables(section, snapshot).map((table) => ({
+    title: sanitizeCell(table.title),
+    columns: table.columns.map((column) => sanitizeCell(column)),
+    rows: table.rows.map((row) => row.map((cell) => sanitizeCell(cell))),
+  }));
 
   return {
     title: `Reporte ejecutivo CEO · ${currentSection}`,
     filename,
     summaryRows: [
-      ["Vista", currentSection],
-      ["Exportado por", actorLabel],
+      ["Vista", sanitizeCell(currentSection)],
+      ["Exportado por", sanitizeCell(actorLabel)],
       ["Generado", formatDateTime(exportedAt)],
       ["Snapshot", formatDateTime(snapshot.generatedAt)],
-      ["Filtros", filtersLabel],
+      ["Filtros", sanitizeCell(filtersLabel)],
       ["Tenants activos", formatNumber(snapshot.summary.totalTenants)],
       ["Casos activos", formatNumber(snapshot.summary.activeCases)],
       ["Alertas abiertas", formatNumber(snapshot.summary.openAlerts)],
@@ -262,7 +323,7 @@ export function buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel
       ["Documentos pendientes", formatNumber(snapshot.summary.pendingDocuments)],
       ["Documentos totales", formatNumber(snapshot.summary.totalDocuments)],
     ],
-    tables: buildCeoExportTables(section, snapshot),
+    tables,
   };
 }
 

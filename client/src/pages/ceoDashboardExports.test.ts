@@ -4,6 +4,7 @@ import {
   buildCeoCsvReport,
   buildCeoExportTables,
   buildCeoPdfModel,
+  getCeoExportBlockReason,
   type CeoDashboardSnapshot,
 } from "./ceoDashboardExports";
 
@@ -116,6 +117,52 @@ function buildSnapshot(): CeoDashboardSnapshot {
   };
 }
 
+describe("getCeoExportBlockReason", () => {
+  it("bloquea la exportación cuando aún no existe snapshot ejecutivo", () => {
+    expect(
+      getCeoExportBlockReason({
+        hasSnapshot: false,
+        isRefreshing: false,
+        isSnapshotStale: false,
+        hasSnapshotError: false,
+      }),
+    ).toMatch(/snapshot ejecutivo termine de cargar/i);
+  });
+
+  it("prioriza el bloqueo por refresco por encima de otros estados no confiables", () => {
+    expect(
+      getCeoExportBlockReason({
+        hasSnapshot: true,
+        isRefreshing: true,
+        isSnapshotStale: true,
+        hasSnapshotError: true,
+      }),
+    ).toMatch(/refrescando la vista ejecutiva/i);
+  });
+
+  it("bloquea la exportación cuando la vista ejecutiva quedó stale", () => {
+    expect(
+      getCeoExportBlockReason({
+        hasSnapshot: true,
+        isRefreshing: false,
+        isSnapshotStale: true,
+        hasSnapshotError: false,
+      }),
+    ).toMatch(/desactualizada/i);
+  });
+
+  it("permite exportar cuando el snapshot está disponible y confiable", () => {
+    expect(
+      getCeoExportBlockReason({
+        hasSnapshot: true,
+        isRefreshing: false,
+        isSnapshotStale: false,
+        hasSnapshotError: false,
+      }),
+    ).toBeNull();
+  });
+});
+
 describe("ceoDashboardExports", () => {
   it("arma el modelo PDF del resumen con metadatos ejecutivos y todas las tablas clave", () => {
     const exportedAt = new Date("2026-04-10T18:45:00.000Z");
@@ -190,5 +237,68 @@ describe("ceoDashboardExports", () => {
     expect(csv.content).toContain('"Filtros","Sin filtros activos"');
     expect(csv.content).toContain('"Documentos visibles"');
     expect(csv.content).toContain('"Sin registros visibles para esta sección"');
+  });
+
+  it("neutraliza fórmulas CSV y normaliza saltos de línea peligrosos antes de exportar", () => {
+    const snapshot = buildSnapshot();
+    snapshot.recentDocuments = [
+      {
+        ...snapshot.recentDocuments[0],
+        originalName: '=HYPERLINK("https://malicioso.test","Abrir")',
+      },
+    ];
+    snapshot.recentAlerts = [
+      {
+        ...snapshot.recentAlerts[0],
+        title: 'Hallazgo crítico\n=CMD()\t',
+      },
+    ];
+
+    const csv = buildCeoCsvReport({
+      section: "resumen",
+      snapshot,
+      appliedFilters: ["Estado: abierto"],
+      actorLabel: "CEO Demo",
+      exportedAt: new Date("2026-04-10T19:05:00.000Z"),
+    });
+
+    expect(csv.content).toContain('"\'=HYPERLINK(""https://malicioso.test"",""Abrir"")"');
+    expect(csv.content).toContain('"Hallazgo crítico =CMD()"');
+    expect(csv.content).not.toContain('Hallazgo crítico\n=CMD()');
+    expect(csv.content).not.toContain('"=HYPERLINK');
+  });
+
+  it("recorta texto exportable excesivo para evitar celdas PDF o CSV patológicas", () => {
+    const snapshot = buildSnapshot();
+    const longLabel = `Hallazgo ${"X".repeat(400)}`;
+
+    snapshot.recentAlerts = [
+      {
+        ...snapshot.recentAlerts[0],
+        title: longLabel,
+      },
+    ];
+
+    const model = buildCeoPdfModel({
+      section: "alertas",
+      snapshot,
+      appliedFilters: [longLabel],
+      actorLabel: longLabel,
+      exportedAt: new Date("2026-04-10T19:10:00.000Z"),
+    });
+    const csv = buildCeoCsvReport({
+      section: "alertas",
+      snapshot,
+      appliedFilters: [longLabel],
+      actorLabel: longLabel,
+      exportedAt: new Date("2026-04-10T19:10:00.000Z"),
+    });
+
+    expect(model.summaryRows.find(([label]) => label === "Exportado por")?.[1]).toMatch(/…$/);
+    expect(model.summaryRows.find(([label]) => label === "Filtros")?.[1]).toMatch(/…$/);
+    expect(model.tables[0].rows[0][0]).toMatch(/…$/);
+    expect(model.tables[0].rows[0][0].length).toBeLessThanOrEqual(240);
+    expect(model.tables[0].rows[0][0]).not.toContain("\n");
+    expect(csv.content).toContain("…");
   });
 });

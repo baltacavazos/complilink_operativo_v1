@@ -3,6 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import {
   addCaseEvent,
+  addCaseEvents,
   addConsentRecord,
   addOperationalAlert,
   addPolicyRecord,
@@ -14,6 +15,7 @@ import {
   buildCaseId,
   buildTraceId,
   createAuditLog,
+  createAuditLogs,
   createCaseRecord,
   ensureTenantForUser,
   findAuditLogEntry,
@@ -35,6 +37,7 @@ import {
   updateOperationalAlertStatus,
   updateTenantMembershipStatus,
   upsertCanonicalContract,
+  upsertCanonicalContracts,
   addDocumentRecord,
   getAuditarDraftById,
   updateDocumentPostProcessing,
@@ -129,6 +132,15 @@ const auditarEditableFieldKeys = [
 ] as const;
 
 const auditarEditableFieldKeySet = new Set<string>(auditarEditableFieldKeys);
+const AUDITAR_ALLOWED_UPLOAD_MIME_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+const AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH = 160;
+const AUDITAR_MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
+const AUDITAR_DRAFT_TTL_MS = 2 * 60 * 60 * 1000;
+const AUDITAR_HEAVY_RATE_WINDOW_MS = 60 * 1000;
+const AUDITAR_TRANSIENT_DEDUP_TTL_MS = 90 * 1000;
+const AUDITAR_ANALYZE_RATE_LIMIT = 4;
+const AUDITAR_UPLOAD_RATE_LIMIT = 4;
+const AUDITAR_CONFIRM_RATE_LIMIT = 8;
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
 const CEO_NEXT_SAFE_CASE_STATUS: Partial<Record<(typeof CASE_STATUSES)[number], (typeof CASE_STATUSES)[number]>> = {
@@ -208,6 +220,182 @@ function getClientIp(req: { headers: Record<string, unknown>; ip?: string | null
 
 function getUserAgent(req: { headers: Record<string, unknown> }) {
   return getHeaderValue(req.headers["user-agent"] as string | string[] | undefined);
+}
+
+const auditarRateWindowByKey = new Map<string, number[]>();
+const auditarTransientDedupByKey = new Map<string, number>();
+
+function pruneAuditarRateWindow(now: number) {
+  auditarRateWindowByKey.forEach((timestamps, key) => {
+    const freshTimestamps = timestamps.filter((timestamp: number) => now - timestamp < AUDITAR_HEAVY_RATE_WINDOW_MS);
+    if (freshTimestamps.length === 0) {
+      auditarRateWindowByKey.delete(key);
+      return;
+    }
+
+    auditarRateWindowByKey.set(key, freshTimestamps);
+  });
+}
+
+function pruneAuditarTransientDedup(now: number) {
+  auditarTransientDedupByKey.forEach((expiresAt, key) => {
+    if (expiresAt <= now) {
+      auditarTransientDedupByKey.delete(key);
+    }
+  });
+}
+
+function assertAuditarRateLimit(params: {
+  action: "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
+  tenantId: string;
+  caseId: string;
+  userId: number;
+  ip: string | null;
+  maxRequests: number;
+}) {
+  const now = Date.now();
+  pruneAuditarRateWindow(now);
+
+  const key = [params.action, params.tenantId, params.caseId, params.userId, params.ip ?? "ip:unknown"].join(":");
+  const recentTimestamps = auditarRateWindowByKey.get(key) ?? [];
+
+  if (recentTimestamps.length >= params.maxRequests) {
+    throw new Error("Detectamos demasiados intentos seguidos en Auditar para este expediente. Espera un minuto y vuelve a intentarlo.");
+  }
+
+  auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
+function acquireAuditarTransientDedup(params: {
+  action: "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
+  dedupKey: string;
+  message: string;
+}) {
+  const now = Date.now();
+  pruneAuditarTransientDedup(now);
+
+  const key = `${params.action}:${params.dedupKey}`;
+  const expiresAt = auditarTransientDedupByKey.get(key);
+  if (expiresAt && expiresAt > now) {
+    throw new Error(params.message);
+  }
+
+  const nextExpiresAt = now + AUDITAR_TRANSIENT_DEDUP_TTL_MS;
+  auditarTransientDedupByKey.set(key, nextExpiresAt);
+
+  return () => {
+    if (auditarTransientDedupByKey.get(key) === nextExpiresAt) {
+      auditarTransientDedupByKey.delete(key);
+    }
+  };
+}
+
+export function resetAuditarRuntimeGuardsForTests() {
+  auditarRateWindowByKey.clear();
+  auditarTransientDedupByKey.clear();
+}
+
+type AuditarMutationAction = "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
+
+type AuditarGuardrailRejection = {
+  reason:
+    | "rate_limited"
+    | "duplicate_submission"
+    | "draft_missing"
+    | "stale_preview"
+    | "already_confirmed"
+    | "invalid_upload";
+  message: string;
+};
+
+function getAuditarGuardrailRejection(error: unknown): AuditarGuardrailRejection | null {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+
+  if (/demasiados intentos seguidos en Auditar/i.test(message)) {
+    return {
+      reason: "rate_limited",
+      message,
+    };
+  }
+
+  if (/Ya estamos procesando|acabamos de procesar|ya está en curso|se procesó hace instantes/i.test(message)) {
+    return {
+      reason: "duplicate_submission",
+      message,
+    };
+  }
+
+  if (/ya no está disponible/i.test(message)) {
+    return {
+      reason: "draft_missing",
+      message,
+    };
+  }
+
+  if (/expiró por seguridad/i.test(message)) {
+    return {
+      reason: "stale_preview",
+      message,
+    };
+  }
+
+  if (/ya fue confirmada/i.test(message)) {
+    return {
+      reason: "already_confirmed",
+      message,
+    };
+  }
+
+  if (
+    /solo puedes subir|necesita un nombre válido|demasiado largo|contenido real del archivo no coincide|llegó vacío|supera el límite de 12 MB/i.test(
+      message,
+    )
+  ) {
+    return {
+      reason: "invalid_upload",
+      message,
+    };
+  }
+
+  return null;
+}
+
+async function auditAuditarGuardrailRejection(params: {
+  action: AuditarMutationAction;
+  tenantId: string;
+  caseId: string;
+  actorUserId: number;
+  ip: string | null;
+  userAgent: string | null;
+  entityId: string;
+  requestContext?: Record<string, unknown>;
+  error: unknown;
+}) {
+  const rejection = getAuditarGuardrailRejection(params.error);
+  if (!rejection) return;
+
+  try {
+    await createAuditLog({
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      traceId: buildTraceId(params.tenantId, params.caseId, `${params.action}-guardrail`),
+      actorUserId: params.actorUserId,
+      entityType: "system",
+      entityId: params.entityId,
+      action: "document.guardrail_rejected",
+      afterState: {
+        mutation: params.action,
+        reason: rejection.reason,
+        message: rejection.message,
+        ip: params.ip,
+        userAgent: params.userAgent,
+        requestContext: params.requestContext ?? null,
+        rejectedAt: new Date().toISOString(),
+      },
+    });
+  } catch (auditError) {
+    console.error("Failed to audit Auditar guardrail rejection", auditError);
+  }
 }
 
 function buildLegalConsentBasis(type: LegalConsentType) {
@@ -603,6 +791,110 @@ function buildDraftPreviewPayload(payload: AuditarDraftContractPayload) {
     preliminaryAnalysis: payload.preliminaryAnalysis,
     scanAssistance: payload.scanAssistance,
   };
+}
+
+function validateAuditarUploadMetadata(params: { fileName: string; mimeType: string }) {
+  const safeFileName = sanitizeFileName(params.fileName).trim();
+
+  if (!safeFileName) {
+    throw new Error("El archivo necesita un nombre válido antes de poder revisarlo.");
+  }
+
+  if (!AUDITAR_ALLOWED_UPLOAD_MIME_TYPES.has(params.mimeType)) {
+    throw new Error("Por ahora solo puedes subir archivos PDF, JPG, PNG o WEBP para una revisión confiable.");
+  }
+
+  if (safeFileName.length > AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH) {
+    throw new Error("El nombre del archivo es demasiado largo para una revisión confiable. Usa un nombre más corto antes de subirlo.");
+  }
+
+  return {
+    safeFileName,
+  };
+}
+
+function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buffer }) {
+  const matchesPdf = params.binary.byteLength >= 5 && params.binary.subarray(0, 5).equals(Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d]));
+  const matchesJpeg = params.binary.byteLength >= 3 && params.binary[0] === 0xff && params.binary[1] === 0xd8 && params.binary[2] === 0xff;
+  const matchesPng = params.binary.byteLength >= 8 && params.binary.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  const matchesWebp = params.binary.byteLength >= 12 && params.binary.subarray(0, 4).equals(Buffer.from("RIFF")) && params.binary.subarray(8, 12).equals(Buffer.from("WEBP"));
+
+  const isValidBinary =
+    (params.mimeType === "application/pdf" && matchesPdf) ||
+    (params.mimeType === "image/jpeg" && matchesJpeg) ||
+    (params.mimeType === "image/png" && matchesPng) ||
+    (params.mimeType === "image/webp" && matchesWebp);
+
+  if (!isValidBinary) {
+    throw new Error("El contenido real del archivo no coincide con el tipo declarado. Vuelve a exportarlo o súbelo en su formato original.");
+  }
+}
+
+function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string; binary: Buffer }) {
+  const { safeFileName } = validateAuditarUploadMetadata(params);
+
+  if (params.binary.byteLength === 0) {
+    throw new Error("El archivo llegó vacío. Intenta subirlo otra vez.");
+  }
+
+  if (params.binary.byteLength > AUDITAR_MAX_UPLOAD_BYTES) {
+    throw new Error("El archivo supera el límite de 12 MB para esta revisión inicial. Súbelo en una versión más ligera.");
+  }
+
+  assertAuditarMimeMatchesBinary({
+    mimeType: params.mimeType,
+    binary: params.binary,
+  });
+
+  return {
+    safeFileName,
+    sizeBytes: params.binary.byteLength,
+  };
+}
+
+function assertAuditarDraftStillFresh(params: {
+  draftRecordCreatedAt?: Date | string | null;
+  previewCreatedAt?: string | null;
+  now?: Date;
+}) {
+  const now = params.now ?? new Date();
+  const draftCreatedAt =
+    typeof params.previewCreatedAt === "string" && params.previewCreatedAt.trim().length > 0
+      ? new Date(params.previewCreatedAt)
+      : params.draftRecordCreatedAt
+        ? new Date(params.draftRecordCreatedAt)
+        : null;
+
+  if (!draftCreatedAt || Number.isNaN(draftCreatedAt.getTime())) {
+    throw new Error("La vista previa de este documento ya no está disponible. Súbelo otra vez para revisarlo antes de guardar.");
+  }
+
+  if (now.getTime() - draftCreatedAt.getTime() > AUDITAR_DRAFT_TTL_MS) {
+    throw new Error("La vista previa expiró por seguridad. Súbelo otra vez para confirmar la versión más reciente.");
+  }
+}
+
+async function assertAuditarDraftNotAlreadyConfirmed(params: { tenantId: string; caseId: string; draftId: string }) {
+  const readyClassifications = await listCanonicalContractsByType({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    contractType: "classification",
+    schemaVersion: "v1",
+    status: "ready",
+  });
+
+  const alreadyConfirmed = readyClassifications.some((row) => {
+    try {
+      const parsed = JSON.parse(row.payload) as { draftId?: string; documentId?: string };
+      return parsed.draftId === params.draftId && typeof parsed.documentId === "string" && parsed.documentId.trim().length > 0;
+    } catch {
+      return false;
+    }
+  });
+
+  if (alreadyConfirmed) {
+    throw new Error("Esta vista previa ya fue confirmada. Actualiza el expediente para ver el documento guardado.");
+  }
 }
 
 function normalizeManualFieldOverrides(overrides: AuditarManualOverride[] | undefined) {
@@ -1278,6 +1570,54 @@ export const appRouter = router({
     ceoSnapshot: adminProcedure.input(ceoSnapshotFiltersSchema).query(async ({ input }) => {
       return getCeoDashboardSnapshot(input ?? {});
     }),
+    ceoRecordExportAudit: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3).optional(),
+          section: z.enum(["resumen", "alertas", "accesos", "documentos"]),
+          format: z.enum(["csv", "pdf"]),
+          snapshotGeneratedAt: z.string().datetime().optional(),
+          appliedFilters: z.array(z.string().min(1).max(160)).max(12),
+          visibleCount: z.number().int().min(0).max(50000),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId =
+          input.tenantId ??
+          (
+            await ensureTenantForUser({
+              userId: ctx.user.id,
+              userName: ctx.user.name ?? ctx.user.email ?? "CompliLink",
+              userEmail: ctx.user.email,
+            })
+          ).tenantId;
+
+        if (input.tenantId) {
+          await assertTenantAdminAccess(ctx.user.id, input.tenantId);
+        }
+
+        const entityId = `${input.format}:${input.section}:${input.snapshotGeneratedAt ?? Date.now()}`;
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-EXPORT-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId,
+          action: "dashboard.ceo.export_generated",
+          afterState: {
+            source: "ceo_dashboard",
+            section: input.section,
+            format: input.format,
+            snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
+            appliedFilters: input.appliedFilters,
+            visibleCount: input.visibleCount,
+          },
+        });
+
+        return { ok: true };
+      }),
     ceoUpdateAlertStatus: adminProcedure
       .input(
         z.object({
@@ -1952,16 +2292,47 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
+
+        try {
+          await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
+        assertAuditarRateLimit({
+          action: "analyzeDocumentDraft",
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          userId: ctx.user.id,
+          ip: getClientIp(ctx.req),
+          maxRequests: AUDITAR_ANALYZE_RATE_LIMIT,
+        });
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
 
-        const binary = decodeBase64File(input.base64Content);
+        const { safeFileName } = validateAuditarUploadMetadata({
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+        });
+        const binary = decodeBase64File(input.base64Content, {
+          maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
+        });
+        const { sizeBytes } = prepareAuditarUploadAsset({
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          binary,
+        });
         const sha256 = computeSha256(binary);
+        acquireAuditarTransientDedup({
+          action: "analyzeDocumentDraft",
+          dedupKey: [input.tenantId, input.caseId, ctx.user.id, safeFileName, sha256].join(":"),
+          message:
+            "Ya estamos procesando o acabamos de procesar este mismo archivo en Auditar. Espera un momento antes de volver a intentarlo.",
+        });
         const draftId = buildDraftId();
-        const safeFileName = sanitizeFileName(input.fileName);
         const storageKey = buildDocumentStorageKey({
           tenantId: input.tenantId,
           caseId: input.caseId,
@@ -2007,7 +2378,7 @@ export const appRouter = router({
           draftId,
           fileName: safeFileName,
           mimeType: input.mimeType,
-          sizeBytes: binary.byteLength,
+          sizeBytes,
           sha256,
           storageKey: uploaded.key,
           storageUrl: uploaded.url,
@@ -2050,21 +2421,68 @@ export const appRouter = router({
         });
 
         return buildDraftPreviewPayload(draftPayload);
+        } catch (error) {
+          await auditAuditarGuardrailRejection({
+            action: "analyzeDocumentDraft",
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            actorUserId: ctx.user.id,
+            ip: clientIp,
+            userAgent,
+            entityId: `draft:${input.caseId}:${input.fileName}`,
+            requestContext: {
+              fileName: input.fileName,
+              mimeType: input.mimeType,
+              expectedDocumentType: input.expectedDocumentType ?? null,
+              captureMode: input.captureMode ?? null,
+            },
+            error,
+          });
+          throw error;
+        }
       }),
     confirmDocumentDraft: protectedProcedure
       .input(
         z.object({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
-          draftId: z.string().min(3),
+          draftId: z.string().min(10),
           visibility: documentVisibilitySchema.default("case_team"),
           consentStatus: documentConsentStatusSchema.default("pending"),
           sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
-          manualOverrides: z.array(auditarManualOverrideSchema).max(5).optional().default([]),
+          manualOverrides: z.array(auditarManualOverrideSchema).max(20).default([]),
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
+
         await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
+
+        assertAuditarRateLimit({
+          action: "confirmDocumentDraft",
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          userId: ctx.user.id,
+          ip: getClientIp(ctx.req),
+          maxRequests: AUDITAR_CONFIRM_RATE_LIMIT,
+        });
+        const releaseConfirmDedup = acquireAuditarTransientDedup({
+          action: "confirmDocumentDraft",
+          dedupKey: [input.tenantId, input.caseId, ctx.user.id, input.draftId].join(":"),
+          message:
+            "Esta confirmación documental ya está en curso o se procesó hace instantes en Auditar. Espera un momento antes de repetirla.",
+        });
+
+        const lockKey = `auditar-confirm:${input.tenantId}:${input.caseId}:${input.draftId}`;
+
+        try {
+          return await withDatabaseLock({
+          lockKey,
+          timeoutSeconds: 12,
+          action: async () => {
+            await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
 
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
@@ -2083,6 +2501,15 @@ export const appRouter = router({
         }
 
         const payload = draft.payload as AuditarDraftContractPayload;
+        assertAuditarDraftStillFresh({
+          draftRecordCreatedAt: draft.createdAt,
+          previewCreatedAt: payload.createdAt,
+        });
+        await assertAuditarDraftNotAlreadyConfirmed({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          draftId: input.draftId,
+        });
         const classification = payload.classification;
         const manualOverrides = normalizeManualFieldOverrides(input.manualOverrides);
         const preliminaryAnalysis = applyManualFieldOverrides({
@@ -2140,69 +2567,69 @@ export const appRouter = router({
           sizeBytes: payload.sizeBytes,
         });
 
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "document_uploaded",
-          title: "Documento confirmado y guardado",
-          description: `${payload.fileName} fue confirmado después de la vista previa y quedó guardado con clasificación inicial ${classification.documentType}.`,
-          metadata: JSON.stringify({
-            document_id: documentId,
-            draft_id: payload.draftId,
-            sha256: payload.sha256,
-            visibility: input.visibility,
-            classification_confidence: classification.classificationConfidence,
-            expected_document_type: payload.expectedDocumentType ?? null,
-            capture_mode: payload.captureMode ?? null,
-            scan_assistance: scanAssistance,
-            manual_override_keys: manualOverrides.map((item) => item.key),
-          }),
-          eventAt: new Date(),
-        });
-
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "document_classified",
-          title: "Documento clasificado",
-          description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
-          metadata: JSON.stringify({
-            draft_id: payload.draftId,
-            reasons: classification.reasons,
-            normalized_doc_type: classification.normalizedDocType,
-            processing_profile: classification.processingProfile,
-            review_recommendation: classification.reviewRecommendation,
-            supports_structured_extraction: classification.supportsStructuredExtraction,
-            supports_benefit_estimation: classification.supportsBenefitEstimation,
-            expected_document_type: payload.expectedDocumentType ?? null,
-          }),
-          eventAt: new Date(),
-        });
-
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "note_added",
-          title: "Escaneo asistido evaluó la captura",
-          description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
-          metadata: JSON.stringify({
-            document_id: documentId,
-            draft_id: payload.draftId,
-            readiness: scanAssistance.readiness,
-            document_presence: scanAssistance.documentPresence,
-            expected_type_alignment: scanAssistance.expectedTypeAlignment,
-            confidence: scanAssistance.confidence,
-            issues: scanAssistance.issues,
-            capture_mode: payload.captureMode ?? null,
-          }),
-          eventAt: new Date(),
-        });
+        const caseEventsToPersist: Parameters<typeof addCaseEvents>[0] = [
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_uploaded",
+            title: "Documento confirmado y guardado",
+            description: `${payload.fileName} fue confirmado después de la vista previa y quedó guardado con clasificación inicial ${classification.documentType}.`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              draft_id: payload.draftId,
+              sha256: payload.sha256,
+              visibility: input.visibility,
+              classification_confidence: classification.classificationConfidence,
+              expected_document_type: payload.expectedDocumentType ?? null,
+              capture_mode: payload.captureMode ?? null,
+              scan_assistance: scanAssistance,
+              manual_override_keys: manualOverrides.map((item) => item.key),
+            }),
+            eventAt: new Date(),
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_classified",
+            title: "Documento clasificado",
+            description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
+            metadata: JSON.stringify({
+              draft_id: payload.draftId,
+              reasons: classification.reasons,
+              normalized_doc_type: classification.normalizedDocType,
+              processing_profile: classification.processingProfile,
+              review_recommendation: classification.reviewRecommendation,
+              supports_structured_extraction: classification.supportsStructuredExtraction,
+              supports_benefit_estimation: classification.supportsBenefitEstimation,
+              expected_document_type: payload.expectedDocumentType ?? null,
+            }),
+            eventAt: new Date(),
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "note_added",
+            title: "Escaneo asistido evaluó la captura",
+            description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              draft_id: payload.draftId,
+              readiness: scanAssistance.readiness,
+              document_presence: scanAssistance.documentPresence,
+              expected_type_alignment: scanAssistance.expectedTypeAlignment,
+              confidence: scanAssistance.confidence,
+              issues: scanAssistance.issues,
+              capture_mode: payload.captureMode ?? null,
+            }),
+            eventAt: new Date(),
+          },
+        ];
 
         if (input.consentStatus === "pending") {
           await addOperationalAlert({
@@ -2218,37 +2645,38 @@ export const appRouter = router({
           });
         }
 
-        await upsertCanonicalContract({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          contractType: "document",
-          schemaVersion: "v1",
-          payload: JSON.stringify(documentContract),
-          status: "ready",
-        });
-
-        await upsertCanonicalContract({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          contractType: "classification",
-          schemaVersion: "v1",
-          payload: JSON.stringify({
-            draftId: payload.draftId,
-            documentId,
-            classification,
-            preliminaryAnalysis,
-            confirmedData: preliminaryAnalysis.confirmedData,
-            estimatedData: preliminaryAnalysis.estimatedData,
-            structuredExtraction: preliminaryAnalysis.structuredExtraction,
-            extractionTargets: preliminaryAnalysis.extractionTargets,
-            manualOverrides,
-            generatedAt: processedAt.toISOString(),
-            previewCreatedAt: payload.createdAt,
-          }),
-          status: "ready",
-        });
+        const contractsToPersist: Parameters<typeof upsertCanonicalContracts>[0] = [
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "document",
+            schemaVersion: "v1",
+            payload: JSON.stringify(documentContract),
+            status: "ready",
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "classification",
+            schemaVersion: "v1",
+            payload: JSON.stringify({
+              draftId: payload.draftId,
+              documentId,
+              classification,
+              preliminaryAnalysis,
+              confirmedData: preliminaryAnalysis.confirmedData,
+              estimatedData: preliminaryAnalysis.estimatedData,
+              structuredExtraction: preliminaryAnalysis.structuredExtraction,
+              extractionTargets: preliminaryAnalysis.extractionTargets,
+              manualOverrides,
+              generatedAt: processedAt.toISOString(),
+              previewCreatedAt: payload.createdAt,
+            }),
+            status: "ready",
+          },
+        ];
 
         const caseContract = buildCanonicalCaseContract({
           tenantId: detail.case.tenantId,
@@ -2270,7 +2698,7 @@ export const appRouter = router({
           documentContracts: [documentContract],
         });
 
-        await upsertCanonicalContract({
+        contractsToPersist.push({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -2296,7 +2724,7 @@ export const appRouter = router({
           },
         });
 
-        await upsertCanonicalContract({
+        contractsToPersist.push({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -2306,7 +2734,9 @@ export const appRouter = router({
           status: "ready",
         });
 
-        await addCaseEvent({
+        await upsertCanonicalContracts(contractsToPersist);
+
+        caseEventsToPersist.push({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -2364,7 +2794,7 @@ export const appRouter = router({
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
         } else {
-          await addCaseEvent({
+          caseEventsToPersist.push({
             tenantId: input.tenantId,
             caseId: input.caseId,
             traceId: detail.case.traceId,
@@ -2385,74 +2815,74 @@ export const appRouter = router({
           });
         }
 
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.upload",
-          afterState: documentRecord,
-        });
+        await addCaseEvents(caseEventsToPersist);
 
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.preview_confirmed",
-          afterState: {
-            draftId: payload.draftId,
-            previewCreatedAt: payload.createdAt,
-            structuredExtraction: preliminaryAnalysis.structuredExtraction,
-            manualOverrides,
+        await createAuditLogs([
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.upload",
+            afterState: documentRecord,
           },
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.engine_dispatch",
-          afterState: engineDispatch,
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.helios_opinion",
-          afterState: heliosOpinionContract,
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.scan_assist",
-          afterState: {
-            scanAssistance,
-            expectedDocumentType: payload.expectedDocumentType ?? null,
-            captureMode: payload.captureMode ?? null,
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.preview_confirmed",
+            afterState: {
+              draftId: payload.draftId,
+              previewCreatedAt: payload.createdAt,
+              structuredExtraction: preliminaryAnalysis.structuredExtraction,
+              manualOverrides,
+            },
           },
-        });
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.engine_dispatch",
+            afterState: engineDispatch,
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.helios_opinion",
+            afterState: heliosOpinionContract,
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.scan_assist",
+            afterState: {
+              scanAssistance,
+              expectedDocumentType: payload.expectedDocumentType ?? null,
+              captureMode: payload.captureMode ?? null,
+            },
+          },
+        ]);
 
         const refreshedDocuments = await listVisibleDocuments({
           userId: ctx.user.id,
@@ -2464,34 +2894,56 @@ export const appRouter = router({
           events: detail.events,
         });
 
-        return {
-          draftId: payload.draftId,
-          document: documentRecord,
-          classification,
-          preliminaryAnalysis,
-          documentContract,
-          sharedEngineEnvelope,
-          heliosOpinion: heliosOpinionContract.opinion,
-          heliosOpinionContract,
-          engineDispatch,
-          scanAssistance,
-          socialSecurityValidation,
-          nextSuggestedDocument:
-            socialSecurityValidation.recommendedDocumentKey === null
-              ? null
-              : {
-                  key: socialSecurityValidation.recommendedDocumentKey,
-                  title: socialSecurityValidation.recommendedDocumentTitle,
-                  reason: socialSecurityValidation.recommendedDocumentReason,
-                },
-          newClarityNotification: socialSecurityValidation.hasNewClarity
-            ? {
-                title: "Tu expediente ganó nueva claridad",
-                message: socialSecurityValidation.clarityChangeLabel,
-                delta: socialSecurityValidation.clarityDelta,
-              }
-            : null,
-        };
+            return {
+              draftId: payload.draftId,
+              document: documentRecord,
+              classification,
+              preliminaryAnalysis,
+              documentContract,
+              sharedEngineEnvelope,
+              heliosOpinion: heliosOpinionContract.opinion,
+              heliosOpinionContract,
+              engineDispatch,
+              scanAssistance,
+              socialSecurityValidation,
+              nextSuggestedDocument:
+                socialSecurityValidation.recommendedDocumentKey === null
+                  ? null
+                  : {
+                      key: socialSecurityValidation.recommendedDocumentKey,
+                      title: socialSecurityValidation.recommendedDocumentTitle,
+                      reason: socialSecurityValidation.recommendedDocumentReason,
+                    },
+              newClarityNotification: socialSecurityValidation.hasNewClarity
+                ? {
+                    title: "Tu expediente ganó nueva claridad",
+                    message: socialSecurityValidation.clarityChangeLabel,
+                    delta: socialSecurityValidation.clarityDelta,
+                  }
+                : null,
+            };
+          },
+        });
+        } catch (error) {
+          releaseConfirmDedup();
+          await auditAuditarGuardrailRejection({
+            action: "confirmDocumentDraft",
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            actorUserId: ctx.user.id,
+            ip: clientIp,
+            userAgent,
+            entityId: `draft:${input.draftId}`,
+            requestContext: {
+              draftId: input.draftId,
+              manualOverrideKeys: input.manualOverrides.map((item) => item.key),
+              visibility: input.visibility,
+              consentStatus: input.consentStatus,
+            },
+            error,
+          });
+          throw error;
+        }
       }),
     uploadDocument: protectedProcedure
       .input(
@@ -2510,16 +2962,47 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
+
+        try {
+          await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
+        assertAuditarRateLimit({
+          action: "uploadDocument",
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          userId: ctx.user.id,
+          ip: getClientIp(ctx.req),
+          maxRequests: AUDITAR_UPLOAD_RATE_LIMIT,
+        });
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
 
-        const binary = decodeBase64File(input.base64Content);
+        const { safeFileName } = validateAuditarUploadMetadata({
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+        });
+        const binary = decodeBase64File(input.base64Content, {
+          maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
+        });
+        const { sizeBytes } = prepareAuditarUploadAsset({
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          binary,
+        });
         const sha256 = computeSha256(binary);
+        acquireAuditarTransientDedup({
+          action: "uploadDocument",
+          dedupKey: [input.tenantId, input.caseId, ctx.user.id, safeFileName, sha256].join(":"),
+          message:
+            "Ya estamos procesando o acabamos de procesar este mismo archivo en Auditar. Espera un momento antes de volver a intentarlo.",
+        });
         const documentId = buildDocumentId();
-        const safeFileName = sanitizeFileName(input.fileName);
         const storageKey = buildDocumentStorageKey({
           tenantId: input.tenantId,
           caseId: input.caseId,
@@ -2570,7 +3053,7 @@ export const appRouter = router({
           uploadedByUserId: ctx.user.id,
           originalName: safeFileName,
           mimeType: input.mimeType,
-          sizeBytes: binary.byteLength,
+          sizeBytes,
           storageKey: uploaded.key,
           storageUrl: uploaded.url,
           sha256,
@@ -2606,68 +3089,70 @@ export const appRouter = router({
           classificationConfidence: classification.classificationConfidence,
           originalName: safeFileName,
           mimeType: input.mimeType,
-          sizeBytes: binary.byteLength,
+          sizeBytes,
         });
 
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "document_uploaded",
-          title: "Documento cargado",
-          description: `${safeFileName} fue cargado con hash SHA-256 y clasificación inicial ${classification.documentType}.`,
-          metadata: JSON.stringify({
-            document_id: documentId,
-            sha256,
-            visibility: input.visibility,
-            classification_confidence: classification.classificationConfidence,
-            expected_document_type: input.expectedDocumentType ?? null,
-            capture_mode: input.captureMode ?? null,
-            scan_assistance: scanAssistance,
-          }),
-          eventAt: new Date(),
-        });
+        const initialCaseEvents = [
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_uploaded" as const,
+            title: "Documento cargado",
+            description: `${safeFileName} fue cargado con hash SHA-256 y clasificación inicial ${classification.documentType}.`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              sha256,
+              visibility: input.visibility,
+              classification_confidence: classification.classificationConfidence,
+              expected_document_type: input.expectedDocumentType ?? null,
+              capture_mode: input.captureMode ?? null,
+              scan_assistance: scanAssistance,
+            }),
+            eventAt: new Date(),
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_classified" as const,
+            title: "Documento clasificado",
+            description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
+            metadata: JSON.stringify({
+              reasons: classification.reasons,
+              normalized_doc_type: classification.normalizedDocType,
+              processing_profile: classification.processingProfile,
+              review_recommendation: classification.reviewRecommendation,
+              supports_structured_extraction: classification.supportsStructuredExtraction,
+              supports_benefit_estimation: classification.supportsBenefitEstimation,
+              expected_document_type: input.expectedDocumentType ?? null,
+            }),
+            eventAt: new Date(),
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "note_added" as const,
+            title: "Escaneo asistido evaluó la captura",
+            description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              readiness: scanAssistance.readiness,
+              document_presence: scanAssistance.documentPresence,
+              expected_type_alignment: scanAssistance.expectedTypeAlignment,
+              confidence: scanAssistance.confidence,
+              issues: scanAssistance.issues,
+              capture_mode: input.captureMode ?? null,
+            }),
+            eventAt: new Date(),
+          },
+        ];
 
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "document_classified",
-          title: "Documento clasificado",
-          description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
-          metadata: JSON.stringify({
-            reasons: classification.reasons,
-            normalized_doc_type: classification.normalizedDocType,
-            processing_profile: classification.processingProfile,
-            review_recommendation: classification.reviewRecommendation,
-            supports_structured_extraction: classification.supportsStructuredExtraction,
-            supports_benefit_estimation: classification.supportsBenefitEstimation,
-            expected_document_type: input.expectedDocumentType ?? null,
-          }),
-          eventAt: new Date(),
-        });
-
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "note_added",
-          title: "Escaneo asistido evaluó la captura",
-          description: `${scanAssistance.friendlyHeadline}. ${scanAssistance.userGuidance}`,
-          metadata: JSON.stringify({
-            document_id: documentId,
-            readiness: scanAssistance.readiness,
-            document_presence: scanAssistance.documentPresence,
-            expected_type_alignment: scanAssistance.expectedTypeAlignment,
-            confidence: scanAssistance.confidence,
-            issues: scanAssistance.issues,
-            capture_mode: input.captureMode ?? null,
-          }),
-          eventAt: new Date(),
-        });
+        await addCaseEvents(initialCaseEvents);
 
         if (input.consentStatus === "pending") {
           await addOperationalAlert({
@@ -2683,34 +3168,35 @@ export const appRouter = router({
           });
         }
 
-        await upsertCanonicalContract({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          contractType: "document",
-          schemaVersion: "v1",
-          payload: JSON.stringify(documentContract),
-          status: "ready",
-        });
-
-        await upsertCanonicalContract({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          contractType: "classification",
-          schemaVersion: "v1",
-          payload: JSON.stringify({
-            documentId,
-            classification,
-            preliminaryAnalysis,
-            confirmedData: preliminaryAnalysis.confirmedData,
-            estimatedData: preliminaryAnalysis.estimatedData,
-            structuredExtraction: preliminaryAnalysis.structuredExtraction,
-            extractionTargets: preliminaryAnalysis.extractionTargets,
-            generatedAt: processedAt.toISOString(),
-          }),
-          status: "ready",
-        });
+        const contractsToPersist: Parameters<typeof upsertCanonicalContracts>[0] = [
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "document" as const,
+            schemaVersion: "v1",
+            payload: JSON.stringify(documentContract),
+            status: "ready" as const,
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "classification" as const,
+            schemaVersion: "v1",
+            payload: JSON.stringify({
+              documentId,
+              classification,
+              preliminaryAnalysis,
+              confirmedData: preliminaryAnalysis.confirmedData,
+              estimatedData: preliminaryAnalysis.estimatedData,
+              structuredExtraction: preliminaryAnalysis.structuredExtraction,
+              extractionTargets: preliminaryAnalysis.extractionTargets,
+              generatedAt: processedAt.toISOString(),
+            }),
+            status: "ready" as const,
+          },
+        ];
 
         const caseContract = buildCanonicalCaseContract({
           tenantId: detail.case.tenantId,
@@ -2732,7 +3218,7 @@ export const appRouter = router({
           documentContracts: [documentContract],
         });
 
-        await upsertCanonicalContract({
+        contractsToPersist.push({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -2758,7 +3244,7 @@ export const appRouter = router({
           },
         });
 
-        await upsertCanonicalContract({
+        contractsToPersist.push({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -2767,6 +3253,8 @@ export const appRouter = router({
           payload: JSON.stringify(heliosOpinionContract),
           status: "ready",
         });
+
+        await upsertCanonicalContracts(contractsToPersist);
 
         await addCaseEvent({
           tenantId: input.tenantId,
@@ -2845,57 +3333,56 @@ export const appRouter = router({
           });
         }
 
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.upload",
-          afterState: documentRecord,
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.engine_dispatch",
-          afterState: engineDispatch,
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.helios_opinion",
-          afterState: heliosOpinionContract,
-        });
-
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          documentId,
-          actorUserId: ctx.user.id,
-          entityType: "document",
-          entityId: documentId,
-          action: "document.scan_assist",
-          afterState: {
-            scanAssistance,
-            expectedDocumentType: input.expectedDocumentType ?? null,
-            captureMode: input.captureMode ?? null,
+        await createAuditLogs([
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.upload",
+            afterState: documentRecord,
           },
-        });
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.engine_dispatch",
+            afterState: engineDispatch,
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.helios_opinion",
+            afterState: heliosOpinionContract,
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            documentId,
+            actorUserId: ctx.user.id,
+            entityType: "document",
+            entityId: documentId,
+            action: "document.scan_assist",
+            afterState: {
+              scanAssistance,
+              expectedDocumentType: input.expectedDocumentType ?? null,
+              captureMode: input.captureMode ?? null,
+            },
+          },
+        ]);
 
         return {
           document: documentRecord,
@@ -2908,6 +3395,27 @@ export const appRouter = router({
           engineDispatch,
           scanAssistance,
         };
+        } catch (error) {
+          await auditAuditarGuardrailRejection({
+            action: "uploadDocument",
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            actorUserId: ctx.user.id,
+            ip: clientIp,
+            userAgent,
+            entityId: `document:${input.caseId}:${input.fileName}`,
+            requestContext: {
+              fileName: input.fileName,
+              mimeType: input.mimeType,
+              expectedDocumentType: input.expectedDocumentType ?? null,
+              captureMode: input.captureMode ?? null,
+              visibility: input.visibility,
+              consentStatus: input.consentStatus,
+            },
+            error,
+          });
+          throw error;
+        }
       }),
   }),
   documents: router({
@@ -3458,9 +3966,11 @@ export const appRouter = router({
         }),
       )
       .mutation(({ input }) => {
-        const buffer = decodeBase64File(input.base64Content);
+        const buffer = decodeBase64File(input.base64Content, {
+          maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
+        });
         return {
-          sha256: computeSha256(Buffer.from(buffer)),
+          sha256: computeSha256(buffer),
           sizeBytes: buffer.byteLength,
         };
       }),

@@ -403,6 +403,62 @@ describe("Dashboard CEO safe actions", () => {
     expect(db.createAuditLog).not.toHaveBeenCalled();
   });
 
+  it("registra la auditoría de un export ejecutivo con filtros, formato y snapshot", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    const result = await caller.dashboard.ceoRecordExportAudit({
+      tenantId: "balt-1",
+      section: "alertas",
+      format: "csv",
+      snapshotGeneratedAt: "2026-04-08T09:30:00.000Z",
+      appliedFilters: ["Tenant: Balt Demo", "Solo críticas"],
+      visibleCount: 3,
+    });
+
+    expect(db.assertTenantAdminAccess).toHaveBeenCalledWith(7, "balt-1");
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        actorUserId: 7,
+        entityType: "system",
+        action: "dashboard.ceo.export_generated",
+        afterState: expect.objectContaining({
+          source: "ceo_dashboard",
+          section: "alertas",
+          format: "csv",
+          visibleCount: 3,
+          appliedFilters: ["Tenant: Balt Demo", "Solo críticas"],
+        }),
+      }),
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("resuelve un tenant operativo por defecto cuando el export ejecutivo es global", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await caller.dashboard.ceoRecordExportAudit({
+      section: "resumen",
+      format: "pdf",
+      snapshotGeneratedAt: "2026-04-08T09:30:00.000Z",
+      appliedFilters: [],
+      visibleCount: 1,
+    });
+
+    expect(db.ensureTenantForUser).toHaveBeenCalledWith({
+      userId: 7,
+      userName: "CompliLink Owner",
+      userEmail: "owner@complilink.mx",
+    });
+    expect(db.assertTenantAdminAccess).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        action: "dashboard.ceo.export_generated",
+      }),
+    );
+  });
+
   it("bloquea estas mutaciones para usuarios sin rol admin", async () => {
     const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
 

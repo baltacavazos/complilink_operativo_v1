@@ -54,6 +54,20 @@ describe("caseContracts", () => {
     expect(computeSha256(buffer)).toBe(expectedHash);
   });
 
+  it("rejects oversized base64 payloads before decoding them", () => {
+    const oversizedBase64 = "A".repeat(2048);
+
+    expect(() => decodeBase64File(oversizedBase64, { maxBytes: 512 })).toThrow(
+      "El archivo supera el límite de 1 KB para esta revisión inicial. Súbelo en una versión más ligera.",
+    );
+  });
+
+  it("rejects malformed base64 payloads before decoding them", () => {
+    expect(() => decodeBase64File("data:application/pdf;base64,%%%not-valid%%%=")).toThrow(
+      "El archivo no tiene un contenido base64 válido. Vuelve a cargarlo antes de revisarlo.",
+    );
+  });
+
   it("sanitizes file names and builds a tenant-aware storage key", () => {
     const sanitized = sanitizeFileName(" Recibo nómina abril 2026.pdf ");
     const storageKey = buildDocumentStorageKey({
@@ -268,6 +282,17 @@ describe("appRouter utils", () => {
 
     expect(result.sizeBytes).toBeGreaterThan(0);
     expect(result.sha256).toHaveLength(64);
+  });
+
+  it("rejects oversized payloads through protected tRPC sha256 utility", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+    const oversizedBase64 = `data:application/pdf;base64,${"A".repeat(17 * 1024 * 1024)}`;
+
+    await expect(
+      caller.utils.sha256({
+        base64Content: oversizedBase64,
+      }),
+    ).rejects.toThrow("El archivo supera el límite de 12 MB para esta revisión inicial. Súbelo en una versión más ligera.");
   });
 
   it("rejects utility access when there is no authenticated user", async () => {

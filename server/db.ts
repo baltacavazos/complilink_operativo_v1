@@ -482,9 +482,15 @@ export async function grantCaseAccess(input: InsertCaseAccess) {
 }
 
 export async function addCaseEvent(input: InsertCaseEvent) {
+  await addCaseEvents([input]);
+}
+
+export async function addCaseEvents(inputs: InsertCaseEvent[]) {
+  if (inputs.length === 0) return;
+
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(caseEvents).values(input);
+  await db.insert(caseEvents).values(inputs);
 }
 
 export async function addDocumentRecord(input: InsertCaseDocument) {
@@ -567,9 +573,15 @@ export async function updateTenantMembershipStatus(params: {
 }
 
 export async function upsertCanonicalContract(input: InsertCanonicalContract) {
+  await upsertCanonicalContracts([input]);
+}
+
+export async function upsertCanonicalContracts(inputs: InsertCanonicalContract[]) {
+  if (inputs.length === 0) return;
+
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(canonicalContracts).values(input);
+  await db.insert(canonicalContracts).values(inputs);
 }
 
 export async function listCanonicalContractsByType(params: {
@@ -752,7 +764,7 @@ function buildAuditHashChain(params: {
     .digest("hex");
 }
 
-export async function createAuditLog(input: {
+type AuditLogPayload = {
   tenantId: string;
   caseId?: string | null;
   traceId: string;
@@ -763,15 +775,13 @@ export async function createAuditLog(input: {
   action: string;
   beforeState?: unknown;
   afterState?: unknown;
-}) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+};
 
+function buildAuditLogInsertPayload(input: AuditLogPayload, previousHash: string | null): InsertAuditLog {
   const beforeState = input.beforeState === undefined ? null : toJson(input.beforeState);
   const afterState = input.afterState === undefined ? null : toJson(input.afterState);
-  const previousHash = await getLatestAuditHash({ tenantId: input.tenantId, caseId: input.caseId });
 
-  const payload: InsertAuditLog = {
+  return {
     ...input,
     caseId: input.caseId ?? null,
     beforeState,
@@ -790,8 +800,35 @@ export async function createAuditLog(input: {
       afterState,
     }),
   };
+}
 
-  await db.insert(auditLogs).values(payload);
+export async function createAuditLog(input: AuditLogPayload) {
+  await createAuditLogs([input]);
+}
+
+export async function createAuditLogs(inputs: AuditLogPayload[]) {
+  if (inputs.length === 0) return;
+
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const tenantId = inputs[0].tenantId;
+  const caseId = inputs[0].caseId ?? null;
+
+  for (const input of inputs) {
+    if (input.tenantId !== tenantId || (input.caseId ?? null) !== caseId) {
+      throw new Error("createAuditLogs requires the same tenantId and caseId for every entry");
+    }
+  }
+
+  let previousHash = await getLatestAuditHash({ tenantId, caseId });
+  const payloads = inputs.map((input) => {
+    const payload = buildAuditLogInsertPayload(input, previousHash);
+    previousHash = payload.hashChain ?? null;
+    return payload;
+  });
+
+  await db.insert(auditLogs).values(payloads);
 }
 
 export async function persistAuditarViewState(params: {

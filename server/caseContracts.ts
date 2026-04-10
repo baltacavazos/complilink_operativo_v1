@@ -282,8 +282,41 @@ export function computeSha256(buffer: Buffer) {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
-export function decodeBase64File(input: string) {
-  const normalized = input.includes(",") ? input.split(",").pop() ?? "" : input;
+function normalizeBase64Payload(input: string) {
+  return (input.includes(",") ? input.split(",").pop() ?? "" : input).replace(/\s+/g, "");
+}
+
+function assertValidBase64Payload(base64Payload: string) {
+  if (!base64Payload || base64Payload.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64Payload)) {
+    throw new Error("El archivo no tiene un contenido base64 válido. Vuelve a cargarlo antes de revisarlo.");
+  }
+}
+
+function estimateDecodedByteLength(base64Payload: string) {
+  if (!base64Payload) return 0;
+  const padding = base64Payload.endsWith("==") ? 2 : base64Payload.endsWith("=") ? 1 : 0;
+  return Math.floor((base64Payload.length * 3) / 4) - padding;
+}
+
+function formatFileSizeLimit(maxBytes: number) {
+  if (maxBytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(maxBytes / 1024))} KB`;
+  }
+
+  return `${Math.round(maxBytes / (1024 * 1024))} MB`;
+}
+
+export function decodeBase64File(input: string, options?: { maxBytes?: number }) {
+  const normalized = normalizeBase64Payload(input);
+  assertValidBase64Payload(normalized);
+  const estimatedBytes = estimateDecodedByteLength(normalized);
+
+  if (options?.maxBytes && estimatedBytes > options.maxBytes) {
+    throw new Error(
+      `El archivo supera el límite de ${formatFileSizeLimit(options.maxBytes)} para esta revisión inicial. Súbelo en una versión más ligera.`,
+    );
+  }
+
   return Buffer.from(normalized, "base64");
 }
 

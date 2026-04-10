@@ -19,7 +19,11 @@ vi.mock("drizzle-orm/mysql2", () => ({
       }),
     }),
     insert: () => ({
-      values: async (payload: Record<string, unknown>) => {
+      values: async (payload: Record<string, unknown> | Array<Record<string, unknown>>) => {
+        if (Array.isArray(payload)) {
+          state.inserted.push(...payload);
+          return;
+        }
         state.inserted.push(payload);
       },
     }),

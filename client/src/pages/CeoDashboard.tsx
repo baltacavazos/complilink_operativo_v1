@@ -13,7 +13,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { trpc } from "@/lib/trpc";
-import { downloadCeoCsvReport, downloadCeoPdfReport } from "@/pages/ceoDashboardExports";
+import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
+import {
+  buildAuditMonitoringSummary,
+  getAuditActionLabel,
+  getAuditActionTone,
+  getAuditRejectionReason,
+} from "@/pages/ceoDashboardMonitoring";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -316,6 +322,14 @@ export default function CeoDashboard() {
   }, [debouncedQuery, filters]);
 
   const hasActiveFilters = Object.keys(snapshotFilters).length > 0;
+  const auditTrailFilters = useMemo(
+    () => ({
+      tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+      caseId: filters.caseId !== "all" ? filters.caseId : undefined,
+      limit: 14,
+    }),
+    [filters.caseId, filters.tenantId],
+  );
 
   const baseSnapshotQuery = trpc.dashboard.ceoSnapshot.useQuery(undefined, {
     enabled: isAdmin,
@@ -328,6 +342,12 @@ export default function CeoDashboard() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+  const auditTrailQuery = trpc.audit.list.useQuery(auditTrailFilters, {
+    enabled: isAdmin,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
 
   const snapshotData = hasActiveFilters ? filteredSnapshotQuery.data : baseSnapshotQuery.data;
   const snapshotError = hasActiveFilters ? filteredSnapshotQuery.error : baseSnapshotQuery.error;
@@ -351,12 +371,25 @@ export default function CeoDashboard() {
       : isSnapshotStale
         ? "La vista visible superó la ventana de frescura operativa. Refresca para volver a habilitar acciones ejecutivas."
         : "La vista visible sigue dentro de la ventana de frescura operativa para ejecutar acciones seguras.";
+  const exportGuardReason = getCeoExportBlockReason({
+    hasSnapshot: Boolean(snapshotData),
+    isRefreshing,
+    isSnapshotStale,
+    hasSnapshotError: Boolean(snapshotError),
+  });
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
   const caseMutation = trpc.dashboard.ceoProgressCaseStage.useMutation();
 
   const globalSummary = baseSnapshotQuery.data?.summary;
+  const auditTrail = auditTrailQuery.data ?? [];
+  const auditSummary = useMemo(() => buildAuditMonitoringSummary(auditTrail), [auditTrail]);
+  const recentOperationalEvents = useMemo(() => auditTrail.slice(0, 6), [auditTrail]);
+  const latestGuardrailEvent = useMemo(
+    () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
+    [auditTrail],
+  );
 
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
@@ -667,9 +700,10 @@ export default function CeoDashboard() {
   }
 
   async function handleExport(kind: "csv" | "pdf") {
-    if (!snapshotData) {
-      sonnerToast.error("La exportación aún no está disponible", {
-        description: "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
+    if (exportGuardReason || !snapshotData) {
+      sonnerToast.error("La exportación ejecutiva está bloqueada", {
+        description:
+          exportGuardReason ?? "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
       });
       return;
     }
@@ -694,10 +728,25 @@ export default function CeoDashboard() {
               actorLabel,
             });
 
+      try {
+        await recordExportAuditMutation.mutateAsync({
+          tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+          section: currentSection,
+          format: kind,
+          snapshotGeneratedAt: snapshotData.generatedAt.toISOString(),
+          appliedFilters,
+          visibleCount: currentSectionCount,
+        });
+      } catch (auditError) {
+        console.warn("No se pudo registrar la auditoría del export ejecutivo", auditError);
+        sonnerToast.warning("El reporte se descargó, pero la trazabilidad del export no quedó registrada.");
+      }
+
       sonnerToast.success(kind === "pdf" ? "Reporte PDF generado" : "Reporte CSV generado", {
-        description: `${filename} se descargó con la vista actual y los filtros aplicados.`,
+        description: `Archivo descargado: ${filename}`,
       });
     } catch (error) {
+
       sonnerToast.error("No fue posible generar el reporte ejecutivo", {
         description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
       });
@@ -716,7 +765,8 @@ export default function CeoDashboard() {
           <Button
             variant="outline"
             className="rounded-full bg-white"
-            disabled={!snapshotData || exportKind !== null}
+            title={exportGuardReason ?? undefined}
+            disabled={Boolean(exportGuardReason) || exportKind !== null}
             onClick={() => {
               void handleExport("csv");
             }}
@@ -727,7 +777,8 @@ export default function CeoDashboard() {
           <Button
             variant="outline"
             className="rounded-full bg-white"
-            disabled={!snapshotData || exportKind !== null}
+            title={exportGuardReason ?? undefined}
+            disabled={Boolean(exportGuardReason) || exportKind !== null}
             onClick={() => {
               void handleExport("pdf");
             }}
@@ -1152,6 +1203,118 @@ export default function CeoDashboard() {
                       )}
                     </div>
                   </article>
+                </div>
+              </section>
+
+              <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Bitácora operativa</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Trazabilidad reciente para diagnóstico ejecutivo</h3>
+                  </div>
+                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+                    {auditTrailQuery.isFetching ? "Actualizando eventos" : `${formatNumber(auditSummary.totalEvents)} eventos recientes`}
+                  </Badge>
+                </div>
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
+                  Esta superficie reutiliza la bitácora de auditoría existente para mostrar actividad reciente, rechazos operativos de guardrails y cobertura de casos visibles sin abrir un frente nuevo de infraestructura.
+                </p>
+                <div className="mt-5 grid gap-4 lg:grid-cols-4">
+                  <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Eventos visibles</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(auditSummary.totalEvents)}</p>
+                    <p className="mt-2 text-sm text-slate-500">Últimos movimientos auditados bajo el filtro actual.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-amber-200 bg-amber-50/70 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Guardrails rechazados</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-950">{formatNumber(auditSummary.guardrailRejections)}</p>
+                    <p className="mt-2 text-sm text-amber-900/80">
+                      {latestGuardrailEvent ? `Último: ${formatDateTime(latestGuardrailEvent.createdAt)}` : "Sin rechazos operativos recientes en la vista actual."}
+                    </p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-cyan-200 bg-cyan-50/70 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Eventos documentales</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-cyan-950">{formatNumber(auditSummary.documentEvents)}</p>
+                    <p className="mt-2 text-sm text-cyan-900/80">Incluye carga, confirmación y rechazos operativos del flujo documental.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-violet-200 bg-violet-50/70 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-700">Casos con huella</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-violet-950">{formatNumber(auditSummary.distinctCases)}</p>
+                    <p className="mt-2 text-sm text-violet-900/80">Casos distintos tocados por los eventos recientes del rastro operativo.</p>
+                  </article>
+                </div>
+                <div className="mt-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-base font-semibold text-slate-950">Eventos recientes</h4>
+                        <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail.</p>
+                      </div>
+                      <Badge className="rounded-full border border-white bg-white text-slate-700">Tenant/caso</Badge>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {recentOperationalEvents.length > 0 ? (
+                        recentOperationalEvents.map((item) => {
+                          const tone = getAuditActionTone(item.action);
+                          const rejectionReason = getAuditRejectionReason(item);
+                          return (
+                            <article key={item.id} className={`rounded-[1.2rem] border p-4 ${tone.card}`}>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge className={`rounded-full border ${tone.badge}`}>{getAuditActionLabel(item.action)}</Badge>
+                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.entityType}</Badge>
+                                {item.caseId ? (
+                                  <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.caseId}</Badge>
+                                ) : null}
+                              </div>
+                              <p className="mt-3 text-sm font-semibold text-slate-950">{item.tenantId}</p>
+                              <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
+                              <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
+                              {rejectionReason ? (
+                                <p className="mt-2 text-sm text-amber-950">
+                                  <strong>Motivo:</strong> {rejectionReason}
+                                </p>
+                              ) : null}
+                            </article>
+                          );
+                        })
+                      ) : (
+                        <SectionEmptyState
+                          title="No hay eventos operativos para la vista actual"
+                          description="Ajusta tenant o caso para recuperar trazabilidad reciente desde la bitácora de auditoría ya persistida."
+                          onClear={clearAllFilters}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <div>
+                      <h4 className="text-base font-semibold text-slate-950">Lectura rápida</h4>
+                      <p className="mt-1 text-sm text-slate-500">Resumen ejecutivo mínimo para monitorear fricción y trazabilidad.</p>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-2xl bg-white p-4 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Accesos auditados</p>
+                        <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.accessEvents)}</p>
+                        <p className="mt-2 text-sm text-slate-500">Cambios de membresías y superficie de acceso trazable.</p>
+                      </div>
+                      <div className="rounded-2xl bg-white p-4 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Políticas auditadas</p>
+                        <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.policyEvents)}</p>
+                        <p className="mt-2 text-sm text-slate-500">Cambios de consentimiento o visibilidad ya persistidos.</p>
+                      </div>
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último guardrail</p>
+                        <p className="mt-2 text-sm font-semibold text-slate-950">
+                          {latestGuardrailEvent ? formatDateTime(latestGuardrailEvent.createdAt) : "Sin eventos de rechazo recientes"}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-500">
+                          {latestGuardrailEvent
+                            ? getAuditRejectionReason(latestGuardrailEvent) || "El rechazo quedó registrado con traza mínima en auditoría."
+                            : "Cuando un guardrail operativo bloquee una acción de Auditar, aparecerá aquí con su razón resumida."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 

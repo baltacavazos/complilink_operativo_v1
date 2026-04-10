@@ -1,5 +1,13 @@
 # Project TODO
 
+- [x] Endurecer /auditar con rate limiting básico por usuario/IP en endpoints pesados
+- [x] Añadir guardrail de concurrencia por caso y deduplicación efímera por archivo en /auditar
+- [x] Registrar rechazos operativos de guardrails con trazabilidad mínima en auditoría
+- [x] Cubrir los nuevos guardrails de /auditar con pruebas negativas y de borde en Vitest
+- [x] AuditaPatron: analizar cuellos de botella internos de backend y flujos críticos con visión multi-IA antes de cambios mayores
+- [x] AuditaPatron: priorizar degradaciones probables bajo alta carga en snapshots, exportes, autenticación, queries y concurrencia
+- [x] AuditaPatron: implementar endurecimientos de escalabilidad aprobados y validarlos con Vitest
+
 - [x] Definir y mantener arquitectura multi-tenant con control estricto por tenant y por caso
 - [x] Implementar autenticación con Manus OAuth y control de acceso contextual por tenant/caso
 - [x] Diseñar modelo de datos canónico con tenant_id, case_id y trace_id consistentes en todo el sistema
@@ -549,3 +557,33 @@
 - [x] Añadir indicadores visibles de datos stale y bloqueo preventivo en acciones CEO
 - [x] Evaluar e implementar un guardrail ejecutivo adicional de backend para acciones CEO de mayor impacto
 - [x] Añadir pruebas Vitest de la nueva iteración de endurecimiento de la Consola CEO
+- [x] Auditar con contraste multi-IA los bloqueantes fundamentales para cerrar la versión 1
+- [x] Corregir únicamente los problemas críticos de estabilidad, permisos, claridad de UX y consistencia detectados en la auditoría V1
+- [x] Revisar el Dashboard CEO sólo para añadir ajustes indispensables de cierre V1 si aparecen huecos críticos reales
+- [x] Ejecutar pruebas y validaciones finales orientadas al cierre de versión 1
+- [x] Endurecer el happy path y el manejo de errores críticos del flujo `/auditar` con foco de cierre V1
+- [ ] Reforzar el gate de acceso y el bloqueo de exportes stale del Dashboard CEO si el código confirma huecos reales
+- [x] Ampliar pruebas negativas y de borde para `/auditar` y `/ceo` como bloque final de robustecimiento V1
+- [ ] Posponer la integración activa con Helios hasta que su contraparte técnica esté lista y mantener mientras tanto a AuditaPatron desacoplado operativamente
+- [ ] Priorizar el siguiente bloque interno de AuditaPatron que más acerque el cierre de V1 sin depender aún de Helios
+- [ ] Contrastar con OpenAI, Grok y Gemini la siguiente mejora interna de mayor impacto antes de implementarla, siguiendo la política de multi-criterio del proyecto
+- [x] Blindar los exportes de la Consola CEO para que también se bloqueen cuando el snapshot esté stale, en error o aún refrescando
+- [ ] Evaluar y reforzar los cuellos de botella internos más probables de AuditaPatron para una primera escala hacia miles de usuarios
+- [x] Contrastar con OpenAI, Grok y Gemini el siguiente bloque de robustez y escalabilidad básica antes de implementarlo
+- [ ] Tomar la vista rescatada de CAMELA como referencia explícita de detalle de proveedor para futuras capas operativas empresariales
+- [ ] Ejecutar de forma continua el bloque de escalabilidad de AuditaPatron hasta agotar mejoras técnicas prioritarias, salvo bloqueo importante o decisión de negocio
+- [x] AuditaPatron: rechazar payloads base64 sobredimensionados antes de decodificarlos para contener presión de CPU y memoria en endpoints pesados de Auditar
+- [x] AuditaPatron: validar nombre y MIME antes de decodificar base64 para rechazar entradas inviables sin asignar buffers innecesarios en Auditar
+- [x] AuditaPatron: endurecer el helper utilitario sha256 para evitar copias redundantes de buffer y rechazar payloads base64 excesivos
+- [x] AuditaPatron: rechazar payloads base64 malformados de forma explícita para cortar errores ambiguos antes de parsing y persistencia
+- [x] AuditaPatron: limitar la longitud del nombre sanitizado del archivo para cortar inputs patológicos antes de storage, hashing contractual y persistencia
+- [x] AuditaPatron: validar firma binaria real (magic bytes) de PDF/JPG/PNG/WEBP antes de storage y análisis para bloquear MIME aparentes o archivos camuflados
+- [x] AuditaPatron CEO: endurecer exportes CSV ejecutivos contra inyección de fórmulas, saltos de línea y celdas peligrosas provenientes del snapshot
+- [x] AuditaPatron CEO: acotar longitud y normalizar texto exportable en PDF/CSV para evitar reportes malformados o render costoso por celdas anómalas
+- [x] AuditaPatron: adelantar la validación explícita de escritura sobre el caso en confirm/upload/analyze para fallar antes de locks, rate limits o trabajo pesado innecesario
+- [ ] Operativa multi-IA: agregar fallback de modelo para Gemini en el script de contraste, de modo que el análisis siga siendo realmente triángulado cuando un modelo no esté habilitado
+- [ ] Operativa multi-IA: ampliar el contexto del script de contraste para incluir las llamadas reales a prepareAuditarUploadAsset en analyze/upload y reducir recomendaciones alucinadas o ya cubiertas
+- [x] AuditaPatron CEO: registrar auditoría de exportes ejecutivos con actor, formato, sección y filtros para mejorar trazabilidad de snapshots sensibles
+- [x] Añadir bitácora operativa mínima en el tablero CEO con consulta reutilizando audit trail y filtros de tenant/caso
+- [x] Exponer una superficie inicial de monitoreo ejecutivo con métricas de trazabilidad y eventos recientes
+- [x] Cubrir la nueva bitácora operativa del tablero CEO con Vitest
