@@ -472,9 +472,17 @@
 - [x] Convertir el bloque de claridad del expediente en un indicador dinámico ligado al estado real de los documentos y hallazgos del usuario.
 - [x] Añadir una acción única para revalidar IMSS e Infonavit con mínima fricción dentro del flujo de AuditaPatron.
 - [x] Formalizar el contrato técnico interno de Helios para unificar carga documental, análisis, almacenamiento y devolución de resultados en AuditaPatron.
-- [ ] Mostrar un historial simple de revalidaciones IMSS/Infonavit con fecha, resultado y cambio detectado dentro de /auditar.
-- [ ] Añadir una recomendación automática del siguiente documento más útil según el estado actual de IMSS/Infonavit y del expediente.
-- [ ] Incorporar una notificación visible cuando el expediente gane nueva claridad después de subir o revalidar información.
+- [x] Mostrar un historial simple de revalidaciones IMSS/Infonavit con fecha, resultado y cambio detectado dentro de /auditar.
+- [x] Añadir una recomendación automática del siguiente documento más útil según el estado actual de IMSS/Infonavit y del expediente.
+- [x] Incorporar una notificación visible cuando el expediente gane nueva claridad después de subir o revalidar información.
 - [x] Implementar historial visible de revalidaciones IMSS/Infonavit con fecha y cambio detectado en /auditar
 - [x] Implementar recomendación automática del siguiente documento útil según el estado IMSS/Infonavit del expediente
 - [x] Implementar notificación de nueva claridad tras subir un archivo procesado y confirmado en el expediente
+- [x] Implementar botón único de revalidación IMSS/Infonavit con feedback de progreso en /auditar
+- [x] Mostrar motivo explicable de por qué se recomienda cada siguiente documento dentro del expediente
+- [x] Incorporar línea de tiempo del expediente que mezcle cargas, revalidaciones y hallazgos visibles
+- [x] Corregir fallo de inserción en canonical_contracts al guardar consentimientos desde /auditar
+- [x] Completar botón único de revalidación IMSS/Infonavit con feedback de progreso en /auditar
+- [x] Mostrar motivo explicable de la recomendación del siguiente documento dentro del expediente
+- [x] Incorporar línea de tiempo del expediente con cargas, revalidaciones y hallazgos visibles
+- [x] Preparar instrucciones claras para conectar los dominios comprados de AuditaPatron desde la interfaz de Manus

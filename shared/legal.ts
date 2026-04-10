@@ -1,5 +1,6 @@
 export const LEGAL_VERSION = "v2.0";
 export const LEGAL_ACCEPTANCE_VERSION = "auditapatron-legal-mx-v2.0-2026-04";
+export const LEGAL_CONTRACT_SCHEMA_VERSION = "legal-mx-v2.0-2026-04";
 export const LEGAL_EFFECTIVE_DATE = "2026-04-09";
 export const LEGAL_CONTROLLER_NAME = "CVZ Liderazgo en Gestión Laboral, S.A. de C.V.";
 export const LEGAL_CONTACT_EMAIL = "privacidad@auditapatron.com";

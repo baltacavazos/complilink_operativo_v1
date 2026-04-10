@@ -46,7 +46,13 @@ vi.mock("./_core/llm", () => llmMocks);
 
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
-import { LEGAL_ACCEPTANCE_VERSION, LEGAL_CONSENT_TYPES, LEGAL_DOCUMENTS, LEGAL_VERSION } from "@shared/legal";
+import {
+  LEGAL_ACCEPTANCE_VERSION,
+  LEGAL_CONSENT_TYPES,
+  LEGAL_CONTRACT_SCHEMA_VERSION,
+  LEGAL_DOCUMENTS,
+  LEGAL_VERSION,
+} from "@shared/legal";
 import { appRouter } from "./routers";
 import { storagePut } from "./storage";
 
@@ -810,6 +816,13 @@ describe("appRouter case workflows", () => {
       LEGAL_CONSENT_TYPES.map((type) => `legal_package:${LEGAL_ACCEPTANCE_VERSION}:${type}`),
     );
     expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
+    expect(db.upsertCanonicalContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contractType: "consent",
+        schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
+        status: "ready",
+      }),
+    );
     expect(db.addCaseEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         title: `Paquete legal ${LEGAL_VERSION} aceptado`,

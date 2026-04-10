@@ -60,6 +60,7 @@ import { buildHeliosOpinionContract } from "./heliosIntegrationService";
 import {
   HELIOS_CONTEXT_NOTE,
   LEGAL_ACCEPTANCE_VERSION,
+  LEGAL_CONTRACT_SCHEMA_VERSION,
   LEGAL_CONTACT_EMAIL,
   LEGAL_CONSENT_TYPES,
   LEGAL_DOCUMENTS,
@@ -2862,7 +2863,7 @@ export const appRouter = router({
             caseId: input.caseId,
             traceId: detail.case.traceId,
             contractType: "consent",
-            schemaVersion: LEGAL_ACCEPTANCE_VERSION,
+            schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
             payload: JSON.stringify(consentContract),
             status: "ready",
           });
