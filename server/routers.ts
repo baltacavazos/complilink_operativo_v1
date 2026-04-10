@@ -6,8 +6,11 @@ import {
   addConsentRecord,
   addOperationalAlert,
   addPolicyRecord,
+  assertActiveTenantMember,
   assertCaseAccess,
+  assertCaseWriteAccess,
   assertTenantAccess,
+  assertTenantAdminAccess,
   buildCaseId,
   buildTraceId,
   createAuditLog,
@@ -1219,7 +1222,7 @@ export const appRouter = router({
         }),
       )
       .query(async ({ ctx, input }) => {
-        await assertTenantAccess(ctx.user.id, input.tenantId);
+        await assertTenantAdminAccess(ctx.user.id, input.tenantId);
         return listAccessibleUsersByTenant(input.tenantId);
       }),
   }),
@@ -1569,7 +1572,11 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        await assertTenantAccess(ctx.user.id, input.tenantId);
+        await assertTenantAdminAccess(ctx.user.id, input.tenantId);
+
+        if (input.assignToUserId) {
+          await assertActiveTenantMember(input.assignToUserId, input.tenantId);
+        }
 
         const caseId = buildCaseId(input.tenantId);
         const traceId = buildTraceId(input.tenantId, caseId);
@@ -1689,7 +1696,7 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        await assertCaseAccess(ctx.user.id, input.tenantId, input.caseId);
+        await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
 
         const updatedCase = await updateCaseStatus({
           tenantId: input.tenantId,
@@ -1851,6 +1858,8 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,
@@ -3074,6 +3083,8 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,
@@ -3155,6 +3166,8 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,

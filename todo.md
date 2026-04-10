@@ -16,16 +16,17 @@
 - [x] Verificar funcionamiento técnico y estado general del proyecto antes de la primera entrega
 - [x] Reemplazar la pantalla placeholder del template por la interfaz operativa real de CompliLink con dashboard, casos, intake documental y trazabilidad visible
 - [x] Implementar acceso seguro de descarga/visualización documental con autorización por tenant, caso y política de visibilidad
-- [ ] Reforzar el registro de auditoría con hash chain para trazabilidad inmutable
+- [x] Reforzar el registro de auditoría con hash chain para trazabilidad inmutable
 - [ ] Incorporar gestión operativa de alertas con estados accionables
 - [ ] Incorporar administración de membresías y accesos por tenant/caso para administradores
 - [ ] Evaluar versionado o supersedencia de documentos sin sobrescritura accidental
 - [x] Ejecutar validación multi-IA final de la build actual y aplicar ajustes previos al checkpoint
-- [ ] Endurecer RBAC granular inicial por tenant y caso para el piloto interno controlado
-- [ ] Reforzar validaciones de entrada y reglas de negocio en workflows críticos de casos y documentos
+- [x] Endurecer RBAC granular inicial por tenant y caso para el piloto interno controlado
+- [x] Reforzar validaciones de entrada y reglas de negocio en workflows críticos de casos y documentos
 - [ ] Incorporar bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico
 - [ ] Documentar estrategia inicial de backup y recuperación para el piloto controlado
 - [x] Añadir cobertura de pruebas para restricciones críticas de acceso y reglas de workflow
+- [x] Añadir pruebas unitarias del hash chain de auditoría y de permisos endurecidos del bloque V1
 - [ ] Reorientar CompliLink como hub personal de control operativo para uso del propietario
 - [ ] Preparar ruta de contratación mínima de servicios para lanzar hoy mismo la plataforma
 - [x] Ajustar la plataforma actual para un lanzamiento inmediato con intervención mínima del usuario
@@ -501,3 +502,10 @@
 - [x] Revisar el PDF de reconstrucción de CompliLink y extraer requisitos, arquitectura y dependencias accionables para reutilizarlos en otro chat
 - [x] Sintetizar la información extraída en un prompt o brief operativo que acelere la reconstrucción de CompliLink
 - [x] Convertir el brief o prompt de reconstrucción de CompliLink a PDF para compartirlo en el otro chat
+- [x] Revisar y reportar al usuario los pendientes actualmente abiertos en el proyecto
+- [ ] Definir el alcance cerrable de la versión 1 de CompliLink/AuditaPatron con criterios claros de salida a pruebas piloto
+- [ ] Contrastar con OpenAI, Grok y Gemini la priorización técnica para robustecer la versión 1 antes de implementar el siguiente bloque
+- [ ] Priorizar y ejecutar el bloque de robustecimiento V1 de mayor impacto inmediato en seguridad, operación y pruebas
+- [ ] Preparar una hoja de ruta de transición de la web app estabilizada hacia apps Android e iOS sin duplicar arquitectura innecesariamente
+- [ ] Consensuar con OpenAI, Grok y Gemini toda decisión técnica relevante del endurecimiento de V1 antes de aplicar cambios estructurales
+- [ ] Ejecutar de forma continua el plan de robustecimiento de V1 hasta requerir una decisión importante de negocio o producto

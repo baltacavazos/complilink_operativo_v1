@@ -1,0 +1,4 @@
+{
+  "model": "grok-3-mini",
+  "error": "429 Client Error: Too Many Requests for url: https://api.x.ai/v1/chat/completions"
+}

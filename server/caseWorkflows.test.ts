@@ -7,8 +7,11 @@ const dbMocks = vi.hoisted(() => ({
   addDocumentRecord: vi.fn(),
   addOperationalAlert: vi.fn(),
   addPolicyRecord: vi.fn(),
+  assertActiveTenantMember: vi.fn(),
   assertCaseAccess: vi.fn(),
+  assertCaseWriteAccess: vi.fn(),
   assertTenantAccess: vi.fn(),
+  assertTenantAdminAccess: vi.fn(),
   buildCaseId: vi.fn(),
   buildTraceId: vi.fn(),
   createAuditLog: vi.fn(),
@@ -125,8 +128,11 @@ describe("appRouter case workflows", () => {
     vi.mocked(db.listCasesForUser).mockResolvedValue([]);
     vi.mocked(db.listAuditTrail).mockResolvedValue([]);
     vi.mocked(db.listVisibleDocuments).mockResolvedValue([]);
+    vi.mocked(db.assertActiveTenantMember).mockResolvedValue(undefined);
     vi.mocked(db.assertTenantAccess).mockResolvedValue(undefined);
+    vi.mocked(db.assertTenantAdminAccess).mockResolvedValue(undefined);
     vi.mocked(db.assertCaseAccess).mockResolvedValue(undefined);
+    vi.mocked(db.assertCaseWriteAccess).mockResolvedValue(undefined);
     vi.mocked(db.buildCaseId).mockReturnValue("CASE-BALT-0001");
     vi.mocked(db.buildTraceId).mockReturnValue("trace.balt-1.CASE-BALT-0001");
     vi.mocked(db.getCaseDetailForUser).mockResolvedValue(demoCaseDetail as never);
@@ -603,7 +609,7 @@ describe("appRouter case workflows", () => {
       dueAt: "2026-04-30T18:00:00.000Z",
     });
 
-    expect(db.assertTenantAccess).toHaveBeenCalledWith(7, "balt-1");
+    expect(db.assertTenantAdminAccess).toHaveBeenCalledWith(7, "balt-1");
     expect(db.buildCaseId).toHaveBeenCalledWith("balt-1");
     expect(db.buildTraceId).toHaveBeenCalledWith("balt-1", "CASE-BALT-0001");
     expect(result.caseId).toBe("CASE-BALT-0001");
@@ -656,7 +662,7 @@ describe("appRouter case workflows", () => {
       dueAt: "2026-05-10T12:00:00.000Z",
     });
 
-    expect(db.assertCaseAccess).toHaveBeenCalledWith(7, "balt-1", "CASE-BALT-1-DEMO001");
+    expect(db.assertCaseWriteAccess).toHaveBeenCalledWith(7, "balt-1", "CASE-BALT-1-DEMO001");
     expect(db.updateCaseStatus).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "balt-1",
@@ -759,6 +765,7 @@ describe("appRouter case workflows", () => {
     });
 
     expect(result.success).toBe(true);
+    expect(db.assertCaseWriteAccess).toHaveBeenCalledWith(7, "balt-1", "CASE-BALT-1-DEMO001");
     expect(db.addConsentRecord).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "balt-1",
@@ -1084,6 +1091,7 @@ describe("appRouter case workflows", () => {
     });
 
     expect(policyResult).toEqual({ success: true });
+    expect(db.assertCaseWriteAccess).toHaveBeenCalledWith(7, "balt-1", "CASE-BALT-1-DEMO001");
     expect(db.addPolicyRecord).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "balt-1",

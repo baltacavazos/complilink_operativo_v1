@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { and, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
@@ -433,6 +434,39 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   return tenantWide[0];
 }
 
+export async function assertActiveTenantMember(userId: number, tenantId: string) {
+  return assertTenantAccess(userId, tenantId);
+}
+
+function hasWriteCapability(membership: { accessLevel?: string | null; role?: string | null }) {
+  return (
+    membership.accessLevel === "owner" ||
+    membership.accessLevel === "editor" ||
+    membership.role === "tenant_admin" ||
+    membership.role === "manager"
+  );
+}
+
+function hasAdminCapability(membership: { role?: string | null }) {
+  return membership.role === "tenant_admin" || membership.role === "manager";
+}
+
+export async function assertCaseWriteAccess(userId: number, tenantId: string, caseId: string) {
+  const membership = await assertCaseAccess(userId, tenantId, caseId);
+  if (!hasWriteCapability(membership)) {
+    throw new Error("Write access denied for case");
+  }
+  return membership;
+}
+
+export async function assertTenantAdminAccess(userId: number, tenantId: string) {
+  const membership = await assertTenantAccess(userId, tenantId);
+  if (!hasAdminCapability(membership)) {
+    throw new Error("Admin access denied for tenant");
+  }
+  return membership;
+}
+
 export async function createCaseRecord(input: InsertLaborCase) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -588,14 +622,120 @@ export async function getAuditarDraftById(params: { tenantId: string; caseId: st
   return null;
 }
 
-export async function createAuditLog(input: Omit<InsertAuditLog, "afterState" | "beforeState"> & { beforeState?: unknown; afterState?: unknown }) {
+function stableSerialize(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "null";
+  }
+
+  if (value instanceof Date) {
+    return JSON.stringify(value.toISOString());
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableSerialize(entry)).join(",")}]`;
+  }
+
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right));
+
+    return `{${entries
+      .map(([key, entryValue]) => `${JSON.stringify(key)}:${stableSerialize(entryValue)}`)
+      .join(",")}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
+async function getLatestAuditHash(params: { tenantId: string; caseId?: string | null }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  const rows = await db
+    .select({ hashChain: auditLogs.hashChain })
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.tenantId, params.tenantId),
+        params.caseId ? eq(auditLogs.caseId, params.caseId) : isNull(auditLogs.caseId),
+      ),
+    )
+    .orderBy(desc(auditLogs.createdAt), desc(auditLogs.id))
+    .limit(1);
+
+  return rows[0]?.hashChain ?? null;
+}
+
+function buildAuditHashChain(params: {
+  previousHash: string | null;
+  tenantId: string;
+  caseId?: string | null;
+  traceId: string;
+  documentId?: string | null;
+  actorUserId?: number | null;
+  entityType: InsertAuditLog["entityType"];
+  entityId: string;
+  action: string;
+  beforeState: string | null;
+  afterState: string | null;
+}) {
+  return createHash("sha256")
+    .update(
+      stableSerialize({
+        previousHash: params.previousHash,
+        tenantId: params.tenantId,
+        caseId: params.caseId ?? "__tenant_scope__",
+        traceId: params.traceId,
+        documentId: params.documentId ?? null,
+        actorUserId: params.actorUserId ?? null,
+        entityType: params.entityType,
+        entityId: params.entityId,
+        action: params.action,
+        beforeState: params.beforeState,
+        afterState: params.afterState,
+      }),
+    )
+    .digest("hex");
+}
+
+export async function createAuditLog(input: {
+  tenantId: string;
+  caseId?: string | null;
+  traceId: string;
+  documentId?: string | null;
+  actorUserId?: number | null;
+  entityType: InsertAuditLog["entityType"];
+  entityId: string;
+  action: string;
+  beforeState?: unknown;
+  afterState?: unknown;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const beforeState = input.beforeState === undefined ? null : toJson(input.beforeState);
+  const afterState = input.afterState === undefined ? null : toJson(input.afterState);
+  const previousHash = await getLatestAuditHash({ tenantId: input.tenantId, caseId: input.caseId });
+
   const payload: InsertAuditLog = {
     ...input,
-    beforeState: input.beforeState === undefined ? null : toJson(input.beforeState),
-    afterState: input.afterState === undefined ? null : toJson(input.afterState),
+    caseId: input.caseId ?? null,
+    beforeState,
+    afterState,
+    hashChain: buildAuditHashChain({
+      previousHash,
+      tenantId: input.tenantId,
+      caseId: input.caseId,
+      traceId: input.traceId,
+      documentId: input.documentId,
+      actorUserId: input.actorUserId,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      action: input.action,
+      beforeState,
+      afterState,
+    }),
   };
 
   await db.insert(auditLogs).values(payload);

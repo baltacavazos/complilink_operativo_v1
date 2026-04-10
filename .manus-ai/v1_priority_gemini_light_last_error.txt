@@ -1,0 +1,1 @@
+gemini-2.0-flash-lite: 404 Client Error: Not Found for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=AIzaSyDtDt2jVnsUl8lKWU5gRdQ1APvRIBYKUcI
