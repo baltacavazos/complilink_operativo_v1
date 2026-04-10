@@ -2,6 +2,16 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavigationItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { trpc } from "@/lib/trpc";
 import { downloadCeoCsvReport, downloadCeoPdfReport } from "@/pages/ceoDashboardExports";
 import {
@@ -106,6 +116,33 @@ function getSafeMembershipAction(membership: { status: string; accessScope: stri
   }
   return null;
 }
+
+type PendingExecutiveAction =
+  | {
+      kind: "alert";
+      alertId: number;
+      title: string;
+      currentStatus: "open" | "acknowledged" | "resolved";
+      nextStatus: "acknowledged" | "resolved";
+      actionLabel: string;
+    }
+  | {
+      kind: "membership";
+      membershipId: number;
+      userLabel: string;
+      currentStatus: "active" | "revoked";
+      nextStatus: "active" | "revoked";
+      actionLabel: string;
+    }
+  | {
+      kind: "case";
+      tenantId: string;
+      caseId: string;
+      title: string;
+      currentStatus: "intake" | "analysis" | "conciliation" | "litigation" | "archived";
+      nextStatus: "analysis" | "conciliation" | "litigation";
+      actionLabel: string;
+    };
 
 function getSafeActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "";
@@ -226,6 +263,8 @@ export default function CeoDashboard() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [exportKind, setExportKind] = useState<"csv" | "pdf" | null>(null);
+  const [pendingExecutiveAction, setPendingExecutiveAction] = useState<PendingExecutiveAction | null>(null);
+  const [snapshotPulseAt, setSnapshotPulseAt] = useState(() => Date.now());
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -236,6 +275,16 @@ export default function CeoDashboard() {
       window.clearTimeout(timeout);
     };
   }, [queryDraft]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setSnapshotPulseAt(Date.now());
+    }, 30000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
 
   const currentSection = useMemo<SectionKey>(() => {
     if (location.startsWith("/ceo/alertas")) return "alertas";
@@ -285,6 +334,23 @@ export default function CeoDashboard() {
   const isInitialLoading = !baseSnapshotQuery.data && baseSnapshotQuery.isLoading;
   const isFilterLoading = hasActiveFilters && !filteredSnapshotQuery.data && filteredSnapshotQuery.isLoading;
   const isRefreshing = baseSnapshotQuery.isFetching || filteredSnapshotQuery.isFetching;
+  const snapshotGeneratedAtMs = useMemo(() => {
+    if (!snapshotData?.generatedAt) return null;
+    const value = new Date(snapshotData.generatedAt).getTime();
+    return Number.isNaN(value) ? null : value;
+  }, [snapshotData?.generatedAt]);
+  const snapshotAgeMs = snapshotGeneratedAtMs === null ? null : Math.max(0, snapshotPulseAt - snapshotGeneratedAtMs);
+  const snapshotFreshnessLabel =
+    snapshotAgeMs === null ? "Frescura no disponible" : snapshotAgeMs < 60000 ? "Vista fresca" : `Actualizada hace ${Math.max(1, Math.round(snapshotAgeMs / 60000))} min`;
+  const isSnapshotStale = snapshotAgeMs !== null && snapshotAgeMs > 2 * 60 * 1000;
+  const executiveActionsBlocked = isRefreshing || isSnapshotStale || Boolean(snapshotError);
+  const executiveGuardrailDescription = isRefreshing
+    ? "La consola está refrescando la vista ejecutiva. Espera a que termine antes de operar cambios sensibles."
+    : snapshotError
+      ? "La vista ejecutiva tuvo un problema al cargar. Refresca antes de volver a intentar una acción sensible."
+      : isSnapshotStale
+        ? "La vista visible superó la ventana de frescura operativa. Refresca para volver a habilitar acciones ejecutivas."
+        : "La vista visible sigue dentro de la ventana de frescura operativa para ejecutar acciones seguras.";
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
@@ -477,6 +543,13 @@ export default function CeoDashboard() {
     membershipMutation.isPending && membershipMutation.variables?.membershipId === membershipId;
   const isCaseBusy = (tenantId: string, caseId: string) =>
     caseMutation.isPending && caseMutation.variables?.tenantId === tenantId && caseMutation.variables?.caseId === caseId;
+  const isConfirmingExecutiveAction = alertMutation.isPending || membershipMutation.isPending || caseMutation.isPending;
+
+  function notifyExecutiveGuardrail() {
+    sonnerToast.error("Actualiza la vista antes de operar", {
+      description: executiveGuardrailDescription,
+    });
+  }
 
   async function refreshSnapshotWithSuccess(title: string, description: string) {
     await utils.dashboard.ceoSnapshot.invalidate();
@@ -487,66 +560,109 @@ export default function CeoDashboard() {
     await utils.dashboard.ceoSnapshot.invalidate();
   }
 
-  async function handleAlertAction(alertId: number, title: string, status: string) {
+  function requestAlertAction(alertId: number, title: string, status: string) {
+    if (executiveActionsBlocked) {
+      notifyExecutiveGuardrail();
+      return;
+    }
+
     const nextStatus = getSafeNextAlertStatus(status);
     const actionLabel = getSafeAlertActionLabel(status);
     if (!nextStatus || !actionLabel) return;
+    if (status !== "open" && status !== "acknowledged" && status !== "resolved") return;
 
-    try {
-      await alertMutation.mutateAsync({ alertId, status: nextStatus, expectedCurrentStatus: status === "open" || status === "acknowledged" || status === "resolved" ? status : undefined });
-      await refreshSnapshotWithSuccess("Alerta actualizada", `${title}: ${actionLabel.toLowerCase()} y traza registrada.`);
-    } catch (error) {
-      sonnerToast.error("No fue posible actualizar la alerta", {
-        description: getSafeActionErrorMessage(error),
-      });
-    }
+    setPendingExecutiveAction({
+      kind: "alert",
+      alertId,
+      title,
+      currentStatus: status,
+      nextStatus,
+      actionLabel,
+    });
   }
 
-  async function handleMembershipAction(
+  function requestMembershipAction(
     membershipId: number,
     membership: { status: string; accessScope: string; caseId?: string | null },
     userLabel: string,
   ) {
+    if (executiveActionsBlocked) {
+      notifyExecutiveGuardrail();
+      return;
+    }
+
     const action = getSafeMembershipAction(membership);
     if (!action) return;
+    if (membership.status !== "active" && membership.status !== "revoked") return;
 
-    try {
-      await membershipMutation.mutateAsync({
-        membershipId,
-        status: action.status,
-        expectedCurrentStatus: membership.status === "active" || membership.status === "revoked" ? membership.status : undefined,
-      });
-      await refreshSnapshotWithSuccess("Acceso actualizado", `${userLabel}: ${action.label.toLowerCase()} con trazabilidad ejecutiva.`);
-    } catch (error) {
-      sonnerToast.error("No fue posible actualizar el acceso", {
-        description: getSafeActionErrorMessage(error),
-      });
-    }
+    setPendingExecutiveAction({
+      kind: "membership",
+      membershipId,
+      userLabel,
+      currentStatus: membership.status,
+      nextStatus: action.status,
+      actionLabel: action.label,
+    });
   }
 
-  async function handleCaseAction(tenantId: string, caseId: string, title: string, status: string) {
+  function requestCaseAction(tenantId: string, caseId: string, title: string, status: string) {
+    if (executiveActionsBlocked) {
+      notifyExecutiveGuardrail();
+      return;
+    }
+
     const nextStatus = getSafeNextCaseStatus(status);
     const actionLabel = getSafeCaseActionLabel(status);
     if (!nextStatus || !actionLabel) return;
+    if (status !== "intake" && status !== "analysis" && status !== "conciliation" && status !== "litigation" && status !== "archived") return;
 
-    const confirmed = window.confirm(`${actionLabel} para “${title}”. Esta acción dejará bitácora operativa y sólo debe ejecutarse si ya validaste la evidencia del caso.`);
-    if (!confirmed) return;
+    setPendingExecutiveAction({
+      kind: "case",
+      tenantId,
+      caseId,
+      title,
+      currentStatus: status,
+      nextStatus,
+      actionLabel,
+    });
+  }
 
+  async function executePendingExecutiveAction(action: PendingExecutiveAction) {
     try {
+      if (action.kind === "alert") {
+        await alertMutation.mutateAsync({
+          alertId: action.alertId,
+          status: action.nextStatus,
+          expectedCurrentStatus: action.currentStatus,
+        });
+        await refreshSnapshotWithSuccess("Alerta actualizada", `${action.title}: ${action.actionLabel.toLowerCase()} y traza registrada.`);
+        return;
+      }
+
+      if (action.kind === "membership") {
+        await membershipMutation.mutateAsync({
+          membershipId: action.membershipId,
+          status: action.nextStatus,
+          expectedCurrentStatus: action.currentStatus,
+        });
+        await refreshSnapshotWithSuccess("Acceso actualizado", `${action.userLabel}: ${action.actionLabel.toLowerCase()} con trazabilidad ejecutiva.`);
+        return;
+      }
+
       await caseMutation.mutateAsync({
-        tenantId,
-        caseId,
-        status: nextStatus,
-        expectedCurrentStatus:
-          status === "intake" || status === "analysis" || status === "conciliation" || status === "litigation" || status === "archived"
-            ? status
-            : undefined,
+        tenantId: action.tenantId,
+        caseId: action.caseId,
+        status: action.nextStatus,
+        expectedCurrentStatus: action.currentStatus,
       });
-      await refreshSnapshotWithSuccess("Caso actualizado", `${title}: ${actionLabel.toLowerCase()} y bitácora registrada.`);
+      await refreshSnapshotWithSuccess("Caso actualizado", `${action.title}: ${action.actionLabel.toLowerCase()} y bitácora registrada.`);
     } catch (error) {
-      sonnerToast.error("No fue posible confirmar el avance del caso", {
+      const title = action.kind === "case" ? "No fue posible confirmar el avance del caso" : action.kind === "membership" ? "No fue posible actualizar el acceso" : "No fue posible actualizar la alerta";
+      sonnerToast.error(title, {
         description: getSafeActionErrorMessage(error),
       });
+    } finally {
+      setPendingExecutiveAction(null);
     }
   }
 
@@ -880,6 +996,31 @@ export default function CeoDashboard() {
             Las tarjetas superiores muestran <strong>contexto global</strong>. Los listados, paneles laterales y contadores de secciones muestran la <strong>vista filtrada</strong> para evitar perder el panorama completo.
           </div>
 
+          <div
+            className={`rounded-[1.4rem] border px-4 py-3 text-sm leading-6 ${executiveActionsBlocked ? "border-amber-200 bg-amber-50/90 text-amber-950" : "border-emerald-200 bg-emerald-50/90 text-emerald-950"}`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em]">Frescura operativa</p>
+                <p>
+                  <strong>{snapshotFreshnessLabel}.</strong> {executiveGuardrailDescription}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full bg-white"
+                disabled={isRefreshing}
+                onClick={() => {
+                  void handleRefresh();
+                }}
+              >
+                {isRefreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                Actualizar vista
+              </Button>
+            </div>
+          </div>
+
           {currentSection === "resumen" ? (
             <>
               <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
@@ -893,9 +1034,14 @@ export default function CeoDashboard() {
                   </Badge>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
-                  Este bloque sólo expone cambios de bajo riesgo. Si el sistema detecta que la vista quedó desactualizada o que una transición sale de secuencia,
-                  bloqueará la operación y te pedirá refrescar antes de continuar.
+                  Este bloque sólo expone cambios de bajo riesgo. Cada acción ahora exige una confirmación visual sobre una vista fresca, y el backend rechazará
+                  cualquier operación si detecta desalineación de estado o secuencia fuera del carril seguro.
                 </p>
+                {executiveActionsBlocked ? (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                    <strong>Acciones sensibles bloqueadas temporalmente.</strong> {executiveGuardrailDescription}
+                  </div>
+                ) : null}
                 <div className="mt-5 grid gap-4 xl:grid-cols-3">
                   <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                     <div className="flex items-center justify-between gap-2">
@@ -915,9 +1061,9 @@ export default function CeoDashboard() {
                             <Button
                               className="mt-3 w-full rounded-full"
                               size="sm"
-                              disabled={isAlertBusy(alert.id)}
+                              disabled={executiveActionsBlocked || isAlertBusy(alert.id)}
                               onClick={() => {
-                                void handleAlertAction(alert.id, alert.title, alert.status);
+                                requestAlertAction(alert.id, alert.title, alert.status);
                               }}
                             >
                               {isAlertBusy(alert.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -952,9 +1098,9 @@ export default function CeoDashboard() {
                               variant="outline"
                               className="mt-3 w-full rounded-full bg-white"
                               size="sm"
-                              disabled={isMembershipBusy(membership.id)}
+                              disabled={executiveActionsBlocked || isMembershipBusy(membership.id)}
                               onClick={() => {
-                                void handleMembershipAction(
+                                requestMembershipAction(
                                   membership.id,
                                   membership,
                                   membership.userName || membership.userEmail || `Usuario ${membership.userId}`,
@@ -991,9 +1137,9 @@ export default function CeoDashboard() {
                               variant="outline"
                               className="mt-3 w-full rounded-full bg-white"
                               size="sm"
-                              disabled={isCaseBusy(item.tenantId, item.caseId)}
+                              disabled={executiveActionsBlocked || isCaseBusy(item.tenantId, item.caseId)}
                               onClick={() => {
-                                void handleCaseAction(item.tenantId, item.caseId, item.title, item.status);
+                                requestCaseAction(item.tenantId, item.caseId, item.title, item.status);
                               }}
                             >
                               {isCaseBusy(item.tenantId, item.caseId) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -1105,9 +1251,9 @@ export default function CeoDashboard() {
                                         variant="outline"
                                         size="sm"
                                         className="rounded-full bg-white"
-                                        disabled={isCaseBusy(item.tenantId, item.caseId)}
+                                        disabled={executiveActionsBlocked || isCaseBusy(item.tenantId, item.caseId)}
                                         onClick={() => {
-                                          void handleCaseAction(item.tenantId, item.caseId, item.title, item.status);
+                                          requestCaseAction(item.tenantId, item.caseId, item.title, item.status);
                                         }}
                                       >
                                         {isCaseBusy(item.tenantId, item.caseId) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -1239,9 +1385,9 @@ export default function CeoDashboard() {
                                 <Button
                                   className="w-full rounded-full"
                                   size="sm"
-                                  disabled={isAlertBusy(alert.id)}
+                                  disabled={executiveActionsBlocked || isAlertBusy(alert.id)}
                                   onClick={() => {
-                                    void handleAlertAction(alert.id, alert.title, alert.status);
+                                    requestAlertAction(alert.id, alert.title, alert.status);
                                   }}
                                 >
                                   {isAlertBusy(alert.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -1313,9 +1459,9 @@ export default function CeoDashboard() {
                                 variant="outline"
                                 className="w-full rounded-full bg-white"
                                 size="sm"
-                                disabled={isMembershipBusy(membership.id)}
+                                disabled={executiveActionsBlocked || isMembershipBusy(membership.id)}
                                 onClick={() => {
-                                  void handleMembershipAction(membership.id, membership, userLabel);
+                                  requestMembershipAction(membership.id, membership, userLabel);
                                 }}
                               >
                                 {isMembershipBusy(membership.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -1401,6 +1547,64 @@ export default function CeoDashboard() {
           ) : null}
         </div>
       )}
+      <AlertDialog
+        open={Boolean(pendingExecutiveAction)}
+        onOpenChange={(open) => {
+          if (!open && !isConfirmingExecutiveAction) {
+            setPendingExecutiveAction(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingExecutiveAction?.kind === "case"
+                ? "Confirmar avance operativo"
+                : pendingExecutiveAction?.kind === "membership"
+                  ? "Confirmar cambio de acceso"
+                  : "Confirmar actualización de alerta"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              La consola ejecutará esta acción sólo si el backend confirma que el estado visible sigue vigente. Si la vista cambió o perdió frescura, la operación se bloqueará.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {pendingExecutiveAction ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700">
+              <p>
+                <strong className="text-slate-950">Acción:</strong> {pendingExecutiveAction.actionLabel}
+              </p>
+              <p>
+                <strong className="text-slate-950">Estado visible:</strong> {pendingExecutiveAction.currentStatus}
+              </p>
+              <p>
+                <strong className="text-slate-950">Contexto:</strong>{" "}
+                {pendingExecutiveAction.kind === "case"
+                  ? `${pendingExecutiveAction.title} · ${pendingExecutiveAction.caseId}`
+                  : pendingExecutiveAction.kind === "membership"
+                    ? pendingExecutiveAction.userLabel
+                    : pendingExecutiveAction.title}
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                {executiveGuardrailDescription}
+              </p>
+            </div>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isConfirmingExecutiveAction}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isConfirmingExecutiveAction || executiveActionsBlocked}
+              onClick={() => {
+                if (pendingExecutiveAction) {
+                  void executePendingExecutiveAction(pendingExecutiveAction);
+                }
+              }}
+            >
+              {isConfirmingExecutiveAction ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Confirmar y registrar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

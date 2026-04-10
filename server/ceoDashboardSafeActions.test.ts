@@ -233,6 +233,7 @@ describe("Dashboard CEO safe actions", () => {
     const result = await caller.dashboard.ceoUpdateAlertStatus({
       alertId: 101,
       status: "acknowledged",
+      expectedCurrentStatus: "open",
     });
 
     expect(db.updateOperationalAlertStatus).toHaveBeenCalledWith({
@@ -260,6 +261,7 @@ describe("Dashboard CEO safe actions", () => {
       caller.dashboard.ceoUpdateAlertStatus({
         alertId: 101,
         status: "resolved",
+        expectedCurrentStatus: "open",
       }),
     ).rejects.toThrow(/siguiente cambio operativo seguro/i);
 
@@ -273,6 +275,7 @@ describe("Dashboard CEO safe actions", () => {
     const result = await caller.dashboard.ceoUpdateMembershipStatus({
       membershipId: 501,
       status: "revoked",
+      expectedCurrentStatus: "active",
     });
 
     expect(db.updateTenantMembershipStatus).toHaveBeenCalledWith({
@@ -313,6 +316,7 @@ describe("Dashboard CEO safe actions", () => {
       caller.dashboard.ceoUpdateMembershipStatus({
         membershipId: 777,
         status: "revoked",
+        expectedCurrentStatus: "active",
       }),
     ).rejects.toThrow(/fuera del caso visible|acotados a un caso/i);
 

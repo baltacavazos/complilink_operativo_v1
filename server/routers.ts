@@ -104,6 +104,7 @@ const ceoSnapshotFiltersSchema = z
 const CEO_SAFE_ERROR_COPY = {
   forbidden: "No tienes permisos suficientes para realizar esta acción.",
   staleData: "Los datos han cambiado. Actualiza la vista e intenta nuevamente.",
+  missingExpectedStatus: "Confirma la acción desde una vista fresca antes de ejecutarla en la consola CEO.",
   invalidTransition: "Solo se permite el siguiente cambio operativo seguro desde la consola CEO.",
   outOfScopeMembership: "No puedes modificar accesos fuera del caso visible en este bloque seguro.",
   genericRetry: "Ocurrió un error inesperado. Intenta nuevamente en unos segundos.",
@@ -137,10 +138,14 @@ const CEO_NEXT_SAFE_CASE_STATUS: Partial<Record<(typeof CASE_STATUSES)[number], 
 };
 
 function assertCeoExpectedCurrentStatus(params: {
-  expectedCurrentStatus?: string;
+  expectedCurrentStatus: string;
   actualCurrentStatus: string;
 }) {
-  if (params.expectedCurrentStatus && params.expectedCurrentStatus !== params.actualCurrentStatus) {
+  if (!params.expectedCurrentStatus) {
+    throw new Error(CEO_SAFE_ERROR_COPY.missingExpectedStatus);
+  }
+
+  if (params.expectedCurrentStatus !== params.actualCurrentStatus) {
     throw new Error(CEO_SAFE_ERROR_COPY.staleData);
   }
 }
@@ -1278,7 +1283,7 @@ export const appRouter = router({
         z.object({
           alertId: z.number().int().positive(),
           status: operationalAlertStatusSchema,
-          expectedCurrentStatus: ceoCurrentAlertStatusSchema.optional(),
+          expectedCurrentStatus: ceoCurrentAlertStatusSchema,
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1323,7 +1328,7 @@ export const appRouter = router({
         z.object({
           membershipId: z.number().int().positive(),
           status: tenantMembershipStatusSchema,
-          expectedCurrentStatus: ceoCurrentMembershipStatusSchema.optional(),
+          expectedCurrentStatus: ceoCurrentMembershipStatusSchema,
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1372,7 +1377,7 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           status: ceoCaseProgressStatusSchema,
-          expectedCurrentStatus: caseStatusSchema.optional(),
+          expectedCurrentStatus: caseStatusSchema,
         }),
       )
       .mutation(async ({ ctx, input }) => {
