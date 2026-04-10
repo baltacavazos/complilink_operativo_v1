@@ -327,10 +327,10 @@
 - [x] Exponer en `cases.detail` un resumen Helios-first del expediente y de los documentos para `/auditar`
 - [x] Ajustar `/auditar` para presentar el expediente y los documentos con semántica Helios-first y cambios mínimos
 - [x] Ampliar pruebas Vitest de backend y frontend para cubrir la formalización mínima Helios-first del bloque 1
-- [ ] Diseñar un panel de control CEO para consultar y controlar toda la plataforma sin depender de Manus
-- [ ] Definir el alcance operativo del panel CEO: resumen ejecutivo, salud operativa, casos, documentos, alertas, usuarios, tenants e integraciones
-- [ ] Contrastar con ChatGPT, Grok y Gemini la mejor arquitectura funcional y UX para el panel CEO antes de implementarlo
-- [ ] Presentar una propuesta priorizada del panel CEO para aprobación antes de construirlo
+- [x] Diseñar un panel de control CEO para consultar y controlar toda la plataforma sin depender de Manus
+- [x] Definir el alcance operativo del panel CEO: resumen ejecutivo, salud operativa, casos, documentos, alertas, usuarios, tenants e integraciones
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor arquitectura funcional y UX para el panel CEO antes de implementarlo
+- [x] Presentar una propuesta priorizada del panel CEO para aprobación antes de construirlo
 - [ ] Incorporar el nuevo logotipo de AuditaPatron en toda la plataforma como identidad visual principal
 - [ ] Reemplazar las marcas y variantes visuales actuales por el nuevo logotipo en navegación, encabezados y superficies clave
 - [ ] Preparar la base visual y técnica para una futura versión del logotipo con QR funcional dentro de la lupa redirigiendo a Auditapatron
@@ -509,3 +509,17 @@
 - [ ] Preparar una hoja de ruta de transición de la web app estabilizada hacia apps Android e iOS sin duplicar arquitectura innecesariamente
 - [ ] Consensuar con OpenAI, Grok y Gemini toda decisión técnica relevante del endurecimiento de V1 antes de aplicar cambios estructurales
 - [ ] Ejecutar de forma continua el plan de robustecimiento de V1 hasta requerir una decisión importante de negocio o producto
+- [x] Diseñar un dashboard de CEO para administrar AuditaPatron fuera de Manus con visibilidad total del negocio y la operación
+- [x] Consultar a ChatGPT, Grok y Gemini sobre la estructura mínima, controles clave y riesgos del dashboard ejecutivo antes de implementarlo
+- [x] Auditar la base actual de AuditaPatron para reutilizar componentes, rutas, métricas y controles existentes en el dashboard de CEO
+- [x] Implementar una vista ejecutiva con métricas, alertas, estado del motor y herramientas administrativas prioritarias para el CEO
+- [x] Incorporar controles administrativos iniciales para gestión operativa sin depender de Manus
+- [ ] Validar el dashboard de CEO con pruebas Vitest, revisión técnica y checkpoint estable
+- [x] Contrastar y consolidar el alcance funcional del Dashboard CEO de AuditaPatron con ChatGPT, Gemini y Grok antes de cerrar su primera iteración
+- [x] Implementar consola CEO con resumen ejecutivo, KPIs operativos y acceso seguro solo para administradores
+- [x] Implementar vista ejecutiva de alertas accionables con estados, severidad y timestamps visibles
+- [x] Implementar vista administrativa de membresías y accesos por caso para operación del CEO
+- [x] Implementar trazabilidad de versionado o supersedencia documental visible desde la consola CEO
+- [ ] Validar el Dashboard CEO con pruebas Vitest, revisión técnica y checkpoint estable
+- [x] Reintentar la consulta del Dashboard CEO con Grok ahora que la API ya tiene crédito e incorporar su feedback al consenso antes de implementar
+- [ ] Dejar documentada la recomendación operativa para conectar los dos dominios comprados al sitio sin interrumpir el dominio temporal

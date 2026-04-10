@@ -260,6 +260,15 @@ function SiteHeader() {
           <Button
             variant="outline"
             className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
+            onClick={() => {
+              window.location.href = "/ceo";
+            }}
+          >
+            Consola CEO
+          </Button>
+          <Button
+            variant="outline"
+            className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
             onClick={() => scrollToId("expediente")}
           >
             Ver tu expediente
@@ -329,6 +338,16 @@ function SiteHeader() {
             </div>
 
             <div className="grid gap-3 border-t border-slate-200/80 pt-3">
+              <Button
+                variant="outline"
+                className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 active:scale-[0.99]"
+                onClick={() => {
+                  setOpen(false);
+                  window.location.href = "/ceo";
+                }}
+              >
+                Consola CEO
+              </Button>
               <Button
                 variant="outline"
                 className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 active:scale-[0.99]"

@@ -21,6 +21,7 @@ const dbMocks = vi.hoisted(() => ({
   getAuditarDraftById: vi.fn(),
   getCaseDetailForUser: vi.fn(),
   getDashboardForUser: vi.fn(),
+  getCeoDashboardSnapshot: vi.fn(),
   getSystemSnapshot: vi.fn(),
   getVisibleDocumentForUser: vi.fn(),
   grantCaseAccess: vi.fn(),
@@ -148,6 +149,45 @@ describe("appRouter case workflows", () => {
         { status: "conciliation", count: 1 },
       ],
     } as never);
+    vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue({
+      generatedAt: new Date("2026-04-08T09:30:00.000Z"),
+      summary: {
+        totalTenants: 4,
+        activeCases: 9,
+        totalDocuments: 28,
+        openAlerts: 5,
+        criticalAlerts: 2,
+        activeMemberships: 12,
+        caseScopedMemberships: 7,
+        pendingDocuments: 3,
+        pendingConsents: 2,
+        supersededDocuments: 4,
+      },
+      casesByStatus: [
+        { status: "analysis", total: 4 },
+        { status: "conciliation", total: 3 },
+      ],
+      alertsBySeverity: [
+        { severity: "critical", total: 2 },
+        { severity: "high", total: 3 },
+      ],
+      tenantHealth: [
+        {
+          tenantId: "balt-1",
+          tenantName: "Balt Demo",
+          status: "active",
+          activeCases: 5,
+          openAlerts: 2,
+          activeMemberships: 4,
+          caseScopedMemberships: 3,
+          pendingDocuments: 1,
+        },
+      ],
+      recentCases: [],
+      recentAlerts: [],
+      recentMemberships: [],
+      recentDocuments: [],
+    } as never);
     vi.mocked(db.createCaseRecord).mockImplementation(async (input) => ({
       id: 101,
       updatedAt: new Date("2026-04-05T10:00:00.000Z"),
@@ -204,6 +244,34 @@ describe("appRouter case workflows", () => {
       openAlerts: 1,
       pendingConsents: 2,
     });
+  });
+
+  it("returns the CEO executive snapshot for admin users", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    const result = await caller.dashboard.ceoSnapshot();
+
+    expect(db.getCeoDashboardSnapshot).toHaveBeenCalledTimes(1);
+    expect(result.summary).toMatchObject({
+      totalTenants: 4,
+      activeCases: 9,
+      openAlerts: 5,
+      activeMemberships: 12,
+      pendingDocuments: 3,
+    });
+    expect(result.tenantHealth).toEqual([
+      expect.objectContaining({
+        tenantId: "balt-1",
+        tenantName: "Balt Demo",
+        activeCases: 5,
+      }),
+    ]);
+  });
+
+  it("blocks the CEO executive snapshot for non-admin users", async () => {
+    const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
+
+    await expect(caller.dashboard.ceoSnapshot()).rejects.toThrow(/10002|required permission|FORBIDDEN/i);
   });
 
   it("returns case detail with persisted Helios opinions attached to visible documents", async () => {

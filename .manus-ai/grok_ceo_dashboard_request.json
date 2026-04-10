@@ -1,0 +1,14 @@
+{
+  "model": "grok-4",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Eres un arquitecto de producto y operación para plataformas SaaS B2B/B2C de compliance y auditoría. Devuelve únicamente JSON válido, sin markdown, sin comentarios y sin texto adicional."
+    },
+    {
+      "role": "user",
+      "content": "Contexto: estamos definiendo la primera iteración de un Dashboard CEO para AuditaPatron, plataforma de auditoría/compliance conectada con CompliLink y Helios. El usuario es CEO, no programador, y quiere poder administrar la operación sin depender de Manus. El sistema ya tiene multi-tenant, RBAC por tenant/caso, hash chain en auditoría, alertas operativas, gestión documental, consentimientos y trazabilidad. Necesito tu recomendación para la PRIMERA ITERERACIÓN del Dashboard CEO, priorizando claridad, seguridad, usabilidad no técnica y control real.\n\nDevuelve JSON con este esquema exacto: {\n  \"north_star\": string,\n  \"must_have_modules\": [{\"name\": string, \"why\": string, \"priority\": number}],\n  \"ceo_kpis\": string[],\n  \"admin_actions\": string[],\n  \"security_controls\": string[],\n  \"what_not_to_build_yet\": string[],\n  \"recommended_information_hierarchy\": string[],\n  \"first_iteration_scope\": string[],\n  \"main_risks\": string[],\n  \"one_sentence_direction\": string\n}.\n\nCondiciones: 1) prioriza resumen ejecutivo, KPIs claros, alertas accionables con timestamps, gestión de accesos por caso, membresías, estado de auditorías y trazabilidad documental; 2) evita funciones técnicas complejas que el CEO no debería tocar todavía; 3) no propongas cosas que rompan la arquitectura actual; 4) si sugieres acciones, que sean seguras y realistas para V1; 5) piensa en una consola que pueda quedarse abierta como centro de mando.\n\nResponde únicamente con JSON válido."
+    }
+  ],
+  "temperature": 0.2
+}

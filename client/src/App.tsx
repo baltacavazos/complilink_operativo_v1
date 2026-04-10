@@ -4,8 +4,9 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
 import Auditar from "./pages/Auditar";
+import CeoDashboard from "./pages/CeoDashboard";
+import Home from "./pages/Home";
 import { LegalPrivacyPage, LegalTermsPage } from "./pages/LegalDocuments";
 
 function Router() {
@@ -14,6 +15,10 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/auditar"} component={Auditar} />
+      <Route path={"/ceo"} component={CeoDashboard} />
+      <Route path={"/ceo/alertas"} component={CeoDashboard} />
+      <Route path={"/ceo/accesos"} component={CeoDashboard} />
+      <Route path={"/ceo/documentos"} component={CeoDashboard} />
       <Route path={"/legal/privacidad"} component={LegalPrivacyPage} />
       <Route path={"/legal/terminos"} component={LegalTermsPage} />
       <Route path={"/404"} component={NotFound} />

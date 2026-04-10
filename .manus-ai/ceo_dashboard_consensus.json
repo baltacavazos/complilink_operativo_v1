@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-04-10T18:28:16.138Z",
+  "promptVersion": "ceo-dashboard-v1-compact",
+  "providers": {
+    "chatgpt": {
+      "provider": "chatgpt",
+      "ok": true,
+      "parsed": {
+        "north_star": "Proveer al CEO una vista clara, segura y accionable del estado operativo y cumplimiento de AuditaPatron, facilitando decisiones estratégicas sin complejidad técnica.",
+        "must_have_modules": [
+          {
+            "name": "Resumen Ejecutivo",
+            "why": "Mostrar un panorama claro y simplificado del estado general de la plataforma, casos activos, cumplimiento y alertas críticas.",
+            "priority": 1
+          },
+          {
+            "name": "KPIs Clave",
+            "why": "Visualizar métricas relevantes para la operación y cumplimiento sin jerga técnica, facilitando seguimiento rápido.",
+            "priority": 1
+          },
+          {
+            "name": "Gestión Básica de Casos y Consentimientos",
+            "why": "Permitir acciones operativas esenciales como revisar y aprobar casos o consentimientos sin depender del equipo de desarrollo.",
+            "priority": 1
+          },
+          {
+            "name": "Alertas y Auditoría Simplificada",
+            "why": "Notificar eventos críticos y permitir revisión rápida de trazabilidad con información resumida y segura.",
+            "priority": 1
+          }
+        ],
+        "ceo_kpis": [
+          "Número de casos activos",
+          "Porcentaje de consentimientos vigentes",
+          "Alertas críticas abiertas",
+          "Cumplimiento de políticas de visibilidad",
+          "Integridad de auditoría (hash chain validado)"
+        ],
+        "admin_actions": [
+          "Aprobar/rechazar casos clave",
+          "Actualizar políticas de visibilidad básicas",
+          "Revisar alertas y marcar como resueltas",
+          "Solicitar reportes de auditoría resumidos"
+        ],
+        "security_controls": [
+          "Autenticación multifactor para acceso CEO",
+          "Acceso basado en roles estrictos (RBAC) limitado a CEO",
+          "Registro de auditoría para todas las acciones del CEO",
+          "Encriptación de datos sensibles en tránsito y reposo"
+        ],
+        "what_not_to_build_yet": [
+          "Configuración avanzada técnica (p.ej. gestión de infraestructura)",
+          "Paneles con jerga técnica o métricas no traducidas",
+          "Automatizaciones complejas sin supervisión",
+          "Gestión granular de usuarios y permisos fuera del CEO"
+        ],
+        "recommended_information_hierarchy": [
+          "Resumen Ejecutivo con KPIs destacados",
+          "Alertas críticas y estado de cumplimiento",
+          "Listado simplificado de casos y consentimientos",
+          "Acciones rápidas y seguras para gestión operativa",
+          "Acceso a reportes y auditorías resumidas"
+        ],
+        "first_iteration_scope": [
+          "Dashboard web minimalista con módulos de Resumen Ejecutivo y KPIs",
+          "Visualización y gestión básica de casos y consentimientos",
+          "Sistema de alertas simplificado con notificaciones",
+          "Implementación de controles de seguridad esenciales para acceso y auditoría"
+        ],
+        "main_risks": [
+          "Exposición accidental de datos sensibles por interfaz simplificada",
+          "Acceso no autorizado si controles de seguridad son débiles",
+          "Sobrecarga de información que confunda al CEO",
+          "Dependencia de datos incompletos o inconsistentes del backend"
+        ],
+        "one_sentence_direction": "Crear un dashboard ejecutivo minimalista, seguro y orientado a la operación real que empodere al CEO a administrar AuditaPatron con confianza y sin complejidad técnica."
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "ok": false,
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    },
+    "grok": {
+      "provider": "grok",
+      "ok": false,
+      "error": "{\"code\":\"Some resource has been exhausted\",\"error\":\"Your team 05529dc3-0aa1-43fb-91fa-8463a25b968b has either used all available credits or reached its monthly spending limit. To continue making API requests, please purchase more credits or raise your spending limit.\"}"
+    }
+  }
+}

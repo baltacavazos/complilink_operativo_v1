@@ -979,6 +979,271 @@ export async function getDashboardForUser(userId: number) {
   };
 }
 
+export async function getCeoDashboardSnapshot() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const activeCaseFilter = or(
+    eq(laborCases.status, "intake"),
+    eq(laborCases.status, "analysis"),
+    eq(laborCases.status, "conciliation"),
+    eq(laborCases.status, "litigation"),
+  );
+  const openAlertFilter = eq(operationalAlerts.status, "open");
+
+  const [
+    [tenantRow],
+    [activeCasesRow],
+    [documentsRow],
+    [openAlertsRow],
+    [criticalAlertsRow],
+    [activeMembershipsRow],
+    [caseScopedMembershipsRow],
+    [pendingDocumentsRow],
+    [pendingConsentsRow],
+    [supersededDocumentsRow],
+    casesByStatusRaw,
+    alertsBySeverityRaw,
+    tenantRows,
+    activeCasesByTenantRaw,
+    openAlertsByTenantRaw,
+    activeMembershipsByTenantRaw,
+    caseScopedMembershipsByTenantRaw,
+    pendingDocumentsByTenantRaw,
+    recentCases,
+    recentAlertsRaw,
+    recentMembershipsRaw,
+    recentDocumentsRaw,
+  ] = await Promise.all([
+    db.select({ value: count() }).from(tenants),
+    db.select({ value: count() }).from(laborCases).where(activeCaseFilter),
+    db.select({ value: count() }).from(caseDocuments),
+    db.select({ value: count() }).from(operationalAlerts).where(openAlertFilter),
+    db
+      .select({ value: count() })
+      .from(operationalAlerts)
+      .where(and(openAlertFilter, eq(operationalAlerts.severity, "critical"))),
+    db.select({ value: count() }).from(tenantMemberships).where(eq(tenantMemberships.status, "active")),
+    db
+      .select({ value: count() })
+      .from(tenantMemberships)
+      .where(and(eq(tenantMemberships.status, "active"), eq(tenantMemberships.accessScope, "case"))),
+    db.select({ value: count() }).from(caseDocuments).where(eq(caseDocuments.integrityStatus, "pending")),
+    db.select({ value: count() }).from(consentRecords).where(eq(consentRecords.status, "pending")),
+    db.select({ value: count() }).from(caseDocuments).where(eq(caseDocuments.integrityStatus, "replaced")),
+    db
+      .select({ status: laborCases.status, total: count() })
+      .from(laborCases)
+      .groupBy(laborCases.status)
+      .orderBy(laborCases.status),
+    db
+      .select({ severity: operationalAlerts.severity, total: count() })
+      .from(operationalAlerts)
+      .where(openAlertFilter)
+      .groupBy(operationalAlerts.severity)
+      .orderBy(operationalAlerts.severity),
+    db
+      .select({
+        tenantId: tenants.tenantId,
+        displayName: tenants.displayName,
+        status: tenants.status,
+        updatedAt: tenants.updatedAt,
+      })
+      .from(tenants)
+      .orderBy(tenants.displayName),
+    db
+      .select({ tenantId: laborCases.tenantId, total: count() })
+      .from(laborCases)
+      .where(activeCaseFilter)
+      .groupBy(laborCases.tenantId),
+    db
+      .select({ tenantId: operationalAlerts.tenantId, total: count() })
+      .from(operationalAlerts)
+      .where(openAlertFilter)
+      .groupBy(operationalAlerts.tenantId),
+    db
+      .select({ tenantId: tenantMemberships.tenantId, total: count() })
+      .from(tenantMemberships)
+      .where(eq(tenantMemberships.status, "active"))
+      .groupBy(tenantMemberships.tenantId),
+    db
+      .select({ tenantId: tenantMemberships.tenantId, total: count() })
+      .from(tenantMemberships)
+      .where(and(eq(tenantMemberships.status, "active"), eq(tenantMemberships.accessScope, "case")))
+      .groupBy(tenantMemberships.tenantId),
+    db
+      .select({ tenantId: caseDocuments.tenantId, total: count() })
+      .from(caseDocuments)
+      .where(eq(caseDocuments.integrityStatus, "pending"))
+      .groupBy(caseDocuments.tenantId),
+    db
+      .select({
+        caseId: laborCases.caseId,
+        title: laborCases.title,
+        tenantId: laborCases.tenantId,
+        tenantName: tenants.displayName,
+        status: laborCases.status,
+        priority: laborCases.priority,
+        dueAt: laborCases.dueAt,
+        lastActivityAt: laborCases.lastActivityAt,
+        updatedAt: laborCases.updatedAt,
+      })
+      .from(laborCases)
+      .innerJoin(tenants, eq(laborCases.tenantId, tenants.tenantId))
+      .orderBy(desc(laborCases.lastActivityAt), desc(laborCases.updatedAt))
+      .limit(8),
+    db
+      .select({
+        id: operationalAlerts.id,
+        tenantId: operationalAlerts.tenantId,
+        tenantName: tenants.displayName,
+        caseId: operationalAlerts.caseId,
+        severity: operationalAlerts.severity,
+        category: operationalAlerts.category,
+        title: operationalAlerts.title,
+        description: operationalAlerts.description,
+        status: operationalAlerts.status,
+        raisedAt: operationalAlerts.raisedAt,
+        resolvedAt: operationalAlerts.resolvedAt,
+      })
+      .from(operationalAlerts)
+      .innerJoin(tenants, eq(operationalAlerts.tenantId, tenants.tenantId))
+      .orderBy(desc(operationalAlerts.raisedAt), desc(operationalAlerts.updatedAt))
+      .limit(12),
+    db
+      .select({
+        id: tenantMemberships.id,
+        tenantId: tenantMemberships.tenantId,
+        tenantName: tenants.displayName,
+        caseId: tenantMemberships.caseId,
+        userId: tenantMemberships.userId,
+        userName: users.name,
+        userEmail: users.email,
+        role: tenantMemberships.role,
+        accessScope: tenantMemberships.accessScope,
+        status: tenantMemberships.status,
+        createdAt: tenantMemberships.createdAt,
+        updatedAt: tenantMemberships.updatedAt,
+      })
+      .from(tenantMemberships)
+      .innerJoin(users, eq(tenantMemberships.userId, users.id))
+      .innerJoin(tenants, eq(tenantMemberships.tenantId, tenants.tenantId))
+      .orderBy(desc(tenantMemberships.updatedAt), desc(tenantMemberships.createdAt))
+      .limit(12),
+    db
+      .select({
+        documentId: caseDocuments.documentId,
+        supersedesDocumentId: caseDocuments.supersedesDocumentId,
+        tenantId: caseDocuments.tenantId,
+        tenantName: tenants.displayName,
+        caseId: caseDocuments.caseId,
+        caseTitle: laborCases.title,
+        originalName: caseDocuments.originalName,
+        documentType: caseDocuments.documentType,
+        integrityStatus: caseDocuments.integrityStatus,
+        consentStatus: caseDocuments.consentStatus,
+        visibility: caseDocuments.visibility,
+        classificationConfidence: caseDocuments.classificationConfidence,
+        traceId: caseDocuments.traceId,
+        createdAt: caseDocuments.createdAt,
+        updatedAt: caseDocuments.updatedAt,
+      })
+      .from(caseDocuments)
+      .innerJoin(laborCases, eq(caseDocuments.caseId, laborCases.caseId))
+      .innerJoin(tenants, eq(caseDocuments.tenantId, tenants.tenantId))
+      .orderBy(desc(caseDocuments.createdAt), desc(caseDocuments.updatedAt))
+      .limit(12),
+  ]);
+
+  const caseIds = Array.from(
+    new Set(
+      [...recentAlertsRaw.map((alert) => alert.caseId), ...recentMembershipsRaw.map((membership) => membership.caseId)].filter(
+        (value): value is string => Boolean(value),
+      ),
+    ),
+  );
+  const linkedCaseRows = caseIds.length
+    ? await db
+        .select({ caseId: laborCases.caseId, title: laborCases.title })
+        .from(laborCases)
+        .where(inArray(laborCases.caseId, caseIds))
+    : [];
+  const caseTitles = new Map(linkedCaseRows.map((row) => [row.caseId, row.title]));
+
+  const supersededIds = Array.from(
+    new Set(
+      recentDocumentsRaw
+        .map((document) => document.supersedesDocumentId)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+  const supersededRows = supersededIds.length
+    ? await db
+        .select({
+          documentId: caseDocuments.documentId,
+          originalName: caseDocuments.originalName,
+          createdAt: caseDocuments.createdAt,
+          integrityStatus: caseDocuments.integrityStatus,
+        })
+        .from(caseDocuments)
+        .where(inArray(caseDocuments.documentId, supersededIds))
+    : [];
+  const supersededMap = new Map(supersededRows.map((row) => [row.documentId, row]));
+
+  const toCountMap = <T extends { tenantId: string; total: unknown }>(rows: T[]) =>
+    new Map(rows.map((row) => [row.tenantId, Number(row.total ?? 0)]));
+
+  const activeCasesByTenant = toCountMap(activeCasesByTenantRaw);
+  const openAlertsByTenant = toCountMap(openAlertsByTenantRaw);
+  const activeMembershipsByTenant = toCountMap(activeMembershipsByTenantRaw);
+  const caseScopedMembershipsByTenant = toCountMap(caseScopedMembershipsByTenantRaw);
+  const pendingDocumentsByTenant = toCountMap(pendingDocumentsByTenantRaw);
+
+  return {
+    generatedAt: new Date(),
+    summary: {
+      totalTenants: Number(tenantRow?.value ?? 0),
+      activeCases: Number(activeCasesRow?.value ?? 0),
+      totalDocuments: Number(documentsRow?.value ?? 0),
+      openAlerts: Number(openAlertsRow?.value ?? 0),
+      criticalAlerts: Number(criticalAlertsRow?.value ?? 0),
+      activeMemberships: Number(activeMembershipsRow?.value ?? 0),
+      caseScopedMemberships: Number(caseScopedMembershipsRow?.value ?? 0),
+      pendingDocuments: Number(pendingDocumentsRow?.value ?? 0),
+      pendingConsents: Number(pendingConsentsRow?.value ?? 0),
+      supersededDocuments: Number(supersededDocumentsRow?.value ?? 0),
+    },
+    casesByStatus: casesByStatusRaw.map((row) => ({ status: row.status, total: Number(row.total ?? 0) })),
+    alertsBySeverity: alertsBySeverityRaw.map((row) => ({ severity: row.severity, total: Number(row.total ?? 0) })),
+    tenantHealth: tenantRows.map((tenant) => ({
+      tenantId: tenant.tenantId,
+      tenantName: tenant.displayName,
+      status: tenant.status,
+      updatedAt: tenant.updatedAt,
+      activeCases: activeCasesByTenant.get(tenant.tenantId) ?? 0,
+      openAlerts: openAlertsByTenant.get(tenant.tenantId) ?? 0,
+      activeMemberships: activeMembershipsByTenant.get(tenant.tenantId) ?? 0,
+      caseScopedMemberships: caseScopedMembershipsByTenant.get(tenant.tenantId) ?? 0,
+      pendingDocuments: pendingDocumentsByTenant.get(tenant.tenantId) ?? 0,
+    })),
+    recentCases,
+    recentAlerts: recentAlertsRaw.map((alert) => ({
+      ...alert,
+      caseTitle: alert.caseId ? caseTitles.get(alert.caseId) ?? null : null,
+    })),
+    recentMemberships: recentMembershipsRaw.map((membership) => ({
+      ...membership,
+      caseTitle: membership.caseId ? caseTitles.get(membership.caseId) ?? null : null,
+    })),
+    recentDocuments: recentDocumentsRaw.map((document) => ({
+      ...document,
+      supersededDocument: document.supersedesDocumentId
+        ? supersededMap.get(document.supersedesDocumentId) ?? null
+        : null,
+    })),
+  };
+}
+
 export async function listTenantsForUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

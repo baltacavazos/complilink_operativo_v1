@@ -19,6 +19,7 @@ import {
   findAuditLogEntry,
   getCaseDetailForUser,
   getDashboardForUser,
+  getCeoDashboardSnapshot,
   getSystemSnapshot,
   getVisibleDocumentForUser,
   grantCaseAccess,
@@ -40,7 +41,7 @@ import {
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storageGet, storagePut } from "./storage";
 import {
   buildCanonicalCaseContract,
@@ -1229,6 +1230,9 @@ export const appRouter = router({
   dashboard: router({
     summary: protectedProcedure.query(async ({ ctx }) => {
       return getDashboardForUser(ctx.user.id);
+    }),
+    ceoSnapshot: adminProcedure.query(async () => {
+      return getCeoDashboardSnapshot();
     }),
   }),
   cases: router({

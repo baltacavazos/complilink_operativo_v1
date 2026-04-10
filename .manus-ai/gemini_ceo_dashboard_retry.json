@@ -1,0 +1,146 @@
+{
+  "ok": true,
+  "model": "gemini-2.5-flash",
+  "parsed": {
+    "north_star": "Empoderar al CEO con visibilidad estratégica y control operativo crítico sobre AuditaPatron, garantizando la seguridad, la independencia de la operación y la confianza en la plataforma.",
+    "must_have_modules": [
+      {
+        "name": "Resumen Ejecutivo de la Plataforma",
+        "why": "Proporciona una visión de alto nivel e instantánea de la salud operativa y de seguridad de AuditaPatron, permitiendo al CEO tomar el pulso de la empresa rápidamente.",
+        "priority": 1
+      },
+      {
+        "name": "Estado de Seguridad y Compliance",
+        "why": "Ofrece una vista consolidada de la postura de seguridad, alertas críticas y el cumplimiento normativo, esencial para una plataforma que maneja datos sensibles.",
+        "priority": 1
+      },
+      {
+        "name": "Gestión de Capacidades Críticas",
+        "why": "Permite al CEO controlar funciones operativas clave que impactan directamente la capacidad de la plataforma para operar o aceptar nuevos negocios, sin entrar en detalles técnicos.",
+        "priority": 1
+      },
+      {
+        "name": "Auditoría de Acciones del CEO",
+        "why": "Garantiza la trazabilidad inmutable de todas las acciones realizadas desde este dashboard, fundamental para la rendición de cuentas y la seguridad.",
+        "priority": 2
+      }
+    ],
+    "ceo_kpis": [
+      "Casos Activos Totales",
+      "Nuevos Casos Creados (Últimos 30 días)",
+      "Alertas de Seguridad Críticas (Últimas 24h)",
+      "Estado de Cumplimiento Normativo (e.g., GDPR, LOPD)",
+      "Disponibilidad del Servicio (Uptime %)",
+      "Uso de Almacenamiento de Datos (Total/Tendencia)"
+    ],
+    "admin_actions": [
+      "Activar/Desactivar el Registro de Nuevos Clientes (Global)",
+      "Forzar Rotación de Claves Maestras de Cifrado (Plataforma)",
+      "Ajustar Límites de Almacenamiento por Defecto para Nuevos Casos",
+      "Suspender Temporalmente la Creación de Nuevos Casos (Global)",
+      "Verificar Logs de Auditoría de Acceso al CEO Dashboard"
+    ],
+    "security_controls": [
+      "Autenticación Multifactor (MFA) Obligatoria y Fuerte para el CEO Dashboard",
+      "Registro Inmutable de Todas las Acciones del CEO (Hash Chain y Trace_ID)",
+      "Control de Acceso Basado en Roles (RBAC) con Principio de Mínimo Privilegio (Solo CEO)",
+      "Cifrado de Extremo a Extremo (E2EE) para la Comunicación y Visualización de Datos Sensibles",
+      "Monitoreo Continuo de Anomalías y Alertas de Seguridad Específicas del Dashboard",
+      "Separación Lógica y Física del Entorno del CEO Dashboard del Entorno de Desarrollo/Operativo",
+      "Auditorías de Seguridad Independientes y Periódicas del Dashboard y su Infraestructura",
+      "Mecanismos de Recuperación de Desastres y Continuidad de Negocio Específicos para el Dashboard"
+    ],
+    "what_not_to_build_yet": [
+      "Reportes Financieros Detallados o Contabilidad",
+      "Herramientas de Marketing o Gestión de Ventas",
+      "Gestión de Usuarios a Nivel de Caso o Tenant (ya cubierto por RBAC operativo)",
+      "Personalización Avanzada de la Interfaz de Usuario",
+      "Integraciones con Herramientas de Terceros no Críticas para la Seguridad o la Operación Básica",
+      "Funcionalidades de Soporte al Cliente o Ticketing"
+    ],
+    "recommended_information_hierarchy": [
+      "Página Principal: Resumen Ejecutivo (KPIs clave, Alertas de Seguridad)",
+      "Sección 'Operaciones': Casos Activos, Nuevos Casos, Uso de Recursos",
+      "Sección 'Seguridad y Compliance': Estado de Seguridad, Alertas, Logs de Auditoría de la Plataforma",
+      "Sección 'Configuración Crítica': Acciones Administrativas Globales",
+      "Sección 'Mi Perfil y Auditoría': Acciones del CEO en el Dashboard, Configuración de MFA"
+    ],
+    "first_iteration_scope": [
+      "Dashboard minimalista con 3-5 KPIs clave (Casos Activos, Nuevos Casos, Alertas Críticas).",
+      "Módulo de Seguridad con estado de cumplimiento básico y las últimas 5 alertas críticas.",
+      "Capacidad de 'Activar/Desactivar el Registro de Nuevos Clientes (Global)'.",
+      "Implementación de MFA obligatoria y registro inmutable de acciones del CEO.",
+      "Interfaz autoexplicativa con mínima navegación."
+    ],
+    "main_risks": [
+      "Riesgo de Compromiso del Dashboard del CEO (Punto único de fallo de alto impacto).",
+      "Complejidad Excesiva que Dificulte la Usabilidad y Confianza para el CEO.",
+      "Dependencia del Proveedor de Desarrollo para Mantenimiento y Evolución.",
+      "Fugas de Información Sensible a Través de la Interfaz del Dashboard.",
+      "Acciones Administrativas Accidentales o Maliciosas por parte del CEO con consecuencias graves.",
+      "Falta de escalabilidad o rendimiento ante el crecimiento de datos."
+    ],
+    "one_sentence_direction": "Crear un panel de control ultra-seguro, minimalista y autoexplicativo que ofrezca al CEO una visión estratégica y un control directo sobre los aspectos más críticos de AuditaPatron, garantizando la independencia operativa y la máxima seguridad."
+  },
+  "attempts": [
+    {
+      "model": "gemini-2.0-flash",
+      "status": 404,
+      "ok": false,
+      "data": {
+        "error": {
+          "code": 404,
+          "message": "This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "model": "gemini-1.5-flash",
+      "status": 404,
+      "ok": false,
+      "data": {
+        "error": {
+          "code": 404,
+          "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "status": 200,
+      "ok": true,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"north_star\": \"Empoderar al CEO con visibilidad estratégica y control operativo crítico sobre AuditaPatron, garantizando la seguridad, la independencia de la operación y la confianza en la plataforma.\",\n  \"must_have_modules\": [\n    {\n      \"name\": \"Resumen Ejecutivo de la Plataforma\",\n      \"why\": \"Proporciona una visión de alto nivel e instantánea de la salud operativa y de seguridad de AuditaPatron, permitiendo al CEO tomar el pulso de la empresa rápidamente.\",\n      \"priority\": 1\n    },\n    {\n      \"name\": \"Estado de Seguridad y Compliance\",\n      \"why\": \"Ofrece una vista consolidada de la postura de seguridad, alertas críticas y el cumplimiento normativo, esencial para una plataforma que maneja datos sensibles.\",\n      \"priority\": 1\n    },\n    {\n      \"name\": \"Gestión de Capacidades Críticas\",\n      \"why\": \"Permite al CEO controlar funciones operativas clave que impactan directamente la capacidad de la plataforma para operar o aceptar nuevos negocios, sin entrar en detalles técnicos.\",\n      \"priority\": 1\n    },\n    {\n      \"name\": \"Auditoría de Acciones del CEO\",\n      \"why\": \"Garantiza la trazabilidad inmutable de todas las acciones realizadas desde este dashboard, fundamental para la rendición de cuentas y la seguridad.\",\n      \"priority\": 2\n    }\n  ],\n  \"ceo_kpis\": [\n    \"Casos Activos Totales\",\n    \"Nuevos Casos Creados (Últimos 30 días)\",\n    \"Alertas de Seguridad Críticas (Últimas 24h)\",\n    \"Estado de Cumplimiento Normativo (e.g., GDPR, LOPD)\",\n    \"Disponibilidad del Servicio (Uptime %)\",\n    \"Uso de Almacenamiento de Datos (Total/Tendencia)\"\n  ],\n  \"admin_actions\": [\n    \"Activar/Desactivar el Registro de Nuevos Clientes (Global)\",\n    \"Forzar Rotación de Claves Maestras de Cifrado (Plataforma)\",\n    \"Ajustar Límites de Almacenamiento por Defecto para Nuevos Casos\",\n    \"Suspender Temporalmente la Creación de Nuevos Casos (Global)\",\n    \"Verificar Logs de Auditoría de Acceso al CEO Dashboard\"\n  ],\n  \"security_controls\": [\n    \"Autenticación Multifactor (MFA) Obligatoria y Fuerte para el CEO Dashboard\",\n    \"Registro Inmutable de Todas las Acciones del CEO (Hash Chain y Trace_ID)\",\n    \"Control de Acceso Basado en Roles (RBAC) con Principio de Mínimo Privilegio (Solo CEO)\",\n    \"Cifrado de Extremo a Extremo (E2EE) para la Comunicación y Visualización de Datos Sensibles\",\n    \"Monitoreo Continuo de Anomalías y Alertas de Seguridad Específicas del Dashboard\",\n    \"Separación Lógica y Física del Entorno del CEO Dashboard del Entorno de Desarrollo/Operativo\",\n    \"Auditorías de Seguridad Independientes y Periódicas del Dashboard y su Infraestructura\",\n    \"Mecanismos de Recuperación de Desastres y Continuidad de Negocio Específicos para el Dashboard\"\n  ],\n  \"what_not_to_build_yet\": [\n    \"Reportes Financieros Detallados o Contabilidad\",\n    \"Herramientas de Marketing o Gestión de Ventas\",\n    \"Gestión de Usuarios a Nivel de Caso o Tenant (ya cubierto por RBAC operativo)\",\n    \"Personalización Avanzada de la Interfaz de Usuario\",\n    \"Integraciones con Herramientas de Terceros no Críticas para la Seguridad o la Operación Básica\",\n    \"Funcionalidades de Soporte al Cliente o Ticketing\"\n  ],\n  \"recommended_information_hierarchy\": [\n    \"Página Principal: Resumen Ejecutivo (KPIs clave, Alertas de Seguridad)\",\n    \"Sección 'Operaciones': Casos Activos, Nuevos Casos, Uso de Recursos\",\n    \"Sección 'Seguridad y Compliance': Estado de Seguridad, Alertas, Logs de Auditoría de la Plataforma\",\n    \"Sección 'Configuración Crítica': Acciones Administrativas Globales\",\n    \"Sección 'Mi Perfil y Auditoría': Acciones del CEO en el Dashboard, Configuración de MFA\"\n  ],\n  \"first_iteration_scope\": [\n    \"Dashboard minimalista con 3-5 KPIs clave (Casos Activos, Nuevos Casos, Alertas Críticas).\",\n    \"Módulo de Seguridad con estado de cumplimiento básico y las últimas 5 alertas críticas.\",\n    \"Capacidad de 'Activar/Desactivar el Registro de Nuevos Clientes (Global)'.\",\n    \"Implementación de MFA obligatoria y registro inmutable de acciones del CEO.\",\n    \"Interfaz autoexplicativa con mínima navegación.\"\n  ],\n  \"main_risks\": [\n    \"Riesgo de Compromiso del Dashboard del CEO (Punto único de fallo de alto impacto).\",\n    \"Complejidad Excesiva que Dificulte la Usabilidad y Confianza para el CEO.\",\n    \"Dependencia del Proveedor de Desarrollo para Mantenimiento y Evolución.\",\n    \"Fugas de Información Sensible a Través de la Interfaz del Dashboard.\",\n    \"Acciones Administrativas Accidentales o Maliciosas por parte del CEO con consecuencias graves.\",\n    \"Falta de escalabilidad o rendimiento ante el crecimiento de datos.\"\n  ],\n  \"one_sentence_direction\": \"Crear un panel de control ultra-seguro, minimalista y autoexplicativo que ofrezca al CEO una visión estratégica y un control directo sobre los aspectos más críticos de AuditaPatron, garantizando la independencia operativa y la máxima seguridad.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 297,
+          "candidatesTokenCount": 1304,
+          "totalTokenCount": 3116,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 297
+            }
+          ],
+          "thoughtsTokenCount": 1515
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "XkHZadLZIP2J-8YPuuOx-Qs"
+      }
+    }
+  ]
+}
