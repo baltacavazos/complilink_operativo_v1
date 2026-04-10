@@ -513,6 +513,59 @@ export async function addOperationalAlert(input: InsertOperationalAlert) {
   await db.insert(operationalAlerts).values(input);
 }
 
+export async function updateOperationalAlertStatus(params: {
+  id: number;
+  status: (typeof operationalAlerts.status.enumValues)[number];
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const previous = await db.select().from(operationalAlerts).where(eq(operationalAlerts.id, params.id)).limit(1);
+  if (!previous[0]) {
+    throw new Error("Operational alert not found");
+  }
+
+  await db
+    .update(operationalAlerts)
+    .set({
+      status: params.status,
+      resolvedAt: params.status === "resolved" ? new Date() : null,
+    })
+    .where(eq(operationalAlerts.id, params.id));
+
+  const updated = await db.select().from(operationalAlerts).where(eq(operationalAlerts.id, params.id)).limit(1);
+  return {
+    previous: previous[0],
+    updated: updated[0],
+  };
+}
+
+export async function updateTenantMembershipStatus(params: {
+  id: number;
+  status: (typeof tenantMemberships.status.enumValues)[number];
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const previous = await db.select().from(tenantMemberships).where(eq(tenantMemberships.id, params.id)).limit(1);
+  if (!previous[0]) {
+    throw new Error("Tenant membership not found");
+  }
+
+  await db
+    .update(tenantMemberships)
+    .set({
+      status: params.status,
+    })
+    .where(eq(tenantMemberships.id, params.id));
+
+  const updated = await db.select().from(tenantMemberships).where(eq(tenantMemberships.id, params.id)).limit(1);
+  return {
+    previous: previous[0],
+    updated: updated[0],
+  };
+}
+
 export async function upsertCanonicalContract(input: InsertCanonicalContract) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

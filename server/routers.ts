@@ -32,6 +32,8 @@ import {
   persistAuditarViewState,
   seedDemoCaseIfEmpty,
   updateCaseStatus,
+  updateOperationalAlertStatus,
+  updateTenantMembershipStatus,
   upsertCanonicalContract,
   addDocumentRecord,
   getAuditarDraftById,
@@ -83,6 +85,9 @@ const casePrioritySchema = z.enum(CASE_PRIORITIES);
 const consentStatusSchema = z.enum(CONSENT_STATUSES);
 const documentConsentStatusSchema = z.enum(["pending", "granted", "revoked", "not_required"]);
 const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
+const operationalAlertStatusSchema = z.enum(["acknowledged", "resolved"]);
+const tenantMembershipStatusSchema = z.enum(["active", "revoked"]);
+const ceoCaseProgressStatusSchema = z.enum(["analysis", "conciliation", "litigation"]);
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
@@ -105,6 +110,11 @@ const auditarEditableFieldKeys = [
 const auditarEditableFieldKeySet = new Set<string>(auditarEditableFieldKeys);
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
+const CEO_NEXT_SAFE_CASE_STATUS: Partial<Record<(typeof CASE_STATUSES)[number], (typeof CASE_STATUSES)[number]>> = {
+  intake: "analysis",
+  analysis: "conciliation",
+  conciliation: "litigation",
+};
 const complilinkReturnEventNames = new Set([
   "document.processing.started",
   "document.analysis.completed",
@@ -1234,6 +1244,146 @@ export const appRouter = router({
     ceoSnapshot: adminProcedure.query(async () => {
       return getCeoDashboardSnapshot();
     }),
+    ceoUpdateAlertStatus: adminProcedure
+      .input(
+        z.object({
+          alertId: z.number().int().positive(),
+          status: operationalAlertStatusSchema,
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const snapshot = await getCeoDashboardSnapshot();
+        const targetAlert = snapshot.recentAlerts.find((alert) => alert.id === input.alertId);
+
+        if (!targetAlert) {
+          throw new Error("La alerta ya no está disponible en la vista operativa actual.");
+        }
+
+        const nextStatus = targetAlert.status === "open" ? "acknowledged" : targetAlert.status === "acknowledged" ? "resolved" : null;
+        if (!nextStatus || input.status !== nextStatus) {
+          throw new Error("La transición solicitada no es válida para esta alerta.");
+        }
+
+        const { previous, updated } = await updateOperationalAlertStatus({
+          id: input.alertId,
+          status: input.status,
+        });
+
+        await createAuditLog({
+          tenantId: updated.tenantId,
+          caseId: updated.caseId ?? null,
+          traceId: updated.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: String(updated.id),
+          action: "dashboard.ceo.alert_status_update",
+          beforeState: previous,
+          afterState: updated,
+        });
+
+        return updated;
+      }),
+    ceoUpdateMembershipStatus: adminProcedure
+      .input(
+        z.object({
+          membershipId: z.number().int().positive(),
+          status: tenantMembershipStatusSchema,
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const snapshot = await getCeoDashboardSnapshot();
+        const targetMembership = snapshot.recentMemberships.find((membership) => membership.id === input.membershipId);
+
+        if (!targetMembership) {
+          throw new Error("El acceso seleccionado ya no está disponible en la consola CEO.");
+        }
+
+        if (targetMembership.accessScope !== "case" || !targetMembership.caseId) {
+          throw new Error("Solo se pueden operar accesos acotados a un caso específico desde este bloque seguro.");
+        }
+
+        if (targetMembership.status === input.status) {
+          throw new Error("El acceso ya se encuentra en el estado solicitado.");
+        }
+
+        const { previous, updated } = await updateTenantMembershipStatus({
+          id: input.membershipId,
+          status: input.status,
+        });
+
+        await createAuditLog({
+          tenantId: updated.tenantId,
+          caseId: updated.caseId ?? null,
+          traceId: updated.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "access",
+          entityId: String(updated.id),
+          action: "dashboard.ceo.membership_status_update",
+          beforeState: previous,
+          afterState: updated,
+        });
+
+        return updated;
+      }),
+    ceoProgressCaseStage: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          status: ceoCaseProgressStatusSchema,
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const snapshot = await getCeoDashboardSnapshot();
+        const targetCase = snapshot.recentCases.find(
+          (laborCase) => laborCase.tenantId === input.tenantId && laborCase.caseId === input.caseId,
+        );
+
+        if (!targetCase) {
+          throw new Error("El caso ya no está disponible en la vista operativa actual.");
+        }
+
+        const nextStatus = CEO_NEXT_SAFE_CASE_STATUS[targetCase.status];
+        if (!nextStatus || input.status !== nextStatus) {
+          throw new Error("Solo se puede confirmar el siguiente avance operativo sugerido por la consola CEO.");
+        }
+
+        const updatedCase = await updateCaseStatus({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          status: input.status,
+        });
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: updatedCase.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "status_changed",
+          title: "Avance operativo confirmado por CEO",
+          description: `El caso avanzó a ${input.status} desde la consola CEO.`,
+          metadata: JSON.stringify({
+            source: "ceo_dashboard_safe_actions",
+            fromStatus: targetCase.status,
+            toStatus: input.status,
+          }),
+          eventAt: new Date(),
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: updatedCase.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "case",
+          entityId: input.caseId,
+          action: "dashboard.ceo.case_progress_confirm",
+          beforeState: targetCase,
+          afterState: updatedCase,
+        });
+
+        return updatedCase;
+      }),
   }),
   cases: router({
     list: protectedProcedure

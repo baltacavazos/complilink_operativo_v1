@@ -9,6 +9,7 @@ import {
   Building2,
   Files,
   LayoutDashboard,
+  Loader2,
   RefreshCw,
   ShieldCheck,
   ShieldX,
@@ -16,6 +17,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useMemo } from "react";
+import { toast as sonnerToast } from "sonner";
 import { useLocation } from "wouter";
 
 function formatNumber(value: number) {
@@ -53,13 +55,52 @@ function getStatusBadgeClass(status: string) {
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "paused":
     case "pending":
+    case "acknowledged":
       return "border-amber-200 bg-amber-50 text-amber-700";
     case "disabled":
     case "resolved":
+    case "revoked":
       return "border-slate-200 bg-slate-100 text-slate-700";
     default:
       return "border-slate-200 bg-slate-100 text-slate-700";
   }
+}
+
+function getSafeNextAlertStatus(status: string) {
+  if (status === "open") return "acknowledged" as const;
+  if (status === "acknowledged") return "resolved" as const;
+  return null;
+}
+
+function getSafeAlertActionLabel(status: string) {
+  if (status === "open") return "Acusar recibo";
+  if (status === "acknowledged") return "Marcar resuelta";
+  return null;
+}
+
+function getSafeNextCaseStatus(status: string) {
+  if (status === "intake") return "analysis" as const;
+  if (status === "analysis") return "conciliation" as const;
+  if (status === "conciliation") return "litigation" as const;
+  return null;
+}
+
+function getSafeCaseActionLabel(status: string) {
+  if (status === "intake") return "Pasar a análisis";
+  if (status === "analysis") return "Pasar a conciliación";
+  if (status === "conciliation") return "Pasar a litigio";
+  return null;
+}
+
+function getSafeMembershipAction(membership: { status: string; accessScope: string; caseId?: string | null }) {
+  if (membership.accessScope !== "case" || !membership.caseId) return null;
+  if (membership.status === "active") {
+    return { status: "revoked" as const, label: "Revocar acceso" };
+  }
+  if (membership.status === "revoked") {
+    return { status: "active" as const, label: "Reactivar acceso" };
+  }
+  return null;
 }
 
 function KpiCard({
@@ -86,12 +127,17 @@ export default function CeoDashboard() {
   const { user } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/ceo" });
   const [location, setLocation] = useLocation();
   const isAdmin = user?.role === "admin";
+  const utils = trpc.useUtils();
 
   const snapshotQuery = trpc.dashboard.ceoSnapshot.useQuery(undefined, {
     enabled: isAdmin,
     retry: false,
     refetchOnWindowFocus: false,
   });
+
+  const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
+  const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
+  const caseMutation = trpc.dashboard.ceoProgressCaseStage.useMutation();
 
   const summary = snapshotQuery.data?.summary;
 
@@ -131,6 +177,112 @@ export default function CeoDashboard() {
     if (location.startsWith("/ceo/documentos")) return "documentos" as const;
     return "resumen" as const;
   }, [location]);
+
+  const safeCaseActions = useMemo(
+    () =>
+      (snapshotQuery.data?.recentCases ?? [])
+        .map((item) => ({
+          ...item,
+          nextStatus: getSafeNextCaseStatus(item.status),
+          actionLabel: getSafeCaseActionLabel(item.status),
+        }))
+        .filter(
+          (item): item is typeof item & { nextStatus: "analysis" | "conciliation" | "litigation"; actionLabel: string } =>
+            Boolean(item.nextStatus && item.actionLabel),
+        )
+        .slice(0, 3),
+    [snapshotQuery.data?.recentCases],
+  );
+
+  const safeAlertActions = useMemo(
+    () =>
+      (snapshotQuery.data?.recentAlerts ?? [])
+        .map((alert) => ({
+          ...alert,
+          nextStatus: getSafeNextAlertStatus(alert.status),
+          actionLabel: getSafeAlertActionLabel(alert.status),
+        }))
+        .filter(
+          (alert): alert is typeof alert & { nextStatus: "acknowledged" | "resolved"; actionLabel: string } =>
+            Boolean(alert.nextStatus && alert.actionLabel),
+        )
+        .slice(0, 3),
+    [snapshotQuery.data?.recentAlerts],
+  );
+
+  const safeMembershipActions = useMemo(
+    () =>
+      (snapshotQuery.data?.recentMemberships ?? [])
+        .map((membership) => ({
+          ...membership,
+          action: getSafeMembershipAction(membership),
+        }))
+        .filter(
+          (membership): membership is typeof membership & { action: { status: "active" | "revoked"; label: string } } =>
+            Boolean(membership.action),
+        )
+        .slice(0, 3),
+    [snapshotQuery.data?.recentMemberships],
+  );
+
+  const isAlertBusy = (alertId: number) => alertMutation.isPending && alertMutation.variables?.alertId === alertId;
+  const isMembershipBusy = (membershipId: number) =>
+    membershipMutation.isPending && membershipMutation.variables?.membershipId === membershipId;
+  const isCaseBusy = (tenantId: string, caseId: string) =>
+    caseMutation.isPending && caseMutation.variables?.tenantId === tenantId && caseMutation.variables?.caseId === caseId;
+
+  async function refreshSnapshotWithSuccess(title: string, description: string) {
+    await utils.dashboard.ceoSnapshot.invalidate();
+    sonnerToast.success(title, { description });
+  }
+
+  async function handleAlertAction(alertId: number, title: string, status: string) {
+    const nextStatus = getSafeNextAlertStatus(status);
+    const actionLabel = getSafeAlertActionLabel(status);
+    if (!nextStatus || !actionLabel) return;
+
+    try {
+      await alertMutation.mutateAsync({ alertId, status: nextStatus });
+      await refreshSnapshotWithSuccess("Alerta actualizada", `${title}: ${actionLabel.toLowerCase()} y traza registrada.`);
+    } catch (error) {
+      sonnerToast.error("No fue posible actualizar la alerta", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
+
+  async function handleMembershipAction(
+    membershipId: number,
+    membership: { status: string; accessScope: string; caseId?: string | null },
+    userLabel: string,
+  ) {
+    const action = getSafeMembershipAction(membership);
+    if (!action) return;
+
+    try {
+      await membershipMutation.mutateAsync({ membershipId, status: action.status });
+      await refreshSnapshotWithSuccess("Acceso actualizado", `${userLabel}: ${action.label.toLowerCase()} con trazabilidad ejecutiva.`);
+    } catch (error) {
+      sonnerToast.error("No fue posible actualizar el acceso", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
+
+  async function handleCaseAction(tenantId: string, caseId: string, title: string, status: string) {
+    const nextStatus = getSafeNextCaseStatus(status);
+    const actionLabel = getSafeCaseActionLabel(status);
+    if (!nextStatus || !actionLabel) return;
+
+    try {
+      await caseMutation.mutateAsync({ tenantId, caseId, status: nextStatus });
+      await refreshSnapshotWithSuccess("Caso actualizado", `${title}: ${actionLabel.toLowerCase()} y bitácora registrada.`);
+    } catch (error) {
+      sonnerToast.error("No fue posible confirmar el avance del caso", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
 
   return (
     <DashboardLayout
@@ -229,157 +381,301 @@ export default function CeoDashboard() {
           </section>
 
           {currentSection === "resumen" ? (
-            <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-              <section className="space-y-6">
-                <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Estado de operación</p>
-                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Salud por tenant</h3>
-                    </div>
-                    <Badge className="rounded-full border border-teal-200 bg-teal-50 text-teal-700">
-                      {formatNumber(snapshotQuery.data.tenantHealth.length)} organizaciones
-                    </Badge>
+            <>
+              <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Bloque seguro</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Acciones administrativas acotadas</h3>
                   </div>
-                  <div className="mt-5 space-y-3">
-                    {snapshotQuery.data.tenantHealth.map((tenant) => (
-                      <article
-                        key={tenant.tenantId}
-                        className="grid gap-4 rounded-[1.4rem] border border-slate-200/80 bg-slate-50/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-base font-semibold text-slate-950">{tenant.tenantName}</p>
-                            <Badge className={`rounded-full border ${getStatusBadgeClass(tenant.status)}`}>{tenant.status}</Badge>
-                          </div>
-                          <p className="text-sm text-slate-500">Actualizado: {formatDateTime(tenant.updatedAt)}</p>
-                        </div>
-                        <div className="grid min-w-[280px] grid-cols-2 gap-3 text-sm text-slate-600 sm:grid-cols-4 lg:min-w-[360px]">
-                          <div className="rounded-2xl bg-white px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Casos</p>
-                            <strong className="text-base text-slate-950">{formatNumber(tenant.activeCases)}</strong>
-                          </div>
-                          <div className="rounded-2xl bg-white px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Alertas</p>
-                            <strong className="text-base text-slate-950">{formatNumber(tenant.openAlerts)}</strong>
-                          </div>
-                          <div className="rounded-2xl bg-white px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Membresías</p>
-                            <strong className="text-base text-slate-950">{formatNumber(tenant.activeMemberships)}</strong>
-                          </div>
-                          <div className="rounded-2xl bg-white px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Docs pendientes</p>
-                            <strong className="text-base text-slate-950">{formatNumber(tenant.pendingDocuments)}</strong>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
+                  <Badge className="rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">
+                    Sólo cambios con trazabilidad y bajo riesgo
+                  </Badge>
                 </div>
+                <div className="mt-5 grid gap-4 xl:grid-cols-3">
+                  <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-base font-semibold text-slate-950">Alertas en secuencia</h4>
+                      <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{formatNumber(safeAlertActions.length)}</Badge>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {safeAlertActions.length > 0 ? (
+                        safeAlertActions.map((alert) => (
+                          <div key={alert.id} className="rounded-2xl bg-white p-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{alert.severity}</Badge>
+                              <Badge className={`rounded-full border ${getStatusBadgeClass(alert.status)}`}>{alert.status}</Badge>
+                            </div>
+                            <p className="mt-2 line-clamp-2 text-sm font-semibold text-slate-950">{alert.title}</p>
+                            <p className="mt-1 text-xs text-slate-500">{alert.tenantName}</p>
+                            <Button
+                              className="mt-3 w-full rounded-full"
+                              size="sm"
+                              disabled={isAlertBusy(alert.id)}
+                              onClick={() => {
+                                void handleAlertAction(alert.id, alert.title, alert.status);
+                              }}
+                            >
+                              {isAlertBusy(alert.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              {alert.actionLabel}
+                            </Button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">No hay alertas con transición segura pendiente.</p>
+                      )}
+                    </div>
+                  </article>
 
-                <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Expedientes recientes</p>
-                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Casos con actividad más reciente</h3>
+                  <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-base font-semibold text-slate-950">Accesos por caso</h4>
+                      <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{formatNumber(safeMembershipActions.length)}</Badge>
                     </div>
-                    <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
-                      {formatNumber(snapshotQuery.data.recentCases.length)} visibles
-                    </Badge>
-                  </div>
-                  <div className="mt-5 overflow-hidden rounded-[1.4rem] border border-slate-200">
-                    <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_auto_auto] gap-3 bg-slate-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      <span>Caso</span>
-                      <span>Tenant</span>
-                      <span>Estatus</span>
-                      <span>Última actividad</span>
+                    <div className="mt-4 space-y-3">
+                      {safeMembershipActions.length > 0 ? (
+                        safeMembershipActions.map((membership) => (
+                          <div key={membership.id} className="rounded-2xl bg-white p-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`rounded-full border ${getStatusBadgeClass(membership.status)}`}>{membership.status}</Badge>
+                              <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{membership.role}</Badge>
+                            </div>
+                            <p className="mt-2 text-sm font-semibold text-slate-950">
+                              {membership.userName || membership.userEmail || `Usuario ${membership.userId}`}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">{membership.caseTitle || membership.caseId}</p>
+                            <Button
+                              variant="outline"
+                              className="mt-3 w-full rounded-full bg-white"
+                              size="sm"
+                              disabled={isMembershipBusy(membership.id)}
+                              onClick={() => {
+                                void handleMembershipAction(
+                                  membership.id,
+                                  membership,
+                                  membership.userName || membership.userEmail || `Usuario ${membership.userId}`,
+                                );
+                              }}
+                            >
+                              {isMembershipBusy(membership.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              {membership.action.label}
+                            </Button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">No hay accesos por caso aptos para este bloque seguro.</p>
+                      )}
                     </div>
-                    <div className="divide-y divide-slate-200 bg-white">
-                      {snapshotQuery.data.recentCases.map((item) => (
-                        <div key={item.caseId} className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_auto_auto] gap-3 px-4 py-4 text-sm">
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold text-slate-950">{item.title}</p>
-                            <p className="truncate text-slate-500">{item.caseId}</p>
+                  </article>
+
+                  <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-base font-semibold text-slate-950">Avance operativo</h4>
+                      <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{formatNumber(safeCaseActions.length)}</Badge>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {safeCaseActions.length > 0 ? (
+                        safeCaseActions.map((item) => (
+                          <div key={item.caseId} className="rounded-2xl bg-white p-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`rounded-full border ${getStatusBadgeClass(item.status)}`}>{item.status}</Badge>
+                              <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{item.tenantName}</Badge>
+                            </div>
+                            <p className="mt-2 line-clamp-2 text-sm font-semibold text-slate-950">{item.title}</p>
+                            <p className="mt-1 text-xs text-slate-500">Última actividad: {formatDateTime(item.lastActivityAt ?? item.updatedAt)}</p>
+                            <Button
+                              variant="outline"
+                              className="mt-3 w-full rounded-full bg-white"
+                              size="sm"
+                              disabled={isCaseBusy(item.tenantId, item.caseId)}
+                              onClick={() => {
+                                void handleCaseAction(item.tenantId, item.caseId, item.title, item.status);
+                              }}
+                            >
+                              {isCaseBusy(item.tenantId, item.caseId) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              {item.actionLabel}
+                            </Button>
                           </div>
-                          <div className="min-w-0 text-slate-600">{item.tenantName}</div>
-                          <div>
-                            <Badge className={`rounded-full border ${getStatusBadgeClass(item.status)}`}>{item.status}</Badge>
+                        ))
+                      ) : (
+                        <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">No hay casos con siguiente avance operativo seguro disponible.</p>
+                      )}
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                <section className="space-y-6">
+                  <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Estado de operación</p>
+                        <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Salud por tenant</h3>
+                      </div>
+                      <Badge className="rounded-full border border-teal-200 bg-teal-50 text-teal-700">
+                        {formatNumber(snapshotQuery.data.tenantHealth.length)} organizaciones
+                      </Badge>
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      {snapshotQuery.data.tenantHealth.map((tenant) => (
+                        <article
+                          key={tenant.tenantId}
+                          className="grid gap-4 rounded-[1.4rem] border border-slate-200/80 bg-slate-50/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-base font-semibold text-slate-950">{tenant.tenantName}</p>
+                              <Badge className={`rounded-full border ${getStatusBadgeClass(tenant.status)}`}>{tenant.status}</Badge>
+                            </div>
+                            <p className="text-sm text-slate-500">Actualizado: {formatDateTime(tenant.updatedAt)}</p>
                           </div>
-                          <div className="text-right text-slate-500">{formatDateTime(item.lastActivityAt ?? item.updatedAt)}</div>
-                        </div>
+                          <div className="grid min-w-[280px] grid-cols-2 gap-3 text-sm text-slate-600 sm:grid-cols-4 lg:min-w-[360px]">
+                            <div className="rounded-2xl bg-white px-3 py-2">
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Casos</p>
+                              <strong className="text-base text-slate-950">{formatNumber(tenant.activeCases)}</strong>
+                            </div>
+                            <div className="rounded-2xl bg-white px-3 py-2">
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Alertas</p>
+                              <strong className="text-base text-slate-950">{formatNumber(tenant.openAlerts)}</strong>
+                            </div>
+                            <div className="rounded-2xl bg-white px-3 py-2">
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Membresías</p>
+                              <strong className="text-base text-slate-950">{formatNumber(tenant.activeMemberships)}</strong>
+                            </div>
+                            <div className="rounded-2xl bg-white px-3 py-2">
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Docs pendientes</p>
+                              <strong className="text-base text-slate-950">{formatNumber(tenant.pendingDocuments)}</strong>
+                            </div>
+                          </div>
+                        </article>
                       ))}
                     </div>
                   </div>
-                </div>
-              </section>
 
-              <section className="space-y-6">
-                <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Distribución</p>
-                  <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Señales operativas del momento</h3>
-                  <div className="mt-5 space-y-4">
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="flex items-center gap-2 text-slate-950">
-                        <Building2 className="h-4 w-4 text-teal-700" />
-                        <p className="font-semibold">Casos por estatus</p>
+                  <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Expedientes recientes</p>
+                        <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Casos con actividad más reciente</h3>
                       </div>
-                      <div className="mt-4 space-y-3">
-                        {snapshotQuery.data.casesByStatus.map((item) => (
-                          <div key={item.status}>
-                            <div className="mb-1 flex items-center justify-between text-sm text-slate-600">
-                              <span>{item.status}</span>
-                              <span>{formatNumber(item.total)}</span>
-                            </div>
-                            <div className="h-2.5 overflow-hidden rounded-full bg-slate-200">
-                              <div
-                                className="h-full rounded-full bg-teal-500"
-                                style={{
-                                  width: `${Math.max(
-                                    8,
-                                    (item.total / Math.max(snapshotQuery.data.summary.activeCases || 1, 1)) * 100,
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+                        {formatNumber(snapshotQuery.data.recentCases.length)} visibles
+                      </Badge>
                     </div>
-
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="flex items-center gap-2 text-slate-950">
-                        <ShieldCheck className="h-4 w-4 text-cyan-700" />
-                        <p className="font-semibold">Alertas por severidad</p>
+                    <div className="mt-5 overflow-hidden rounded-[1.4rem] border border-slate-200">
+                      <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_auto_auto_auto] gap-3 bg-slate-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        <span>Caso</span>
+                        <span>Tenant</span>
+                        <span>Estatus</span>
+                        <span>Última actividad</span>
+                        <span className="text-right">Acción segura</span>
                       </div>
-                      <div className="mt-4 space-y-3">
-                        {snapshotQuery.data.alertsBySeverity.map((item) => (
-                          <div key={item.severity} className="flex items-center justify-between rounded-2xl bg-white px-3 py-3 text-sm">
-                            <Badge className={`rounded-full border ${getSeverityBadgeClass(item.severity)}`}>{item.severity}</Badge>
-                            <strong className="text-slate-950">{formatNumber(item.total)}</strong>
-                          </div>
-                        ))}
+                      <div className="divide-y divide-slate-200 bg-white">
+                        {snapshotQuery.data.recentCases.map((item) => {
+                          const actionLabel = getSafeCaseActionLabel(item.status);
+                          return (
+                            <div key={item.caseId} className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_auto_auto_auto] gap-3 px-4 py-4 text-sm">
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold text-slate-950">{item.title}</p>
+                                <p className="truncate text-slate-500">{item.caseId}</p>
+                              </div>
+                              <div className="min-w-0 text-slate-600">{item.tenantName}</div>
+                              <div>
+                                <Badge className={`rounded-full border ${getStatusBadgeClass(item.status)}`}>{item.status}</Badge>
+                              </div>
+                              <div className="text-right text-slate-500">{formatDateTime(item.lastActivityAt ?? item.updatedAt)}</div>
+                              <div className="flex justify-end">
+                                {actionLabel ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-full bg-white"
+                                    disabled={isCaseBusy(item.tenantId, item.caseId)}
+                                    onClick={() => {
+                                      void handleCaseAction(item.tenantId, item.caseId, item.title, item.status);
+                                    }}
+                                  >
+                                    {isCaseBusy(item.tenantId, item.caseId) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    {actionLabel}
+                                  </Button>
+                                ) : (
+                                  <span className="text-xs text-slate-400">Sin acción segura</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
-                </div>
+                </section>
 
-                <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pendientes del CEO</p>
-                  <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Prioridades para seguimiento</h3>
-                  <div className="mt-5 space-y-3 text-sm text-slate-700">
-                    <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 px-4 py-3">
-                      Hay <strong>{formatNumber(snapshotQuery.data.summary.pendingConsents)}</strong> consentimientos pendientes de resolver.
-                    </div>
-                    <div className="rounded-[1.3rem] border border-rose-200 bg-rose-50 px-4 py-3">
-                      Existen <strong>{formatNumber(snapshotQuery.data.summary.criticalAlerts)}</strong> alertas críticas que merecen revisión ejecutiva.
-                    </div>
-                    <div className="rounded-[1.3rem] border border-cyan-200 bg-cyan-50 px-4 py-3">
-                      Se registran <strong>{formatNumber(snapshotQuery.data.summary.caseScopedMemberships)}</strong> accesos de alcance por caso actualmente activos.
+                <section className="space-y-6">
+                  <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Distribución</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Señales operativas del momento</h3>
+                    <div className="mt-5 space-y-4">
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="flex items-center gap-2 text-slate-950">
+                          <Building2 className="h-4 w-4 text-teal-700" />
+                          <p className="font-semibold">Casos por estatus</p>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {snapshotQuery.data.casesByStatus.map((item) => (
+                            <div key={item.status}>
+                              <div className="mb-1 flex items-center justify-between text-sm text-slate-600">
+                                <span>{item.status}</span>
+                                <span>{formatNumber(item.total)}</span>
+                              </div>
+                              <div className="h-2.5 overflow-hidden rounded-full bg-slate-200">
+                                <div
+                                  className="h-full rounded-full bg-teal-500"
+                                  style={{
+                                    width: `${Math.max(8, (item.total / Math.max(snapshotQuery.data.summary.activeCases || 1, 1)) * 100)}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="flex items-center gap-2 text-slate-950">
+                          <ShieldCheck className="h-4 w-4 text-cyan-700" />
+                          <p className="font-semibold">Alertas por severidad</p>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {snapshotQuery.data.alertsBySeverity.map((item) => (
+                            <div key={item.severity} className="flex items-center justify-between rounded-2xl bg-white px-3 py-3 text-sm">
+                              <Badge className={`rounded-full border ${getSeverityBadgeClass(item.severity)}`}>{item.severity}</Badge>
+                              <strong className="text-slate-950">{formatNumber(item.total)}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </section>
-            </div>
+
+                  <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pendientes del CEO</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Prioridades para seguimiento</h3>
+                    <div className="mt-5 space-y-3 text-sm text-slate-700">
+                      <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 px-4 py-3">
+                        Hay <strong>{formatNumber(snapshotQuery.data.summary.pendingConsents)}</strong> consentimientos pendientes de resolver.
+                      </div>
+                      <div className="rounded-[1.3rem] border border-rose-200 bg-rose-50 px-4 py-3">
+                        Existen <strong>{formatNumber(snapshotQuery.data.summary.criticalAlerts)}</strong> alertas críticas que merecen revisión ejecutiva.
+                      </div>
+                      <div className="rounded-[1.3rem] border border-cyan-200 bg-cyan-50 px-4 py-3">
+                        Se registran <strong>{formatNumber(snapshotQuery.data.summary.caseScopedMemberships)}</strong> accesos de alcance por caso actualmente activos.
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </>
           ) : null}
 
           {currentSection === "alertas" ? (
@@ -394,27 +690,47 @@ export default function CeoDashboard() {
                 </Badge>
               </div>
               <div className="mt-5 space-y-3">
-                {snapshotQuery.data.recentAlerts.map((alert) => (
-                  <article key={alert.id} className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{alert.severity}</Badge>
-                          <Badge className={`rounded-full border ${getStatusBadgeClass(alert.status)}`}>{alert.status}</Badge>
-                          <span className="text-xs uppercase tracking-[0.16em] text-slate-400">{alert.category}</span>
+                {snapshotQuery.data.recentAlerts.map((alert) => {
+                  const actionLabel = getSafeAlertActionLabel(alert.status);
+                  return (
+                    <article key={alert.id} className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{alert.severity}</Badge>
+                            <Badge className={`rounded-full border ${getStatusBadgeClass(alert.status)}`}>{alert.status}</Badge>
+                            <span className="text-xs uppercase tracking-[0.16em] text-slate-400">{alert.category}</span>
+                          </div>
+                          <h4 className="text-lg font-semibold text-slate-950">{alert.title}</h4>
+                          <p className="max-w-3xl text-sm leading-6 text-slate-600">{alert.description || "Sin descripción adicional."}</p>
                         </div>
-                        <h4 className="text-lg font-semibold text-slate-950">{alert.title}</h4>
-                        <p className="max-w-3xl text-sm leading-6 text-slate-600">{alert.description || "Sin descripción adicional."}</p>
+                        <div className="min-w-[260px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                          <p><strong className="text-slate-950">Tenant:</strong> {alert.tenantName}</p>
+                          <p><strong className="text-slate-950">Caso:</strong> {alert.caseTitle || alert.caseId || "Sin caso"}</p>
+                          <p><strong className="text-slate-950">Detectada:</strong> {formatDateTime(alert.raisedAt)}</p>
+                          <p><strong className="text-slate-950">Resuelta:</strong> {formatDateTime(alert.resolvedAt)}</p>
+                          <div className="mt-3">
+                            {actionLabel ? (
+                              <Button
+                                className="w-full rounded-full"
+                                size="sm"
+                                disabled={isAlertBusy(alert.id)}
+                                onClick={() => {
+                                  void handleAlertAction(alert.id, alert.title, alert.status);
+                                }}
+                              >
+                                {isAlertBusy(alert.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {actionLabel}
+                              </Button>
+                            ) : (
+                              <p className="text-xs text-slate-400">Esta alerta ya no tiene una transición segura disponible.</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="min-w-[220px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
-                        <p><strong className="text-slate-950">Tenant:</strong> {alert.tenantName}</p>
-                        <p><strong className="text-slate-950">Caso:</strong> {alert.caseTitle || alert.caseId || "Sin caso"}</p>
-                        <p><strong className="text-slate-950">Detectada:</strong> {formatDateTime(alert.raisedAt)}</p>
-                        <p><strong className="text-slate-950">Resuelta:</strong> {formatDateTime(alert.resolvedAt)}</p>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ) : null}
@@ -431,33 +747,55 @@ export default function CeoDashboard() {
                 </Badge>
               </div>
               <div className="mt-5 grid gap-3">
-                {snapshotQuery.data.recentMemberships.map((membership) => (
-                  <article key={membership.id} className="grid gap-4 rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-semibold text-slate-950">{membership.userName || membership.userEmail || `Usuario ${membership.userId}`}</p>
-                        <Badge className={`rounded-full border ${getStatusBadgeClass(membership.status)}`}>{membership.status}</Badge>
-                        <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{membership.role}</Badge>
-                        <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{membership.accessScope}</Badge>
+                {snapshotQuery.data.recentMemberships.map((membership) => {
+                  const action = getSafeMembershipAction(membership);
+                  const userLabel = membership.userName || membership.userEmail || `Usuario ${membership.userId}`;
+                  return (
+                    <article key={membership.id} className="grid gap-4 rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-lg font-semibold text-slate-950">{userLabel}</p>
+                          <Badge className={`rounded-full border ${getStatusBadgeClass(membership.status)}`}>{membership.status}</Badge>
+                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{membership.role}</Badge>
+                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{membership.accessScope}</Badge>
+                        </div>
+                        <p className="text-sm text-slate-600">{membership.userEmail || "Sin correo visible"}</p>
+                        <p className="text-sm text-slate-600">
+                          <strong className="text-slate-950">Tenant:</strong> {membership.tenantName}
+                          {membership.caseTitle || membership.caseId ? (
+                            <>
+                              {" · "}
+                              <strong className="text-slate-950">Caso:</strong> {membership.caseTitle || membership.caseId}
+                            </>
+                          ) : null}
+                        </p>
                       </div>
-                      <p className="text-sm text-slate-600">{membership.userEmail || "Sin correo visible"}</p>
-                      <p className="text-sm text-slate-600">
-                        <strong className="text-slate-950">Tenant:</strong> {membership.tenantName}
-                        {membership.caseTitle || membership.caseId ? (
-                          <>
-                            {" · "}
-                            <strong className="text-slate-950">Caso:</strong> {membership.caseTitle || membership.caseId}
-                          </>
-                        ) : null}
-                      </p>
-                    </div>
-                    <div className="min-w-[220px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
-                      <p><strong className="text-slate-950">Creado:</strong> {formatDateTime(membership.createdAt)}</p>
-                      <p><strong className="text-slate-950">Actualizado:</strong> {formatDateTime(membership.updatedAt)}</p>
-                      <p><strong className="text-slate-950">Usuario ID:</strong> {membership.userId}</p>
-                    </div>
-                  </article>
-                ))}
+                      <div className="min-w-[260px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                        <p><strong className="text-slate-950">Creado:</strong> {formatDateTime(membership.createdAt)}</p>
+                        <p><strong className="text-slate-950">Actualizado:</strong> {formatDateTime(membership.updatedAt)}</p>
+                        <p><strong className="text-slate-950">Usuario ID:</strong> {membership.userId}</p>
+                        <div className="mt-3">
+                          {action ? (
+                            <Button
+                              variant="outline"
+                              className="w-full rounded-full bg-white"
+                              size="sm"
+                              disabled={isMembershipBusy(membership.id)}
+                              onClick={() => {
+                                void handleMembershipAction(membership.id, membership, userLabel);
+                              }}
+                            >
+                              {isMembershipBusy(membership.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              {action.label}
+                            </Button>
+                          ) : (
+                            <p className="text-xs text-slate-400">Sólo los accesos acotados a un caso pueden operarse desde este bloque seguro.</p>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ) : null}
@@ -492,7 +830,8 @@ export default function CeoDashboard() {
                         <p className="text-sm text-slate-600">
                           <strong className="text-slate-950">Trace ID:</strong> {document.traceId}
                           {" · "}
-                          <strong className="text-slate-950">Confianza:</strong> {typeof document.classificationConfidence === "number"
+                          <strong className="text-slate-950">Confianza:</strong>{" "}
+                          {typeof document.classificationConfidence === "number"
                             ? `${Math.round(document.classificationConfidence * 100)}%`
                             : "N/D"}
                         </p>

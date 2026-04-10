@@ -514,12 +514,21 @@
 - [x] Auditar la base actual de AuditaPatron para reutilizar componentes, rutas, métricas y controles existentes en el dashboard de CEO
 - [x] Implementar una vista ejecutiva con métricas, alertas, estado del motor y herramientas administrativas prioritarias para el CEO
 - [x] Incorporar controles administrativos iniciales para gestión operativa sin depender de Manus
-- [ ] Validar el dashboard de CEO con pruebas Vitest, revisión técnica y checkpoint estable
+- [x] Validar el dashboard de CEO con pruebas Vitest, revisión técnica y checkpoint estable
 - [x] Contrastar y consolidar el alcance funcional del Dashboard CEO de AuditaPatron con ChatGPT, Gemini y Grok antes de cerrar su primera iteración
 - [x] Implementar consola CEO con resumen ejecutivo, KPIs operativos y acceso seguro solo para administradores
 - [x] Implementar vista ejecutiva de alertas accionables con estados, severidad y timestamps visibles
 - [x] Implementar vista administrativa de membresías y accesos por caso para operación del CEO
 - [x] Implementar trazabilidad de versionado o supersedencia documental visible desde la consola CEO
-- [ ] Validar el Dashboard CEO con pruebas Vitest, revisión técnica y checkpoint estable
+- [x] Validar el Dashboard CEO con pruebas Vitest, revisión técnica y checkpoint estable
 - [x] Reintentar la consulta del Dashboard CEO con Grok ahora que la API ya tiene crédito e incorporar su feedback al consenso antes de implementar
-- [ ] Dejar documentada la recomendación operativa para conectar los dos dominios comprados al sitio sin interrumpir el dominio temporal
+- [x] Dejar documentada la recomendación operativa para conectar los dos dominios comprados al sitio sin interrumpir el dominio temporal
+- [ ] Contrastar con ChatGPT, Gemini y Grok el diseño mínimo útil de acciones administrativas seguras para la consola CEO antes de implementarlas
+- [ ] Implementar acciones administrativas seguras desde la consola CEO con trazabilidad y control exclusivo para administradores
+- [ ] Implementar filtros y búsqueda avanzada por tenant, caso, usuario, severidad y fecha dentro de la consola CEO
+- [ ] Implementar reportes ejecutivos exportables para seguimiento operativo del CEO
+- [ ] Ejecutar un bloque de endurecimiento V1 sobre permisos, validaciones y pruebas del Dashboard CEO tras estas mejoras
+- [x] Implementar acciones administrativas seguras del Dashboard CEO para aprobar o rechazar membresías pendientes
+- [x] Implementar acciones administrativas seguras del Dashboard CEO para asignar o revocar accesos por caso con trazabilidad
+- [x] Implementar acciones administrativas seguras del Dashboard CEO para confirmar avance operativo de auditorías sin acciones destructivas
+- [x] Añadir pruebas Vitest y validación técnica del nuevo bloque de acciones administrativas seguras del Dashboard CEO
