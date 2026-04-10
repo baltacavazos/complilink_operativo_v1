@@ -2038,6 +2038,41 @@ export default function Auditar() {
     attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
     receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
   });
+  const operationalFunnelSteps = [
+    {
+      id: "home",
+      label: "Home",
+      completed: auth.isAuthenticated || bootstrapMutation.isSuccess,
+      detail: "Ya entraste al entorno base desde el que empieza el recorrido operativo.",
+    },
+    {
+      id: "expediente",
+      label: "Expediente",
+      completed: Boolean(currentCaseScopeKey),
+      detail: currentCaseScopeKey
+        ? "Ya seleccionaste un expediente y la continuidad entre dispositivos quedó activa."
+        : "Falta elegir un expediente para continuar con el flujo principal.",
+    },
+    {
+      id: "legal",
+      label: "Aceptación legal",
+      completed: Boolean(legalAcceptance?.isAccepted),
+      detail: legalAcceptance?.isAccepted
+        ? "El paquete legal ya quedó aceptado para este expediente."
+        : "Todavía falta aceptar el paquete legal antes de subir documentos al expediente.",
+    },
+    {
+      id: "documents",
+      label: "Subida documental",
+      completed: documents.length > 0,
+      detail:
+        documents.length > 0
+          ? `Ya hay ${documents.length} documento${documents.length === 1 ? "" : "s"} incorporado${documents.length === 1 ? "" : "s"} al expediente.`
+          : "Aún no hay documentos incorporados al expediente visible.",
+    },
+  ] as const;
+  const operationalFunnelCompletedCount = operationalFunnelSteps.filter((step) => step.completed).length;
+  const operationalFunnelNextStep = operationalFunnelSteps.find((step) => !step.completed) ?? null;
 
   useEffect(() => {
     setLegalGateChecked(false);
@@ -4737,6 +4772,52 @@ export default function Auditar() {
               <div className={`mt-4 rounded-[1.3rem] border p-4 ${monitoringOverview.classes}`}>
                 <p className="font-semibold">{monitoringOverview.title}</p>
                 <p className="mt-2 text-sm leading-7">{monitoringOverview.body}</p>
+              </div>
+
+              <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Embudo operativo mínimo</p>
+                    <p className="mt-2 text-lg font-semibold text-slate-950">Del acceso inicial al primer documento útil</p>
+                  </div>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                    {operationalFunnelCompletedCount}/{operationalFunnelSteps.length} hitos visibles
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {operationalFunnelSteps.map((step, index) => (
+                    <div
+                      key={step.id}
+                      className={`rounded-[1.1rem] border p-4 ${
+                        step.completed
+                          ? "border-emerald-200 bg-emerald-50"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Paso {index + 1}</p>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                            step.completed
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {step.completed ? "Listo" : "Pendiente"}
+                        </span>
+                      </div>
+                      <p className="mt-3 font-semibold text-slate-950">{step.label}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">{step.detail}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
+                  {operationalFunnelNextStep
+                    ? `Siguiente hito visible: ${operationalFunnelNextStep.label.toLowerCase()}. Cuando ese paso cambie, esta lectura mínima te dejará ver rápidamente en qué parte exacta se está cayendo el recorrido.`
+                    : "Los cuatro hitos mínimos ya aparecen cubiertos en este expediente. A partir de aquí el valor operativo se concentra en la calidad del seguimiento y en las respuestas automáticas."}
+                </div>
               </div>
 
               {pendingMonitoringDocuments.length === 0 ? (

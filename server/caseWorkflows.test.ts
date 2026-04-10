@@ -916,6 +916,85 @@ describe("appRouter case workflows", () => {
     expect(db.createAuditLog).not.toHaveBeenCalled();
   });
 
+  it("recreates only the persistent audit marker when the legal package was accepted but the audit entry is missing", async () => {
+    const acceptedAt = new Date("2026-04-06T12:30:00.000Z");
+
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      ...demoCaseDetail,
+      events: [
+        {
+          eventType: "consent_updated",
+          metadata: JSON.stringify({
+            acceptance_version: LEGAL_ACCEPTANCE_VERSION,
+          }),
+        },
+      ],
+      consents: LEGAL_CONSENT_TYPES.map((consentType) => ({
+        legalBasis: `legal_package:${LEGAL_ACCEPTANCE_VERSION}:${consentType}`,
+        status: "granted",
+        notes: JSON.stringify({
+          acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+          consentType,
+          clientIp: "203.0.113.9",
+          userAgent: "Vitest Legal Gate",
+          actorEmail: "owner@complilink.mx",
+        }),
+        subjectName: "CompliLink Owner",
+        subjectRole: "platform_user",
+        documentId: null,
+        grantedAt: acceptedAt,
+        createdAt: acceptedAt,
+        updatedAt: acceptedAt,
+      })),
+    } as never);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValue(
+      LEGAL_CONSENT_TYPES.map((consentType, index) => ({
+        id: index + 1,
+        payload: JSON.stringify({
+          schema_version: LEGAL_ACCEPTANCE_VERSION,
+          consent_type: consentType,
+        }),
+        createdAt: acceptedAt,
+        updatedAt: acceptedAt,
+        status: "ready",
+        schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
+      })) as never,
+    );
+    vi.mocked(db.findAuditLogEntry).mockResolvedValue(null);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.consent.acceptLegalPackage({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      accepted: true,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      alreadyAccepted: true,
+      acceptance: {
+        isAccepted: true,
+      },
+    });
+    expect(db.addConsentRecord).not.toHaveBeenCalled();
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+    expect(db.addCaseEvent).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "consent.legal_package_accept",
+        entityId: `CASE-BALT-1-DEMO001:legal_package:${LEGAL_ACCEPTANCE_VERSION}`,
+        afterState: expect.objectContaining({
+          repairedArtifacts: expect.objectContaining({
+            missingConsentTypes: [],
+            missingContractTypes: [],
+            createdAcceptanceEvent: false,
+          }),
+        }),
+      }),
+    );
+  });
+
   it("repairs missing legal artifacts without inserting duplicate consent rows", async () => {
     const acceptedAt = new Date("2026-04-06T12:30:00.000Z");
 

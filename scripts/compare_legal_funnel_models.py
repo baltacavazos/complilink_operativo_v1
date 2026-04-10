@@ -4,27 +4,37 @@ import requests
 from pathlib import Path
 
 PROMPT = """
-Contexto: proyecto web de AuditaPatron con arquitectura interna Helios-first. Hay una mutación backend llamada acceptLegalPackage que hoy ya usa un lock lógico por caso/version, pero todavía puede crear duplicados de consentimientos y contratos si llegan reintentos o concurrencia. También hay que instrumentar un embudo analítico ya existente con Umami, sin introducir nueva infraestructura.
+Contexto: proyecto web de AuditaPatron con arquitectura interna Helios-first. Ya se endureció acceptLegalPackage para reducir duplicados y ya existe instrumentación básica del embudo en frontend con Umami. La siguiente iteración busca tres cosas: (a) llevar la idempotencia a un nivel persistente, resistente a reintentos y concurrencia real, (b) exponer una lectura operativa mínima del embudo sin introducir una nueva plataforma analítica compleja, y (c) validar login, /auditar y páginas legales bajo el dominio final del proyecto.
 
 Objetivo:
-1. Recomienda la estrategia más robusta y pragmática para blindar acceptLegalPackage con idempotencia real en backend.
-2. Indica si conviene usar solo lock aplicativo, huella/idempotency key persistida en DB, verificación previa por versión legal y/o constraints únicos.
-3. Propón un enfoque mínimo y seguro para instrumentar el embudo home → expediente → aceptación legal → subida documental usando Umami ya cargado globalmente en el frontend.
-4. Da riesgos concretos, pruebas mínimas y sugerencias de naming de eventos.
+1. Recomienda la estrategia más robusta y pragmática para persistir una idempotency key o huella transaccional en backend para consentimientos/aceptación legal.
+2. Indica el mínimo panel, consulta, vista o reporte interno que permita leer el embudo ya instrumentado sin sobreconstruir infraestructura.
+3. Propón una estrategia de validación final bajo dominio propio/manus space para login, rutas legales y /auditar.
+4. Da riesgos concretos, pruebas mínimas y orden recomendado de implementación.
+
+Restricciones:
+- Priorizar cambios pequeños, seguros y compatibles con la base actual.
+- No introducir servicios nuevos si puede resolverse con DB, backend y Umami ya existentes.
+- Pensar en confiabilidad útil para el usuario final, no solo elegancia técnica.
 
 Responde en JSON estricto con esta forma:
 {
-  "backend_idempotency": {
+  "persistent_idempotency": {
     "recommended_strategy": "",
-    "why": "",
+    "storage_shape": "",
     "must_have_controls": [""],
-    "db_or_app_tradeoff": "",
+    "failure_modes": [""],
     "test_cases": [""]
   },
-  "analytics_funnel": {
+  "funnel_readout": {
     "recommended_strategy": "",
-    "event_names": [""],
-    "trigger_points": [""],
+    "minimum_viable_surface": "",
+    "metrics_or_events_to_show": [""],
+    "risks": [""]
+  },
+  "final_domain_validation": {
+    "recommended_strategy": "",
+    "critical_checks": [""],
     "risks": [""]
   },
   "implementation_order": [""],
@@ -32,7 +42,7 @@ Responde en JSON estricto con esta forma:
 }
 """.strip()
 
-OUT = Path("/home/ubuntu/complilink_operativo_v1/tmp/model_consensus_legal_funnel.json")
+OUT = Path("/home/ubuntu/complilink_operativo_v1/tmp/model_consensus_next_iteration.json")
 OUT.parent.mkdir(parents=True, exist_ok=True)
 
 headers_json = {"Content-Type": "application/json"}

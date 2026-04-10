@@ -1,0 +1,30 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n  \"idempotencia_persistente\": {\n    \"estrategia\": \"Token de idempotencia en cabecera HTTP (X-Idempotency-Key) para acceptLegalPackage y consentimientos.\",\n    \"clave_idempotencia\": \"UUIDv4 generado por el cliente (frontend) al iniciar la acción, enviado en cada solicitud.\",\n    \"persistencia\": \"Tabla 'idempotency_keys' en DB con 'key' (UUID), 'status' (PENDING, COMPLETED, FAILED), 'response_payload', 'timestamp'. Índice único en 'key'.\",\n    \"manejo_concurrencia\": \"Transacción DB: INSERT con 'key' y 'status=PENDING'. Si falla por duplicado, esperar y reintentar lectura del estado o devolver respuesta almacenada. Bloqueo optimista o 'SELECT FOR UPDATE' si se necesita procesar.\"\n  },\n  \"lectura_embudo_operativo\": {\n    \"metrica_principal\": \"Tasa de conversión Home -\u003e Documento Subido.\",\n    \"eventos_minimos\": [\n      \"home_view\",\n      \"expediente_view\",\n      \"legal_acceptance_view\",\n      \"document_upload_start\",\n      \"document_upload_complete\"\n    ],\n    \"vista_minima\": \"Dashboard con embudo de conversión (funnel chart) y desglose por pasos, mostrando caídas y tiempos medios.\"\n  },\n  \"validacion_dominio_final\": {\n    \"checks\": [\n      \"Certificado SSL/TLS válido\",\n      \"Resolución DNS correcta\",\n      \"Contenido estático y dinámico cargado\",\n      \"Funcionalidad completa del flujo (home a subida doc)\",\n      \"Integridad de enlaces y formularios\",\n      \"Textos legales actualizados y accesibles\",\n      \"Integración de analíticas funcionando\"\n    ],\n    \"riesgos\": [\n      \"Fallo de seguridad (HTTPS)\",\n      \"Acceso denegado/incorrecto\",\n      \"Experiencia de usuario rota\",\n      \"Incumplimiento legal\",\n      \"Pérdida de datos analíticos\"\n    ]\n  },\n  \"pruebas_prioritarias\": [\n    \"Test de idempotencia: múltiples envíos de acceptLegalPackage con misma clave, verificar un único procesamiento.\",\n    \"Test de concurrencia: múltiples usuarios intentando aceptar legal al mismo tiempo.\",\n    \"Test E2E completo del embudo en entorno de producción (dominio final).\",\n    \"Verificación de eventos analíticos en cada paso del embudo en producción.\"\n  ],\n  \"recomendacion_final\": \"Implementar la capa de idempotencia en el backend como middleware o decorador para acceptLegalPackage y consentimientos, garantizando atomicidad y persistencia. Priorizar la monitorización del embudo con alertas sobre caídas.\"\n}"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 216,
+    "candidatesTokenCount": 637,
+    "totalTokenCount": 1901,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 216
+      }
+    ],
+    "thoughtsTokenCount": 1048
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "ui7ZaZ6_Nei9jMcPsty60AU"
+}

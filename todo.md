@@ -486,10 +486,15 @@
 - [x] Mostrar motivo explicable de la recomendación del siguiente documento dentro del expediente
 - [x] Incorporar línea de tiempo del expediente con cargas, revalidaciones y hallazgos visibles
 - [x] Preparar instrucciones claras para conectar los dominios comprados de AuditaPatron desde la interfaz de Manus
-- [ ] Blindar el guardado de consentimientos con idempotency keys reales en backend para evitar duplicados o reintentos concurrentes
-- [ ] Ejecutar una ronda de pruebas post-dominio en login, /auditar y páginas legales para validar comportamiento bajo la URL final
+- [x] Blindar el guardado de consentimientos con idempotency keys reales en backend para evitar duplicados o reintentos concurrentes
+- [x] Ejecutar una ronda de pruebas post-dominio en login, /auditar y páginas legales para validar comportamiento bajo la URL final
 - [x] Añadir analítica del embudo home → expediente → aceptación legal → subida documental para medir conversión real
 - [x] Contrastar con ChatGPT, Grok y Gemini el endurecimiento de idempotencia en acceptLegalPackage y la instrumentación del embudo antes de implementar cambios
 - [x] Blindar acceptLegalPackage con idempotencia real en backend para evitar consentimientos y contratos duplicados
 - [x] Instrumentar el embudo analítico existente de AuditaPatron en home → expediente → aceptación legal → subida documental
 - [x] Ejecutar una ronda de validación en login, /auditar y páginas legales después de los cambios
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor estrategia para idempotencia persistente, lectura operativa del embudo y validación bajo dominio final antes de implementar
+- [x] Blindar el guardado de consentimientos con idempotency key persistente en backend para soportar reintentos y concurrencia
+- [x] Añadir una lectura operativa mínima del embudo sobre la analítica ya instrumentada para detectar caídas entre home, expediente, aceptación legal y subida documental
+- [x] Añadir una lectura operativa mínima del embudo para identificar caídas reales de conversión
+- [x] Ejecutar una ronda de validación en login, /auditar y páginas legales bajo el dominio final

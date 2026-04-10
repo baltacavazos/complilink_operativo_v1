@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-DT9dccoEXERPE3XNfz9S05a3SmQh1",
+  "object": "chat.completion",
+  "created": 1775840932,
+  "model": "gpt-4.1-mini-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"idempotencia_persistente\": {\n    \"estrategia\": \"Generar y almacenar un UUID único por acción en BD antes de procesar; rechazar duplicados basados en UUID\",\n    \"clave_idempotencia\": \"UUID generado cliente o servidor enviado en payload y almacenado con estado\",\n    \"persistencia\": \"Tabla específica para idempotencia con índice único en clave_idempotencia y tipo de acción\",\n    \"manejo_concurrencia\": \"Transacciones ACID con bloqueo optimista para evitar doble procesamiento concurrente\"\n  },\n  \"lectura_embudo_operativo\": {\n    \"metrica_principal\": \"Tasa de conversión y tiempo medio entre pasos\",\n    \"eventos_minimos\": [\"home_visit\", \"expediente_view\", \"legal_accept\", \"document_upload\"],\n    \"vista_minima\": \"Dashboard analítico filtrado por usuario y sesión con eventos correlacionados\"\n  },\n  \"validacion_dominio_final\": {\n    \"checks\": [\n      \"Validar formato y existencia del dominio en DNS\",\n      \"Verificar HTTPS y certificado válido\",\n      \"Confirmar coincidencia con dominio publicado en configuración\",\n      \"Bloquear dominios no autorizados o en lista negra\"\n    ],\n    \"riesgos\": [\n      \"Phishing o spoofing de dominio\",\n      \"Errores de configuración que permitan dominios no válidos\",\n      \"Problemas de seguridad por certificados inválidos\"\n    ]\n  },\n  \"pruebas_prioritarias\": [\n    \"Test de idempotencia con múltiples envíos simultáneos\",\n    \"Pruebas de flujo completo del embudo con eventos mínimos\",\n    \"Validación de dominio con dominios válidos e inválidos\"\n  ],\n  \"recomendacion_final\": \"Implementar idempotencia en backend con persistencia robusta y bloqueo, optimizar analítica para eventos clave minimizando carga, y validar dominio en backend con chequeos DNS y certificados para seguridad.\"\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 225,
+    "completion_tokens": 408,
+    "total_tokens": 633,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_7c69b3d8d3"
+}
