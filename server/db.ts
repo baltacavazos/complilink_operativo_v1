@@ -1032,7 +1032,35 @@ export async function getDashboardForUser(userId: number) {
   };
 }
 
-export async function getCeoDashboardSnapshot() {
+type CeoDashboardSnapshotFilters = {
+  tenantId?: string;
+  severity?: string;
+  caseId?: string;
+  userId?: number;
+  dateWindowDays?: number;
+  query?: string;
+};
+
+const normalizeFilterValue = (value: unknown) => String(value ?? "").trim().toLowerCase();
+
+const matchesFreeText = (query: string | undefined, values: unknown[]) => {
+  const needle = normalizeFilterValue(query);
+  if (!needle) return true;
+
+  return values.some((value) => normalizeFilterValue(value).includes(needle));
+};
+
+const matchesDateWindow = (value: Date | string | number | null | undefined, dateWindowDays?: number) => {
+  if (!dateWindowDays || dateWindowDays <= 0) return true;
+  if (!value) return false;
+
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(parsed.getTime())) return false;
+
+  return parsed.getTime() >= Date.now() - dateWindowDays * 24 * 60 * 60 * 1000;
+};
+
+export async function getCeoDashboardSnapshot(filters: CeoDashboardSnapshotFilters = {}) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -1252,6 +1280,136 @@ export async function getCeoDashboardSnapshot() {
   const caseScopedMembershipsByTenant = toCountMap(caseScopedMembershipsByTenantRaw);
   const pendingDocumentsByTenant = toCountMap(pendingDocumentsByTenantRaw);
 
+  const normalizedFilters = {
+    tenantId: filters.tenantId?.trim() || undefined,
+    severity: filters.severity?.trim() || undefined,
+    caseId: filters.caseId?.trim() || undefined,
+    userId: typeof filters.userId === "number" ? filters.userId : undefined,
+    dateWindowDays:
+      typeof filters.dateWindowDays === "number" && filters.dateWindowDays > 0 ? filters.dateWindowDays : undefined,
+    query: filters.query?.trim() || undefined,
+  };
+
+  const filtersApplied = {
+    ...normalizedFilters,
+    active: Boolean(
+      normalizedFilters.tenantId ||
+        normalizedFilters.severity ||
+        normalizedFilters.caseId ||
+        normalizedFilters.userId ||
+        normalizedFilters.dateWindowDays ||
+        normalizedFilters.query,
+    ),
+  };
+
+  const baseTenantHealth = tenantRows.map((tenant) => ({
+    tenantId: tenant.tenantId,
+    tenantName: tenant.displayName,
+    status: tenant.status,
+    updatedAt: tenant.updatedAt,
+    activeCases: activeCasesByTenant.get(tenant.tenantId) ?? 0,
+    openAlerts: openAlertsByTenant.get(tenant.tenantId) ?? 0,
+    activeMemberships: activeMembershipsByTenant.get(tenant.tenantId) ?? 0,
+    caseScopedMemberships: caseScopedMembershipsByTenant.get(tenant.tenantId) ?? 0,
+    pendingDocuments: pendingDocumentsByTenant.get(tenant.tenantId) ?? 0,
+  }));
+
+  const baseRecentCases = recentCases;
+  const baseRecentAlerts = recentAlertsRaw.map((alert) => ({
+    ...alert,
+    caseTitle: alert.caseId ? caseTitles.get(alert.caseId) ?? null : null,
+  }));
+  const baseRecentMemberships = recentMembershipsRaw.map((membership) => ({
+    ...membership,
+    caseTitle: membership.caseId ? caseTitles.get(membership.caseId) ?? null : null,
+  }));
+  const baseRecentDocuments = recentDocumentsRaw.map((document) => ({
+    ...document,
+    supersededDocument: document.supersedesDocumentId ? supersededMap.get(document.supersedesDocumentId) ?? null : null,
+  }));
+
+  const filteredTenantHealth = baseTenantHealth.filter(
+    (tenant) =>
+      (!normalizedFilters.tenantId || tenant.tenantId === normalizedFilters.tenantId) &&
+      matchesFreeText(normalizedFilters.query, [tenant.tenantId, tenant.tenantName, tenant.status]),
+  );
+
+  const filteredRecentCases = baseRecentCases.filter(
+    (laborCase) =>
+      (!normalizedFilters.tenantId || laborCase.tenantId === normalizedFilters.tenantId) &&
+      (!normalizedFilters.caseId || laborCase.caseId === normalizedFilters.caseId) &&
+      matchesDateWindow(laborCase.lastActivityAt ?? laborCase.updatedAt, normalizedFilters.dateWindowDays) &&
+      matchesFreeText(normalizedFilters.query, [
+        laborCase.caseId,
+        laborCase.title,
+        laborCase.tenantId,
+        laborCase.tenantName,
+        laborCase.status,
+        laborCase.priority,
+      ]),
+  );
+
+  const filteredRecentAlerts = baseRecentAlerts.filter(
+    (alert) =>
+      (!normalizedFilters.tenantId || alert.tenantId === normalizedFilters.tenantId) &&
+      (!normalizedFilters.severity || alert.severity === normalizedFilters.severity) &&
+      (!normalizedFilters.caseId || alert.caseId === normalizedFilters.caseId) &&
+      matchesDateWindow(alert.raisedAt ?? alert.resolvedAt, normalizedFilters.dateWindowDays) &&
+      matchesFreeText(normalizedFilters.query, [
+        alert.id,
+        alert.title,
+        alert.description,
+        alert.caseId,
+        alert.caseTitle,
+        alert.tenantId,
+        alert.tenantName,
+        alert.severity,
+        alert.category,
+        alert.status,
+      ]),
+  );
+
+  const filteredRecentMemberships = baseRecentMemberships.filter(
+    (membership) =>
+      (!normalizedFilters.tenantId || membership.tenantId === normalizedFilters.tenantId) &&
+      (!normalizedFilters.caseId || membership.caseId === normalizedFilters.caseId) &&
+      (!normalizedFilters.userId || membership.userId === normalizedFilters.userId) &&
+      matchesDateWindow(membership.updatedAt ?? membership.createdAt, normalizedFilters.dateWindowDays) &&
+      matchesFreeText(normalizedFilters.query, [
+        membership.id,
+        membership.tenantId,
+        membership.tenantName,
+        membership.caseId,
+        membership.caseTitle,
+        membership.userId,
+        membership.userName,
+        membership.userEmail,
+        membership.role,
+        membership.accessScope,
+        membership.status,
+      ]),
+  );
+
+  const filteredRecentDocuments = baseRecentDocuments.filter(
+    (document) =>
+      (!normalizedFilters.tenantId || document.tenantId === normalizedFilters.tenantId) &&
+      (!normalizedFilters.caseId || document.caseId === normalizedFilters.caseId) &&
+      matchesDateWindow(document.updatedAt ?? document.createdAt, normalizedFilters.dateWindowDays) &&
+      matchesFreeText(normalizedFilters.query, [
+        document.documentId,
+        document.originalName,
+        document.documentType,
+        document.integrityStatus,
+        document.consentStatus,
+        document.visibility,
+        document.tenantId,
+        document.tenantName,
+        document.caseId,
+        document.caseTitle,
+        document.traceId,
+      ]),
+  );
+
   return {
     generatedAt: new Date(),
     summary: {
@@ -1266,34 +1424,21 @@ export async function getCeoDashboardSnapshot() {
       pendingConsents: Number(pendingConsentsRow?.value ?? 0),
       supersededDocuments: Number(supersededDocumentsRow?.value ?? 0),
     },
+    filteredSummary: {
+      visibleTenants: filteredTenantHealth.length,
+      visibleCases: filteredRecentCases.length,
+      visibleAlerts: filteredRecentAlerts.length,
+      visibleMemberships: filteredRecentMemberships.length,
+      visibleDocuments: filteredRecentDocuments.length,
+    },
+    filtersApplied,
     casesByStatus: casesByStatusRaw.map((row) => ({ status: row.status, total: Number(row.total ?? 0) })),
     alertsBySeverity: alertsBySeverityRaw.map((row) => ({ severity: row.severity, total: Number(row.total ?? 0) })),
-    tenantHealth: tenantRows.map((tenant) => ({
-      tenantId: tenant.tenantId,
-      tenantName: tenant.displayName,
-      status: tenant.status,
-      updatedAt: tenant.updatedAt,
-      activeCases: activeCasesByTenant.get(tenant.tenantId) ?? 0,
-      openAlerts: openAlertsByTenant.get(tenant.tenantId) ?? 0,
-      activeMemberships: activeMembershipsByTenant.get(tenant.tenantId) ?? 0,
-      caseScopedMemberships: caseScopedMembershipsByTenant.get(tenant.tenantId) ?? 0,
-      pendingDocuments: pendingDocumentsByTenant.get(tenant.tenantId) ?? 0,
-    })),
-    recentCases,
-    recentAlerts: recentAlertsRaw.map((alert) => ({
-      ...alert,
-      caseTitle: alert.caseId ? caseTitles.get(alert.caseId) ?? null : null,
-    })),
-    recentMemberships: recentMembershipsRaw.map((membership) => ({
-      ...membership,
-      caseTitle: membership.caseId ? caseTitles.get(membership.caseId) ?? null : null,
-    })),
-    recentDocuments: recentDocumentsRaw.map((document) => ({
-      ...document,
-      supersededDocument: document.supersedesDocumentId
-        ? supersededMap.get(document.supersedesDocumentId) ?? null
-        : null,
-    })),
+    tenantHealth: filteredTenantHealth,
+    recentCases: filteredRecentCases,
+    recentAlerts: filteredRecentAlerts,
+    recentMemberships: filteredRecentMemberships,
+    recentDocuments: filteredRecentDocuments,
   };
 }
 

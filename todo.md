@@ -525,10 +525,14 @@
 - [x] Dejar documentada la recomendación operativa para conectar los dos dominios comprados al sitio sin interrumpir el dominio temporal
 - [ ] Contrastar con ChatGPT, Gemini y Grok el diseño mínimo útil de acciones administrativas seguras para la consola CEO antes de implementarlas
 - [ ] Implementar acciones administrativas seguras desde la consola CEO con trazabilidad y control exclusivo para administradores
-- [ ] Implementar filtros y búsqueda avanzada por tenant, caso, usuario, severidad y fecha dentro de la consola CEO
+- [x] Implementar filtros y búsqueda avanzada por tenant, caso, usuario, severidad y fecha dentro de la consola CEO
 - [ ] Implementar reportes ejecutivos exportables para seguimiento operativo del CEO
 - [ ] Ejecutar un bloque de endurecimiento V1 sobre permisos, validaciones y pruebas del Dashboard CEO tras estas mejoras
 - [x] Implementar acciones administrativas seguras del Dashboard CEO para aprobar o rechazar membresías pendientes
 - [x] Implementar acciones administrativas seguras del Dashboard CEO para asignar o revocar accesos por caso con trazabilidad
 - [x] Implementar acciones administrativas seguras del Dashboard CEO para confirmar avance operativo de auditorías sin acciones destructivas
 - [x] Añadir pruebas Vitest y validación técnica del nuevo bloque de acciones administrativas seguras del Dashboard CEO
+- [x] Contrastar con Grok, OpenAI y análisis propio el bloque mínimo útil de filtros y búsqueda avanzada de la Consola CEO
+- [x] Implementar filtros avanzados de la Consola CEO por tenant, caso, severidad, usuario y fecha
+- [x] Implementar búsqueda rápida de la Consola CEO para localizar expedientes, alertas y accesos desde una sola superficie
+- [x] Añadir pruebas Vitest y validación técnica del bloque de filtros y búsqueda avanzada de la Consola CEO

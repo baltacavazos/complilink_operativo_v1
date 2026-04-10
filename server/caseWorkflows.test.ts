@@ -268,6 +268,28 @@ describe("appRouter case workflows", () => {
     ]);
   });
 
+  it("accepts advanced filters for the CEO executive snapshot", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await caller.dashboard.ceoSnapshot({
+      tenantId: "balt-1",
+      severity: "critical",
+      caseId: "CASE-BALT-1-DEMO001",
+      userId: 7,
+      dateWindowDays: 30,
+      query: "despido",
+    });
+
+    expect(db.getCeoDashboardSnapshot).toHaveBeenCalledWith({
+      tenantId: "balt-1",
+      severity: "critical",
+      caseId: "CASE-BALT-1-DEMO001",
+      userId: 7,
+      dateWindowDays: 30,
+      query: "despido",
+    });
+  });
+
   it("blocks the CEO executive snapshot for non-admin users", async () => {
     const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
 

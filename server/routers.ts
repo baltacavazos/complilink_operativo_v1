@@ -88,6 +88,16 @@ const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
 const operationalAlertStatusSchema = z.enum(["acknowledged", "resolved"]);
 const tenantMembershipStatusSchema = z.enum(["active", "revoked"]);
 const ceoCaseProgressStatusSchema = z.enum(["analysis", "conciliation", "litigation"]);
+const ceoSnapshotFiltersSchema = z
+  .object({
+    tenantId: z.string().trim().min(1).max(80).optional(),
+    severity: z.string().trim().min(1).max(40).optional(),
+    caseId: z.string().trim().min(1).max(120).optional(),
+    userId: z.number().int().positive().optional(),
+    dateWindowDays: z.number().int().positive().max(365).optional(),
+    query: z.string().trim().min(1).max(160).optional(),
+  })
+  .optional();
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
@@ -1241,8 +1251,8 @@ export const appRouter = router({
     summary: protectedProcedure.query(async ({ ctx }) => {
       return getDashboardForUser(ctx.user.id);
     }),
-    ceoSnapshot: adminProcedure.query(async () => {
-      return getCeoDashboardSnapshot();
+    ceoSnapshot: adminProcedure.input(ceoSnapshotFiltersSchema).query(async ({ input }) => {
+      return getCeoDashboardSnapshot(input ?? {});
     }),
     ceoUpdateAlertStatus: adminProcedure
       .input(
