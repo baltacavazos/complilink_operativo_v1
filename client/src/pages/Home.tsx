@@ -18,7 +18,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { trackFunnelStep } from "@/lib/analytics";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type TourStep = {
@@ -214,6 +215,10 @@ function scrollToId(id: string) {
 const PRIMARY_CTA_LABEL = "Abrir mi expediente";
 
 function goToAuditFlow() {
+  trackFunnelStep("home_cta_clicked", {
+    source: "home",
+    destination: "/auditar",
+  });
   window.location.href = "/auditar";
 }
 
@@ -1334,6 +1339,12 @@ function SiteFooter() {
 }
 
 export default function Home() {
+  useEffect(() => {
+    trackFunnelStep("home_viewed", {
+      source: "landing",
+    });
+  }, []);
+
   return (
     <main className="audita-home min-h-screen bg-[#f9fcfb] font-sans text-slate-950">
       <SiteHeader />

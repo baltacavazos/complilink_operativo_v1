@@ -486,3 +486,10 @@
 - [x] Mostrar motivo explicable de la recomendación del siguiente documento dentro del expediente
 - [x] Incorporar línea de tiempo del expediente con cargas, revalidaciones y hallazgos visibles
 - [x] Preparar instrucciones claras para conectar los dominios comprados de AuditaPatron desde la interfaz de Manus
+- [ ] Blindar el guardado de consentimientos con idempotency keys reales en backend para evitar duplicados o reintentos concurrentes
+- [ ] Ejecutar una ronda de pruebas post-dominio en login, /auditar y páginas legales para validar comportamiento bajo la URL final
+- [x] Añadir analítica del embudo home → expediente → aceptación legal → subida documental para medir conversión real
+- [x] Contrastar con ChatGPT, Grok y Gemini el endurecimiento de idempotencia en acceptLegalPackage y la instrumentación del embudo antes de implementar cambios
+- [x] Blindar acceptLegalPackage con idempotencia real en backend para evitar consentimientos y contratos duplicados
+- [x] Instrumentar el embudo analítico existente de AuditaPatron en home → expediente → aceptación legal → subida documental
+- [x] Ejecutar una ronda de validación en login, /auditar y páginas legales después de los cambios

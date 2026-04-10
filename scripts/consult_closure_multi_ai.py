@@ -1,27 +1,35 @@
 import json
+import json
 import os
 import requests
 from pathlib import Path
 
 PROMPT = """
-Contexto breve de AuditaPatron (México, IMSS/Infonavit):
-- Ya existe un flujo /auditar con aceptación de paquete legal versionado antes de permitir carga y revalidación.
-- El problema observado fue repetición de intentos al guardar consentimientos de tipo contractType=consent con schemaVersion=auditapatron-legal-mx-v2.0-2026-04.
-- El backend actual corta temprano si el paquete legal ya está aceptado y la UI deshabilita el botón mientras la aceptación está pendiente de respuesta, además de bloquear acciones si el paquete legal sigue pendiente.
-- También ya está visible en /auditar: revalidación IMSS/Infonavit, explicación del siguiente documento recomendado y línea de tiempo del expediente.
-- Falta entregar instrucciones claras para conectar dominios comprados dentro de Manus.
+Contexto breve del producto:
+- Existe un flujo /auditar con aceptación de paquete legal versionado antes de permitir carga documental y revalidación.
+- El backend actual ya hace corte temprano si el paquete legal ya está aceptado.
+- El frontend ya deshabilita el botón mientras la mutación corre.
+- Aún NO hay idempotency key explícita ni candado transaccional fuerte para reintentos concurrentes o doble click desde varias pestañas.
+- También se quiere validar una ronda post-dominio en login, /auditar y páginas legales.
+- Además se quiere instrumentar analítica del embudo: home → expediente → aceptación legal → subida documental.
+- Contexto de arquitectura: AuditaPatron y CompliLink son frentes separados, pero Auditapatron conversa con Helios por webhooks.
 
 Quiero una respuesta breve y estructurada con este formato JSON estricto:
 {
   "model_view": "string corto",
-  "bug_fix_assessment": {
+  "hardening_assessment": {
     "verdict": "sufficient|partial|risky",
     "why": "string corto",
-    "recommended_hardening": ["string", "string"]
+    "recommended_backend": ["string", "string"],
+    "recommended_frontend": ["string", "string"]
   },
-  "domain_connection_assessment": {
-    "recommended_flow": ["string", "string", "string", "string"],
-    "key_watchouts": ["string", "string"]
+  "post_domain_test_plan": {
+    "critical_flows": ["string", "string", "string"],
+    "main_failures_to_watch": ["string", "string"]
+  },
+  "funnel_analytics_assessment": {
+    "recommended_events": ["string", "string", "string", "string"],
+    "event_properties": ["string", "string", "string"]
   },
   "priority_order": ["string", "string", "string"]
 }

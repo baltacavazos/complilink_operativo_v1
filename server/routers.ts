@@ -13,6 +13,7 @@ import {
   createAuditLog,
   createCaseRecord,
   ensureTenantForUser,
+  findAuditLogEntry,
   getCaseDetailForUser,
   getDashboardForUser,
   getSystemSnapshot,
@@ -20,6 +21,7 @@ import {
   grantCaseAccess,
   listAccessibleUsersByTenant,
   listAuditTrail,
+  listCanonicalContractsByType,
   listCasesForUser,
   listTenantsForUser,
   listVisibleDocuments,
@@ -30,6 +32,7 @@ import {
   addDocumentRecord,
   getAuditarDraftById,
   updateDocumentPostProcessing,
+  withDatabaseLock,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -2768,150 +2771,293 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        const detail = await getCaseDetailForUser({
-          userId: ctx.user.id,
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-        });
-        const currentAcceptance = buildLegalAcceptanceSummary(detail.consents);
+        const lockKey = `legal:${input.tenantId}:${input.caseId}:${LEGAL_ACCEPTANCE_VERSION}`;
 
-        if (currentAcceptance.isAccepted) {
-          return {
-            success: true,
-            alreadyAccepted: true,
-            acceptance: currentAcceptance,
-          };
-        }
-
-        const acceptedAt = new Date();
-        const subjectName = ctx.user.name ?? ctx.user.email ?? `Usuario ${ctx.user.id}`;
-        const subjectRole = "platform_user";
-        const clientIp = getClientIp(ctx.req);
-        const userAgent = getUserAgent(ctx.req);
-
-        const legalRecords = LEGAL_CONSENT_TYPES.map((consentType) => {
-          const relatedDocument = LEGAL_DOCUMENTS.find((document) => document.consentType === consentType);
-          const isSecondaryPurpose = consentType === "ai_training";
-
-          return {
-            consentType,
-            documentId: undefined,
-            subjectName,
-            subjectRole,
-            legalBasis: buildLegalConsentBasis(consentType),
-            status: "granted" as const,
-            notes: JSON.stringify({
-              acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
-              legalVersion: LEGAL_VERSION,
-              effectiveDate: LEGAL_EFFECTIVE_DATE,
-              consentType,
-              consentLabel: getLegalConsentLabel(consentType),
-              documentSlug: relatedDocument?.slug ?? null,
-              documentRoute: relatedDocument?.route ?? null,
-              clientIp,
-              userAgent,
-              actorUserId: ctx.user.id,
-              actorEmail: ctx.user.email ?? null,
-              source: "auditar_gate_v2",
-              treatmentMode: isSecondaryPurpose ? "opt_out_available" : "required_for_service",
-            }),
-            grantedAt: acceptedAt,
-            createdAt: acceptedAt,
-            updatedAt: acceptedAt,
-          };
-        });
-
-        for (const record of legalRecords) {
-          await addConsentRecord({
-            tenantId: input.tenantId,
-            caseId: input.caseId,
-            traceId: detail.case.traceId,
-            documentId: record.documentId,
-            subjectName: record.subjectName,
-            subjectRole: record.subjectRole,
-            legalBasis: record.legalBasis,
-            status: record.status,
-            notes: record.notes,
-            grantedAt: record.grantedAt,
-          });
-
-          const consentContract = {
-            ...buildCanonicalConsentContract({
+        return withDatabaseLock({
+          lockKey,
+          timeoutSeconds: 12,
+          action: async () => {
+            const detail = await getCaseDetailForUser({
+              userId: ctx.user.id,
               tenantId: input.tenantId,
               caseId: input.caseId,
-              traceId: detail.case.traceId,
-              documentId: record.documentId,
-              subjectName: record.subjectName,
-              status: record.status,
-              legalBasis: record.legalBasis,
-            }),
-            schema_version: LEGAL_ACCEPTANCE_VERSION,
-            legal_version: LEGAL_VERSION,
-            effective_date: LEGAL_EFFECTIVE_DATE,
-            consent_type: record.consentType,
-            consent_label: getLegalConsentLabel(record.consentType),
-            document_route: getLegalDocumentRouteByConsentType(record.consentType),
-            accepted_at: acceptedAt.toISOString(),
-            accepted_from_ip: clientIp,
-            accepted_user_agent: userAgent,
-            actor_user_id: ctx.user.id,
-            actor_email: ctx.user.email ?? null,
-          };
+            });
+            const currentAcceptance = buildLegalAcceptanceSummary(detail.consents);
+            const subjectName = ctx.user.name ?? ctx.user.email ?? `Usuario ${ctx.user.id}`;
+            const subjectRole = "platform_user";
+            const clientIp = getClientIp(ctx.req);
+            const userAgent = getUserAgent(ctx.req);
+            const acceptanceEntityId = `${input.caseId}:legal_package:${LEGAL_ACCEPTANCE_VERSION}`;
 
-          await upsertCanonicalContract({
-            tenantId: input.tenantId,
-            caseId: input.caseId,
-            traceId: detail.case.traceId,
-            contractType: "consent",
-            schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
-            payload: JSON.stringify(consentContract),
-            status: "ready",
-          });
-        }
+            type ConsentArtifact = {
+              consentType: LegalConsentType;
+              documentId: string | undefined;
+              subjectName: string;
+              subjectRole: string;
+              legalBasis: string;
+              status: "granted";
+              notes: string;
+              grantedAt: Date;
+              createdAt: Date;
+              updatedAt: Date;
+            };
 
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "consent_updated",
-          title: `Paquete legal ${LEGAL_VERSION} aceptado`,
-          description: `${subjectName} aceptó el Aviso de Privacidad Integral y los Términos y Condiciones vigentes para continuar en el expediente digital.`,
-          metadata: JSON.stringify({
-            acceptance_version: LEGAL_ACCEPTANCE_VERSION,
-            legal_version: LEGAL_VERSION,
-            consent_types: LEGAL_CONSENT_TYPES,
-            client_ip: clientIp,
-            user_agent: userAgent,
-          }),
-          eventAt: acceptedAt,
-        });
+            const parseObject = (value: string | null | undefined) => {
+              if (!value) return null;
+              try {
+                const parsed = JSON.parse(value);
+                return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+                  ? (parsed as Record<string, unknown>)
+                  : null;
+              } catch {
+                return null;
+              }
+            };
 
-        await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          entityType: "consent",
-          entityId: `${input.caseId}:legal_package:${LEGAL_ACCEPTANCE_VERSION}`,
-          action: "consent.legal_package_accept",
-          afterState: {
-            acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
-            legalVersion: LEGAL_VERSION,
-            effectiveDate: LEGAL_EFFECTIVE_DATE,
-            acceptedAt: acceptedAt.toISOString(),
-            clientIp,
-            userAgent,
-            consentTypes: LEGAL_CONSENT_TYPES,
-            requiredConsentTypes: legalRequiredConsentTypes,
+            const readString = (payload: Record<string, unknown> | null, key: string) => {
+              const value = payload?.[key];
+              return typeof value === "string" && value.trim().length > 0 ? value : null;
+            };
+
+            const toDate = (value: Date | string | null | undefined, fallback: Date) => {
+              if (value instanceof Date) return value;
+              if (typeof value === "string" && value.trim().length > 0) {
+                const parsed = new Date(value);
+                if (!Number.isNaN(parsed.getTime())) return parsed;
+              }
+              return fallback;
+            };
+
+            const isLegalConsentType = (value: string | null): value is LegalConsentType =>
+              Boolean(value && LEGAL_CONSENT_TYPES.includes(value as LegalConsentType));
+
+            const consentArtifactsByType = new Map<LegalConsentType, ConsentArtifact>();
+
+            for (const consent of detail.consents) {
+              if (consent.status !== "granted") continue;
+
+              const consentType = getLegalConsentTypeFromBasis(consent.legalBasis);
+              if (!consentType || consentArtifactsByType.has(consentType)) continue;
+
+              const notes = parseObject(consent.notes);
+              if (readString(notes, "acceptanceVersion") !== LEGAL_ACCEPTANCE_VERSION) continue;
+
+              const fallbackTimestamp = currentAcceptance.acceptedAt ? new Date(currentAcceptance.acceptedAt) : new Date();
+              const grantedAt = toDate(consent.grantedAt ?? consent.updatedAt ?? consent.createdAt, fallbackTimestamp);
+
+              consentArtifactsByType.set(consentType, {
+                consentType,
+                documentId: consent.documentId ?? undefined,
+                subjectName: consent.subjectName ?? subjectName,
+                subjectRole: consent.subjectRole ?? subjectRole,
+                legalBasis: consent.legalBasis ?? buildLegalConsentBasis(consentType),
+                status: "granted",
+                notes: consent.notes ?? JSON.stringify(notes ?? {}),
+                grantedAt,
+                createdAt: toDate(consent.createdAt, grantedAt),
+                updatedAt: toDate(consent.updatedAt ?? consent.grantedAt ?? consent.createdAt, grantedAt),
+              });
+            }
+
+            const consentContracts = await listCanonicalContractsByType({
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              contractType: "consent",
+              schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
+              status: "ready",
+            });
+
+            const contractConsentTypes = new Set<LegalConsentType>();
+            for (const contract of consentContracts) {
+              const payload = parseObject(contract.payload);
+              const consentType = readString(payload, "consent_type");
+              if (readString(payload, "schema_version") !== LEGAL_ACCEPTANCE_VERSION || !isLegalConsentType(consentType)) {
+                continue;
+              }
+              contractConsentTypes.add(consentType);
+            }
+
+            const hasAcceptanceEvent = detail.events.some((event) => {
+              if (event.eventType !== "consent_updated") return false;
+              return readString(parseObject(event.metadata), "acceptance_version") === LEGAL_ACCEPTANCE_VERSION;
+            });
+
+            const existingAuditLog = await findAuditLogEntry({
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              entityType: "consent",
+              entityId: acceptanceEntityId,
+              action: "consent.legal_package_accept",
+            });
+
+            const missingConsentTypes = LEGAL_CONSENT_TYPES.filter((type) => !consentArtifactsByType.has(type));
+            const missingContractTypes = LEGAL_CONSENT_TYPES.filter((type) => !contractConsentTypes.has(type));
+            const requiresRepair = missingConsentTypes.length > 0 || missingContractTypes.length > 0 || !hasAcceptanceEvent || !existingAuditLog;
+
+            if (currentAcceptance.isAccepted && !requiresRepair) {
+              return {
+                success: true,
+                alreadyAccepted: true,
+                acceptance: currentAcceptance,
+              };
+            }
+
+            const operationAcceptedAt = new Date();
+            const createdLegalSummaries: LegalConsentSummarySource[] = [];
+
+            for (const consentType of missingConsentTypes) {
+              const relatedDocument = LEGAL_DOCUMENTS.find((document) => document.consentType === consentType);
+              const isSecondaryPurpose = consentType === "ai_training";
+              const artifact: ConsentArtifact = {
+                consentType,
+                documentId: undefined,
+                subjectName,
+                subjectRole,
+                legalBasis: buildLegalConsentBasis(consentType),
+                status: "granted",
+                notes: JSON.stringify({
+                  acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+                  legalVersion: LEGAL_VERSION,
+                  effectiveDate: LEGAL_EFFECTIVE_DATE,
+                  consentType,
+                  consentLabel: getLegalConsentLabel(consentType),
+                  documentSlug: relatedDocument?.slug ?? null,
+                  documentRoute: relatedDocument?.route ?? null,
+                  clientIp,
+                  userAgent,
+                  actorUserId: ctx.user.id,
+                  actorEmail: ctx.user.email ?? null,
+                  source: "auditar_gate_v2",
+                  treatmentMode: isSecondaryPurpose ? "opt_out_available" : "required_for_service",
+                  idempotencyKey: lockKey,
+                }),
+                grantedAt: operationAcceptedAt,
+                createdAt: operationAcceptedAt,
+                updatedAt: operationAcceptedAt,
+              };
+
+              await addConsentRecord({
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                traceId: detail.case.traceId,
+                documentId: artifact.documentId,
+                subjectName: artifact.subjectName,
+                subjectRole: artifact.subjectRole,
+                legalBasis: artifact.legalBasis,
+                status: artifact.status,
+                notes: artifact.notes,
+                grantedAt: artifact.grantedAt,
+              });
+
+              consentArtifactsByType.set(consentType, artifact);
+              createdLegalSummaries.push({
+                legalBasis: artifact.legalBasis,
+                status: artifact.status,
+                grantedAt: artifact.grantedAt,
+                createdAt: artifact.createdAt,
+                updatedAt: artifact.updatedAt,
+              });
+            }
+
+            for (const consentType of LEGAL_CONSENT_TYPES.filter((type) => !contractConsentTypes.has(type))) {
+              const artifact = consentArtifactsByType.get(consentType);
+              if (!artifact) continue;
+
+              const notePayload = parseObject(artifact.notes);
+              const consentContract = {
+                ...buildCanonicalConsentContract({
+                  tenantId: input.tenantId,
+                  caseId: input.caseId,
+                  traceId: detail.case.traceId,
+                  documentId: artifact.documentId,
+                  subjectName: artifact.subjectName,
+                  status: artifact.status,
+                  legalBasis: artifact.legalBasis,
+                }),
+                schema_version: LEGAL_ACCEPTANCE_VERSION,
+                legal_version: LEGAL_VERSION,
+                effective_date: LEGAL_EFFECTIVE_DATE,
+                consent_type: consentType,
+                consent_label: getLegalConsentLabel(consentType),
+                document_route: getLegalDocumentRouteByConsentType(consentType),
+                accepted_at: artifact.grantedAt.toISOString(),
+                accepted_from_ip: readString(notePayload, "clientIp") ?? clientIp,
+                accepted_user_agent: readString(notePayload, "userAgent") ?? userAgent,
+                actor_user_id: ctx.user.id,
+                actor_email: readString(notePayload, "actorEmail") ?? ctx.user.email ?? null,
+                idempotency_key: lockKey,
+              };
+
+              await upsertCanonicalContract({
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                traceId: detail.case.traceId,
+                contractType: "consent",
+                schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
+                payload: JSON.stringify(consentContract),
+                status: "ready",
+              });
+            }
+
+            const finalAcceptance = buildLegalAcceptanceSummary([...detail.consents, ...createdLegalSummaries]);
+            const acceptanceTimestamp = finalAcceptance.acceptedAt ? new Date(finalAcceptance.acceptedAt) : operationAcceptedAt;
+
+            if (!hasAcceptanceEvent) {
+              await addCaseEvent({
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                traceId: detail.case.traceId,
+                actorUserId: ctx.user.id,
+                eventType: "consent_updated",
+                title: `Paquete legal ${LEGAL_VERSION} aceptado`,
+                description: `${subjectName} aceptó el Aviso de Privacidad Integral y los Términos y Condiciones vigentes para continuar en el expediente digital.`,
+                metadata: JSON.stringify({
+                  acceptance_version: LEGAL_ACCEPTANCE_VERSION,
+                  legal_version: LEGAL_VERSION,
+                  consent_types: LEGAL_CONSENT_TYPES,
+                  client_ip: clientIp,
+                  user_agent: userAgent,
+                  idempotency_key: lockKey,
+                }),
+                eventAt: acceptanceTimestamp,
+              });
+            }
+
+            if (!existingAuditLog) {
+              await createAuditLog({
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                traceId: detail.case.traceId,
+                actorUserId: ctx.user.id,
+                entityType: "consent",
+                entityId: acceptanceEntityId,
+                action: "consent.legal_package_accept",
+                afterState: {
+                  acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+                  legalVersion: LEGAL_VERSION,
+                  effectiveDate: LEGAL_EFFECTIVE_DATE,
+                  acceptedAt: acceptanceTimestamp.toISOString(),
+                  clientIp,
+                  userAgent,
+                  consentTypes: LEGAL_CONSENT_TYPES,
+                  requiredConsentTypes: legalRequiredConsentTypes,
+                  idempotencyKey: lockKey,
+                  repairedArtifacts: {
+                    missingConsentTypes,
+                    missingContractTypes,
+                    createdAcceptanceEvent: !hasAcceptanceEvent,
+                  },
+                },
+              });
+            }
+
+            return {
+              success: true,
+              alreadyAccepted: currentAcceptance.isAccepted,
+              acceptance: finalAcceptance,
+            };
           },
         });
-
-        return {
-          success: true,
-          alreadyAccepted: false,
-          acceptance: buildLegalAcceptanceSummary([...detail.consents, ...legalRecords]),
-        };
       }),
     create: protectedProcedure
       .input(

@@ -3,6 +3,7 @@ import { getLoginUrl } from "@/const";
 import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
+import { trackFunnelStep } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -1584,6 +1585,8 @@ export default function Auditar() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const syncedRemoteViewStateRef = useRef("");
+  const trackedExpedienteScopeRef = useRef("");
+  const trackedLegalGateScopeRef = useRef("");
 
   const auditarPersistenceKey = useMemo(() => {
     if (!auth.user) {
@@ -1823,6 +1826,33 @@ export default function Auditar() {
   const legalPendingDocuments = legalAcceptance?.missingDocuments ?? [];
   const legalGateRequired = Boolean(caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted);
   const documents = caseDetailQuery.data?.documents ?? [];
+
+  useEffect(() => {
+    if (!currentCaseScopeKey || caseDetailQuery.status !== "success" || trackedExpedienteScopeRef.current === currentCaseScopeKey) {
+      return;
+    }
+
+    trackedExpedienteScopeRef.current = currentCaseScopeKey;
+    trackFunnelStep("expediente_opened", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      documentCount: documents.length,
+      legalAccepted: !legalGateRequired,
+    });
+  }, [caseDetailQuery.status, currentCaseScopeKey, documents.length, legalGateRequired, selectedCaseId, selectedTenantId]);
+
+  useEffect(() => {
+    if (!currentCaseScopeKey || !legalGateRequired || trackedLegalGateScopeRef.current === currentCaseScopeKey) {
+      return;
+    }
+
+    trackedLegalGateScopeRef.current = currentCaseScopeKey;
+    trackFunnelStep("legal_gate_viewed", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      missingDocumentsCount: legalPendingDocuments.length,
+    });
+  }, [currentCaseScopeKey, legalGateRequired, legalPendingDocuments.length, selectedCaseId, selectedTenantId]);
   const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
   const socialSecurityValidation = caseDetailQuery.data?.socialSecurityValidation;
   const uploadSocialSecurityValidation = lastUpload?.socialSecurityValidation ?? null;
@@ -2182,6 +2212,11 @@ export default function Auditar() {
       await acceptLegalPackageMutation.mutateAsync({
         ...caseDetailInput,
         accepted: true,
+      });
+      trackFunnelStep("legal_package_accepted", {
+        tenantId: caseDetailInput.tenantId,
+        caseId: caseDetailInput.caseId,
+        acceptedDocumentsCount: acceptedLegalDocumentsCount + legalPendingDocuments.length,
       });
       setLegalGateChecked(false);
       await Promise.all([
@@ -2555,6 +2590,12 @@ export default function Auditar() {
       });
 
       setPendingDraft(result as DraftPreviewResultView);
+      trackFunnelStep("document_draft_analyzed", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType: result.classification.documentType,
+        captureMode: selectedCaptureMode ?? preferredCaptureMode ?? null,
+      });
       setLastUpload(null);
       setSelectedFile(null);
       setSelectedCaptureMode(null);
@@ -2590,6 +2631,12 @@ export default function Auditar() {
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
+      trackFunnelStep("document_uploaded", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType: result.classification.documentType,
+        sourceChannel: "manual",
+      });
       setPendingDraft(null);
       setManualFieldValues({});
       setSelectedFile(null);
@@ -2660,6 +2707,9 @@ export default function Auditar() {
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
                   onClick={() => {
+                    trackFunnelStep("auditar_login_clicked", {
+                      source: "auditar_guard",
+                    });
                     window.location.href = getLoginUrl();
                   }}
                 >

@@ -43,6 +43,40 @@ export async function getDb() {
   return _db;
 }
 
+function readLockResult(rows: unknown, field: string) {
+  if (!Array.isArray(rows) || rows.length === 0) return 0;
+  const firstRow = rows[0] as Record<string, unknown>;
+  const value = firstRow?.[field];
+  if (typeof value === "number") return value;
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "string") return Number.parseInt(value, 10) || 0;
+  return 0;
+}
+
+export async function withDatabaseLock<T>(params: {
+  lockKey: string;
+  timeoutSeconds?: number;
+  action: () => Promise<T>;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const lockKey = params.lockKey.trim().slice(0, 64);
+  const timeoutSeconds = Math.max(1, Math.min(params.timeoutSeconds ?? 10, 30));
+  const acquiredRows = await db.execute(sql`SELECT GET_LOCK(${lockKey}, ${timeoutSeconds}) AS acquired`);
+  const acquired = readLockResult(acquiredRows, "acquired");
+
+  if (acquired !== 1) {
+    throw new Error("No se pudo asegurar la aceptación legal en este momento. Intenta de nuevo.");
+  }
+
+  try {
+    return await params.action();
+  } finally {
+    await db.execute(sql`SELECT RELEASE_LOCK(${lockKey}) AS released`);
+  }
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
@@ -449,6 +483,68 @@ export async function upsertCanonicalContract(input: InsertCanonicalContract) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(canonicalContracts).values(input);
+}
+
+export async function listCanonicalContractsByType(params: {
+  tenantId: string;
+  caseId: string;
+  contractType: InsertCanonicalContract["contractType"];
+  schemaVersion?: string;
+  status?: InsertCanonicalContract["status"];
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db
+    .select({
+      id: canonicalContracts.id,
+      payload: canonicalContracts.payload,
+      createdAt: canonicalContracts.createdAt,
+      updatedAt: canonicalContracts.updatedAt,
+      status: canonicalContracts.status,
+      schemaVersion: canonicalContracts.schemaVersion,
+    })
+    .from(canonicalContracts)
+    .where(
+      and(
+        eq(canonicalContracts.tenantId, params.tenantId),
+        eq(canonicalContracts.caseId, params.caseId),
+        eq(canonicalContracts.contractType, params.contractType),
+        params.schemaVersion ? eq(canonicalContracts.schemaVersion, params.schemaVersion) : undefined,
+        params.status ? eq(canonicalContracts.status, params.status) : undefined,
+      ),
+    )
+    .orderBy(desc(canonicalContracts.createdAt));
+}
+
+export async function findAuditLogEntry(params: {
+  tenantId: string;
+  caseId: string;
+  entityType: InsertAuditLog["entityType"];
+  entityId: string;
+  action: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select({
+      id: auditLogs.id,
+      createdAt: auditLogs.createdAt,
+    })
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.tenantId, params.tenantId),
+        eq(auditLogs.caseId, params.caseId),
+        eq(auditLogs.entityType, params.entityType),
+        eq(auditLogs.entityId, params.entityId),
+        eq(auditLogs.action, params.action),
+      ),
+    )
+    .limit(1);
+
+  return rows[0] ?? null;
 }
 
 export async function getAuditarDraftById(params: { tenantId: string; caseId: string; draftId: string }) {
