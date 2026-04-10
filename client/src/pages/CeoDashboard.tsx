@@ -3,6 +3,7 @@ import DashboardLayout, { type DashboardNavigationItem } from "@/components/Dash
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { downloadCeoCsvReport, downloadCeoPdfReport } from "@/pages/ceoDashboardExports";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -205,6 +206,7 @@ export default function CeoDashboard() {
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [exportKind, setExportKind] = useState<"csv" | "pdf" | null>(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -512,6 +514,46 @@ export default function CeoDashboard() {
     }
   }
 
+  async function handleExport(kind: "csv" | "pdf") {
+    if (!snapshotData) {
+      sonnerToast.error("La exportación aún no está disponible", {
+        description: "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
+      });
+      return;
+    }
+
+    const actorLabel = user?.name || user?.email || "Operación ejecutiva";
+    const appliedFilters = activeFilterChips.map((chip) => chip.label);
+
+    try {
+      setExportKind(kind);
+      const filename =
+        kind === "pdf"
+          ? downloadCeoPdfReport({
+              section: currentSection,
+              snapshot: snapshotData,
+              appliedFilters,
+              actorLabel,
+            })
+          : downloadCeoCsvReport({
+              section: currentSection,
+              snapshot: snapshotData,
+              appliedFilters,
+              actorLabel,
+            });
+
+      sonnerToast.success(kind === "pdf" ? "Reporte PDF generado" : "Reporte CSV generado", {
+        description: `${filename} se descargó con la vista actual y los filtros aplicados.`,
+      });
+    } catch (error) {
+      sonnerToast.error("No fue posible generar el reporte ejecutivo", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    } finally {
+      setExportKind(null);
+    }
+  }
+
   return (
     <DashboardLayout
       title="Dashboard CEO"
@@ -519,6 +561,28 @@ export default function CeoDashboard() {
       navigation={navigation}
       headerActions={
         <>
+          <Button
+            variant="outline"
+            className="rounded-full bg-white"
+            disabled={!snapshotData || exportKind !== null}
+            onClick={() => {
+              void handleExport("csv");
+            }}
+          >
+            {exportKind === "csv" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Files className="mr-2 h-4 w-4" />}
+            Exportar CSV
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-full bg-white"
+            disabled={!snapshotData || exportKind !== null}
+            onClick={() => {
+              void handleExport("pdf");
+            }}
+          >
+            {exportKind === "pdf" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+            Reporte PDF
+          </Button>
           <Button variant="outline" className="rounded-full" onClick={() => void handleRefresh()}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Actualizar
