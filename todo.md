@@ -539,3 +539,8 @@
 - [x] Contrastar con OpenAI, Grok y Gemini el diseño mínimo útil de reportes ejecutivos exportables para la Consola CEO
 - [x] Implementar reportes ejecutivos exportables de la Consola CEO con alcance inicial útil para operación
 - [x] Añadir pruebas Vitest y validación técnica del bloque de reportes ejecutivos exportables de la Consola CEO
+- [ ] Contrastar con OpenAI, Grok y Gemini el alcance mínimo útil del endurecimiento V1 de permisos y validaciones cruzadas en la Consola CEO
+- [ ] Implementar endurecimiento V1 de permisos y validaciones cruzadas en la Consola CEO
+- [ ] Añadir pruebas Vitest y validación técnica del endurecimiento V1 de la Consola CEO
+- [x] Endurecer V1 la Consola CEO con validaciones stale, secuencia segura y microcopy operativo consistente
+- [x] Corregir el import roto de la página CeoDashboard para restablecer la compilación del frontend

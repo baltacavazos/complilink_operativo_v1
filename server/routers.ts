@@ -88,16 +88,26 @@ const documentVisibilitySchema = z.enum(DOCUMENT_VISIBILITIES);
 const operationalAlertStatusSchema = z.enum(["acknowledged", "resolved"]);
 const tenantMembershipStatusSchema = z.enum(["active", "revoked"]);
 const ceoCaseProgressStatusSchema = z.enum(["analysis", "conciliation", "litigation"]);
+const ceoCurrentAlertStatusSchema = z.enum(["open", "acknowledged", "resolved"]);
+const ceoCurrentMembershipStatusSchema = z.enum(["active", "revoked"]);
+const ceoAllowedDateWindowDaysSchema = z.union([z.literal(7), z.literal(30), z.literal(90), z.literal(365)]);
 const ceoSnapshotFiltersSchema = z
   .object({
     tenantId: z.string().trim().min(1).max(80).optional(),
     severity: z.string().trim().min(1).max(40).optional(),
     caseId: z.string().trim().min(1).max(120).optional(),
     userId: z.number().int().positive().optional(),
-    dateWindowDays: z.number().int().positive().max(365).optional(),
+    dateWindowDays: ceoAllowedDateWindowDaysSchema.optional(),
     query: z.string().trim().min(1).max(160).optional(),
   })
   .optional();
+const CEO_SAFE_ERROR_COPY = {
+  forbidden: "No tienes permisos suficientes para realizar esta acción.",
+  staleData: "Los datos han cambiado. Actualiza la vista e intenta nuevamente.",
+  invalidTransition: "Solo se permite el siguiente cambio operativo seguro desde la consola CEO.",
+  outOfScopeMembership: "No puedes modificar accesos fuera del caso visible en este bloque seguro.",
+  genericRetry: "Ocurrió un error inesperado. Intenta nuevamente en unos segundos.",
+} as const;
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
@@ -125,6 +135,15 @@ const CEO_NEXT_SAFE_CASE_STATUS: Partial<Record<(typeof CASE_STATUSES)[number], 
   analysis: "conciliation",
   conciliation: "litigation",
 };
+
+function assertCeoExpectedCurrentStatus(params: {
+  expectedCurrentStatus?: string;
+  actualCurrentStatus: string;
+}) {
+  if (params.expectedCurrentStatus && params.expectedCurrentStatus !== params.actualCurrentStatus) {
+    throw new Error(CEO_SAFE_ERROR_COPY.staleData);
+  }
+}
 const complilinkReturnEventNames = new Set([
   "document.processing.started",
   "document.analysis.completed",
@@ -1259,6 +1278,7 @@ export const appRouter = router({
         z.object({
           alertId: z.number().int().positive(),
           status: operationalAlertStatusSchema,
+          expectedCurrentStatus: ceoCurrentAlertStatusSchema.optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1266,12 +1286,17 @@ export const appRouter = router({
         const targetAlert = snapshot.recentAlerts.find((alert) => alert.id === input.alertId);
 
         if (!targetAlert) {
-          throw new Error("La alerta ya no está disponible en la vista operativa actual.");
+          throw new Error(CEO_SAFE_ERROR_COPY.staleData);
         }
+
+        assertCeoExpectedCurrentStatus({
+          expectedCurrentStatus: input.expectedCurrentStatus,
+          actualCurrentStatus: targetAlert.status,
+        });
 
         const nextStatus = targetAlert.status === "open" ? "acknowledged" : targetAlert.status === "acknowledged" ? "resolved" : null;
         if (!nextStatus || input.status !== nextStatus) {
-          throw new Error("La transición solicitada no es válida para esta alerta.");
+          throw new Error(CEO_SAFE_ERROR_COPY.invalidTransition);
         }
 
         const { previous, updated } = await updateOperationalAlertStatus({
@@ -1298,6 +1323,7 @@ export const appRouter = router({
         z.object({
           membershipId: z.number().int().positive(),
           status: tenantMembershipStatusSchema,
+          expectedCurrentStatus: ceoCurrentMembershipStatusSchema.optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1305,15 +1331,20 @@ export const appRouter = router({
         const targetMembership = snapshot.recentMemberships.find((membership) => membership.id === input.membershipId);
 
         if (!targetMembership) {
-          throw new Error("El acceso seleccionado ya no está disponible en la consola CEO.");
+          throw new Error(CEO_SAFE_ERROR_COPY.staleData);
         }
 
+        assertCeoExpectedCurrentStatus({
+          expectedCurrentStatus: input.expectedCurrentStatus,
+          actualCurrentStatus: targetMembership.status,
+        });
+
         if (targetMembership.accessScope !== "case" || !targetMembership.caseId) {
-          throw new Error("Solo se pueden operar accesos acotados a un caso específico desde este bloque seguro.");
+          throw new Error(CEO_SAFE_ERROR_COPY.outOfScopeMembership);
         }
 
         if (targetMembership.status === input.status) {
-          throw new Error("El acceso ya se encuentra en el estado solicitado.");
+          throw new Error(CEO_SAFE_ERROR_COPY.staleData);
         }
 
         const { previous, updated } = await updateTenantMembershipStatus({
@@ -1341,6 +1372,7 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           status: ceoCaseProgressStatusSchema,
+          expectedCurrentStatus: caseStatusSchema.optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -1350,12 +1382,17 @@ export const appRouter = router({
         );
 
         if (!targetCase) {
-          throw new Error("El caso ya no está disponible en la vista operativa actual.");
+          throw new Error(CEO_SAFE_ERROR_COPY.staleData);
         }
+
+        assertCeoExpectedCurrentStatus({
+          expectedCurrentStatus: input.expectedCurrentStatus,
+          actualCurrentStatus: targetCase.status,
+        });
 
         const nextStatus = CEO_NEXT_SAFE_CASE_STATUS[targetCase.status];
         if (!nextStatus || input.status !== nextStatus) {
-          throw new Error("Solo se puede confirmar el siguiente avance operativo sugerido por la consola CEO.");
+          throw new Error(CEO_SAFE_ERROR_COPY.invalidTransition);
         }
 
         const updatedCase = await updateCaseStatus({

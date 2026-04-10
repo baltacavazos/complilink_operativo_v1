@@ -107,6 +107,25 @@ function getSafeMembershipAction(membership: { status: string; accessScope: stri
   return null;
 }
 
+function getSafeActionErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+
+  if (/han cambiado|desactualizada/i.test(message)) {
+    return "La vista quedó desactualizada. Refresca el panel antes de intentar de nuevo.";
+  }
+  if (/siguiente cambio operativo seguro|transición solicitada no es válida/i.test(message)) {
+    return "El backend bloqueó un cambio fuera de la secuencia segura permitida por la consola CEO.";
+  }
+  if (/fuera del caso visible|acotados a un caso/i.test(message)) {
+    return "Este bloque sólo permite operar accesos ligados a un caso visible y trazable.";
+  }
+  if (/permission|FORBIDDEN|10002/i.test(message)) {
+    return "Tu sesión ya no tiene permisos suficientes para ejecutar esta acción.";
+  }
+
+  return "Intenta nuevamente en unos segundos.";
+}
+
 function KpiCard({
   label,
   value,
@@ -231,7 +250,7 @@ export default function CeoDashboard() {
       severity?: string;
       caseId?: string;
       userId?: number;
-      dateWindowDays?: number;
+      dateWindowDays?: 7 | 30 | 90 | 365;
       query?: string;
     } = {};
 
@@ -239,7 +258,9 @@ export default function CeoDashboard() {
     if (filters.severity !== "all") input.severity = filters.severity;
     if (filters.caseId !== "all") input.caseId = filters.caseId;
     if (filters.userId !== "all") input.userId = Number(filters.userId);
-    if (filters.dateWindowDays !== "all") input.dateWindowDays = Number(filters.dateWindowDays);
+    if (filters.dateWindowDays === "7" || filters.dateWindowDays === "30" || filters.dateWindowDays === "90" || filters.dateWindowDays === "365") {
+      input.dateWindowDays = Number(filters.dateWindowDays) as 7 | 30 | 90 | 365;
+    }
     if (debouncedQuery.length > 0) input.query = debouncedQuery;
 
     return input;
@@ -472,11 +493,11 @@ export default function CeoDashboard() {
     if (!nextStatus || !actionLabel) return;
 
     try {
-      await alertMutation.mutateAsync({ alertId, status: nextStatus });
+      await alertMutation.mutateAsync({ alertId, status: nextStatus, expectedCurrentStatus: status === "open" || status === "acknowledged" || status === "resolved" ? status : undefined });
       await refreshSnapshotWithSuccess("Alerta actualizada", `${title}: ${actionLabel.toLowerCase()} y traza registrada.`);
     } catch (error) {
       sonnerToast.error("No fue posible actualizar la alerta", {
-        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+        description: getSafeActionErrorMessage(error),
       });
     }
   }
@@ -490,11 +511,15 @@ export default function CeoDashboard() {
     if (!action) return;
 
     try {
-      await membershipMutation.mutateAsync({ membershipId, status: action.status });
+      await membershipMutation.mutateAsync({
+        membershipId,
+        status: action.status,
+        expectedCurrentStatus: membership.status === "active" || membership.status === "revoked" ? membership.status : undefined,
+      });
       await refreshSnapshotWithSuccess("Acceso actualizado", `${userLabel}: ${action.label.toLowerCase()} con trazabilidad ejecutiva.`);
     } catch (error) {
       sonnerToast.error("No fue posible actualizar el acceso", {
-        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+        description: getSafeActionErrorMessage(error),
       });
     }
   }
@@ -504,12 +529,23 @@ export default function CeoDashboard() {
     const actionLabel = getSafeCaseActionLabel(status);
     if (!nextStatus || !actionLabel) return;
 
+    const confirmed = window.confirm(`${actionLabel} para “${title}”. Esta acción dejará bitácora operativa y sólo debe ejecutarse si ya validaste la evidencia del caso.`);
+    if (!confirmed) return;
+
     try {
-      await caseMutation.mutateAsync({ tenantId, caseId, status: nextStatus });
+      await caseMutation.mutateAsync({
+        tenantId,
+        caseId,
+        status: nextStatus,
+        expectedCurrentStatus:
+          status === "intake" || status === "analysis" || status === "conciliation" || status === "litigation" || status === "archived"
+            ? status
+            : undefined,
+      });
       await refreshSnapshotWithSuccess("Caso actualizado", `${title}: ${actionLabel.toLowerCase()} y bitácora registrada.`);
     } catch (error) {
       sonnerToast.error("No fue posible confirmar el avance del caso", {
-        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+        description: getSafeActionErrorMessage(error),
       });
     }
   }
@@ -856,6 +892,10 @@ export default function CeoDashboard() {
                     Sólo cambios con trazabilidad y bajo riesgo
                   </Badge>
                 </div>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  Este bloque sólo expone cambios de bajo riesgo. Si el sistema detecta que la vista quedó desactualizada o que una transición sale de secuencia,
+                  bloqueará la operación y te pedirá refrescar antes de continuar.
+                </p>
                 <div className="mt-5 grid gap-4 xl:grid-cols-3">
                   <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                     <div className="flex items-center justify-between gap-2">

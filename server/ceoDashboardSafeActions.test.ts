@@ -261,7 +261,7 @@ describe("Dashboard CEO safe actions", () => {
         alertId: 101,
         status: "resolved",
       }),
-    ).rejects.toThrow(/transición solicitada no es válida/i);
+    ).rejects.toThrow(/siguiente cambio operativo seguro/i);
 
     expect(db.updateOperationalAlertStatus).not.toHaveBeenCalled();
     expect(db.createAuditLog).not.toHaveBeenCalled();
@@ -314,7 +314,7 @@ describe("Dashboard CEO safe actions", () => {
         membershipId: 777,
         status: "revoked",
       }),
-    ).rejects.toThrow(/solo se pueden operar accesos acotados a un caso/i);
+    ).rejects.toThrow(/fuera del caso visible|acotados a un caso/i);
 
     expect(db.updateTenantMembershipStatus).not.toHaveBeenCalled();
   });
@@ -326,6 +326,7 @@ describe("Dashboard CEO safe actions", () => {
       tenantId: "balt-1",
       caseId: "CASE-BALT-1-DEMO001",
       status: "analysis",
+      expectedCurrentStatus: "intake",
     });
 
     expect(db.updateCaseStatus).toHaveBeenCalledWith({
@@ -351,6 +352,53 @@ describe("Dashboard CEO safe actions", () => {
     expect(result).toMatchObject({ status: "analysis" });
   });
 
+  it("bloquea acciones sobre alertas si la vista del operador quedó stale", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoUpdateAlertStatus({
+        alertId: 101,
+        status: "acknowledged",
+        expectedCurrentStatus: "acknowledged",
+      }),
+    ).rejects.toThrow(/han cambiado|desactualizada/i);
+
+    expect(db.updateOperationalAlertStatus).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("bloquea acciones sobre accesos si el estado visible ya cambió", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoUpdateMembershipStatus({
+        membershipId: 501,
+        status: "revoked",
+        expectedCurrentStatus: "revoked",
+      }),
+    ).rejects.toThrow(/han cambiado|desactualizada/i);
+
+    expect(db.updateTenantMembershipStatus).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("bloquea el avance del caso si el estado vigente ya no coincide con la vista del operador", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoProgressCaseStage({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        status: "analysis",
+        expectedCurrentStatus: "analysis",
+      }),
+    ).rejects.toThrow(/han cambiado|desactualizada/i);
+
+    expect(db.updateCaseStatus).not.toHaveBeenCalled();
+    expect(db.addCaseEvent).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
   it("bloquea estas mutaciones para usuarios sin rol admin", async () => {
     const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
 
@@ -359,6 +407,7 @@ describe("Dashboard CEO safe actions", () => {
         tenantId: "balt-1",
         caseId: "CASE-BALT-1-DEMO001",
         status: "analysis",
+        expectedCurrentStatus: "intake",
       }),
     ).rejects.toThrow(/10002|required permission|FORBIDDEN/i);
   });

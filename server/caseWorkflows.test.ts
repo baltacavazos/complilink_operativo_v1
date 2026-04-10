@@ -290,6 +290,16 @@ describe("appRouter case workflows", () => {
     });
   });
 
+  it("rejects unsupported date windows for the CEO executive snapshot", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoSnapshot({
+        dateWindowDays: 14,
+      }),
+    ).rejects.toThrow(/Invalid enum value|Invalid input|Expected 7|30|90|365/i);
+  });
+
   it("blocks the CEO executive snapshot for non-admin users", async () => {
     const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
 
