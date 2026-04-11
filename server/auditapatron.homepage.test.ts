@@ -63,14 +63,18 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).not.toContain("CompliLink Operativo");
   });
 
-  it("simplifies the first mobile upload touchpoint with a visible mode toggle and explicit auto-advance copy", () => {
+  it("simplifies the first mobile upload touchpoint with a visible mode toggle, autofocus and selector analytics", () => {
     expect(auditFlowSource).toContain("const isFirstDocumentFlow = documents.length === 0 && !pendingDraft && !lastUpload;");
     expect(auditFlowSource).toContain("Sube tu primer documento");
     expect(auditFlowSource).toContain("Toma foto para empezar");
     expect(auditFlowSource).toContain("Elige archivo para empezar");
-    expect(auditFlowSource).toContain("comenzaremos a revisarla automáticamente");
-    expect(auditFlowSource).toContain("comenzaremos a revisarlo automáticamente");
-    expect(auditFlowSource).toContain("el análisis empezará solo");
+    expect(auditFlowSource).toContain("El análisis empieza solo en cuanto captures o elijas el documento.");
+    expect(auditFlowSource).toContain("Elige cómo subirlo. Después te mostraremos el siguiente documento sugerido.");
+    expect(auditFlowSource).toContain("upload_mode_selected");
+    expect(auditFlowSource).toContain("compact_mobile_toggle");
+    expect(auditFlowSource).toContain("preference_panel");
+    expect(auditFlowSource).toContain("recommendedStepRef.current?.scrollIntoView");
+    expect(auditFlowSource).toContain("Siguiente paso sugerido");
     expect(auditFlowSource).toContain("Archivo");
     expect(auditFlowSource).toContain("Cámara");
     expect(auditFlowSource).toContain("La revisión preliminar empieza sola en cuanto termina la carga");

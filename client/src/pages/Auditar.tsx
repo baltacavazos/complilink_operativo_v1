@@ -1783,6 +1783,7 @@ export default function Auditar() {
   const [manualFieldValues, setManualFieldValues] = useState<Record<string, string>>({});
   const [previewStatusFlash, setPreviewStatusFlash] = useState(false);
   const [saveStatusFlash, setSaveStatusFlash] = useState(false);
+  const [recommendedStepFlash, setRecommendedStepFlash] = useState(false);
   const [lastUpload, setLastUpload] = useState<ConfirmedUploadResultView | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
@@ -1797,6 +1798,7 @@ export default function Auditar() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
+  const recommendedStepRef = useRef<HTMLDivElement | null>(null);
   const syncedRemoteViewStateRef = useRef("");
   const trackedExpedienteScopeRef = useRef("");
   const trackedLegalGateScopeRef = useRef("");
@@ -2874,6 +2876,18 @@ export default function Auditar() {
   }, [pendingDraft]);
 
   useEffect(() => {
+    if (!pendingDraft || !previewNextTarget) {
+      setRecommendedStepFlash(false);
+      return;
+    }
+
+    recommendedStepRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setRecommendedStepFlash(true);
+    const timeoutId = window.setTimeout(() => setRecommendedStepFlash(false), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [pendingDraft, previewNextTarget]);
+
+  useEffect(() => {
     if (!lastUpload) {
       setSaveStatusFlash(false);
       return;
@@ -2950,6 +2964,21 @@ export default function Auditar() {
     }
 
     openFilePicker();
+  };
+
+  const handleCaptureModeSelection = (
+    mode: AuditarCaptureMode,
+    surface: "compact_mobile_toggle" | "preference_panel",
+  ) => {
+    setPreferredCaptureMode(mode);
+    setSelectedCaptureMode(mode);
+    trackFunnelStep("upload_mode_selected", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      mode,
+      context: shouldCompactMobileUploadEntry ? "first_upload" : "subsequent_upload",
+      surface,
+    });
   };
 
   const focusRecommendedUpload = (targetType?: DossierTarget["type"] | null) => {
@@ -3938,11 +3967,7 @@ export default function Auditar() {
                           {shouldCompactMobileUploadEntry ? "Sube tu primer documento" : "Escaneo asistido por IA"}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-700">
-                          {shouldCompactMobileUploadEntry
-                            ? activeCaptureMode === "camera"
-                              ? "Empieza con una foto clara de tu documento. En cuanto la tomes, comenzaremos a revisarla automáticamente para darte una primera lectura sin pasos extra."
-                              : "Empieza con el archivo que ya tengas guardado. En cuanto lo elijas, comenzaremos a revisarlo automáticamente para darte una primera lectura sin pasos extra."
-                            : selectedFilePreparationCopy}
+                          {shouldCompactMobileUploadEntry ? "El análisis empieza solo en cuanto captures o elijas el documento." : selectedFilePreparationCopy}
                         </p>
                       </div>
                     </div>
@@ -3964,7 +3989,7 @@ export default function Auditar() {
                             ? "border-teal-200 bg-teal-50 text-teal-900"
                             : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
-                        onClick={() => setPreferredCaptureMode("camera")}
+                        onClick={() => handleCaptureModeSelection("camera", "preference_panel")}
                       >
                         <Camera className="h-4 w-4" strokeWidth={1.8} />
                         Cámara
@@ -3976,7 +4001,7 @@ export default function Auditar() {
                             ? "border-teal-200 bg-teal-50 text-teal-900"
                             : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
-                        onClick={() => setPreferredCaptureMode("file")}
+                        onClick={() => handleCaptureModeSelection("file", "preference_panel")}
                       >
                         <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
                         Archivo
@@ -4048,9 +4073,7 @@ export default function Auditar() {
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {shouldCompactMobileUploadEntry
-                          ? activeCaptureMode === "camera"
-                            ? "Abriremos primero la cámara y, en cuanto tomes la foto, el análisis empezará solo. Si ya tienes el documento guardado, cambia a archivo con un toque."
-                            : "Abriremos primero tus archivos y, en cuanto elijas uno, el análisis empezará solo. Si prefieres tomar foto, cambia a cámara con un toque."
+                          ? "Elige cómo subirlo. Después te mostraremos el siguiente documento sugerido."
                           : preferredCaptureMode === "camera"
                             ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
                             : preferredCaptureMode === "file"
@@ -4066,10 +4089,7 @@ export default function Auditar() {
                                 ? "border-teal-200 bg-teal-50 text-teal-900"
                                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                             }`}
-                            onClick={() => {
-                              setPreferredCaptureMode("camera");
-                              setSelectedCaptureMode("camera");
-                            }}
+                            onClick={() => handleCaptureModeSelection("camera", "compact_mobile_toggle")}
                           >
                             <Camera className="h-4 w-4" strokeWidth={1.8} />
                             Cámara
@@ -4081,10 +4101,7 @@ export default function Auditar() {
                                 ? "border-teal-200 bg-teal-50 text-teal-900"
                                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                             }`}
-                            onClick={() => {
-                              setPreferredCaptureMode("file");
-                              setSelectedCaptureMode("file");
-                            }}
+                            onClick={() => handleCaptureModeSelection("file", "compact_mobile_toggle")}
                           >
                             <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
                             Archivo
@@ -4324,8 +4341,17 @@ export default function Auditar() {
                       )}
                     </div>
 
-                    <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-300">
-                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">Sugerencia útil para seguir</p>
+                    <div
+                      ref={recommendedStepRef}
+                      className={`rounded-[1.2rem] border bg-emerald-50 p-4 transition-all duration-300 ${
+                        recommendedStepFlash
+                          ? "border-emerald-300 shadow-[0_24px_60px_-38px_rgba(16,185,129,0.45)] ring-2 ring-emerald-100"
+                          : "border-emerald-100"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                        {recommendedStepFlash ? "Siguiente paso sugerido" : "Sugerencia útil para seguir"}
+                      </p>
                       <h4 className="mt-2 text-lg font-semibold text-slate-950">{previewNextDocumentCopy.headline}</h4>
                       <p className="mt-2 text-sm leading-7 text-emerald-950">{previewNextDocumentCopy.intro}</p>
                       <div className="mt-4 rounded-[1rem] border border-white/80 bg-white p-3">

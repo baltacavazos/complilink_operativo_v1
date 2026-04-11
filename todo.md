@@ -754,3 +754,6 @@
 - [ ] Definir y documentar qué eventos se consideran críticos para evitar notificaciones innecesarias
 - [x] Simplificar aún más la primera carga mobile-first de /auditar ocultando fricción inicial, priorizando cámara y reforzando el valor incremental del expediente
 - [x] Retomar ahora el bloque mobile-first prioritario de /auditar con contraste multimodelo previo: autoavance seguro, preferencia visible cámara/archivo y reducción adicional de acciones secundarias
+- [x] Añadir autoenfoque visual al siguiente paso sugerido tras la primera carga en /auditar
+- [x] Reducir aún más los textos secundarios del bloque móvil de /auditar para dejar una sola decisión principal
+- [x] Instrumentar eventos analíticos del selector Cámara/Archivo en /auditar para medir adopción real
