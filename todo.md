@@ -736,3 +736,4 @@
 - [ ] Descargar a Dropbox los artefactos voluminosos del flujo de respaldo cuando ayude a no saturar el contexto de trabajo
 - [x] Corregir la inconsistencia entre la prueba reforzada de Dropbox y la ejecución real del script de backup que falla con 401 en create_folder_v2
 - [x] Investigar y corregir la discrepancia entre la prueba reforzada de Dropbox y la ejecución real del script de respaldo que devolvió 401 en create_folder_v2
+- [x] Cerrar el frente de Dropbox dejando README de respaldo, CONFIGURACION.md, ARQUITECTURA.md y documentación de servicios activos integrados en el paquete operativo

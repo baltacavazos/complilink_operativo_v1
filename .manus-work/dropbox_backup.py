@@ -24,6 +24,17 @@ CHUNK_SIZE = 8 * 1024 * 1024
 TIME_FORMAT = "%Y%m%d_%H%M"
 BACKUP_RE = re.compile(r"AuditaPatron_backup_(\d{8}_\d{4})\.zip$")
 README_RE = re.compile(r"AuditaPatron_backup_(\d{8}_\d{4})_README\.md$")
+CONFIG_DOCS = ["README.md", "CONFIGURACION.md", "ARQUITECTURA.md"]
+THIRD_PARTY_SERVICES = [
+    "Dropbox",
+    "MySQL/TiDB",
+    "S3",
+    "Manus OAuth",
+    "OpenAI",
+    "Gemini",
+    "Grok",
+    "Resend",
+]
 
 
 @dataclass
@@ -250,6 +261,49 @@ def parse_timestamp_from_name(name: str, regex: re.Pattern[str]) -> datetime | N
     return datetime.strptime(match.group(1), TIME_FORMAT)
 
 
+def build_backup_snapshot_readme(now: datetime, zip_name: str, previous_latest: str | None, zip_meta: dict[str, Any]) -> str:
+    included_docs = "\n".join(f"- `{name}`" for name in CONFIG_DOCS)
+    third_party = "\n".join(f"- {name}" for name in THIRD_PARTY_SERVICES)
+    if previous_latest:
+        changes_text = (
+            f"Este respaldo reemplaza como referencia más reciente a `{previous_latest}` y añade documentación operativa actualizada dentro del ZIP."
+        )
+    else:
+        changes_text = "Este es el primer respaldo operativo registrado en Dropbox para esta serie de snapshots."
+    return f"""# Snapshot de respaldo {zip_name}
+
+## Resumen
+
+Este snapshot documenta el respaldo generado el **{now.isoformat(timespec='minutes')}** para **AuditaPatron / CompliLink Operativo V1**. El ZIP asociado fue subido a **`{DROPBOX_FOLDER}/{zip_name}`** y resume el estado operativo actual del proyecto.
+
+## Contenido confirmado del respaldo
+
+| Campo | Valor |
+| --- | --- |
+| Archivo ZIP | `{zip_name}` |
+| Archivos empaquetados | `{zip_meta['file_count']}` |
+| Tamaño del ZIP | `{zip_meta['size_bytes']}` bytes |
+| Carpeta remota | `{DROPBOX_FOLDER}` |
+| Retención | `{KEEP_BACKUPS}` respaldos máximos |
+
+## Documentación incluida dentro del ZIP
+
+{included_docs}
+
+## Servicios de terceros activos documentados
+
+{third_party}
+
+## Cambios respecto al respaldo anterior
+
+{changes_text}
+
+## Notas operativas
+
+El ZIP excluye artefactos regenerables y rutas autorreferenciales, en particular `node_modules`, `dist`, `.git`, `.turbo`, `.next` y `.manus-work/backups`. La intención es conservar un respaldo compacto, legible y útil para recuperación operativa.
+"""
+
+
 def enforce_retention(token: str, entries: list[DropboxEntry]) -> dict[str, list[str]]:
     zip_entries = []
     readme_entries = []
@@ -285,6 +339,7 @@ def main() -> int:
     readme_snapshot_name = f"AuditaPatron_backup_{stamp}_README.md"
     zip_path = LOCAL_BACKUP_DIR / zip_name
     readme_path = PROJECT_PATH / "README.md"
+    readme_snapshot_path = WORK_DIR / readme_snapshot_name
 
     if not readme_path.exists():
         raise RuntimeError("README.md no existe en la raíz del proyecto")
@@ -297,8 +352,10 @@ def main() -> int:
     previous_latest = previous_backups[0] if previous_backups else None
 
     zip_meta = make_zip(zip_path)
+    readme_snapshot = build_backup_snapshot_readme(now, zip_name, previous_latest, zip_meta)
+    readme_snapshot_path.write_text(readme_snapshot, encoding="utf-8")
     upload_file(token, zip_path, f"{DROPBOX_FOLDER}/{zip_name}", mode="add")
-    upload_file(token, readme_path, f"{DROPBOX_FOLDER}/{readme_snapshot_name}", mode="add")
+    upload_file(token, readme_snapshot_path, f"{DROPBOX_FOLDER}/{readme_snapshot_name}", mode="add")
     upload_file(token, readme_path, LATEST_README_PATH, mode="overwrite")
 
     after_entries = list_folder(token, DROPBOX_FOLDER)
@@ -315,6 +372,7 @@ def main() -> int:
         "backup_dropbox_path": f"{DROPBOX_FOLDER}/{zip_name}",
         "readme_snapshot_name": readme_snapshot_name,
         "readme_dropbox_path": f"{DROPBOX_FOLDER}/{readme_snapshot_name}",
+        "readme_snapshot_local_path": str(readme_snapshot_path),
         "latest_readme_path": LATEST_README_PATH,
         "previous_backup": previous_latest,
         "deleted_zip_backups": deleted["zip"],

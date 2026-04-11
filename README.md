@@ -59,6 +59,29 @@ El proyecto recibe varias variables desde la plataforma. Para una instalación e
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Webhook del motor/bridge |
 | `DROPBOX_API_KEY` | Respaldo obligatorio de checkpoints en Dropbox |
 
+## Documentos operativos incluidos en cada respaldo
+
+Cada respaldo operativo debe incluir este `README.md`, además de `CONFIGURACION.md` y `ARQUITECTURA.md`, para que una recuperación no dependa de memoria institucional ni del contexto de conversación.
+
+| Documento | Función en recuperación |
+| --- | --- |
+| `README.md` | Estado actual, stack, instalación y changelog operativo |
+| `CONFIGURACION.md` | Variables, endpoints, puertos, integraciones y reglas de operación |
+| `ARQUITECTURA.md` | Mapa estructural del sistema, capas y dependencias principales |
+
+## Servicios e integraciones activas documentadas
+
+| Servicio | Papel operativo actual |
+| --- | --- |
+| Dropbox | Respaldo obligatorio del proyecto y snapshots de README |
+| MySQL/TiDB | Persistencia transaccional principal |
+| S3 | Almacenamiento documental |
+| Manus OAuth | Autenticación y sesión |
+| OpenAI | Contraste técnico y apoyo analítico |
+| Gemini | Segunda vista multimodelo y validación |
+| Grok | Tercera vista multimodelo y contraste adicional |
+| Resend | Notificaciones por correo |
+
 ## Estructura operativa relevante
 
 | Ruta | Función |
@@ -79,4 +102,8 @@ En este checkpoint se reforzó la claridad operativa del flujo de **`/auditar`**
 
 ## Política de respaldo operativo
 
-A partir de este punto, cada milestone importante debe generar un respaldo con dos artefactos: un **ZIP completo del proyecto** y este **README actualizado**. Ambos deben enviarse a **`/Backups/AuditaPatron/`** en Dropbox, manteniendo únicamente los **últimos cinco respaldos** cuando el total exceda ese límite.
+A partir de este punto, cada milestone importante debe generar un respaldo con un **ZIP completo del proyecto** y con documentación operativa suficiente para recuperación. El ZIP debe contener, como mínimo, `README.md`, `CONFIGURACION.md` y `ARQUITECTURA.md`. Además, cada corrida de respaldo genera un **snapshot breve de confirmación** con fecha, contenido incluido y referencia al respaldo anterior. Todo debe enviarse a **`/Backups/AuditaPatron/`** en Dropbox, manteniendo únicamente los **últimos cinco respaldos** cuando el total exceda ese límite.
+
+## Estado vigente del respaldo en Dropbox
+
+El flujo de backup ya quedó corregido para excluir artefactos regenerables y evitar que la carpeta local de respaldos se empaquete dentro del propio ZIP. El último resultado verificado dejó constancia de un respaldo exitoso en **`/Backups/AuditaPatron/`**, con un ZIP compacto y snapshot documental asociado. A partir de ahora, el cierre operativo de Dropbox se considera utilizable para milestones reales del proyecto.

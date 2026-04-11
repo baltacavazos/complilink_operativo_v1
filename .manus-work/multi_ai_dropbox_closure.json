@@ -1,0 +1,85 @@
+{
+  "openai": {
+    "available": true,
+    "raw": "{\n  \"alcance_minimo_recomendado\": [\n    \"Crear README de respaldo por checkpoint con instrucciones básicas de uso\",\n    \"Documentar brevemente los servicios de terceros activos relacionados con Dropbox\",\n    \"Confirmar y describir de forma concisa el contenido de cada respaldo\"\n  ],\n  \"artefactos_imprescindibles\": [\n    \"README de respaldo por checkpoint\",\n    \"Documentación breve de servicios de terceros activos\",\n    \"Confirmación del contenido de los respaldos\"\n  ],\n  \"que_posponer\": [\n    \"CONFIGURACION.md con variables, puertos, URLs externas y parámetros operativos\",\n    \"ARQUITECTURA.md con frontend, backend, carpetas y flujo entre componentes\"\n  ],\n  \"cambios_recomendados_al_script\": [\n    \"Incluir comentarios mínimos para clarificar puntos críticos del script\",\n    \"Agregar logs básicos para confirmar subida exitosa sin sobrecargar\"\n  ],\n  \"criterio_de_cierre\": \"El proyecto se considera cerrado cuando exista documentación mínima que permita entender el proceso de respaldo, los servicios involucrados y el contenido de los respaldos, sin bloquear el avance del proyecto principal.\",\n  \"confianza\": \"alta\"\n}",
+    "parsed": {
+      "alcance_minimo_recomendado": [
+        "Crear README de respaldo por checkpoint con instrucciones básicas de uso",
+        "Documentar brevemente los servicios de terceros activos relacionados con Dropbox",
+        "Confirmar y describir de forma concisa el contenido de cada respaldo"
+      ],
+      "artefactos_imprescindibles": [
+        "README de respaldo por checkpoint",
+        "Documentación breve de servicios de terceros activos",
+        "Confirmación del contenido de los respaldos"
+      ],
+      "que_posponer": [
+        "CONFIGURACION.md con variables, puertos, URLs externas y parámetros operativos",
+        "ARQUITECTURA.md con frontend, backend, carpetas y flujo entre componentes"
+      ],
+      "cambios_recomendados_al_script": [
+        "Incluir comentarios mínimos para clarificar puntos críticos del script",
+        "Agregar logs básicos para confirmar subida exitosa sin sobrecargar"
+      ],
+      "criterio_de_cierre": "El proyecto se considera cerrado cuando exista documentación mínima que permita entender el proceso de respaldo, los servicios involucrados y el contenido de los respaldos, sin bloquear el avance del proyecto principal.",
+      "confianza": "alta"
+    }
+  },
+  "gemini": {
+    "available": true,
+    "raw": "{\n  \"alcance_minimo_recomendado\": [\n    \"Creación de README.md para el script de respaldo, describiendo su propósito y uso básico.\",\n    \"Creación de CONFIGURACION.md detallando variables, credenciales (sin valores sensibles) y parámetros operativos del script.\",\n    \"Actualización o creación de ARQUITECTURA.md con una sección breve sobre el flujo del script de respaldo (origen, destino, frecuencia).\",\n    \"Documentación de Dropbox como servicio de terceros activo, incluyendo su propósito y credenciales asociadas (sin valores sensibles).\",\n    \"Implementación de una confirmación breve (ej. log o salida) del contenido del respaldo (ej. número de archivos, tamaño total, directorio respaldado).\"\n  ],\n  \"artefactos_imprescindibles\": [\n    \"Archivo README.md (específico para el script de backup).\",\n    \"Archivo CONFIGURACION.md (específico para el script de backup).\",\n    \"Archivo ARQUITECTURA.md (con sección dedicada al backup o un archivo separado si es muy extenso).\",\n    \"Entrada en la documentación general de 'Servicios de Terceros' para Dropbox.\",\n    \"Modificación del script de backup para incluir una salida o log de confirmación del contenido.\"\n  ],\n  \"que_posponer\": [\n    \"Diagramas de flujo detallados o UML para el script de backup.\",\n    \"Optimización de rendimiento del script de backup más allá de su funcionalidad actual.\",\n    \"Implementación de monitoreo avanzado o alertas para el proceso de backup.\",\n    \"Validación exhaustiva del contenido de cada archivo respaldado.\",\n    \"Refactorización mayor del script si ya es funcional y mantenible.\",\n    \"Exploración de alternativas a Dropbox para el backup.\"\n  ],\n  \"cambios_recomendados_al_script\": [\n    \"Añadir funcionalidad para generar una 'confirmación breve' del contenido del respaldo (ej. listar los directorios/archivos principales respaldados, tamaño total, fecha/hora del respaldo) y registrarla en un log o en la salida estándar.\"\n  ],\n  \"criterio_de_cierre\": \"Los documentos README.md, CONFIGURACION.md y ARQUITECTURA.md (o sección) existen y contienen la información mínima requerida. Dropbox está documentado como servicio de terceros. El script de backup ejecuta exitosamente y produce una confirmación breve del contenido respaldado. El equipo de desarrollo valida que la información es suficiente para entender y operar el script sin sobreingeniería.\",\n  \"confianza\": \"alta\"\n}",
+    "parsed": {
+      "alcance_minimo_recomendado": [
+        "Creación de README.md para el script de respaldo, describiendo su propósito y uso básico.",
+        "Creación de CONFIGURACION.md detallando variables, credenciales (sin valores sensibles) y parámetros operativos del script.",
+        "Actualización o creación de ARQUITECTURA.md con una sección breve sobre el flujo del script de respaldo (origen, destino, frecuencia).",
+        "Documentación de Dropbox como servicio de terceros activo, incluyendo su propósito y credenciales asociadas (sin valores sensibles).",
+        "Implementación de una confirmación breve (ej. log o salida) del contenido del respaldo (ej. número de archivos, tamaño total, directorio respaldado)."
+      ],
+      "artefactos_imprescindibles": [
+        "Archivo README.md (específico para el script de backup).",
+        "Archivo CONFIGURACION.md (específico para el script de backup).",
+        "Archivo ARQUITECTURA.md (con sección dedicada al backup o un archivo separado si es muy extenso).",
+        "Entrada en la documentación general de 'Servicios de Terceros' para Dropbox.",
+        "Modificación del script de backup para incluir una salida o log de confirmación del contenido."
+      ],
+      "que_posponer": [
+        "Diagramas de flujo detallados o UML para el script de backup.",
+        "Optimización de rendimiento del script de backup más allá de su funcionalidad actual.",
+        "Implementación de monitoreo avanzado o alertas para el proceso de backup.",
+        "Validación exhaustiva del contenido de cada archivo respaldado.",
+        "Refactorización mayor del script si ya es funcional y mantenible.",
+        "Exploración de alternativas a Dropbox para el backup."
+      ],
+      "cambios_recomendados_al_script": [
+        "Añadir funcionalidad para generar una 'confirmación breve' del contenido del respaldo (ej. listar los directorios/archivos principales respaldados, tamaño total, fecha/hora del respaldo) y registrarla en un log o en la salida estándar."
+      ],
+      "criterio_de_cierre": "Los documentos README.md, CONFIGURACION.md y ARQUITECTURA.md (o sección) existen y contienen la información mínima requerida. Dropbox está documentado como servicio de terceros. El script de backup ejecuta exitosamente y produce una confirmación breve del contenido respaldado. El equipo de desarrollo valida que la información es suficiente para entender y operar el script sin sobreingeniería.",
+      "confianza": "alta"
+    }
+  },
+  "grok": {
+    "available": true,
+    "raw": "{\n  \"alcance_minimo_recomendado\": [\n    \"Documentar el proceso de backup en un README básico por checkpoint\",\n    \"Crear un CONFIGURACION.md con variables y parámetros operativos esenciales\",\n    \"Incluir una confirmación breve del contenido de cada respaldo en el README\"\n  ],\n  \"artefactos_imprescindibles\": [\n    \"README.md que cubra el proceso de backup y confirmación de respaldos\",\n    \"CONFIGURACION.md con variables, puertos y URLs necesarias\"\n  ],\n  \"que_posponer\": [\n    \"ARQUITECTURA.md con detalles de frontend, backend y flujos\",\n    \"Documentación completa de servicios de terceros\"\n  ],\n  \"cambios_recomendados_al_script\": [\n    \"Agregar una salida de log simple para confirmar el contenido subido, sin alterar la funcionalidad principal\"\n  ],\n  \"criterio_de_cierre\": \"Los artefactos imprescindibles están completos, el script de backup se verifica manualmente una vez, y no hay bloqueos para el proyecto principal\",\n  \"confianza\": \"alta\"\n}",
+    "parsed": {
+      "alcance_minimo_recomendado": [
+        "Documentar el proceso de backup en un README básico por checkpoint",
+        "Crear un CONFIGURACION.md con variables y parámetros operativos esenciales",
+        "Incluir una confirmación breve del contenido de cada respaldo en el README"
+      ],
+      "artefactos_imprescindibles": [
+        "README.md que cubra el proceso de backup y confirmación de respaldos",
+        "CONFIGURACION.md con variables, puertos y URLs necesarias"
+      ],
+      "que_posponer": [
+        "ARQUITECTURA.md con detalles de frontend, backend y flujos",
+        "Documentación completa de servicios de terceros"
+      ],
+      "cambios_recomendados_al_script": [
+        "Agregar una salida de log simple para confirmar el contenido subido, sin alterar la funcionalidad principal"
+      ],
+      "criterio_de_cierre": "Los artefactos imprescindibles están completos, el script de backup se verifica manualmente una vez, y no hay bloqueos para el proyecto principal",
+      "confianza": "alta"
+    }
+  }
+}
