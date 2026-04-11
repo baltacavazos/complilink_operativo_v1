@@ -7,7 +7,10 @@ const webhookUrl = process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "";
 const hmacSecret = process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "";
 const expectedWebhookUrl = "https://complilink.mx/api/auditapatron/webhook";
 const expectedHealthUrl = "https://complilink.mx/api/auditapatron/health";
-const runLiveBridgeSmoke = process.env.RUN_LIVE_COMPLILINK_BRIDGE_SMOKE === "1";
+const allowLiveBridgeSmokeByEnv =
+  process.env.ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === "TRUE";
+const allowLiveBridgeSmokeByRuntime = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+const runLiveBridgeSmoke = allowLiveBridgeSmokeByEnv && allowLiveBridgeSmokeByRuntime;
 const liveSmokeIt = runLiveBridgeSmoke ? it : it.skip;
 const serversToClose: Array<ReturnType<typeof createServer>> = [];
 
@@ -109,6 +112,14 @@ describe("CompliLink MX bridge credentials", () => {
     expect(serverResult.signatureHeader).toBe(signature);
     expect(serverResult.signatureHeader).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.parse(serverResult.body)).toMatchObject(payload);
+  });
+
+  it("keeps the live smoke test disabled unless the explicit dev-only guardrail is enabled", () => {
+    expect(runLiveBridgeSmoke).toBe(allowLiveBridgeSmokeByEnv && allowLiveBridgeSmokeByRuntime);
+
+    if (allowLiveBridgeSmokeByEnv) {
+      expect(allowLiveBridgeSmokeByRuntime).toBe(true);
+    }
   });
 
   liveSmokeIt("reaches the published health endpoint over the network", async () => {

@@ -1,0 +1,111 @@
+{
+  "brief_path": "/home/ubuntu/complilink_operativo_v1/ceo_perimeter_multi_ai_brief.md",
+  "generated_at": "2026-04-11T03:57:04Z",
+  "results": [
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"keep_as_is\": [\n    \"Mutations CEO están detrás de adminProcedure\",\n    \"ceoRecordExportAudit valida frescura del snapshot y assertTenantAdminAccess si hay tenantId\",\n    \"ceoUpdateAlertStatus y ceoProgressCaseStage restringen transiciones seguras explícitas\",\n    \"Pruebas para stale data en alertas, membresías y casos\"\n  ],\n  \"must_fix_now\": [\n    {\n      \"issue\": \"ceoUpdateMembershipStatus permite transición revocada -> activa sin restricción\",\n      \"why\": \"Permite reactivar accesos desde la consola CEO, lo que puede violar políticas de seguridad y acceso mínimo necesario\",\n      \"minimal_fix\": \"Modificar ceoUpdateMembershipStatus para bloquear explícitamente la transición de 'revoked' a 'active' en V1\",\n      \"test_to_add\": \"Prueba negativa que verifique que no se permite reactivar membresía revocada desde CEO\"\n    },\n    {\n      \"issue\": \"Falta cobertura negativa final para exportes stale en ceoRecordExportAudit\",\n      \"why\": \"Sin esta prueba, podría permitirse exportar datos obsoletos, comprometiendo la integridad y frescura de la información ejecutiva\",\n      \"minimal_fix\": \"Agregar prueba que valide que ceoRecordExportAudit rechaza exportes con snapshotGeneratedAt stale\",\n      \"test_to_add\": \"Prueba negativa para exportes con snapshotGeneratedAt anterior al umbral permitido\"\n    }\n  ],\n  \"nice_to_have_later\": [\n    \"Implementar transición segura explícita para ceoUpdateMembershipStatus que permita solo cambios autorizados\",\n    \"Mejorar mensajes de error y logs para accesos bloqueados por stale data o transiciones inválidas\",\n    \"Auditoría más granular de intentos de reactivación de membresías\"\n  ],\n  \"risk_level\": \"medium\",\n  \"final_recommendation\": \"Para cerrar V1, bloquear la reactivación de membresías revocadas desde CEO y añadir pruebas negativas para exportes stale. Mantener las protecciones actuales y pruebas existentes. Estos cambios son mínimos y críticos para evitar brechas de seguridad y garantizar integridad de datos.\"\n}",
+      "parsed": {
+        "keep_as_is": [
+          "Mutations CEO están detrás de adminProcedure",
+          "ceoRecordExportAudit valida frescura del snapshot y assertTenantAdminAccess si hay tenantId",
+          "ceoUpdateAlertStatus y ceoProgressCaseStage restringen transiciones seguras explícitas",
+          "Pruebas para stale data en alertas, membresías y casos"
+        ],
+        "must_fix_now": [
+          {
+            "issue": "ceoUpdateMembershipStatus permite transición revocada -> activa sin restricción",
+            "why": "Permite reactivar accesos desde la consola CEO, lo que puede violar políticas de seguridad y acceso mínimo necesario",
+            "minimal_fix": "Modificar ceoUpdateMembershipStatus para bloquear explícitamente la transición de 'revoked' a 'active' en V1",
+            "test_to_add": "Prueba negativa que verifique que no se permite reactivar membresía revocada desde CEO"
+          },
+          {
+            "issue": "Falta cobertura negativa final para exportes stale en ceoRecordExportAudit",
+            "why": "Sin esta prueba, podría permitirse exportar datos obsoletos, comprometiendo la integridad y frescura de la información ejecutiva",
+            "minimal_fix": "Agregar prueba que valide que ceoRecordExportAudit rechaza exportes con snapshotGeneratedAt stale",
+            "test_to_add": "Prueba negativa para exportes con snapshotGeneratedAt anterior al umbral permitido"
+          }
+        ],
+        "nice_to_have_later": [
+          "Implementar transición segura explícita para ceoUpdateMembershipStatus que permita solo cambios autorizados",
+          "Mejorar mensajes de error y logs para accesos bloqueados por stale data o transiciones inválidas",
+          "Auditoría más granular de intentos de reactivación de membresías"
+        ],
+        "risk_level": "medium",
+        "final_recommendation": "Para cerrar V1, bloquear la reactivación de membresías revocadas desde CEO y añadir pruebas negativas para exportes stale. Mantener las protecciones actuales y pruebas existentes. Estos cambios son mínimos y críticos para evitar brechas de seguridad y garantizar integridad de datos."
+      }
+    },
+    {
+      "provider": "xai",
+      "model": "grok-4",
+      "raw": "{\"keep_as_is\":[\"Mutaciones CEO detrás de adminProcedure\",\"Validación de frescura en ceoRecordExportAudit con tenantId check\",\"Restricciones de transiciones seguras en ceoUpdateAlertStatus y ceoProgressCaseStage\",\"Pruebas existentes para stale data en alertas, membresías y casos\"],\"must_fix_now\":[{\"issue\":\"ceoUpdateMembershipStatus permite transiciones no seguras, incluyendo revoked -> active\",\"why\":\"Permite reactivar accesos revocados desde la consola CEO, lo que representa un riesgo de seguridad al potencialmente restaurar accesos no autorizados; debe bloquearse en V1 para hardening\",\"minimal_fix\":\"Agregar restricción explícita en ceoUpdateMembershipStatus para solo permitir transiciones de active -> revoked, rechazando revoked -> active; actualizar getSafeMembershipAction en frontend para reflejar esto\",\"test_to_add\":\"Agregar prueba negativa que intente revoked -> active y verifique que la mutación falle con error de transición no permitida\"},{\"issue\":\"Falta cobertura de pruebas negativas para exportes stale\",\"why\":\"Aunque la validación existe, sin pruebas negativas finales, no se confirma que el sistema rechace exportes con snapshots stale, dejando un hueco en la cobertura de seguridad\",\"minimal_fix\":\"No requiere cambio en código; solo agregar la prueba\",\"test_to_add\":\"Crear test que simule un export con snapshotGeneratedAt stale y verifique que ceoRecordExportAudit rechace la operación con error de frescura\"},{\"issue\":\"Falta prueba negativa para reactivación de accesos\",\"why\":\"Sin esta prueba, no se valida que intentos de reactivación sean bloqueados, especialmente tras el fix de transición\",\"minimal_fix\":\"No requiere cambio en código; solo agregar la prueba (asumiendo fix previo implementado)\",\"test_to_add\":\"Agregar test que intente reactivar un membership revoked vía ceoUpdateMembershipStatus y confirme rechazo con error apropiado\"}],\"nice_to_have_later\":[\"Explorar refactors para un sistema de transiciones de estado más genérico en mutaciones CEO\",\"Mejorar logging en validaciones de frescura para auditoría futura\"],\"risk_level\":\"medium\",\"final_recommendation\":\"Implementar los fixes mínimos y pruebas negativas propuestos para bloquear reactivaciones no seguras y cerrar cobertura, permitiendo un cierre seguro de V1 con bajo riesgo adicional\"}",
+      "parsed": {
+        "keep_as_is": [
+          "Mutaciones CEO detrás de adminProcedure",
+          "Validación de frescura en ceoRecordExportAudit con tenantId check",
+          "Restricciones de transiciones seguras en ceoUpdateAlertStatus y ceoProgressCaseStage",
+          "Pruebas existentes para stale data en alertas, membresías y casos"
+        ],
+        "must_fix_now": [
+          {
+            "issue": "ceoUpdateMembershipStatus permite transiciones no seguras, incluyendo revoked -> active",
+            "why": "Permite reactivar accesos revocados desde la consola CEO, lo que representa un riesgo de seguridad al potencialmente restaurar accesos no autorizados; debe bloquearse en V1 para hardening",
+            "minimal_fix": "Agregar restricción explícita en ceoUpdateMembershipStatus para solo permitir transiciones de active -> revoked, rechazando revoked -> active; actualizar getSafeMembershipAction en frontend para reflejar esto",
+            "test_to_add": "Agregar prueba negativa que intente revoked -> active y verifique que la mutación falle con error de transición no permitida"
+          },
+          {
+            "issue": "Falta cobertura de pruebas negativas para exportes stale",
+            "why": "Aunque la validación existe, sin pruebas negativas finales, no se confirma que el sistema rechace exportes con snapshots stale, dejando un hueco en la cobertura de seguridad",
+            "minimal_fix": "No requiere cambio en código; solo agregar la prueba",
+            "test_to_add": "Crear test que simule un export con snapshotGeneratedAt stale y verifique que ceoRecordExportAudit rechace la operación con error de frescura"
+          },
+          {
+            "issue": "Falta prueba negativa para reactivación de accesos",
+            "why": "Sin esta prueba, no se valida que intentos de reactivación sean bloqueados, especialmente tras el fix de transición",
+            "minimal_fix": "No requiere cambio en código; solo agregar la prueba (asumiendo fix previo implementado)",
+            "test_to_add": "Agregar test que intente reactivar un membership revoked vía ceoUpdateMembershipStatus y confirme rechazo con error apropiado"
+          }
+        ],
+        "nice_to_have_later": [
+          "Explorar refactors para un sistema de transiciones de estado más genérico en mutaciones CEO",
+          "Mejorar logging en validaciones de frescura para auditoría futura"
+        ],
+        "risk_level": "medium",
+        "final_recommendation": "Implementar los fixes mínimos y pruebas negativas propuestos para bloquear reactivaciones no seguras y cerrar cobertura, permitiendo un cierre seguro de V1 con bajo riesgo adicional"
+      }
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"keep_as_is\": [\n    \"All CEO mutations are behind `adminProcedure`.\",\n    \"`ceoRecordExportAudit` correctly validates snapshot freshness and tenant access.\",\n    \"`ceoUpdateAlertStatus` and `ceoProgressCaseStage` enforce safe state transitions.\"\n  ],\n  \"must_fix_now\": [\n    {\n      \"issue\": \"`ceoUpdateMembershipStatus` lacks explicit safe transition logic, allowing `revoked -> active` transitions.\",\n      \"why\": \"This is a critical security vulnerability. Reactivating a revoked access from the CEO dashboard bypasses intended security controls, potentially granting access to sensitive case data to unauthorized individuals. The frontend allowing this action exacerbates the risk.\",\n      \"minimal_fix\": \"Modify `ceoUpdateMembershipStatus` to explicitly restrict membership status changes to `active -> revoked` only. Block any attempt to change a `revoked` status to `active` or any other status. The backend must be the source of truth for allowed transitions.\",\n      \"test_to_add\": \"Add a negative test case for `ceoUpdateMembershipStatus` that attempts to change a `revoked` membership to `active`, asserting that the operation is rejected with an appropriate error (e.g., 'Unauthorized transition' or 'Invalid state change').\"\n    },\n    {\n      \"issue\": \"Missing comprehensive negative test coverage for stale data rejection in `ceoRecordExportAudit`.\",\n      \"why\": \"While validation exists, insufficient negative tests mean regressions could introduce vulnerabilities where stale export data is accepted without detection, leading to audit inaccuracies or security bypasses. This could compromise the integrity of executive export records.\",\n      \"minimal_fix\": \"Implement additional negative test cases for `ceoRecordExportAudit` specifically targeting scenarios where `snapshotGeneratedAt` is intentionally older than the allowed freshness threshold, ensuring the mutation correctly rejects such operations.\",\n      \"test_to_add\": \"Add a negative test case for `ceoRecordExportAudit` attempting to record an audit with an `snapshotGeneratedAt` value that is demonstrably stale (e.g., several days old), asserting that the mutation fails with a 'Stale data' or similar error.\"\n    }\n  ],\n  \"nice_to_have_later\": [\n    \"Review frontend `getSafeMembershipAction()` to align with the new backend restrictions, disabling the `revoked -> active` option in the UI to prevent user confusion and unnecessary backend calls.\"\n  ],\n  \"risk_level\": \"high\",\n  \"final_recommendation\": \"Prioritize immediate implementation of explicit state transition restrictions for `ceoUpdateMembershipStatus` to prevent `revoked -> active` transitions. Concurrently, enhance negative test coverage for stale data rejection in `ceoRecordExportAudit`. These changes are critical for V1 security and data integrity.\"\n}",
+      "parsed": {
+        "keep_as_is": [
+          "All CEO mutations are behind `adminProcedure`.",
+          "`ceoRecordExportAudit` correctly validates snapshot freshness and tenant access.",
+          "`ceoUpdateAlertStatus` and `ceoProgressCaseStage` enforce safe state transitions."
+        ],
+        "must_fix_now": [
+          {
+            "issue": "`ceoUpdateMembershipStatus` lacks explicit safe transition logic, allowing `revoked -> active` transitions.",
+            "why": "This is a critical security vulnerability. Reactivating a revoked access from the CEO dashboard bypasses intended security controls, potentially granting access to sensitive case data to unauthorized individuals. The frontend allowing this action exacerbates the risk.",
+            "minimal_fix": "Modify `ceoUpdateMembershipStatus` to explicitly restrict membership status changes to `active -> revoked` only. Block any attempt to change a `revoked` status to `active` or any other status. The backend must be the source of truth for allowed transitions.",
+            "test_to_add": "Add a negative test case for `ceoUpdateMembershipStatus` that attempts to change a `revoked` membership to `active`, asserting that the operation is rejected with an appropriate error (e.g., 'Unauthorized transition' or 'Invalid state change')."
+          },
+          {
+            "issue": "Missing comprehensive negative test coverage for stale data rejection in `ceoRecordExportAudit`.",
+            "why": "While validation exists, insufficient negative tests mean regressions could introduce vulnerabilities where stale export data is accepted without detection, leading to audit inaccuracies or security bypasses. This could compromise the integrity of executive export records.",
+            "minimal_fix": "Implement additional negative test cases for `ceoRecordExportAudit` specifically targeting scenarios where `snapshotGeneratedAt` is intentionally older than the allowed freshness threshold, ensuring the mutation correctly rejects such operations.",
+            "test_to_add": "Add a negative test case for `ceoRecordExportAudit` attempting to record an audit with an `snapshotGeneratedAt` value that is demonstrably stale (e.g., several days old), asserting that the mutation fails with a 'Stale data' or similar error."
+          }
+        ],
+        "nice_to_have_later": [
+          "Review frontend `getSafeMembershipAction()` to align with the new backend restrictions, disabling the `revoked -> active` option in the UI to prevent user confusion and unnecessary backend calls."
+        ],
+        "risk_level": "high",
+        "final_recommendation": "Prioritize immediate implementation of explicit state transition restrictions for `ceoUpdateMembershipStatus` to prevent `revoked -> active` transitions. Concurrently, enhance negative test coverage for stale data rejection in `ceoRecordExportAudit`. These changes are critical for V1 security and data integrity."
+      }
+    }
+  ],
+  "duration_seconds": 44.84
+}

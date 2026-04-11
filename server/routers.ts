@@ -45,6 +45,7 @@ import {
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import {
+  AuthFlowError,
   clearEmailChallengeCookie,
   completeEmailLogin,
   isGoogleOAuthConfigured,
@@ -1608,18 +1609,31 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        const result = await startEmailLogin({
-          req: ctx.req,
-          res: ctx.res,
-          email: input.email,
-          name: input.name,
-        });
+        try {
+          const result = await startEmailLogin({
+            req: ctx.req,
+            res: ctx.res,
+            email: input.email,
+            name: input.name,
+          });
 
-        return {
-          success: true,
-          maskedEmail: result.maskedEmail,
-          expiresInSeconds: result.expiresInSeconds,
-        } as const;
+          return {
+            success: true,
+            maskedEmail: result.maskedEmail,
+            expiresInSeconds: result.expiresInSeconds,
+            cooldownSeconds: result.cooldownSeconds,
+            maxRequestsPerWindow: result.maxRequestsPerWindow,
+            rateLimitWindowSeconds: result.rateLimitWindowSeconds,
+          } as const;
+        } catch (error) {
+          if (error instanceof AuthFlowError) {
+            if (error.retryAfterSeconds) {
+              throw new Error(`${error.message}||retry_after=${error.retryAfterSeconds}||code=${error.code}`);
+            }
+            throw new Error(`${error.message}||code=${error.code}`);
+          }
+          throw error;
+        }
       }),
     verifyEmailCode: publicProcedure
       .input(
@@ -1630,18 +1644,25 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        const user = await completeEmailLogin({
-          req: ctx.req,
-          res: ctx.res,
-          email: input.email,
-          code: input.code,
-          name: input.name,
-        });
+        try {
+          const user = await completeEmailLogin({
+            req: ctx.req,
+            res: ctx.res,
+            email: input.email,
+            code: input.code,
+            name: input.name,
+          });
 
-        return {
-          success: true,
-          user,
-        } as const;
+          return {
+            success: true,
+            user,
+          } as const;
+        } catch (error) {
+          if (error instanceof AuthFlowError) {
+            throw new Error(`${error.message}||code=${error.code}`);
+          }
+          throw error;
+        }
       }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
@@ -1831,6 +1852,10 @@ export const appRouter = router({
 
         if (targetMembership.status === input.status) {
           throw new Error(CEO_SAFE_ERROR_COPY.staleData);
+        }
+
+        if (targetMembership.status !== "active" || input.status !== "revoked") {
+          throw new Error(CEO_SAFE_ERROR_COPY.invalidTransition);
         }
 
         const { previous, updated } = await updateTenantMembershipStatus({

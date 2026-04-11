@@ -1,69 +1,61 @@
-# Brief de auditoría corta para cierre V1
+# Brief de auditoría de cierre V1
 
 ## Objetivo
 
-Realizar una auditoría corta y estrictamente priorizada para cerrar la versión 1 de **AuditaPatron / CompliLink Operativo**. El objetivo no es proponer features nuevas, sino detectar solamente huecos **fundamentales** que bloquearían una salida V1 razonable.
+Realizar una auditoría corta y estrictamente priorizada para determinar **qué falta realmente para cerrar la versión 1** de **AuditaPatron / CompliLink Operativo**. El objetivo no es expandir alcance ni proponer ideas bonitas, sino distinguir con dureza qué debe entrar **antes** del cierre V1 y qué puede esperar.
 
 ## Estado actual verificado
 
-La base ya cuenta con dos rondas recientes de endurecimiento del Dashboard CEO.
+El proyecto ya pasó varias rondas de endurecimiento funcional, técnico y de pruebas.
 
 | Área | Estado actual |
 | --- | --- |
-| Dashboard CEO | Existe snapshot ejecutivo, filtros avanzados, búsqueda transversal, exportes PDF/CSV, acciones seguras y trazabilidad |
-| Endurecimiento frontend | Confirmación visual reutilizable, indicador de vista stale y bloqueo preventivo |
-| Endurecimiento backend | Guardrails para exigir contexto fresco y secuencias seguras en acciones ejecutivas |
-| Calidad | 27 pruebas Vitest venían en verde en la ronda anterior, sin errores de TypeScript reportados |
-| Alcance deseado | Cerrar V1 con lo mínimo indispensable |
+| Flujo principal `/auditar` | Endurecido en happy path y errores críticos; se añadieron validaciones negativas y de borde |
+| Consola CEO | Ya tiene snapshot ejecutivo, filtros avanzados, búsqueda transversal, exportes PDF/CSV, auditoría de exportes, acciones seguras, trazabilidad y varios guardrails V1 |
+| Autenticación | Existe flujo unificado con **Manus OAuth**, **correo passwordless** y preparación de **Google OAuth** sin romper la base previa |
+| Calidad | La suite completa de pruebas volvió a quedar **en verde** después de aislar como opt-in el smoke test externo del bridge TLS |
+| Bridge externo | El contrato local quedó validado de forma determinista; los smoke tests reales ya no rompen la suite por defecto |
+| Infra interna | Se añadieron varios hardenings contra payloads base64 patológicos, validación de MIME/magic bytes y protección de exportes |
 
-## Flujos visibles del producto
+## Restricciones para esta auditoría
 
-| Ruta | Propósito |
+1. No proponer features cosméticas, marketing, rediseños amplios ni expansión de producto.
+2. Priorizar solamente bloqueantes de salida V1 relacionados con **seguridad, permisos, confiabilidad, claridad operativa, continuidad del flujo principal, autenticación o escalabilidad mínima razonable**.
+3. Si un pendiente puede esperar a una versión posterior sin comprometer el uso inicial con empresas conocidas o pilotos controlados, debe quedar fuera del núcleo V1.
+4. No asumas que un pendiente en `todo.md` es automáticamente bloqueante; debes re-priorizarlo por impacto real.
+
+## Pendientes candidatos hoy visibles
+
+| Pendiente candidato | Contexto |
 | --- | --- |
-| `/` | Home pública y narrativa de entrada hacia el expediente laboral |
-| `/auditar` | Flujo principal del usuario: carga documental, revisión inicial, expediente, claridad legal/operativa |
-| `/ceo` y subrutas | Consola CEO para snapshot ejecutivo, alertas, accesos y trazabilidad documental |
-| `/legal/*` | Documentos legales |
-
-## Hallazgos arquitectónicos ya presentes
-
-| Componente | Observación |
-| --- | --- |
-| `client/src/App.tsx` | Rutas principales mínimas y directas |
-| `client/src/pages/Home.tsx` | Home extensa, con CTA principal hacia `/auditar` y acceso visible a Consola CEO |
-| `client/src/pages/Auditar.tsx` | Flujo nuclear del producto, muy amplio, con intake, preanálisis, seguridad social, expediente y asistente |
-| `client/src/pages/CeoDashboard.tsx` | Consola CEO amplia con filtros, exportación, confirmaciones, stale state y acciones seguras |
-| `server/routers.ts` | Endpoints CEO con validación de expectedCurrentStatus, secuencia segura y scope acotado |
-| `server/ceoDashboardSafeActions.test.ts` | Cobertura específica de las acciones seguras del CEO |
-
-## Restricciones de producto
-
-1. No agregar features cosméticas ni nice-to-have.
-2. Sólo señalar bloqueantes de salida V1 o mejoras que eviten un fallo importante de operación, confianza, seguridad, permisos o UX crítica.
-3. Si sugieres algo para la Consola CEO, debe ser porque realmente afecta la operación V1.
-4. Prioriza happy path, errores críticos sin manejar, permisos, claridad de UX, consistencia y estabilidad.
+| Reforzar el gate de acceso y el bloqueo de exportes stale del Dashboard CEO si aún existen huecos reales | Hay antecedente de endurecimientos previos; falta decidir si todavía es bloqueante o ya quedó cubierto |
+| Ejecutar un bloque final de endurecimiento V1 sobre permisos, validaciones y pruebas del Dashboard CEO | Puede ser cierre natural, pero hay que decidir si sigue siendo necesario antes de release |
+| Implementar acciones administrativas seguras para la consola CEO con trazabilidad y control exclusivo para administradores | Existe mezcla de tareas históricas y tareas ya parcialmente cerradas; hay que decidir si aún falta algo material |
+| Posponer integración activa con Helios y mantener AuditaPatron desacoplado operativamente | Necesitamos saber si esto debe considerarse requisito explícito de cierre V1 |
+| Elegir el siguiente bloque interno de mayor impacto para cerrar V1 sin depender de Helios | Puede ser un criterio de priorización, no necesariamente una tarea técnica única |
+| Evaluar cuellos de botella internos probables para una primera escala hacia miles de usuarios | Determinar si esto es V1 o V1.1 |
+| Ampliar el contexto del script multi-IA para reducir recomendaciones alucinadas o repetidas | Puede mejorar la operación interna, pero quizá no sea un bloqueante del producto |
+| Tomar la vista rescatada de CAMELA como referencia para futuras capas operativas empresariales | Parece claramente posterior, salvo que detectes una dependencia oculta |
 
 ## Lo que necesito de ti
 
 Devuelve una respuesta estructurada con exactamente estas secciones:
 
-1. **Top 5 bloqueantes V1**
-2. **Qué NO tocaría antes del release**
-3. **Ajustes mínimos recomendados para el Dashboard CEO**
-4. **Riesgo si se libera hoy**
-5. **Orden sugerido de implementación**
+1. **Pendientes críticos para cerrar V1**
+2. **Pendientes recomendados pero no bloqueantes**
+3. **Pendientes que movería después de V1**
+4. **Riesgo real de liberar hoy**
+5. **Siguiente bloque óptimo de trabajo**
 
 ## Criterio de severidad
 
-Usa esta escala:
-
 | Severidad | Definición |
 | --- | --- |
-| Crítico | Puede romper confianza, operación o seguridad central del producto |
-| Alto | Daña el uso principal o deja huecos importantes de control/claridad |
-| Medio | Conviene corregirlo, pero no necesariamente bloquea V1 |
-| Bajo | Puede esperar después del release |
+| Crítico | Debe resolverse antes de liberar V1 porque compromete operación, seguridad, permisos o confianza básica |
+| Alto | Conviene resolverlo muy pronto; puede entrar en la última milla V1 si el costo es razonable |
+| Medio | Útil pero no bloquea salida inicial controlada |
+| Bajo | Deferible sin problema claro para V1 |
 
 ## Instrucción final
 
-Sé duro, concreto y pragmático. Si ves que el producto ya está suficientemente cerrado para V1, dilo claramente y limita la lista a lo indispensable.
+Sé duro, concreto y pragmático. Si el producto ya está suficientemente cerrado para una **V1 controlada**, dilo con claridad y limita la lista a lo indispensable. Si un pendiente ya está absorbido por trabajo previo, dilo en vez de volverlo a proponer.

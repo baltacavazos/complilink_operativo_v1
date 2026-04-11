@@ -50,13 +50,15 @@ export function registerOAuthRoutes(app: Express) {
   });
 
   app.get("/api/auth/google/start", async (req: Request, res: Response) => {
+    const returnTo = getQueryParam(req, "returnTo") || "/";
+
     try {
-      const returnTo = getQueryParam(req, "returnTo") || "/";
       const authorizationUrl = await buildGoogleAuthorizationUrl(req, returnTo);
       res.redirect(302, authorizationUrl);
     } catch (error) {
       console.error("[OAuth] Google start failed", error);
-      res.status(500).json({ error: "Google OAuth start failed" });
+      const safeReturnTo = returnTo.startsWith("/") ? returnTo : "/";
+      res.redirect(302, `/acceso?error=google_not_available&returnTo=${encodeURIComponent(safeReturnTo)}`);
     }
   });
 
@@ -65,7 +67,7 @@ export function registerOAuthRoutes(app: Express) {
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+      res.redirect(302, "/acceso?error=google_callback_failed");
       return;
     }
 
@@ -74,7 +76,7 @@ export function registerOAuthRoutes(app: Express) {
       res.redirect(302, returnTo || "/");
     } catch (error) {
       console.error("[OAuth] Google callback failed", error);
-      res.status(500).json({ error: "Google OAuth callback failed" });
+      res.redirect(302, "/acceso?error=google_callback_failed");
     }
   });
 }

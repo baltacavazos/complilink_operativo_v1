@@ -1,0 +1,124 @@
+{
+  "started_at": "2026-04-11T04:07:25Z",
+  "brief_path": "/home/ubuntu/complilink_operativo_v1/bridge_observability_multi_ai_brief.md",
+  "models": {
+    "openai": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "Falta de trazabilidad estructurada dificulta diagnóstico rápido de fallos",
+          "Ejecución accidental de smoke tests remotos puede generar falsos positivos o carga innecesaria",
+          "Ausencia de indicadores claros sobre reintentos y resultados limita alertas operativas"
+        ],
+        "minimum_service_changes": [
+          "Agregar envelope de observabilidad en sendDocumentToAuditaPatronEngine con campos: targetHost, targetPath, dispatchId (UUID), retryScheduled (bool), retryDelayMs (num), outcomeCategory (sent|failed|skipped), remoteSmokeEnabled (bool)",
+          "Incluir flag explícito para controlar ejecución de smoke tests remotos basado en RUN_LIVE_COMPLILINK_BRIDGE_SMOKE",
+          "Instrumentar puntos clave para capturar y propagar dispatchId y estado de reintentos sin modificar lógica de firma ni payload"
+        ],
+        "result_shape_changes": [
+          "Añadir campo opcional 'observabilityEnvelope' con estructura descrita para facilitar auditoría y alertas",
+          "No modificar campos existentes en AuditaPatronEngineDispatchResult"
+        ],
+        "smoke_test_guardrails": [
+          "Ejecutar smoke tests remotos solo si RUN_LIVE_COMPLILINK_BRIDGE_SMOKE==='1' está explícitamente seteado",
+          "Agregar log/flag remoteSmokeEnabled en envelope para visibilidad operativa",
+          "Documentar claramente que esta variable debe ser controlada en entornos de integración y producción"
+        ],
+        "tests_to_add": [
+          "Vitest para validar que observabilityEnvelope se genera correctamente con todos los campos esperados",
+          "Prueba que smoke test remoto no se ejecuta si RUN_LIVE_COMPLILINK_BRIDGE_SMOKE !== '1'",
+          "Validación de que resultado funcional y firma HMAC permanecen intactos tras cambios"
+        ],
+        "do_not_change": [
+          "Contrato HMAC y payload enviados al bridge",
+          "Política de reintentos (solo en 5xx)",
+          "Flujo funcional principal de sendDocumentToAuditaPatronEngine",
+          "Dependencias y estructura general del servicio"
+        ],
+        "confidence": "high"
+      }
+    },
+    "grok": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "Falta de trazabilidad operativa para diagnósticos rápidos en fallos del bridge",
+          "Ejecución accidental de smoke tests remotos causando cargas innecesarias",
+          "Dificultad en auditoría y alertas desde routers.ts sin envelope estructurado"
+        ],
+        "minimum_service_changes": [
+          "Añadir envelope de observabilidad en sendDocumentToAuditaPatronEngine con campos como targetHost, dispatchId y outcomeCategory",
+          "Implementar chequeo explícito de env var para smoke tests antes de ejecución remota",
+          "Emitir logs estructurados simples (console.log con JSON) para retryScheduled y retryDelayMs sin dependencias externas"
+        ],
+        "result_shape_changes": [
+          "Agregar targetHost y targetPath al resultado para contexto de destino",
+          "Incluir dispatchId único (e.g., UUID o timestamp) para trazabilidad",
+          "Añadir outcomeCategory (e.g., 'success', 'retry', 'fail') y remoteSmokeEnabled (boolean) sin alterar sent/failed/skipped"
+        ],
+        "smoke_test_guardrails": [
+          "Requerir RUN_LIVE_COMPLILINK_BRIDGE_SMOKE='1' y una confirmación adicional (e.g., flag en config) para activación",
+          "Desactivar por default y loggear intentos no autorizados",
+          "Limitar smoke tests a entornos no-productivos vía chequeo de NODE_ENV"
+        ],
+        "tests_to_add": [
+          "Test unitario para envelope en sendDocumentToAuditaPatronEngine con mocks de fetch",
+          "Test de integración para guardrails de smoke test, verificando no ejecución sin env var",
+          "Test de regresión para HMAC y reintentos en 5xx sin cambios funcionales"
+        ],
+        "do_not_change": [
+          "Firma HMAC con timestamp.body y política de reintentos solo en 5xx",
+          "Estructura base del payload y contrato del webhook",
+          "Flujo principal de dispatch y compatibilidad con pruebas existentes en auditaPatronBridgeSecret.test.ts"
+        ],
+        "confidence": "high"
+      }
+    },
+    "gemini": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "Dificultad para diagnosticar fallos en el bridge sin trazabilidad operacional normalizada.",
+          "Ejecución accidental de smoke tests remotos en entornos no deseados (ej. producción) debido a un control laxo.",
+          "Visibilidad limitada sobre el estado de los reintentos y su impacto en la entrega de documentos.",
+          "Falta de métricas operativas clave para el puente, dificultando la monitorización proactiva."
+        ],
+        "minimum_service_changes": [
+          "En `sendDocumentToAuditaPatronEngine`, generar un `dispatchId` (UUID) al inicio de cada operación.",
+          "Introducir un objeto de log estructurado simple que capture `dispatchId`, `targetHost`, `targetPath`, `outcomeCategory` (SUCCESS, RETRY_SCHEDULED, PERMANENT_FAILURE, SKIPPED), `retryScheduled`, `retryDelayMs` y `httpStatusCode` (si aplica). Este log debe ser emitido al final de la operación.",
+          "Modificar la lógica del smoke test en `auditaPatronBridgeSecret.test.ts` para requerir una variable de entorno más explícita y un chequeo de entorno (ej. `process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`).",
+          "Añadir un campo `remoteSmokeEnabled` al resultado para auditoría si el smoke test se ejecutó."
+        ],
+        "result_shape_changes": [
+          "Añadir `dispatchId`: string (UUID único para cada intento de envío).",
+          "Añadir `outcomeCategory`: 'SUCCESS' | 'RETRY_SCHEDULED' | 'PERMANENT_FAILURE' | 'SKIPPED'.",
+          "Añadir `targetHost`: string (host al que se intentó enviar).",
+          "Añadir `targetPath`: string (ruta al que se intentó enviar).",
+          "Añadir `retryScheduled`: boolean (indica si se programó un reintento).",
+          "Añadir `retryDelayMs`: number | null (tiempo de espera para el reintento, si aplica).",
+          "Añadir `httpStatusCode`: number | null (código de respuesta HTTP del intento final o fallido).",
+          "Añadir `remoteSmokeEnabled`: boolean (indica si la operación fue parte de un smoke test remoto)."
+        ],
+        "smoke_test_guardrails": [
+          "Cambiar `RUN_LIVE_COMPLILINK_BRIDGE_SMOKE === \"1\"` a una variable de entorno más restrictiva y explícita, como `ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === \"TRUE\"`.",
+          "Añadir una condición de entorno (`process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'`) junto con la variable explícita para la ejecución del smoke test remoto.",
+          "Documentar claramente que esta variable NUNCA debe ser configurada en entornos de producción o pre-producción."
+        ],
+        "tests_to_add": [
+          "Test unitario para la generación de `dispatchId` y su inclusión en el resultado y log estructurado.",
+          "Test unitario para la lógica de `outcomeCategory` basada en diferentes escenarios de respuesta (2xx, 4xx, 5xx, reintentos).",
+          "Test de integración (mockeado) para verificar que el log estructurado contiene todos los campos esperados al finalizar `sendDocumentToAuditaPatronEngine`.",
+          "Test de Vitest que asegure que el smoke test remoto NO se ejecuta si los nuevos guardrails de entorno y variables no se cumplen explícitamente."
+        ],
+        "do_not_change": [
+          "El contrato del webhook ni el payload enviado a CompliLink.",
+          "La firma HMAC del payload.",
+          "La política de reintentos existente (solo en 5xx).",
+          "La introducción de dependencias pesadas o sistemas externos de logging.",
+          "El flujo funcional principal de `sendDocumentToAuditaPatronEngine`."
+        ],
+        "confidence": "high"
+      }
+    }
+  }
+}

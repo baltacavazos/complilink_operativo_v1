@@ -19,6 +19,43 @@ function getReturnToFromSearch() {
   return returnTo;
 }
 
+function getAccessErrorFromSearch() {
+  if (typeof window === "undefined") return null;
+
+  const error = new URLSearchParams(window.location.search).get("error");
+  switch (error) {
+    case "google_not_available":
+      return "Google no está disponible todavía en este entorno. Mientras termina la configuración, puedes entrar con Manus o con código por correo.";
+    case "google_callback_failed":
+      return "No pudimos completar el acceso con Google. Intenta de nuevo o usa Manus o el código por correo para continuar.";
+    default:
+      return null;
+  }
+}
+
+function parseStructuredAuthMessage(rawMessage: string) {
+  const [baseMessage, ...tokens] = rawMessage.split("||");
+  let retryAfterSeconds: number | null = null;
+  let code: string | null = null;
+
+  for (const token of tokens) {
+    if (token.startsWith("retry_after=")) {
+      const parsedSeconds = Number(token.replace("retry_after=", ""));
+      retryAfterSeconds = Number.isFinite(parsedSeconds) ? parsedSeconds : null;
+    }
+
+    if (token.startsWith("code=")) {
+      code = token.replace("code=", "") || null;
+    }
+  }
+
+  return {
+    message: baseMessage.trim(),
+    retryAfterSeconds,
+    code,
+  };
+}
+
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
   const { loading, user } = useAuth();
@@ -29,19 +66,28 @@ export default function Access() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emailStep, setEmailStep] = useState<"request" | "verify">("request");
+  const [emailCooldownUntil, setEmailCooldownUntil] = useState<number | null>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
+  const accessErrorFromSearch = useMemo(() => getAccessErrorFromSearch(), []);
 
   const googleStatusQuery = trpc.auth.googleStatus.useQuery();
   const requestEmailCode = trpc.auth.requestEmailCode.useMutation({
     onSuccess(data) {
-      setSubmittedEmail(email.trim().toLowerCase());
+      const normalizedEmail = email.trim().toLowerCase();
+      setSubmittedEmail(normalizedEmail);
       setEmailStep("verify");
       setCode("");
       setErrorMessage(null);
-      setStatusMessage(`Enviamos un código de 6 dígitos a ${data.maskedEmail}.`);
+      setEmailCooldownUntil(Date.now() + data.cooldownSeconds * 1000);
+      setStatusMessage(`Enviamos un código de 6 dígitos a ${data.maskedEmail}. Puedes solicitar otro dentro de ${data.cooldownSeconds} segundos si lo necesitas.`);
     },
     onError(error) {
-      setErrorMessage(error.message);
+      const parsed = parseStructuredAuthMessage(error.message);
+      setErrorMessage(parsed.message);
       setStatusMessage(null);
+      if (parsed.retryAfterSeconds) {
+        setEmailCooldownUntil(Date.now() + parsed.retryAfterSeconds * 1000);
+      }
     },
   });
   const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
@@ -51,7 +97,8 @@ export default function Access() {
       }
     },
     onError(error) {
-      setErrorMessage(error.message);
+      const parsed = parseStructuredAuthMessage(error.message);
+      setErrorMessage(parsed.message);
       setStatusMessage(null);
     },
   });
@@ -61,6 +108,22 @@ export default function Access() {
       window.location.replace(returnTo);
     }
   }, [loading, returnTo, user]);
+
+  useEffect(() => {
+    if (!accessErrorFromSearch) return;
+    setErrorMessage(accessErrorFromSearch);
+    setStatusMessage(null);
+  }, [accessErrorFromSearch]);
+
+  useEffect(() => {
+    if (!emailCooldownUntil) return;
+
+    const timer = window.setInterval(() => {
+      setNowTs(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [emailCooldownUntil]);
 
   const handleRequestCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -84,6 +147,8 @@ export default function Access() {
   };
 
   const googleEnabled = Boolean(googleStatusQuery.data?.enabled);
+  const emailCooldownSecondsRemaining = emailCooldownUntil ? Math.max(0, Math.ceil((emailCooldownUntil - nowTs) / 1000)) : 0;
+  const emailCooldownActive = emailCooldownSecondsRemaining > 0;
   const googleLabel = googleStatusQuery.isLoading
     ? "Verificando disponibilidad de Google"
     : googleEnabled
@@ -196,9 +261,14 @@ export default function Access() {
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                Usa tu correo de trabajo para recibir un código de verificación. Si es tu primer acceso por este canal, el sistema reconciliará tu identidad con la cuenta existente cuando encuentre el mismo email.
-              </p>
+                  <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                    Usa tu correo de trabajo para recibir un código de verificación. Si es tu primer acceso por este canal, el sistema reconciliará tu identidad con la cuenta existente cuando encuentre el mismo email.
+                  </p>
+
+                  <div className="mt-4 rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                    Por seguridad, el reenvío del código tiene un breve enfriamiento visible y el sistema limita la cantidad de solicitudes repetidas por correo durante la misma ventana operativa.
+                  </div>
+
 
               {statusMessage ? (
                 <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
@@ -250,10 +320,10 @@ export default function Access() {
                     type="submit"
                     size="lg"
                     className="h-12 w-full rounded-2xl"
-                    disabled={requestEmailCode.isPending || loading}
+                    disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                   >
                     {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Enviar código de acceso
+                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Enviar código de acceso"}
                   </Button>
                 </form>
               ) : (
@@ -304,7 +374,7 @@ export default function Access() {
                       size="lg"
                       variant="outline"
                       className="h-12 rounded-2xl border-border/80 bg-background/70"
-                      disabled={requestEmailCode.isPending}
+                      disabled={requestEmailCode.isPending || emailCooldownActive}
                       onClick={async () => {
                         setErrorMessage(null);
                         setStatusMessage(null);
@@ -315,9 +385,15 @@ export default function Access() {
                       }}
                     >
                       {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Reenviar código
+                      {emailCooldownActive ? `Reenviar en ${emailCooldownSecondsRemaining}s` : "Reenviar código"}
                     </Button>
                   </div>
+
+                  {emailCooldownActive ? (
+                    <p className="text-sm text-muted-foreground">
+                      Puedes pedir un nuevo código en <strong className="text-foreground">{emailCooldownSecondsRemaining}s</strong>.
+                    </p>
+                  ) : null}
 
                   <button
                     type="button"

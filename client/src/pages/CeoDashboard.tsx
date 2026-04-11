@@ -127,9 +127,6 @@ function getSafeMembershipAction(membership: { status: string; accessScope: stri
   if (membership.status === "active") {
     return { status: "revoked" as const, label: "Revocar acceso" };
   }
-  if (membership.status === "revoked") {
-    return { status: "active" as const, label: "Reactivar acceso" };
-  }
   return null;
 }
 

@@ -198,6 +198,16 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.attempts).toBe(1);
     expect(result.responseBody).toContain("accepted");
     expect(result.payload.event).toBe("document.uploaded");
+    expect(result.observabilityEnvelope.targetHost).toContain("127.0.0.1");
+    expect(result.observabilityEnvelope.targetPath).toBe("/engine/webhook");
+    expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
+    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
+    expect(result.observabilityEnvelope.retryDelayMs).toBeNull();
+    expect(result.observabilityEnvelope.httpStatusCode).toBe(202);
+    expect(result.observabilityEnvelope.remoteSmokeEnabled).toBe(false);
+    expect(result.observabilityEnvelope.dispatchId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
   });
 
   it("retries only for 5xx responses and eventually succeeds", async () => {
@@ -240,6 +250,9 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.status).toBe("sent");
     expect(result.httpStatus).toBe(202);
     expect(result.attempts).toBe(3);
+    expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
+    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
+    expect(result.observabilityEnvelope.httpStatusCode).toBe(202);
   });
 
   it("skips delivery cleanly when configuration is missing", async () => {
@@ -263,5 +276,11 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.reason).toBe("engine_not_configured");
     expect(result.httpStatus).toBeNull();
     expect(result.attempts).toBe(0);
+    expect(result.observabilityEnvelope.targetHost).toBeNull();
+    expect(result.observabilityEnvelope.targetPath).toBeNull();
+    expect(result.observabilityEnvelope.outcomeCategory).toBe("skipped");
+    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
+    expect(result.observabilityEnvelope.retryDelayMs).toBeNull();
+    expect(result.observabilityEnvelope.httpStatusCode).toBeNull();
   });
 });

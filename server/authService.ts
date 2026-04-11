@@ -13,6 +13,11 @@ const EMAIL_CODE_TTL_MS = 1000 * 60 * 10;
 const GOOGLE_STATE_TTL_MS = 1000 * 60 * 10;
 const GOOGLE_CALLBACK_PATH = "/api/auth/google/callback";
 const GOOGLE_START_PATH = "/api/auth/google/start";
+const EMAIL_RESEND_COOLDOWN_MS = 1000 * 60;
+const EMAIL_RESEND_WINDOW_MS = 1000 * 60 * 60;
+const EMAIL_RESEND_MAX_REQUESTS = 5;
+
+const emailLoginRateByEmail = new Map<string, { lastSentAt: number; windowStartedAt: number; sentCount: number }>();
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -50,6 +55,76 @@ function buildFallbackName(email: string, providedName?: string | null) {
   const candidate = providedName?.trim();
   if (candidate) return candidate;
   return normalizeEmail(email);
+}
+
+export class AuthFlowError extends Error {
+  constructor(
+    public readonly code:
+      | "EMAIL_CODE_COOLDOWN_ACTIVE"
+      | "EMAIL_CODE_RATE_LIMITED"
+      | "INVALID_EMAIL_CODE"
+      | "EMAIL_CODE_EXPIRED",
+    message: string,
+    public readonly retryAfterSeconds?: number,
+  ) {
+    super(message);
+    this.name = "AuthFlowError";
+  }
+}
+
+function getEmailRateState(email: string, now = Date.now()) {
+  const currentState = emailLoginRateByEmail.get(email);
+  if (!currentState) {
+    return {
+      lastSentAt: 0,
+      windowStartedAt: now,
+      sentCount: 0,
+    };
+  }
+
+  if (now - currentState.windowStartedAt >= EMAIL_RESEND_WINDOW_MS) {
+    return {
+      lastSentAt: currentState.lastSentAt,
+      windowStartedAt: now,
+      sentCount: 0,
+    };
+  }
+
+  return currentState;
+}
+
+function assertEmailCodeRequestAllowed(email: string, now = Date.now()) {
+  const state = getEmailRateState(email, now);
+  const cooldownRemainingMs = state.lastSentAt ? EMAIL_RESEND_COOLDOWN_MS - (now - state.lastSentAt) : 0;
+  if (cooldownRemainingMs > 0) {
+    throw new AuthFlowError(
+      "EMAIL_CODE_COOLDOWN_ACTIVE",
+      "Debes esperar antes de solicitar otro código. Intenta de nuevo en unos segundos.",
+      Math.ceil(cooldownRemainingMs / 1000),
+    );
+  }
+
+  if (state.sentCount >= EMAIL_RESEND_MAX_REQUESTS) {
+    const windowRemainingMs = EMAIL_RESEND_WINDOW_MS - (now - state.windowStartedAt);
+    throw new AuthFlowError(
+      "EMAIL_CODE_RATE_LIMITED",
+      "Ya enviamos demasiados códigos a este correo en la última hora. Espera antes de intentarlo otra vez.",
+      Math.max(60, Math.ceil(windowRemainingMs / 1000)),
+    );
+  }
+}
+
+function recordEmailCodeRequest(email: string, now = Date.now()) {
+  const state = getEmailRateState(email, now);
+  emailLoginRateByEmail.set(email, {
+    lastSentAt: now,
+    windowStartedAt: state.windowStartedAt,
+    sentCount: state.sentCount + 1,
+  });
+}
+
+function clearEmailCodeRequestState(email: string) {
+  emailLoginRateByEmail.delete(email);
 }
 
 async function signEmailChallengeToken(payload: { email: string; codeHash: string; name: string }) {
@@ -214,6 +289,8 @@ async function sendEmailCodeWithResend(params: { email: string; code: string }) 
 
 export async function startEmailLogin(params: { req: Request; res: Response; email: string; name?: string | null }) {
   const email = normalizeEmail(params.email);
+  assertEmailCodeRequestAllowed(email);
+
   const code = `${randomInt(100000, 999999)}`;
   const codeHash = hashEmailCode(email, code);
   const challengeToken = await signEmailChallengeToken({
@@ -223,26 +300,45 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
   });
 
   await sendEmailCodeWithResend({ email, code });
+  recordEmailCodeRequest(email);
   setEmailChallengeCookie(params.req, params.res, challengeToken);
 
   return {
     maskedEmail: maskEmail(email),
     expiresInSeconds: Math.floor(EMAIL_CODE_TTL_MS / 1000),
+    cooldownSeconds: Math.floor(EMAIL_RESEND_COOLDOWN_MS / 1000),
+    maxRequestsPerWindow: EMAIL_RESEND_MAX_REQUESTS,
+    rateLimitWindowSeconds: Math.floor(EMAIL_RESEND_WINDOW_MS / 1000),
   };
 }
 
 export async function completeEmailLogin(params: { req: Request; res: Response; email: string; code: string; name?: string | null }) {
   const cookies = parseCookies(params.req);
-  const challenge = await verifyEmailChallengeToken(cookies[EMAIL_LOGIN_COOKIE]);
   const normalizedEmail = normalizeEmail(params.email);
 
+  let challenge: Awaited<ReturnType<typeof verifyEmailChallengeToken>>;
+  try {
+    challenge = await verifyEmailChallengeToken(cookies[EMAIL_LOGIN_COOKIE]);
+  } catch {
+    throw new AuthFlowError(
+      "EMAIL_CODE_EXPIRED",
+      "El código ya expiró o esta solicitud ya no es válida. Solicita uno nuevo para continuar.",
+    );
+  }
+
   if (challenge.email !== normalizedEmail) {
-    throw new Error("Email does not match the active verification challenge");
+    throw new AuthFlowError(
+      "INVALID_EMAIL_CODE",
+      "El código no coincide con el correo que estás intentando validar. Verifica el dato e inténtalo otra vez.",
+    );
   }
 
   const submittedCodeHash = hashEmailCode(normalizedEmail, params.code.trim());
   if (submittedCodeHash !== challenge.codeHash) {
-    throw new Error("Invalid verification code");
+    throw new AuthFlowError(
+      "INVALID_EMAIL_CODE",
+      "El código es incorrecto o ya expiró. Revisa tu correo e inténtalo otra vez.",
+    );
   }
 
   const user = await resolveOrCreateUser({
@@ -257,6 +353,7 @@ export async function completeEmailLogin(params: { req: Request; res: Response; 
     name: user.name ?? normalizedEmail,
   });
   clearEmailChallengeCookie(params.req, params.res);
+  clearEmailCodeRequestState(normalizedEmail);
 
   return user;
 }

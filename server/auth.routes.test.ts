@@ -1,14 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
-const authServiceMocks = vi.hoisted(() => ({
-  isGoogleOAuthConfigured: vi.fn(),
-  startEmailLogin: vi.fn(),
-  completeEmailLogin: vi.fn(),
-  clearEmailChallengeCookie: vi.fn(),
-}));
+const authServiceMocks = vi.hoisted(() => {
+  class AuthFlowError extends Error {
+    constructor(
+      public readonly code: string,
+      message: string,
+      public readonly retryAfterSeconds?: number,
+    ) {
+      super(message);
+      this.name = "AuthFlowError";
+    }
+  }
+
+  return {
+    AuthFlowError,
+    isGoogleOAuthConfigured: vi.fn(),
+    startEmailLogin: vi.fn(),
+    completeEmailLogin: vi.fn(),
+    clearEmailChallengeCookie: vi.fn(),
+  };
+});
 
 vi.mock("./authService", () => ({
+  AuthFlowError: authServiceMocks.AuthFlowError,
   isGoogleOAuthConfigured: authServiceMocks.isGoogleOAuthConfigured,
   startEmailLogin: authServiceMocks.startEmailLogin,
   completeEmailLogin: authServiceMocks.completeEmailLogin,
@@ -67,10 +82,13 @@ describe("auth router", () => {
     });
   });
 
-  it("requests an email code and returns masked metadata", async () => {
+  it("requests an email code and returns masked metadata plus cooldown details", async () => {
     authServiceMocks.startEmailLogin.mockResolvedValue({
       maskedEmail: "al***@empresa.com",
       expiresInSeconds: 600,
+      cooldownSeconds: 60,
+      maxRequestsPerWindow: 5,
+      rateLimitWindowSeconds: 3600,
     });
     const { ctx } = createContext();
 
@@ -89,6 +107,9 @@ describe("auth router", () => {
       success: true,
       maskedEmail: "al***@empresa.com",
       expiresInSeconds: 600,
+      cooldownSeconds: 60,
+      maxRequestsPerWindow: 5,
+      rateLimitWindowSeconds: 3600,
     });
   });
 
@@ -102,6 +123,24 @@ describe("auth router", () => {
         name: "Alice",
       }),
     ).rejects.toThrow("Resend rejected the request: 403");
+  });
+
+  it("returns a controlled cooldown error when email resend is requested too soon", async () => {
+    authServiceMocks.startEmailLogin.mockRejectedValue(
+      new authServiceMocks.AuthFlowError(
+        "EMAIL_CODE_COOLDOWN_ACTIVE",
+        "Debes esperar antes de solicitar otro código.",
+        42,
+      ),
+    );
+    const { ctx } = createContext();
+
+    await expect(
+      appRouter.createCaller(ctx).auth.requestEmailCode({
+        email: "alice@empresa.com",
+        name: "Alice",
+      }),
+    ).rejects.toThrow("Debes esperar antes de solicitar otro código.||retry_after=42||code=EMAIL_CODE_COOLDOWN_ACTIVE");
   });
 
   it("verifies an email code and returns the signed-in user", async () => {
@@ -146,5 +185,23 @@ describe("auth router", () => {
         name: "Alice",
       }),
     ).rejects.toThrow("Invalid verification code");
+  });
+
+  it("returns a controlled verification error when the submitted code is invalid or expired", async () => {
+    authServiceMocks.completeEmailLogin.mockRejectedValue(
+      new authServiceMocks.AuthFlowError(
+        "INVALID_EMAIL_CODE",
+        "El código es incorrecto o ya expiró. Revisa tu correo e inténtalo otra vez.",
+      ),
+    );
+    const { ctx } = createContext();
+
+    await expect(
+      appRouter.createCaller(ctx).auth.verifyEmailCode({
+        email: "alice@empresa.com",
+        code: "123456",
+        name: "Alice",
+      }),
+    ).rejects.toThrow("El código es incorrecto o ya expiró. Revisa tu correo e inténtalo otra vez.||code=INVALID_EMAIL_CODE");
   });
 });

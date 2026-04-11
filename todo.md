@@ -616,3 +616,11 @@
 - [x] Contrastar con ChatGPT, Grok y Gemini el fallo TLS/SSL del bridge externo complilink.mx y sintetizar un diagnóstico comparado
 - [x] Inspeccionar el bridge y su prueba de secreto para decidir si corresponde corrección local, mitigación de test o escalamiento externo
 - [x] Validar nuevamente la suite tras la corrección o mitigación del bloqueo TLS/SSL del bridge
+- [x] Revisar el inventario completo de pendientes para determinar qué falta realmente para cerrar la versión 1
+- [x] Contrastar con ChatGPT, Grok y Gemini la priorización final de pendientes de cierre para la versión 1
+- [x] Clasificar los pendientes de la versión 1 en críticos, recomendados y posteriores para definir la siguiente ejecución
+- [x] Cierre V1 autorizado: auditar y sellar el perímetro CEO con foco en permisos, roles, exportes stale y pruebas negativas finales
+- [x] Cierre V1 autorizado: robustecer la autenticación unificada con Google OAuth real, errores visibles y cero regresión sobre Manus OAuth
+- [x] Cierre V1 autorizado: añadir límites visibles de reintento y enfriamiento al acceso passwordless por email
+- [x] Cierre V1 autorizado: instrumentar logs estructurados del bridge y documentar la ejecución controlada de smoke tests externos
+- [ ] Cierre V1 autorizado: ejecutar validación final, revisar estado del proyecto y guardar checkpoint técnico

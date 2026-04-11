@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { ENV } from "./_core/env";
 import {
   buildCanonicalCaseContract,
@@ -46,6 +46,17 @@ export type AuditaPatronEnginePayload = {
   metadata?: AuditaPatronMetadata;
 };
 
+export type AuditaPatronBridgeObservabilityEnvelope = {
+  dispatchId: string;
+  targetHost: string | null;
+  targetPath: string | null;
+  outcomeCategory: "success" | "retry_scheduled" | "permanent_failure" | "skipped";
+  retryScheduled: boolean;
+  retryDelayMs: number | null;
+  remoteSmokeEnabled: boolean;
+  httpStatusCode: number | null;
+};
+
 export type AuditaPatronEngineDispatchResult = {
   status: "sent" | "failed" | "skipped";
   dispatchedAt: string;
@@ -56,6 +67,7 @@ export type AuditaPatronEngineDispatchResult = {
   errorMessage?: string;
   responseBody?: string | null;
   payload: AuditaPatronEnginePayload;
+  observabilityEnvelope: AuditaPatronBridgeObservabilityEnvelope;
 };
 
 export type CompliLinkReturnEnvelope = {
@@ -113,6 +125,70 @@ function parseTimestampSeconds(timestampHeader?: string | null) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseWebhookTarget(webhookUrl: string) {
+  if (!webhookUrl) {
+    return { targetHost: null, targetPath: null };
+  }
+
+  try {
+    const url = new URL(webhookUrl);
+    return {
+      targetHost: url.host,
+      targetPath: `${url.pathname}${url.search}` || url.pathname || "/",
+    };
+  } catch {
+    return { targetHost: null, targetPath: null };
+  }
+}
+
+function isRemoteBridgeSmokeEnabled() {
+  return (
+    process.env.ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === "TRUE" &&
+    (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test")
+  );
+}
+
+function buildObservabilityEnvelope(params: {
+  dispatchId: string;
+  targetHost: string | null;
+  targetPath: string | null;
+  outcomeCategory: AuditaPatronBridgeObservabilityEnvelope["outcomeCategory"];
+  retryScheduled: boolean;
+  retryDelayMs: number | null;
+  remoteSmokeEnabled: boolean;
+  httpStatusCode: number | null;
+}) {
+  return {
+    dispatchId: params.dispatchId,
+    targetHost: params.targetHost,
+    targetPath: params.targetPath,
+    outcomeCategory: params.outcomeCategory,
+    retryScheduled: params.retryScheduled,
+    retryDelayMs: params.retryDelayMs,
+    remoteSmokeEnabled: params.remoteSmokeEnabled,
+    httpStatusCode: params.httpStatusCode,
+  } satisfies AuditaPatronBridgeObservabilityEnvelope;
+}
+
+function emitBridgeObservability(params: {
+  status: AuditaPatronEngineDispatchResult["status"];
+  attempts: number;
+  reason?: string;
+  errorMessage?: string;
+  observabilityEnvelope: AuditaPatronBridgeObservabilityEnvelope;
+}) {
+  console.info(
+    JSON.stringify({
+      event: "auditapatron_bridge_dispatch",
+      status: params.status,
+      attempts: params.attempts,
+      reason: params.reason,
+      errorMessage: params.errorMessage,
+      ...params.observabilityEnvelope,
+    }),
+  );
 }
 
 function slugifyDocType(value: string) {
@@ -284,9 +360,12 @@ export async function sendDocumentToAuditaPatronEngine(
 ): Promise<AuditaPatronEngineDispatchResult> {
   const payload = buildAuditaPatronEnginePayload(params);
   const config = getAuditaPatronEngineConfig(overrides);
+  const dispatchId = randomUUID();
+  const { targetHost, targetPath } = parseWebhookTarget(config.webhookUrl);
+  const remoteSmokeEnabled = isRemoteBridgeSmokeEnabled();
 
   if (!config.webhookUrl || !config.hmacSecret) {
-    return {
+    const result = {
       status: "skipped",
       dispatchedAt: new Date().toISOString(),
       timestamp: buildUnixTimestamp(),
@@ -294,7 +373,26 @@ export async function sendDocumentToAuditaPatronEngine(
       httpStatus: null,
       reason: "engine_not_configured",
       payload,
-    };
+      observabilityEnvelope: buildObservabilityEnvelope({
+        dispatchId,
+        targetHost,
+        targetPath,
+        outcomeCategory: "skipped",
+        retryScheduled: false,
+        retryDelayMs: null,
+        remoteSmokeEnabled,
+        httpStatusCode: null,
+      }),
+    } satisfies AuditaPatronEngineDispatchResult;
+
+    emitBridgeObservability({
+      status: result.status,
+      attempts: result.attempts,
+      reason: result.reason,
+      observabilityEnvelope: result.observabilityEnvelope,
+    });
+
+    return result;
   }
 
   const body = JSON.stringify(payload);
@@ -325,7 +423,7 @@ export async function sendDocumentToAuditaPatronEngine(
       lastResponseBody = await response.text();
 
       if (response.ok) {
-        return {
+        const result = {
           status: "sent",
           dispatchedAt: new Date().toISOString(),
           timestamp: finalTimestamp,
@@ -333,17 +431,51 @@ export async function sendDocumentToAuditaPatronEngine(
           httpStatus: response.status,
           responseBody: lastResponseBody,
           payload,
-        };
+          observabilityEnvelope: buildObservabilityEnvelope({
+            dispatchId,
+            targetHost,
+            targetPath,
+            outcomeCategory: "success",
+            retryScheduled: false,
+            retryDelayMs: null,
+            remoteSmokeEnabled,
+            httpStatusCode: response.status,
+          }),
+        } satisfies AuditaPatronEngineDispatchResult;
+
+        emitBridgeObservability({
+          status: result.status,
+          attempts: result.attempts,
+          observabilityEnvelope: result.observabilityEnvelope,
+        });
+
+        return result;
       }
 
       lastReason = "webhook_rejected";
 
       if (shouldRetry(response.status) && attemptIndex < config.retryDelaysMs.length) {
-        await sleep(config.retryDelaysMs[attemptIndex] ?? 0);
+        const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
+        emitBridgeObservability({
+          status: "failed",
+          attempts,
+          reason: lastReason,
+          observabilityEnvelope: buildObservabilityEnvelope({
+            dispatchId,
+            targetHost,
+            targetPath,
+            outcomeCategory: "retry_scheduled",
+            retryScheduled: true,
+            retryDelayMs,
+            remoteSmokeEnabled,
+            httpStatusCode: response.status,
+          }),
+        });
+        await sleep(retryDelayMs);
         continue;
       }
 
-      return {
+      const result = {
         status: "failed",
         dispatchedAt: new Date().toISOString(),
         timestamp: finalTimestamp,
@@ -352,7 +484,26 @@ export async function sendDocumentToAuditaPatronEngine(
         reason: lastReason,
         responseBody: lastResponseBody,
         payload,
-      };
+        observabilityEnvelope: buildObservabilityEnvelope({
+          dispatchId,
+          targetHost,
+          targetPath,
+          outcomeCategory: "permanent_failure",
+          retryScheduled: false,
+          retryDelayMs: null,
+          remoteSmokeEnabled,
+          httpStatusCode: response.status,
+        }),
+      } satisfies AuditaPatronEngineDispatchResult;
+
+      emitBridgeObservability({
+        status: result.status,
+        attempts: result.attempts,
+        reason: result.reason,
+        observabilityEnvelope: result.observabilityEnvelope,
+      });
+
+      return result;
     } catch (error) {
       lastHttpStatus = null;
       lastReason = "network_error";
@@ -361,7 +512,7 @@ export async function sendDocumentToAuditaPatronEngine(
     }
   }
 
-  return {
+  const result = {
     status: "failed",
     dispatchedAt: new Date().toISOString(),
     timestamp: finalTimestamp,
@@ -371,5 +522,25 @@ export async function sendDocumentToAuditaPatronEngine(
     errorMessage: lastErrorMessage,
     responseBody: lastResponseBody,
     payload,
-  };
+    observabilityEnvelope: buildObservabilityEnvelope({
+      dispatchId,
+      targetHost,
+      targetPath,
+      outcomeCategory: "permanent_failure",
+      retryScheduled: false,
+      retryDelayMs: null,
+      remoteSmokeEnabled,
+      httpStatusCode: lastHttpStatus,
+    }),
+  } satisfies AuditaPatronEngineDispatchResult;
+
+  emitBridgeObservability({
+    status: result.status,
+    attempts: result.attempts,
+    reason: result.reason,
+    errorMessage: result.errorMessage,
+    observabilityEnvelope: result.observabilityEnvelope,
+  });
+
+  return result;
 }

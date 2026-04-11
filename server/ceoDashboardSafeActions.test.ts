@@ -475,6 +475,52 @@ describe("Dashboard CEO safe actions", () => {
     );
   });
 
+  it("bloquea la reactivación de un acceso revocado desde la consola CEO", async () => {
+    vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue({
+      ...buildSnapshot(),
+      recentMemberships: [
+        {
+          ...buildSnapshot().recentMemberships[0],
+          membershipId: 501,
+          id: 501,
+          status: "revoked",
+        },
+      ],
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoUpdateMembershipStatus({
+        membershipId: 501,
+        status: "active",
+        expectedCurrentStatus: "revoked",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+      }),
+    ).rejects.toThrow(/siguiente cambio operativo seguro/i);
+
+    expect(db.updateTenantMembershipStatus).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("rechaza registrar auditoría de exportes CEO cuando el snapshot ya está stale", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.dashboard.ceoRecordExportAudit({
+        tenantId: "balt-1",
+        section: "documentos",
+        format: "pdf",
+        snapshotGeneratedAt: "2026-04-08T09:20:59.000Z",
+        appliedFilters: ["Documentos críticos"],
+        visibleCount: 2,
+      }),
+    ).rejects.toThrow(/han cambiado|desactualizada/i);
+
+    expect(db.assertTenantAdminAccess).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
   it("bloquea estas mutaciones para usuarios sin rol admin", async () => {
     const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
 

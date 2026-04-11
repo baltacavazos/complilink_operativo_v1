@@ -1,0 +1,124 @@
+{
+  "started_at": "2026-04-11T04:00:58Z",
+  "brief_path": "/home/ubuntu/complilink_operativo_v1/auth_unified_multi_ai_brief.md",
+  "models": {
+    "openai": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "Usuarios confusos por estado ambiguo de Google OAuth si no está configurado",
+          "Errores genéricos en callback de Google OAuth que no informan claramente al usuario",
+          "Ausencia de límites visibles en reenvío de código passwordless que permite spam o abuso",
+          "Posible regresión en sesión o redirección si se modifican flujos OAuth existentes",
+          "Estado residual de Vite que puede causar renderizados inconsistentes en Access.tsx"
+        ],
+        "minimum_backend_changes": [
+          "Modificar rutas /api/auth/google/start y /callback para devolver errores JSON con mensajes claros y códigos HTTP adecuados",
+          "Agregar validación y control de cooldown en auth.requestEmailCode para impedir reenvíos antes de tiempo",
+          "Exponer en auth.googleStatus un flag explícito de configuración para UI",
+          "Registrar eventos de fallo en callback Google para trazabilidad sin alterar flujo actual"
+        ],
+        "minimum_frontend_changes": [
+          "En Access.tsx, mostrar mensaje claro y deshabilitar botón Google OAuth si no está configurado",
+          "Implementar contador visible y estado de cooldown para reenvío de código passwordless basado en backend",
+          "Mostrar mensajes de error específicos para callback fallido y código inválido usando estados locales",
+          "Evitar dependencias o hooks que puedan causar problemas con estado residual de Vite, usar estados locales controlados"
+        ],
+        "cooldown_strategy": "Backend impone cooldown mínimo (ej. 60s) entre envíos de código; frontend muestra contador regresivo y deshabilita botón reenvío durante cooldown con mensaje visible 'Espere X segundos para reenviar código'.",
+        "error_copy": {
+          "google_not_configured": "Google OAuth no está configurado. Contacta al administrador.",
+          "google_callback_failed": "Error al autenticar con Google. Intenta nuevamente más tarde.",
+          "invalid_code": "Código inválido o expirado. Revisa tu correo e intenta otra vez.",
+          "cooldown_active": "Por favor espera unos segundos antes de solicitar otro código."
+        },
+        "do_not_change": [
+          "Flujo y URLs de Manus OAuth para evitar romper integración actual",
+          "Patrón de rutas tRPC y sesiones actuales para mantener compatibilidad",
+          "No introducir wrappers Axios ni cambiar librerías de red",
+          "No modificar lógica de sesión y redirección post-login"
+        ],
+        "confidence": "high"
+      }
+    },
+    "grok": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "Regresión en Manus OAuth por cambios en rutas compartidas",
+          "Errores silenciosos en Google callback exponiendo datos sensibles",
+          "Ausencia de rate limiting en passwordless permitiendo brute force",
+          "UI confusa si Google no configurado, llevando a UX pobre",
+          "Falta de manejo de cooldown causando spam de emails"
+        ],
+        "minimum_backend_changes": [
+          "En authService.ts, agregar manejo de errores específicos en completeEmailLogin y Google callback, retornando códigos como 'invalid_code' o 'google_callback_failed' via tRPC",
+          "En oauth.ts, modificar respuestas de error en /api/auth/google/start y /callback para JSON estructurado {error: 'specific_message'} en lugar de 500 genérico",
+          "Implementar cooldown simple en requestEmailCode: mapa en memoria por email con timestamp, denegar si <60s desde último envío, retornar 'cooldown_active'"
+        ],
+        "minimum_frontend_changes": [
+          "En Access.tsx, condicionar botón Google con auth.googleStatus; si false, mostrar mensaje y ocultar botón",
+          "Agregar manejo de errores en tRPC calls: mapear 'google_callback_failed', 'invalid_code', 'cooldown_active' a estados UI con mensajes",
+          "Implementar estado local para cooldown: deshabilitar botón reenviar y mostrar countdown basado en respuesta backend"
+        ],
+        "cooldown_strategy": [
+          "Backend: Usar Map<email, timestamp> en authService.ts para trackear último envío; cooldown de 60s, retornar error si activo",
+          "Frontend: En requestEmailCode, si cooldown_active, setear timer countdown en estado local y actualizar UI cada segundo hasta 0",
+          "Límite: Máximo 3 intentos por hora por email, loggear para trazabilidad; no usar DB para V1, solo memoria para simplicidad"
+        ],
+        "error_copy": {
+          "google_not_configured": "Google OAuth no está disponible. Usa Manus o email.",
+          "google_callback_failed": "Error al completar login con Google. Intenta de nuevo o usa otra opción.",
+          "invalid_code": "Código incorrecto. Verifica tu email y reintenta.",
+          "cooldown_active": "Espera 60 segundos para reenviar el código."
+        },
+        "do_not_change": [
+          "Flujo completo de Manus OAuth y getManusLoginUrl",
+          "Estructura de sesiones y redirecciones post-auth",
+          "Rutas Express existentes en oauth.ts",
+          "Patrón tRPC en routers.ts y llamadas en UI",
+          "Dependencias de authService.ts para verificación básica"
+        ],
+        "confidence": "high"
+      }
+    },
+    "gemini": {
+      "ok": true,
+      "result": {
+        "top_risks": [
+          "UX de Google OAuth confusa si no está configurado o falla, llevando a frustración del usuario.",
+          "Abuso o spamming del flujo passwordless por correo debido a la falta de límites visibles y enfriamiento.",
+          "Errores silenciosos en el callback de Google OAuth que no proporcionan feedback claro al usuario.",
+          "Regresiones en el flujo de Manus OAuth o la gestión de sesión existente debido a cambios no intencionados."
+        ],
+        "minimum_backend_changes": [
+          "Modificar `server/_core/oauth.ts` para que `/api/auth/google/callback` redirija a `/access?error=google_callback_failed` en caso de fallo, en lugar de responder con JSON genérico.",
+          "En `server/authService.ts`, implementar un mecanismo de rate-limiting/cooldown para `requestEmailCode` (e.g., almacenar `lastRequestTimestamp` por email en memoria o caché). Si se solicita antes de tiempo, devolver un error específico `COOLDOWN_ACTIVE` con el tiempo restante.",
+          "Asegurar que `server/authService.ts` en `completeEmailLogin` devuelva un error específico (e.g., `INVALID_CODE`, `EXPIRED_CODE`) para códigos incorrectos."
+        ],
+        "minimum_frontend_changes": [
+          "En `client/src/pages/Access.tsx`, usar `auth.googleStatus` para deshabilitar el botón de Google y mostrar un mensaje claro si no está configurado.",
+          "En `client/src/pages/Access.tsx`, leer parámetros de URL (e.g., `?error=google_callback_failed`) para mostrar mensajes de error específicos de Google OAuth.",
+          "En `client/src/pages/Access.tsx`, implementar un estado local para el cooldown del passwordless: mostrar un contador y deshabilitar el botón 'Enviar código' durante el enfriamiento. Mostrar mensajes de error específicos para `requestEmailCode` (cooldown activo) y `verifyEmailCode` (código inválido).",
+          "Asegurar que los mensajes de error se muestren de forma prominente y clara al usuario."
+        ],
+        "cooldown_strategy": [
+          "**Backend (`authService.ts`)**: Almacenar el `lastRequestTimestamp` por dirección de correo electrónico. Si una nueva solicitud de código llega antes de `X` segundos (e.g., 60-120s) desde `lastRequestTimestamp`, rechazarla con un error `COOLDOWN_ACTIVE` que incluya el tiempo restante.",
+          "**Frontend (`Access.tsx`)**: Tras una solicitud exitosa de código, iniciar un temporizador en la UI. Deshabilitar el botón 'Enviar código' y mostrar 'Reenviar en X segundos'. Si el backend devuelve `COOLDOWN_ACTIVE`, activar el temporizador con el tiempo restante proporcionado."
+        ],
+        "error_copy": {
+          "google_not_configured": "Google Login no está disponible. Contacta a soporte técnico.",
+          "google_callback_failed": "No pudimos iniciar sesión con Google. Intenta de nuevo o usa otro método.",
+          "invalid_code": "El código es incorrecto o ha expirado. Intenta de nuevo.",
+          "cooldown_active": "Debes esperar antes de solicitar otro código. Intenta en {segundos} segundos."
+        },
+        "do_not_change": [
+          "El flujo de autenticación de Manus OAuth y su construcción de URL (`getManusLoginUrl`).",
+          "La lógica de sesión de aplicación y redirección `returnTo` post-autenticación.",
+          "La arquitectura tRPC para los endpoints de autenticación existentes.",
+          "El uso de `window.location.origin` para construir URLs de login."
+        ],
+        "confidence": "high"
+      }
+    }
+  }
+}
