@@ -601,6 +601,39 @@ export function buildInlineLegalConsentState(params: {
   };
 }
 
+export function shouldAutoAnalyzeSelectedFile(params: {
+  autoAnalyzeRequested: boolean;
+  hasSelectedFile: boolean;
+  pendingDraft: boolean;
+  legalGateRequired: boolean;
+  hasSelectedTenant: boolean;
+  hasSelectedCase: boolean;
+  analyzePending: boolean;
+  confirmPending: boolean;
+}) {
+  const {
+    autoAnalyzeRequested,
+    hasSelectedFile,
+    pendingDraft,
+    legalGateRequired,
+    hasSelectedTenant,
+    hasSelectedCase,
+    analyzePending,
+    confirmPending,
+  } = params;
+
+  return (
+    autoAnalyzeRequested &&
+    hasSelectedFile &&
+    !pendingDraft &&
+    !legalGateRequired &&
+    hasSelectedTenant &&
+    hasSelectedCase &&
+    !analyzePending &&
+    !confirmPending
+  );
+}
+
 function getCaptureModeSupportCopy(value: AuditarCaptureMode | null | undefined) {
   return value === "camera"
     ? "Ideal si tu documento está en papel. Abriremos primero la cámara para escanearlo más rápido."
@@ -668,14 +701,14 @@ function getSelectedFilePreparationCopy(params: {
   }
 
   if (params.file.type.startsWith("image/")) {
-    return "Al subir la foto revisaremos nitidez, bordes, orientación y si el contenido visible parece suficiente para continuar sin fricción.";
+    return "En cuanto tomes la foto iniciaremos una revisión preliminar de nitidez, bordes y orientación para dejarte una vista previa antes de cualquier guardado final.";
   }
 
   if (params.file.type === "application/pdf") {
-    return "Al subir el PDF revisaremos si sus páginas parecen completas, legibles y alineadas con el documento que quieres aportar.";
+    return "En cuanto elijas el PDF iniciaremos una revisión preliminar para validar que sus páginas se vean completas y claras antes de pedirte confirmación.";
   }
 
-  return "Al subir el archivo comprobaremos si este formato puede revisarse automáticamente y te diremos si conviene complementarlo con una foto o PDF más claro.";
+  return "En cuanto elijas el archivo haremos una revisión preliminar automática y te avisaremos si conviene complementarlo con una foto o PDF más claro antes de guardarlo.";
 }
 
 const analysisFieldLabels: Record<string, string> = {
@@ -1705,6 +1738,7 @@ export default function Auditar() {
   const [selectedRecommendedTargetType, setSelectedRecommendedTargetType] = useState<DossierTarget["type"] | null>(null);
   const [preferredCaptureMode, setPreferredCaptureMode] = useState<AuditarCaptureMode | null>(null);
   const [selectedCaptureMode, setSelectedCaptureMode] = useState<AuditarCaptureMode | null>(null);
+  const [autoAnalyzeRequested, setAutoAnalyzeRequested] = useState(false);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
   const [pendingDraft, setPendingDraft] = useState<DraftPreviewResultView | null>(null);
@@ -2796,6 +2830,7 @@ export default function Auditar() {
   const clearSelectedFile = () => {
     setSelectedFile(null);
     setSelectedCaptureMode(null);
+    setAutoAnalyzeRequested(false);
     setPendingDraft(null);
     setTextHint("");
     setSubmitError(null);
@@ -2806,6 +2841,9 @@ export default function Auditar() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
+    setAutoAnalyzeRequested(Boolean(file));
+    setPendingDraft(null);
+    setLastUpload(null);
     if (file && selectedRecommendedTargetType) {
       setTextHint((current) => current.trim() || getRecommendedDocumentHint(selectedRecommendedTargetType));
     }
@@ -2857,6 +2895,7 @@ export default function Auditar() {
     setManualFieldValues({});
     setSelectedFile(null);
     setSelectedCaptureMode(null);
+    setAutoAnalyzeRequested(false);
     setSubmitError(null);
     setPickerKey((value) => value + 1);
 
@@ -2872,6 +2911,8 @@ export default function Auditar() {
   };
 
   const handleUpload = async () => {
+    setAutoAnalyzeRequested(false);
+
     if (!selectedTenantId || !selectedCaseId || !selectedFile) {
       setSubmitError("Selecciona un expediente y un archivo antes de continuar.");
       return;
@@ -2916,6 +2957,35 @@ export default function Auditar() {
       setSubmitError(error instanceof Error ? error.message : "No fue posible analizar el archivo.");
     }
   };
+
+  useEffect(() => {
+    const shouldStartAutoAnalysis = shouldAutoAnalyzeSelectedFile({
+      autoAnalyzeRequested,
+      hasSelectedFile: Boolean(selectedFile),
+      pendingDraft: Boolean(pendingDraft),
+      legalGateRequired,
+      hasSelectedTenant: Boolean(selectedTenantId),
+      hasSelectedCase: Boolean(selectedCaseId),
+      analyzePending: analyzeDraftMutation.isPending,
+      confirmPending: confirmDraftMutation.isPending,
+    });
+
+    if (!shouldStartAutoAnalysis) {
+      return;
+    }
+
+    setAutoAnalyzeRequested(false);
+    void handleUpload();
+  }, [
+    autoAnalyzeRequested,
+    confirmDraftMutation.isPending,
+    legalGateRequired,
+    pendingDraft,
+    selectedCaseId,
+    selectedFile,
+    selectedTenantId,
+    analyzeDraftMutation.isPending,
+  ]);
 
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
@@ -3911,12 +3981,13 @@ export default function Auditar() {
                   </div>
                 ) : selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
-                    <p className="font-semibold">Archivo listo para analizarse</p>
+                    <p className="font-semibold">Documento recibido para borrador automático</p>
                     <p className="mt-1">{selectedFile.name} · {(selectedFile.size / 1024).toFixed(1)} KB</p>
+                    <p className="mt-2 leading-6">En cuanto termina la carga, AuditaPatrón prepara una vista previa para que la revises antes de cualquier guardado final.</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre antes de analizarlo antes del guardado final.
+                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre y el borrador automático antes de decidir si lo guardas definitivamente.
                   </div>
                 )}
               </div>
@@ -5719,7 +5790,7 @@ export default function Auditar() {
                   ? `Vista previa lista: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} preparado${manualOverridePayload.length === 1 ? "" : "s"} antes de guardar.`
                   : `Vista previa lista: ${pendingDraft.previewAsset.fileName}`
                 : selectedFile
-                  ? `Listo para analizar: ${selectedFile.name}`
+                  ? `Borrador automático en preparación: ${selectedFile.name}`
                   : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
             {pendingDraft || selectedFile ? (

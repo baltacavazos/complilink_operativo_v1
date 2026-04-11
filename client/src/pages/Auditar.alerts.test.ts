@@ -10,6 +10,7 @@ import {
   buildInlineLegalConsentState,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
+  shouldAutoAnalyzeSelectedFile,
 } from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
@@ -220,6 +221,51 @@ describe("buildDossierTypeProgress", () => {
       count: 0,
       targetCount: 1,
     });
+  });
+});
+
+describe("shouldAutoAnalyzeSelectedFile", () => {
+  it("permite el autoanálisis solo cuando existe archivo, expediente listo y el gate legal ya no bloquea", () => {
+    expect(
+      shouldAutoAnalyzeSelectedFile({
+        autoAnalyzeRequested: true,
+        hasSelectedFile: true,
+        pendingDraft: false,
+        legalGateRequired: false,
+        hasSelectedTenant: true,
+        hasSelectedCase: true,
+        analyzePending: false,
+        confirmPending: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("bloquea el autoanálisis si el documento sigue sujeto a aceptación legal o ya existe un borrador pendiente", () => {
+    expect(
+      shouldAutoAnalyzeSelectedFile({
+        autoAnalyzeRequested: true,
+        hasSelectedFile: true,
+        pendingDraft: false,
+        legalGateRequired: true,
+        hasSelectedTenant: true,
+        hasSelectedCase: true,
+        analyzePending: false,
+        confirmPending: false,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldAutoAnalyzeSelectedFile({
+        autoAnalyzeRequested: true,
+        hasSelectedFile: true,
+        pendingDraft: true,
+        legalGateRequired: false,
+        hasSelectedTenant: true,
+        hasSelectedCase: true,
+        analyzePending: false,
+        confirmPending: false,
+      }),
+    ).toBe(false);
   });
 });
 

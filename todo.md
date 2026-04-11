@@ -1,5 +1,10 @@
 # Project TODO
 
+- [x] Autoiniciar el análisis en /auditar al seleccionar foto o archivo cuando el contexto mínimo ya esté resuelto
+- [x] Mantener el guardado final solo tras aceptación aplicable y confirmación explícita del usuario
+- [x] Reforzar la distinción entre borrador analizado y documento confirmado para no contaminar la memoria persistente
+- [x] Actualizar pruebas del flujo de /auditar para cubrir autoanálisis, no autoguardado y trazabilidad
+
 - [x] Sprint pre-Helios: completar el comparador multi-IA con contexto real de prepareAuditarUploadAsset en analyzeDocumentDraft y uploadDocument
 - [x] Sprint pre-Helios: reforzar el Dashboard CEO contra snapshots stale en acceso/exportes y corregir el import duplicado de useAuth en CeoDashboard
 - [x] Sprint pre-Helios: evaluar y endurecer quick wins de escalabilidad con pruebas y validación operativa
@@ -704,3 +709,6 @@
 - [x] Priorizar una experiencia mobile-first en /auditar abriendo la acción principal con el menor número posible de toques
 - [x] Evitar drawers o pasos intermedios en móvil cuando ya exista una preferencia de cámara o archivo y el sistema pueda actuar directo
 - [x] Revisar que los CTAs fijos y el flujo post-selección en móvil mantengan continuidad, claridad y sensación de rapidez
+- [ ] Implementar autoavance seguro en /auditar después de capturar o elegir archivo cuando la señal del documento sea suficiente
+- [ ] Añadir una preferencia visible de cámara o archivos que pueda cambiarse en un solo toque desde móvil
+- [ ] Reducir aún más acciones secundarias alrededor de selección, reintento y subida de otro documento para que el flujo móvil siga una sola línea natural
