@@ -688,3 +688,6 @@
 - [x] Añadir telemetría operativa del lock de aceptación legal y mapear conflictos de concurrencia con error específico en backend
 - [x] Implementar reintento controlado en la UI de /auditar para fallos de concurrencia o lock sin duplicar aceptaciones
 - [x] Cubrir el gate legal de /auditar con pruebas Vitest y de flujo para concurrencia, reintento e idempotencia
+- [x] Añadir una prueba de navegador del reintento del gate legal en /auditar para validar el flujo real de UI
+- [x] Exponer métricas operativas visibles del lock legal en /auditar para diagnóstico rápido
+- [x] Mejorar el mensaje de error legal en /auditar con temporizador breve y estado de reintento progresivo

@@ -45,15 +45,43 @@ type LegalGateErrorState = {
   message: string;
   type: LegalGateErrorType;
   retryCount: number;
+  retryAfterSeconds: number;
+  retryAvailableAt: number | null;
+};
+
+type LegalGateMetricEvent = "idle" | "attempt" | "retry" | "conflict" | "accepted" | "transient" | "fatal";
+
+type LegalGateMetricsState = {
+  attempts: number;
+  retries: number;
+  conflicts: number;
+  lastEvent: LegalGateMetricEvent;
+  lastUpdatedAt: number | null;
 };
 
 const MAX_LEGAL_GATE_RETRIES = 3;
+const LEGAL_GATE_CONCURRENCY_RETRY_SECONDS = 4;
+const LEGAL_GATE_TRANSIENT_RETRY_SECONDS = 6;
+const INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {
+  attempts: 0,
+  retries: 0,
+  conflicts: 0,
+  lastEvent: "idle",
+  lastUpdatedAt: null,
+};
 
-function buildLegalGateErrorState(message: string, type: LegalGateErrorType, retryCount = 0): LegalGateErrorState {
+function buildLegalGateErrorState(
+  message: string,
+  type: LegalGateErrorType,
+  retryCount = 0,
+  retryAfterSeconds = 0,
+): LegalGateErrorState {
   return {
     message,
     type,
     retryCount,
+    retryAfterSeconds,
+    retryAvailableAt: retryAfterSeconds > 0 ? Date.now() + retryAfterSeconds * 1000 : null,
   };
 }
 
@@ -87,20 +115,39 @@ function resolveLegalGateError(error: unknown, retryCount = 0): LegalGateErrorSt
   const code = errorRecord?.data?.code ?? errorRecord?.shape?.data?.code ?? null;
   const causeType = extractLegalGateCauseType(errorRecord?.data?.cause ?? errorRecord?.shape?.data?.cause);
 
-  if (code === "CONFLICT" || causeType === "CONCURRENCY_LOCK_FAILURE") {
+   if (code === "CONFLICT" || causeType === "CONCURRENCY_LOCK_FAILURE") {
     return buildLegalGateErrorState(
-      "Otro proceso está registrando esta aceptación. Espera unos segundos y vuelve a intentarlo.",
+      "Otro proceso está registrando esta aceptación. Protegimos tu expediente para evitar registros duplicados. Espera el temporizador y vuelve a intentarlo.",
       "concurrency",
       retryCount,
+      LEGAL_GATE_CONCURRENCY_RETRY_SECONDS,
     );
   }
-
   if (code === "TOO_MANY_REQUESTS" || code === "TIMEOUT" || message.toLowerCase().includes("intenta de nuevo")) {
-    return buildLegalGateErrorState(message, "transient", retryCount);
+    return buildLegalGateErrorState(message, "transient", retryCount, LEGAL_GATE_TRANSIENT_RETRY_SECONDS);
   }
-
   return buildLegalGateErrorState(message, "fatal", retryCount);
 }
+
+function describeLegalGateMetricEvent(event: LegalGateMetricEvent) {
+  switch (event) {
+    case "attempt":
+      return "Intento en curso";
+    case "retry":
+      return "Reintento ejecutado";
+    case "conflict":
+      return "Conflicto de lock detectado";
+    case "accepted":
+      return "Aceptación registrada";
+    case "transient":
+      return "Fallo transitorio";
+    case "fatal":
+      return "Error que requiere revisión";
+    default:
+      return "Sin actividad reciente";
+  }
+}
+
 
 type DossierTarget = {
   type: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence";
@@ -1644,12 +1691,38 @@ export default function Auditar() {
   const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<HeliosCopilotMessage[]>([]);
   const [legalGateChecked, setLegalGateChecked] = useState(false);
   const [legalGateError, setLegalGateError] = useState<LegalGateErrorState | null>(null);
+  const [legalGateMetrics, setLegalGateMetrics] = useState<LegalGateMetricsState>(INITIAL_LEGAL_GATE_METRICS);
+  const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const syncedRemoteViewStateRef = useRef("");
   const trackedExpedienteScopeRef = useRef("");
   const trackedLegalGateScopeRef = useRef("");
+  const legalGateHarnessMode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return new URLSearchParams(window.location.search).get("legalGateHarness") === "1";
+  }, []);
+
+  useEffect(() => {
+    const retryAvailableAt = legalGateError?.retryAvailableAt ?? null;
+
+    if (!retryAvailableAt) {
+      setLegalGateRetryCountdown(0);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remainingSeconds = Math.max(Math.ceil((retryAvailableAt - Date.now()) / 1000), 0);
+      setLegalGateRetryCountdown(remainingSeconds);
+    };
+
+    updateCountdown();
+    const countdownTimer = window.setInterval(updateCountdown, 250);
+    return () => window.clearInterval(countdownTimer);
+  }, [legalGateError?.retryAvailableAt]);
 
   const auditarPersistenceKey = useMemo(() => {
     if (!auth.user) {
@@ -2294,8 +2367,46 @@ export default function Auditar() {
         : previewStructuredExtraction.reviewNotes,
     };
   }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
+  const handleTriggerLegalGateHarnessConflict = () => {
+    setLegalGateChecked(true);
+    setSubmitError(null);
+    setLegalGateMetrics((current) => ({
+      attempts: current.attempts + 1,
+      retries: current.retries,
+      conflicts: current.conflicts + 1,
+      lastEvent: "conflict",
+      lastUpdatedAt: Date.now(),
+    }));
+    setLegalGateError(
+      buildLegalGateErrorState(
+        "Otro proceso está registrando esta aceptación. Protegimos tu expediente para evitar registros duplicados. Espera el temporizador y vuelve a intentarlo.",
+        "concurrency",
+        0,
+        3,
+      ),
+    );
+  };
+
   const handleAcceptLegalPackage = async ({ isRetry = false }: { isRetry?: boolean } = {}) => {
     if (!caseDetailInput) {
+      if (legalGateHarnessMode && isRetry) {
+        setLegalGateError(null);
+        setSubmitError(null);
+        setLegalGateMetrics((current) => ({
+          attempts: current.attempts + 1,
+          retries: current.retries + 1,
+          conflicts: current.conflicts,
+          lastEvent: "retry",
+          lastUpdatedAt: Date.now(),
+        }));
+        await Promise.resolve();
+        setLegalGateChecked(false);
+        setLegalGateMetrics((current) => ({
+          ...current,
+          lastEvent: "accepted",
+          lastUpdatedAt: Date.now(),
+        }));
+      }
       return;
     }
 
@@ -2314,6 +2425,13 @@ export default function Auditar() {
     try {
       setLegalGateError(null);
       setSubmitError(null);
+      setLegalGateMetrics((current) => ({
+        attempts: current.attempts + (isRetry ? 0 : 1),
+        retries: current.retries + (isRetry ? 1 : 0),
+        conflicts: current.conflicts,
+        lastEvent: isRetry ? "retry" : "attempt",
+        lastUpdatedAt: Date.now(),
+      }));
 
       if (isRetry) {
         trackFunnelStep("legal_package_retry_attempt", {
@@ -2335,6 +2453,11 @@ export default function Auditar() {
         retryCount: nextRetryCount,
       });
       setLegalGateChecked(false);
+      setLegalGateMetrics((current) => ({
+        ...current,
+        lastEvent: "accepted",
+        lastUpdatedAt: Date.now(),
+      }));
       await Promise.all([
         utils.cases.detail.invalidate(caseDetailInput),
         utils.consent.status.invalidate(caseDetailInput),
@@ -2351,6 +2474,17 @@ export default function Auditar() {
         });
       }
 
+      setLegalGateMetrics((current) => ({
+        ...current,
+        conflicts: current.conflicts + (resolvedError.type === "concurrency" ? 1 : 0),
+        lastEvent:
+          resolvedError.type === "concurrency"
+            ? "conflict"
+            : resolvedError.type === "transient"
+              ? "transient"
+              : "fatal",
+        lastUpdatedAt: Date.now(),
+      }));
       setLegalGateError(resolvedError);
     }
   };
@@ -2824,7 +2958,7 @@ export default function Auditar() {
     );
   }
 
-  if (!auth.isAuthenticated) {
+  if (!auth.isAuthenticated && !legalGateHarnessMode) {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-10 text-slate-950">
         <div className="container mx-auto max-w-6xl">
@@ -3018,7 +3152,30 @@ export default function Auditar() {
           </div>
         ) : null}
 
-        {legalGateRequired ? (
+        {legalGateHarnessMode ? (
+          <section className="mt-6 rounded-[1.75rem] border border-dashed border-amber-300 bg-amber-50/70 p-5 shadow-sm" data-testid="legal-gate-harness">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-900">Modo de prueba del gate legal</p>
+                <p className="mt-2 text-sm leading-6 text-amber-950">
+                  Simula un conflicto controlado del lock para validar en navegador el temporizador, las métricas visibles y el reintento.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+                onClick={handleTriggerLegalGateHarnessConflict}
+                data-testid="legal-gate-harness-trigger"
+              >
+                Simular conflicto del lock
+              </Button>
+
+            </div>
+          </section>
+        ) : null}
+
+        {legalGateRequired || legalGateHarnessMode ? (
           <section className="mt-6 rounded-[1.75rem] border border-amber-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
@@ -3036,6 +3193,36 @@ export default function Auditar() {
                   {acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.
                 </p>
                 <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700" data-testid="legal-gate-lock-metrics">
+                <p className="font-semibold text-slate-950">Métricas visibles del lock</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Intentos</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-attempts">{legalGateMetrics.attempts}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Conflictos</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-conflicts">{legalGateMetrics.conflicts}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Reintentos ejecutados</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-retries">{legalGateMetrics.retries}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-slate-600" data-testid="legal-gate-metric-status">
+                  Estado actual: {describeLegalGateMetricEvent(legalGateMetrics.lastEvent)}
+                  {legalGateMetrics.lastUpdatedAt
+                    ? ` · Última actualización ${new Date(legalGateMetrics.lastUpdatedAt).toLocaleTimeString("es-MX", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}`
+                    : ""}
+                </p>
+                {legalGateRetryCountdown > 0 ? (
+                  <p className="mt-2 text-xs font-semibold text-amber-900" data-testid="legal-gate-metric-timer">Temporizador de reintento activo: {legalGateRetryCountdown}s</p>
+                ) : null}
               </div>
             </div>
 
@@ -3083,22 +3270,37 @@ export default function Auditar() {
             </label>
 
             {legalGateError ? (
-              <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900">
-                <p>{legalGateError.message}</p>
+              <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900" data-testid="legal-gate-error">
+                <p className="font-semibold text-rose-950">No pudimos completar la aceptación legal.</p>
+                <p className="mt-2">{legalGateError.message}</p>
+                <p className="mt-2 text-xs text-rose-800/90">
+                  Conservamos tu progreso y protegemos el expediente frente a registros duplicados o intentos simultáneos.
+                </p>
                 {canRetryLegalGate ? (
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-full border-rose-300 bg-white text-rose-900 hover:bg-rose-100"
-                      onClick={() => void handleAcceptLegalPackage({ isRetry: true })}
-                      disabled={acceptLegalPackageMutation.isPending}
+                      className="border-rose-300 text-rose-700 hover:bg-rose-50"
+                      onClick={() => {
+                        void handleAcceptLegalPackage({ isRetry: true });
+                      }}
+                      disabled={acceptLegalPackageMutation.isPending || legalGateRetryCountdown > 0 || legalGateError.retryCount >= MAX_LEGAL_GATE_RETRIES}
+                      data-testid="legal-gate-retry-button"
                     >
                       <RefreshCw className="mr-2 size-4" />
-                      Reintentar aceptación
+                      {legalGateRetryCountdown > 0 ? `Disponible en ${legalGateRetryCountdown}s` : "Reintentar aceptación"}
                     </Button>
+                    <span className="text-xs text-rose-700" data-testid="legal-gate-retry-copy">
+                      Reintento {Math.min(legalGateError.retryCount + 1, MAX_LEGAL_GATE_RETRIES)} de {MAX_LEGAL_GATE_RETRIES}
+                    </span>
                     <span className="text-xs text-rose-700">
                       Intentos restantes: {Math.max(MAX_LEGAL_GATE_RETRIES - legalGateError.retryCount, 0)}
+                    </span>
+                    <span className="text-xs font-semibold text-rose-800" data-testid="legal-gate-retry-countdown" data-seconds={legalGateRetryCountdown}>
+                      {legalGateRetryCountdown > 0
+                        ? `Reintento habilitado en ${legalGateRetryCountdown}s`
+                        : "Reintento inmediato disponible"}
                     </span>
                   </div>
                 ) : null}
@@ -4693,8 +4895,8 @@ export default function Auditar() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                        onClick={() => uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                        className="rounded-full border-teal-200 text-teal-900 hover:bg-teal-100"
+                        onClick={() => setUploadSourceOpen(true)}
                       >
                         Subir otro documento
                       </Button>

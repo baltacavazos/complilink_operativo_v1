@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-04-11T18:16:54.978Z",
+  "promptSummary": "Comparativa multi-AI para prueba de navegador, métricas visibles del lock y UX del error legal en /auditar",
+  "openai": {
+    "browser_test": [
+      "Crear un test e2e con Playwright o Cypress que simule un conflicto de lock en /auditar y valide que el frontend realiza reintentos automáticos hasta éxito o timeout.",
+      "El test debe interactuar con la UI real, verificar el mensaje de estado de reintento y confirmar que el proceso finaliza correctamente sin errores visibles.",
+      "Incluir validación de que el contador de reintentos/progreso se actualiza en la UI durante el proceso."
+    ],
+    "visible_metrics": [
+      "Agregar un pequeño componente en /auditar que muestre métricas clave de lock contention y tiempos de espera, reutilizando el sistema de tracking ya implementado para eventos de lock.",
+      "Mostrar solo métricas resumidas y no técnicas (ej. número de reintentos en la sesión actual, tiempo promedio de espera) para no saturar al usuario final.",
+      "Ubicar el componente en un área discreta pero visible, como un footer o sidebar, con diseño responsive para UX móvil."
+    ],
+    "error_ux": [
+      "Modificar el mensaje de error legal para incluir un temporizador de cuenta regresiva corto (ej. 5 segundos) antes de reintentar automáticamente.",
+      "Mostrar feedback progresivo en la UI indicando el estado actual (esperando, reintentando, éxito o fallo final) con texto y animaciones simples usando Tailwind.",
+      "Permitir cancelar el reintento manualmente para mejorar control y experiencia en caso de bloqueo prolongado."
+    ],
+    "risks": [
+      "Incremento leve en la complejidad del frontend por manejo de estados de reintento y temporizador, que debe ser cuidadosamente testeado para no romper idempotencia.",
+      "Posible sobrecarga visual si las métricas no se mantienen minimalistas y bien ubicadas, afectando UX móvil.",
+      "El test e2e puede ser frágil si la simulación del conflicto de lock no es estable o reproducible consistentemente."
+    ],
+    "recommended_minimal_plan": [
+      "1. Implementar el componente de métricas reutilizando tracking existente y ubicarlo discretamente en /auditar.",
+      "2. Mejorar el mensaje de error legal con temporizador y feedback progresivo, permitiendo cancelación manual.",
+      "3. Crear el test e2e que valide el flujo real de reintento en UI, asegurando que el nuevo UX y métricas funcionan correctamente.",
+      "4. Validar que no se rompe la idempotencia ni el gate legal endurecido con pruebas unitarias y de integración existentes."
+    ]
+  },
+  "gemini": {
+    "browser_test": [
+      "Configurar Playwright (o similar) para pruebas E2E en el proyecto React.",
+      "Crear un test que navegue a `/auditar`.",
+      "Interceptar la llamada tRPC `consent.acceptLegalPackage`.",
+      "Configurar el interceptor para que la *primera* respuesta simule un error de concurrencia (e.g., `TRPCClientError` con código `CONFLICT` o un error custom de lock).",
+      "Configurar el interceptor para que las *siguientes* respuestas (e.g., la segunda o tercera) simulen éxito.",
+      "Hacer clic en el botón para aceptar el paquete legal.",
+      "Assert que el mensaje de error/reintento progresivo (ver mejora C) aparece en la UI.",
+      "Assert que, después de un breve tiempo (simulando el reintento), la UI transiciona a un estado de éxito (e.g., navegación, mensaje de confirmación)."
+    ],
+    "visible_metrics": [
+      "En el componente `LegalGate` de `/auditar`, mantener un estado interno para `retryAttemptCount` (número de reintentos actuales) y `totalRetryWaitTimeMs` (tiempo total acumulado en espera de reintentos).",
+      "Crear un componente `LegalGateDebugInfo` que se renderice condicionalmente (e.g., solo si `process.env.NODE_ENV === 'development'` o si un query param `?debug=true` está presente).",
+      "Este componente `LegalGateDebugInfo` recibirá los estados `retryAttemptCount` y `totalRetryWaitTimeMs` como props o a través de un Context.",
+      "Mostrar en `LegalGateDebugInfo` de forma clara y concisa: 'Intentos de Reintento: [X]', 'Tiempo de Espera Total: [Y] ms'.",
+      "Utilizar Tailwind para estilizar este panel de debug de manera discreta, quizás en una esquina de la pantalla, con un fondo semitransparente y un borde distintivo para indicar que es información operativa."
+    ],
+    "error_ux": [
+      "Modificar el componente `LegalGate` para que, al recibir un error de concurrencia de `consent.acceptLegalPackage`, active un estado `isRetrying` y `timeToNextRetry`.",
+      "Cuando `isRetrying` es `true`, mostrar un mensaje dinámico en la UI, por ejemplo: 'Conflicto detectado. Reintentando en [X] segundos...' donde `[X]` es un contador regresivo.",
+      "Implementar un `setInterval` o `setTimeout` para actualizar `[X]` cada segundo, decrementando desde un valor inicial (e.g., 3 segundos) hasta 0, antes de que se dispare el siguiente reintento.",
+      "Añadir un indicador visual sutil (e.g., un spinner pequeño o un cambio de color tenue con Tailwind) junto al mensaje para reforzar que la acción está en progreso.",
+      "Si los reintentos se agotan, el mensaje debe cambiar a un error persistente con una opción para reintentar manualmente o contactar soporte."
+    ],
+    "risks": [
+      "**Flakiness en Pruebas de Navegador:** La simulación de errores y tiempos puede ser sensible; asegurar mocks robustos y esperas adecuadas (`waitFor` en Playwright).",
+      "**Exposición de Métricas:** Asegurar que el componente `LegalGateDebugInfo` *nunca* sea visible para usuarios finales en producción, incluso por error. La lógica de renderizado condicional debe ser infalible.",
+      "**Complejidad de UX:** Un contador regresivo o mensajes dinámicos pueden ser percibidos como intrusivos si no están bien diseñados. Priorizar la claridad y la concisión.",
+      "**Impacto en Idempotencia:** Aunque el backend ya está endurecido, cualquier cambio en el frontend que altere la secuencia o el número de llamadas podría, teóricamente, afectar la idempotencia si no se maneja con cuidado. Validar que el número de reintentos y la lógica de backoff no introduzcan nuevos problemas.",
+      "**Rendimiento en Móviles:** Asegurar que las animaciones o actualizaciones de UI para el contador regresivo no degraden el rendimiento en dispositivos móviles."
+    ],
+    "recommended_minimal_plan": [
+      "**Fase 1: Mejora de UX del Error (C)**: Implementar el mensaje de error progresivo con temporizador y estado de reintento. Esto proporciona feedback inmediato al usuario.",
+      "**Fase 2: Prueba de Navegador (A)**: Desarrollar la prueba E2E para validar el flujo completo de reintento y la nueva UX del error. Esto asegura la robustez del sistema.",
+      "**Fase 3: Métricas Operativas Visibles (B)**: Integrar las métricas de debug en el componente `LegalGate` y crear el panel `LegalGateDebugInfo`. Esto mejora la capacidad de diagnóstico para desarrolladores/operadores."
+    ]
+  },
+  "grok": {
+    "browser_test": [
+      "Usar Vitest con un plugin de navegador como Playwright o Cypress para simular el flujo de reintento en /auditar.",
+      "Crear una prueba que inicie una sesión, intente aceptar el legal package con un lock simulado, verifique que el error de concurrencia se muestre y que el reintento automático ocurra dentro de 5 segundos.",
+      "Verificar en la UI que el estado de reintento se actualice correctamente (e.g., texto 'Reintentando...' y luego éxito o nuevo error).",
+      "Ejecutar la prueba en entornos móviles emulados para asegurar compatibilidad con UX móvil."
+    ],
+    "visible_metrics": [
+      "Reutilizar el componente de logging existente (e.g., un toast o barra de estado con Tailwind) para mostrar métricas como 'Tiempo de espera: X segundos' solo en modo debug o para usuarios admin.",
+      "Agregar un indicador sutil en la UI de /auditar, como un icono de reloj que muestra el número de reintentos, sin exponer detalles sensibles al usuario final.",
+      "Integrar con el tracking existente (e.g., via tRPC middleware) para capturar métricas de lock contention y mostrarlas en una sección oculta por defecto, accesible via un toggle.",
+      "Minimizar complejidad limitando a un contador de reintentos y tiempo promedio, evitando nuevos endpoints o componentes."
+    ],
+    "error_ux": [
+      "Mejorar el mensaje de error actualizando el componente React para incluir un countdown timer (e.g., 'Reintentando en 3... 2... 1...' usando setTimeout).",
+      "Agregar feedback progresivo con un loader animado (via Tailwind classes) y un estado de texto que cambie (e.g., 'Esperando lock...' a 'Reintentando ahora').",
+      "Asegurar que el temporizador sea breve (máximo 5 segundos) y responsivo para UX móvil, con un botón manual de reintento como fallback.",
+      "Mantener idempotencia asegurando que el reintento no genere acciones duplicadas."
+    ],
+    "risks": [
+      "Posible introducción de bugs en el flujo de reintento si la prueba de navegador no cubre todos los escenarios de concurrencia.",
+      "Exposición accidental de métricas sensibles si el toggle para visibles no se implementa con permisos adecuados, afectando la privacidad.",
+      "Aumento en el tamaño del bundle React si se agregan nuevos componentes para el temporizador, lo que podría impactar el rendimiento móvil.",
+      "Riesgo de romper la idempotencia si el feedback progresivo envía solicitudes adicionales sin validación."
+    ],
+    "recommended_minimal_plan": [
+      "Paso 1: Implementar la prueba de navegador usando Vitest + Playwright, enfocándote en el flujo de /auditar y validándola en local.",
+      "Paso 2: Agregar métricas visibles reutilizando un componente existente, como un toast, y limitándolo a modo debug.",
+      "Paso 3: Actualizar el mensaje de error en el frontend con un simple countdown y loader, probando en dispositivos móviles.",
+      "Paso 4: Realizar pruebas unitarias y de integración para asegurar que no se rompa la idempotencia, luego mergear en una PR pequeña.",
+      "Paso 5: Monitorear en producción por 24 horas para validar robustez y hacer ajustes si es necesario."
+    ]
+  }
+}
