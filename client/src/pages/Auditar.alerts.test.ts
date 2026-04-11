@@ -5,9 +5,11 @@ vi.mock("@/components/HeliosCopilotSheet", () => ({
 }));
 
 import {
+  buildAuditarTimelineEntryState,
   buildDossierTypeProgress,
   buildHeliosPriorityAlerts,
   buildInlineLegalConsentState,
+  buildReanalyzeDraftActionState,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
   shouldAutoAnalyzeSelectedFile,
@@ -266,6 +268,55 @@ describe("shouldAutoAnalyzeSelectedFile", () => {
         confirmPending: false,
       }),
     ).toBe(false);
+  });
+});
+
+describe("buildAuditarTimelineEntryState", () => {
+  it("marca los documentos confirmados como parte estable del expediente", () => {
+    expect(buildAuditarTimelineEntryState("confirmed")).toEqual({
+      label: "Documento confirmado",
+      badgeClasses: "border border-emerald-200 bg-emerald-100 text-emerald-800",
+      cardClasses: "border-slate-200 bg-slate-50",
+      roleCardClasses: "border-teal-100 bg-teal-50",
+      supportingCopy: "Este documento ya quedó confirmado dentro del expediente y sirve como base para el contraste posterior.",
+    });
+  });
+
+  it("destaca los borradores como lectura temporal pendiente de confirmación", () => {
+    expect(buildAuditarTimelineEntryState("draft")).toEqual({
+      label: "Borrador analizado",
+      badgeClasses: "border border-amber-200 bg-amber-100 text-amber-900",
+      cardClasses: "border-amber-200 border-dashed bg-amber-50/70",
+      roleCardClasses: "border-amber-200 bg-white",
+      supportingCopy: "Aún no forma parte del expediente: confirma o ajusta este borrador antes de integrarlo.",
+    });
+  });
+});
+
+describe("buildReanalyzeDraftActionState", () => {
+  it("expone el CTA de Reanalizar cuando existe un borrador activo", () => {
+    expect(buildReanalyzeDraftActionState({ pendingDraft: true, hasManualOverrides: false })).toEqual({
+      shouldShow: true,
+      label: "Reanalizar",
+      supportingCopy: "Empezarás una nueva lectura desde cero sin tocar lo que ya confirmaste dentro del expediente.",
+    });
+  });
+
+  it("advierte que los ajustes manuales no se arrastran al reanalizar", () => {
+    expect(buildReanalyzeDraftActionState({ pendingDraft: true, hasManualOverrides: true })).toEqual({
+      shouldShow: true,
+      label: "Reanalizar",
+      supportingCopy:
+        "Empezarás una nueva lectura desde cero. Los ajustes de este borrador no se arrastran y los documentos ya confirmados no cambian.",
+    });
+  });
+
+  it("oculta el CTA cuando no hay un borrador activo", () => {
+    expect(buildReanalyzeDraftActionState({ pendingDraft: false, hasManualOverrides: false })).toEqual({
+      shouldShow: false,
+      label: "",
+      supportingCopy: "",
+    });
   });
 });
 

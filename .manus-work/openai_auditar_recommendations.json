@@ -1,0 +1,39 @@
+{
+  "status_code": 200,
+  "body": {
+    "id": "chatcmpl-DTZ5Z2uS4x1dQulQqJ69B1UYlJ52X",
+    "object": "chat.completion",
+    "created": 1775938765,
+    "model": "gpt-4o-mini-2024-07-18",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"timeline_indicator\": {\n    \"placement\": \"En la sección del timeline del expediente, junto a cada documento.\",\n    \"visual_treatment\": \"Utilizar colores distintos: gris para borradores analizados, verde para confirmados. Iconos diferenciadores para cada estado.\",\n    \"copy\": \"Etiquetas claras: 'Borrador Analizado' y 'Confirmado'.\",\n    \"caveat\": \"Asegurarse de que los colores sean accesibles y no confundan a los usuarios daltónicos.\"\n  },\n  \"reanalyze_cta\": {\n    \"label\": \"Reanalizar\",\n    \"placement\": \"Cerca del documento en estado de borrador activo, visible al usuario.\",\n    \"behavior\": \"Al hacer clic, reinicia el ciclo de análisis desde el borrador sin afectar documentos confirmados.\",\n    \"guardrail\": \"Deshabilitar el botón si no hay un borrador activo para evitar confusiones.\"\n  },\n  \"analytics_events\": [\n    {\n      \"name\": \"Archivo Seleccionado\",\n      \"when\": \"Cuando el usuario selecciona un archivo para análisis.\",\n      \"required_fields\": [\"user_id\", \"file_id\"]\n    },\n    {\n      \"name\": \"Inicio de Análisis\",\n      \"when\": \"Cuando se inicia el análisis del documento.\",\n      \"required_fields\": [\"user_id\", \"file_id\"]\n    },\n    {\n      \"name\": \"Borrador Analizado\",\n      \"when\": \"Cuando un borrador es analizado.\",\n      \"required_fields\": [\"user_id\", \"draft_id\"]\n    },\n    {\n      \"name\": \"Reanálisis Iniciado\",\n      \"when\": \"Cuando se hace clic en el botón Reanalizar.\",\n      \"required_fields\": [\"user_id\", \"draft_id\"]\n    },\n    {\n      \"name\": \"Guardado Confirmado\",\n      \"when\": \"Cuando un documento es guardado como confirmado.\",\n      \"required_fields\": [\"user_id\", \"document_id\"]\n    }\n  ],\n  \"risks\": [\n    \"Confusión del usuario si los colores no son accesibles.\",\n    \"Posible pérdida de datos si el ciclo de reanálisis no se gestiona correctamente.\",\n    \"Falta de seguimiento de métricas si no se implementan correctamente los eventos de análisis.\"\n  ]\n}",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 220,
+      "completion_tokens": 477,
+      "total_tokens": 697,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_0ade386d00"
+  }
+}

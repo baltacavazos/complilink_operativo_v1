@@ -712,3 +712,9 @@
 - [ ] Implementar autoavance seguro en /auditar después de capturar o elegir archivo cuando la señal del documento sea suficiente
 - [ ] Añadir una preferencia visible de cámara o archivos que pueda cambiarse en un solo toque desde móvil
 - [ ] Reducir aún más acciones secundarias alrededor de selección, reintento y subida de otro documento para que el flujo móvil siga una sola línea natural
+- [ ] Reforzar el indicador visual de estado borrador-confirmado dentro del expediente y del flujo /auditar
+- [ ] Añadir un botón único de reanalizar en /auditar para repetir captura y análisis con un solo toque
+- [ ] Registrar métricas de conversión en /auditar para medir selección, análisis, confirmación y guardado
+- [x] /auditar: reforzar el indicador visual de estado borrador vs confirmado dentro del timeline del expediente
+- [x] /auditar: añadir botón único de Reanalizar para reiniciar el ciclo desde un borrador activo sin tocar documentos confirmados
+- [x] /auditar: registrar métricas de conversión del flujo de auditoría desde selección hasta guardado confirmado

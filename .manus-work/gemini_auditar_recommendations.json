@@ -1,0 +1,33 @@
+{
+  "status_code": 200,
+  "body": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"timeline_indicator\": {\n    \"placement\": \"En cada elemento del timeline que represente un documento.\",\n    \"visual_treatment\": \"Icono distintivo (ej. lápiz para borrador, check para confirmado) y/o color de fondo sutil. Los borradores podrían tener un borde punteado.\",\n    \"copy\": \"Tooltip al pasar el ratón indicando 'Borrador Analizado' o 'Confirmado'.\",\n    \"caveat\": \"Asegurar que los borradores no confirmados tengan un estado visual claro de 'no finalizado' y no se mezclen con la secuencia principal de documentos confirmados. Podrían agruparse visualmente o tener un separador claro.\"\n  },\n  \"reanalyze_cta\": {\n    \"label\": \"Reanalizar\",\n    \"placement\": \"Visible y prominente en la sección de edición/análisis del borrador, solo cuando exista un borrador activo y editable.\",\n    \"behavior\": \"Al hacer clic, toma el contenido del borrador activo, lo envía para un nuevo análisis y actualiza el borrador con los nuevos resultados, manteniendo el historial de versiones si es relevante. No afecta documentos confirmados.\",\n    \"guardrail\": \"Debe operar exclusivamente sobre el borrador activo. Los documentos confirmados son inmutables a través de esta acción. Podría requerir una confirmación si el borrador tiene cambios no guardados antes de reanalizar.\"\n  },\n  \"analytics_events\": [\n    {\n      \"name\": \"file_selected\",\n      \"when\": \"Cuando el usuario selecciona un archivo para auditar.\",\n      \"required_fields\": [\n        \"file_type\",\n        \"file_size_bytes\",\n        \"user_id\"\n      ]\n    },\n    {\n      \"name\": \"analysis_started\",\n      \"when\": \"Inmediatamente después de que el usuario inicia el proceso de análisis.\",\n      \"required_fields\": [\n        \"document_id\",\n        \"analysis_type\",\n        \"user_id\"\n      ]\n    },\n    {\n      \"name\": \"draft_analyzed\",\n      \"when\": \"Cuando los resultados del análisis inicial están disponibles y se muestra el borrador al usuario.\",\n      \"required_fields\": [\n        \"document_id\",\n        \"analysis_duration_ms\",\n        \"issues_found_count\",\n        \"user_id\"\n      ]\n    },\n    {\n      \"name\": \"reanalysis_initiated\",\n      \"when\": \"Cuando el usuario hace clic en el botón 'Reanalizar'.\",\n      \"required_fields\": [\n        \"document_id\",\n        \"draft_version\",\n        \"user_id\"\n      ]\n    },\n    {\n      \"name\": \"document_saved_confirmed\",\n      \"when\": \"Cuando el usuario confirma y guarda el borrador, convirtiéndolo en un documento final.\",\n      \"required_fields\": [\n        \"document_id\",\n        \"final_status\",\n        \"time_to_confirm_ms\",\n        \"user_id\"\n      ]\n    }\n  ],\n  \"risks\": [\n    \"Confusión del usuario si la distinción visual de borradores no es clara o si se mezclan con documentos confirmados en el timeline.\",\n    \"Pérdida de datos o estado si el botón 'Reanalizar' no maneja correctamente los cambios no guardados en el borrador o si no hay un sistema de versiones robusto.\",\n    \"Impacto en el rendimiento del backend si el reanálisis es una operación costosa y se activa frecuentemente por múltiples usuarios.\",\n    \"Sobrecarga de eventos de analíticas si no se filtran o agrupan adecuadamente, o si los campos requeridos no se recolectan consistentemente, dificultando la interpretación.\"\n  ]\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 199,
+      "candidatesTokenCount": 852,
+      "totalTokenCount": 2499,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 199
+        }
+      ],
+      "thoughtsTokenCount": 1448
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "6KzaafqJFtyM_PUP4oXdQA"
+  }
+}

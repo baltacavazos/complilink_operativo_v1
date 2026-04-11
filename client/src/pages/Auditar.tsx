@@ -601,6 +601,44 @@ export function buildInlineLegalConsentState(params: {
   };
 }
 
+export function buildAuditarTimelineEntryState(status: "draft" | "confirmed") {
+  if (status === "draft") {
+    return {
+      label: "Borrador analizado",
+      badgeClasses: "border border-amber-200 bg-amber-100 text-amber-900",
+      cardClasses: "border-amber-200 border-dashed bg-amber-50/70",
+      roleCardClasses: "border-amber-200 bg-white",
+      supportingCopy: "Aún no forma parte del expediente: confirma o ajusta este borrador antes de integrarlo.",
+    } as const;
+  }
+
+  return {
+    label: "Documento confirmado",
+    badgeClasses: "border border-emerald-200 bg-emerald-100 text-emerald-800",
+    cardClasses: "border-slate-200 bg-slate-50",
+    roleCardClasses: "border-teal-100 bg-teal-50",
+    supportingCopy: "Este documento ya quedó confirmado dentro del expediente y sirve como base para el contraste posterior.",
+  } as const;
+}
+
+export function buildReanalyzeDraftActionState(params: { pendingDraft: boolean; hasManualOverrides: boolean }) {
+  if (!params.pendingDraft) {
+    return {
+      shouldShow: false,
+      label: "",
+      supportingCopy: "",
+    } as const;
+  }
+
+  return {
+    shouldShow: true,
+    label: "Reanalizar",
+    supportingCopy: params.hasManualOverrides
+      ? "Empezarás una nueva lectura desde cero. Los ajustes de este borrador no se arrastran y los documentos ya confirmados no cambian."
+      : "Empezarás una nueva lectura desde cero sin tocar lo que ya confirmaste dentro del expediente.",
+  } as const;
+}
+
 export function shouldAutoAnalyzeSelectedFile(params: {
   autoAnalyzeRequested: boolean;
   hasSelectedFile: boolean;
@@ -1762,6 +1800,7 @@ export default function Auditar() {
   const syncedRemoteViewStateRef = useRef("");
   const trackedExpedienteScopeRef = useRef("");
   const trackedLegalGateScopeRef = useRef("");
+  const documentSelectionStartedAtRef = useRef<number | null>(null);
   const legalGateHarnessMode = useMemo(() => {
     if (typeof window === "undefined") {
       return false;
@@ -2179,29 +2218,52 @@ export default function Auditar() {
             "Este documento puede ayudarte a ganar más claridad dentro del expediente.",
         }
       : null;
-  const timelineEntries = useMemo(
-    () =>
-      [...documents]
-        .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime())
-        .map((document, index) => {
-          const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
-          const insight = getUploadInsight(document.documentType);
-          const readiness = getDocumentReadiness(document.classificationConfidence);
+  const timelineEntries = useMemo(() => {
+    const confirmedEntries = [...documents]
+      .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime())
+      .map((document, index) => {
+        const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
+        const insight = getUploadInsight(document.documentType);
+        const readiness = getDocumentReadiness(document.classificationConfidence);
 
-          return {
-            id: document.documentId,
-            step: index + 1,
-            title: getSimpleDocumentTypeLabel(document.documentType),
-            originalName: document.originalName,
-            contribution: insight.contribution,
-            heliosRole: getHeliosTimelineRole(document.documentType, heliosOpinion),
-            createdAt: document.createdAt,
-            readiness,
-            hasVisibleOpinion: Boolean(heliosOpinion),
-          };
-        }),
-    [documents],
-  );
+        return {
+          id: document.documentId,
+          step: index + 1,
+          title: getSimpleDocumentTypeLabel(document.documentType),
+          originalName: document.originalName,
+          contribution: insight.contribution,
+          heliosRole: getHeliosTimelineRole(document.documentType, heliosOpinion),
+          createdAt: document.createdAt,
+          readiness,
+          hasVisibleOpinion: Boolean(heliosOpinion),
+          lifecycleState: buildAuditarTimelineEntryState("confirmed"),
+        };
+      });
+
+    if (!pendingDraft) {
+      return confirmedEntries;
+    }
+
+    const previewInsight = getUploadInsight(pendingDraft.classification.documentType);
+
+    return [
+      ...confirmedEntries,
+      {
+        id: `draft-${pendingDraft.draftId}`,
+        step: confirmedEntries.length + 1,
+        title: getSimpleDocumentTypeLabel(pendingDraft.classification.documentType),
+        originalName: pendingDraft.previewAsset.fileName,
+        contribution: previewInsight.contribution,
+        heliosRole:
+          pendingDraft.preliminaryAnalysis.summary ||
+          "Este borrador ya ofrece una lectura inicial, pero seguirá fuera del expediente hasta que lo confirmes.",
+        createdAt: new Date().toISOString(),
+        readiness: getDocumentReadiness(pendingDraft.scanAssistance?.confidence),
+        hasVisibleOpinion: true,
+        lifecycleState: buildAuditarTimelineEntryState("draft"),
+      },
+    ];
+  }, [documents, pendingDraft]);
 
   const comparisonDocuments = useMemo(
     () => [...documents].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
@@ -2345,6 +2407,10 @@ export default function Auditar() {
     hasSelectedFile: Boolean(selectedFile),
     activeCaptureMode,
     manualOverrideCount: manualOverridePayload.length,
+  });
+  const reanalyzeDraftAction = buildReanalyzeDraftActionState({
+    pendingDraft: Boolean(pendingDraft),
+    hasManualOverrides: manualOverridePayload.length > 0,
   });
   const isPrimaryDocumentActionPending = isProcessingDocument || acceptLegalPackageMutation.isPending;
   const manualOverrideMap = useMemo(
@@ -2828,6 +2894,7 @@ export default function Auditar() {
   }, [dossierTypeProgress, selectedRecommendedTargetType]);
 
   const clearSelectedFile = () => {
+    documentSelectionStartedAtRef.current = null;
     setSelectedFile(null);
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
@@ -2844,6 +2911,17 @@ export default function Auditar() {
     setAutoAnalyzeRequested(Boolean(file));
     setPendingDraft(null);
     setLastUpload(null);
+    if (file) {
+      documentSelectionStartedAtRef.current = Date.now();
+      trackFunnelStep("document_selected_for_analysis", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        captureMode: selectedCaptureMode ?? preferredCaptureMode ?? "file",
+        fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
+      });
+    } else {
+      documentSelectionStartedAtRef.current = null;
+    }
     if (file && selectedRecommendedTargetType) {
       setTextHint((current) => current.trim() || getRecommendedDocumentHint(selectedRecommendedTargetType));
     }
@@ -2891,6 +2969,13 @@ export default function Auditar() {
   };
 
   const restartPreviewFlow = () => {
+    trackFunnelStep("document_reanalysis_requested", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      documentType: pendingDraft?.classification.documentType,
+      hadManualOverrides: manualOverridePayload.length > 0,
+    });
+    documentSelectionStartedAtRef.current = null;
     setPendingDraft(null);
     setManualFieldValues({});
     setSelectedFile(null);
@@ -2942,11 +3027,16 @@ export default function Auditar() {
       });
 
       setPendingDraft(result as DraftPreviewResultView);
+      const selectionToDraftSeconds =
+        documentSelectionStartedAtRef.current === null
+          ? undefined
+          : Math.max(0, Math.round((Date.now() - documentSelectionStartedAtRef.current) / 1000));
       trackFunnelStep("document_draft_analyzed", {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         documentType: result.classification.documentType,
         captureMode: selectedCaptureMode ?? preferredCaptureMode ?? null,
+        selectionToDraftSeconds,
       });
       setLastUpload(null);
       setSelectedFile(null);
@@ -3014,12 +3104,26 @@ export default function Auditar() {
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
+      const selectionToConfirmedSeconds =
+        documentSelectionStartedAtRef.current === null
+          ? undefined
+          : Math.max(0, Math.round((Date.now() - documentSelectionStartedAtRef.current) / 1000));
+      trackFunnelStep("document_draft_confirmed", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType: result.classification.documentType,
+        hadManualOverrides: manualOverridePayload.length > 0,
+        selectionToConfirmedSeconds,
+      });
       trackFunnelStep("document_uploaded", {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         documentType: result.classification.documentType,
         sourceChannel: "manual",
+        hadManualOverrides: manualOverridePayload.length > 0,
+        selectionToConfirmedSeconds,
       });
+      documentSelectionStartedAtRef.current = null;
       setPendingDraft(null);
       setManualFieldValues({});
       setSelectedFile(null);
@@ -4314,7 +4418,7 @@ export default function Auditar() {
                       disabled={isPrimaryDocumentActionPending}
                       onClick={restartPreviewFlow}
                     >
-                      Subir otra foto o archivo
+                      {reanalyzeDraftAction.label}
                     </Button>
                   </div>
                 </div>
@@ -4438,7 +4542,8 @@ export default function Auditar() {
                   onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
                   disabled={isPrimaryDocumentActionPending}
                 >
-                  {pendingDraft ? "Subir otra foto o archivo" : "Limpiar formulario"}
+                    {pendingDraft ? reanalyzeDraftAction.label : "Limpiar formulario"}
+
                 </Button>
               </div>
             </div>
@@ -4770,8 +4875,14 @@ export default function Auditar() {
                     </p>
                   ) : null}
                 </div>
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {timelineEntries.length} etapa{timelineEntries.length === 1 ? "" : "s"}
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                    <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-amber-900">Borrador analizado</span>
+                    <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-emerald-800">Documento confirmado</span>
+                  </div>
+                  <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {timelineEntries.length} etapa{timelineEntries.length === 1 ? "" : "s"}
+                  </div>
                 </div>
               </div>
 
@@ -4798,12 +4909,20 @@ export default function Auditar() {
                         {index !== timelineEntries.length - 1 ? <div className="mt-2 w-px flex-1 bg-slate-200" /> : null}
                       </div>
 
-                      <article className="flex-1 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
+                      <article
+                        className={`flex-1 rounded-[1.35rem] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm ${entry.lifecycleState.cardClasses}`}
+                      >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="font-semibold text-slate-950">{entry.title}</p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-slate-950">{entry.title}</p>
+                              <span className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] ${entry.lifecycleState.badgeClasses}`}>
+                                {entry.lifecycleState.label}
+                              </span>
+                            </div>
                             <p className="mt-1 text-sm leading-6 text-slate-600">{entry.originalName}</p>
                             <p className="mt-1 text-xs leading-6 text-slate-500">Incorporado el {formatDate(entry.createdAt)}</p>
+                            <p className="mt-2 text-xs leading-5 text-slate-600">{entry.lifecycleState.supportingCopy}</p>
                           </div>
                           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${entry.readiness.classes}`}>{entry.readiness.label}</span>
                         </div>
@@ -4813,9 +4932,9 @@ export default function Auditar() {
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Lo que aportó</p>
                             <p className="mt-2 text-sm leading-7 text-slate-700">{entry.contribution}</p>
                           </div>
-                          <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
+                          <div className={`rounded-[1rem] border p-3 ${entry.lifecycleState.roleCardClasses}`}>
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Cómo aportó al expediente</p>
-                            <p className="mt-2 text-sm leading-7 text-teal-950">{entry.heliosRole}</p>
+                            <p className="mt-2 text-sm leading-7 text-slate-900">{entry.heliosRole}</p>
                           </div>
                         </div>
                       </article>
@@ -5795,7 +5914,7 @@ export default function Auditar() {
             </p>
             {pendingDraft || selectedFile ? (
               <button className="font-semibold text-slate-700" onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile} type="button">
-                {pendingDraft ? "Cambiar" : "Limpiar"}
+                {pendingDraft ? reanalyzeDraftAction.label : "Limpiar"}
               </button>
             ) : null}
           </div>

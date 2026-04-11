@@ -1,0 +1,40 @@
+{
+  "status_code": 200,
+  "body": {
+    "id": "515edc97-b4a5-981d-a88c-10ccced982a9",
+    "object": "chat.completion",
+    "created": 1775938775,
+    "model": "grok-4-0709",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"timeline_indicator\":{\"placement\":\"Integrar en el componente Timeline de React, agregando un ítem temporal al final para borradores, separado de ítems confirmados.\",\"visual_treatment\":\"Usar color gris claro y borde dashed para borradores; verde sólido para confirmados. Incluir ícono de 'draft' vs 'check'.\",\"copy\":\"Etiqueta 'Borrador Analizado' para temporales; 'Confirmado y Guardado' para finales.\",\"caveat\":\"Asegurar que borradores no se intercalen con confirmados; mostrarlos en una sección 'Pendiente' para evitar mezclas.\"},\"reanalyze_cta\":{\"label\":\"Reanalizar\",\"placement\":\"Colocar botón en la card del borrador activo, visible solo si existe borrador (usar condicional en React state).\",\"behavior\":\"Al click, reiniciar análisis desde borrador actual, manteniendo estado de documentos confirmados; llamar API de reanálisis sin mutar datos guardados.\",\"guardrail\":\"Verificar estado en backend antes de acción; deshabilitar si no hay borrador; confirmar con modal para evitar clics accidentales.\"},\"analytics_events\":[{\"name\":\"file_selected\",\"when\":\"Al seleccionar archivo en input de carga.\",\"required_fields\":[\"file_type\",\"user_id\"]},{\"name\":\"analysis_started\",\"when\":\"Al iniciar análisis post-selección.\",\"required_fields\":[\"analysis_id\",\"timestamp\"]},{\"name\":\"draft_analyzed\",\"when\":\"Al completar análisis de borrador.\",\"required_fields\":[\"draft_id\",\"success\"]},{\"name\":\"reanalysis_triggered\",\"when\":\"Al click en botón Reanalizar.\",\"required_fields\":[\"reanalysis_count\",\"draft_id\"]},{\"name\":\"save_confirmed\",\"when\":\"Al confirmar y guardar documento.\",\"required_fields\":[\"document_id\",\"user_id\"]}],\"risks\":[\"Confusión visual si timeline crece mucho; sobrecarga de eventos analytics en sesiones largas; errores si estado de borrador no se sincroniza correctamente entre frontend y backend.\"]}",
+          "refusal": null
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 896,
+      "completion_tokens": 398,
+      "total_tokens": 1792,
+      "prompt_tokens_details": {
+        "text_tokens": 896,
+        "audio_tokens": 0,
+        "image_tokens": 0,
+        "cached_tokens": 676
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 498,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "num_sources_used": 0,
+      "cost_in_usd_ticks": 146070000
+    },
+    "system_fingerprint": "fp_74614d6fcc"
+  }
+}
