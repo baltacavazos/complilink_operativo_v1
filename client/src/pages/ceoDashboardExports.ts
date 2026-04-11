@@ -137,7 +137,7 @@ export function getCeoExportBlockReason({
     return "La vista ejecutiva tuvo un problema al cargar. Refresca antes de generar un reporte.";
   }
   if (isSnapshotStale) {
-    return "La vista ejecutiva quedó desactualizada. Refresca el panel antes de exportar para evitar reportes obsoletos.";
+    return "Datos desactualizados. Actualiza el dashboard antes de continuar.";
   }
 
   return null;

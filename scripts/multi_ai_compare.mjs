@@ -13,7 +13,54 @@ const results = {
   generatedAt: new Date().toISOString(),
   prompt,
   models: {},
+  comparison: null,
 };
+
+const SECTION_TITLES = [
+  'Consenso útil',
+  'Recomendaciones de copy',
+  'Recomendaciones de integración',
+  'Riesgos y guardrails',
+];
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function extractSections(content) {
+  const sections = {};
+
+  for (let index = 0; index < SECTION_TITLES.length; index += 1) {
+    const currentTitle = SECTION_TITLES[index];
+    const nextTitle = SECTION_TITLES[index + 1];
+    const pattern = nextTitle
+      ? new RegExp(`${escapeRegex(currentTitle)}\\s*:?\\s*([\\s\\S]*?)${escapeRegex(nextTitle)}\\s*:?', 'i')
+      : new RegExp(`${escapeRegex(currentTitle)}\\s*:?\\s*([\\s\\S]*)`, 'i');
+    const match = content.match(pattern);
+    sections[currentTitle] = match?.[1]?.trim() ?? '';
+  }
+
+  return sections;
+}
+
+function summarizeComparison(models) {
+  const entries = Object.entries(models).map(([provider, payload]) => ({
+    provider,
+    ok: Boolean(payload?.ok),
+    model: payload?.model ?? null,
+    sections: payload?.ok ? extractSections(payload.content ?? '') : null,
+    error: payload?.ok ? null : payload?.error ?? 'Unknown error',
+  }));
+
+  return {
+    providers: entries,
+    successfulProviders: entries.filter((entry) => entry.ok).map((entry) => entry.provider),
+    failedProviders: entries.filter((entry) => !entry.ok).map((entry) => ({
+      provider: entry.provider,
+      error: entry.error,
+    })),
+  };
+}
 
 async function callOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -139,6 +186,7 @@ async function main() {
   results.models.openai = await callOpenAI();
   results.models.gemini = await callGemini();
   results.models.grok = await callGrok();
+  results.comparison = summarizeComparison(results.models);
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
   console.log(`Saved comparison to ${outputPath}`);
 }

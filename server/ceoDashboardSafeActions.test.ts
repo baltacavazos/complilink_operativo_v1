@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
@@ -48,6 +48,8 @@ import { appRouter } from "./routers";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
+const TEST_SNAPSHOT_GENERATED_AT = "2026-04-08T09:30:00.000Z";
+
 function createProtectedContext(userOverride?: Partial<AuthenticatedUser>): TrpcContext {
   const user: AuthenticatedUser = {
     id: 7,
@@ -76,7 +78,7 @@ function createProtectedContext(userOverride?: Partial<AuthenticatedUser>): Trpc
 
 function buildSnapshot() {
   return {
-    generatedAt: new Date("2026-04-08T09:30:00.000Z"),
+    generatedAt: new Date(TEST_SNAPSHOT_GENERATED_AT),
     summary: {
       totalTenants: 1,
       activeCases: 3,
@@ -163,6 +165,8 @@ function buildSnapshot() {
 
 describe("Dashboard CEO safe actions", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-08T09:31:00.000Z"));
     vi.clearAllMocks();
 
     vi.mocked(db.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
@@ -227,6 +231,10 @@ describe("Dashboard CEO safe actions", () => {
     vi.mocked(db.createAuditLog).mockResolvedValue(undefined);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("permite acusar recibo de una alerta abierta con trazabilidad", async () => {
     const caller = appRouter.createCaller(createProtectedContext());
 
@@ -234,6 +242,7 @@ describe("Dashboard CEO safe actions", () => {
       alertId: 101,
       status: "acknowledged",
       expectedCurrentStatus: "open",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
     });
 
     expect(db.updateOperationalAlertStatus).toHaveBeenCalledWith({
@@ -262,6 +271,7 @@ describe("Dashboard CEO safe actions", () => {
         alertId: 101,
         status: "resolved",
         expectedCurrentStatus: "open",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/siguiente cambio operativo seguro/i);
 
@@ -276,6 +286,7 @@ describe("Dashboard CEO safe actions", () => {
       membershipId: 501,
       status: "revoked",
       expectedCurrentStatus: "active",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
     });
 
     expect(db.updateTenantMembershipStatus).toHaveBeenCalledWith({
@@ -317,6 +328,7 @@ describe("Dashboard CEO safe actions", () => {
         membershipId: 777,
         status: "revoked",
         expectedCurrentStatus: "active",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/fuera del caso visible|acotados a un caso/i);
 
@@ -331,6 +343,7 @@ describe("Dashboard CEO safe actions", () => {
       caseId: "CASE-BALT-1-DEMO001",
       status: "analysis",
       expectedCurrentStatus: "intake",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
     });
 
     expect(db.updateCaseStatus).toHaveBeenCalledWith({
@@ -364,6 +377,7 @@ describe("Dashboard CEO safe actions", () => {
         alertId: 101,
         status: "acknowledged",
         expectedCurrentStatus: "acknowledged",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/han cambiado|desactualizada/i);
 
@@ -379,6 +393,7 @@ describe("Dashboard CEO safe actions", () => {
         membershipId: 501,
         status: "revoked",
         expectedCurrentStatus: "revoked",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/han cambiado|desactualizada/i);
 
@@ -395,6 +410,7 @@ describe("Dashboard CEO safe actions", () => {
         caseId: "CASE-BALT-1-DEMO001",
         status: "analysis",
         expectedCurrentStatus: "analysis",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/han cambiado|desactualizada/i);
 
@@ -410,7 +426,7 @@ describe("Dashboard CEO safe actions", () => {
       tenantId: "balt-1",
       section: "alertas",
       format: "csv",
-      snapshotGeneratedAt: "2026-04-08T09:30:00.000Z",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       appliedFilters: ["Tenant: Balt Demo", "Solo críticas"],
       visibleCount: 3,
     });
@@ -440,7 +456,7 @@ describe("Dashboard CEO safe actions", () => {
     await caller.dashboard.ceoRecordExportAudit({
       section: "resumen",
       format: "pdf",
-      snapshotGeneratedAt: "2026-04-08T09:30:00.000Z",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       appliedFilters: [],
       visibleCount: 1,
     });
@@ -468,6 +484,7 @@ describe("Dashboard CEO safe actions", () => {
         caseId: "CASE-BALT-1-DEMO001",
         status: "analysis",
         expectedCurrentStatus: "intake",
+        snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
       }),
     ).rejects.toThrow(/10002|required permission|FORBIDDEN/i);
   });

@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Sprint pre-Helios: completar el comparador multi-IA con contexto real de prepareAuditarUploadAsset en analyzeDocumentDraft y uploadDocument
+- [x] Sprint pre-Helios: reforzar el Dashboard CEO contra snapshots stale en acceso/exportes y corregir el import duplicado de useAuth en CeoDashboard
+- [x] Sprint pre-Helios: evaluar y endurecer quick wins de escalabilidad con pruebas y validación operativa
+
 - [x] Endurecer /auditar con rate limiting básico por usuario/IP en endpoints pesados
 - [x] Añadir guardrail de concurrencia por caso y deduplicación efímera por archivo en /auditar
 - [x] Registrar rechazos operativos de guardrails con trazabilidad mínima en auditoría
@@ -581,7 +585,7 @@
 - [x] AuditaPatron CEO: endurecer exportes CSV ejecutivos contra inyección de fórmulas, saltos de línea y celdas peligrosas provenientes del snapshot
 - [x] AuditaPatron CEO: acotar longitud y normalizar texto exportable en PDF/CSV para evitar reportes malformados o render costoso por celdas anómalas
 - [x] AuditaPatron: adelantar la validación explícita de escritura sobre el caso en confirm/upload/analyze para fallar antes de locks, rate limits o trabajo pesado innecesario
-- [ ] Operativa multi-IA: agregar fallback de modelo para Gemini en el script de contraste, de modo que el análisis siga siendo realmente triángulado cuando un modelo no esté habilitado
+- [x] Operativa multi-IA: agregar fallback de modelo para Gemini en el script de contraste, de modo que el análisis siga siendo realmente triángulado cuando un modelo no esté habilitado
 - [ ] Operativa multi-IA: ampliar el contexto del script de contraste para incluir las llamadas reales a prepareAuditarUploadAsset en analyze/upload y reducir recomendaciones alucinadas o ya cubiertas
 - [x] AuditaPatron CEO: registrar auditoría de exportes ejecutivos con actor, formato, sección y filtros para mejorar trazabilidad de snapshots sensibles
 - [x] Añadir bitácora operativa mínima en el tablero CEO con consulta reutilizando audit trail y filtros de tenant/caso
@@ -592,8 +596,13 @@
 - [x] Enlazar cada evento reciente de la bitácora operativa hacia su caso o documento correspondiente
 - [x] Incorporar alertas ejecutivas cuando se acumulen rechazos operativos por tenant o caso
 - [x] Cubrir con Vitest la evolución de filtros, drill-down y alertas de la bitácora CEO
-- [ ] Operativa multi-IA: corregir o sustituir la clave de Gemini, actualmente rechazada por la API como filtrada, para recuperar el contraste triple completo
+- [x] Operativa multi-IA: corregir o sustituir la clave de Gemini, actualmente rechazada por la API como filtrada, para recuperar el contraste triple completo
 - [x] Añadir filtros rápidos por tipo de evento y severidad en la bitácora operativa del Dashboard CEO
 - [x] Incorporar enlaces operativos desde cada evento reciente hacia el caso o documento correspondiente dentro de la consola CEO
 - [x] Crear alertas ejecutivas derivadas de acumulación de rechazos operativos por tenant o por caso en la bitácora CEO
 - [x] Extender pruebas Vitest del módulo de monitoreo CEO para cubrir filtros rápidos, drill-down y alertas derivadas
+- [x] Actualizar la clave GEMINI_API_KEY proporcionada por el usuario y revalidar la operativa multi-IA del proyecto
+- [x] Revisar y priorizar los pendientes activos del proyecto para continuar la siguiente iteración de implementación
+- [x] Operativa multi-IA: ampliar el script de contraste con el contexto real de prepareAuditarUploadAsset en analyze/upload para mejorar la priorización
+- [x] Dashboard CEO: reforzar el gate de acceso y el bloqueo de exportes cuando el snapshot esté stale, incompleto o en error
+- [x] Escalabilidad AuditaPatron: evaluar y endurecer los cuellos de botella internos más probables para soportar crecimiento de usuarios

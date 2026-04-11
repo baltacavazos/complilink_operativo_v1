@@ -387,6 +387,10 @@ export default function CeoDashboard() {
     return Number.isNaN(value) ? null : value;
   }, [snapshotData?.generatedAt]);
   const snapshotAgeMs = snapshotGeneratedAtMs === null ? null : Math.max(0, snapshotPulseAt - snapshotGeneratedAtMs);
+  const snapshotGeneratedAtIso = useMemo(
+    () => (snapshotGeneratedAtMs === null ? null : new Date(snapshotGeneratedAtMs).toISOString()),
+    [snapshotGeneratedAtMs],
+  );
   const snapshotFreshnessLabel =
     snapshotAgeMs === null ? "Frescura no disponible" : snapshotAgeMs < 60000 ? "Vista fresca" : `Actualizada hace ${Math.max(1, Math.round(snapshotAgeMs / 60000))} min`;
   const isSnapshotStale = snapshotAgeMs !== null && snapshotAgeMs > 2 * 60 * 1000;
@@ -396,7 +400,7 @@ export default function CeoDashboard() {
     : snapshotError
       ? "La vista ejecutiva tuvo un problema al cargar. Refresca antes de volver a intentar una acción sensible."
       : isSnapshotStale
-        ? "La vista visible superó la ventana de frescura operativa. Refresca para volver a habilitar acciones ejecutivas."
+        ? "Datos desactualizados. Actualiza el dashboard antes de continuar."
         : "La vista visible sigue dentro de la ventana de frescura operativa para ejecutar acciones seguras.";
   const exportGuardReason = getCeoExportBlockReason({
     hasSnapshot: Boolean(snapshotData),
@@ -719,12 +723,19 @@ export default function CeoDashboard() {
   }
 
   async function executePendingExecutiveAction(action: PendingExecutiveAction) {
+    if (executiveActionsBlocked || !snapshotGeneratedAtIso) {
+      notifyExecutiveGuardrail();
+      setPendingExecutiveAction(null);
+      return;
+    }
+
     try {
       if (action.kind === "alert") {
         await alertMutation.mutateAsync({
           alertId: action.alertId,
           status: action.nextStatus,
           expectedCurrentStatus: action.currentStatus,
+          snapshotGeneratedAt: snapshotGeneratedAtIso!,
         });
         await refreshSnapshotWithSuccess("Alerta actualizada", `${action.title}: ${action.actionLabel.toLowerCase()} y traza registrada.`);
         return;
@@ -735,6 +746,7 @@ export default function CeoDashboard() {
           membershipId: action.membershipId,
           status: action.nextStatus,
           expectedCurrentStatus: action.currentStatus,
+          snapshotGeneratedAt: snapshotGeneratedAtIso!,
         });
         await refreshSnapshotWithSuccess("Acceso actualizado", `${action.userLabel}: ${action.actionLabel.toLowerCase()} con trazabilidad ejecutiva.`);
         return;
@@ -745,6 +757,7 @@ export default function CeoDashboard() {
         caseId: action.caseId,
         status: action.nextStatus,
         expectedCurrentStatus: action.currentStatus,
+        snapshotGeneratedAt: snapshotGeneratedAtIso,
       });
       await refreshSnapshotWithSuccess("Caso actualizado", `${action.title}: ${action.actionLabel.toLowerCase()} y bitácora registrada.`);
     } catch (error) {
@@ -791,7 +804,7 @@ export default function CeoDashboard() {
           tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
           section: currentSection,
           format: kind,
-          snapshotGeneratedAt: snapshotData.generatedAt.toISOString(),
+          snapshotGeneratedAt: snapshotGeneratedAtIso!,
           appliedFilters,
           visibleCount: currentSectionCount,
         });

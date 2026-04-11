@@ -143,6 +143,7 @@ const AUDITAR_UPLOAD_RATE_LIMIT = 4;
 const AUDITAR_CONFIRM_RATE_LIMIT = 8;
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
+const CEO_SNAPSHOT_STALE_WINDOW_MS = 2 * 60 * 1000;
 const CEO_NEXT_SAFE_CASE_STATUS: Partial<Record<(typeof CASE_STATUSES)[number], (typeof CASE_STATUSES)[number]>> = {
   intake: "analysis",
   analysis: "conciliation",
@@ -158,6 +159,17 @@ function assertCeoExpectedCurrentStatus(params: {
   }
 
   if (params.expectedCurrentStatus !== params.actualCurrentStatus) {
+    throw new Error(CEO_SAFE_ERROR_COPY.staleData);
+  }
+}
+
+function assertCeoSnapshotFresh(snapshotGeneratedAt: string) {
+  const generatedAtMs = new Date(snapshotGeneratedAt).getTime();
+  if (Number.isNaN(generatedAtMs)) {
+    throw new Error(CEO_SAFE_ERROR_COPY.staleData);
+  }
+
+  if (Date.now() - generatedAtMs > CEO_SNAPSHOT_STALE_WINDOW_MS) {
     throw new Error(CEO_SAFE_ERROR_COPY.staleData);
   }
 }
@@ -266,8 +278,8 @@ function assertAuditarRateLimit(params: {
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
 }
 
-function acquireAuditarTransientDedup(params: {
-  action: "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
+function assertAuditarTransientDedupInactive(params: {
+  action: "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument" | "confirmDocumentDraftCompleted";
   dedupKey: string;
   message: string;
 }) {
@@ -279,8 +291,17 @@ function acquireAuditarTransientDedup(params: {
   if (expiresAt && expiresAt > now) {
     throw new Error(params.message);
   }
+}
 
-  const nextExpiresAt = now + AUDITAR_TRANSIENT_DEDUP_TTL_MS;
+function acquireAuditarTransientDedup(params: {
+  action: "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument" | "confirmDocumentDraftCompleted";
+  dedupKey: string;
+  message: string;
+}) {
+  assertAuditarTransientDedupInactive(params);
+
+  const key = `${params.action}:${params.dedupKey}`;
+  const nextExpiresAt = Date.now() + AUDITAR_TRANSIENT_DEDUP_TTL_MS;
   auditarTransientDedupByKey.set(key, nextExpiresAt);
 
   return () => {
@@ -849,6 +870,66 @@ function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string;
   return {
     safeFileName,
     sizeBytes: params.binary.byteLength,
+    sha256: computeSha256(params.binary),
+  };
+}
+
+async function prepareAuditarDocumentPipeline(params: {
+  tenantId: string;
+  caseId: string;
+  storageEntityId: string;
+  fileName: string;
+  mimeType: string;
+  binary: Buffer;
+  expectedDocumentType?: AuditarTargetType;
+  textHint?: string;
+}) {
+  const storageKey = buildDocumentStorageKey({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    documentId: params.storageEntityId,
+    fileName: params.fileName,
+  });
+  const uploaded = await storagePut(storageKey, params.binary, params.mimeType);
+  const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(params.expectedDocumentType);
+  const enrichedTextHint = [params.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
+  const classification = classifyMexicanLaborDocument({
+    fileName: params.fileName,
+    mimeType: params.mimeType,
+    textHint: enrichedTextHint || undefined,
+  });
+  const scanAssistance = await analyzeDocumentScanAssist({
+    fileUrl: uploaded.url,
+    mimeType: params.mimeType,
+    fileName: params.fileName,
+    expectedDocumentType: params.expectedDocumentType,
+    textHint: params.textHint,
+  });
+  const basePreliminaryAnalysis = buildPreliminaryLaborAnalysis({
+    fileName: params.fileName,
+    mimeType: params.mimeType,
+    textHint: enrichedTextHint || undefined,
+    classification,
+  });
+  const structuredExtraction = await analyzeStructuredDocumentPreview({
+    fileUrl: uploaded.url,
+    mimeType: params.mimeType,
+    fileName: params.fileName,
+    textHint: enrichedTextHint || undefined,
+    classification,
+    preliminaryAnalysis: basePreliminaryAnalysis,
+  });
+  const preliminaryAnalysis: DraftPreliminaryAnalysis = {
+    ...basePreliminaryAnalysis,
+    structuredExtraction,
+  };
+
+  return {
+    storageKey,
+    uploaded,
+    classification,
+    scanAssistance,
+    preliminaryAnalysis,
   };
 }
 
@@ -1576,12 +1657,14 @@ export const appRouter = router({
           tenantId: z.string().min(3).optional(),
           section: z.enum(["resumen", "alertas", "accesos", "documentos"]),
           format: z.enum(["csv", "pdf"]),
-          snapshotGeneratedAt: z.string().datetime().optional(),
+          snapshotGeneratedAt: z.string().datetime(),
           appliedFilters: z.array(z.string().min(1).max(160)).max(12),
           visibleCount: z.number().int().min(0).max(50000),
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        assertCeoSnapshotFresh(input.snapshotGeneratedAt);
+
         const auditTenantId =
           input.tenantId ??
           (
@@ -1624,9 +1707,11 @@ export const appRouter = router({
           alertId: z.number().int().positive(),
           status: operationalAlertStatusSchema,
           expectedCurrentStatus: ceoCurrentAlertStatusSchema,
+          snapshotGeneratedAt: z.string().datetime(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        assertCeoSnapshotFresh(input.snapshotGeneratedAt);
         const snapshot = await getCeoDashboardSnapshot();
         const targetAlert = snapshot.recentAlerts.find((alert) => alert.id === input.alertId);
 
@@ -1669,9 +1754,11 @@ export const appRouter = router({
           membershipId: z.number().int().positive(),
           status: tenantMembershipStatusSchema,
           expectedCurrentStatus: ceoCurrentMembershipStatusSchema,
+          snapshotGeneratedAt: z.string().datetime(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        assertCeoSnapshotFresh(input.snapshotGeneratedAt);
         const snapshot = await getCeoDashboardSnapshot();
         const targetMembership = snapshot.recentMemberships.find((membership) => membership.id === input.membershipId);
 
@@ -1718,9 +1805,11 @@ export const appRouter = router({
           caseId: z.string().min(3),
           status: ceoCaseProgressStatusSchema,
           expectedCurrentStatus: caseStatusSchema,
+          snapshotGeneratedAt: z.string().datetime(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        assertCeoSnapshotFresh(input.snapshotGeneratedAt);
         const snapshot = await getCeoDashboardSnapshot();
         const targetCase = snapshot.recentCases.find(
           (laborCase) => laborCase.tenantId === input.tenantId && laborCase.caseId === input.caseId,
@@ -2320,12 +2409,11 @@ export const appRouter = router({
         const binary = decodeBase64File(input.base64Content, {
           maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
         });
-        const { sizeBytes } = prepareAuditarUploadAsset({
+        const { sizeBytes, sha256 } = prepareAuditarUploadAsset({
           fileName: safeFileName,
           mimeType: input.mimeType,
           binary,
         });
-        const sha256 = computeSha256(binary);
         acquireAuditarTransientDedup({
           action: "analyzeDocumentDraft",
           dedupKey: [input.tenantId, input.caseId, ctx.user.id, safeFileName, sha256].join(":"),
@@ -2333,45 +2421,17 @@ export const appRouter = router({
             "Ya estamos procesando o acabamos de procesar este mismo archivo en Auditar. Espera un momento antes de volver a intentarlo.",
         });
         const draftId = buildDraftId();
-        const storageKey = buildDocumentStorageKey({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          documentId: draftId,
-          fileName: safeFileName,
-        });
-        const uploaded = await storagePut(storageKey, binary, input.mimeType);
-        const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(input.expectedDocumentType);
-        const enrichedTextHint = [input.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
-        const classification = classifyMexicanLaborDocument({
-          fileName: safeFileName,
-          mimeType: input.mimeType,
-          textHint: enrichedTextHint || undefined,
-        });
-        const scanAssistance = await analyzeDocumentScanAssist({
-          fileUrl: uploaded.url,
-          mimeType: input.mimeType,
-          fileName: safeFileName,
-          expectedDocumentType: input.expectedDocumentType,
-          textHint: input.textHint,
-        });
-        const basePreliminaryAnalysis = buildPreliminaryLaborAnalysis({
-          fileName: safeFileName,
-          mimeType: input.mimeType,
-          textHint: enrichedTextHint || undefined,
-          classification,
-        });
-        const structuredExtraction = await analyzeStructuredDocumentPreview({
-          fileUrl: uploaded.url,
-          mimeType: input.mimeType,
-          fileName: safeFileName,
-          textHint: enrichedTextHint || undefined,
-          classification,
-          preliminaryAnalysis: basePreliminaryAnalysis,
-        });
-        const preliminaryAnalysis: DraftPreliminaryAnalysis = {
-          ...basePreliminaryAnalysis,
-          structuredExtraction,
-        };
+        const { storageKey, uploaded, classification, scanAssistance, preliminaryAnalysis } =
+          await prepareAuditarDocumentPipeline({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            storageEntityId: draftId,
+            fileName: safeFileName,
+            mimeType: input.mimeType,
+            binary,
+            expectedDocumentType: input.expectedDocumentType,
+            textHint: input.textHint,
+          });
         const createdAt = new Date();
 
         const draftPayload: AuditarDraftContractPayload = {
@@ -2468,9 +2528,10 @@ export const appRouter = router({
           ip: getClientIp(ctx.req),
           maxRequests: AUDITAR_CONFIRM_RATE_LIMIT,
         });
-        const releaseConfirmDedup = acquireAuditarTransientDedup({
-          action: "confirmDocumentDraft",
-          dedupKey: [input.tenantId, input.caseId, ctx.user.id, input.draftId].join(":"),
+        const confirmDraftDedupKey = [input.tenantId, input.caseId, ctx.user.id, input.draftId].join(":");
+        assertAuditarTransientDedupInactive({
+          action: "confirmDocumentDraftCompleted",
+          dedupKey: confirmDraftDedupKey,
           message:
             "Esta confirmación documental ya está en curso o se procesó hace instantes en Auditar. Espera un momento antes de repetirla.",
         });
@@ -2479,9 +2540,9 @@ export const appRouter = router({
 
         try {
           return await withDatabaseLock({
-          lockKey,
-          timeoutSeconds: 12,
-          action: async () => {
+            lockKey,
+            timeoutSeconds: 12,
+            action: async () => {
             await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
 
         const detail = await getCaseDetailForUser({
@@ -2504,6 +2565,12 @@ export const appRouter = router({
         assertAuditarDraftStillFresh({
           draftRecordCreatedAt: draft.createdAt,
           previewCreatedAt: payload.createdAt,
+        });
+        acquireAuditarTransientDedup({
+          action: "confirmDocumentDraft",
+          dedupKey: confirmDraftDedupKey,
+          message:
+            "Esta confirmación documental ya está en curso o se procesó hace instantes en Auditar. Espera un momento antes de repetirla.",
         });
         await assertAuditarDraftNotAlreadyConfirmed({
           tenantId: input.tenantId,
@@ -2893,6 +2960,12 @@ export const appRouter = router({
           documents: refreshedDocuments,
           events: detail.events,
         });
+        acquireAuditarTransientDedup({
+          action: "confirmDocumentDraftCompleted",
+          dedupKey: confirmDraftDedupKey,
+          message:
+            "Esta confirmación documental ya está en curso o se procesó hace instantes en Auditar. Espera un momento antes de repetirla.",
+        });
 
             return {
               draftId: payload.draftId,
@@ -2923,9 +2996,8 @@ export const appRouter = router({
                 : null,
             };
           },
-        });
+          });
         } catch (error) {
-          releaseConfirmDedup();
           await auditAuditarGuardrailRejection({
             action: "confirmDocumentDraft",
             tenantId: input.tenantId,
@@ -2990,12 +3062,11 @@ export const appRouter = router({
         const binary = decodeBase64File(input.base64Content, {
           maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
         });
-        const { sizeBytes } = prepareAuditarUploadAsset({
+        const { sizeBytes, sha256 } = prepareAuditarUploadAsset({
           fileName: safeFileName,
           mimeType: input.mimeType,
           binary,
         });
-        const sha256 = computeSha256(binary);
         acquireAuditarTransientDedup({
           action: "uploadDocument",
           dedupKey: [input.tenantId, input.caseId, ctx.user.id, safeFileName, sha256].join(":"),
@@ -3003,45 +3074,17 @@ export const appRouter = router({
             "Ya estamos procesando o acabamos de procesar este mismo archivo en Auditar. Espera un momento antes de volver a intentarlo.",
         });
         const documentId = buildDocumentId();
-        const storageKey = buildDocumentStorageKey({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          documentId,
-          fileName: safeFileName,
-        });
-        const uploaded = await storagePut(storageKey, binary, input.mimeType);
-        const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(input.expectedDocumentType);
-        const enrichedTextHint = [input.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
-        const classification = classifyMexicanLaborDocument({
-          fileName: safeFileName,
-          mimeType: input.mimeType,
-          textHint: enrichedTextHint || undefined,
-        });
-        const scanAssistance = await analyzeDocumentScanAssist({
-          fileUrl: uploaded.url,
-          mimeType: input.mimeType,
-          fileName: safeFileName,
-          expectedDocumentType: input.expectedDocumentType,
-          textHint: input.textHint,
-        });
-        const basePreliminaryAnalysis = buildPreliminaryLaborAnalysis({
-          fileName: safeFileName,
-          mimeType: input.mimeType,
-          textHint: enrichedTextHint || undefined,
-          classification,
-        });
-        const structuredExtraction = await analyzeStructuredDocumentPreview({
-          fileUrl: uploaded.url,
-          mimeType: input.mimeType,
-          fileName: safeFileName,
-          textHint: enrichedTextHint || undefined,
-          classification,
-          preliminaryAnalysis: basePreliminaryAnalysis,
-        });
-        const preliminaryAnalysis: DraftPreliminaryAnalysis = {
-          ...basePreliminaryAnalysis,
-          structuredExtraction,
-        };
+        const { storageKey, uploaded, classification, scanAssistance, preliminaryAnalysis } =
+          await prepareAuditarDocumentPipeline({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            storageEntityId: documentId,
+            fileName: safeFileName,
+            mimeType: input.mimeType,
+            binary,
+            expectedDocumentType: input.expectedDocumentType,
+            textHint: input.textHint,
+          });
 
         const processedAt = new Date();
 

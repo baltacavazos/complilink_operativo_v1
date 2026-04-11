@@ -148,7 +148,7 @@ describe("getCeoExportBlockReason", () => {
         isSnapshotStale: true,
         hasSnapshotError: false,
       }),
-    ).toMatch(/desactualizada/i);
+    ).toMatch(/datos desactualizados|actualiza el dashboard/i);
   });
 
   it("permite exportar cuando el snapshot está disponible y confiable", () => {
