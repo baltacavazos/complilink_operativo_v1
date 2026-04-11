@@ -1,4 +1,4 @@
-type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
+export type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
 
 type UmamiTracker = {
   track: (eventName: string, payload?: AnalyticsPayload) => void;
@@ -37,4 +37,54 @@ export function trackFunnelStep(step: string, payload?: AnalyticsPayload) {
     step,
     ...payload,
   });
+}
+
+export function trackCeoConsoleViewed(section: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_ceo_console_viewed", {
+    section,
+    ...payload,
+  });
+
+  trackFunnelStep("ceo_console_viewed", {
+    section,
+    ...payload,
+  });
+}
+
+export function trackCeoViewModeToggled(mode: "user_demo" | "ceo_master", payload?: AnalyticsPayload) {
+  trackEvent("audipatron_ceo_view_mode_toggled", {
+    mode,
+    ...payload,
+  });
+
+  trackFunnelStep(mode === "user_demo" ? "ceo_user_view_entered" : "ceo_master_view_restored", {
+    mode,
+    ...payload,
+  });
+}
+
+export function trackCeoRefresh(section: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_ceo_refresh", {
+    section,
+    ...payload,
+  });
+}
+
+export function trackCeoExport(
+  kind: "csv" | "pdf",
+  status: "requested" | "completed" | "blocked" | "failed",
+  payload?: AnalyticsPayload,
+) {
+  trackEvent("audipatron_ceo_export", {
+    kind,
+    status,
+    ...payload,
+  });
+
+  if (status === "completed") {
+    trackFunnelStep("ceo_export_completed", {
+      kind,
+      ...payload,
+    });
+  }
 }

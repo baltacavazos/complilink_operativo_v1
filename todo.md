@@ -639,3 +639,9 @@
 - [x] Validar los flujos críticos reales de acceso, conmutación CEO ↔ vista usuario y expediente, corrigiendo solo fallos bloqueantes.
 - [x] Corregir exportación PDF de la consola CEO que descarga archivo vacío en validación real.
 - [x] Cerrar esta iteración con verificación técnica final y reporte breve del estado estable.
+- [x] Implementar pruebas E2E del flujo crítico CEO ↔ vista usuario ↔ expediente con validación reproducible de guardrails.
+- [x] Automatizar la validación de exportes CSV/PDF con comprobación de descarga y contenido mínimo esperado.
+- [x] Instrumentar métricas de uso y embudo operativo en las superficies clave de AuditaPatron.
+- [x] Añadir prueba E2E Playwright del flujo crítico CEO → vista usuario → expediente → retorno a CEO
+- [x] Validar automáticamente descargas CSV/PDF del dashboard CEO con verificación de archivo descargado y contenido mínimo
+- [x] Instrumentar métricas y embudo operativo mínimo del dashboard CEO y flujos críticos asociados

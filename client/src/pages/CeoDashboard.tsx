@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { trackCeoConsoleViewed, trackCeoExport, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
@@ -49,7 +50,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast as sonnerToast } from "sonner";
 import { useLocation } from "wouter";
 
@@ -311,9 +312,19 @@ function getSectionLabel(section: SectionKey) {
 }
 
 export default function CeoDashboard() {
-  const { user } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/ceo" });
+  const auth = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/ceo" });
+  const { user, isViewingAsUser, loading } = auth;
   const [location, setLocation] = useLocation();
   const isAdmin = user?.role === "admin";
+
+  useEffect(() => {
+    if (loading || !isViewingAsUser) return;
+    if (typeof window === "undefined") return;
+    if (!window.location.pathname.startsWith("/ceo")) return;
+
+    window.location.replace("/auditar");
+  }, [isViewingAsUser, loading]);
+
   const utils = trpc.useUtils();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
@@ -567,6 +578,23 @@ export default function CeoDashboard() {
     [bridgeOverview.rows.length, currentSection, snapshotData],
   );
   const exportableSection = currentSection === "bridge" ? "resumen" : currentSection;
+  const lastTrackedSectionViewRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const nextViewKey = `${currentSection}:${hasActiveFilters ? "filtered" : "global"}`;
+    if (lastTrackedSectionViewRef.current === nextViewKey) {
+      return;
+    }
+
+    lastTrackedSectionViewRef.current = nextViewKey;
+    trackCeoConsoleViewed(currentSection, {
+      source: "ceo_dashboard",
+      hasActiveFilters,
+      visibleCount: currentSectionCount,
+    });
+  }, [currentSection, currentSectionCount, hasActiveFilters, isAdmin]);
 
   const safeCaseActions = useMemo(
     () =>
@@ -704,6 +732,11 @@ export default function CeoDashboard() {
   }
 
   async function handleRefresh() {
+    trackCeoRefresh(currentSection, {
+      source: "ceo_dashboard",
+      hasActiveFilters,
+      visibleCount: currentSectionCount,
+    });
     await utils.dashboard.ceoSnapshot.invalidate();
   }
 
@@ -824,6 +857,13 @@ export default function CeoDashboard() {
 
   async function handleExport(kind: "csv" | "pdf") {
     if (currentSectionExportGuardReason || !snapshotData) {
+      trackCeoExport(kind, "blocked", {
+        section: exportableSection,
+        source: "ceo_dashboard",
+        hasActiveFilters,
+        visibleCount: currentSectionCount,
+        reason: currentSectionExportGuardReason ?? "snapshot_not_ready",
+      });
       sonnerToast.error("La exportación ejecutiva está bloqueada", {
         description:
           currentSectionExportGuardReason ?? "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
@@ -833,6 +873,13 @@ export default function CeoDashboard() {
 
     const actorLabel = user?.name || user?.email || "Operación ejecutiva";
     const appliedFilters = activeFilterChips.map((chip) => chip.label);
+
+    trackCeoExport(kind, "requested", {
+      section: exportableSection,
+      source: "ceo_dashboard",
+      hasActiveFilters,
+      visibleCount: currentSectionCount,
+    });
 
     try {
       setExportKind(kind);
@@ -865,18 +912,35 @@ export default function CeoDashboard() {
         sonnerToast.warning("El reporte se descargó, pero la trazabilidad del export no quedó registrada.");
       }
 
+      trackCeoExport(kind, "completed", {
+        section: exportableSection,
+        source: "ceo_dashboard",
+        hasActiveFilters,
+        visibleCount: currentSectionCount,
+      });
       sonnerToast.success(kind === "pdf" ? "Reporte PDF generado" : "Reporte CSV generado", {
         description: `Archivo descargado: ${filename}`,
       });
     } catch (error) {
-
-      sonnerToast.error("No fue posible generar el reporte ejecutivo", {
+      trackCeoExport(kind, "failed", {
+        section: exportableSection,
+        source: "ceo_dashboard",
+        hasActiveFilters,
+        visibleCount: currentSectionCount,
+        reason: error instanceof Error ? error.message : "unexpected_error",
+      });
+      sonnerToast.error(kind === "pdf" ? "No fue posible generar el PDF" : "No fue posible generar el CSV", {
         description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
       });
     } finally {
       setExportKind(null);
     }
   }
+
+  if (loading || isViewingAsUser) {
+    return null;
+  }
+
 
   return (
     <DashboardLayout

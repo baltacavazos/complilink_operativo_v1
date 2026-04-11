@@ -47,8 +47,9 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, setNativeView, utils]);
 
   useEffect(() => {
+    if (meQuery.isLoading) return;
     syncWithUser(meQuery.data ?? null);
-  }, [meQuery.data, syncWithUser]);
+  }, [meQuery.data, meQuery.isLoading, syncWithUser]);
 
   const state = useMemo(() => {
     const realUser = meQuery.data ?? null;

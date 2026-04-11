@@ -24,6 +24,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { trackCeoViewModeToggled } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { LogOut, PanelLeft, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
@@ -347,11 +348,17 @@ function DashboardLayoutContent({
                     className="rounded-full bg-white"
                     onClick={() => {
                       if (isViewingAsUser) {
+                        trackCeoViewModeToggled("ceo_master", {
+                          source: "dashboard_layout",
+                        });
                         exitUserView();
                         setLocation("/ceo");
                         return;
                       }
 
+                      trackCeoViewModeToggled("user_demo", {
+                        source: "dashboard_layout",
+                      });
                       enterUserView();
                       setLocation("/auditar");
                     }}

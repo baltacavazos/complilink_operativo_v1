@@ -1,0 +1,197 @@
+[
+  {
+    "provider": "chatgpt",
+    "ok": true,
+    "raw": "{\n  \"summary\": \"Implementar pruebas E2E para el flujo CEO con validaciones clave, automatizar la verificación básica de exportes CSV/PDF descargados y añadir métricas mínimas para monitoreo operativo. Priorizar estabilidad y correcciones bloqueantes sin ampliar el alcance. Usar Playwright para E2E, validación simple de archivos descargados y eventos esenciales para embudo. Mantener foco en robustez y simplicidad.\",\n  \"priority_order\": [\"e2e\", \"exports\", \"metrics\"],\n  \"e2e\": {\n    \"critical_assertions\": [\n      \"El CEO puede activar modo 'vista como usuario' correctamente\",\n      \"Se accede al expediente desde la vista usuario sin errores\",\n      \"Al regresar, el CEO recupera sus permisos originales\"\n    ],\n    \"test_strategy\": \"Crear un test Playwright que simule el cambio de rol, navegación al expediente y retorno, verificando estados y permisos en cada paso.\",\n    \"main_risks\": [\n      \"Fallas en restauración de permisos del CEO\",\n      \"Errores de navegación o carga en modo usuario\",\n      \"Cambios UI que rompan selectores de test\"\n    ]\n  },\n  \"exports\": {\n    \"critical_assertions\": [\n      \"El archivo CSV/PDF se descarga tras la acción correspondiente\",\n      \"El contenido básico del archivo coincide con datos esperados (ej. encabezados y filas mínimas)\"\n    ],\n    \"validation_strategy\": \"Interceptar la descarga en Playwright, leer el blob y validar estructura y contenido mínimo sin parsing exhaustivo.\",\n    \"main_risks\": [\n      \"Descargas bloqueadas o fallidas por navegador\",\n      \"Archivos corruptos o vacíos\",\n      \"Cambios en formato que invaliden validación simple\"\n    ]\n  },\n  \"metrics\": {\n    \"events\": [\n      \"ceo_mode_switch_start\",\n      \"ceo_mode_switch_end\",\n      \"expediente_view_open\",\n      \"export_csv_trigger\",\n      \"export_pdf_trigger\"\n    ],\n    \"funnel\": [\n      \"Inicio modo CEO\",\n      \"Vista expediente en modo usuario\",\n      \"Exportación completada\"\n    ],\n    \"implementation_hint\": \"Usar hooks o middleware tRPC para emitir eventos mínimos, enviarlos a sistema de métricas ligero (p.ej. Google Analytics o similar interno).\"\n  },\n  \"recommended_sequence\": [\n    \"Implementar test E2E para flujo CEO completo\",\n    \"Agregar validación automática de exportes en tests E2E\",\n    \"Incorporar eventos y embudo mínimos para métricas\"\n  ],\n  \"what_not_to_do\": [\n    \"No ampliar el alcance con nuevas funcionalidades o métricas complejas\",\n    \"No realizar validaciones exhaustivas de contenido exportado\",\n    \"No modificar permisos o roles fuera del flujo probado\"\n  ]\n}",
+    "parsed": {
+      "summary": "Implementar pruebas E2E para el flujo CEO con validaciones clave, automatizar la verificación básica de exportes CSV/PDF descargados y añadir métricas mínimas para monitoreo operativo. Priorizar estabilidad y correcciones bloqueantes sin ampliar el alcance. Usar Playwright para E2E, validación simple de archivos descargados y eventos esenciales para embudo. Mantener foco en robustez y simplicidad.",
+      "priority_order": [
+        "e2e",
+        "exports",
+        "metrics"
+      ],
+      "e2e": {
+        "critical_assertions": [
+          "El CEO puede activar modo 'vista como usuario' correctamente",
+          "Se accede al expediente desde la vista usuario sin errores",
+          "Al regresar, el CEO recupera sus permisos originales"
+        ],
+        "test_strategy": "Crear un test Playwright que simule el cambio de rol, navegación al expediente y retorno, verificando estados y permisos en cada paso.",
+        "main_risks": [
+          "Fallas en restauración de permisos del CEO",
+          "Errores de navegación o carga en modo usuario",
+          "Cambios UI que rompan selectores de test"
+        ]
+      },
+      "exports": {
+        "critical_assertions": [
+          "El archivo CSV/PDF se descarga tras la acción correspondiente",
+          "El contenido básico del archivo coincide con datos esperados (ej. encabezados y filas mínimas)"
+        ],
+        "validation_strategy": "Interceptar la descarga en Playwright, leer el blob y validar estructura y contenido mínimo sin parsing exhaustivo.",
+        "main_risks": [
+          "Descargas bloqueadas o fallidas por navegador",
+          "Archivos corruptos o vacíos",
+          "Cambios en formato que invaliden validación simple"
+        ]
+      },
+      "metrics": {
+        "events": [
+          "ceo_mode_switch_start",
+          "ceo_mode_switch_end",
+          "expediente_view_open",
+          "export_csv_trigger",
+          "export_pdf_trigger"
+        ],
+        "funnel": [
+          "Inicio modo CEO",
+          "Vista expediente en modo usuario",
+          "Exportación completada"
+        ],
+        "implementation_hint": "Usar hooks o middleware tRPC para emitir eventos mínimos, enviarlos a sistema de métricas ligero (p.ej. Google Analytics o similar interno)."
+      },
+      "recommended_sequence": [
+        "Implementar test E2E para flujo CEO completo",
+        "Agregar validación automática de exportes en tests E2E",
+        "Incorporar eventos y embudo mínimos para métricas"
+      ],
+      "what_not_to_do": [
+        "No ampliar el alcance con nuevas funcionalidades o métricas complejas",
+        "No realizar validaciones exhaustivas de contenido exportado",
+        "No modificar permisos o roles fuera del flujo probado"
+      ]
+    }
+  },
+  {
+    "provider": "grok",
+    "ok": true,
+    "raw": "{\n  \"summary\": \"Proponemos un plan mínimo y robusto para estabilizar la app, enfocándonos en pruebas E2E, validación de exportes y métricas básicas. Priorizamos la prueba E2E para asegurar el flujo de roles, seguida de la validación automática de archivos descargados y, finalmente, el setup de métricas para monitoreo. Se mantiene el enfoque en correcciones bloqueantes, evitando expansiones. Estrategias simples: usar Playwright para E2E, validar archivos en tests y trackear eventos clave. Total: 78 palabras.\",\n  \"priority_order\": [\"e2e\", \"exports\", \"metrics\"],\n  \"e2e\": {\n    \"critical_assertions\": [\"Verificar que el rol CEO cambia a modo vista usuario correctamente\", \"Confirmar navegación al expediente sin errores\", \"Asegurar regreso al rol CEO con permisos intactos\"],\n    \"test_strategy\": \"Utilizar Playwright para simular el flujo completo: login como CEO, activar vista usuario, navegar al expediente y regresar, con aserciones en cada paso para validar estados y UI.\",\n    \"main_risks\": [\"Posibles fallos en autenticación debido a cambios en sesiones\", \"Alteraciones en la interfaz que invaliden selectores de elementos\"]\n  },\n  \"exports\": {\n    \"critical_assertions\": [\"Confirmar que el archivo CSV o PDF se descarga exitosamente\", \"Verificar que el contenido del archivo coincida con los datos esperados\"],\n    \"validation_strategy\": \"En las pruebas con Vitest y Playwright, descargar el blob, guardarlo temporalmente y usar librerías como 'papaparse' para CSV o 'pdfjs' para PDF para validar el contenido automáticamente.\",\n    \"main_risks\": [\"Inconsistencias en rutas de archivos entre entornos de prueba y producción\", \"Variaciones en formatos que podrían causar falsos positivos en validaciones\"]\n  },\n  \"metrics\": {\n    \"events\": [\"Acceso a modo vista usuario\", \"Descarga de exporte CSV/PDF\", \"Navegación al expediente y regreso\"],\n    \"funnel\": [\"Inicio sesión como CEO\", \"Cambio a vista usuario\", \"Acceso a expediente\", \"Regreso a CEO\"],\n    \"implementation_hint\": \"Integrar eventos con una herramienta mínima como un logger personalizado o segmento.io, trackeando solo datos esenciales en el frontend con tRPC para enviar al backend.\"\n  },\n  \"recommended_sequence\": [\"Implementar y ejecutar la prueba E2E para validar el flujo\", \"Añadir la validación automática de exportes en los tests existentes\", \"Configurar el tracking de métricas y embudo básico\"],\n  \"what_not_to_do\": [\"No introducir nuevas funcionalidades o flujos no relacionados\", \"Evitar expandir el scope a pruebas no críticas\", \"No realizar optimizaciones o cambios en código que no sean correcciones directas\"]\n}",
+    "parsed": {
+      "summary": "Proponemos un plan mínimo y robusto para estabilizar la app, enfocándonos en pruebas E2E, validación de exportes y métricas básicas. Priorizamos la prueba E2E para asegurar el flujo de roles, seguida de la validación automática de archivos descargados y, finalmente, el setup de métricas para monitoreo. Se mantiene el enfoque en correcciones bloqueantes, evitando expansiones. Estrategias simples: usar Playwright para E2E, validar archivos en tests y trackear eventos clave. Total: 78 palabras.",
+      "priority_order": [
+        "e2e",
+        "exports",
+        "metrics"
+      ],
+      "e2e": {
+        "critical_assertions": [
+          "Verificar que el rol CEO cambia a modo vista usuario correctamente",
+          "Confirmar navegación al expediente sin errores",
+          "Asegurar regreso al rol CEO con permisos intactos"
+        ],
+        "test_strategy": "Utilizar Playwright para simular el flujo completo: login como CEO, activar vista usuario, navegar al expediente y regresar, con aserciones en cada paso para validar estados y UI.",
+        "main_risks": [
+          "Posibles fallos en autenticación debido a cambios en sesiones",
+          "Alteraciones en la interfaz que invaliden selectores de elementos"
+        ]
+      },
+      "exports": {
+        "critical_assertions": [
+          "Confirmar que el archivo CSV o PDF se descarga exitosamente",
+          "Verificar que el contenido del archivo coincida con los datos esperados"
+        ],
+        "validation_strategy": "En las pruebas con Vitest y Playwright, descargar el blob, guardarlo temporalmente y usar librerías como 'papaparse' para CSV o 'pdfjs' para PDF para validar el contenido automáticamente.",
+        "main_risks": [
+          "Inconsistencias en rutas de archivos entre entornos de prueba y producción",
+          "Variaciones en formatos que podrían causar falsos positivos en validaciones"
+        ]
+      },
+      "metrics": {
+        "events": [
+          "Acceso a modo vista usuario",
+          "Descarga de exporte CSV/PDF",
+          "Navegación al expediente y regreso"
+        ],
+        "funnel": [
+          "Inicio sesión como CEO",
+          "Cambio a vista usuario",
+          "Acceso a expediente",
+          "Regreso a CEO"
+        ],
+        "implementation_hint": "Integrar eventos con una herramienta mínima como un logger personalizado o segmento.io, trackeando solo datos esenciales en el frontend con tRPC para enviar al backend."
+      },
+      "recommended_sequence": [
+        "Implementar y ejecutar la prueba E2E para validar el flujo",
+        "Añadir la validación automática de exportes en los tests existentes",
+        "Configurar el tracking de métricas y embudo básico"
+      ],
+      "what_not_to_do": [
+        "No introducir nuevas funcionalidades o flujos no relacionados",
+        "Evitar expandir el scope a pruebas no críticas",
+        "No realizar optimizaciones o cambios en código que no sean correcciones directas"
+      ]
+    }
+  },
+  {
+    "provider": "gemini",
+    "ok": true,
+    "raw": "{\n  \"summary\": \"Plan mínimo para estabilizar la app. Prioriza E2E para el flujo CEO-vista usuario-expediente, asegurando la integridad de la funcionalidad crítica. Implementa validación automática de exportes CSV/PDF descargados, verificando contenido y formato. Finalmente, añade métricas básicas de uso para soporte operativo, enfocándose en un embudo clave. El objetivo es robustecer la aplicación sin introducir nuevas funcionalidades, manteniendo el alcance estrictamente en correcciones y estabilidad.\",\n  \"priority_order\": [\n    \"e2e\",\n    \"exports\",\n    \"metrics\"\n  ],\n  \"e2e\": {\n    \"critical_assertions\": [\n      \"Login exitoso como CEO.\",\n      \"Activación de 'vista como usuario' y selección de un usuario.\",\n      \"Navegación a un expediente específico del usuario seleccionado.\",\n      \"Verificación de datos clave en el expediente (ej. nombre, estado, permisos de lectura).\",\n      \"Desactivación de 'vista como usuario' y regreso a la interfaz de CEO.\",\n      \"Verificación de permisos de CEO restaurados (ej. acceso a panel de administración).\"\n    ],\n    \"test_strategy\": \"Utilizar Playwright para simular el flujo completo. Autenticación programática para el rol CEO. Navegación y clics usando selectores robustos (preferiblemente 'data-testid'). Verificaciones de texto y visibilidad de elementos. Asegurar que el estado de 'vista como usuario' se activa y desactiva correctamente, usando un usuario de prueba dedicado.\",\n    \"main_risks\": [\n      \"Dependencia de datos de prueba específicos y su gestión (creación/reseteo).\",\n      \"Fragilidad de selectores si la UI cambia frecuentemente.\",\n      \"Manejo de estados asíncronos o transiciones de UI complejas.\",\n      \"Impacto en el rendimiento de los tests si el flujo es muy largo o se ejecuta con demasiada frecuencia.\"\n    ]\n  },\n  \"exports\": {\n    \"critical_assertions\": [\n      \"Descarga exitosa de archivos CSV/PDF.\",\n      \"Verificación de que el archivo descargado no está vacío.\",\n      \"Validación de contenido mínimo (ej. cabeceras CSV, texto clave en PDF).\",\n      \"Validación de formato básico (ej. número de columnas CSV, estructura PDF válida).\"\n    ],\n    \"validation_strategy\": \"Usar Playwright para iniciar la descarga y capturar el blob. Para CSV: Parsear el contenido del blob (ej. con una librería simple o split por líneas/comas) y verificar filas, columnas y valores esperados. Para PDF: Usar una librería de terceros (ej. 'pdf-parse' si es viable en el entorno de test) para extraer texto y verificar la presencia de cadenas clave. Alternativamente, una validación más ligera podría ser solo el tamaño y la presencia de un marcador de inicio/fin.\",\n    \"main_risks\": [\n      \"Complejidad del parseo de PDF y necesidad de librerías externas.\",\n      \"Variaciones en el contenido de los exportes (fechas, IDs dinámicos) que requieren lógica de validación flexible.\",\n      \"Tamaño de los archivos exportados, afectando el rendimiento y la memoria del test.\",\n      \"Diferencias entre entornos de ejecución de tests (OS, librerías) que pueden afectar el parseo de PDF.\"\n    ]\n  },\n  \"metrics\": {\n    \"events\": [\n      \"login_exitoso\",\n      \"vista_como_usuario_activada\",\n      \"expediente_visualizado\",\n      \"exporte_csv_realizado\",\n      \"exporte_pdf_realizado\"\n    ],\n    \"funnel\": [\n      \"Login -> Vista como usuario activada -> Expediente visualizado -> Regreso a CEO\"\n    ],\n    \"implementation_hint\": \"Integrar un sistema de métricas simple (ej. PostHog, Google Analytics, o un endpoint tRPC dedicado para eventos básicos) con llamadas desde el frontend React en puntos clave. Priorizar la simplicidad sobre la exhaustividad y evitar la recolección de datos sensibles.\"\n  },\n  \"recommended_sequence\": [\n    \"Implementar el test E2E del flujo CEO -> vista usuario con Playwright.\",\n    \"Implementar la validación automática de exportes CSV con Playwright y Vitest.\",\n    \"Implementar la validación automática de exportes PDF (priorizando la viabilidad y simplicidad).\",\n    \"Integrar las métricas mínimas para el embudo de uso en el frontend React.\",\n    \"Revisar y optimizar los tests existentes y nuevos para asegurar estabilidad y rendimiento.\"\n  ],\n  \"what_not_to_do\": [\n    \"No añadir nuevas funcionalidades de UI o backend no relacionadas con los frentes actuales.\",\n    \"No implementar métricas avanzadas, dashboards complejos o sistemas de analítica en tiempo real.\",\n    \"No refactorizar código no directamente relacionado con las correcciones o la estabilidad de los frentes.\",\n    \"No abrir discusiones sobre cambios de stack tecnológico o herramientas principales.\",\n    \"No intentar validar el 100% del contenido de los exportes PDF si esto introduce una complejidad excesiva.\"\n  ]\n}",
+    "parsed": {
+      "summary": "Plan mínimo para estabilizar la app. Prioriza E2E para el flujo CEO-vista usuario-expediente, asegurando la integridad de la funcionalidad crítica. Implementa validación automática de exportes CSV/PDF descargados, verificando contenido y formato. Finalmente, añade métricas básicas de uso para soporte operativo, enfocándose en un embudo clave. El objetivo es robustecer la aplicación sin introducir nuevas funcionalidades, manteniendo el alcance estrictamente en correcciones y estabilidad.",
+      "priority_order": [
+        "e2e",
+        "exports",
+        "metrics"
+      ],
+      "e2e": {
+        "critical_assertions": [
+          "Login exitoso como CEO.",
+          "Activación de 'vista como usuario' y selección de un usuario.",
+          "Navegación a un expediente específico del usuario seleccionado.",
+          "Verificación de datos clave en el expediente (ej. nombre, estado, permisos de lectura).",
+          "Desactivación de 'vista como usuario' y regreso a la interfaz de CEO.",
+          "Verificación de permisos de CEO restaurados (ej. acceso a panel de administración)."
+        ],
+        "test_strategy": "Utilizar Playwright para simular el flujo completo. Autenticación programática para el rol CEO. Navegación y clics usando selectores robustos (preferiblemente 'data-testid'). Verificaciones de texto y visibilidad de elementos. Asegurar que el estado de 'vista como usuario' se activa y desactiva correctamente, usando un usuario de prueba dedicado.",
+        "main_risks": [
+          "Dependencia de datos de prueba específicos y su gestión (creación/reseteo).",
+          "Fragilidad de selectores si la UI cambia frecuentemente.",
+          "Manejo de estados asíncronos o transiciones de UI complejas.",
+          "Impacto en el rendimiento de los tests si el flujo es muy largo o se ejecuta con demasiada frecuencia."
+        ]
+      },
+      "exports": {
+        "critical_assertions": [
+          "Descarga exitosa de archivos CSV/PDF.",
+          "Verificación de que el archivo descargado no está vacío.",
+          "Validación de contenido mínimo (ej. cabeceras CSV, texto clave en PDF).",
+          "Validación de formato básico (ej. número de columnas CSV, estructura PDF válida)."
+        ],
+        "validation_strategy": "Usar Playwright para iniciar la descarga y capturar el blob. Para CSV: Parsear el contenido del blob (ej. con una librería simple o split por líneas/comas) y verificar filas, columnas y valores esperados. Para PDF: Usar una librería de terceros (ej. 'pdf-parse' si es viable en el entorno de test) para extraer texto y verificar la presencia de cadenas clave. Alternativamente, una validación más ligera podría ser solo el tamaño y la presencia de un marcador de inicio/fin.",
+        "main_risks": [
+          "Complejidad del parseo de PDF y necesidad de librerías externas.",
+          "Variaciones en el contenido de los exportes (fechas, IDs dinámicos) que requieren lógica de validación flexible.",
+          "Tamaño de los archivos exportados, afectando el rendimiento y la memoria del test.",
+          "Diferencias entre entornos de ejecución de tests (OS, librerías) que pueden afectar el parseo de PDF."
+        ]
+      },
+      "metrics": {
+        "events": [
+          "login_exitoso",
+          "vista_como_usuario_activada",
+          "expediente_visualizado",
+          "exporte_csv_realizado",
+          "exporte_pdf_realizado"
+        ],
+        "funnel": [
+          "Login -> Vista como usuario activada -> Expediente visualizado -> Regreso a CEO"
+        ],
+        "implementation_hint": "Integrar un sistema de métricas simple (ej. PostHog, Google Analytics, o un endpoint tRPC dedicado para eventos básicos) con llamadas desde el frontend React en puntos clave. Priorizar la simplicidad sobre la exhaustividad y evitar la recolección de datos sensibles."
+      },
+      "recommended_sequence": [
+        "Implementar el test E2E del flujo CEO -> vista usuario con Playwright.",
+        "Implementar la validación automática de exportes CSV con Playwright y Vitest.",
+        "Implementar la validación automática de exportes PDF (priorizando la viabilidad y simplicidad).",
+        "Integrar las métricas mínimas para el embudo de uso en el frontend React.",
+        "Revisar y optimizar los tests existentes y nuevos para asegurar estabilidad y rendimiento."
+      ],
+      "what_not_to_do": [
+        "No añadir nuevas funcionalidades de UI o backend no relacionadas con los frentes actuales.",
+        "No implementar métricas avanzadas, dashboards complejos o sistemas de analítica en tiempo real.",
+        "No refactorizar código no directamente relacionado con las correcciones o la estabilidad de los frentes.",
+        "No abrir discusiones sobre cambios de stack tecnológico o herramientas principales.",
+        "No intentar validar el 100% del contenido de los exportes PDF si esto introduce una complejidad excesiva."
+      ]
+    }
+  }
+]
