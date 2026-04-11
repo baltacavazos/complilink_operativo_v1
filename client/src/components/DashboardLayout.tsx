@@ -25,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { LogOut, PanelLeft, type LucideIcon } from "lucide-react";
+import { LogOut, PanelLeft, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -150,7 +150,15 @@ function DashboardLayoutContent({
   headerActions,
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
+  const {
+    user,
+    realUser,
+    logout,
+    canToggleUserView,
+    isViewingAsUser,
+    enterUserView,
+    exitUserView,
+  } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -276,8 +284,13 @@ function DashboardLayoutContent({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                    <p className="truncate text-sm font-medium text-sidebar-foreground">{user?.name || "Usuario"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user?.email || "Sesión protegida"}</p>
+                    <p className="truncate text-sm font-medium text-sidebar-foreground">{realUser?.name || user?.name || "Usuario"}</p>
+                    <p className="truncate text-xs text-muted-foreground">{realUser?.email || user?.email || "Sesión protegida"}</p>
+                    {canToggleUserView ? (
+                      <p className="truncate text-[11px] font-medium text-sidebar-foreground/70">
+                        {isViewingAsUser ? "Vista activa: usuario normal" : "Vista activa: CEO maestro"}
+                      </p>
+                    ) : null}
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -315,7 +328,45 @@ function DashboardLayoutContent({
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-3">{headerActions}</div>
+            <div className="flex items-center gap-3">
+              {canToggleUserView ? (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "hidden rounded-full px-3 py-1 text-[11px] font-semibold md:inline-flex",
+                      isViewingAsUser
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-emerald-100 text-emerald-800",
+                    )}
+                  >
+                    {isViewingAsUser ? "Vista usuario demo" : "Modo CEO maestro"}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    className="rounded-full bg-white"
+                    onClick={() => {
+                      if (isViewingAsUser) {
+                        exitUserView();
+                        setLocation("/ceo");
+                        return;
+                      }
+
+                      enterUserView();
+                      setLocation("/auditar");
+                    }}
+                  >
+                    {isViewingAsUser ? (
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                    ) : (
+                      <UserRound className="mr-2 h-4 w-4" />
+                    )}
+                    {isViewingAsUser ? "Volver a CEO" : "Ver como usuario"}
+                  </Button>
+                </>
+              ) : null}
+              {headerActions}
+            </div>
           </div>
         </div>
         <main className="container flex-1 py-6">{children}</main>

@@ -2788,7 +2788,31 @@ export default function Auditar() {
       <main className="audita-auditar min-h-screen bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
 
       <div className="container mx-auto max-w-6xl">
-          <div className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left">
+        {auth.canToggleUserView && auth.isViewingAsUser ? (
+          <Alert className="mb-6 border-amber-200 bg-amber-50/95 text-amber-950 shadow-sm">
+            <AlertCircle className="h-4 w-4 text-amber-700" />
+            <AlertTitle>Estás viendo la plataforma como usuario normal</AlertTitle>
+            <AlertDescription className="mt-2 space-y-3 text-sm leading-6 text-amber-900">
+              <p>
+                Tu identidad real como <strong>CEO maestro</strong> sigue intacta. Esta vista sólo oculta la consola ejecutiva para que puedas hacer muestras con el mismo recorrido que vería un usuario estándar.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="outline"
+                  className="rounded-full border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                  onClick={() => {
+                    auth.exitUserView();
+                    window.location.href = "/ceo";
+                  }}
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                  Salir de la demo y volver al CEO
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        <div className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />

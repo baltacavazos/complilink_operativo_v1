@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
+import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -42,6 +43,7 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   registerCompliLinkReturnWebhook(app);
+  registerE2EAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

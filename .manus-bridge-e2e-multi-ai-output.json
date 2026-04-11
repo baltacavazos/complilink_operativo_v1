@@ -1,0 +1,408 @@
+{
+  "prompt": "Actúa como arquitecto senior de QA y software para una aplicación React/tRPC con dashboard interno.\n\nContexto del proyecto:\n- Ya existe un dashboard CEO en AuditaPatron / CompliLink con una nueva sección interna de monitoreo operativo del bridge.\n- El siguiente bloque del roadmap es cubrir con pruebas E2E el flujo completo de acceso, expediente y guardrails del bridge.\n- La aplicación ya tiene frontend React y backend tRPC/Express, con autenticación Manus OAuth.\n- Debemos priorizar pruebas estables, de alto valor y bajo mantenimiento.\n- Queremos evitar flakiness, evitar depender de datos volátiles y reutilizar al máximo la infraestructura existente del proyecto.\n- Las pruebas deben validar navegación, acceso al dashboard/expediente, visualización del monitoreo bridge y guardrails funcionales clave.\n\nNecesito una recomendación concisa pero útil para un primer corte de pruebas E2E.\n\nDevuelve JSON válido con esta estructura exacta:\n{\n  \"recommended_flows\": [\"string\"],\n  \"coverage_split\": {\n    \"critical\": [\"string\"],\n    \"secondary\": [\"string\"],\n    \"not_now\": [\"string\"]\n  },\n  \"test_data_strategy\": [\"string\"],\n  \"selector_strategy\": [\"string\"],\n  \"stabilization_guardrails\": [\"string\"],\n  \"must_mock_or_seed\": [\"string\"],\n  \"minimal_file_plan\": [\"string\"],\n  \"rationale\": \"string\"\n}\n\nReglas:\n- Prioriza una V1 mínima, confiable y mantenible.\n- Propón primero pruebas de recorrido crítico antes que cobertura exhaustiva.\n- Favorece selectores semánticos y contratos estables sobre detalles visuales frágiles.\n- Incluye estrategias para auth, datos de prueba, waits y aislamiento.\n- Responde sólo JSON, sin markdown.",
+  "results": [
+    {
+      "ok": true,
+      "provider": "chatgpt",
+      "raw": {
+        "id": "resp_036953707ebb5f070069d9d152f35081a2a24b78921cc44155",
+        "object": "response",
+        "created_at": 1775882578,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1775882584,
+        "error": null,
+        "frequency_penalty": 0.0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "output": [
+          {
+            "id": "msg_036953707ebb5f070069d9d1541e2c81a2b21e588ee6d60cae",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"recommended_flows\": [\n    \"user_login_and_access_dashboard\",\n    \"navigate_to_bridge_monitoring_section\",\n    \"view_bridge_operational_metrics\",\n    \"verify_guardrails_status_and_alerts\"\n  ],\n  \"coverage_split\": {\n    \"critical\": [\n      \"user_login_and_access_dashboard\",\n      \"view_bridge_operational_metrics\",\n      \"verify_guardrails_status_and_alerts\"\n    ],\n    \"secondary\": [\n      \"navigate_to_bridge_monitoring_section\"\n    ],\n    \"not_now\": [\n      \"deep_expedient_filters_interactions\",\n      \"non_critical_visual_ui_effects\"\n    ]\n  },\n  \"test_data_strategy\": [\n    \"use_seeded_static_test_accounts with fixed OAuth tokens or mocks\",\n    \"mock backend tRPC responses for bridge metrics and guardrails\",\n    \"avoid reliance on volatile live data by seeding or mocking\",\n    \"clean test data state before each test run\"\n  ],\n  \"selector_strategy\": [\n    \"use data-testid or data-cy stable semantic attributes\",\n    \"prefer role-based selectors when applicable\",\n    \"avoid CSS class or position-based selectors prone to break\"\n  ],\n  \"stabilization_guardrails\": [\n    \"use explicit waits for backend readiness via API\",\n    \"mock network calls to ensure predictable responses\",\n    \"isolate tests to avoid cross-test state contamination\",\n    \"retry flaky assertions with timeout and proper error messages\"\n  ],\n  \"must_mock_or_seed\": [\n    \"OAuth authentication to bypass real Manus login in tests\",\n    \"tRPC endpoints providing bridge monitoring data\",\n    \"guardrails evaluation logic outputs\"\n  ],\n  \"minimal_file_plan\": [\n    \"auth_access.spec.ts\",\n    \"bridge_monitoring_display.spec.ts\",\n    \"guardrails_functionality.spec.ts\"\n  ],\n  \"rationale\": \"The recommended E2E test plan focuses on the most critical user journeys related to bridge monitoring and guardrails, prioritizing reliability and maintainability by using stable semantic selectors and mocking volatile data sources. Authentication is mocked to speed up tests and reduce flakiness. The strategy avoids deep exhaustive coverage initially, favoring a minimal but high-value V1 set of stable flows covering login, dashboard access, bridge metrics visibility, and guardrails validation. This approach leverages existing infrastructure, seeds or mocks data to avoid brittleness, and applies explicit synchronization points to ensure stable execution.\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0.0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "json_schema",
+            "description": null,
+            "name": "bridge_e2e_recommendation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recommended_flows": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "coverage_split": {
+                  "type": "object",
+                  "properties": {
+                    "critical": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "secondary": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "not_now": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "critical",
+                    "secondary",
+                    "not_now"
+                  ],
+                  "additionalProperties": false
+                },
+                "test_data_strategy": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "selector_strategy": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stabilization_guardrails": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "must_mock_or_seed": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "minimal_file_plan": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "rationale": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "recommended_flows",
+                "coverage_split",
+                "test_data_strategy",
+                "selector_strategy",
+                "stabilization_guardrails",
+                "must_mock_or_seed",
+                "minimal_file_plan",
+                "rationale"
+              ],
+              "additionalProperties": false
+            },
+            "strict": true
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 571,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 488,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 1059
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "parsed": {
+        "recommended_flows": [
+          "user_login_and_access_dashboard",
+          "navigate_to_bridge_monitoring_section",
+          "view_bridge_operational_metrics",
+          "verify_guardrails_status_and_alerts"
+        ],
+        "coverage_split": {
+          "critical": [
+            "user_login_and_access_dashboard",
+            "view_bridge_operational_metrics",
+            "verify_guardrails_status_and_alerts"
+          ],
+          "secondary": [
+            "navigate_to_bridge_monitoring_section"
+          ],
+          "not_now": [
+            "deep_expedient_filters_interactions",
+            "non_critical_visual_ui_effects"
+          ]
+        },
+        "test_data_strategy": [
+          "use_seeded_static_test_accounts with fixed OAuth tokens or mocks",
+          "mock backend tRPC responses for bridge metrics and guardrails",
+          "avoid reliance on volatile live data by seeding or mocking",
+          "clean test data state before each test run"
+        ],
+        "selector_strategy": [
+          "use data-testid or data-cy stable semantic attributes",
+          "prefer role-based selectors when applicable",
+          "avoid CSS class or position-based selectors prone to break"
+        ],
+        "stabilization_guardrails": [
+          "use explicit waits for backend readiness via API",
+          "mock network calls to ensure predictable responses",
+          "isolate tests to avoid cross-test state contamination",
+          "retry flaky assertions with timeout and proper error messages"
+        ],
+        "must_mock_or_seed": [
+          "OAuth authentication to bypass real Manus login in tests",
+          "tRPC endpoints providing bridge monitoring data",
+          "guardrails evaluation logic outputs"
+        ],
+        "minimal_file_plan": [
+          "auth_access.spec.ts",
+          "bridge_monitoring_display.spec.ts",
+          "guardrails_functionality.spec.ts"
+        ],
+        "rationale": "The recommended E2E test plan focuses on the most critical user journeys related to bridge monitoring and guardrails, prioritizing reliability and maintainability by using stable semantic selectors and mocking volatile data sources. Authentication is mocked to speed up tests and reduce flakiness. The strategy avoids deep exhaustive coverage initially, favoring a minimal but high-value V1 set of stable flows covering login, dashboard access, bridge metrics visibility, and guardrails validation. This approach leverages existing infrastructure, seeds or mocks data to avoid brittleness, and applies explicit synchronization points to ensure stable execution."
+      }
+    },
+    {
+      "ok": true,
+      "provider": "gemini",
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\"recommended_flows\": [\"Autenticación exitosa de usuario con rol de acceso al dashboard.\", \"Navegación al dashboard principal y acceso a la sección de monitoreo operativo del bridge.\", \"Visualización de datos clave en la sección de monitoreo del bridge (ej. estado, métricas principales).\", \"Acceso y visualización del expediente asociado al bridge desde el dashboard.\", \"Validación de la activación/desactivación de un guardrail funcional clave.\"], \"coverage_split\": {\"critical\": [\"Login exitoso y redirección al dashboard.\", \"Acceso a la sección 'Monitoreo Bridge'.\", \"Carga y visualización de la tabla/lista principal de monitoreo del bridge.\", \"Navegación al detalle de un 'expediente' desde el monitoreo del bridge.\", \"Verificación de la presencia de un guardrail funcional crítico.\"], \"secondary\": [\"Filtrado y ordenamiento básico en la tabla de monitoreo del bridge.\", \"Paginación en la lista de expedientes.\", \"Interacción con elementos secundarios de la UI (ej. tooltips, modales informativos).\", \"Validación de mensajes de error controlados para acciones no permitidas.\"], \"not_now\": [\"Pruebas de rendimiento o carga.\", \"Validación pixel-perfect de la UI.\", \"Cobertura exhaustiva de todos los filtros y combinaciones.\", \"Pruebas de accesibilidad (a menos que sea un requisito explícito y crítico).\", \"Flujos de recuperación de contraseña o registro (si no son parte del dashboard interno).\"]}, \"test_data_strategy\": [\"Uso de un entorno de pruebas dedicado con base de datos aislada.\", \"Seed de datos de prueba directamente en la base de datos para usuarios, configuraciones de bridge y expedientes.\", \"Utilización de APIs de backend (tRPC) para pre-condicionar el estado de la aplicación antes de las interacciones de UI.\", \"Creación de usuarios de prueba específicos con roles y permisos definidos para cada escenario.\"], \"selector_strategy\": [\"Priorizar atributos `data-testid` para elementos interactivos y de contenido clave.\", \"Utilizar selectores semánticos (ej. `getByRole`, `getByLabelText`) cuando sea apropiado y estable.\", \"Evitar selectores basados en clases CSS o estructura DOM frágil.\", \"Asegurar que los componentes reutilizables tengan `data-testid` consistentes.\"], \"stabilization_guardrails\": [\"Implementar esperas explícitas (`waitFor`, `findBy`) para elementos asíncronos y cargas de datos.\", \"Configurar reintentos automáticos para pruebas que puedan ser inherentemente inestables (ej. con Cypress/Playwright).\", \"Aislar cada prueba para que se ejecute en un estado limpio, reseteando la base de datos o el estado de la sesión.\", \"Manejo robusto de la autenticación, posiblemente con un token pre-generado o un flujo de login simplificado para pruebas.\"], \"must_mock_or_seed\": [\"Credenciales de usuario para Manus OAuth con diferentes roles (ej. CEO, Operador).\", \"Datos de monitoreo del bridge (ej. estado 'activo', 'inactivo', métricas de rendimiento).\", \"Datos de expedientes asociados al bridge (ej. 'expediente_123' con detalles específicos).\", \"Configuraciones de guardrails (ej. 'guardrail_A' activo, 'guardrail_B' inactivo).\", \"Respuestas de APIs externas si el bridge interactúa con ellas y no son parte del tRPC local.\"], \"minimal_file_plan\": [\"e2e/auth.spec.ts (Login y acceso inicial).\", \"e2e/bridgeMonitoring.spec.ts (Navegación y visualización del monitoreo del bridge).\", \"e2e/expedienteAccess.spec.ts (Acceso y visualización de expedientes).\", \"e2e/guardrails.spec.ts (Validación de la funcionalidad de guardrails clave).\"], \"rationale\": \"Este plan prioriza la cobertura de los flujos de negocio más críticos y de alto valor para el dashboard interno del bridge, enfocándose en la estabilidad y el bajo mantenimiento. Al utilizar estrategias de datos de prueba controlados, selectores robustos y guardrails de estabilización, buscamos construir una suite de E2E confiable que valide la funcionalidad central sin introducir flakiness. La modularización en archivos permite una gestión clara y una expansión futura.\"}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 407,
+          "candidatesTokenCount": 942,
+          "totalTokenCount": 3256,
+          "cachedContentTokenCount": 284,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 407
+            }
+          ],
+          "cacheTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 284
+            }
+          ],
+          "thoughtsTokenCount": 1907
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "WNHZaeS3H9ef_uMPluvA0A8"
+      },
+      "parsed": {
+        "recommended_flows": [
+          "Autenticación exitosa de usuario con rol de acceso al dashboard.",
+          "Navegación al dashboard principal y acceso a la sección de monitoreo operativo del bridge.",
+          "Visualización de datos clave en la sección de monitoreo del bridge (ej. estado, métricas principales).",
+          "Acceso y visualización del expediente asociado al bridge desde el dashboard.",
+          "Validación de la activación/desactivación de un guardrail funcional clave."
+        ],
+        "coverage_split": {
+          "critical": [
+            "Login exitoso y redirección al dashboard.",
+            "Acceso a la sección 'Monitoreo Bridge'.",
+            "Carga y visualización de la tabla/lista principal de monitoreo del bridge.",
+            "Navegación al detalle de un 'expediente' desde el monitoreo del bridge.",
+            "Verificación de la presencia de un guardrail funcional crítico."
+          ],
+          "secondary": [
+            "Filtrado y ordenamiento básico en la tabla de monitoreo del bridge.",
+            "Paginación en la lista de expedientes.",
+            "Interacción con elementos secundarios de la UI (ej. tooltips, modales informativos).",
+            "Validación de mensajes de error controlados para acciones no permitidas."
+          ],
+          "not_now": [
+            "Pruebas de rendimiento o carga.",
+            "Validación pixel-perfect de la UI.",
+            "Cobertura exhaustiva de todos los filtros y combinaciones.",
+            "Pruebas de accesibilidad (a menos que sea un requisito explícito y crítico).",
+            "Flujos de recuperación de contraseña o registro (si no son parte del dashboard interno)."
+          ]
+        },
+        "test_data_strategy": [
+          "Uso de un entorno de pruebas dedicado con base de datos aislada.",
+          "Seed de datos de prueba directamente en la base de datos para usuarios, configuraciones de bridge y expedientes.",
+          "Utilización de APIs de backend (tRPC) para pre-condicionar el estado de la aplicación antes de las interacciones de UI.",
+          "Creación de usuarios de prueba específicos con roles y permisos definidos para cada escenario."
+        ],
+        "selector_strategy": [
+          "Priorizar atributos `data-testid` para elementos interactivos y de contenido clave.",
+          "Utilizar selectores semánticos (ej. `getByRole`, `getByLabelText`) cuando sea apropiado y estable.",
+          "Evitar selectores basados en clases CSS o estructura DOM frágil.",
+          "Asegurar que los componentes reutilizables tengan `data-testid` consistentes."
+        ],
+        "stabilization_guardrails": [
+          "Implementar esperas explícitas (`waitFor`, `findBy`) para elementos asíncronos y cargas de datos.",
+          "Configurar reintentos automáticos para pruebas que puedan ser inherentemente inestables (ej. con Cypress/Playwright).",
+          "Aislar cada prueba para que se ejecute en un estado limpio, reseteando la base de datos o el estado de la sesión.",
+          "Manejo robusto de la autenticación, posiblemente con un token pre-generado o un flujo de login simplificado para pruebas."
+        ],
+        "must_mock_or_seed": [
+          "Credenciales de usuario para Manus OAuth con diferentes roles (ej. CEO, Operador).",
+          "Datos de monitoreo del bridge (ej. estado 'activo', 'inactivo', métricas de rendimiento).",
+          "Datos de expedientes asociados al bridge (ej. 'expediente_123' con detalles específicos).",
+          "Configuraciones de guardrails (ej. 'guardrail_A' activo, 'guardrail_B' inactivo).",
+          "Respuestas de APIs externas si el bridge interactúa con ellas y no son parte del tRPC local."
+        ],
+        "minimal_file_plan": [
+          "e2e/auth.spec.ts (Login y acceso inicial).",
+          "e2e/bridgeMonitoring.spec.ts (Navegación y visualización del monitoreo del bridge).",
+          "e2e/expedienteAccess.spec.ts (Acceso y visualización de expedientes).",
+          "e2e/guardrails.spec.ts (Validación de la funcionalidad de guardrails clave)."
+        ],
+        "rationale": "Este plan prioriza la cobertura de los flujos de negocio más críticos y de alto valor para el dashboard interno del bridge, enfocándose en la estabilidad y el bajo mantenimiento. Al utilizar estrategias de datos de prueba controlados, selectores robustos y guardrails de estabilización, buscamos construir una suite de E2E confiable que valide la funcionalidad central sin introducir flakiness. La modularización en archivos permite una gestión clara y una expansión futura."
+      }
+    },
+    {
+      "ok": true,
+      "provider": "grok",
+      "raw": {
+        "id": "7a2c730a-bea0-9754-a6fc-2225085bf4fd",
+        "object": "chat.completion",
+        "created": 1775882599,
+        "model": "grok-4-0709",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " {\n  \"recommended_flows\": [\n    \"Login via Manus OAuth and navigate to CEO dashboard\",\n    \"Access and view operational monitoring section for bridge\",\n    \"Interact with expediente view and validate guardrails\"\n  ],\n  \"coverage_split\": {\n    \"critical\": [\n      \"Authentication and access control\",\n      \"Navigation to dashboard and expediente\",\n      \"Core guardrails validation (e.g., data visibility restrictions)\"\n    ],\n    \"secondary\": [\n      \"Detailed UI interactions in monitoring section\",\n      \"Error handling for invalid access\"\n    ],\n    \"not_now\": [\n      \"Edge cases like network failures\",\n      \"Performance testing\",\n      \"Multi-user concurrency\"\n    ]\n  },\n  \"test_data_strategy\": [\n    \"Seed static test users and bridge data via backend scripts\",\n    \"Use environment-specific fixtures to avoid volatile production data\"\n  ],\n  \"selector_strategy\": [\n    \"Prioritize semantic selectors like data-testid and ARIA roles\",\n    \"Avoid fragile CSS classes or XPath; use stable component contracts\"\n  ],\n  \"stabilization_guardrails\": [\n    \"Implement explicit waits for API responses and DOM updates\",\n    \"Use test isolation by resetting state between tests\",\n    \"Add retries for flaky network calls in CI\"\n  ],\n  \"must_mock_or_seed\": [\n    \"Mock Manus OAuth token responses for consistent auth\",\n    \"Seed bridge monitoring data and expediente records\"\n  ],\n  \"minimal_file_plan\": [\n    \"auth.e2e.ts: Login and access flows\",\n    \"dashboard.e2e.ts: Navigation and viewing monitoring\",\n    \"guardrails.e2e.ts: Expediente interactions and validations\"\n  ],\n  \"rationale\": \"This V1 focuses on critical paths for stability and value, using seeded data and semantic selectors to minimize maintenance and flakiness, while reusing existing auth and backend infra for isolation.\"\n}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1314,
+          "completion_tokens": 379,
+          "total_tokens": 2229,
+          "prompt_tokens_details": {
+            "text_tokens": 1314,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 676
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 536,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 161460000
+        },
+        "system_fingerprint": "fp_74614d6fcc"
+      },
+      "parsed": {
+        "recommended_flows": [
+          "Login via Manus OAuth and navigate to CEO dashboard",
+          "Access and view operational monitoring section for bridge",
+          "Interact with expediente view and validate guardrails"
+        ],
+        "coverage_split": {
+          "critical": [
+            "Authentication and access control",
+            "Navigation to dashboard and expediente",
+            "Core guardrails validation (e.g., data visibility restrictions)"
+          ],
+          "secondary": [
+            "Detailed UI interactions in monitoring section",
+            "Error handling for invalid access"
+          ],
+          "not_now": [
+            "Edge cases like network failures",
+            "Performance testing",
+            "Multi-user concurrency"
+          ]
+        },
+        "test_data_strategy": [
+          "Seed static test users and bridge data via backend scripts",
+          "Use environment-specific fixtures to avoid volatile production data"
+        ],
+        "selector_strategy": [
+          "Prioritize semantic selectors like data-testid and ARIA roles",
+          "Avoid fragile CSS classes or XPath; use stable component contracts"
+        ],
+        "stabilization_guardrails": [
+          "Implement explicit waits for API responses and DOM updates",
+          "Use test isolation by resetting state between tests",
+          "Add retries for flaky network calls in CI"
+        ],
+        "must_mock_or_seed": [
+          "Mock Manus OAuth token responses for consistent auth",
+          "Seed bridge monitoring data and expediente records"
+        ],
+        "minimal_file_plan": [
+          "auth.e2e.ts: Login and access flows",
+          "dashboard.e2e.ts: Navigation and viewing monitoring",
+          "guardrails.e2e.ts: Expediente interactions and validations"
+        ],
+        "rationale": "This V1 focuses on critical paths for stability and value, using seeded data and semantic selectors to minimize maintenance and flakiness, while reusing existing auth and backend infra for isolation."
+      }
+    }
+  ]
+}

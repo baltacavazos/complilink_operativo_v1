@@ -549,7 +549,10 @@
 - [x] Implementar búsqueda rápida de la Consola CEO para localizar expedientes, alertas y accesos desde una sola superficie
 - [x] Añadir pruebas Vitest y validación técnica del bloque de filtros y búsqueda avanzada de la Consola CEO
 - [x] Contrastar con OpenAI, Grok y Gemini el diseño mínimo útil de reportes ejecutivos exportables para la Consola CEO
-- [x] Implementar reportes ejecutivos exportables de la Consola CEO con alcance inicial útil para operación
+- [x] Implementar reportes ejecutivos exportables de la Consola CEO con alcance inicial
+- [x] Mantener al usuario propietario como CEO maestro sin degradar permisos ni el perímetro actual.
+- [x] Añadir un modo seguro de visualización como usuario normal para demos, con retorno inmediato al contexto CEO.
+- [x] Completar la cobertura E2E de la convivencia entre el rol CEO maestro y la vista de usuario normal; la cobertura unitaria ya quedó implementada.
 - [x] Añadir pruebas Vitest y validación técnica del bloque de reportes ejecutivos exportables de la Consola CEO
 - [x] Contrastar con OpenAI, Grok y arbitraje técnico propio el alcance mínimo útil del endurecimiento V1 de permisos y validaciones cruzadas en la Consola CEO, por falla actual de Gemini
 - [x] Implementar endurecimiento V1 de permisos y validaciones cruzadas en la Consola CEO
@@ -631,3 +634,4 @@
 - [x] Implementar panel operativo interno del bridge con KPIs, filtros y detalle de eventos/errores en el dashboard CEO
 - [ ] Cubrir con pruebas E2E el flujo completo de acceso, expediente y guardrails del bridge
 - [ ] Instrumentar métricas de uso y embudo de conversión del acceso para el corte V1.1
+- [ ] Diseñar y automatizar pruebas E2E del bridge cubriendo acceso, expediente y guardrails con criterios de estabilidad reutilizables
