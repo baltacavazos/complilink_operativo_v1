@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { trackFunnelStep } from "@/lib/analytics";
+import { trackEvent, trackFunnelStep } from "@/lib/analytics";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type TourStep = {
@@ -258,6 +258,46 @@ const heroCopyVariants = {
   },
 } as const;
 
+const heroPrediagnosticOptions = [
+  {
+    id: "para-mi",
+    label: "¿Me puede ayudar?",
+    helper: "Quiero entender rápido si esto me sirve.",
+  },
+  {
+    id: "primer-documento",
+    label: "¿Qué subo primero?",
+    helper: "Necesito el mejor archivo para empezar hoy.",
+  },
+  {
+    id: "privacidad",
+    label: "Quiero ir con calma",
+    helper: "Prefiero empezar con control y confianza.",
+  },
+] as const;
+
+const heroVariantReadiness = {
+  alert: 64,
+  control: 72,
+} as const;
+
+const heroSidebarFindings = {
+  alert: {
+    badge: "Hallazgo laboral que podrías detectar primero",
+    title: "Tu nómina dice una cosa y tu CFDI otra.",
+    description:
+      "Comparar ambos puede mostrar conceptos, montos o periodos reportados de forma distinta para que ubiques dónde conviene revisar primero sin irte por todo el expediente.",
+    impact: "Empiezas con una discrepancia visible y conviertes la duda inicial en un punto concreto para actuar con más claridad.",
+  },
+  control: {
+    badge: "Hallazgo laboral para recuperar control",
+    title: "Tus pagos o deducciones cambian más de lo normal.",
+    description:
+      "Cuando subes varios recibos seguidos, aparecen patrones que un solo documento no deja ver y eso te ayuda a entender qué cambió y desde cuándo.",
+    impact: "Ver el patrón te devuelve contexto para decidir con calma qué documento sumar después y qué vale la pena revisar primero.",
+  },
+} as const;
+
 const socialProofItems = [
   {
     label: "Duda real compartida por personas usuarias",
@@ -320,11 +360,28 @@ function scrollToId(id: string) {
 
 const PRIMARY_CTA_LABEL = "Empieza ahora y protege tu futuro";
 
-function goToAuditFlow() {
+function goToAuditFlow(
+  payloadOrEvent?:
+    | Record<string, string | number | boolean | null | undefined>
+    | { preventDefault?: () => void },
+) {
+  const payload: Record<string, string | number | boolean | null | undefined> =
+    payloadOrEvent && "preventDefault" in payloadOrEvent
+      ? {}
+      : ((payloadOrEvent ?? {}) as Record<string, string | number | boolean | null | undefined>);
+
+  trackEvent("audipatron_home_cta_clicked", {
+    source: "home",
+    destination: "/auditar",
+    ...payload,
+  });
+
   trackFunnelStep("home_cta_clicked", {
     source: "home",
     destination: "/auditar",
+    ...payload,
   });
+
   window.location.href = "/auditar";
 }
 
@@ -482,9 +539,63 @@ function SiteHeader() {
 }
 
 function HeroSection() {
-  const dossierReadiness = 58;
   const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("alert");
+  const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
   const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
+  const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
+  const activeSidebarFinding = heroSidebarFindings[selectedHeroVariant];
+  const dossierReadiness = heroVariantReadiness[selectedHeroVariant];
+
+  useEffect(() => {
+    trackEvent("audipatron_hero_state_viewed", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+    });
+  }, [selectedHeroPrediagnostic, selectedHeroVariant]);
+
+  function handleHeroVariantChange(variantKey: keyof typeof heroCopyVariants) {
+    setSelectedHeroVariant(variantKey);
+
+    trackEvent("audipatron_hero_variant_selected", {
+      source: "hero",
+      hero_variant: variantKey,
+      prediagnostic: selectedHeroPrediagnostic,
+    });
+
+    trackFunnelStep("hero_variant_selected", {
+      source: "hero",
+      hero_variant: variantKey,
+      prediagnostic: selectedHeroPrediagnostic,
+    });
+  }
+
+  function handleHeroPrediagnosticSelect(optionId: (typeof heroPrediagnosticOptions)[number]["id"]) {
+    setSelectedHeroPrediagnostic(optionId);
+
+    trackEvent("audipatron_hero_prediagnostic_selected", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: optionId,
+    });
+
+    trackFunnelStep("hero_prediagnostic_selected", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: optionId,
+    });
+  }
+
+  function handleHeroSecondaryCta() {
+    trackEvent("audipatron_home_secondary_cta_clicked", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+      cta_label: activeHeroVariant.ctaSecondary,
+    });
+
+    scrollToId("preguntas");
+  }
 
   return (
     <section
@@ -502,7 +613,7 @@ function HeroSection() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelectedHeroVariant(key)}
+                  onClick={() => handleHeroVariantChange(key)}
                   className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                     isActive
                       ? "border-teal-300 bg-teal-50 text-teal-900 shadow-[0_18px_40px_-32px_rgba(13,148,136,0.34)]"
@@ -554,12 +665,75 @@ function HeroSection() {
           </p>
 
           <div
+            className="motion-enter-soft mt-5 w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:p-5"
+            style={{ ["--motion-delay" as string]: "250ms" }}
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                  Mini prediagnóstico guiado
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">
+                  Elige lo que más se parece a tu duda y te digo con qué documento conviene empezar para ganar claridad sin fricción.
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                Empiezas con control
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {heroPrediagnosticOptions.map((option) => {
+                const isActive = selectedHeroPrediagnostic === option.id;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => handleHeroPrediagnosticSelect(option.id)}
+                    className={`rounded-[1.25rem] border px-3.5 py-3 text-left transition ${
+                      isActive
+                        ? "border-teal-300 bg-teal-50 text-teal-950 shadow-[0_18px_42px_-34px_rgba(13,148,136,0.34)]"
+                        : "border-slate-200 bg-slate-50/80 text-slate-700 hover:border-teal-200 hover:bg-white"
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    <p className="text-sm font-semibold leading-5">{option.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">{option.helper}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-white bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
+                  {activePrediagnostic.badge}
+                </span>
+                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  Documento para empezar hoy
+                </span>
+              </div>
+              <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.document}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
+              <p className="mt-3 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
+            </div>
+          </div>
+
+          <div
             className="motion-enter-soft mt-6 flex w-full max-w-sm flex-col gap-2.5 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
-              onClick={goToAuditFlow}
+              onClick={() =>
+                goToAuditFlow({
+                  entry_point: "hero_primary",
+                  hero_variant: selectedHeroVariant,
+                  prediagnostic: selectedHeroPrediagnostic,
+                  cta_label: activeHeroVariant.ctaPrimary,
+                })
+              }
             >
               {activeHeroVariant.ctaPrimary}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -567,7 +741,7 @@ function HeroSection() {
             <Button
               variant="outline"
               className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
-              onClick={() => scrollToId("preguntas")}
+              onClick={handleHeroSecondaryCta}
             >
               {activeHeroVariant.ctaSecondary}
             </Button>
@@ -625,21 +799,30 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tu tranquilidad hoy
+                    {activeSidebarFinding.badge}
                   </p>
-                  <div className="mt-2 flex items-end gap-3">
-                    <p className="text-[2.85rem] font-bold tracking-[-0.065em] text-slate-950">{dossierReadiness}%</p>
-                    <span className="mb-1 text-sm font-semibold text-teal-700">Ya empezaste a recuperar control</span>
-                  </div>
+                  <p className="mt-2 max-w-[14ch] text-[2.05rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:max-w-[15ch] sm:text-[2.35rem]">
+                    {activeSidebarFinding.title}
+                  </p>
                 </div>
-                <div className="rounded-full border border-emerald-200 bg-emerald-100/90 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
-                  24/7
+                <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
+                  Ejemplo útil
                 </div>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Ves rápido qué te da tranquilidad hoy y qué conviene reforzar después.
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                {activeSidebarFinding.description}
               </p>
-              <div className="mt-4 h-3 overflow-hidden rounded-full bg-white shadow-inner">
+              <div className="mt-4 rounded-[1.15rem] border border-white/90 bg-white/92 px-4 py-3 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                  Qué te devuelve este primer paso
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-800">{activeSidebarFinding.impact}</p>
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-teal-800">Ruta de claridad sugerida hoy</p>
+                <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
+              </div>
+              <div className="mt-2 h-3 overflow-hidden rounded-full bg-white shadow-inner">
                 <div
                   className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
                   style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
@@ -666,7 +849,14 @@ function HeroSection() {
 
             <button
               type="button"
-              onClick={goToAuditFlow}
+              onClick={() =>
+                goToAuditFlow({
+                  entry_point: "hero_sidebar",
+                  hero_variant: selectedHeroVariant,
+                  prediagnostic: selectedHeroPrediagnostic,
+                  cta_label: "Siguiente paso sugerido",
+                })
+              }
               className="mt-5 block w-full rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-4 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
             >
               <div className="flex items-start justify-between gap-3">
@@ -675,7 +865,7 @@ function HeroSection() {
                     Siguiente paso sugerido
                   </p>
                   <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Ya diste el primer paso; sumar IMSS, Infonavit o CFDI puede darte todavía más claridad y más respaldo.
+                    Empieza con {activePrediagnostic.document.toLowerCase()} y convierte tu primera duda en un hallazgo visible sin tener que reunir todo de una vez.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -688,14 +878,14 @@ function HeroSection() {
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Ya sumaste: recibo y contrato
+                  Variante activa: {activeHeroVariant.tabLabel}
                 </span>
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Sigue con: IMSS, Infonavit o CFDI
+                  Recomendación: {activePrediagnostic.badge}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Toca aquí para seguir fortaleciendo tu expediente con el archivo que más impacto puede darte ahora.
+                Toca aquí para seguir con el archivo que te da más contexto hoy y deja que AuditaPatron ordene el resto paso a paso.
               </p>
             </button>
           </div>

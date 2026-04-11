@@ -1,0 +1,244 @@
+{
+  "started_at": 1775924045,
+  "prompt": "Actúa como estratega senior de CRO y UX writing para una landing de una app laboral mexicana llamada AuditaPatron.\n\nContexto actual del hero:\n- Variante A tab: \"Alerta y control\"\n- Eyebrow: \"Alerta laboral temprana\"\n- Titular: \"Podrías estar perdiendo dinero o derechos y ni siquiera lo sabes.\"\n- Refuerzo: \"Revísalo hoy y toma control de tu historial laboral.\"\n- CTA principal: \"Auditar mi situación ahora\"\n- CTA secundario: \"Ver qué documento subir primero\"\n\nVariante B tab: \"Control inmediato\"\n- Titular: \"Revisa hoy tu historial laboral y actúa con más control.\"\n- Refuerzo: \"Empieza con el documento que ya tienes a la mano.\"\n- CTA principal: \"Empezar mi revisión\"\n- CTA secundario: \"Quiero una guía rápida\"\n\nMejoras a definir en una sola iteración:\n1. Un mini prediagnóstico inline dentro del hero para orientar al usuario desde el primer vistazo.\n2. Medición de clics por variante del hero para comparar desempeño entre mensajes.\n3. Refuerzo de la tarjeta lateral del hero con un hallazgo laboral concreto que haga tangible el valor de la auditoría.\n\nObjetivo de negocio:\n- Maximizar claridad, confianza y conversión.\n- Mantener sensación de empoderamiento, no solo miedo.\n- Hacer que el usuario sienta que puede empezar fácil desde el primer documento.\n- No usar jerga legal compleja.\n\nResponde SOLO en JSON válido con esta estructura exacta:\n{\n  \"prediagnostic\": {\n    \"recommended_format\": \"string\",\n    \"question\": \"string\",\n    \"options\": [\n      {\"id\": \"string\", \"label\": \"string\", \"microcopy\": \"string\", \"recommended_document\": \"string\"}\n    ],\n    \"cta_after_selection\": \"string\"\n  },\n  \"analytics\": {\n    \"events\": [\n      {\"name\": \"string\", \"trigger\": \"string\", \"properties\": [\"string\"]}\n    ],\n    \"primary_success_metric\": \"string\",\n    \"guardrails\": [\"string\"]\n  },\n  \"side_card\": {\n    \"headline\": \"string\",\n    \"example_finding\": \"string\",\n    \"supporting_copy\": \"string\",\n    \"tone_warning\": \"string\"\n  },\n  \"implementation_order\": [\"string\", \"string\", \"string\"],\n  \"rationale\": \"string\"\n}",
+  "openai": {
+    "prediagnostic": {
+      "recommended_format": "inline radio buttons with short descriptions",
+      "question": "¿Cuál documento tienes a la mano para empezar?",
+      "options": [
+        {
+          "id": "nss",
+          "label": "Número de Seguridad Social (NSS)",
+          "microcopy": "Tu clave para revisar aportes y derechos.",
+          "recommended_document": "Constancia de NSS o recibo de nómina"
+        },
+        {
+          "id": "recibo_nomina",
+          "label": "Recibo de nómina reciente",
+          "microcopy": "Muestra tu historial laboral más actualizado.",
+          "recommended_document": "Recibo de nómina de los últimos 3 meses"
+        },
+        {
+          "id": "contrato",
+          "label": "Contrato de trabajo",
+          "microcopy": "Confirma tus condiciones y antigüedad.",
+          "recommended_document": "Copia digital de contrato laboral"
+        }
+      ],
+      "cta_after_selection": "Comenzar mi auditoría"
+    },
+    "analytics": {
+      "events": [
+        {
+          "name": "hero_cta_click",
+          "trigger": "click en CTA principal del hero",
+          "properties": [
+            "variante",
+            "prediagnostic_option_selected"
+          ]
+        },
+        {
+          "name": "prediagnostic_option_selected",
+          "trigger": "selección de opción en prediagnóstico inline",
+          "properties": [
+            "option_id"
+          ]
+        },
+        {
+          "name": "secondary_cta_click",
+          "trigger": "click en CTA secundario del hero",
+          "properties": [
+            "variante"
+          ]
+        }
+      ],
+      "primary_success_metric": "tasa de clic en CTA principal del hero",
+      "guardrails": [
+        "no aumentar sensación de miedo o ansiedad",
+        "mantener claridad en el mensaje",
+        "asegurar que el prediagnóstico no alargue el tiempo de interacción"
+      ]
+    },
+    "side_card": {
+      "headline": "¿Sabías que el 30% de los trabajadores mexicanos tienen inconsistencias en su historial laboral?",
+      "example_finding": "Un usuario promedio recupera hasta $5,000 MXN o semanas de cotización no registradas tras una auditoría.",
+      "supporting_copy": "AuditaPatron detecta estas inconsistencias para que no pierdas dinero ni derechos.",
+      "tone_warning": "No te alarmes, aquí te ayudamos a tomar control paso a paso."
+    },
+    "implementation_order": [
+      "prediagnostic",
+      "side_card",
+      "analytics"
+    ],
+    "rationale": "Incluir un prediagnóstico inline permite que el usuario se sienta guiado desde el primer momento y entienda que puede empezar fácilmente con un documento que ya tiene, reforzando el empoderamiento. La tarjeta lateral con un hallazgo concreto hace tangible el valor real y práctico de la auditoría, aumentando confianza y relevancia. Finalmente, la medición detallada de eventos por variante y opción seleccionada permitirá optimizar la comunicación y maximizar conversiones sin perder claridad ni generar miedo."
+  },
+  "grok": {
+    "prediagnostic": {
+      "recommended_format": "radio buttons",
+      "question": "¿Cuál es tu mayor preocupación laboral ahora?",
+      "options": [
+        {
+          "id": "salario",
+          "label": "Mi salario o pagos",
+          "microcopy": "Revisa si te deben horas extras o bonos.",
+          "recommended_document": "Recibo de nómina"
+        },
+        {
+          "id": "despido",
+          "label": "Un despido reciente",
+          "microcopy": "Verifica si tu liquidación fue justa.",
+          "recommended_document": "Carta de despido"
+        },
+        {
+          "id": "contrato",
+          "label": "Mi contrato o condiciones",
+          "microcopy": "Asegúrate de que todo esté en orden.",
+          "recommended_document": "Contrato de trabajo"
+        }
+      ],
+      "cta_after_selection": "Empezar con este documento"
+    },
+    "analytics": {
+      "events": [
+        {
+          "name": "hero_variant_click",
+          "trigger": "Click on CTA in hero",
+          "properties": [
+            "variant_id",
+            "cta_type",
+            "timestamp"
+          ]
+        },
+        {
+          "name": "prediagnostic_selection",
+          "trigger": "User selects an option in prediagnostic",
+          "properties": [
+            "option_id",
+            "variant_id"
+          ]
+        }
+      ],
+      "primary_success_metric": "Conversion rate from hero CTA to onboarding start",
+      "guardrails": [
+        "Track only unique users via session ID",
+        "Compare variants with at least 1000 impressions each",
+        "Exclude bot traffic"
+      ]
+    },
+    "side_card": {
+      "headline": "Hallazgo real de un usuario",
+      "example_finding": "Descubrió $15,000 en horas extras no pagadas en su último empleo.",
+      "supporting_copy": "Con AuditaPatron, revisa tu historial y reclama lo que te corresponde. Empieza con un solo documento y toma el control.",
+      "tone_warning": "Mantén el enfoque en empoderamiento y acción positiva, evita generar miedo innecesario"
+    },
+    "implementation_order": [
+      "prediagnostic",
+      "side_card",
+      "analytics"
+    ],
+    "rationale": "Estas mejoras integran un prediagnóstico simple para guiar al usuario de inmediato, fomentando confianza y facilidad de inicio; la medición de analytics permite comparar variantes A y B para optimizar conversión; la tarjeta lateral hace tangible el valor con un ejemplo concreto, equilibrando empoderamiento sin jerga compleja ni miedo, alineado con los objetivos de negocio."
+  },
+  "gemini": {
+    "prediagnostic": {
+      "recommended_format": "inline_radio_buttons",
+      "question": "¿Qué quieres revisar hoy de tu historial laboral?",
+      "options": [
+        {
+          "id": "salary_benefits",
+          "label": "Mi salario y prestaciones",
+          "microcopy": "Asegúrate de que te paguen lo justo y recibas todos tus beneficios.",
+          "recommended_document": "Recibos de nómina"
+        },
+        {
+          "id": "imss_weeks",
+          "label": "Mis semanas cotizadas y seguro social (IMSS)",
+          "microcopy": "Verifica que tu historial de cotizaciones esté completo y correcto para tu pensión y otros derechos.",
+          "recommended_document": "Reporte de Semanas Cotizadas"
+        },
+        {
+          "id": "severance_liquidation",
+          "label": "Mi finiquito o liquidación",
+          "microcopy": "Confirma que los cálculos sean exactos y recibas lo que te corresponde por ley.",
+          "recommended_document": "Carta finiquito/liquidación"
+        },
+        {
+          "id": "general_review",
+          "label": "No estoy seguro, quiero una revisión general",
+          "microcopy": "Empezaremos con el documento más fácil para ti y te guiaremos paso a paso.",
+          "recommended_document": "Cualquier documento laboral"
+        }
+      ],
+      "cta_after_selection": "Subir mi [Documento Sugerido]"
+    },
+    "analytics": {
+      "events": [
+        {
+          "name": "prediagnostic_question_view",
+          "trigger": "hero_section_load",
+          "properties": [
+            "variant_id",
+            "hero_tab_active"
+          ]
+        },
+        {
+          "name": "prediagnostic_option_selected",
+          "trigger": "click_on_prediagnostic_option",
+          "properties": [
+            "variant_id",
+            "hero_tab_active",
+            "option_id",
+            "option_label",
+            "recommended_document"
+          ]
+        },
+        {
+          "name": "prediagnostic_cta_click",
+          "trigger": "click_on_prediagnostic_cta",
+          "properties": [
+            "variant_id",
+            "hero_tab_active",
+            "cta_text",
+            "recommended_document_after_selection"
+          ]
+        },
+        {
+          "name": "hero_cta_primary_click",
+          "trigger": "click_on_main_cta",
+          "properties": [
+            "variant_id",
+            "hero_tab_active",
+            "cta_text"
+          ]
+        },
+        {
+          "name": "hero_cta_secondary_click",
+          "trigger": "click_on_secondary_cta",
+          "properties": [
+            "variant_id",
+            "hero_tab_active",
+            "cta_text"
+          ]
+        }
+      ],
+      "primary_success_metric": "Porcentaje de usuarios que inician la auditoría (suben el primer documento) desde el hero.",
+      "guardrails": [
+        "Tasa de rebote en la landing page",
+        "Tiempo promedio en la página",
+        "Porcentaje de usuarios que completan el prediagnóstico",
+        "Clics en CTAs secundarios (para asegurar que la guía rápida sigue siendo accesible)"
+      ]
+    },
+    "side_card": {
+      "headline": "Descubre un hallazgo real",
+      "example_finding": "¡Tu salario base de cotización en el IMSS es 20% menor al real! Esto afecta directamente tu pensión, crédito INFONAVIT y otros beneficios futuros.",
+      "supporting_copy": "Este es solo un ejemplo de cómo AuditaPatron te ayuda a identificar errores que te cuestan dinero y derechos. Conoce la verdad y toma el control de tu futuro laboral.",
+      "tone_warning": "El tono debe ser de empoderamiento y acción, no solo de miedo. El hallazgo debe motivar a la acción y a la búsqueda de la verdad, no paralizar al usuario."
+    },
+    "implementation_order": [
+      "prediagnostic",
+      "side_card",
+      "analytics"
+    ],
+    "rationale": "El prediagnóstico inline aborda la necesidad de claridad y facilidad de inicio, guiando al usuario según su preocupación principal sin jerga legal. Fomenta el empoderamiento al permitirle elegir su punto de partida. La medición de clics por variante es crucial para entender qué mensaje resuena más y optimizar el hero. El refuerzo de la tarjeta lateral con un hallazgo concreto hace tangible el valor de AuditaPatron, construyendo confianza y motivando la conversión al mostrar un problema real y su impacto, siempre manteniendo un tono de empoderamiento para la acción."
+  }
+}

@@ -672,3 +672,6 @@
 - [x] Conectar la guía rápida a un prediagnóstico que sugiera el primer documento ideal para subir según la duda elegida
 - [x] Rediseñar el hero de AuditaPatron hacia una versión más agresiva, de alto impacto y orientada a maximizar la atención inicial y el engagement
 - [x] Ajustar el hero agresivo para que, además de urgencia y riesgo, transmita empoderamiento y sensación de control para el usuario
+- [x] Implementar mini prediagnóstico inline dentro del hero de AuditaPatron para orientar al usuario desde el primer vistazo.
+- [x] Instrumentar medición de clics por variante del hero de AuditaPatron para comparar desempeño entre mensajes.
+- [x] Reforzar la tarjeta lateral del hero con un hallazgo laboral concreto que haga tangible el valor de la auditoría.
