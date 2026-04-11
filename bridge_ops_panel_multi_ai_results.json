@@ -1,0 +1,190 @@
+{
+  "started_at": "2026-04-11T04:17:36Z",
+  "prompt_file": "/home/ubuntu/complilink_operativo_v1/bridge_ops_panel_multi_ai_brief.md",
+  "models": {
+    "openai": {
+      "parsed": {
+        "recommended_scope": [
+          "Visualización de eventos de dispatch con estado actualizado (éxito, esperando retorno, timeout/atención)",
+          "Monitoreo de eventos de retorno webhook con categorización clara (correctos, rechazos, errores de validación)",
+          "Alertas operativas básicas basadas en advertencias y guardrails devueltos por CompliLink",
+          "Filtros por rango temporal, estado y tipo de evento para facilitar diagnóstico rápido",
+          "Acceso a detalles clave de cada evento sin posibilidad de modificar datos"
+        ],
+        "ui_recommendation": {
+          "placement": "Sección específica dentro del dashboard CEO",
+          "why": "Permite reutilizar la infraestructura y estilos existentes del dashboard CEO, manteniendo la coherencia UX y seguridad. Facilita acceso directo para roles CEO/admin sin fragmentar la experiencia ni introducir datasets nuevos complejos."
+        },
+        "must_have_operational_states": [
+          "dispatch_successful",
+          "dispatch_waiting_return",
+          "dispatch_attention_timeout",
+          "return_event_success",
+          "return_event_rejected_validation",
+          "return_event_document_not_found",
+          "return_event_unknown_event",
+          "return_event_hmac_error",
+          "compliLink_warning_guardrails"
+        ],
+        "must_have_kpis": [
+          "total_dispatches",
+          "dispatches_waiting_return",
+          "dispatches_attention_timeout",
+          "dispatches_successful",
+          "return_events_successful",
+          "return_events_rejected_validation",
+          "return_events_document_not_found",
+          "return_events_unknown_event",
+          "return_events_hmac_errors",
+          "compliLink_warnings_count"
+        ],
+        "data_strategy": {
+          "approach": "Extender la bitácora auditada existente y construir vistas derivadas en backend para agregados KPI y estados operativos",
+          "why": "Evita duplicación de datos y nueva infraestructura, aprovecha la persistencia y auditoría ya implementada, facilita trazabilidad y pruebas, y mantiene compatibilidad con el router tRPC y dashboard CEO."
+        },
+        "test_recommendations": [
+          "Pruebas unitarias para generación correcta de eventos y estados en la bitácora auditada",
+          "Pruebas de integración para asegurar que el router expone correctamente los datos filtrados y agregados",
+          "Pruebas end-to-end en frontend para validar visualización, filtros y KPIs sin posibilidad de acciones sensibles",
+          "Pruebas de seguridad para garantizar que solo roles CEO/admin acceden al panel",
+          "Pruebas de carga básicas para asegurar performance aceptable con volumen esperado de eventos"
+        ],
+        "risks": [
+          "Sobrecarga visual si se incluyen demasiados eventos sin filtros adecuados",
+          "Posible confusión si estados no están claramente definidos o documentados",
+          "Dependencia de la calidad y completitud de la bitácora auditada existente",
+          "Riesgo de exponer datos sensibles si no se respetan guardrails de acceso",
+          "Retrasos en actualización de datos si se usan agregados derivados sin refresco adecuado"
+        ],
+        "implementation_order": [
+          "Analizar y mapear eventos y estados clave en la bitácora auditada existente",
+          "Extender backend para agregar vistas derivadas con KPIs y estados operativos",
+          "Crear sección específica en dashboard CEO con componentes de visualización y filtros",
+          "Implementar pruebas unitarias e integración para backend y frontend",
+          "Realizar pruebas de seguridad y performance",
+          "Desplegar en entorno de staging para validación operativa y feedback",
+          "Desplegar en producción con monitoreo inicial"
+        ]
+      },
+      "raw": "{\n  \"recommended_scope\": [\n    \"Visualización de eventos de dispatch con estado actualizado (éxito, esperando retorno, timeout/atención)\",\n    \"Monitoreo de eventos de retorno webhook con categorización clara (correctos, rechazos, errores de validación)\",\n    \"Alertas operativas básicas basadas en advertencias y guardrails devueltos por CompliLink\",\n    \"Filtros por rango temporal, estado y tipo de evento para facilitar diagnóstico rápido\",\n    \"Acceso a detalles clave de cada evento sin posibilidad de modificar datos\"\n  ],\n  \"ui_recommendation\": {\n    \"placement\": \"Sección específica dentro del dashboard CEO\",\n    \"why\": \"Permite reutilizar la infraestructura y estilos existentes del dashboard CEO, manteniendo la coherencia UX y seguridad. Facilita acceso directo para roles CEO/admin sin fragmentar la experiencia ni introducir datasets nuevos complejos.\"\n  },\n  \"must_have_operational_states\": [\n    \"dispatch_successful\",\n    \"dispatch_waiting_return\",\n    \"dispatch_attention_timeout\",\n    \"return_event_success\",\n    \"return_event_rejected_validation\",\n    \"return_event_document_not_found\",\n    \"return_event_unknown_event\",\n    \"return_event_hmac_error\",\n    \"compliLink_warning_guardrails\"\n  ],\n  \"must_have_kpis\": [\n    \"total_dispatches\",\n    \"dispatches_waiting_return\",\n    \"dispatches_attention_timeout\",\n    \"dispatches_successful\",\n    \"return_events_successful\",\n    \"return_events_rejected_validation\",\n    \"return_events_document_not_found\",\n    \"return_events_unknown_event\",\n    \"return_events_hmac_errors\",\n    \"compliLink_warnings_count\"\n  ],\n  \"data_strategy\": {\n    \"approach\": \"Extender la bitácora auditada existente y construir vistas derivadas en backend para agregados KPI y estados operativos\",\n    \"why\": \"Evita duplicación de datos y nueva infraestructura, aprovecha la persistencia y auditoría ya implementada, facilita trazabilidad y pruebas, y mantiene compatibilidad con el router tRPC y dashboard CEO.\"\n  },\n  \"test_recommendations\": [\n    \"Pruebas unitarias para generación correcta de eventos y estados en la bitácora auditada\",\n    \"Pruebas de integración para asegurar que el router expone correctamente los datos filtrados y agregados\",\n    \"Pruebas end-to-end en frontend para validar visualización, filtros y KPIs sin posibilidad de acciones sensibles\",\n    \"Pruebas de seguridad para garantizar que solo roles CEO/admin acceden al panel\",\n    \"Pruebas de carga básicas para asegurar performance aceptable con volumen esperado de eventos\"\n  ],\n  \"risks\": [\n    \"Sobrecarga visual si se incluyen demasiados eventos sin filtros adecuados\",\n    \"Posible confusión si estados no están claramente definidos o documentados\",\n    \"Dependencia de la calidad y completitud de la bitácora auditada existente\",\n    \"Riesgo de exponer datos sensibles si no se respetan guardrails de acceso\",\n    \"Retrasos en actualización de datos si se usan agregados derivados sin refresco adecuado\"\n  ],\n  \"implementation_order\": [\n    \"Analizar y mapear eventos y estados clave en la bitácora auditada existente\",\n    \"Extender backend para agregar vistas derivadas con KPIs y estados operativos\",\n    \"Crear sección específica en dashboard CEO con componentes de visualización y filtros\",\n    \"Implementar pruebas unitarias e integración para backend y frontend\",\n    \"Realizar pruebas de seguridad y performance\",\n    \"Desplegar en entorno de staging para validación operativa y feedback\",\n    \"Desplegar en producción con monitoreo inicial\"\n  ]\n}"
+    },
+    "grok": {
+      "parsed": {
+        "recommended_scope": [
+          "Visualización en solo lectura de eventos y errores del bridge AuditaPatron/CompliLink, incluyendo dispatches salientes, retornos entrantes y estados intermedios.",
+          "Integración con dashboard CEO existente para monitoreo unificado, con filtros por fecha, dispatchId y outcomeCategory.",
+          "KPIs básicos y drill-down a bitácora auditada sin acciones editables.",
+          "Reutilización de observabilityEnvelope y eventos auditados ya persistidos."
+        ],
+        "ui_recommendation": {
+          "placement": "Extender la bitácora auditada existente del CEO con una sección dedicada al bridge.",
+          "why": "Minimiza cambios en el frontend (reutiliza ceoDashboardMonitoring.ts y filtros existentes), evita duplicación de UI y mantiene el flujo unificado sin romper OAuth o autenticación actual."
+        },
+        "must_have_operational_states": [
+          "Dispatches exitosos (outcomeCategory: success, httpStatusCode: 2xx).",
+          "Envíos esperando retorno (retryScheduled: true o sin retorno recibido).",
+          "Timeouts o atención pendiente (retryDelayMs > 0 o eventos de timeout).",
+          "Retornos correctos (eventos complilink.return_webhook.success).",
+          "Rechazos o errores de validación del webhook (missing_fields, unknown_event, document_not_found).",
+          "Advertencias/guardrails devueltos (addOperationalAlert con warnings de CompliLink)."
+        ],
+        "must_have_kpis": [
+          "Total de dispatches procesados (conteo por período).",
+          "Dispatches en waiting (sin retorno recibido).",
+          "Tasa de éxito (porcentaje de retornos correctos vs. total dispatches).",
+          "Errores de webhook (conteo de rechazos por tipo: HMAC inválido, payload errors).",
+          "Retornos con warnings (conteo de operational alerts).",
+          "Tiempo promedio de retry (basado en retryDelayMs)."
+        ],
+        "data_strategy": {
+          "approach": "Query derivado en dashboard.ceoSnapshot que agrega filtros y agregaciones sobre la bitácora auditada existente (usando addCaseEvent, createAuditLog y observabilityEnvelope), sin nuevo modelo de datos; extender routers.ts con un endpoint como bridge.operationalSnapshot.",
+          "why": "Evita duplicación de persistencia (reutiliza datos ya en audit logs), reduce complejidad y asegura trazabilidad inmediata con queries SQL/ORM existentes, alineado con restricciones de no introducir infraestructura pesada."
+        },
+        "test_recommendations": [
+          "Unit tests para el nuevo endpoint en routers.test.ts (validar queries y agregaciones con mocks de audit logs).",
+          "Integration tests en auditaPatronIntegrationService.test.ts para simular eventos de bridge y verificar estados/KPIs.",
+          "E2E tests en Vitest para el panel UI (renderizado de sección, filtros y drill-down sin acciones sensibles).",
+          "Cobertura mínima: 80% en lógica de agregación, enfocada en edge cases como timeouts y rechazos."
+        ],
+        "risks": [
+          "Sobrecarga de queries si no se indexa la bitácora auditada por dispatchId/outcomeCategory.",
+          "Inconsistencias en datos si los eventos de retorno no se correlacionan perfectamente con dispatches (mitigar con dispatchId como clave).",
+          "Impacto mínimo en performance del dashboard CEO si el query derivado no se cachea.",
+          "Exposición accidental de datos sensibles si los guardrails de hardening no cubren la nueva sección (verificar autenticación unificada)."
+        ],
+        "implementation_order": [
+          "1. Extender router con query derivado para bridge snapshot (reutilizar buildCompliLinkMonitoring).",
+          "2. Agregar sección en ceoDashboardMonitoring.ts con KPIs y filtros.",
+          "3. Implementar drill-down a bitácora existente.",
+          "4. Escribir tests unitarios e integration.",
+          "5. Validar en staging sin romper flujos CEO existentes."
+        ]
+      },
+      "raw": "{\n  \"recommended_scope\": [\n    \"Visualización en solo lectura de eventos y errores del bridge AuditaPatron/CompliLink, incluyendo dispatches salientes, retornos entrantes y estados intermedios.\",\n    \"Integración con dashboard CEO existente para monitoreo unificado, con filtros por fecha, dispatchId y outcomeCategory.\",\n    \"KPIs básicos y drill-down a bitácora auditada sin acciones editables.\",\n    \"Reutilización de observabilityEnvelope y eventos auditados ya persistidos.\"\n  ],\n  \"ui_recommendation\": {\n    \"placement\": \"Extender la bitácora auditada existente del CEO con una sección dedicada al bridge.\",\n    \"why\": \"Minimiza cambios en el frontend (reutiliza ceoDashboardMonitoring.ts y filtros existentes), evita duplicación de UI y mantiene el flujo unificado sin romper OAuth o autenticación actual.\"\n  },\n  \"must_have_operational_states\": [\n    \"Dispatches exitosos (outcomeCategory: success, httpStatusCode: 2xx).\",\n    \"Envíos esperando retorno (retryScheduled: true o sin retorno recibido).\",\n    \"Timeouts o atención pendiente (retryDelayMs > 0 o eventos de timeout).\",\n    \"Retornos correctos (eventos complilink.return_webhook.success).\",\n    \"Rechazos o errores de validación del webhook (missing_fields, unknown_event, document_not_found).\",\n    \"Advertencias/guardrails devueltos (addOperationalAlert con warnings de CompliLink).\"\n  ],\n  \"must_have_kpis\": [\n    \"Total de dispatches procesados (conteo por período).\",\n    \"Dispatches en waiting (sin retorno recibido).\",\n    \"Tasa de éxito (porcentaje de retornos correctos vs. total dispatches).\",\n    \"Errores de webhook (conteo de rechazos por tipo: HMAC inválido, payload errors).\",\n    \"Retornos con warnings (conteo de operational alerts).\",\n    \"Tiempo promedio de retry (basado en retryDelayMs).\"\n  ],\n  \"data_strategy\": {\n    \"approach\": \"Query derivado en dashboard.ceoSnapshot que agrega filtros y agregaciones sobre la bitácora auditada existente (usando addCaseEvent, createAuditLog y observabilityEnvelope), sin nuevo modelo de datos; extender routers.ts con un endpoint como bridge.operationalSnapshot.\",\n    \"why\": \"Evita duplicación de persistencia (reutiliza datos ya en audit logs), reduce complejidad y asegura trazabilidad inmediata con queries SQL/ORM existentes, alineado con restricciones de no introducir infraestructura pesada.\"\n  },\n  \"test_recommendations\": [\n    \"Unit tests para el nuevo endpoint en routers.test.ts (validar queries y agregaciones con mocks de audit logs).\",\n    \"Integration tests en auditaPatronIntegrationService.test.ts para simular eventos de bridge y verificar estados/KPIs.\",\n    \"E2E tests en Vitest para el panel UI (renderizado de sección, filtros y drill-down sin acciones sensibles).\",\n    \"Cobertura mínima: 80% en lógica de agregación, enfocada en edge cases como timeouts y rechazos.\"\n  ],\n  \"risks\": [\n    \"Sobrecarga de queries si no se indexa la bitácora auditada por dispatchId/outcomeCategory.\",\n    \"Inconsistencias en datos si los eventos de retorno no se correlacionan perfectamente con dispatches (mitigar con dispatchId como clave).\",\n    \"Impacto mínimo en performance del dashboard CEO si el query derivado no se cachea.\",\n    \"Exposición accidental de datos sensibles si los guardrails de hardening no cubren la nueva sección (verificar autenticación unificada).\"\n  ],\n  \"implementation_order\": [\n    \"1. Extender router con query derivado para bridge snapshot (reutilizar buildCompliLinkMonitoring).\",\n    \"2. Agregar sección en ceoDashboardMonitoring.ts con KPIs y filtros.\",\n    \"3. Implementar drill-down a bitácora existente.\",\n    \"4. Escribir tests unitarios e integration.\",\n    \"5. Validar en staging sin romper flujos CEO existentes.\"\n  ]\n}"
+    },
+    "gemini": {
+      "parsed": {
+        "recommended_scope": [
+          "Visualización del ciclo de vida completo de cada dispatch saliente (envío, reintentos, estado de espera, retorno).",
+          "Identificación clara de dispatches que requieren atención (ej. timeouts, fallos finales, retornos con advertencias).",
+          "Resumen de KPIs operativos clave para el bridge.",
+          "Capacidad de filtrar y buscar eventos por `dispatchId`, estado, fecha, etc.",
+          "Acceso de solo lectura a los detalles de eventos y errores, sin acciones transaccionales desde la UI."
+        ],
+        "ui_recommendation": {
+          "placement": "Crear una sección específica dentro del dashboard CEO existente, accesible a través de una nueva pestaña o sub-navegación.",
+          "why": "Esta opción proporciona un espacio dedicado para la información operativa del bridge, evitando sobrecargar la bitácora auditada general con detalles técnicos. Permite un diseño de UI y filtros específicos para el monitoreo del bridge, mientras se mantiene dentro del contexto familiar del dashboard CEO y reutiliza su infraestructura de frontend (router tRPC, componentes de tabla/filtro). Un resumen de alto nivel podría añadirse a `dashboard.ceoSnapshot` como un 'widget' adicional, pero el detalle operativo requiere su propia sección."
+        },
+        "must_have_operational_states": [
+          "dispatch.sent_initial (Envío inicial del dispatch)",
+          "dispatch.retry_scheduled (Dispatch fallido, reintento programado)",
+          "dispatch.failed_final (Dispatch fallido después de todos los reintentos)",
+          "dispatch.pending_return (Dispatch enviado, esperando webhook de retorno)",
+          "dispatch.timeout_attention (Dispatch enviado, sin retorno en un tiempo predefinido)",
+          "return_webhook.success (Webhook de retorno recibido y procesado exitosamente)",
+          "return_webhook.rejected.invalid_hmac (Webhook rechazado por firma HMAC inválida)",
+          "return_webhook.rejected.missing_fields (Webhook rechazado por campos faltantes)",
+          "return_webhook.rejected.unknown_event (Webhook rechazado por evento desconocido)",
+          "return_webhook.rejected.document_not_found (Webhook rechazado por documento no encontrado)",
+          "return_webhook.warning.complilink_guardrail (Webhook de retorno con advertencia/guardrail de CompliLink)"
+        ],
+        "must_have_kpis": [
+          "Total Dispatches (últimas 24h / 7d / 30d)",
+          "Dispatches Pendientes de Retorno (actualmente)",
+          "Dispatches Requiriendo Atención (ej. timeouts, fallos finales, retornos con errores/advertencias)",
+          "Dispatches Exitosos (con retorno exitoso, últimas 24h / 7d / 30d)",
+          "Retornos Exitosos (últimas 24h / 7d / 30d)",
+          "Retornos Rechazados (total y por categoría, últimas 24h / 7d / 30d)",
+          "Retornos con Advertencias (últimas 24h / 7d / 30d)",
+          "Latencia Promedio de Retorno (tiempo desde dispatch hasta retorno exitoso)"
+        ],
+        "data_strategy": {
+          "approach": "Extender la persistencia del `observabilityEnvelope` y crear una tabla ligera `BridgeEventStatus` que actúe como una vista materializada del ciclo de vida de cada dispatch. Esta tabla se actualizará en el momento del dispatch y nuevamente cuando se reciba el webhook de retorno.",
+          "why": "Reutiliza el `observabilityEnvelope` ya existente como base. La tabla `BridgeEventStatus` (o similar) contendría campos clave como `dispatchId`, `currentStatus` (uno de los `must_have_operational_states`), `lastUpdated`, `dispatchTimestamp`, `returnTimestamp`, `httpStatusCode`, `outcomeCategory`, `returnReason` (para rechazos), y un enlace al `auditLog` relevante. Esto evita duplicar grandes volúmenes de datos, pero proporciona una fuente de datos optimizada y desnormalizada para consultas rápidas del panel y KPIs, sin depender de agregaciones costosas sobre la tabla `auditLog` para cada carga de dashboard. Los servicios existentes (`auditaPatronIntegrationService` y `auditaPatronReturnWebhook`) serían los encargados de mantener esta tabla actualizada."
+        },
+        "test_recommendations": [
+          "**Unit Tests:** Para la lógica de actualización de `BridgeEventStatus` en `auditaPatronIntegrationService` y `auditaPatronReturnWebhook`.",
+          "**Integration Tests:** Simular el flujo completo de dispatch y retorno (éxito, reintentos, fallos finales, retornos rechazados, retornos con advertencias) y verificar que la tabla `BridgeEventStatus` se actualiza correctamente en cada etapa.",
+          "**Router Tests:** Validar que los nuevos endpoints tRPC para el panel operativo devuelven los datos esperados (lista de eventos, KPIs) con los filtros correctos.",
+          "**Performance Tests (básicos):** Medir el tiempo de respuesta de las consultas de KPIs y listado de eventos para asegurar que son adecuadas para un dashboard operativo."
+        ],
+        "risks": [
+          "**Inconsistencia de Datos:** Si la correlación entre `dispatchId` y el webhook de retorno no es robusta, o si las actualizaciones a `BridgeEventStatus` fallan, el panel podría mostrar información incorrecta.",
+          "**Rendimiento de Consultas:** Aunque se propone una tabla `BridgeEventStatus` optimizada, si el volumen de datos es extremadamente alto o las consultas son ineficientes, podría haber degradación del rendimiento.",
+          "**Complejidad en la Detección de Timeouts:** La detección de `dispatch.timeout_attention` requiere una lógica adicional (ej. un job programado o un mecanismo de monitoreo) que podría introducir complejidad si no se diseña cuidadosamente.",
+          "**Alert Fatigue:** Si los criterios para 'requiriendo atención' no son bien definidos, el panel podría generar ruido en lugar de información útil."
+        ],
+        "implementation_order": [
+          "1. **Diseño y Creación de `BridgeEventStatus`:** Definir el esquema de la nueva tabla y crearla.",
+          "2. **Actualización de `auditaPatronIntegrationService`:** Modificar el servicio para insertar/actualizar el estado inicial del dispatch en `BridgeEventStatus` tras cada envío (ej. `dispatch.sent_initial`, `dispatch.retry_scheduled`, `dispatch.failed_final`).",
+          "3. **Actualización de `auditaPatronReturnWebhook`:** Modificar el webhook para actualizar el estado del dispatch en `BridgeEventStatus` cuando se recibe un retorno (ej. `return_webhook.success`, `return_webhook.rejected.*`, `return_webhook.warning.*`).",
+          "4. **Desarrollo de Endpoints tRPC:** Crear nuevos procedimientos en el router tRPC para obtener la lista de eventos del bridge y los KPIs desde `BridgeEventStatus`.",
+          "5. **Implementación de UI:** Desarrollar la nueva sección en el dashboard CEO, incluyendo tablas, filtros y visualizaciones de KPIs.",
+          "6. **Implementación de Detección de Timeouts:** Añadir la lógica para identificar y marcar dispatches como `dispatch.timeout_attention` (ej. un cron job que revise `BridgeEventStatus` periódicamente).",
+          "7. **Cobertura de Pruebas:** Añadir pruebas unitarias, de integración y de router para todas las nuevas funcionalidades."
+        ]
+      },
+      "raw": "{\n  \"recommended_scope\": [\n    \"Visualización del ciclo de vida completo de cada dispatch saliente (envío, reintentos, estado de espera, retorno).\",\n    \"Identificación clara de dispatches que requieren atención (ej. timeouts, fallos finales, retornos con advertencias).\",\n    \"Resumen de KPIs operativos clave para el bridge.\",\n    \"Capacidad de filtrar y buscar eventos por `dispatchId`, estado, fecha, etc.\",\n    \"Acceso de solo lectura a los detalles de eventos y errores, sin acciones transaccionales desde la UI.\"\n  ],\n  \"ui_recommendation\": {\n    \"placement\": \"Crear una sección específica dentro del dashboard CEO existente, accesible a través de una nueva pestaña o sub-navegación.\",\n    \"why\": \"Esta opción proporciona un espacio dedicado para la información operativa del bridge, evitando sobrecargar la bitácora auditada general con detalles técnicos. Permite un diseño de UI y filtros específicos para el monitoreo del bridge, mientras se mantiene dentro del contexto familiar del dashboard CEO y reutiliza su infraestructura de frontend (router tRPC, componentes de tabla/filtro). Un resumen de alto nivel podría añadirse a `dashboard.ceoSnapshot` como un 'widget' adicional, pero el detalle operativo requiere su propia sección.\"\n  },\n  \"must_have_operational_states\": [\n    \"dispatch.sent_initial (Envío inicial del dispatch)\",\n    \"dispatch.retry_scheduled (Dispatch fallido, reintento programado)\",\n    \"dispatch.failed_final (Dispatch fallido después de todos los reintentos)\",\n    \"dispatch.pending_return (Dispatch enviado, esperando webhook de retorno)\",\n    \"dispatch.timeout_attention (Dispatch enviado, sin retorno en un tiempo predefinido)\",\n    \"return_webhook.success (Webhook de retorno recibido y procesado exitosamente)\",\n    \"return_webhook.rejected.invalid_hmac (Webhook rechazado por firma HMAC inválida)\",\n    \"return_webhook.rejected.missing_fields (Webhook rechazado por campos faltantes)\",\n    \"return_webhook.rejected.unknown_event (Webhook rechazado por evento desconocido)\",\n    \"return_webhook.rejected.document_not_found (Webhook rechazado por documento no encontrado)\",\n    \"return_webhook.warning.complilink_guardrail (Webhook de retorno con advertencia/guardrail de CompliLink)\"\n  ],\n  \"must_have_kpis\": [\n    \"Total Dispatches (últimas 24h / 7d / 30d)\",\n    \"Dispatches Pendientes de Retorno (actualmente)\",\n    \"Dispatches Requiriendo Atención (ej. timeouts, fallos finales, retornos con errores/advertencias)\",\n    \"Dispatches Exitosos (con retorno exitoso, últimas 24h / 7d / 30d)\",\n    \"Retornos Exitosos (últimas 24h / 7d / 30d)\",\n    \"Retornos Rechazados (total y por categoría, últimas 24h / 7d / 30d)\",\n    \"Retornos con Advertencias (últimas 24h / 7d / 30d)\",\n    \"Latencia Promedio de Retorno (tiempo desde dispatch hasta retorno exitoso)\"\n  ],\n  \"data_strategy\": {\n    \"approach\": \"Extender la persistencia del `observabilityEnvelope` y crear una tabla ligera `BridgeEventStatus` que actúe como una vista materializada del ciclo de vida de cada dispatch. Esta tabla se actualizará en el momento del dispatch y nuevamente cuando se reciba el webhook de retorno.\",\n    \"why\": \"Reutiliza el `observabilityEnvelope` ya existente como base. La tabla `BridgeEventStatus` (o similar) contendría campos clave como `dispatchId`, `currentStatus` (uno de los `must_have_operational_states`), `lastUpdated`, `dispatchTimestamp`, `returnTimestamp`, `httpStatusCode`, `outcomeCategory`, `returnReason` (para rechazos), y un enlace al `auditLog` relevante. Esto evita duplicar grandes volúmenes de datos, pero proporciona una fuente de datos optimizada y desnormalizada para consultas rápidas del panel y KPIs, sin depender de agregaciones costosas sobre la tabla `auditLog` para cada carga de dashboard. Los servicios existentes (`auditaPatronIntegrationService` y `auditaPatronReturnWebhook`) serían los encargados de mantener esta tabla actualizada.\"\n  },\n  \"test_recommendations\": [\n    \"**Unit Tests:** Para la lógica de actualización de `BridgeEventStatus` en `auditaPatronIntegrationService` y `auditaPatronReturnWebhook`.\",\n    \"**Integration Tests:** Simular el flujo completo de dispatch y retorno (éxito, reintentos, fallos finales, retornos rechazados, retornos con advertencias) y verificar que la tabla `BridgeEventStatus` se actualiza correctamente en cada etapa.\",\n    \"**Router Tests:** Validar que los nuevos endpoints tRPC para el panel operativo devuelven los datos esperados (lista de eventos, KPIs) con los filtros correctos.\",\n    \"**Performance Tests (básicos):** Medir el tiempo de respuesta de las consultas de KPIs y listado de eventos para asegurar que son adecuadas para un dashboard operativo.\"\n  ],\n  \"risks\": [\n    \"**Inconsistencia de Datos:** Si la correlación entre `dispatchId` y el webhook de retorno no es robusta, o si las actualizaciones a `BridgeEventStatus` fallan, el panel podría mostrar información incorrecta.\",\n    \"**Rendimiento de Consultas:** Aunque se propone una tabla `BridgeEventStatus` optimizada, si el volumen de datos es extremadamente alto o las consultas son ineficientes, podría haber degradación del rendimiento.\",\n    \"**Complejidad en la Detección de Timeouts:** La detección de `dispatch.timeout_attention` requiere una lógica adicional (ej. un job programado o un mecanismo de monitoreo) que podría introducir complejidad si no se diseña cuidadosamente.\",\n    \"**Alert Fatigue:** Si los criterios para 'requiriendo atención' no son bien definidos, el panel podría generar ruido en lugar de información útil.\"\n  ],\n  \"implementation_order\": [\n    \"1. **Diseño y Creación de `BridgeEventStatus`:** Definir el esquema de la nueva tabla y crearla.\",\n    \"2. **Actualización de `auditaPatronIntegrationService`:** Modificar el servicio para insertar/actualizar el estado inicial del dispatch en `BridgeEventStatus` tras cada envío (ej. `dispatch.sent_initial`, `dispatch.retry_scheduled`, `dispatch.failed_final`).\",\n    \"3. **Actualización de `auditaPatronReturnWebhook`:** Modificar el webhook para actualizar el estado del dispatch en `BridgeEventStatus` cuando se recibe un retorno (ej. `return_webhook.success`, `return_webhook.rejected.*`, `return_webhook.warning.*`).\",\n    \"4. **Desarrollo de Endpoints tRPC:** Crear nuevos procedimientos en el router tRPC para obtener la lista de eventos del bridge y los KPIs desde `BridgeEventStatus`.\",\n    \"5. **Implementación de UI:** Desarrollar la nueva sección en el dashboard CEO, incluyendo tablas, filtros y visualizaciones de KPIs.\",\n    \"6. **Implementación de Detección de Timeouts:** Añadir la lógica para identificar y marcar dispatches como `dispatch.timeout_attention` (ej. un cron job que revise `BridgeEventStatus` periódicamente).\",\n    \"7. **Cobertura de Pruebas:** Añadir pruebas unitarias, de integración y de router para todas las nuevas funcionalidades.\"\n  ]\n}"
+    }
+  }
+}

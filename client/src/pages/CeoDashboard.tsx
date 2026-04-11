@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { trpc } from "@/lib/trpc";
+import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
 import {
   buildAuditExecutiveAlerts,
@@ -34,8 +35,10 @@ import {
   AlertTriangle,
   ArrowLeft,
   Building2,
+  Clock3,
   Files,
   Filter,
+  GitBranch,
   LayoutDashboard,
   Loader2,
   RefreshCw,
@@ -94,6 +97,31 @@ function getStatusBadgeClass(status: string) {
     default:
       return "border-slate-200 bg-slate-100 text-slate-700";
   }
+}
+
+function getBridgeHealthBadgeClass(health: string) {
+  switch (health) {
+    case "healthy":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "pending":
+      return "border-sky-200 bg-sky-50 text-sky-700";
+    case "warning":
+      return "border-amber-200 bg-amber-50 text-amber-700";
+    case "critical":
+      return "border-rose-200 bg-rose-50 text-rose-700";
+    default:
+      return "border-slate-200 bg-slate-100 text-slate-700";
+  }
+}
+
+function getBridgeOutcomeLabel(outcome: string) {
+  if (outcome === "success") return "Retorno conforme";
+  if (outcome === "retry_scheduled") return "Reintento programado";
+  if (outcome === "permanent_failure") return "Fallo permanente";
+  if (outcome === "skipped") return "Envío omitido";
+  if (outcome === "pending_return") return "Esperando retorno";
+  if (outcome === "warning") return "Con advertencias";
+  return "Sin clasificar";
 }
 
 function getSafeNextAlertStatus(status: string) {
@@ -217,7 +245,7 @@ function SectionEmptyState({
   );
 }
 
-type SectionKey = "resumen" | "alertas" | "accesos" | "documentos";
+type SectionKey = "resumen" | "bridge" | "alertas" | "accesos" | "documentos";
 
 type FilterState = {
   tenantId: string;
@@ -275,6 +303,7 @@ function getCurrentSectionCount(
 }
 
 function getSectionLabel(section: SectionKey) {
+  if (section === "bridge") return "Bridge operativo";
   if (section === "alertas") return "Alertas";
   if (section === "accesos") return "Accesos";
   if (section === "documentos") return "Documentos";
@@ -317,6 +346,7 @@ export default function CeoDashboard() {
   }, []);
 
   const currentSection = useMemo<SectionKey>(() => {
+    if (location.startsWith("/ceo/bridge")) return "bridge";
     if (location.startsWith("/ceo/alertas")) return "alertas";
     if (location.startsWith("/ceo/accesos")) return "accesos";
     if (location.startsWith("/ceo/documentos")) return "documentos";
@@ -405,6 +435,8 @@ export default function CeoDashboard() {
     isSnapshotStale,
     hasSnapshotError: Boolean(snapshotError),
   });
+  const currentSectionExportGuardReason =
+    currentSection === "bridge" ? "La exportación del panel bridge quedará disponible en una siguiente iteración." : exportGuardReason;
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
@@ -423,6 +455,16 @@ export default function CeoDashboard() {
     [auditTrail],
   );
   const auditExecutiveAlerts = useMemo(() => buildAuditExecutiveAlerts(auditTrail).slice(0, 4), [auditTrail]);
+  const bridgeOverview = useMemo(
+    () =>
+      buildBridgeMonitoringPanel({
+        auditTrail,
+        tenantHealth: snapshotData?.tenantHealth ?? [],
+        recentDocuments: snapshotData?.recentDocuments ?? [],
+        recentAlerts: snapshotData?.recentAlerts ?? [],
+      }),
+    [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
+  );
 
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
@@ -431,6 +473,15 @@ export default function CeoDashboard() {
         label: "Resumen CEO",
         path: "/ceo",
         badge: globalSummary ? formatNumber(globalSummary.activeCases) : undefined,
+      },
+      {
+        icon: GitBranch,
+        label: "Bridge",
+        path: "/ceo/bridge",
+        badge:
+          bridgeOverview.summary.critical + bridgeOverview.summary.warning + bridgeOverview.summary.pending > 0
+            ? formatNumber(bridgeOverview.summary.critical + bridgeOverview.summary.warning + bridgeOverview.summary.pending)
+            : undefined,
       },
       {
         icon: Siren,
@@ -451,7 +502,7 @@ export default function CeoDashboard() {
         badge: globalSummary ? formatNumber(globalSummary.pendingDocuments) : undefined,
       },
     ],
-    [globalSummary],
+    [bridgeOverview.summary.critical, bridgeOverview.summary.pending, bridgeOverview.summary.warning, globalSummary],
   );
 
   const tenantOptions = useMemo(() => {
@@ -511,7 +562,11 @@ export default function CeoDashboard() {
     [snapshotData],
   );
 
-  const currentSectionCount = useMemo(() => getCurrentSectionCount(currentSection, snapshotData), [currentSection, snapshotData]);
+  const currentSectionCount = useMemo(
+    () => (currentSection === "bridge" ? bridgeOverview.rows.length : getCurrentSectionCount(currentSection, snapshotData)),
+    [bridgeOverview.rows.length, currentSection, snapshotData],
+  );
+  const exportableSection = currentSection === "bridge" ? "resumen" : currentSection;
 
   const safeCaseActions = useMemo(
     () =>
@@ -768,10 +823,10 @@ export default function CeoDashboard() {
   }
 
   async function handleExport(kind: "csv" | "pdf") {
-    if (exportGuardReason || !snapshotData) {
+    if (currentSectionExportGuardReason || !snapshotData) {
       sonnerToast.error("La exportación ejecutiva está bloqueada", {
         description:
-          exportGuardReason ?? "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
+          currentSectionExportGuardReason ?? "Espera a que el snapshot ejecutivo termine de cargar para generar el reporte.",
       });
       return;
     }
@@ -784,13 +839,13 @@ export default function CeoDashboard() {
       const filename =
         kind === "pdf"
           ? downloadCeoPdfReport({
-              section: currentSection,
+              section: exportableSection,
               snapshot: snapshotData,
               appliedFilters,
               actorLabel,
             })
           : downloadCeoCsvReport({
-              section: currentSection,
+              section: exportableSection,
               snapshot: snapshotData,
               appliedFilters,
               actorLabel,
@@ -799,9 +854,9 @@ export default function CeoDashboard() {
       try {
         await recordExportAuditMutation.mutateAsync({
           tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
-          section: currentSection,
+          section: exportableSection,
           format: kind,
-          snapshotGeneratedAt: snapshotGeneratedAtIso!,
+          snapshotGeneratedAt: snapshotGeneratedAtIso ?? new Date().toISOString(),
           appliedFilters,
           visibleCount: currentSectionCount,
         });
@@ -833,8 +888,8 @@ export default function CeoDashboard() {
           <Button
             variant="outline"
             className="rounded-full bg-white"
-            title={exportGuardReason ?? undefined}
-            disabled={Boolean(exportGuardReason) || exportKind !== null}
+            title={currentSectionExportGuardReason ?? undefined}
+            disabled={Boolean(currentSectionExportGuardReason) || exportKind !== null}
             onClick={() => {
               void handleExport("csv");
             }}
@@ -845,8 +900,8 @@ export default function CeoDashboard() {
           <Button
             variant="outline"
             className="rounded-full bg-white"
-            title={exportGuardReason ?? undefined}
-            disabled={Boolean(exportGuardReason) || exportKind !== null}
+            title={currentSectionExportGuardReason ?? undefined}
+            disabled={Boolean(currentSectionExportGuardReason) || exportKind !== null}
             onClick={() => {
               void handleExport("pdf");
             }}
@@ -1665,6 +1720,212 @@ export default function CeoDashboard() {
                 </section>
               </div>
             </>
+          ) : null}
+
+          {currentSection === "bridge" ? (
+            <div className="space-y-5">
+              <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Observabilidad bridge</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Snapshot operativo CompliLink ↔ AuditaPatron</h3>
+                  </div>
+                  <Badge className="rounded-full border border-sky-200 bg-sky-50 text-sky-700">
+                    {formatNumber(bridgeOverview.rows.length)} expedientes trazados
+                  </Badge>
+                </div>
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
+                  Esta vista concentra el estado operativo del bridge usando el feed de auditoría ya disponible: envíos recientes, expedientes pendientes de retorno,
+                  fallos permanentes y advertencias que todavía requieren seguimiento manual.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <article className="rounded-[1.4rem] border border-rose-200 bg-rose-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <Siren className="h-5 w-5 text-rose-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">Críticos</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-rose-950">{formatNumber(bridgeOverview.summary.critical)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-rose-900/80">Fallo permanente, guardrail activo o incidente con riesgo operativo inmediato.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-amber-200 bg-amber-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Advertencias</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-950">{formatNumber(bridgeOverview.summary.warning)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-amber-900/80">Eventos con retry, inconsistencias o alertas abiertas ligadas al retorno documental.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-sky-200 bg-sky-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <Clock3 className="h-5 w-5 text-sky-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">Pendientes</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-sky-950">{formatNumber(bridgeOverview.summary.pending)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-sky-900/80">Expedientes que ya salieron al bridge y siguen esperando webhook o confirmación final.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-emerald-200 bg-emerald-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Conformes</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-emerald-950">{formatNumber(bridgeOverview.summary.healthy)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-emerald-900/80">Retornos procesados sin alertas abiertas en el expediente visible.</p>
+                  </article>
+                </div>
+              </section>
+
+              <section className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Cola priorizada</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Expedientes que requieren revisión</h3>
+                    </div>
+                    <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700">
+                      {formatNumber(bridgeOverview.issues.length)} en foco
+                    </Badge>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {bridgeOverview.issues.length > 0 ? (
+                      bridgeOverview.issues.map((item) => (
+                        <article key={item.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge className={`rounded-full border ${getBridgeHealthBadgeClass(item.health)}`}>{item.health}</Badge>
+                                <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{getBridgeOutcomeLabel(item.outcomeCategory)}</Badge>
+                                {item.openAlertCount > 0 ? (
+                                  <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-700">
+                                    {formatNumber(item.openAlertCount)} alerta{item.openAlertCount === 1 ? "" : "s"}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <p className="text-lg font-semibold text-slate-950">{item.documentName || item.documentId}</p>
+                              <p className="text-sm text-slate-600">
+                                {item.tenantName} · {item.caseTitle || item.caseId || "Sin caso asociado"}
+                              </p>
+                              <p className="text-sm text-slate-500">
+                                Último evento: {formatDateTime(item.lastActivityAt)} · Intentos {formatNumber(item.attempts)}
+                              </p>
+                              {item.guardrailReason || item.errorMessage ? (
+                                <p className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                                  <strong>Detalle:</strong> {item.guardrailReason || item.errorMessage}
+                                </p>
+                              ) : null}
+                              {item.warnings.length > 0 ? (
+                                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
+                                  <strong className="text-slate-950">Warnings:</strong> {item.warnings.join(" · ")}
+                                </div>
+                              ) : null}
+                            </div>
+                            <div className="min-w-[250px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                              <p><strong className="text-slate-950">Trace:</strong> {item.traceId || "Sin traza"}</p>
+                              <p><strong className="text-slate-950">CompliLink ID:</strong> {item.compliLinkId || "Pendiente"}</p>
+                              <p><strong className="text-slate-950">Dispatch:</strong> {formatDateTime(item.dispatchedAt)}</p>
+                              <p><strong className="text-slate-950">Retorno:</strong> {formatDateTime(item.returnedAt)}</p>
+                              <p><strong className="text-slate-950">HTTP:</strong> {item.httpStatusCode ?? "Sin respuesta"}</p>
+                            </div>
+                          </div>
+                        </article>
+                      ))
+                    ) : (
+                      <div className="rounded-[1.4rem] border border-dashed border-emerald-200 bg-emerald-50/70 px-5 py-8 text-sm text-emerald-900">
+                        No hay expedientes bridge con atención inmediata en la vista actual.
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales operativas</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Lectura rápida del carril bridge</h3>
+                    </div>
+                    <GitBranch className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <div className="mt-5 space-y-3 text-sm text-slate-600">
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Pendientes de retorno</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeOverview.summary.pending)}</p>
+                      <p className="mt-2">Útil para detectar cuellos de botella entre dispatch y webhook final.</p>
+                    </div>
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Reintentos o warnings</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeOverview.summary.warning)}</p>
+                      <p className="mt-2">Revisa especialmente expedientes con múltiples intentos y alertas abiertas de integridad.</p>
+                    </div>
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Fallo permanente</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeOverview.summary.critical)}</p>
+                      <p className="mt-2">Prioridad máxima para soporte operativo o corrección manual del expediente.</p>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Actividad reciente</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Timeline resumido por expediente</h3>
+                  </div>
+                  <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700">
+                    Ordenado por evento más reciente
+                  </Badge>
+                </div>
+                <div className="mt-5 overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-200 text-sm">
+                    <thead>
+                      <tr className="text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <th className="pb-3 pr-4">Documento</th>
+                        <th className="pb-3 pr-4">Tenant / caso</th>
+                        <th className="pb-3 pr-4">Estado</th>
+                        <th className="pb-3 pr-4">Resultado</th>
+                        <th className="pb-3 pr-4">Intentos</th>
+                        <th className="pb-3 pr-4">Último evento</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {bridgeOverview.rows.length > 0 ? (
+                        bridgeOverview.rows.map((item) => (
+                          <tr key={item.documentId} className="align-top text-slate-600">
+                            <td className="py-4 pr-4">
+                              <p className="font-semibold text-slate-950">{item.documentName || item.documentId}</p>
+                              <p className="mt-1 text-xs text-slate-500">{item.traceId || "Sin traza"}</p>
+                            </td>
+                            <td className="py-4 pr-4">
+                              <p>{item.tenantName}</p>
+                              <p className="mt-1 text-xs text-slate-500">{item.caseTitle || item.caseId || "Sin caso asociado"}</p>
+                            </td>
+                            <td className="py-4 pr-4">
+                              <Badge className={`rounded-full border ${getBridgeHealthBadgeClass(item.health)}`}>{item.health}</Badge>
+                            </td>
+                            <td className="py-4 pr-4">{getBridgeOutcomeLabel(item.outcomeCategory)}</td>
+                            <td className="py-4 pr-4">{formatNumber(item.attempts)}</td>
+                            <td className="py-4 pr-4">{formatDateTime(item.lastActivityAt)}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="py-10 text-center text-sm text-slate-500">
+                            Aún no hay actividad del bridge disponible para los filtros seleccionados.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
           ) : null}
 
           {currentSection === "alertas" ? (

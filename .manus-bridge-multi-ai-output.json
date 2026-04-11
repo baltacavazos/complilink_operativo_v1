@@ -1,0 +1,416 @@
+{
+  "prompt": "Actúa como arquitecto senior de producto y software para un dashboard administrativo interno.\n\nContexto del proyecto:\n- Existe un dashboard CEO en React/tRPC para una plataforma llamada AuditaPatron / CompliLink.\n- Debemos agregar una nueva sección interna llamada 'panel operativo del bridge'.\n- No debe romper el acceso actual ni la navegación existente del dashboard CEO.\n- El backend ya tiene dos flujos clave:\n  1) Salida hacia AuditaPatron Engine / CompliLink, con observabilidad que incluye: dispatchId, targetHost, targetPath, outcomeCategory, retryScheduled, retryDelayMs, remoteSmokeEnabled, httpStatusCode.\n  2) Webhook de retorno firmado con eventos como document.processing.started, document.analysis.completed, document.analyzed, contract.analysis.detailed. Los warnings/flags pueden abrir alertas operativas.\n- El dashboard CEO actual ya usa snapshot ejecutivo, filtros transversales, auditoría, alertas, accesos y documentos.\n- Ya existe lógica para calcular estado por documento: not_sent, waiting, attention, received.\n\nNecesito una recomendación concisa pero útil para implementar el primer corte del panel operativo del bridge.\n\nDevuelve JSON válido con esta estructura exacta:\n{\n  \"recommended_scope\": [\"string\"],\n  \"backend_shape\": {\n    \"endpoint_name\": \"string\",\n    \"top_level_keys\": [\"string\"],\n    \"derived_kpis\": [\"string\"],\n    \"filters\": [\"string\"]\n  },\n  \"ui_sections\": [\"string\"],\n  \"risk_guardrails\": [\"string\"],\n  \"test_plan\": [\"string\"],\n  \"not_now\": [\"string\"],\n  \"rationale\": \"string\"\n}\n\nReglas:\n- Prioriza una implementación V1 mínima, observable y segura.\n- Reutiliza tablas, logs y procedimientos existentes antes de proponer nuevos esquemas.\n- Incluye KPIs, filtros y un detalle de eventos/errores.\n- Considera guardrails de frescura, trazabilidad y no duplicar fuentes de verdad.\n- Responde sólo JSON, sin markdown.",
+  "results": [
+    {
+      "ok": true,
+      "provider": "chatgpt",
+      "raw": {
+        "id": "resp_0167eb22b32bfc6a0069d9cdaa49bc8196b710b72533809681",
+        "object": "response",
+        "created_at": 1775881642,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1775881650,
+        "error": null,
+        "frequency_penalty": 0.0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "output": [
+          {
+            "id": "msg_0167eb22b32bfc6a0069d9cdab71b881968bf75b42cd7854b0",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"recommended_scope\": [\n    \"Mostrar estado operativo resumido de eventos bridge en tiempo casi real\",\n    \"Incluir métricas clave de envío/retorno (dispatchId, outcomes, estados por documento)\",\n    \"Permitir filtros por fecha, estado documento, outcomeCategory y tipo evento webhook\",\n    \"Presentar alertas basadas en warnings/flags detectados en webhook\",\n    \"No modificar navegación ni roles de acceso existentes\"\n  ],\n  \"backend_shape\": {\n    \"endpoint_name\": \"bridgeOperationalPanel.summary\",\n    \"top_level_keys\": [\n      \"dispatchEvents\",\n      \"webhookEvents\",\n      \"documentStates\",\n      \"alertsSummary\"\n    ],\n    \"derived_kpis\": [\n      \"totalDispatches\",\n      \"dispatchSuccessRate\",\n      \"avgRetryDelayMs\",\n      \"webhookEventCountsByType\",\n      \"documentsByState\",\n      \"openAlertsCount\"\n    ],\n    \"filters\": [\n      \"dateRange\",\n      \"documentState\",\n      \"outcomeCategory\",\n      \"webhookEventType\"\n    ]\n  },\n  \"ui_sections\": [\n    \"Resumen KPI operativos\",\n    \"Tabla de dispatchs recientes con outcome y retry info\",\n    \"Lista de eventos webhook con detalles y flags\",\n    \"Panel de alertas activas con links para resolución\",\n    \"Filtros transversales persistentes\"\n  ],\n  \"risk_guardrails\": [\n    \"Cache de datos por intervalos cortos para evitar sobrecarga backend\",\n    \"Validación estricta de input para filtros para evitar SQL/Injection\",\n    \"No crear nuevas tablas, solo consultas a fuente existente\",\n    \"Audit trail preserve integridad y trazabilidad de eventos\",\n    \"Rollout gradual para no afectar experiencia CEO dashboard\"\n  ],\n  \"test_plan\": [\n    \"Verificar carga y respuesta del endpoint con filtros activos\",\n    \"Validar calculo correcto de KPIs vs datos base\",\n    \"Simular eventos webhook con warnings para alerta\",\n    \"Pruebas UI para filtros, paginación y refresco de datos\",\n    \"Monitorear impacto en performance del dashboard CEO\"\n  ],\n  \"not_now\": [\n    \"Implementación de gráficos avanzados o históricos en V1\",\n    \"Cambios en esquema de base de datos o agregar tablas nuevas\",\n    \"Intervención en roles y permisos, mantener acceso actual\",\n    \"Automatización de resolución de alertas\"\n  ],\n  \"rationale\": \"La propuesta prioriza una solución mínima viable que expone en un único endpoint los datos ya existentes relativos al bridge operativo sin alterar la estructura ni el acceso del dashboard CEO. La selección de KPIs y filtros facilita monitoreo básico, mientras que los riesgos se mitigan con caché y validación. Así se garantiza observabilidad y trazabilidad sin comprometer la estabilidad, permitiendo iterar en futuras versiones con mejoras visuales o funcionales.\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0.0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "json_schema",
+            "description": null,
+            "name": "bridge_panel_recommendation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recommended_scope": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "backend_shape": {
+                  "type": "object",
+                  "properties": {
+                    "endpoint_name": {
+                      "type": "string"
+                    },
+                    "top_level_keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "derived_kpis": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "filters": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "endpoint_name",
+                    "top_level_keys",
+                    "derived_kpis",
+                    "filters"
+                  ],
+                  "additionalProperties": false
+                },
+                "ui_sections": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "risk_guardrails": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "test_plan": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "not_now": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "rationale": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "recommended_scope",
+                "backend_shape",
+                "ui_sections",
+                "risk_guardrails",
+                "test_plan",
+                "not_now",
+                "rationale"
+              ],
+              "additionalProperties": false
+            },
+            "strict": true
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 607,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 597,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 1204
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "parsed": {
+        "recommended_scope": [
+          "Mostrar estado operativo resumido de eventos bridge en tiempo casi real",
+          "Incluir métricas clave de envío/retorno (dispatchId, outcomes, estados por documento)",
+          "Permitir filtros por fecha, estado documento, outcomeCategory y tipo evento webhook",
+          "Presentar alertas basadas en warnings/flags detectados en webhook",
+          "No modificar navegación ni roles de acceso existentes"
+        ],
+        "backend_shape": {
+          "endpoint_name": "bridgeOperationalPanel.summary",
+          "top_level_keys": [
+            "dispatchEvents",
+            "webhookEvents",
+            "documentStates",
+            "alertsSummary"
+          ],
+          "derived_kpis": [
+            "totalDispatches",
+            "dispatchSuccessRate",
+            "avgRetryDelayMs",
+            "webhookEventCountsByType",
+            "documentsByState",
+            "openAlertsCount"
+          ],
+          "filters": [
+            "dateRange",
+            "documentState",
+            "outcomeCategory",
+            "webhookEventType"
+          ]
+        },
+        "ui_sections": [
+          "Resumen KPI operativos",
+          "Tabla de dispatchs recientes con outcome y retry info",
+          "Lista de eventos webhook con detalles y flags",
+          "Panel de alertas activas con links para resolución",
+          "Filtros transversales persistentes"
+        ],
+        "risk_guardrails": [
+          "Cache de datos por intervalos cortos para evitar sobrecarga backend",
+          "Validación estricta de input para filtros para evitar SQL/Injection",
+          "No crear nuevas tablas, solo consultas a fuente existente",
+          "Audit trail preserve integridad y trazabilidad de eventos",
+          "Rollout gradual para no afectar experiencia CEO dashboard"
+        ],
+        "test_plan": [
+          "Verificar carga y respuesta del endpoint con filtros activos",
+          "Validar calculo correcto de KPIs vs datos base",
+          "Simular eventos webhook con warnings para alerta",
+          "Pruebas UI para filtros, paginación y refresco de datos",
+          "Monitorear impacto en performance del dashboard CEO"
+        ],
+        "not_now": [
+          "Implementación de gráficos avanzados o históricos en V1",
+          "Cambios en esquema de base de datos o agregar tablas nuevas",
+          "Intervención en roles y permisos, mantener acceso actual",
+          "Automatización de resolución de alertas"
+        ],
+        "rationale": "La propuesta prioriza una solución mínima viable que expone en un único endpoint los datos ya existentes relativos al bridge operativo sin alterar la estructura ni el acceso del dashboard CEO. La selección de KPIs y filtros facilita monitoreo básico, mientras que los riesgos se mitigan con caché y validación. Así se garantiza observabilidad y trazabilidad sin comprometer la estabilidad, permitiendo iterar en futuras versiones con mejoras visuales o funcionales."
+      }
+    },
+    {
+      "ok": true,
+      "provider": "gemini",
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"recommended_scope\": [\"Vista agregada del estado general del bridge (salientes y entrantes)\", \"Listado de los últimos N dispatches con su estado (outcomeCategory, httpStatusCode, retryScheduled)\", \"Listado de los últimos N webhooks recibidos con su tipo de evento y estado (document.processing.started, document.analysis.completed, warnings/flags)\", \"Identificación rápida de dispatches fallidos o webhooks con warnings/flags\", \"Detalle de un dispatchId o webhookEvent específico para ver todos los eventos relacionados\"],\n  \"backend_shape\": {\n    \"endpoint_name\": \"bridgeTelemetry\",\n    \"top_level_keys\": [\"dispatchId\", \"webhookEventId\", \"overallBridgeStatus\"],\n    \"derived_kpis\": [\"dispatchSuccessRateLast24h\", \"webhookProcessingSuccessRateLast24h\", \"averageDispatchLatencyMs\", \"totalRetriesLast24h\", \"activeWarningsCount\", \"documentsInAttentionState\"],\n    \"filters\": [\"timeRange\", \"outcomeCategory\", \"httpStatusCode\", \"webhookEventType\", \"hasWarnings\", \"targetHost\"]\n  },\n  \"ui_sections\": [\"Bridge Overview (tarjetas de resumen con KPIs clave)\", \"Outbound Dispatches (tabla paginada de dispatches recientes)\", \"Inbound Webhooks (tabla paginada de webhooks recientes)\", \"Operational Alerts (sección destacada para fallos/warnings)\", \"Detail View (modal o página para dispatchId o webhookEventId)\"],\n  \"risk_guardrails\": [\"Data Freshness: Asegurar que los datos reflejen el estado casi en tiempo real (< 5 minutos de latencia)\", \"Traceability: Capacidad de trazar un dispatchId desde el inicio hasta el resultado final, incluyendo webhooks relacionados\", \"No Data Duplication: Reutilizar las tablas de logs y observabilidad existentes para evitar crear nuevas fuentes de verdad\", \"Performance Impact: El endpoint no debe impactar negativamente el rendimiento de los sistemas transaccionales o el dashboard CEO existente\", \"Access Control: Implementar permisos específicos para el 'panel operativo del bridge'\", \"Data Integrity: Validar que los datos de observabilidad sean consistentes y completos\"],\n  \"test_plan\": [\"Unit & Integration Tests para la nueva lógica de agregación y el endpoint del backend\", \"E2E Tests para verificar la navegación y la correcta visualización de datos en la UI\", \"Performance Tests para asegurar tiempos de respuesta aceptables con volúmenes de datos esperados\", \"Data Validation Tests para comparar los KPIs calculados con los datos crudos y asegurar precisión\", \"Security Tests para verificar que el acceso esté restringido según los roles definidos\", \"Observability Tests para asegurar que los logs y métricas del propio panel funcionen correctamente\"],\n  \"not_now\": [\"Configuración dinámica de retries desde el dashboard\", \"Re-procesamiento manual de eventos (re-disparar dispatches o webhooks)\", \"Análisis predictivo o machine learning avanzado\", \"Integración con sistemas de ticketing externos para creación automática de tickets\", \"Reportes históricos complejos (enfocarse en el estado operativo actual y reciente)\"],\n  \"rationale\": \"La propuesta se centra en una V1 mínima y de alto valor, aprovechando la observabilidad existente de los flujos de salida y entrada del bridge. Al reutilizar las tablas de logs y la lógica de estado de documentos, se minimiza el riesgo y el esfuerzo de desarrollo. Se prioriza la visibilidad del estado operativo en tiempo real, la identificación rápida de problemas y la trazabilidad básica, sentando las bases para futuras expansiones sin comprometer la estabilidad ni el rendimiento del dashboard CEO.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 459,
+          "candidatesTokenCount": 775,
+          "totalTokenCount": 2873,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 459
+            }
+          ],
+          "thoughtsTokenCount": 1639
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "ss3ZaaamGITg_uMPpMSlCA"
+      },
+      "parsed": {
+        "recommended_scope": [
+          "Vista agregada del estado general del bridge (salientes y entrantes)",
+          "Listado de los últimos N dispatches con su estado (outcomeCategory, httpStatusCode, retryScheduled)",
+          "Listado de los últimos N webhooks recibidos con su tipo de evento y estado (document.processing.started, document.analysis.completed, warnings/flags)",
+          "Identificación rápida de dispatches fallidos o webhooks con warnings/flags",
+          "Detalle de un dispatchId o webhookEvent específico para ver todos los eventos relacionados"
+        ],
+        "backend_shape": {
+          "endpoint_name": "bridgeTelemetry",
+          "top_level_keys": [
+            "dispatchId",
+            "webhookEventId",
+            "overallBridgeStatus"
+          ],
+          "derived_kpis": [
+            "dispatchSuccessRateLast24h",
+            "webhookProcessingSuccessRateLast24h",
+            "averageDispatchLatencyMs",
+            "totalRetriesLast24h",
+            "activeWarningsCount",
+            "documentsInAttentionState"
+          ],
+          "filters": [
+            "timeRange",
+            "outcomeCategory",
+            "httpStatusCode",
+            "webhookEventType",
+            "hasWarnings",
+            "targetHost"
+          ]
+        },
+        "ui_sections": [
+          "Bridge Overview (tarjetas de resumen con KPIs clave)",
+          "Outbound Dispatches (tabla paginada de dispatches recientes)",
+          "Inbound Webhooks (tabla paginada de webhooks recientes)",
+          "Operational Alerts (sección destacada para fallos/warnings)",
+          "Detail View (modal o página para dispatchId o webhookEventId)"
+        ],
+        "risk_guardrails": [
+          "Data Freshness: Asegurar que los datos reflejen el estado casi en tiempo real (< 5 minutos de latencia)",
+          "Traceability: Capacidad de trazar un dispatchId desde el inicio hasta el resultado final, incluyendo webhooks relacionados",
+          "No Data Duplication: Reutilizar las tablas de logs y observabilidad existentes para evitar crear nuevas fuentes de verdad",
+          "Performance Impact: El endpoint no debe impactar negativamente el rendimiento de los sistemas transaccionales o el dashboard CEO existente",
+          "Access Control: Implementar permisos específicos para el 'panel operativo del bridge'",
+          "Data Integrity: Validar que los datos de observabilidad sean consistentes y completos"
+        ],
+        "test_plan": [
+          "Unit & Integration Tests para la nueva lógica de agregación y el endpoint del backend",
+          "E2E Tests para verificar la navegación y la correcta visualización de datos en la UI",
+          "Performance Tests para asegurar tiempos de respuesta aceptables con volúmenes de datos esperados",
+          "Data Validation Tests para comparar los KPIs calculados con los datos crudos y asegurar precisión",
+          "Security Tests para verificar que el acceso esté restringido según los roles definidos",
+          "Observability Tests para asegurar que los logs y métricas del propio panel funcionen correctamente"
+        ],
+        "not_now": [
+          "Configuración dinámica de retries desde el dashboard",
+          "Re-procesamiento manual de eventos (re-disparar dispatches o webhooks)",
+          "Análisis predictivo o machine learning avanzado",
+          "Integración con sistemas de ticketing externos para creación automática de tickets",
+          "Reportes históricos complejos (enfocarse en el estado operativo actual y reciente)"
+        ],
+        "rationale": "La propuesta se centra en una V1 mínima y de alto valor, aprovechando la observabilidad existente de los flujos de salida y entrada del bridge. Al reutilizar las tablas de logs y la lógica de estado de documentos, se minimiza el riesgo y el esfuerzo de desarrollo. Se prioriza la visibilidad del estado operativo en tiempo real, la identificación rápida de problemas y la trazabilidad básica, sentando las bases para futuras expansiones sin comprometer la estabilidad ni el rendimiento del dashboard CEO."
+      }
+    },
+    {
+      "ok": true,
+      "provider": "grok",
+      "raw": {
+        "id": "261ef6ae-53d0-92fc-bec8-b26a0fa7b0ea",
+        "object": "chat.completion",
+        "created": 1775881663,
+        "model": "grok-4-0709",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " {\"recommended_scope\":[\"Monitoreo básico de flujos de salida y entrada\",\"KPIs derivados de observabilidad existente\",\"Filtros reutilizando lógica de dashboard CEO\",\"Detalle de eventos y errores por dispatchId\"],\"backend_shape\":{\"endpoint_name\":\"getBridgeOperationalPanel\",\"top_level_keys\":[\"outboundDispatches\",\"inboundWebhooks\",\"alerts\"],\"derived_kpis\":[\"successRate\",\"retryRate\",\"averageProcessingTime\",\"attentionFlagsCount\"],\"filters\":[\"dateRange\",\"outcomeCategory\",\"documentState\",\"targetHost\"]},\"ui_sections\":[\"Resumen de KPIs\",\"Tabla de Dispatches Salientes\",\"Tabla de Webhooks Entrantes\",\"Sección de Alertas Operativas\"],\"risk_guardrails\":[\"Garantizar frescura de datos con cache < 1min\",\"Mantener trazabilidad vía dispatchId sin duplicar logs\",\"Validar firmas de webhooks en backend\",\"Evitar exposición de datos sensibles en UI\"],\"test_plan\":[\"Probar endpoint con datos mock para verificar estructura\",\"Verificar filtros aplican correctamente a KPIs y tablas\",\"Simular errores para chequear alertas\",\"Asegurar no impacto en navegación existente del dashboard CEO\"],\"not_now\":[\"Actualizaciones en tiempo real via websockets\",\"Análisis predictivo de retries\",\"Integración con herramientas externas de monitoreo\",\"Exportación de datos a CSV\"],\"rationale\":\"Esta V1 mínima reutiliza observabilidad y lógica existente para un panel observable y seguro, enfocándose en flujos clave sin introducir nuevos esquemas, priorizando trazabilidad y frescura para operaciones internas sin romper el dashboard actual.\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1348,
+          "completion_tokens": 314,
+          "total_tokens": 2274,
+          "prompt_tokens_details": {
+            "text_tokens": 1348,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 676
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 612,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 164130000
+        },
+        "system_fingerprint": "fp_74614d6fcc"
+      },
+      "parsed": {
+        "recommended_scope": [
+          "Monitoreo básico de flujos de salida y entrada",
+          "KPIs derivados de observabilidad existente",
+          "Filtros reutilizando lógica de dashboard CEO",
+          "Detalle de eventos y errores por dispatchId"
+        ],
+        "backend_shape": {
+          "endpoint_name": "getBridgeOperationalPanel",
+          "top_level_keys": [
+            "outboundDispatches",
+            "inboundWebhooks",
+            "alerts"
+          ],
+          "derived_kpis": [
+            "successRate",
+            "retryRate",
+            "averageProcessingTime",
+            "attentionFlagsCount"
+          ],
+          "filters": [
+            "dateRange",
+            "outcomeCategory",
+            "documentState",
+            "targetHost"
+          ]
+        },
+        "ui_sections": [
+          "Resumen de KPIs",
+          "Tabla de Dispatches Salientes",
+          "Tabla de Webhooks Entrantes",
+          "Sección de Alertas Operativas"
+        ],
+        "risk_guardrails": [
+          "Garantizar frescura de datos con cache < 1min",
+          "Mantener trazabilidad vía dispatchId sin duplicar logs",
+          "Validar firmas de webhooks en backend",
+          "Evitar exposición de datos sensibles en UI"
+        ],
+        "test_plan": [
+          "Probar endpoint con datos mock para verificar estructura",
+          "Verificar filtros aplican correctamente a KPIs y tablas",
+          "Simular errores para chequear alertas",
+          "Asegurar no impacto en navegación existente del dashboard CEO"
+        ],
+        "not_now": [
+          "Actualizaciones en tiempo real via websockets",
+          "Análisis predictivo de retries",
+          "Integración con herramientas externas de monitoreo",
+          "Exportación de datos a CSV"
+        ],
+        "rationale": "Esta V1 mínima reutiliza observabilidad y lógica existente para un panel observable y seguro, enfocándose en flujos clave sin introducir nuevos esquemas, priorizando trazabilidad y frescura para operaciones internas sin romper el dashboard actual."
+      }
+    }
+  ]
+}

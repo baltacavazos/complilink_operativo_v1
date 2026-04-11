@@ -18,6 +18,7 @@ function Router() {
       <Route path={"/acceso"} component={Access} />
       <Route path={"/auditar"} component={Auditar} />
       <Route path={"/ceo"} component={CeoDashboard} />
+      <Route path={"/ceo/bridge"} component={CeoDashboard} />
       <Route path={"/ceo/alertas"} component={CeoDashboard} />
       <Route path={"/ceo/accesos"} component={CeoDashboard} />
       <Route path={"/ceo/documentos"} component={CeoDashboard} />

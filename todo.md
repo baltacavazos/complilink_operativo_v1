@@ -623,4 +623,11 @@
 - [x] Cierre V1 autorizado: robustecer la autenticación unificada con Google OAuth real, errores visibles y cero regresión sobre Manus OAuth
 - [x] Cierre V1 autorizado: añadir límites visibles de reintento y enfriamiento al acceso passwordless por email
 - [x] Cierre V1 autorizado: instrumentar logs estructurados del bridge y documentar la ejecución controlada de smoke tests externos
-- [ ] Cierre V1 autorizado: ejecutar validación final, revisar estado del proyecto y guardar checkpoint técnico
+- [x] Cierre V1 autorizado: ejecutar validación final, revisar estado del proyecto y guardar checkpoint técnico
+- [ ] Post-V1 autorizado: diseñar e implementar panel operativo de eventos y errores del bridge
+- [ ] Post-V1 autorizado: diseñar e implementar pruebas E2E del flujo de acceso y expediente
+- [ ] Post-V1 autorizado: diseñar e implementar métricas de uso y embudo de conversión en acceso
+
+- [x] Implementar panel operativo interno del bridge con KPIs, filtros y detalle de eventos/errores en el dashboard CEO
+- [ ] Cubrir con pruebas E2E el flujo completo de acceso, expediente y guardrails del bridge
+- [ ] Instrumentar métricas de uso y embudo de conversión del acceso para el corte V1.1
