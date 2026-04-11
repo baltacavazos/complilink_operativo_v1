@@ -182,31 +182,75 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
 
 const faqs = [
   {
-    question: "¿AuditaPatron es para demandar a mi empresa?",
+    id: "para-mi",
+    question: "¿Esto me puede servir si todavía no sé qué está mal en mis papeles?",
     answer:
-      "No. Primero te ayuda a entender tu situación, ordenar tus documentos y detectar si hay algo que conviene revisar con más atención.",
+      "Sí. AuditaPatron está pensado para empezar justo ahí: ordenar lo que ya tienes, explicarte lo importante con palabras simples y ayudarte a ver qué conviene revisar primero.",
   },
   {
+    id: "primer-documento",
+    question: "¿Qué documento conviene subir primero?",
+    answer:
+      "El que ya tengas más a la mano y te dé contexto útil: un recibo de nómina, un CFDI, tu contrato o un soporte IMSS/Infonavit. Empezar es más importante que esperar el expediente perfecto.",
+  },
+  {
+    id: "privacidad",
+    question: "¿Mi información está protegida?",
+    answer:
+      "Sí. Tus archivos se resguardan dentro del flujo de AuditaPatron para mantenerlos ordenados, disponibles para ti y con control sobre tu expediente digital.",
+  },
+  {
+    id: "sin-tecnicismos",
     question: "¿Necesito saber de leyes o de nómina para usarlo?",
     answer:
       "No. Está pensado para explicarte lo importante con palabras sencillas y pasos claros.",
   },
   {
+    id: "mas-contexto",
     question: "¿Por qué conviene subir más de un documento?",
     answer:
-      "Porque varios documentos dan más contexto. Eso ayuda a ver patrones, diferencias y a construir un expediente digital ordenado, disponible 24/7 cuando lo necesites.",
-  },
-  {
-    question: "¿Mi información está protegida?",
-    answer:
-      "Sí. Tus archivos se resguardan con control dentro del flujo de AuditaPatron, se analizan para fortalecer tu expediente digital y se mantienen disponibles para ti cuando los necesites.",
-  },
-  {
-    question: "¿Qué tipo de archivos puedo reunir aquí?",
-    answer:
-      "Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit y otros documentos laborales que ayuden a entender mejor tu caso.",
+      "Porque varios documentos dan más contexto. Eso ayuda a detectar patrones, comparar información y fortalecer tu expediente digital con mayor claridad.",
   },
 ];
+
+const guidedFaqOptions = [
+  {
+    id: "para-mi",
+    label: "Quiero saber si esto me sirve",
+    description: "Empieza por aquí si todavía no tienes claro por dónde comenzar.",
+  },
+  {
+    id: "primer-documento",
+    label: "No sé qué documento subir primero",
+    description: "Te orienta con el archivo que más suele ayudar en el primer paso.",
+  },
+  {
+    id: "privacidad",
+    label: "Me preocupa mi privacidad",
+    description: "Aclara cómo se resguardan tus archivos y cómo mantienes el control.",
+  },
+];
+
+const heroCopyVariants = {
+  serenity: {
+    eyebrowMobile: "Calma, protección y control desde tu primer archivo",
+    eyebrowDesktop: "Calma, protección y control desde tu primer archivo",
+    titleLead: "Protege tu historia laboral",
+    titleAccent: "y recupera la calma.",
+    body:
+      "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
+  },
+  respaldo: {
+    eyebrowMobile: "Más claridad desde tu primer archivo",
+    eyebrowDesktop: "Más claridad y respaldo desde tu primer archivo",
+    titleLead: "Pon tus documentos en orden",
+    titleAccent: "y gana control con calma.",
+    body:
+      "Empieza con el archivo que ya tienes. AuditaPatron lo ordena, lo resguarda y te ayuda a entender lo importante para que sientas más control desde el primer paso.",
+  },
+} as const;
+
+const activeHeroVariant = heroCopyVariants.serenity;
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -391,8 +435,8 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            <span className="sm:hidden">Calma y control desde tu primer archivo</span>
-            <span className="hidden sm:inline">Claridad, calma y control desde tu primer archivo</span>
+                <span className="sm:hidden">{activeHeroVariant.eyebrowMobile}</span>
+                <span className="hidden sm:inline">{activeHeroVariant.eyebrowDesktop}</span>
           </div>
 
           <h1
@@ -400,12 +444,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              Recupera la calma,
-              <span className="mt-1 block text-teal-700">y toma control de tu historia laboral.</span>
+              {activeHeroVariant.titleLead}
+              <span className="mt-1 block text-teal-700">{activeHeroVariant.titleAccent}</span>
             </span>
             <span className="hidden sm:block">
-              Recupera la calma,
-              <span className="block text-teal-700">y toma control de tu historia laboral.</span>
+              {activeHeroVariant.titleLead}
+              <span className="block text-teal-700">{activeHeroVariant.titleAccent}</span>
             </span>
           </h1>
 
@@ -413,7 +457,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos sin enredos. AuditaPatron los ordena, los resguarda y te explica lo importante con claridad para que entiendas mejor tu situación y avances con más tranquilidad desde el primer archivo.
+            {activeHeroVariant.body}
           </p>
 
           <div
@@ -456,12 +500,12 @@ function HeroSection() {
                 ))}
               </div>
               <p className="text-sm font-medium leading-6 text-slate-700">
-                Creado a partir de dudas reales de trabajadores que necesitaban claridad, orden y tranquilidad con sus documentos.
+                Lo que más nos dicen quienes llegan con dudas parecidas: entender rápido qué revisar, ordenar sus archivos y sentir más tranquilidad desde el primer documento.
               </p>
             </div>
 
             <div className="mt-3 flex flex-wrap justify-center gap-2.5 text-sm text-slate-600 lg:justify-start">
-              {["Expediente privado y siempre disponible", "Más claridad sobre IMSS e Infonavit", "Sin vueltas ni palabras difíciles"].map((item) => (
+              {["“Ya entendí mejor qué revisar primero.”", "“Por fin tengo mis documentos en un solo lugar.”", "“Me dio paz empezar sin palabras complicadas.”"].map((item) => (
                 <span
                   key={item}
                   className="motion-hover-lift rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-sm"
@@ -1242,27 +1286,67 @@ function PrivacySection() {
 }
 
 function FAQSection() {
+  const [selectedFaq, setSelectedFaq] = useState<string | undefined>("para-mi");
+
   return (
     <section id="preguntas" className="bg-[#f7fafb] py-14 sm:py-16">
-      <div className="container grid gap-8 lg:grid-cols-[0.8fr_1fr]">
+      <div className="container grid gap-8 lg:grid-cols-[0.85fr_1fr]">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Preguntas frecuentes
+            Guía rápida para empezar
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Respuestas claras para empezar con confianza.
+            Empieza por la duda que hoy más te frena.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Si llegas con dudas, aquí resuelves lo esencial rápido y sin explicaciones interminables.
+            Si todavía no quieres subir un archivo, primero elige tu duda principal y te mostramos la respuesta más útil para avanzar con más confianza.
           </p>
+
+          <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-[0_20px_60px_-52px_rgba(15,23,42,0.34)] sm:p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Mini diagnóstico inicial
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Elige lo que más se parece a tu caso y abrimos primero la respuesta indicada.
+            </p>
+            <div className="mt-4 space-y-3">
+              {guidedFaqOptions.map((option) => {
+                const isActive = selectedFaq === option.id;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedFaq(option.id)}
+                    className={`w-full rounded-[1.2rem] border px-4 py-3 text-left transition ${
+                      isActive
+                        ? "border-teal-300 bg-teal-50 shadow-[0_18px_40px_-34px_rgba(13,148,136,0.42)]"
+                        : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-950">{option.label}</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-600">{option.description}</p>
+                      </div>
+                      <ChevronRight className={`mt-0.5 h-4 w-4 shrink-0 ${isActive ? "text-teal-600" : "text-slate-400"}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 sm:p-6">
-          <Accordion type="single" collapsible className="space-y-3">
-            {faqs.map((item, index) => (
+          <p className="mb-4 text-sm leading-6 text-slate-600">
+            Empieza por tu duda principal y revisa primero la respuesta más útil para ti.
+          </p>
+          <Accordion type="single" collapsible value={selectedFaq} onValueChange={setSelectedFaq} className="space-y-3">
+            {faqs.map((item) => (
               <AccordionItem
-                key={item.question}
-                value={`item-${index}`}
+                key={item.id}
+                value={item.id}
                 className="rounded-[1.3rem] border border-slate-200 bg-white px-5"
               >
                 <AccordionTrigger className="text-left text-base font-semibold text-slate-950 hover:no-underline">
@@ -1309,7 +1393,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                 onClick={() => scrollToId("preguntas")}
               >
-                Prefiero aclarar mis dudas primero
+                Quiero una guía rápida antes de subir
               </Button>
             </div>
           </div>

@@ -664,3 +664,6 @@
 - [x] Ajustar el CTA secundario de la landing para capturar mejor a usuarios que aún llegan con dudas antes de entrar al flujo principal
 - [x] Contrastar con Grok, ChatGPT y Gemini todo el siguiente bloque de optimización de la landing de AuditaPatron y consensuar sus recomendaciones antes de implementar nuevos cambios
 - [x] Presentar al usuario una síntesis comparada con coincidencias, diferencias y recomendaciones priorizadas para hero A/B, prueba social y CTA secundario guiado
+- [x] Implementar variante optimizada del hero con enfoque sereno y medible para futura comparación A/B
+- [x] Añadir módulo de prueba social sobria con testimonios o evidencia breve sin alterar la estructura visual
+- [x] Convertir el CTA secundario en una entrada guiada hacia FAQs o mini diagnóstico inicial

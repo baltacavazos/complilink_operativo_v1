@@ -1,0 +1,74 @@
+{
+  "openai": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "result": {
+      "hero_variant_recommendation": "Tono sereno, protector y con enfoque en resultados tangibles y medibles para el usuario.",
+      "hero_title": "Protege tus documentos laborales y entiende tu situación con claridad.",
+      "hero_body": "Sube tus archivos sin complicaciones. AuditaPatron los organiza, resguarda y te muestra lo que realmente importa para que puedas avanzar con confianza y tranquilidad desde el primer paso.",
+      "social_proof_format": "Testimonios breves y reales de usuarios que valoran la claridad y el orden aportados.",
+      "social_proof_copy": [
+        "“Gracias a AuditaPatron, finalmente entendí cómo están mis documentos y qué pasos seguir.”",
+        "“Una herramienta sencilla que me ayudó a organizar todo sin estrés ni dudas.”",
+        "“Me siento más seguro porque sé que mis documentos están bien protegidos y claros.”"
+      ],
+      "secondary_cta_pattern": "Entrada guiada que invita a resolver dudas frecuentes o realizar un mini diagnóstico fácil y rápido.",
+      "secondary_cta_label": "Quiero aclarar mis dudas en un minuto",
+      "faq_intro_copy": "¿Tienes preguntas? Aquí respondemos las dudas más comunes para que avances sin preocupaciones.",
+      "implementation_notes": [
+        "Mantener la estructura visual actual, solo reemplazar textos dentro de los bloques existentes.",
+        "Incluir la prueba social en el bloque de confianza reforzando credibilidad sin exagerar.",
+        "Transformar el CTA secundario en un enlace a un mini cuestionario o sección FAQ interactiva de bajo esfuerzo para el usuario."
+      ],
+      "rationale": "El ajuste del hero con un tono sereno y protector refuerza la confianza sin generar falsas expectativas. La prueba social basada en testimonios reales y simples aporta credibilidad sin promesas exageradas. El CTA secundario rediseñado reduce la fricción para usuarios indecisos al ofrecer una vía rápida para resolver dudas, incrementando la posibilidad de conversión futura."
+    }
+  },
+  "grok": {
+    "provider": "grok",
+    "model": "grok-3-mini",
+    "result": {
+      "hero_variant_recommendation": "Variante A/B con enfoque sereno y protector, destacando beneficios medibles como orden y claridad para fomentar confianza sin promesas absolutas.",
+      "hero_title": "Recupera la calma y protege tu historia laboral con sencillez.",
+      "hero_body": "Sube tus documentos de forma fácil. AuditaPatron los organiza, los cuida y te ayuda a ver lo esencial con claridad, para que sientas más control y tranquilidad desde el primer paso.",
+      "social_proof_format": "Testimonios breves y creíbles de usuarios reales, presentados de manera sobria.",
+      "social_proof_copy": [
+        "Usuarios como tú han encontrado orden en sus archivos laborales.",
+        "Basado en experiencias reales: 'Ahora manejo mis documentos sin estrés diario.'",
+        "Feedback común: 'Me da la paz que necesitaba para revisar mi historial laboral.'"
+      ],
+      "secondary_cta_pattern": "Enlace directo a una sección de FAQs o un mini diagnóstico simple que guía al usuario con preguntas básicas.",
+      "secondary_cta_label": "Resuelve tus dudas de manera rápida",
+      "faq_intro_copy": "Explora respuestas claras a preguntas comunes sobre cómo gestionar y proteger tus documentos laborales.",
+      "implementation_notes": [
+        "Verificar que el nuevo copy encaje en los bloques existentes sin alterar el layout.",
+        "Asegurar que la variante hero sea fácil de alternar para pruebas A/B.",
+        "Mantener el tono sereno en toda la página para reforzar la confianza emocional."
+      ],
+      "rationale": "Esta propuesta mejora la conversión al reforzar la claridad emocional y confianza sobria, reduce fricciones con un CTA guiado, y añade prueba social creíble, todo con lenguaje simple para un enfoque mínimo en complejidades."
+    }
+  },
+  "gemini": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "result": {
+      "hero_variant_recommendation": "Hero centrado en la protección, calma y control tangible de la historia laboral",
+      "hero_title": "Protege tu historia laboral: recupera la calma y el control.",
+      "hero_body": "Con AuditaPatron, tus documentos laborales están seguros y ordenados. Entiende fácilmente cada detalle clave de tu situación y avanza con la tranquilidad de tener tu información protegida y clara desde el primer paso.",
+      "social_proof_format": "Citas de usuarios reales enfocadas en beneficios clave",
+      "social_proof_copy": [
+        "Me dio la tranquilidad que necesitaba para entender mejor mis papeles.",
+        "Por fin tengo mis documentos ordenados y sé dónde está todo, sin estrés.",
+        "Saber que mi información está segura y clara me quita un gran peso de encima."
+      ],
+      "secondary_cta_pattern": "Entrada guiada a preguntas frecuentes y mini-diagnóstico de baja fricción",
+      "secondary_cta_label": "Aclara tus dudas: inicia tu mini-diagnóstico",
+      "faq_intro_copy": "Inicia tu camino hacia la claridad. Resuelve tus dudas más comunes y recibe una guía personalizada sobre tus documentos laborales.",
+      "implementation_notes": [
+        "Implementar el nuevo copy del hero como variante A/B para medir su impacto en la tasa de conversión y el tiempo en página.",
+        "Integrar las citas de prueba social en un carrusel o bloque de testimonios visible, preferiblemente cerca del hero o de la sección de beneficios, usando un formato de 'voz del usuario'.",
+        "Asegurar que el CTA secundario dirija a una experiencia interactiva (ej. chatbot simple o formulario de 3-4 preguntas) que filtre las FAQs relevantes o dé una orientación inicial, en lugar de una página estática."
+      ],
+      "rationale": "La estrategia se centra en reforzar la propuesta de valor emocional y funcional de AuditaPatron. El hero afina la promesa de protección y calma, haciéndola más tangible y medible. La prueba social añade credibilidad mediante experiencias de usuarios reales, evitando exageraciones y conectando con los beneficios clave. Finalmente, el CTA secundario se transforma en una herramienta de baja fricción que guía al usuario con dudas, aumentando la probabilidad de engagement al ofrecer una solución directa y personalizada a sus inquietudes iniciales, alineándose con la búsqueda de claridad y control."
+    }
+  }
+}
