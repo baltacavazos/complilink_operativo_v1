@@ -1,0 +1,182 @@
+[
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "result": {
+      "positioning_thesis": "AuditaPatron detecta y te alerta sobre irregularidades en tu situación laboral que podrían estar pasándote factura sin que lo sepas, para que puedas tomar acción inmediata y recuperar el control.",
+      "risk_angle": "Tu historial laboral tiene fallas que pueden costarte dinero o derechos sin que te hayas dado cuenta. Cada día que pasa sin revisar tus documentos y pagos es un riesgo que podrías evitar.",
+      "empowerment_angle": "Con AuditaPatron, tienes en tus manos una herramienta clara y rápida para identificar problemas y decidir qué hacer hoy mismo, sin esperas ni complicaciones legales inmediatas.",
+      "hero_variants": [
+        {
+          "name": "Impacto Directo",
+          "eyebrow": "¿Sabes si tu trabajo está siendo correctamente reconocido?",
+          "title": "Tu empleo puede estar en riesgo. Descúbrelo ya.",
+          "body": "No dejes que errores en nóminas o documentos laborales te perjudiquen sin que lo sepas. Revisa tu situación con un análisis claro y toma el control hoy.",
+          "cta_primary": "Revisar mi situación laboral",
+          "cta_secondary": "¿Cómo funciona?",
+          "why_it_hooks": "Genera urgencia inmediata con una pregunta directa que hace que el usuario cuestione su realidad, seguido de un llamado a la acción que empodera."
+        },
+        {
+          "name": "Alerta y Acción",
+          "eyebrow": "Cada día sin revisar puede costarte más.",
+          "title": "Detecta fallas en tus pagos y documentos laborales ahora.",
+          "body": "AuditaPatron te da el poder de identificar posibles problemas antes de que sea demasiado tarde. Toma el control y entiende paso a paso qué hacer.",
+          "cta_primary": "Comenzar auditoría gratis",
+          "cta_secondary": "Aprende por qué es urgente",
+          "why_it_hooks": "Combina el mensaje de urgencia con el empoderamiento de comenzar una auditoría sin compromiso, incentivando la acción inmediata."
+        },
+        {
+          "name": "Control Total",
+          "eyebrow": "No permitas que errores laborales decidan por ti.",
+          "title": "Revisa hoy mismo tu situación laboral y actúa con información.",
+          "body": "AuditaPatron te brinda un reporte claro para que detectes irregularidades y entiendas tus siguientes pasos sin complicaciones.",
+          "cta_primary": "Iniciar revisión ahora",
+          "cta_secondary": "Más información sobre el proceso",
+          "why_it_hooks": "Enfatiza la sensación de control y capacidad de acción inmediata, reduciendo la posible parálisis por miedo o incertidumbre."
+        }
+      ],
+      "recommended_variant_name": "Alerta y Acción",
+      "recommended_ab_test": {
+        "variant_a": "Impacto Directo",
+        "variant_b": "Alerta y Acción",
+        "success_metric": "Tasa de clics en CTA primaria en los primeros 10 segundos"
+      },
+      "visual_emphasis_notes": [
+        "Destacar el título con fuente grande y contrastante para impacto inmediato.",
+        "Colocar CTA primaria visible sin scroll, con botón de color vibrante.",
+        "Usar espacios limpios para facilitar lectura rápida en mobile."
+      ],
+      "copy_risks_to_avoid": [
+        "No prometer resultados legales ni garantías de solución.",
+        "Evitar términos técnicos complejos que dificulten comprensión rápida.",
+        "No generar miedo paralizante, siempre cerrar con opción de acción."
+      ],
+      "implementation_notes": [
+        "Mantener la jerarquía clara: Eyebrow pequeño, título grande, cuerpo breve.",
+        "Usar un lenguaje directo y familiar, sin florituras innecesarias.",
+        "Optimizar para carga rápida y legibilidad en dispositivos móviles."
+      ],
+      "final_recommendation": "Implementar el hero 'Alerta y Acción' para maximizar la urgencia y el empoderamiento, junto a un A/B test con 'Impacto Directo' para medir qué enfoque genera mayor engagement inmediato. Priorizar claridad y llamada a la acción visible para facilitar la conversión desde el primer vistazo."
+    }
+  },
+  {
+    "provider": "grok",
+    "model": "grok-4",
+    "result": {
+      "positioning_thesis": "AuditaPatron posiciona la auditoría laboral como una herramienta urgente para detectar riesgos ocultos, empoderando al usuario a tomar control inmediato y actuar sin demoras.",
+      "risk_angle": "Enfatizar los peligros invisibles en documentos laborales, pagos y evidencias que podrían comprometer la estabilidad del trabajador, generando un sentido de urgencia para revisar ahora.",
+      "empowerment_angle": "Transmitir que el usuario puede transformar el riesgo en acción inmediata, ganando control y claridad sobre su situación laboral con solo unos clics.",
+      "hero_variants": [
+        {
+          "name": "Urgencia Inminente",
+          "eyebrow": "¡No ignores las señales!",
+          "title": "¿Está tu patrón ocultando irregularidades en tu contrato o pagos?",
+          "body": "Muchos trabajadores descubren problemas tarde, pero tú puedes auditar tu situación laboral ahora mismo y tomar el control antes de que sea peor.",
+          "cta_primary": "Audita tu caso gratis",
+          "cta_secondary": "Aprende más",
+          "why_it_hooks": "Captura atención con una pregunta directa sobre riesgos personales, genera urgencia y cierra con empoderamiento para motivar acción inmediata."
+        },
+        {
+          "name": "Riesgo Empoderado",
+          "eyebrow": "Alerta laboral",
+          "title": "Detecta riesgos en tu empleo antes de que te afecten",
+          "body": "Irregularidades en documentos o pagos pueden pasar desapercibidas, pero con AuditaPatron, revisas todo en minutos y decides cómo actuar con total control.",
+          "cta_primary": "Revisa ahora",
+          "cta_secondary": "Descubre cómo",
+          "why_it_hooks": "Usa un título que resalta el riesgo inminente, pero equilibra con empoderamiento en el body, fomentando una sensación de capacidad inmediata."
+        },
+        {
+          "name": "Control Inmediato",
+          "eyebrow": "¡Actúa ya!",
+          "title": "No dejes que problemas laborales te sorprendan: audita y toma el mando",
+          "body": "Identifica posibles irregularidades en evidencias, pagos o contratos de forma rápida. Tú tienes el poder de revisar y entender qué hacer hoy mismo.",
+          "cta_primary": "Inicia auditoría",
+          "cta_secondary": "Ver detalles",
+          "why_it_hooks": "El título genera urgencia con un llamado a la acción, mientras el body refuerza el empoderamiento, creando un flujo que impulsa clics sin paralizar al usuario."
+        }
+      ],
+      "recommended_variant_name": "Urgencia Inminente",
+      "recommended_ab_test": {
+        "variant_a": "Urgencia Inminente",
+        "variant_b": "Riesgo Empoderado",
+        "success_metric": "Tasa de conversión en CTA primary (clics para iniciar auditoría)"
+      },
+      "visual_emphasis_notes": [
+        "Usar colores rojos o naranjas para palabras clave de riesgo como 'irregularidades' o 'riesgos' para captar atención inmediata.",
+        "Asegurar que el título sea grande y bold en mobile, con el CTA primary destacado en un botón prominente.",
+        "Mantener el layout simple: eyebrow arriba, título centrado, body corto y CTAs alineados horizontalmente para fácil navegación táctil."
+      ],
+      "copy_risks_to_avoid": [
+        "No incluir afirmaciones como 'garantizamos detectar todos los problemas' para evitar promesas absolutas.",
+        "Evitar lenguaje que suene alarmista extremo, como 'tu empleo está en peligro inminente', para mantener credibilidad.",
+        "No mencionar cifras inventadas o escenarios legales específicos sin base, como 'el 80% de contratos tienen errores'."
+      ],
+      "implementation_notes": [
+        "Priorizar mobile-first: texto conciso, con saltos de línea para legibilidad en pantallas pequeñas.",
+        "Asegurar que el hero cargue rápido y sea accesible, con CTAs que respondan bien a toques.",
+        "Probar la jerarquía: eyebrow para gancho inicial, título para impacto, body para contexto y CTAs para cierre empoderador."
+      ],
+      "final_recommendation": "Implementa la variante 'Urgencia Inminente' como base, ya que equilibra agresividad con empoderamiento, y realiza el AB test propuesto para optimizar el engagement inicial."
+    }
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "result": {
+      "positioning_thesis": "Activar la alarma sobre riesgos laborales ocultos, transformando la ansiedad en acción inmediata y control personal. El objetivo es que el trabajador sienta una urgencia real por revisar su situación, seguido de una sensación de empoderamiento para actuar.",
+      "risk_angle": "La posibilidad de que el trabajador esté perdiendo dinero, derechos, beneficios o seguridad en su empleo sin ser consciente de ello, enfatizando la vulnerabilidad ante errores, omisiones o irregularidades no detectadas en sus documentos o pagos.",
+      "empowerment_angle": "Ofrecer al trabajador la herramienta y el conocimiento para descubrir la verdad sobre su situación laboral, evaluar posibles problemas y decidir los siguientes pasos, pasando de la incertidumbre y el riesgo pasivo a la acción informada y el control proactivo.",
+      "hero_variants": [
+        {
+          "name": "Directo y Urgente",
+          "eyebrow": "ATENCIÓN: Tu futuro laboral en juego",
+          "title": "¿Estás perdiendo dinero o derechos sin saberlo? Descúbrelo.",
+          "body": "Cada día que pasa, errores u omisiones en tu historial laboral pueden costarte caro. Revisa ahora y protege lo que es tuyo antes de que sea tarde.",
+          "cta_primary": "Audita tu situación laboral GRATIS",
+          "cta_secondary": "Descubre qué debes revisar",
+          "why_it_hooks": "Impacto directo con una pregunta de riesgo personal ('perdiendo dinero o derechos'). Genera curiosidad y miedo a la pérdida. El 'cada día que pasa' refuerza la urgencia, y cierra con control ('protege lo que es tuyo')."
+        },
+        {
+          "name": "Confrontacional y Control",
+          "eyebrow": "ALERTA: Tu estabilidad laboral",
+          "title": "Tu expediente laboral podría tener errores. ¿Lo sabes con certeza?",
+          "body": "No dejes que irregularidades ocultas pongan en riesgo tu estabilidad o compensación. Toma el control hoy mismo y verifica cada detalle clave de tu empleo.",
+          "cta_primary": "Inicia tu auditoría rápida",
+          "cta_secondary": "¿Qué tipo de errores buscar?",
+          "why_it_hooks": "Ataca el punto ciego del usuario ('podría tener errores', '¿Lo sabes con certeza?'). La palabra 'expediente' da una sensación de oficialidad y seriedad. 'No dejes que...' empodera, y 'toma el control hoy mismo' refuerza la acción inmediata."
+        },
+        {
+          "name": "Intriga y Claridad",
+          "eyebrow": "No esperes a que sea demasiado tarde.",
+          "title": "¿Hay algo oculto en tus documentos laborales? Sal de dudas YA.",
+          "body": "La incertidumbre sobre tu salario, prestaciones o contrato termina hoy. Obtén claridad instantánea y la capacidad de actuar con información precisa y relevante.",
+          "cta_primary": "Quiero revisar mi situación",
+          "cta_secondary": "¿Cómo funciona AuditaPatron?",
+          "why_it_hooks": "Empieza con una advertencia ('No esperes...'). 'Algo oculto' genera intriga y una paranoia controlada. 'Sal de dudas YA' es imperativo y urgente. El cuerpo promete el fin de la incertidumbre y la capacidad de actuar, conectando directamente con el empoderamiento."
+        }
+      ],
+      "recommended_variant_name": "Directo y Urgente",
+      "recommended_ab_test": {
+        "variant_a": "Directo y Urgente",
+        "variant_b": "Confrontacional y Control",
+        "success_metric": "Porcentaje de clics en el CTA principal (Inicio de auditoría) y tasa de finalización del primer paso del flujo."
+      },
+      "visual_emphasis_notes": [
+        "Utilizar un color de acento fuerte (ej. rojo o amarillo ámbar) para palabras clave de riesgo o urgencia en el título.",
+        "Asegurar que el título principal sea la primera y más grande pieza de texto visible en dispositivos móviles, con una tipografía de alto contraste.",
+        "Considerar un icono de alerta o 'stop' sutil pero visible junto al eyebrow o el título, sin que distraiga de la legibilidad."
+      ],
+      "copy_risks_to_avoid": [
+        "Evitar lenguaje jurídico excesivamente técnico o alarmista que no se traduzca en una acción clara para el usuario.",
+        "No prometer resultados legales garantizados o cifras de recuperación de dinero específicas sin una base sólida y una advertencia de que cada caso es único.",
+        "No culpar directamente al empleador o generar animosidad, sino centrarse en el derecho del trabajador a la información y la protección de sus propios intereses."
+      ],
+      "implementation_notes": [
+        "Asegurar que el proceso posterior al clic en el CTA sea igual de claro, rápido y empoderador, guiando al usuario sin fricción excesiva.",
+        "Realizar pruebas A/B no solo con los títulos, sino también con la redacción de los CTA para optimizar la tasa de conversión.",
+        "Considerar la posibilidad de incluir un campo de entrada simple (ej. tipo de contrato, años trabajando) directamente en el hero para reducir la barrera de entrada y obtener un compromiso inicial."
+      ],
+      "final_recommendation": "El enfoque clave es generar un 'golpe de atención' inmediato que conecte con el miedo a la pérdida o al error oculto, seguido de una promesa clara de control y la capacidad de actuar. El usuario debe sentir que 'esto me afecta AHORA y necesito hacer algo', pero también 'tengo la herramienta para entenderlo y solucionarlo HOY'."
+    }
+  }
+]

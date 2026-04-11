@@ -232,27 +232,29 @@ const guidedFaqOptions = [
 ];
 
 const heroCopyVariants = {
-  serenity: {
-    tabLabel: "Calma y protección",
-    eyebrowMobile: "Calma, protección y control desde tu primer archivo",
-    eyebrowDesktop: "Calma, protección y control desde tu primer archivo",
-    titleLead: "Protege tu historia laboral",
-    titleAccent: "y recupera la calma.",
+  alert: {
+    tabLabel: "Alerta y control",
+    eyebrowMobile: "Alerta laboral temprana",
+    eyebrowDesktop: "Alerta laboral temprana",
+    titleLead: "Podrías estar perdiendo dinero o derechos",
+    titleAccent: "y ni siquiera lo sabes.",
+    supportLine: "Revísalo hoy y toma control de tu historial laboral.",
     body:
-      "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
-    ctaPrimary: "Comenzar con calma",
-    ctaSecondary: "Ver guía rápida antes de subir",
+      "AuditaPatron te ayuda a detectar señales de riesgo en nómina, CFDI y documentos clave para que entiendas qué revisar primero y actúes con más claridad.",
+    ctaPrimary: "Auditar mi situación ahora",
+    ctaSecondary: "Ver qué documento subir primero",
   },
   control: {
-    tabLabel: "Orden y control",
-    eyebrowMobile: "Orden, claridad y control desde tu primer archivo",
-    eyebrowDesktop: "Orden, claridad y control desde tu primer archivo",
-    titleLead: "Pon tus documentos en orden",
-    titleAccent: "y toma control con calma.",
+    tabLabel: "Control inmediato",
+    eyebrowMobile: "Control y claridad desde tu primer archivo",
+    eyebrowDesktop: "Control y claridad desde tu primer archivo",
+    titleLead: "Revisa hoy tu historial laboral",
+    titleAccent: "y actúa con más control.",
+    supportLine: "Empieza con el documento que ya tienes a la mano.",
     body:
-      "Empieza con el archivo que ya tienes. AuditaPatron lo ordena, lo resguarda y te ayuda a entender lo importante para que sientas más control desde el primer paso.",
-    ctaPrimary: "Empezar a ordenar mis documentos",
-    ctaSecondary: "Quiero una guía rápida antes de subir",
+      "AuditaPatron ordena tus archivos, detecta señales importantes y te orienta sobre qué revisar primero para que avances con claridad desde el primer paso.",
+    ctaPrimary: "Empezar mi revisión",
+    ctaSecondary: "Quiero una guía rápida",
   },
 } as const;
 
@@ -481,7 +483,7 @@ function SiteHeader() {
 
 function HeroSection() {
   const dossierReadiness = 58;
-  const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("serenity");
+  const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("alert");
   const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
 
   return (
@@ -524,21 +526,28 @@ function HeroSection() {
           </div>
 
           <h1
-            className="motion-enter-soft mt-4 max-w-[13ch] text-balance text-[2.55rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:text-[3.6rem] lg:max-w-[11ch] lg:text-[4.4rem]"
+            className="motion-enter-soft mt-4 max-w-[15ch] text-balance text-[2.55rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
               {activeHeroVariant.titleLead}
-              <span className="mt-1 block text-teal-700">{activeHeroVariant.titleAccent}</span>
+              <span className="mt-1 block text-amber-700">{activeHeroVariant.titleAccent}</span>
             </span>
             <span className="hidden sm:block">
               {activeHeroVariant.titleLead}
-              <span className="block text-teal-700">{activeHeroVariant.titleAccent}</span>
+              <span className="block text-amber-700">{activeHeroVariant.titleAccent}</span>
             </span>
           </h1>
 
           <p
-            className="motion-enter-soft mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
+            className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
+            style={{ ["--motion-delay" as string]: "180ms" }}
+          >
+            {activeHeroVariant.supportLine}
+          </p>
+
+          <p
+            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
             {activeHeroVariant.body}

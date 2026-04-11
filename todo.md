@@ -670,3 +670,5 @@
 - [x] Implementar variante A/B visible del hero para comparar mensaje sereno contra alternativa de control y respaldo
 - [x] Añadir testimonios o casos resumidos con señales de respaldo visible dentro de la landing
 - [x] Conectar la guía rápida a un prediagnóstico que sugiera el primer documento ideal para subir según la duda elegida
+- [x] Rediseñar el hero de AuditaPatron hacia una versión más agresiva, de alto impacto y orientada a maximizar la atención inicial y el engagement
+- [x] Ajustar el hero agresivo para que, además de urgencia y riesgo, transmita empoderamiento y sensación de control para el usuario

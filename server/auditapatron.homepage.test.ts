@@ -7,13 +7,13 @@ describe("Auditapatron homepage and audit flow content", () => {
   const auditFlowSource = readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8");
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
 
-  it("shows a worker-centered value proposition with IMSS and Infonavit clarity", () => {
-    expect(homeSource).toContain("Protege tu historia laboral");
-    expect(homeSource).toContain("y recupera la calma.");
-    expect(homeSource).toContain("Sube tus documentos sin complicarte.");
-    expect(homeSource).toContain("te muestra lo importante");
+  it("shows an urgent worker-centered value proposition that also reinforces immediate control", () => {
+    expect(homeSource).toContain("Podrías estar perdiendo dinero o derechos");
+    expect(homeSource).toContain("y ni siquiera lo sabes.");
+    expect(homeSource).toContain("Revísalo hoy y toma control de tu historial laboral.");
+    expect(homeSource).toContain("detectar señales de riesgo en nómina, CFDI y documentos clave");
     expect(homeSource).toContain("El documento que ya tengas más a la mano siempre puede servir.");
-    expect(homeSource).toContain("Orden, claridad y control desde tu primer archivo");
+    expect(homeSource).toContain("Control y claridad desde tu primer archivo");
     expect(homeSource).not.toContain("CompliLink Operativo");
   });
 
@@ -29,7 +29,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
-    expect(homeSource).toContain("Quiero una guía rápida antes de subir");
+    expect(homeSource).toContain("Ver qué documento subir primero");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Mini diagnóstico inicial");
     expect(homeSource).toContain("Señales de confianza");

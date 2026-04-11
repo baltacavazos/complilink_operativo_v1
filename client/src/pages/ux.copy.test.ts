@@ -20,12 +20,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Helios ordena tu expediente y fortalece tu respaldo");
     expect(source).not.toContain("CompliLink");
     expect(source).not.toContain("ThemeToggle");
-    expect(source).toContain('tabLabel: "Calma y protección"');
-    expect(source).toContain('tabLabel: "Orden y control"');
-    expect(source).toContain("Protege tu historia laboral");
-    expect(source).toContain("y recupera la calma.");
-    expect(source).toContain("Calma, protección y control desde tu primer archivo");
-    expect(source).toContain("Orden, claridad y control desde tu primer archivo");
+    expect(source).toContain('tabLabel: "Alerta y control"');
+    expect(source).toContain('tabLabel: "Control inmediato"');
+    expect(source).toContain("Podrías estar perdiendo dinero o derechos");
+    expect(source).toContain("y ni siquiera lo sabes.");
+    expect(source).toContain("Revísalo hoy y toma control de tu historial laboral.");
+    expect(source).toContain("Alerta laboral temprana");
+    expect(source).toContain("Control y claridad desde tu primer archivo");
     expect(source).toContain('label: "Asistente"');
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");
@@ -38,7 +39,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Señales de confianza");
     expect(source).toContain("feedback recurrente recogido durante pruebas de mensaje");
-    expect(source).toContain("Quiero una guía rápida antes de subir");
+    expect(source).toContain("Ver qué documento subir primero");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Mini diagnóstico inicial");
     expect(source).toContain("Quiero entender rápido si esto me puede ayudar");
