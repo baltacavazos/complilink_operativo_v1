@@ -753,3 +753,4 @@
 - [ ] Limitar las alertas del sistema de backup únicamente a fallos críticos que comprometan la recuperabilidad
 - [ ] Definir y documentar qué eventos se consideran críticos para evitar notificaciones innecesarias
 - [x] Simplificar aún más la primera carga mobile-first de /auditar ocultando fricción inicial, priorizando cámara y reforzando el valor incremental del expediente
+- [x] Retomar ahora el bloque mobile-first prioritario de /auditar con contraste multimodelo previo: autoavance seguro, preferencia visible cámara/archivo y reducción adicional de acciones secundarias

@@ -3939,7 +3939,9 @@ export default function Auditar() {
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-700">
                           {shouldCompactMobileUploadEntry
-                            ? "Empieza con la foto o el archivo que tengas más a la mano. Cada documento que agregas fortalece tu expediente y nos da más claridad para entender tu caso."
+                            ? activeCaptureMode === "camera"
+                              ? "Empieza con una foto clara de tu documento. En cuanto la tomes, comenzaremos a revisarla automáticamente para darte una primera lectura sin pasos extra."
+                              : "Empieza con el archivo que ya tengas guardado. En cuanto lo elijas, comenzaremos a revisarlo automáticamente para darte una primera lectura sin pasos extra."
                             : selectedFilePreparationCopy}
                         </p>
                       </div>
@@ -4040,28 +4042,65 @@ export default function Auditar() {
                         : shouldCompactMobileUploadEntry
                           ? activeCaptureMode === "camera"
                             ? "Toma foto para empezar"
-                            : "Sube tu primer documento"
+                            : "Elige archivo para empezar"
                           : uploadPrimaryActionLabel}
                     </Button>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {shouldCompactMobileUploadEntry
                           ? activeCaptureMode === "camera"
-                            ? "Abriremos primero la cámara para que empieces en un solo toque. Si ya lo tienes guardado, puedes cambiar a archivo."
-                            : "Abriremos primero tus archivos para avanzar rápido. Cada documento que subes fortalece tu expediente y mejora la lectura de tu caso."
+                            ? "Abriremos primero la cámara y, en cuanto tomes la foto, el análisis empezará solo. Si ya tienes el documento guardado, cambia a archivo con un toque."
+                            : "Abriremos primero tus archivos y, en cuanto elijas uno, el análisis empezará solo. Si prefieres tomar foto, cambia a cámara con un toque."
                           : preferredCaptureMode === "camera"
                             ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
                             : preferredCaptureMode === "file"
                               ? "Abriremos primero tus archivos para quitarte un toque innecesario."
                               : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
                       </p>
-                      <button
-                        type="button"
-                        className="shrink-0 text-xs font-semibold text-teal-700 underline decoration-teal-200 underline-offset-4"
-                        onClick={() => setUploadSourceOpen(true)}
-                      >
-                        Cambiar método
-                      </button>
+                      {shouldCompactMobileUploadEntry ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
+                              activeCaptureMode === "camera"
+                                ? "border-teal-200 bg-teal-50 text-teal-900"
+                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            }`}
+                            onClick={() => {
+                              setPreferredCaptureMode("camera");
+                              setSelectedCaptureMode("camera");
+                            }}
+                          >
+                            <Camera className="h-4 w-4" strokeWidth={1.8} />
+                            Cámara
+                          </button>
+                          <button
+                            type="button"
+                            className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
+                              activeCaptureMode === "file"
+                                ? "border-teal-200 bg-teal-50 text-teal-900"
+                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            }`}
+                            onClick={() => {
+                              setPreferredCaptureMode("file");
+                              setSelectedCaptureMode("file");
+                            }}
+                          >
+                            <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
+                            Archivo
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-end">
+                          <button
+                            type="button"
+                            className="shrink-0 text-xs font-semibold text-teal-700 underline decoration-teal-200 underline-offset-4"
+                            onClick={() => setUploadSourceOpen(true)}
+                          >
+                            Cambiar método
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -4105,7 +4144,7 @@ export default function Auditar() {
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
                     <p className="font-semibold">Documento recibido para borrador automático</p>
                     <p className="mt-1">{selectedFile.name} · {(selectedFile.size / 1024).toFixed(1)} KB</p>
-                    <p className="mt-2 leading-6">En cuanto termina la carga, AuditaPatrón prepara una vista previa para que la revises antes de cualquier guardado final.</p>
+                    <p className="mt-2 leading-6">La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">

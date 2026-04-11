@@ -63,11 +63,16 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).not.toContain("CompliLink Operativo");
   });
 
-  it("simplifies the first mobile upload touchpoint with a camera-first entry and stronger expediente value copy", () => {
+  it("simplifies the first mobile upload touchpoint with a visible mode toggle and explicit auto-advance copy", () => {
     expect(auditFlowSource).toContain("const isFirstDocumentFlow = documents.length === 0 && !pendingDraft && !lastUpload;");
     expect(auditFlowSource).toContain("Sube tu primer documento");
     expect(auditFlowSource).toContain("Toma foto para empezar");
-    expect(auditFlowSource).toContain("Cada documento que agregas fortalece tu expediente");
-    expect(auditFlowSource).toContain("Abriremos primero la cámara para que empieces en un solo toque.");
+    expect(auditFlowSource).toContain("Elige archivo para empezar");
+    expect(auditFlowSource).toContain("comenzaremos a revisarla automáticamente");
+    expect(auditFlowSource).toContain("comenzaremos a revisarlo automáticamente");
+    expect(auditFlowSource).toContain("el análisis empezará solo");
+    expect(auditFlowSource).toContain("Archivo");
+    expect(auditFlowSource).toContain("Cámara");
+    expect(auditFlowSource).toContain("La revisión preliminar empieza sola en cuanto termina la carga");
   });
 });
