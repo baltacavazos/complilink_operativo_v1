@@ -606,3 +606,10 @@
 - [x] Operativa multi-IA: ampliar el script de contraste con el contexto real de prepareAuditarUploadAsset en analyze/upload para mejorar la priorización
 - [x] Dashboard CEO: reforzar el gate de acceso y el bloqueo de exportes cuando el snapshot esté stale, incompleto o en error
 - [x] Escalabilidad AuditaPatron: evaluar y endurecer los cuellos de botella internos más probables para soportar crecimiento de usuarios
+- [x] Revalidar la base restaurada de autenticación y corregir el bloqueo de compilación en server/routers.ts
+- [x] Implementar autenticación por email passwordless sin romper Manus OAuth
+- [x] Preparar la integración de Google OAuth sobre el modelo multi-identidad
+- [x] Actualizar la interfaz de acceso para un flujo unificado con Manus, Google y correo
+- [x] Cubrir los nuevos flujos de autenticación con pruebas Vitest y validación técnica
+- [x] Corregir el error de compilación del frontend asociado a Access.tsx y dejar estable la pantalla de acceso unificada
+- [ ] Investigar y corregir el fallo TLS/SSL del endpoint externo complilink.mx que hoy rompe `server/auditaPatronBridgeSecret.test.ts` en la suite completa

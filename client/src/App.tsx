@@ -8,12 +8,14 @@ import Auditar from "./pages/Auditar";
 import CeoDashboard from "./pages/CeoDashboard";
 import Home from "./pages/Home";
 import { LegalPrivacyPage, LegalTermsPage } from "./pages/LegalDocuments";
+import Access from "./pages/Access";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/acceso"} component={Access} />
       <Route path={"/auditar"} component={Auditar} />
       <Route path={"/ceo"} component={CeoDashboard} />
       <Route path={"/ceo/alertas"} component={CeoDashboard} />

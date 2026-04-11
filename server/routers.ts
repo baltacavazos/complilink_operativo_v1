@@ -44,6 +44,12 @@ import {
   withDatabaseLock,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
+import {
+  clearEmailChallengeCookie,
+  completeEmailLogin,
+  isGoogleOAuthConfigured,
+  startEmailLogin,
+} from "./authService";
 import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -1590,9 +1596,57 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
+    googleStatus: publicProcedure.query(() => ({
+      enabled: isGoogleOAuthConfigured(),
+      startPath: "/api/auth/google/start",
+    })),
+    requestEmailCode: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          name: z.string().trim().min(2).max(120).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const result = await startEmailLogin({
+          req: ctx.req,
+          res: ctx.res,
+          email: input.email,
+          name: input.name,
+        });
+
+        return {
+          success: true,
+          maskedEmail: result.maskedEmail,
+          expiresInSeconds: result.expiresInSeconds,
+        } as const;
+      }),
+    verifyEmailCode: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          code: z.string().trim().regex(/^\d{6}$/),
+          name: z.string().trim().min(2).max(120).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const user = await completeEmailLogin({
+          req: ctx.req,
+          res: ctx.res,
+          email: input.email,
+          code: input.code,
+          name: input.name,
+        });
+
+        return {
+          success: true,
+          user,
+        } as const;
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      clearEmailChallengeCookie(ctx.req, ctx.res);
       return {
         success: true,
       } as const;

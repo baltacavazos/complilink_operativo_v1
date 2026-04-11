@@ -1,7 +1,10 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
-import * as db from "../db";
-import { getSessionCookieOptions } from "./cookies";
+import {
+  buildGoogleAuthorizationUrl,
+  completeGoogleLogin,
+  createAppSessionForUser,
+  syncManusUser,
+} from "../authService";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -28,26 +31,50 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
-      await db.upsertUser({
+      const user = await syncManusUser({
         openId: userInfo.openId,
         name: userInfo.name || null,
         email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: new Date(),
       });
 
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
+      await createAppSessionForUser(req, res, {
+        openId: user.openId,
+        name: user.name || userInfo.name || userInfo.email || "CompliLink",
       });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       res.redirect(302, "/");
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });
+    }
+  });
+
+  app.get("/api/auth/google/start", async (req: Request, res: Response) => {
+    try {
+      const returnTo = getQueryParam(req, "returnTo") || "/";
+      const authorizationUrl = await buildGoogleAuthorizationUrl(req, returnTo);
+      res.redirect(302, authorizationUrl);
+    } catch (error) {
+      console.error("[OAuth] Google start failed", error);
+      res.status(500).json({ error: "Google OAuth start failed" });
+    }
+  });
+
+  app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
+    const code = getQueryParam(req, "code");
+    const state = getQueryParam(req, "state");
+
+    if (!code || !state) {
+      res.status(400).json({ error: "code and state are required" });
+      return;
+    }
+
+    try {
+      const { returnTo } = await completeGoogleLogin({ req, res, code, state });
+      res.redirect(302, returnTo || "/");
+    } catch (error) {
+      console.error("[OAuth] Google callback failed", error);
+      res.status(500).json({ error: "Google OAuth callback failed" });
     }
   });
 }

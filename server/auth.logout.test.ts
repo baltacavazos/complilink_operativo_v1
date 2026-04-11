@@ -49,9 +49,13 @@ describe("auth.logout", () => {
     const result = await caller.auth.logout();
 
     expect(result).toEqual({ success: true });
-    expect(clearedCookies).toHaveLength(1);
-    expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
-    expect(clearedCookies[0]?.options).toMatchObject({
+    expect(clearedCookies).toHaveLength(2);
+    expect(clearedCookies.map((cookie) => cookie.name)).toEqual(
+      expect.arrayContaining([COOKIE_NAME, "complilink_email_login"]),
+    );
+
+    const sessionCookie = clearedCookies.find((cookie) => cookie.name === COOKIE_NAME);
+    expect(sessionCookie?.options).toMatchObject({
       maxAge: -1,
       secure: true,
       sameSite: "none",
