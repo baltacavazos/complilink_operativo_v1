@@ -651,3 +651,10 @@
 - [x] Panel de métricas exclusivo para el usuario maestro en la consola CEO
 - [x] Registrar vistas de consola CEO y bloqueos de guardrails como eventos analíticos persistentes
 - [x] Ampliar cobertura Playwright para snapshot stale, reintentos y fallos de consola CEO
+- [ ] Revisar la estructura, layout y mensajes de la página con enfoque de simplicidad extrema y máximo engagement antes de la versión final
+- [ ] Consultar y moderar consenso entre Grok, ChatGPT y Gemini sobre mejoras de alto impacto sin cambios estructurales grandes
+- [ ] Presentar propuesta final priorizada para aprobación antes de implementar ajustes visuales o de copy
+- [ ] Reforzar el hero de la home con copy más emocional orientado a alivio, control y protección
+- [ ] Hacer más fuerte el CTA principal y la tarjeta lateral con mensajes de progreso y deseo inmediato de probar el producto
+- [ ] Simplificar redundancias y humanizar el microcopy de confianza en la home sin cambios estructurales grandes
+- [x] Aplicar microajustes de copy emocionales en la landing de AuditaPatron sin modificar estructura ni layout

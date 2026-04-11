@@ -212,7 +212,7 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-const PRIMARY_CTA_LABEL = "Abrir mi expediente";
+const PRIMARY_CTA_LABEL = "Empieza ahora y protege tu futuro";
 
 function goToAuditFlow() {
   trackFunnelStep("home_cta_clicked", {
@@ -391,8 +391,8 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            <span className="sm:hidden">Hecho para trabajadores</span>
-            <span className="hidden sm:inline">Diseñado para trabajadores, no para expertos</span>
+            <span className="sm:hidden">Claridad desde tu primer archivo</span>
+            <span className="hidden sm:inline">Claridad, respaldo y control desde tu primer archivo</span>
           </div>
 
           <h1
@@ -400,12 +400,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              Tus derechos laborales,
-              <span className="mt-1 block text-teal-700">claros desde tu primer documento.</span>
+              Recupera el control,
+              <span className="mt-1 block text-teal-700">la calma y tu respaldo laboral.</span>
             </span>
             <span className="hidden sm:block">
-              Tus derechos laborales,
-              <span className="block text-teal-700">claros desde el primer documento que subes.</span>
+              Recupera el control,
+              <span className="block text-teal-700">la calma y tu respaldo laboral.</span>
             </span>
           </h1>
 
@@ -413,7 +413,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus documentos y deja que AuditaPatron los analice, los resguarde y te devuelva resultados útiles dentro de AuditaPatron. Además, podrás revisar con más claridad si tu alta en IMSS e Infonavit está en orden, sin palabras difíciles.
+            Sube tus papeles sin complicarte. AuditaPatron los ordena, los resguarda y los convierte en claridad, protección y respaldo experto para que entiendas qué revisar y sientas más control sobre tu situación laboral.
           </p>
 
           <div
@@ -432,7 +432,7 @@ function HeroSection() {
               className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
               onClick={() => scrollToId("copiloto")}
             >
-              Ver cómo funciona
+              Quiero ver cómo funciona
             </Button>
           </div>
 
@@ -456,12 +456,12 @@ function HeroSection() {
                 ))}
               </div>
               <p className="text-sm font-medium leading-6 text-slate-700">
-                Diseñado con dudas reales de trabajadores sobre recibos, contratos, CFDI, IMSS e Infonavit.
+                Creado a partir de dudas reales de trabajadores que necesitaban claridad, orden y tranquilidad con sus documentos.
               </p>
             </div>
 
             <div className="mt-3 flex flex-wrap justify-center gap-2.5 text-sm text-slate-600 lg:justify-start">
-              {["Expediente privado", "IMSS e Infonavit con más claridad", "Sin palabras difíciles"].map((item) => (
+              {["Expediente privado y siempre disponible", "Más claridad sobre IMSS e Infonavit", "Sin vueltas ni palabras difíciles"].map((item) => (
                 <span
                   key={item}
                   className="motion-hover-lift rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-sm"
@@ -484,11 +484,11 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tu claridad hoy
+                    Tu tranquilidad hoy
                   </p>
                   <div className="mt-2 flex items-end gap-3">
                     <p className="text-[2.85rem] font-bold tracking-[-0.065em] text-slate-950">{dossierReadiness}%</p>
-                    <span className="mb-1 text-sm font-semibold text-teal-700">Ya puedes empezar</span>
+                    <span className="mb-1 text-sm font-semibold text-teal-700">Ya empezaste a recuperar control</span>
                   </div>
                 </div>
                 <div className="rounded-full border border-emerald-200 bg-emerald-100/90 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
@@ -496,7 +496,7 @@ function HeroSection() {
                 </div>
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Entiendes rápido qué revisar primero.
+                Ves rápido qué te da tranquilidad hoy y qué conviene reforzar después.
               </p>
               <div className="mt-4 h-3 overflow-hidden rounded-full bg-white shadow-inner">
                 <div
@@ -508,9 +508,9 @@ function HeroSection() {
 
             <div className="mt-5 space-y-3">
               {[
-                "Subes tu recibo, contrato, soporte IMSS o constancia de Infonavit.",
-                "AuditaPatron analiza y te devuelve lo importante sin lenguaje complicado.",
-                "Todo queda resguardado en tu expediente digital.",
+                "Subes tu recibo, contrato o soporte clave en minutos.",
+                "AuditaPatron te devuelve lo importante sin vueltas ni lenguaje complicado.",
+                "Tu expediente crece y tu respaldo también.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -534,7 +534,7 @@ function HeroSection() {
                     Siguiente paso sugerido
                   </p>
                   <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Ya tienes recibo y contrato listos; seguir con IMSS, Infonavit o CFDI puede darte todavía más claridad.
+                    Ya diste el primer paso; sumar IMSS, Infonavit o CFDI puede darte todavía más claridad y más respaldo.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -547,14 +547,14 @@ function HeroSection() {
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Listos: recibo y contrato
+                  Ya sumaste: recibo y contrato
                 </span>
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Siguiente: IMSS, Infonavit o CFDI
+                  Sigue con: IMSS, Infonavit o CFDI
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Toca aquí para continuar con el siguiente archivo recomendado y entender mejor qué te falta.
+                Toca aquí para seguir fortaleciendo tu expediente con el archivo que más impacto puede darte ahora.
               </p>
             </button>
           </div>
@@ -569,9 +569,9 @@ function QuickTrustSection() {
     <section className="border-y border-teal-100/80 bg-[#dbeeee] py-3.5 sm:bg-[#e6f2f1]">
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
-              "Sube recibo, CFDI, soporte IMSS o constancia de Infonavit.",
-              "AuditaPatron lo analiza y lo ordena en tu expediente digital.",
-              "Tus resultados y archivos quedan disponibles 24/7.",
+              "Empieza con el documento que ya tienes más a la mano.",
+              "AuditaPatron lo ordena y te devuelve claridad útil sin rodeos.",
+              "Tu expediente queda disponible para ti 24/7.",
 
         ].map((item) => (
           <div
@@ -1150,18 +1150,18 @@ function PrivacySection() {
             Tu privacidad es parte del producto
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Tus archivos se resguardan para ayudarte, no para confundirte.
+            Tus archivos se cuidan para darte claridad, no para llenarte de dudas.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cada documento puede darte más claridad y mejor respaldo, pero siempre con control, resguardo y la tranquilidad de tener tu expediente digital disponible 24/7.
+            Cada documento suma contexto, orden y tranquilidad. La idea es simple: que puedas entender mejor tu situación y volver a tu expediente cuando lo necesites, con control y resguardo desde el inicio.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
-              "Tus documentos se organizan con propósito.",
-              "La explicación es clara y humana.",
-              "Tu expediente queda disponible 24/7 para ti.",
-              "La confianza se cuida desde el inicio.",
+              "Tus documentos se acomodan para ayudarte, no para perderte.",
+              "La explicación busca ser clara, humana y tranquila.",
+              "Tu expediente sigue disponible para ti 24/7.",
+              "La confianza se construye desde el primer archivo.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-teal-100 bg-white p-4">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1195,13 +1195,13 @@ function PrivacySection() {
         <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
           <div className="rounded-[1.5rem] border border-teal-100 bg-teal-50 p-5">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-700">
-              Lo que necesitas sentir aquí
+              Lo que queremos que sientas aquí
             </p>
             <div className="mt-4 space-y-3">
               {[
-                "Entiendo mejor mi situación.",
-                "Mi información está cuidada y ordenada.",
-                "Tengo mis documentos a la mano cuando los necesite.",
+                "Entiendo mejor mi situación sin sentirme abrumado.",
+                "Mi información está cuidada, ordenada y bajo control.",
+                "Tengo mis documentos a la mano cuando más los necesite.",
               ].map((item) => (
                 <div key={item} className="flex gap-3 rounded-[1.2rem] border border-white bg-white p-4 shadow-sm">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1216,7 +1216,7 @@ function PrivacySection() {
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-teal-800" strokeWidth={1.8} />
               <div>
                 <p className="text-sm leading-7 text-teal-950">
-                  Tus documentos pueden fortalecer tu expediente y tu contexto laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
+                  Tus documentos pueden fortalecer tu expediente y darte más respaldo laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {LEGAL_DOCUMENTS.map((document) => (
@@ -1250,10 +1250,10 @@ function FAQSection() {
             Preguntas frecuentes
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Respuestas claras antes de que empieces.
+            Respuestas claras para empezar con confianza.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Si llegas con dudas o desconfianza, aquí puedes resolver lo esencial sin leer explicaciones largas.
+            Si llegas con dudas, aquí resuelves lo esencial rápido y sin explicaciones interminables.
           </p>
         </div>
 
@@ -1290,10 +1290,10 @@ function FinalCtaSection() {
               Empieza cuando quieras
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
-              Tu primer documento ya puede darte más claridad.
+              Tu primer documento ya puede devolverte más claridad y tranquilidad.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Empieza con lo que ya tienes a la mano y ve fortaleciendo un expediente digital que seguirá contigo, ordenado y disponible 24/7.
+              Empieza con lo que ya tienes a la mano y deja que AuditaPatron convierta ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -1309,7 +1309,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                 onClick={() => scrollToId("preguntas")}
               >
-                Resolver mis dudas primero
+                Quiero resolver mis dudas primero
               </Button>
             </div>
           </div>
@@ -1330,7 +1330,7 @@ function SiteFooter() {
             subtitleClassName="text-[0.75rem] tracking-[0.14em]"
           />
           <p className="max-w-md text-sm leading-6 text-slate-500">
-            AuditaPatron te ayuda a conocer tus derechos con un expediente digital simple, privado y útil para revisar tu situación con más claridad.
+            AuditaPatron te ayuda a recuperar claridad, orden y respaldo con un expediente digital simple, privado y útil para revisar tu situación laboral.
           </p>
         </div>
         <div className="flex flex-wrap gap-4">

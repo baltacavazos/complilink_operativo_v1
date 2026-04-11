@@ -8,12 +8,12 @@ describe("Auditapatron homepage and audit flow content", () => {
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
 
   it("shows a worker-centered value proposition with IMSS and Infonavit clarity", () => {
-    expect(homeSource).toContain("Tus derechos laborales,");
-    expect(homeSource).toContain("claros desde el primer documento que subes.");
-    expect(homeSource).toContain("Sube tus documentos y deja que AuditaPatron los analice, los resguarde y te devuelva resultados útiles dentro de AuditaPatron.");
-    expect(homeSource).toContain("podrás revisar con más claridad si tu alta en IMSS e Infonavit está en orden");
-    expect(homeSource).toContain("Sube recibo, CFDI, soporte IMSS o constancia de Infonavit.");
-    expect(homeSource).toContain("Recibos, CFDI, contratos, soportes IMSS, constancias de Infonavit y evidencia");
+    expect(homeSource).toContain("Recupera el control,");
+    expect(homeSource).toContain("la calma y tu respaldo laboral.");
+    expect(homeSource).toContain("Sube tus papeles sin complicarte.");
+    expect(homeSource).toContain("claridad, protección y respaldo experto");
+    expect(homeSource).toContain("Empieza con el documento que ya tienes más a la mano.");
+    expect(homeSource).toContain("Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit");
     expect(homeSource).not.toContain("CompliLink Operativo");
   });
 
@@ -22,13 +22,13 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
     expect(homeSource).toContain("AuditaPatron lo analiza y lo guarda en tu expediente");
-    expect(homeSource).toContain("Tus resultados y archivos quedan disponibles 24/7");
+    expect(homeSource).toContain("Ves qué se entendió, qué conviene revisar y mantienes tus documentos y resultados disponibles 24/7");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
   });
 
   it("preserves trust, privacy and FAQs while keeping Helios out of the public homepage copy", () => {
-    expect(homeSource).toContain("Tus archivos se resguardan con control dentro del flujo de AuditaPatron");
+    expect(homeSource).toContain("Tus archivos se cuidan para darte claridad, no para llenarte de dudas.");
     expect(homeSource).toContain("Preguntas frecuentes");
     expect(homeSource).toContain("Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
