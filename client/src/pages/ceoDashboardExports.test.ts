@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildCeoCsvReport,
   buildCeoExportTables,
   buildCeoPdfModel,
+  downloadCeoPdfReport,
   getCeoExportBlockReason,
   type CeoDashboardSnapshot,
 } from "./ceoDashboardExports";
@@ -164,6 +165,11 @@ describe("getCeoExportBlockReason", () => {
 });
 
 describe("ceoDashboardExports", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("arma el modelo PDF del resumen con metadatos ejecutivos y todas las tablas clave", () => {
     const exportedAt = new Date("2026-04-10T18:45:00.000Z");
     const model = buildCeoPdfModel({
@@ -266,6 +272,61 @@ describe("ceoDashboardExports", () => {
     expect(csv.content).toContain('"Hallazgo crítico =CMD()"');
     expect(csv.content).not.toContain('Hallazgo crítico\n=CMD()');
     expect(csv.content).not.toContain('"=HYPERLINK');
+  });
+
+  it("descarga el PDF ejecutivo como blob explícito para evitar archivos vacíos", () => {
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:ceo-pdf");
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+    const appendChild = vi.fn();
+    const remove = vi.fn();
+    const click = vi.fn();
+    const createElement = vi.fn().mockImplementation((tagName: string) => {
+      if (tagName === "a") {
+        return {
+          href: "",
+          download: "",
+          rel: "",
+          click,
+          remove,
+        } as unknown as HTMLAnchorElement;
+      }
+
+      throw new Error(`Elemento no esperado en prueba: ${tagName}`);
+    });
+    const setTimeoutSpy = vi.fn((callback: TimerHandler) => {
+      if (typeof callback === "function") {
+        callback();
+      }
+      return 0 as unknown as number;
+    });
+
+    vi.stubGlobal("document", {
+      body: { appendChild },
+      createElement,
+    });
+    vi.stubGlobal("window", {
+      setTimeout: setTimeoutSpy,
+    });
+
+    const filename = downloadCeoPdfReport({
+      section: "resumen",
+      snapshot: buildSnapshot(),
+      appliedFilters: ["Tenant: Balt Demo"],
+      actorLabel: "CEO Demo",
+      exportedAt: new Date("2026-04-10T19:15:00.000Z"),
+    });
+
+    expect(filename).toBe(buildExpectedFilename("resumen", "pdf", new Date("2026-04-10T19:15:00.000Z")));
+    expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    const blobArg = createObjectURL.mock.calls[0]?.[0];
+    expect(blobArg).toBeInstanceOf(Blob);
+    expect((blobArg as Blob).type).toBe("application/pdf");
+    expect(appendChild).toHaveBeenCalled();
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(setTimeoutSpy).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:ceo-pdf");
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(createElement).toHaveBeenCalledWith("a");
   });
 
   it("recorta texto exportable excesivo para evitar celdas PDF o CSV patológicas", () => {

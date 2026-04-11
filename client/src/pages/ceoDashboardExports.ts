@@ -354,14 +354,19 @@ export function buildCeoCsvReport({ section, snapshot, appliedFilters, actorLabe
   };
 }
 
-function saveBlob(filename: string, content: BlobPart, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType });
+function saveBlob(filename: string, content: BlobPart | Blob, mimeType: string) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
+  anchor.rel = "noopener";
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+    anchor.remove();
+  }, 0);
 }
 
 export function downloadCeoCsvReport(args: BuildExportArgs) {
@@ -434,6 +439,7 @@ export function downloadCeoPdfReport(args: BuildExportArgs) {
     });
   }
 
-  doc.save(model.filename);
+  const pdfBlob = doc.output("blob");
+  saveBlob(model.filename, pdfBlob, "application/pdf");
   return model.filename;
 }

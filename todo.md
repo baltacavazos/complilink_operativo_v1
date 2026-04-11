@@ -635,3 +635,7 @@
 - [ ] Cubrir con pruebas E2E el flujo completo de acceso, expediente y guardrails del bridge
 - [ ] Instrumentar métricas de uso y embudo de conversión del acceso para el corte V1.1
 - [ ] Diseñar y automatizar pruebas E2E del bridge cubriendo acceso, expediente y guardrails con criterios de estabilidad reutilizables
+- [x] Ejecutar una ronda final mínima de endurecimiento sobre permisos, sesiones, cookies y exportes para detectar regresiones críticas sin añadir funcionalidades.
+- [x] Validar los flujos críticos reales de acceso, conmutación CEO ↔ vista usuario y expediente, corrigiendo solo fallos bloqueantes.
+- [x] Corregir exportación PDF de la consola CEO que descarga archivo vacío en validación real.
+- [x] Cerrar esta iteración con verificación técnica final y reporte breve del estado estable.
