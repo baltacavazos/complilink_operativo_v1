@@ -662,3 +662,5 @@
 - [x] Implementar una variante más persuasiva del hero de la landing sin romper su estructura visual actual
 - [x] Reforzar el bloque de confianza de la landing con mensajes más concretos y tranquilizadores
 - [x] Ajustar el CTA secundario de la landing para capturar mejor a usuarios que aún llegan con dudas antes de entrar al flujo principal
+- [x] Contrastar con Grok, ChatGPT y Gemini todo el siguiente bloque de optimización de la landing de AuditaPatron y consensuar sus recomendaciones antes de implementar nuevos cambios
+- [x] Presentar al usuario una síntesis comparada con coincidencias, diferencias y recomendaciones priorizadas para hero A/B, prueba social y CTA secundario guiado
