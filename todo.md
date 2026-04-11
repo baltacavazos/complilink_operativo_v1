@@ -1,5 +1,7 @@
 # Project TODO
 
+- [x] Revalidar el token de Dropbox y confirmar si ya permite continuar con el respaldo obligatorio
+
 - [x] Autoiniciar el análisis en /auditar al seleccionar foto o archivo cuando el contexto mínimo ya esté resuelto
 - [x] Mantener el guardado final solo tras aceptación aplicable y confirmación explícita del usuario
 - [x] Reforzar la distinción entre borrador analizado y documento confirmado para no contaminar la memoria persistente
@@ -718,3 +720,19 @@
 - [x] /auditar: reforzar el indicador visual de estado borrador vs confirmado dentro del timeline del expediente
 - [x] /auditar: añadir botón único de Reanalizar para reiniciar el ciclo desde un borrador activo sin tocar documentos confirmados
 - [x] /auditar: registrar métricas de conversión del flujo de auditoría desde selección hasta guardado confirmado
+- [ ] Activar política operativa de respaldo automático en Dropbox para AuditaPatron en cada milestone importante
+- [x] Generar ZIP completo del proyecto con nomenclatura AuditaPatron_backup_YYYYMMDD_HHMM y subirlo a /Backups/AuditaPatron/
+- [ ] Mantener README.md de respaldo actualizado con estado actual, stack, instalación, variables de entorno y changelog por checkpoint
+- [x] Aplicar retención automática de los últimos 5 backups en Dropbox sin borrar históricos si aún no exceden el límite
+- [ ] Confirmar brevemente cada respaldo realizado indicando fecha, contenido incluido y cambios respecto al backup anterior
+- [ ] Incluir CONFIGURACION.md en cada respaldo con variables de entorno, API keys por nombre, puertos, URLs externas y parámetros operativos
+- [ ] Incluir ARQUITECTURA.md en cada respaldo con descripción del frontend, backend, carpetas y flujo entre componentes
+- [ ] Documentar en el respaldo todos los servicios de terceros activos y su integración en el proyecto
+- [ ] Incluir export o dump de la base de datos en el ZIP cuando el proyecto use una base externa y sea técnicamente posible en el entorno
+- [x] Validar la credencial actualizada de Dropbox con una prueba ligera antes de ejecutar el respaldo automático completo
+- [ ] Preparar offline los artefactos del respaldo ampliado mientras llega un token válido de Dropbox
+- [x] Corregir la validación de Dropbox para que compruebe acceso real a la API de archivos, no solo a la cuenta
+- [x] Obtener un token de Dropbox con permisos efectivos de archivos y reintentar el respaldo completo
+- [ ] Descargar a Dropbox los artefactos voluminosos del flujo de respaldo cuando ayude a no saturar el contexto de trabajo
+- [x] Corregir la inconsistencia entre la prueba reforzada de Dropbox y la ejecución real del script de backup que falla con 401 en create_folder_v2
+- [x] Investigar y corregir la discrepancia entre la prueba reforzada de Dropbox y la ejecución real del script de respaldo que devolvió 401 en create_folder_v2

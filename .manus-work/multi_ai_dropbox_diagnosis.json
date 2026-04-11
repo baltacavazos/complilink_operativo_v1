@@ -1,0 +1,59 @@
+[
+  {
+    "provider": "openai",
+    "result": {
+      "hipótesis_principal": "El script está incluyendo los archivos ZIP gigantes generados en la carpeta .manus-work/backups dentro del ZIP que intenta subir o procesar, lo que provoca que la petición a Dropbox falle con 401 debido a un posible timeout, límite de tamaño o corrupción del token en ese contexto.",
+      "hipótesis_alternativas": [
+        "El token DROPBOX_API_KEY usado por el script está expirado o revocado, aunque manualmente y en pruebas funciona, el script podría estar usando una variable de entorno diferente o caché obsoleta.",
+        "El script está haciendo la petición con un header Authorization mal formado o con espacios/errores invisibles que causan el 401.",
+        "Hay un problema de concurrencia o estado en el script que provoca que el token se sobrescriba o invalide justo antes de la llamada a create_folder_v2."
+      ],
+      "veredicto_sobre_script": "cambiar_script",
+      "verificaciones_minimas": [
+        "Modificar el script para excluir explícitamente la carpeta .manus-work/backups al crear el ZIP.",
+        "Verificar que el token DROPBOX_API_KEY usado en el script es exactamente el mismo que en la prueba manual (imprimirlo o comparar hash).",
+        "Agregar logging detallado del header Authorization y la respuesta HTTP completa para la llamada a create_folder_v2.",
+        "Probar crear un ZIP pequeño y limpio sin archivos grandes para confirmar que el error desaparece."
+      ],
+      "confianza": "alta"
+    }
+  },
+  {
+    "provider": "gemini",
+    "result": {
+      "hipótesis_principal": "El script Python está cargando o utilizando una clave de API de Dropbox incorrecta, expirada o con permisos insuficientes en el momento de su ejecución, a pesar de que la clave de API configurada en el entorno (y utilizada por las pruebas y verificaciones manuales) es válida y funcional. Esto sugiere un problema de contexto de ejecución o de carga de variables de entorno específico del script.",
+      "hipótesis_alternativas": [
+        "Existe una diferencia sutil en la construcción de la solicitud HTTP (headers, body, codificación) por parte del script Python que lo hace fallar la autenticación, a diferencia de las pruebas y verificaciones manuales.",
+        "Dropbox aplicó una invalidación temporal del token o un límite de tasa específico para la ejecución del script, que se resolvió antes de las verificaciones posteriores.",
+        "El script está experimentando problemas de recursos (ej. memoria, tiempo de ejecución prolongado debido a los ZIPs gigantes) que indirectamente causan un estado de error o la pérdida de acceso a la clave de API válida."
+      ],
+      "veredicto_sobre_script": "cambiar_script",
+      "verificaciones_minimas": [
+        "Modificar el script para loguear (de forma segura, sin exponer en logs públicos) el valor exacto de DROPBOX_API_KEY que está utilizando justo antes de realizar la llamada a la API.",
+        "Capturar y comparar la solicitud HTTP completa (headers, body, URL) generada por el script fallido con una solicitud exitosa de las pruebas o la verificación manual.",
+        "Ejecutar el script en un entorno de prueba controlado, asegurando que todas las variables de entorno sean idénticas a las que se usaron en las pruebas exitosas.",
+        "Implementar reglas de exclusión más robustas o un mecanismo de gestión de tamaño para los archivos ZIP generados, ya que los archivos gigantes son un problema de fiabilidad y recursos."
+      ],
+      "confianza": "alta"
+    }
+  },
+  {
+    "provider": "grok",
+    "result": {
+      "hipótesis_principal": "El error 401 indica un problema de autenticación durante la ejecución del script, probablemente porque la variable DROPBOX_API_KEY no se carga correctamente en el contexto de ejecución del script (por ejemplo, diferencias en el entorno, como variables de entorno no propagadas o sobrescritura accidental), a pesar de que las pruebas manuales y previas funcionan con la misma variable.",
+      "hipótesis_alternativas": [
+        "Error sutil en la construcción de la cabecera Authorization en el script, como espacios extras o codificación incorrecta de la clave.",
+        "El token fue revocado o modificado temporalmente durante la ventana de ejecución del script, posiblemente por actividad concurrente.",
+        "Los ZIPs grandes consumen recursos del sistema, causando un fallo en el proceso que afecta la lectura de variables de entorno o la request HTTP."
+      ],
+      "veredicto_sobre_script": "cambiar_script",
+      "verificaciones_minimas": [
+        "Agregar logging en el script para imprimir los primeros 10 caracteres de DROPBOX_API_KEY justo antes de la request a create_folder_v2 y compararlos con una prueba manual.",
+        "Ejecutar el script manualmente desde el mismo shell donde las verificaciones manuales funcionan, y verificar si la env var está disponible con echo $DROPBOX_API_KEY.",
+        "Inspeccionar el código del script para confirmar que la cabecera Authorization se construye correctamente sin modificaciones inesperadas.",
+        "Monitorear el uso de memoria y CPU durante la creación de ZIPs para descartar impactos en el proceso de requests."
+      ],
+      "confianza": "media"
+    }
+  }
+]

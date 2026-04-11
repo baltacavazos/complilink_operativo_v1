@@ -1,0 +1,114 @@
+{
+  "openai": {
+    "status_code": 200,
+    "body": {
+      "id": "chatcmpl-DTaOqiJq7wsO1UBrSZHdbtJMqx318",
+      "object": "chat.completion",
+      "created": 1775943804,
+      "model": "gpt-4o-mini-2024-07-18",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"likely_causes\": [\n    \"Token de acceso no tiene permisos suficientes para crear carpetas.\",\n    \"Token de acceso ha expirado o es inválido.\",\n    \"La ruta de la carpeta que se intenta crear no es válida.\"\n  ],\n  \"most_probable_cause\": \"Token de acceso no tiene permisos suficientes para crear carpetas.\",\n  \"required_dropbox_permissions\": [\n    \"files.metadata.write\",\n    \"files.content.write\"\n  ],\n  \"recommended_validation_endpoints\": [\n    \"/2/users/get_current_account\",\n    \"/2/files/get_metadata\"\n  ],\n  \"improved_secret_test\": \"Verificar que el token tenga los permisos necesarios y que no haya expirado.\",\n  \"user_instruction\": \"Asegúrate de que el token de acceso tenga los permisos adecuados para crear carpetas y que esté activo.\"\n}",
+            "refusal": null,
+            "annotations": []
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 150,
+        "completion_tokens": 174,
+        "total_tokens": 324,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "service_tier": "default",
+      "system_fingerprint": "fp_e155db4643"
+    }
+  },
+  "grok": {
+    "status_code": 200,
+    "body": {
+      "id": "22661ebc-b1d5-99ab-bb77-d020525420c5",
+      "object": "chat.completion",
+      "created": 1775943809,
+      "model": "grok-4-0709",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"likely_causes\": [\n    \"The access token lacks the necessary scopes for file operations such as creating folders.\",\n    \"The Dropbox app permissions were not fully granted during token generation.\",\n    \"Token expiration or revocation, though the account check passes, indicating scope-specific issues.\",\n    \"Mismatch between the token's granted scopes and the required API endpoints for file manipulation.\"\n  ],\n  \"most_probable_cause\": \"Insufficient scopes in the access token, specifically missing 'files.metadata.write' for creating folders.\",\n  \"required_dropbox_permissions\": [\n    \"files.metadata.write (for creating folders)\",\n    \"files.metadata.read (for listing files)\",\n    \"files.content.write (for uploading ZIP and deleting old backups)\"\n  ],\n  \"recommended_validation_endpoints\": [\n    \"POST /2/files/list_folder (to check read access)\",\n    \"POST /2/files/upload (to test write access with a small file)\",\n    \"POST /2/files/delete_v2 (to test delete access)\"\n  ],\n  \"improved_secret_test\": \"Enhance the token validation by attempting a minimal operation like creating a temporary folder using POST /2/files/create_folder_v2 with a unique path, and immediately delete it if successful, to confirm all required scopes without affecting user data.\",\n  \"user_instruction\": \"Regenerate the Dropbox access token ensuring the app has been granted full file access scopes (files.metadata.read, files.metadata.write, files.content.write). Reauthorize the app if necessary and test the new token with the improved validation steps.\"\n}",
+            "refusal": null
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 833,
+        "completion_tokens": 311,
+        "total_tokens": 1752,
+        "prompt_tokens_details": {
+          "text_tokens": 833,
+          "audio_tokens": 0,
+          "image_tokens": 0,
+          "cached_tokens": 676
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 608,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        },
+        "num_sources_used": 0,
+        "cost_in_usd_ticks": 147630000
+      },
+      "system_fingerprint": "fp_74614d6fcc"
+    }
+  },
+  "gemini": {
+    "status_code": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "parts": [
+              {
+                "text": "{\n  \"likely_causes\": [\n    \"El token de Dropbox fue generado con permisos (scopes) insuficientes para operaciones de archivos. Aunque permite leer información de la cuenta (users.info.read), no tiene permisos de escritura o lectura de contenido de archivos (files.content.write, files.content.read o files.content.full).\",\n    \"El tipo de acceso de la aplicación en Dropbox (por ejemplo, 'App folder' vs. 'Full Dropbox') no coincide con las operaciones que se intentan realizar o con el token generado. Si la aplicación está configurada para 'App folder' y el token es para 'Full Dropbox' o viceversa, o si se intenta acceder fuera de la carpeta de la aplicación.\"\n  ],\n  \"most_probable_cause\": \"El token de Dropbox carece de los scopes necesarios para operaciones de escritura de archivos, específicamente 'files.content.write' o 'files.content.full'.\",\n  \"required_dropbox_permissions\": [\n    \"users.info.read (para get_current_account)\",\n    \"files.content.write (para crear carpetas, subir archivos, borrar archivos)\",\n    \"files.content.read (para listar archivos)\",\n    \"files.content.full (alternativa que cubre read y write de contenido de archivos)\"\n  ],\n  \"recommended_validation_endpoints\": [\n    \"POST /2/files/list_folder (para verificar files.content.read)\",\n    \"POST /2/files/create_folder_v2 (para verificar files.content.write)\",\n    \"POST /2/files/upload (para verificar files.content.write)\",\n    \"POST /2/files/delete_v2 (para verificar files.content.write)\"\n  ],\n  \"improved_secret_test\": \"En lugar de solo probar /2/users/get_current_account, el test debería intentar una operación de escritura mínima, como crear una carpeta temporal (POST /2/files/create_folder_v2) y luego borrarla (POST /2/files/delete_v2). Si ambas operaciones tienen éxito, el token tiene los permisos de escritura necesarios. Si create_folder_v2 falla con 401, confirma la falta de permisos de escritura.\",\n  \"user_instruction\": \"Verifica los scopes seleccionados al generar el token de Dropbox. Asegúrate de que 'files.content.write' o 'files.content.full' estén marcados. Regenera el token con los permisos correctos. Además, confirma que el tipo de acceso de tu aplicación en Dropbox (App folder o Full Dropbox) sea el adecuado para las operaciones que intentas realizar y que el token se haya generado para ese tipo de acceso.\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "usageMetadata": {
+        "promptTokenCount": 160,
+        "candidatesTokenCount": 590,
+        "totalTokenCount": 1993,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 160
+          }
+        ],
+        "thoughtsTokenCount": 1243
+      },
+      "modelVersion": "gemini-2.5-flash",
+      "responseId": "kMDaaeDgLq7S_uMP1oOAuQU"
+    }
+  }
+}

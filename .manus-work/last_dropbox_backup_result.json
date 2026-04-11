@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-11T17:59",
+  "backup_name": "AuditaPatron_backup_20260411_1759.zip",
+  "backup_dropbox_path": "/Backups/AuditaPatron/AuditaPatron_backup_20260411_1759.zip",
+  "readme_snapshot_name": "AuditaPatron_backup_20260411_1759_README.md",
+  "readme_dropbox_path": "/Backups/AuditaPatron/AuditaPatron_backup_20260411_1759_README.md",
+  "latest_readme_path": "/Backups/AuditaPatron/README.md",
+  "previous_backup": null,
+  "deleted_zip_backups": [],
+  "deleted_readme_snapshots": [],
+  "remaining_zip_backups": [
+    "AuditaPatron_backup_20260411_1759.zip"
+  ],
+  "zip_file_count": 548,
+  "zip_size_bytes": 1953912,
+  "local_zip_path": "/home/ubuntu/complilink_operativo_v1/.manus-work/backups/AuditaPatron_backup_20260411_1759.zip"
+}
