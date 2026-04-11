@@ -612,4 +612,7 @@
 - [x] Actualizar la interfaz de acceso para un flujo unificado con Manus, Google y correo
 - [x] Cubrir los nuevos flujos de autenticación con pruebas Vitest y validación técnica
 - [x] Corregir el error de compilación del frontend asociado a Access.tsx y dejar estable la pantalla de acceso unificada
-- [ ] Investigar y corregir el fallo TLS/SSL del endpoint externo complilink.mx que hoy rompe `server/auditaPatronBridgeSecret.test.ts` en la suite completa
+- [x] Investigar y corregir el fallo TLS/SSL del endpoint externo complilink.mx que hoy rompe `server/auditaPatronBridgeSecret.test.ts` en la suite completa
+- [x] Contrastar con ChatGPT, Grok y Gemini el fallo TLS/SSL del bridge externo complilink.mx y sintetizar un diagnóstico comparado
+- [x] Inspeccionar el bridge y su prueba de secreto para decidir si corresponde corrección local, mitigación de test o escalamiento externo
+- [x] Validar nuevamente la suite tras la corrección o mitigación del bloqueo TLS/SSL del bridge
