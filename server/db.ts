@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { and, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { createPool, type Pool } from "mysql2/promise";
 import {
   auditLogs,
   canonicalContracts,
@@ -31,6 +32,7 @@ import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _lockPool: Pool | null = null;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -42,6 +44,18 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+async function getLockPool() {
+  if (!_lockPool && process.env.DATABASE_URL) {
+    try {
+      _lockPool = createPool(process.env.DATABASE_URL);
+    } catch (error) {
+      console.warn("[Database] Failed to create lock pool:", error);
+      _lockPool = null;
+    }
+  }
+  return _lockPool;
 }
 
 function readLockResult(rows: unknown, field: string) {
@@ -59,22 +73,34 @@ export async function withDatabaseLock<T>(params: {
   timeoutSeconds?: number;
   action: () => Promise<T>;
 }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  const lockPool = await getLockPool();
+  if (!lockPool) throw new Error("Database not available");
 
   const lockKey = params.lockKey.trim().slice(0, 64);
   const timeoutSeconds = Math.max(1, Math.min(params.timeoutSeconds ?? 10, 30));
-  const acquiredRows = await db.execute(sql`SELECT GET_LOCK(${lockKey}, ${timeoutSeconds}) AS acquired`);
-  const acquired = readLockResult(acquiredRows, "acquired");
-
-  if (acquired !== 1) {
-    throw new Error("No se pudo asegurar la aceptación legal en este momento. Intenta de nuevo.");
-  }
+  const connection = await lockPool.getConnection();
+  let acquired = false;
 
   try {
+    const [acquiredRows] = await connection.query("SELECT GET_LOCK(?, ?) AS acquired", [lockKey, timeoutSeconds]);
+    acquired = readLockResult(acquiredRows, "acquired") === 1;
+
+    if (!acquired) {
+      throw new Error("No se pudo asegurar la aceptación legal en este momento. Intenta de nuevo.");
+    }
+
     return await params.action();
   } finally {
-    await db.execute(sql`SELECT RELEASE_LOCK(${lockKey}) AS released`);
+    if (acquired) {
+      try {
+        await connection.query("SELECT RELEASE_LOCK(?) AS released", [lockKey]);
+      } catch (error) {
+        connection.destroy();
+        throw error;
+      }
+    }
+
+    connection.release();
   }
 }
 

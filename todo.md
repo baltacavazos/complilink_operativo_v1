@@ -681,3 +681,4 @@
 - [x] AuditaPatron hero iteración 4: mostrar resultado instantáneo del prediagnóstico con documento exacto sugerido y CTA accionable
 - [x] AuditaPatron hero iteración 4: instrumentar scroll depth del hero y eventos de cambio de variante sin romper el tracking existente
 - [x] AuditaPatron hero iteración 4: reemplazar la tarjeta lateral por un carrusel de 3 hallazgos laborales resumidos
+- [x] Corregir en /auditar el error que impide asegurar la aceptación legal durante la mutación del flujo de auditoría
