@@ -2363,7 +2363,9 @@ export default function Auditar() {
   );
   const visiblePriorityUploadGuides = missingPriorityUploadGuides.length > 0 ? missingPriorityUploadGuides : priorityUploadGuides.slice(0, 2);
   const activeMobileOnboardingStep = mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
-  const activeCaptureMode = selectedCaptureMode ?? preferredCaptureMode ?? "file";
+  const isFirstDocumentFlow = documents.length === 0 && !pendingDraft && !lastUpload;
+  const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
+  const activeCaptureMode = selectedCaptureMode ?? preferredCaptureMode ?? (isFirstDocumentFlow ? "camera" : "file");
   const remoteViewStateSyncLabel = !currentCaseScopeKey
     ? "Elige tu caso para activar continuidad entre dispositivos."
     : persistAuditarViewStateMutation.isPending
@@ -3804,7 +3806,7 @@ export default function Auditar() {
                 </p>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:hidden">
+              <div className={`mt-5 gap-3 sm:hidden ${shouldCompactMobileUploadEntry ? "hidden" : "grid"}`}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-900">Si vienes desde tu celular, así se siente de simple</p>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -3853,7 +3855,7 @@ export default function Auditar() {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className={`mt-6 gap-4 md:grid-cols-2 ${shouldCompactMobileUploadEntry ? "hidden sm:grid" : "grid"}`}>
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">Tu espacio</span>
                   <select
@@ -3932,8 +3934,14 @@ export default function Auditar() {
                         <FileSearch className="h-5 w-5" strokeWidth={1.8} />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-950">Escaneo asistido por IA</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-700">{selectedFilePreparationCopy}</p>
+                        <p className="font-semibold text-slate-950">
+                          {shouldCompactMobileUploadEntry ? "Sube tu primer documento" : "Escaneo asistido por IA"}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-700">
+                          {shouldCompactMobileUploadEntry
+                            ? "Empieza con la foto o el archivo que tengas más a la mano. Cada documento que agregas fortalece tu expediente y nos da más claridad para entender tu caso."
+                            : selectedFilePreparationCopy}
+                        </p>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
@@ -3943,7 +3951,7 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4">
+                  <div className={`rounded-[1.2rem] border border-slate-200 bg-white p-4 ${shouldCompactMobileUploadEntry ? "hidden sm:block" : ""}`}>
                     <p className="text-sm font-semibold text-slate-950">Abrir primero</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">{getCaptureModeSupportCopy(preferredCaptureMode)}</p>
                     <div className="mt-3 grid grid-cols-2 gap-2">
@@ -3975,7 +3983,7 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                {activeCaptureMode === "camera" ? (
+                {activeCaptureMode === "camera" && !shouldCompactMobileUploadEntry ? (
                   <div className="mt-4 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                     <div className="rounded-[1.2rem] border border-teal-100 bg-white p-4">
                       <p className="text-sm font-semibold text-slate-950">Guía visual para encuadrar el documento</p>
@@ -4027,15 +4035,25 @@ export default function Auditar() {
                       className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                       onClick={openPreferredPicker}
                     >
-                      {selectedFile ? "Cambiar documento" : uploadPrimaryActionLabel}
+                      {selectedFile
+                        ? "Cambiar documento"
+                        : shouldCompactMobileUploadEntry
+                          ? activeCaptureMode === "camera"
+                            ? "Toma foto para empezar"
+                            : "Sube tu primer documento"
+                          : uploadPrimaryActionLabel}
                     </Button>
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-xs leading-5 text-slate-500">
-                        {preferredCaptureMode === "camera"
-                          ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
-                          : preferredCaptureMode === "file"
-                            ? "Abriremos primero tus archivos para quitarte un toque innecesario."
-                            : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
+                        {shouldCompactMobileUploadEntry
+                          ? activeCaptureMode === "camera"
+                            ? "Abriremos primero la cámara para que empieces en un solo toque. Si ya lo tienes guardado, puedes cambiar a archivo."
+                            : "Abriremos primero tus archivos para avanzar rápido. Cada documento que subes fortalece tu expediente y mejora la lectura de tu caso."
+                          : preferredCaptureMode === "camera"
+                            ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
+                            : preferredCaptureMode === "file"
+                              ? "Abriremos primero tus archivos para quitarte un toque innecesario."
+                              : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
                       </p>
                       <button
                         type="button"

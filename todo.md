@@ -745,3 +745,11 @@
 - [x] Documentar el flujo operativo de export, validación y recuperación mínima
 - [x] Dejar preparada la base para automatizar backups a partir del export recuperable
 - [x] Actualizar y ejecutar pruebas Vitest del sprint de resiliencia operativa
+
+- [ ] Cerrar formalmente el frente de Dropbox como bloque resuelto en esta etapa y evitar nuevo trabajo allí salvo incidencia real
+- [ ] Retomar el desarrollo de pendientes del proyecto comenzando por la optimización mobile-first del flujo /auditar
+
+- [ ] Configurar automatización de backups en modo silencioso sin correos ni avisos por ejecuciones exitosas de rutina
+- [ ] Limitar las alertas del sistema de backup únicamente a fallos críticos que comprometan la recuperabilidad
+- [ ] Definir y documentar qué eventos se consideran críticos para evitar notificaciones innecesarias
+- [x] Simplificar aún más la primera carga mobile-first de /auditar ocultando fricción inicial, priorizando cámara y reforzando el valor incremental del expediente
