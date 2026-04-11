@@ -1784,6 +1784,7 @@ export default function Auditar() {
   const [previewStatusFlash, setPreviewStatusFlash] = useState(false);
   const [saveStatusFlash, setSaveStatusFlash] = useState(false);
   const [recommendedStepFlash, setRecommendedStepFlash] = useState(false);
+  const [autoAdvanceFlash, setAutoAdvanceFlash] = useState(false);
   const [lastUpload, setLastUpload] = useState<ConfirmedUploadResultView | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
@@ -2888,6 +2889,15 @@ export default function Auditar() {
   }, [pendingDraft, previewNextTarget]);
 
   useEffect(() => {
+    if (!autoAdvanceFlash) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setAutoAdvanceFlash(false), 2400);
+    return () => window.clearTimeout(timeoutId);
+  }, [autoAdvanceFlash]);
+
+  useEffect(() => {
     if (!lastUpload) {
       setSaveStatusFlash(false);
       return;
@@ -3096,6 +3106,7 @@ export default function Auditar() {
     }
 
     setAutoAnalyzeRequested(false);
+    setAutoAdvanceFlash(true);
     void handleUpload();
   }, [
     autoAnalyzeRequested,
@@ -3143,6 +3154,7 @@ export default function Auditar() {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         documentType: result.classification.documentType,
+        captureMode: pendingDraft.previewAsset.captureMode,
         hadManualOverrides: manualOverridePayload.length > 0,
         selectionToConfirmedSeconds,
       });
@@ -3150,6 +3162,7 @@ export default function Auditar() {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         documentType: result.classification.documentType,
+        captureMode: pendingDraft.previewAsset.captureMode,
         sourceChannel: "manual",
         hadManualOverrides: manualOverridePayload.length > 0,
         selectionToConfirmedSeconds,
@@ -4606,7 +4619,9 @@ export default function Auditar() {
                       {isProcessingDocument
                         ? pendingDraft
                           ? "Guardando documento..."
-                          : "Analizando documento..."
+                          : autoAdvanceFlash
+                            ? "Autoavance activado..."
+                            : "Analizando documento..."
                         : acceptLegalPackageMutation.isPending
                           ? "Registrando autorización..."
                           : pendingDraft
@@ -4618,6 +4633,11 @@ export default function Auditar() {
                         <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                       )}
                     </Button>
+                    {autoAdvanceFlash && !pendingDraft ? (
+                      <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
+                        Autoavance activado: en cuanto termine el análisis te llevamos a la revisión rápida para confirmar el documento.
+                      </p>
+                    ) : null}
 
                 <Button
                   variant="outline"
@@ -5976,14 +5996,20 @@ export default function Auditar() {
             {isProcessingDocument
               ? pendingDraft
                 ? "Guardando documento..."
-                : "Analizando documento..."
+                : autoAdvanceFlash
+                  ? "Autoavance activado..."
+                  : "Analizando documento..."
               : acceptLegalPackageMutation.isPending
                 ? "Registrando autorización..."
                 : pendingDraft
                   ? confirmPrimaryActionLabel
                   : uploadPrimaryActionLabel}
           </Button>
-
+          {autoAdvanceFlash && !pendingDraft ? (
+            <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
+              Autoavance activado: terminando el análisis abrimos la revisión rápida automáticamente.
+            </p>
+          ) : null}
 
           <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">
             <p className="min-w-0 flex-1 truncate">

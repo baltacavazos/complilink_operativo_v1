@@ -757,3 +757,11 @@
 - [x] Añadir autoenfoque visual al siguiente paso sugerido tras la primera carga en /auditar
 - [x] Reducir aún más los textos secundarios del bloque móvil de /auditar para dejar una sola decisión principal
 - [x] Instrumentar eventos analíticos del selector Cámara/Archivo en /auditar para medir adopción real
+- [ ] Medir en AuditaPatron el embudo real de primera carga → análisis → confirmación para detectar abandono móvil
+- [ ] Añadir microfeedback posterior al autoavance en /auditar para reforzar confianza sin generar ruido
+- [ ] Conectar la lectura analítica del selector Cámara/Archivo a la Consola CEO para seguimiento operativo
+
+- [x] Embudo real de primera carga a confirmación en /auditar con tiempos y contexto de primer documento
+- [x] Microfeedback visual breve tras el autoavance de revisión preliminar para reforzar que el flujo continúa solo
+- [x] Lectura ejecutiva en la Consola CEO para selector Cámara/Archivo y embudo móvil reutilizando la analítica existente
+- [x] Actualizar pruebas de analítica y monitoreo CEO para cubrir la nueva lectura operativa

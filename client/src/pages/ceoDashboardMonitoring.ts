@@ -21,6 +21,14 @@ export type AuditMonitoringSummary = {
   accessEvents: number;
   policyEvents: number;
   distinctCases: number;
+  previewAnalyzedEvents: number;
+  previewConfirmedEvents: number;
+  documentUploadEvents: number;
+  cameraCaptureSelections: number;
+  fileCaptureSelections: number;
+  previewToConfirmRate: number | null;
+  confirmToUploadRate: number | null;
+  averagePreviewToConfirmationSeconds: number | null;
 };
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
@@ -43,6 +51,8 @@ export type AuditDrilldownDescriptor = {
   helper: string;
 };
 
+type AuditStateRecord = Record<string, unknown>;
+
 function uniqueCount(values: Array<string | null | undefined>) {
   return new Set(values.filter((value): value is string => Boolean(value))).size;
 }
@@ -58,7 +68,86 @@ function normalizeActionFamily(action: string): Exclude<AuditEventFamily, "all">
   return "other";
 }
 
+function parseAuditState(state: unknown): AuditStateRecord | null {
+  if (!state) return null;
+
+  if (typeof state === "string") {
+    try {
+      const parsed = JSON.parse(state) as unknown;
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as AuditStateRecord) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return typeof state === "object" && !Array.isArray(state) ? (state as AuditStateRecord) : null;
+}
+
+function toTimestampMs(value: unknown) {
+  if (value instanceof Date) {
+    const timestamp = value.getTime();
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
+  if (typeof value === "string" || typeof value === "number") {
+    const timestamp = new Date(value).getTime();
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
+  return null;
+}
+
+function getPercentage(numerator: number, denominator: number) {
+  if (denominator <= 0) return null;
+  return Math.round((numerator / denominator) * 100);
+}
+
+function normalizeCaptureMode(value: unknown): "camera" | "file" | null {
+  return value === "camera" || value === "file" ? value : null;
+}
+
+function getCaptureModeFromItem(item: AuditFeedItem) {
+  const state = parseAuditState(item.afterState);
+  return normalizeCaptureMode(state?.captureMode);
+}
+
+function getPreviewToConfirmationSeconds(item: AuditFeedItem) {
+  if (item.action !== "document.preview_confirmed") return null;
+
+  const state = parseAuditState(item.afterState);
+  const previewCreatedAt = toTimestampMs(state?.previewCreatedAt);
+  const confirmedAt = toTimestampMs(item.createdAt);
+
+  if (previewCreatedAt === null || confirmedAt === null || confirmedAt < previewCreatedAt) {
+    return null;
+  }
+
+  return Math.max(0, Math.round((confirmedAt - previewCreatedAt) / 1000));
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
+  const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
+  const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
+  const documentUploadEvents = items.filter((item) => item.action === "document.upload");
+
+  let cameraCaptureSelections = 0;
+  let fileCaptureSelections = 0;
+
+  for (const item of previewAnalyzedEvents) {
+    const captureMode = getCaptureModeFromItem(item);
+    if (captureMode === "camera") cameraCaptureSelections += 1;
+    if (captureMode === "file") fileCaptureSelections += 1;
+  }
+
+  const previewToConfirmationSamples = previewConfirmedEvents
+    .map((item) => getPreviewToConfirmationSeconds(item))
+    .filter((value): value is number => value !== null);
+
+  const averagePreviewToConfirmationSeconds =
+    previewToConfirmationSamples.length > 0
+      ? Math.round(previewToConfirmationSamples.reduce((total, value) => total + value, 0) / previewToConfirmationSamples.length)
+      : null;
+
   return {
     totalEvents: items.length,
     guardrailRejections: items.filter((item) => item.action === "document.guardrail_rejected").length,
@@ -66,6 +155,14 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     accessEvents: items.filter((item) => item.entityType === "access").length,
     policyEvents: items.filter((item) => item.entityType === "policy").length,
     distinctCases: uniqueCount(items.map((item) => item.caseId)),
+    previewAnalyzedEvents: previewAnalyzedEvents.length,
+    previewConfirmedEvents: previewConfirmedEvents.length,
+    documentUploadEvents: documentUploadEvents.length,
+    cameraCaptureSelections,
+    fileCaptureSelections,
+    previewToConfirmRate: getPercentage(previewConfirmedEvents.length, previewAnalyzedEvents.length),
+    confirmToUploadRate: getPercentage(documentUploadEvents.length, previewConfirmedEvents.length),
+    averagePreviewToConfirmationSeconds,
   };
 }
 
@@ -117,8 +214,8 @@ export function getAuditActionTone(action: string) {
 
 export function getAuditRejectionReason(item: AuditFeedItem) {
   if (item.action !== "document.guardrail_rejected") return null;
-  if (!item.afterState || typeof item.afterState !== "object") return null;
-  const reason = (item.afterState as { reason?: unknown }).reason;
+  const state = parseAuditState(item.afterState);
+  const reason = state?.reason;
   return typeof reason === "string" && reason.length > 0 ? reason : null;
 }
 

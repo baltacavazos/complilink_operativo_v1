@@ -32,21 +32,43 @@ function buildAuditItem(overrides: Partial<AuditFeedItem> = {}): AuditFeedItem {
 }
 
 describe("ceoDashboardMonitoring", () => {
-  it("resume eventos por tipo y casos distintos", () => {
+  it("resume eventos por tipo, casos distintos y embudo operativo derivado del audit trail", () => {
     const items = [
-      buildAuditItem({ id: 1, action: "document.uploaded", entityType: "document", caseId: "case-001" }),
-      buildAuditItem({ id: 2, action: "document.guardrail_rejected", entityType: "document", caseId: "case-001" }),
-      buildAuditItem({ id: 3, action: "access.membership_updated", entityType: "access", caseId: "case-002" }),
-      buildAuditItem({ id: 4, action: "policy.create", entityType: "policy", caseId: null }),
+      buildAuditItem({
+        id: 1,
+        action: "document.preview_analyzed",
+        entityType: "document",
+        caseId: "case-001",
+        afterState: { captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 2,
+        action: "document.preview_confirmed",
+        entityType: "document",
+        caseId: "case-001",
+        afterState: { previewCreatedAt: "2026-04-10T11:59:10.000Z" },
+        createdAt: "2026-04-10T12:00:00.000Z",
+      }),
+      buildAuditItem({ id: 3, action: "document.upload", entityType: "document", caseId: "case-001" }),
+      buildAuditItem({ id: 4, action: "access.membership_updated", entityType: "access", caseId: "case-002" }),
+      buildAuditItem({ id: 5, action: "policy.create", entityType: "policy", caseId: null }),
     ];
 
     expect(buildAuditMonitoringSummary(items)).toEqual({
-      totalEvents: 4,
-      guardrailRejections: 1,
-      documentEvents: 2,
+      totalEvents: 5,
+      guardrailRejections: 0,
+      documentEvents: 3,
       accessEvents: 1,
       policyEvents: 1,
       distinctCases: 2,
+      previewAnalyzedEvents: 1,
+      previewConfirmedEvents: 1,
+      documentUploadEvents: 1,
+      cameraCaptureSelections: 1,
+      fileCaptureSelections: 0,
+      previewToConfirmRate: 100,
+      confirmToUploadRate: 100,
+      averagePreviewToConfirmationSeconds: 50,
     });
   });
 
@@ -59,10 +81,10 @@ describe("ceoDashboardMonitoring", () => {
     });
   });
 
-  it("extrae el motivo de rechazo sólo cuando existe en afterState", () => {
+  it("extrae el motivo de rechazo sólo cuando existe en afterState incluso si viene serializado", () => {
     const rejected = buildAuditItem({
       action: "document.guardrail_rejected",
-      afterState: { reason: "rate_limit_exceeded", message: "Demasiados intentos" },
+      afterState: JSON.stringify({ reason: "rate_limit_exceeded", message: "Demasiados intentos" }),
     });
     const regular = buildAuditItem({ action: "document.uploaded", afterState: { reason: "ignored" } });
 

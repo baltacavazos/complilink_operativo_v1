@@ -1646,8 +1646,9 @@ export default function CeoDashboard() {
                   </div>
                   <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                     <div>
-                      <h4 className="text-base font-semibold text-slate-950">Lectura rápida</h4>
-                      <p className="mt-1 text-sm text-slate-500">Resumen ejecutivo mínimo para monitorear fricción, trazabilidad y acumulación de rechazos operativos.</p>
+                        <h4 className="text-base font-semibold text-slate-950">Lectura rápida</h4>
+                        <p className="mt-1 text-sm text-slate-500">Resumen ejecutivo mínimo para monitorear fricción, trazabilidad, embudo documental y preferencia Cámara/Archivo sin abrir otra capa analítica.</p>
+
                     </div>
                     <div className="mt-4 space-y-3">
                       <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm">
@@ -1675,6 +1676,73 @@ export default function CeoDashboard() {
                             <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
                           )}
                         </div>
+                      </div>
+                      <div className="rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Embudo preview → confirmación → carga</p>
+                          <Badge className="rounded-full border border-cyan-200 bg-white text-cyan-700">{formatNumber(auditSummary.previewAnalyzedEvents)} previews</Badge>
+                        </div>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Preview</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.previewAnalyzedEvents)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Análisis previos listos para revisión.</p>
+                          </div>
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Confirmación</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.previewConfirmedEvents)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">
+                              {auditSummary.previewToConfirmRate === null
+                                ? "Sin base suficiente para medir el paso desde preview."
+                                : `${formatNumber(auditSummary.previewToConfirmRate)}% pasa de preview a confirmación.`}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Carga final</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.documentUploadEvents)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">
+                              {auditSummary.confirmToUploadRate === null
+                                ? "Todavía no hay confirmaciones visibles para cerrar el paso final."
+                                : `${formatNumber(auditSummary.confirmToUploadRate)}% de las confirmaciones ya termina en carga.`}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm text-cyan-900/80">
+                          {auditSummary.averagePreviewToConfirmationSeconds === null
+                            ? "Aún no hay confirmaciones suficientes para estimar el tiempo entre preview y confirmación."
+                            : auditSummary.averagePreviewToConfirmationSeconds < 60
+                              ? `Promedio visible: ${formatNumber(auditSummary.averagePreviewToConfirmationSeconds)} s entre preview y confirmación.`
+                              : `Promedio visible: ${(auditSummary.averagePreviewToConfirmationSeconds / 60).toFixed(1)} min entre preview y confirmación.`}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Selector Cámara / Archivo</p>
+                          <Badge className="rounded-full border border-emerald-200 bg-white text-emerald-700">
+                            {formatNumber(auditSummary.cameraCaptureSelections + auditSummary.fileCaptureSelections)} selecciones
+                          </Badge>
+                        </div>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cámara</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.cameraCaptureSelections)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Capturas donde el preview llegó desde cámara.</p>
+                          </div>
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Archivo</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.fileCaptureSelections)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Selecciones donde el preview llegó desde archivo.</p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm text-emerald-900/80">
+                          {auditSummary.cameraCaptureSelections + auditSummary.fileCaptureSelections === 0
+                            ? "Todavía no hay previews visibles con captureMode suficiente para leer preferencia de entrada."
+                            : auditSummary.cameraCaptureSelections === auditSummary.fileCaptureSelections
+                              ? "La preferencia visible está equilibrada entre Cámara y Archivo."
+                              : auditSummary.cameraCaptureSelections > auditSummary.fileCaptureSelections
+                                ? "Predomina Cámara en la entrada visible del flujo móvil; conviene vigilar nitidez y autoencuadre."
+                                : "Predomina Archivo en la entrada visible; conviene vigilar tiempos de selección y tamaño de archivo."}
+                        </p>
                       </div>
                       <div className="rounded-2xl bg-white p-4 shadow-sm">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Accesos auditados</p>
