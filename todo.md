@@ -698,3 +698,9 @@
 - [x] Rediseñar el consentimiento legal de /auditar para integrarlo al flujo de subida con microcopy protector, checkbox sutil y acceso discreto a términos
 - [x] Implementar aceptación legal embebida en el momento de analizar/guardar documento sin paso separado intrusivo
 - [ ] Actualizar pruebas Vitest y de navegador para validar el nuevo consentimiento integrado y la resiliencia del lock
+- [x] Reducir clics innecesarios en /auditar para que el flujo de carga y análisis se sienta más fluido
+- [x] Revisar y simplificar transiciones, CTAs y estados intermedios que todavía interrumpen la acción principal del usuario
+- [x] Validar con enfoque móvil y pruebas que la nueva experiencia mantenga rapidez, claridad y trazabilidad
+- [x] Priorizar una experiencia mobile-first en /auditar abriendo la acción principal con el menor número posible de toques
+- [x] Evitar drawers o pasos intermedios en móvil cuando ya exista una preferencia de cámara o archivo y el sistema pueda actuar directo
+- [x] Revisar que los CTAs fijos y el flujo post-selección en móvil mantengan continuidad, claridad y sensación de rapidez

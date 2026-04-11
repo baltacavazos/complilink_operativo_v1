@@ -271,4 +271,20 @@ describe("buildInlineLegalConsentState", () => {
       uploadPrimaryActionLabel: "Analizar antes de guardar",
     });
   });
+
+  it("sugiere elegir archivo para continuar cuando el flujo mobile-first abre directo el picker preferido sin documento previo", () => {
+    expect(
+      buildInlineLegalConsentState({
+        legalGateRequired: false,
+        pendingDraft: false,
+        hasSelectedFile: false,
+        activeCaptureMode: "file",
+        manualOverrideCount: 0,
+      }),
+    ).toEqual({
+      shouldShowInlineLegalConsent: false,
+      confirmPrimaryActionLabel: "Confirmar y guardar documento",
+      uploadPrimaryActionLabel: "Elegir archivo para continuar",
+    });
+  });
 });

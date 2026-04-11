@@ -2849,11 +2849,6 @@ export default function Auditar() {
       return;
     }
 
-    if (typeof window !== "undefined" && window.innerWidth < 640) {
-      setUploadSourceOpen(true);
-      return;
-    }
-
     openPreferredPicker();
   };
 
@@ -2864,11 +2859,6 @@ export default function Auditar() {
     setSelectedCaptureMode(null);
     setSubmitError(null);
     setPickerKey((value) => value + 1);
-
-    if (typeof window !== "undefined" && window.innerWidth < 640) {
-      setUploadSourceOpen(true);
-      return;
-    }
 
     openPreferredPicker();
   };
@@ -3857,17 +3847,30 @@ export default function Auditar() {
                 />
 
                 <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
-                  <div className="sm:hidden space-y-2">
+                  <div className="space-y-2 sm:hidden">
                     <Button
                       variant="outline"
                       className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
-                      onClick={() => setUploadSourceOpen(true)}
+                      onClick={openPreferredPicker}
                     >
-                      {selectedFile ? "Cambiar foto o archivo" : "Elegir cómo subirlo"}
+                      {selectedFile ? "Cambiar documento" : uploadPrimaryActionLabel}
                     </Button>
-                    <p className="text-xs leading-5 text-slate-500">
-                      Toma foto o elige un archivo ya guardado.
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-xs leading-5 text-slate-500">
+                        {preferredCaptureMode === "camera"
+                          ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
+                          : preferredCaptureMode === "file"
+                            ? "Abriremos primero tus archivos para quitarte un toque innecesario."
+                            : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
+                      </p>
+                      <button
+                        type="button"
+                        className="shrink-0 text-xs font-semibold text-teal-700 underline decoration-teal-200 underline-offset-4"
+                        onClick={() => setUploadSourceOpen(true)}
+                      >
+                        Cambiar método
+                      </button>
+                    </div>
                   </div>
 
                   <div className="hidden gap-3 sm:grid sm:grid-cols-2">
@@ -4993,7 +4996,7 @@ export default function Auditar() {
                         type="button"
                         variant="outline"
                         className="rounded-full border-teal-200 text-teal-900 hover:bg-teal-100"
-                        onClick={() => setUploadSourceOpen(true)}
+                        onClick={openPreferredPicker}
                       >
                         Subir otro documento
                       </Button>
