@@ -573,6 +573,34 @@ export function buildDossierTypeProgress(documentTypeCounts: Record<string, numb
   });
 }
 
+export function buildInlineLegalConsentState(params: {
+  legalGateRequired: boolean;
+  pendingDraft: boolean;
+  hasSelectedFile: boolean;
+  activeCaptureMode: AuditarCaptureMode;
+  manualOverrideCount: number;
+}) {
+  const { legalGateRequired, pendingDraft, hasSelectedFile, activeCaptureMode, manualOverrideCount } = params;
+
+  return {
+    shouldShowInlineLegalConsent: legalGateRequired && (hasSelectedFile || pendingDraft),
+    confirmPrimaryActionLabel: legalGateRequired
+      ? manualOverrideCount > 0
+        ? "Aceptar y guardar con ajustes"
+        : "Aceptar y guardar documento"
+      : manualOverrideCount > 0
+        ? "Guardar y aplicar ajustes"
+        : "Confirmar y guardar documento",
+    uploadPrimaryActionLabel: hasSelectedFile
+      ? legalGateRequired
+        ? "Aceptar y analizar documento"
+        : "Analizar antes de guardar"
+      : activeCaptureMode === "camera"
+        ? "Tomar foto para continuar"
+        : "Elegir archivo para continuar",
+  };
+}
+
 function getCaptureModeSupportCopy(value: AuditarCaptureMode | null | undefined) {
   return value === "camera"
     ? "Ideal si tu documento está en papel. Abriremos primero la cámara para escanearlo más rápido."
@@ -1693,6 +1721,7 @@ export default function Auditar() {
   const [legalGateError, setLegalGateError] = useState<LegalGateErrorState | null>(null);
   const [legalGateMetrics, setLegalGateMetrics] = useState<LegalGateMetricsState>(INITIAL_LEGAL_GATE_METRICS);
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
+  const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
@@ -2272,6 +2301,18 @@ export default function Auditar() {
     () => buildManualOverridePayload(previewEditableFields, manualFieldValues),
     [manualFieldValues, previewEditableFields],
   );
+  const {
+    shouldShowInlineLegalConsent,
+    confirmPrimaryActionLabel,
+    uploadPrimaryActionLabel,
+  } = buildInlineLegalConsentState({
+    legalGateRequired,
+    pendingDraft: Boolean(pendingDraft),
+    hasSelectedFile: Boolean(selectedFile),
+    activeCaptureMode,
+    manualOverrideCount: manualOverridePayload.length,
+  });
+  const isPrimaryDocumentActionPending = isProcessingDocument || acceptLegalPackageMutation.isPending;
   const manualOverrideMap = useMemo(
     () => new Map<string, string>(manualOverridePayload.map((item) => [item.key, item.value])),
     [manualOverridePayload],
@@ -2406,8 +2447,9 @@ export default function Auditar() {
           lastEvent: "accepted",
           lastUpdatedAt: Date.now(),
         }));
+        return true;
       }
-      return;
+      return false;
     }
 
     if (!legalGateChecked) {
@@ -2417,7 +2459,7 @@ export default function Auditar() {
           "validation",
         ),
       );
-      return;
+      return false;
     }
 
     const nextRetryCount = isRetry ? (legalGateError?.retryCount ?? 0) + 1 : 0;
@@ -2463,6 +2505,7 @@ export default function Auditar() {
         utils.consent.status.invalidate(caseDetailInput),
       ]);
       await caseDetailQuery.refetch();
+      return true;
     } catch (error) {
       const resolvedError = resolveLegalGateError(error, nextRetryCount);
 
@@ -2486,6 +2529,7 @@ export default function Auditar() {
         lastUpdatedAt: Date.now(),
       }));
       setLegalGateError(resolvedError);
+      return false;
     }
   };
 
@@ -2844,14 +2888,11 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError(
-        buildLegalGateErrorState(
-          "Para subir documentos y fortalecer tu expediente, primero acepta el paquete legal vigente.",
-          "validation",
-        ),
-      );
-      setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
-      return;
+      const accepted = await handleAcceptLegalPackage();
+      if (!accepted) {
+        setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
+        return;
+      }
     }
 
     try {
@@ -2893,14 +2934,11 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError(
-        buildLegalGateErrorState(
-          "Antes de guardar documentos en tu expediente, acepta el paquete legal vigente.",
-          "validation",
-        ),
-      );
-      setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
-      return;
+      const accepted = await handleAcceptLegalPackage();
+      if (!accepted) {
+        setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
+        return;
+      }
     }
 
     try {
@@ -3176,151 +3214,109 @@ export default function Auditar() {
         ) : null}
 
         {legalGateRequired || legalGateHarnessMode ? (
-          <section className="mt-6 rounded-[1.75rem] border border-amber-200 bg-white p-6 shadow-sm">
+          <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-900">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
-                  Gate legal activo
+                  Actualización legal pendiente
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950">{LEGAL_GATE_COPY.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-700">{LEGAL_GATE_COPY.body}</p>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{LEGAL_GATE_COPY.subtext}</p>
-              </div>
-              <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                <p className="font-semibold text-slate-950">Progreso legal</p>
-                <p className="mt-2">
-                  {acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.
+                <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-slate-950">Confirma tu autorización cuando subas o guardes tu documento</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-700">
+                  Ya no te detenemos con un paso aparte. Cuando estés listo para analizar o guardar tu archivo, verás una confirmación breve en ese mismo punto para proteger tu expediente y dejar trazabilidad versionada.
                 </p>
-                <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</p>
-              </div>
-              <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700" data-testid="legal-gate-lock-metrics">
-                <p className="font-semibold text-slate-950">Métricas visibles del lock</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Intentos</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-attempts">{legalGateMetrics.attempts}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Conflictos</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-conflicts">{legalGateMetrics.conflicts}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Reintentos ejecutados</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-retries">{legalGateMetrics.retries}</p>
-                  </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-700"
+                    onClick={() => setLegalDocumentsDrawerOpen(true)}
+                  >
+                    Revisar aviso y términos vigentes
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
+                  </button>
+                  <span className="text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</span>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-600" data-testid="legal-gate-metric-status">
-                  Estado actual: {describeLegalGateMetricEvent(legalGateMetrics.lastEvent)}
-                  {legalGateMetrics.lastUpdatedAt
-                    ? ` · Última actualización ${new Date(legalGateMetrics.lastUpdatedAt).toLocaleTimeString("es-MX", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}`
-                    : ""}
-                </p>
-                {legalGateRetryCountdown > 0 ? (
-                  <p className="mt-2 text-xs font-semibold text-amber-900" data-testid="legal-gate-metric-timer">Temporizador de reintento activo: {legalGateRetryCountdown}s</p>
-                ) : null}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[24rem]">
+                <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-950">Cobertura legal</p>
+                  <p className="mt-2">{acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">La aceptación se registra cuando confirmas la acción principal de este expediente.</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700" data-testid="legal-gate-lock-metrics">
+                  <p className="font-semibold text-slate-950">Estado del resguardo</p>
+                  <div className="mt-3 grid grid-cols-3 gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Intentos</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-attempts">{legalGateMetrics.attempts}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Conflictos</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-conflicts">{legalGateMetrics.conflicts}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Reintentos</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-retries">{legalGateMetrics.retries}</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-slate-600" data-testid="legal-gate-metric-status">
+                    Estado actual: {describeLegalGateMetricEvent(legalGateMetrics.lastEvent)}
+                    {legalGateMetrics.lastUpdatedAt
+                      ? ` · Última actualización ${new Date(legalGateMetrics.lastUpdatedAt).toLocaleTimeString("es-MX", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}`
+                      : ""}
+                  </p>
+                  {legalGateRetryCountdown > 0 ? (
+                    <p className="mt-2 text-xs font-semibold text-amber-900" data-testid="legal-gate-metric-timer">Temporizador de reintento activo: {legalGateRetryCountdown}s</p>
+                  ) : null}
+                </div>
               </div>
             </div>
+          </section>
+        ) : null}
 
-            <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        <Drawer open={legalDocumentsDrawerOpen} onOpenChange={setLegalDocumentsDrawerOpen}>
+          <DrawerContent>
+            <DrawerHeader className="text-left">
+              <DrawerTitle>Documentos legales vigentes de tu expediente</DrawerTitle>
+              <DrawerDescription>
+                Revísalos con calma. La aceptación se registra únicamente cuando confirmas la acción principal de analizar o guardar dentro de este expediente.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="space-y-3 px-4 pb-2">
               {LEGAL_DOCUMENTS.map((document) => {
                 const status = legalAcceptanceDocuments.find((item) => item.slug === document.slug);
                 const accepted = status?.accepted ?? false;
                 return (
-                  <div key={document.slug} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                  <div key={document.slug} className="rounded-[1.1rem] border border-slate-200 bg-white p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-semibold text-slate-950">{document.fullTitle}</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">
-                          Versión {document.version} · Vigencia {document.effectiveDate}
-                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-600">Versión {document.version} · Vigencia {document.effectiveDate}</p>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-semibold ${accepted ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}>
                         {accepted ? "Aceptado" : "Pendiente"}
                       </span>
                     </div>
-                    <a
-                      href={document.route}
-                      className="mt-3 inline-flex text-sm font-semibold text-slate-900 underline underline-offset-4"
-                    >
-                      Revisar documento
+                    <a href={document.route} className="mt-3 inline-flex text-sm font-semibold text-slate-900 underline underline-offset-4">
+                      Abrir documento completo
                     </a>
                   </div>
                 );
               })}
             </div>
-
-            <label className="mt-5 flex items-start gap-3 rounded-[1.2rem] border border-slate-200 bg-white p-4">
-              <input
-                type="checkbox"
-                checked={legalGateChecked}
-                onChange={(event) => {
-                  setLegalGateChecked(event.target.checked);
-                  if (event.target.checked) {
-                    setLegalGateError(null);
-                  }
-                }}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-              />
-              <span className="text-sm leading-7 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
-            </label>
-
-            {legalGateError ? (
-              <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900" data-testid="legal-gate-error">
-                <p className="font-semibold text-rose-950">No pudimos completar la aceptación legal.</p>
-                <p className="mt-2">{legalGateError.message}</p>
-                <p className="mt-2 text-xs text-rose-800/90">
-                  Conservamos tu progreso y protegemos el expediente frente a registros duplicados o intentos simultáneos.
-                </p>
-                {canRetryLegalGate ? (
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-rose-300 text-rose-700 hover:bg-rose-50"
-                      onClick={() => {
-                        void handleAcceptLegalPackage({ isRetry: true });
-                      }}
-                      disabled={acceptLegalPackageMutation.isPending || legalGateRetryCountdown > 0 || legalGateError.retryCount >= MAX_LEGAL_GATE_RETRIES}
-                      data-testid="legal-gate-retry-button"
-                    >
-                      <RefreshCw className="mr-2 size-4" />
-                      {legalGateRetryCountdown > 0 ? `Disponible en ${legalGateRetryCountdown}s` : "Reintentar aceptación"}
-                    </Button>
-                    <span className="text-xs text-rose-700" data-testid="legal-gate-retry-copy">
-                      Reintento {Math.min(legalGateError.retryCount + 1, MAX_LEGAL_GATE_RETRIES)} de {MAX_LEGAL_GATE_RETRIES}
-                    </span>
-                    <span className="text-xs text-rose-700">
-                      Intentos restantes: {Math.max(MAX_LEGAL_GATE_RETRIES - legalGateError.retryCount, 0)}
-                    </span>
-                    <span className="text-xs font-semibold text-rose-800" data-testid="legal-gate-retry-countdown" data-seconds={legalGateRetryCountdown}>
-                      {legalGateRetryCountdown > 0
-                        ? `Reintento habilitado en ${legalGateRetryCountdown}s`
-                        : "Reintento inmediato disponible"}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Button
-                className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                onClick={() => void handleAcceptLegalPackage()}
-                disabled={acceptLegalPackageMutation.isPending}
-              >
-                {acceptLegalPackageMutation.isPending ? "Registrando aceptación..." : LEGAL_GATE_COPY.button}
-              </Button>
-              <p className="text-sm leading-6 text-slate-600">
-                Mientras este paso esté pendiente, tu asistente laboral y la carga de documentos quedan en pausa para este expediente.
-              </p>
-            </div>
-          </section>
-        ) : null}
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                  Cerrar
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
@@ -4183,6 +4179,40 @@ export default function Auditar() {
                     </div>
                   ) : null}
 
+                  {shouldShowInlineLegalConsent ? (
+                    <div className="mt-5 rounded-[1.25rem] border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="max-w-2xl">
+                          <p className="text-sm font-semibold text-amber-950">Antes de guardar, confirma tu autorización</p>
+                          <p className="mt-1 text-sm leading-6 text-amber-900/90">
+                            Protegemos tu información y registramos la versión legal vigente en el mismo momento en que guardas este documento.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-sm font-semibold text-amber-950 underline decoration-amber-300 underline-offset-4"
+                          onClick={() => setLegalDocumentsDrawerOpen(true)}
+                        >
+                          Ver documentos vigentes
+                        </button>
+                      </div>
+                      <label className="mt-4 flex items-start gap-3 rounded-[1rem] border border-amber-200 bg-white/85 p-3">
+                        <input
+                          type="checkbox"
+                          checked={legalGateChecked}
+                          onChange={(event) => {
+                            setLegalGateChecked(event.target.checked);
+                            if (event.target.checked) {
+                              setLegalGateError(null);
+                            }
+                          }}
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                        />
+                        <span className="text-sm leading-6 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+                      </label>
+                    </div>
+                  ) : null}
+
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                     <Button
                       className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
@@ -4190,11 +4220,15 @@ export default function Auditar() {
                           ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
                           : "bg-teal-600 hover:bg-teal-700"
                       }`}
-                      disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
+                      disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
                       onClick={() => void handleConfirmDraft()}
                     >
-                      {confirmDraftMutation.isPending ? "Guardando documento..." : manualOverridePayload.length ? "Guardar y aplicar ajustes" : "Confirmar y guardar documento"}
-                      {confirmDraftMutation.isPending ? (
+                      {confirmDraftMutation.isPending
+                        ? "Guardando documento..."
+                        : acceptLegalPackageMutation.isPending
+                          ? "Registrando autorización..."
+                          : confirmPrimaryActionLabel}
+                      {isPrimaryDocumentActionPending ? (
                         <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
                       ) : (
                         <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -4203,7 +4237,7 @@ export default function Auditar() {
                     <Button
                       variant="outline"
                       className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      disabled={isProcessingDocument}
+                      disabled={isPrimaryDocumentActionPending}
                       onClick={restartPreviewFlow}
                     >
                       Subir otra foto o archivo
@@ -4221,6 +4255,73 @@ export default function Auditar() {
                 </div>
               ) : null}
 
+              {legalGateError ? (
+                <div className="mt-6 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900" data-testid="legal-gate-error">
+                  <p className="font-semibold text-rose-950">No pudimos registrar tu autorización todavía.</p>
+                  <p className="mt-2">{legalGateError.message}</p>
+                  <p className="mt-2 text-xs text-rose-800/90">
+                    Tu archivo y tu progreso siguen resguardados. Puedes reintentar desde aquí sin duplicar el expediente.
+                  </p>
+                  {canRetryLegalGate ? (
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-rose-300 text-rose-700 hover:bg-rose-50"
+                        onClick={() => {
+                          void handleAcceptLegalPackage({ isRetry: true });
+                        }}
+                        disabled={acceptLegalPackageMutation.isPending || legalGateRetryCountdown > 0 || legalGateError.retryCount >= MAX_LEGAL_GATE_RETRIES}
+                        data-testid="legal-gate-retry-button"
+                      >
+                        <RefreshCw className="mr-2 size-4" />
+                        {legalGateRetryCountdown > 0 ? `Disponible en ${legalGateRetryCountdown}s` : "Reintentar autorización"}
+                      </Button>
+                      <span className="text-xs text-rose-700" data-testid="legal-gate-retry-copy">
+                        Reintento {Math.min(legalGateError.retryCount + 1, MAX_LEGAL_GATE_RETRIES)} de {MAX_LEGAL_GATE_RETRIES}
+                      </span>
+                      <span className="text-xs font-semibold text-rose-800" data-testid="legal-gate-retry-countdown" data-seconds={legalGateRetryCountdown}>
+                        {legalGateRetryCountdown > 0 ? `Disponible nuevamente en ${legalGateRetryCountdown}s` : "Reintento inmediato disponible"}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {shouldShowInlineLegalConsent ? (
+                <div className="mt-5 hidden rounded-[1.25rem] border border-amber-200 bg-amber-50/70 p-4 sm:block">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="max-w-2xl">
+                      <p className="text-sm font-semibold text-amber-950">Autorización integrada a la acción principal</p>
+                      <p className="mt-1 text-sm leading-6 text-amber-900/90">
+                        Cuando avances con este documento, registraremos tu aceptación del aviso de privacidad y de los términos vigentes en ese mismo paso.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-amber-950 underline decoration-amber-300 underline-offset-4"
+                      onClick={() => setLegalDocumentsDrawerOpen(true)}
+                    >
+                      Revisar términos y aviso
+                    </button>
+                  </div>
+                  <label className="mt-4 flex items-start gap-3 rounded-[1rem] border border-amber-200 bg-white/85 p-3">
+                    <input
+                      type="checkbox"
+                      checked={legalGateChecked}
+                      onChange={(event) => {
+                        setLegalGateChecked(event.target.checked);
+                        if (event.target.checked) {
+                          setLegalGateError(null);
+                        }
+                      }}
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    />
+                    <span className="text-sm leading-6 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+                  </label>
+                </div>
+              ) : null}
+
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row">
                     <Button
                       className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
@@ -4228,7 +4329,7 @@ export default function Auditar() {
                           ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
                           : "bg-teal-600 hover:bg-teal-700"
                       }`}
-                      disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
+                      disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
                       onClick={() => {
                         if (pendingDraft) {
                           void handleConfirmDraft();
@@ -4245,16 +4346,12 @@ export default function Auditar() {
                         ? pendingDraft
                           ? "Guardando documento..."
                           : "Analizando documento..."
-                        : pendingDraft
-                          ? manualOverridePayload.length
-                            ? "Guardar y aplicar ajustes"
-                            : "Confirmar y guardar documento"
-                          : selectedFile
-                            ? "Analizar antes de guardar"
-                            : activeCaptureMode === "camera"
-                              ? "Tomar foto para continuar"
-                              : "Elegir archivo para continuar"}
-                      {isProcessingDocument ? (
+                        : acceptLegalPackageMutation.isPending
+                          ? "Registrando autorización..."
+                          : pendingDraft
+                            ? confirmPrimaryActionLabel
+                            : uploadPrimaryActionLabel}
+                      {isPrimaryDocumentActionPending ? (
                         <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
                       ) : (
                         <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -4265,7 +4362,7 @@ export default function Auditar() {
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
-                  disabled={isProcessingDocument}
+                  disabled={isPrimaryDocumentActionPending}
                 >
                   {pendingDraft ? "Subir otra foto o archivo" : "Limpiar formulario"}
                 </Button>
@@ -5549,13 +5646,45 @@ export default function Auditar() {
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden">
         <div className="mx-auto max-w-6xl">
+          {shouldShowInlineLegalConsent ? (
+            <div className="mb-3 rounded-[1.15rem] border border-amber-200 bg-amber-50/95 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-amber-950">Confirma tu autorización en este paso</p>
+                  <p className="mt-1 text-xs leading-5 text-amber-900/90">Tu aceptación se registra junto con la acción principal del documento.</p>
+                </div>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-amber-950 underline underline-offset-4"
+                  onClick={() => setLegalDocumentsDrawerOpen(true)}
+                >
+                  Ver términos
+                </button>
+              </div>
+              <label className="mt-3 flex items-start gap-3 rounded-[0.95rem] border border-amber-200 bg-white/85 p-3">
+                <input
+                  type="checkbox"
+                  checked={legalGateChecked}
+                  onChange={(event) => {
+                    setLegalGateChecked(event.target.checked);
+                    if (event.target.checked) {
+                      setLegalGateError(null);
+                    }
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span className="text-xs leading-5 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+              </label>
+            </div>
+          ) : null}
+
           <Button
             className={`h-14 w-full rounded-[1.2rem] text-base font-semibold text-white transition-all duration-300 ${
               pendingDraft && manualOverridePayload.length
                 ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
                 : "bg-teal-600 hover:bg-teal-700"
             }`}
-            disabled={isProcessingDocument || !selectedTenantId || !selectedCaseId}
+            disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
             onClick={() => {
               if (pendingDraft) {
                 void handleConfirmDraft();
@@ -5572,15 +5701,11 @@ export default function Auditar() {
               ? pendingDraft
                 ? "Guardando documento..."
                 : "Analizando documento..."
-              : pendingDraft
-                ? manualOverridePayload.length
-                  ? "Guardar y aplicar ajustes"
-                  : "Confirmar y guardar documento"
-                : selectedFile
-                  ? "Analizar antes de guardar"
-                  : activeCaptureMode === "camera"
-                    ? "Tomar foto para continuar"
-                    : "Elegir archivo para continuar"}
+              : acceptLegalPackageMutation.isPending
+                ? "Registrando autorización..."
+                : pendingDraft
+                  ? confirmPrimaryActionLabel
+                  : uploadPrimaryActionLabel}
           </Button>
 
 

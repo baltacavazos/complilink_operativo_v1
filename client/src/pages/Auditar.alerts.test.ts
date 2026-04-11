@@ -7,6 +7,7 @@ vi.mock("@/components/HeliosCopilotSheet", () => ({
 import {
   buildDossierTypeProgress,
   buildHeliosPriorityAlerts,
+  buildInlineLegalConsentState,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
 } from "./Auditar";
@@ -218,6 +219,56 @@ describe("buildDossierTypeProgress", () => {
       coverageLabel: "Pendiente",
       count: 0,
       targetCount: 1,
+    });
+  });
+});
+
+describe("buildInlineLegalConsentState", () => {
+  it("activa el consentimiento inline y renombra el CTA cuando hay un archivo seleccionado con gate legal pendiente", () => {
+    expect(
+      buildInlineLegalConsentState({
+        legalGateRequired: true,
+        pendingDraft: false,
+        hasSelectedFile: true,
+        activeCaptureMode: "file",
+        manualOverrideCount: 0,
+      }),
+    ).toEqual({
+      shouldShowInlineLegalConsent: true,
+      confirmPrimaryActionLabel: "Aceptar y guardar documento",
+      uploadPrimaryActionLabel: "Aceptar y analizar documento",
+    });
+  });
+
+  it("mantiene el consentimiento inline para borradores pendientes y adapta el CTA cuando existen ajustes manuales", () => {
+    expect(
+      buildInlineLegalConsentState({
+        legalGateRequired: true,
+        pendingDraft: true,
+        hasSelectedFile: false,
+        activeCaptureMode: "camera",
+        manualOverrideCount: 2,
+      }),
+    ).toEqual({
+      shouldShowInlineLegalConsent: true,
+      confirmPrimaryActionLabel: "Aceptar y guardar con ajustes",
+      uploadPrimaryActionLabel: "Tomar foto para continuar",
+    });
+  });
+
+  it("desactiva el consentimiento inline y conserva los CTA originales cuando el gate legal ya está resuelto", () => {
+    expect(
+      buildInlineLegalConsentState({
+        legalGateRequired: false,
+        pendingDraft: false,
+        hasSelectedFile: true,
+        activeCaptureMode: "file",
+        manualOverrideCount: 1,
+      }),
+    ).toEqual({
+      shouldShowInlineLegalConsent: false,
+      confirmPrimaryActionLabel: "Guardar y aplicar ajustes",
+      uploadPrimaryActionLabel: "Analizar antes de guardar",
     });
   });
 });

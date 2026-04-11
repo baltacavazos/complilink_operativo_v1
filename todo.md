@@ -691,3 +691,10 @@
 - [x] Añadir una prueba de navegador del reintento del gate legal en /auditar para validar el flujo real de UI
 - [x] Exponer métricas operativas visibles del lock legal en /auditar para diagnóstico rápido
 - [x] Mejorar el mensaje de error legal en /auditar con temporizador breve y estado de reintento progresivo
+- [x] Rediseñar el consentimiento legal de /auditar para que quede integrado al gesto natural de subir documentos y no se perciba como un paso extra
+- [x] Reescribir el microcopy legal de /auditar para que sea claro, protector, sutil y no genere sensación de cesión de derechos
+- [ ] Ajustar la UX del flujo de subida para que el cumplimiento legal sea lo menos intrusivo posible, manteniendo trazabilidad y validez operativa
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor solución UX/legal antes de implementar el nuevo consentimiento integrado
+- [x] Rediseñar el consentimiento legal de /auditar para integrarlo al flujo de subida con microcopy protector, checkbox sutil y acceso discreto a términos
+- [x] Implementar aceptación legal embebida en el momento de analizar/guardar documento sin paso separado intrusivo
+- [ ] Actualizar pruebas Vitest y de navegador para validar el nuevo consentimiento integrado y la resiliencia del lock

@@ -1,0 +1,166 @@
+{
+  "generatedAt": "2026-04-11T18:43:37.354Z",
+  "promptSummary": "Consenso multi-AI para rediseñar el consentimiento legal de /auditar con mínima fricción e integración natural al flujo de subida",
+  "openai": {
+    "recommended_pattern": {
+      "name": "consentimiento_inline_cerca_del_CTA",
+      "why": [
+        "Integra el consentimiento directamente en el flujo natural de subir documentos, evitando barreras separadas.",
+        "Minimiza la sensación de un paso legal extra, haciendo que el usuario lo perciba como parte orgánica del proceso.",
+        "Permite un microcopy protector y claro justo donde el usuario toma la acción, aumentando la comprensión y confianza.",
+        "Facilita la trazabilidad legal al requerir una acción explícita (clic en subir) con consentimiento implícito en el contexto.",
+        "Compatible con UX mobile-first y diseño simple, sin saturar la pantalla con elementos adicionales."
+      ],
+      "legal_capture_moment": "Al hacer clic en el botón 'Subir', se entiende que el usuario acepta los términos y condiciones relacionados con la carga.",
+      "user_visible_elements": [
+        "Botón principal de subir documentos con microcopy integrado que indica consentimiento.",
+        "Texto breve y claro junto al botón que explica el consentimiento de forma protectora.",
+        "Link secundario a términos completos, discreto y sin interrumpir el flujo."
+      ],
+      "avoid": [
+        "Checkbox separado que actúe como barrera antes de subir.",
+        "Avisos legales largos o técnicos que generen desconfianza.",
+        "Pop-ups o modales intrusivos que interrumpan el flujo natural.",
+        "Lenguaje agresivo o alarmante que pueda generar rechazo."
+      ]
+    },
+    "microcopy": {
+      "primary": "Al subir tus documentos, confirmas que están protegidos y que cumplimos con tu privacidad.",
+      "secondary": "Puedes consultar los detalles en nuestros términos.",
+      "link_label": "Ver términos completos",
+      "checkbox_label": "Acepto los términos y condiciones (integrado en el botón subir)"
+    },
+    "interaction_model": [
+      "Usuario selecciona o arrastra documentos para subir.",
+      "Justo debajo o al lado del botón 'Subir', se muestra el microcopy protector y el link a términos.",
+      "Al presionar 'Subir', se registra el consentimiento implícito junto con la acción de carga.",
+      "El link a términos abre un sheet o drawer sutil si el usuario desea más información, sin interrumpir el flujo.",
+      "No se requiere checkbox adicional, para evitar sensación de barrera."
+    ],
+    "compliance_notes": [
+      "El consentimiento queda registrado en el momento del clic en 'Subir', con timestamp y referencia a la versión de términos.",
+      "El link a términos completos debe estar siempre accesible y actualizado.",
+      "El microcopy debe ser revisado legalmente para asegurar que cumple con normativas locales de protección de datos.",
+      "Se mantiene trazabilidad operativa sin afectar la experiencia del usuario."
+    ],
+    "implementation_notes": [
+      "Diseñar el botón 'Subir' con espacio para microcopy breve y link a términos sin saturar la interfaz.",
+      "Implementar tracking del clic en 'Subir' junto con la versión de términos aceptada.",
+      "El sheet/drawer para términos debe ser ligero, rápido y fácil de cerrar en mobile.",
+      "Evitar elementos visuales que distraigan o generen desconfianza.",
+      "Probar con usuarios para validar percepción de confianza y fluidez."
+    ],
+    "risks": [
+      "El consentimiento implícito puede ser cuestionado si el microcopy no es suficientemente claro o visible.",
+      "Usuarios que no lean el microcopy pueden desconocer el consentimiento, aunque legalmente válido.",
+      "Si el link a términos no es accesible o claro, puede afectar la validez legal.",
+      "Demasiada sutileza puede generar dudas internas en el equipo legal sobre la robustez del consentimiento."
+    ]
+  },
+  "gemini": {
+    "recommended_pattern": {
+      "name": "Consentimiento Integrado con Microcopy y Checkbox Sutil",
+      "why": [
+        "Integra el consentimiento directamente en el flujo de subida de documentos, eliminando barreras y pasos extra.",
+        "Utiliza microcopy protector y un checkbox discreto para minimizar la intrusión y mantener la fluidez.",
+        "El clic de aceptación se percibe como parte orgánica de la acción de subir, no como un paso legal separado o una barrera.",
+        "Garantiza la trazabilidad legal del consentimiento explícito sin abrumar al usuario con información técnica.",
+        "Diseño mobile-first, simple y comprensible para un público masivo, priorizando la claridad y la facilidad de uso.",
+        "Evita la sensación de cesión amplia de derechos, enfocándose en el procesamiento de documentos para un fin específico y limitado."
+      ],
+      "legal_capture_moment": "Al hacer clic en el botón 'Subir' o 'Confirmar', una vez que el usuario ha marcado explícitamente el checkbox de aceptación.",
+      "user_visible_elements": [
+        "Microcopy protector y tranquilizador, ubicado estratégicamente cerca del área de carga o del CTA final.",
+        "Un único checkbox con una etiqueta clara, concisa y directamente relacionada con la acción de subir documentos.",
+        "Un enlace secundario y discreto a los 'Términos de Uso y Aviso de Privacidad' para quienes deseen profundizar.",
+        "El botón de acción principal ('Subir' o 'Confirmar'), que se activa solo tras la aceptación del checkbox."
+      ],
+      "avoid": [
+        "Pop-ups, modales o pantallas completas intrusivas dedicadas exclusivamente al consentimiento legal.",
+        "Pasos adicionales o pantallas separadas en el flujo de subida que rompan la continuidad de la experiencia.",
+        "Lenguaje técnico, agresivo, alarmante o excesivamente formal que genere desconfianza o confusión.",
+        "Frases que sugieran una cesión amplia, indefinida o irreversible de derechos sobre los documentos.",
+        "Múltiples checkboxes, formularios legales complejos o cualquier elemento que añada fricción innecesaria."
+      ]
+    },
+    "microcopy": {
+      "primary": "Al subir tus documentos, aceptas que los procesemos de forma segura y confidencial para validar tu información conforme a nuestros Términos de Uso.",
+      "secondary": "Tu información se usará exclusivamente para este proceso y está protegida.",
+      "link_label": "Consulta nuestros Términos de Uso y Aviso de Privacidad.",
+      "checkbox_label": "Acepto los Términos de Uso para el procesamiento de mis documentos."
+    },
+    "interaction_model": [
+      "El usuario llega a la pantalla /auditar y comienza a interactuar con el área de carga de documentos (arrastrar y soltar, seleccionar archivos).",
+      "Debajo del área de carga o justo encima del botón final 'Subir', se muestra el microcopy primario y el checkbox de aceptación.",
+      "El botón 'Subir' permanece inactivo (deshabilitado) hasta que el usuario marca el checkbox.",
+      "El usuario marca el checkbox 'Acepto los Términos de Uso para el procesamiento de mis documentos.', lo que activa el botón 'Subir'.",
+      "Al hacer clic en 'Subir', el sistema registra el consentimiento explícito (checkbox marcado, timestamp, ID de usuario, IP, versión de los términos) y procede con la carga de los documentos.",
+      "Se muestra una confirmación sutil al usuario (ej. un 'toast' o mensaje breve): 'Documentos subidos con éxito. Tu información está protegida.'",
+      "El enlace 'Consulta nuestros Términos de Uso y Aviso de Privacidad' está siempre visible y accesible para consulta en cualquier momento."
+    ],
+    "compliance_notes": [
+      "**Consentimiento Explícito:** La combinación del checkbox marcado y la acción de 'Subir' constituye un consentimiento explícito y afirmativo, cumpliendo con la normativa de protección de datos.",
+      "**Finalidad Específica:** El microcopy comunica claramente el propósito del procesamiento de los documentos ('validar tu información'), limitando su uso y evitando ambigüedades.",
+      "**Transparencia:** Se proporciona información esencial de forma concisa y un enlace a los términos completos para garantizar la transparencia y el derecho a la información del usuario.",
+      "**Trazabilidad y Auditoría:** Es fundamental registrar la aceptación del usuario (fecha, hora, ID de usuario, dirección IP, versión exacta de los términos aceptados) para futuras auditorías y cumplimiento legal.",
+      "**Protección de Datos:** El lenguaje enfatiza la seguridad y confidencialidad ('de forma segura y confidencial', 'está protegida'), alineándose con los principios de protección de datos personales."
+    ],
+    "implementation_notes": [
+      "**Integración UI/UX:** El microcopy y el checkbox deben integrarse visualmente de forma armónica con el diseño general de la pantalla /auditar, sin parecer un elemento añadido o disruptivo.",
+      "**Accesibilidad:** Asegurar que el checkbox y el enlace sean completamente accesibles para todos los usuarios, incluyendo aquellos que utilizan tecnologías de asistencia (ej. navegación por teclado, etiquetas ARIA).",
+      "**Diseño Responsivo:** Optimizar la disposición y el tamaño de los elementos para una experiencia fluida y legible en dispositivos móviles, priorizando la facilidad de interacción con el checkbox y el botón.",
+      "**Validación Frontend/Backend:** Implementar validación tanto en el frontend (deshabilitar botón) como en el backend para asegurar que no se procesen documentos sin el consentimiento explícito.",
+      "**Revisión Legal Continua:** El microcopy y los Términos de Uso completos deben ser validados periódicamente por el equipo legal para asegurar su vigencia y cumplimiento con la legislación aplicable en México.",
+      "**Control de Versiones:** Implementar un sistema robusto para registrar la versión exacta de los Términos de Uso que el usuario aceptó en un momento dado, crucial para la trazabilidad legal."
+    ],
+    "risks": [
+      "**Falta de Lectura:** Aunque el diseño busca la claridad, algunos usuarios podrían marcar el checkbox sin leer completamente el microcopy o los términos, lo cual es un riesgo inherente a cualquier consentimiento digital.",
+      "**Interpretación Legal:** A pesar del cuidado en el lenguaje, siempre existe un riesgo de diferentes interpretaciones legales en futuras auditorías o disputas, especialmente si la legislación evoluciona.",
+      "**Complejidad Futura:** La tentación de añadir más requisitos legales o información adicional podría comprometer la simplicidad y fluidez del patrón propuesto, desvirtuando el objetivo inicial.",
+      "**Actualización de Términos:** Cambios futuros en los Términos de Uso podrían requerir una re-aceptación por parte del usuario, lo que podría interrumpir el flujo si no se gestiona con un patrón de re-consentimiento adecuado y poco intrusivo."
+    ]
+  },
+  "grok": {
+    "recommended_pattern": {
+      "name": "Checkbox integrado en el flujo de subida con microcopy sutil",
+      "why": [
+        "Integra el consentimiento de manera natural en el último paso de la subida, evitando que parezca un gate separado y manteniendo el flujo fluido.",
+        "Es lo menos intrusivo posible mientras asegura trazabilidad legal, al combinar un elemento simple como un checkbox con microcopy protector.",
+        "Cumple con criterios de UX mobile-first y público masivo, ya que es simple, visible pero no abrumador, y evita la sensación de cesión amplia de derechos al usar lenguaje tranquilizador."
+      ],
+      "legal_capture_moment": "Al momento de confirmar la subida del documento, con el checkbox marcado explícitamente.",
+      "user_visible_elements": [
+        "Un checkbox único embebido justo arriba del botón de subir, con microcopy breve junto a él.",
+        "Un link secundario discreto para más información, que se abre en un drawer sutil si se selecciona."
+      ],
+      "avoid": [
+        "Evitar pop-ups o pantallas completas que interrumpan el flujo natural.",
+        "Evitar lenguaje técnico o alarmante que haga sentir al usuario que está cediendo derechos de manera amplia."
+      ]
+    },
+    "microcopy": {
+      "primary": "Al subir este documento, confirmo que se usará solo para verificar mi información de manera segura.",
+      "secondary": "Tu privacidad está protegida; solo usamos lo necesario.",
+      "link_label": "Más detalles sobre cómo cuidamos tus datos",
+      "checkbox_label": "Acepto el uso seguro de este documento para el proceso"
+    },
+    "interaction_model": [
+      "El usuario selecciona el archivo en el área de carga, luego en el resumen final ve el checkbox con microcopy.",
+      "El usuario marca el checkbox y presiona el botón de subir; si hace clic en el link, se abre un drawer no modal para leer más sin salir del flujo.",
+      "El sistema registra el consentimiento al marcar el checkbox, asegurando que no se proceda sin él."
+    ],
+    "compliance_notes": [
+      "El consentimiento es explícito y trazable mediante el registro del checkbox, cumpliendo con la LFPDPPP en México.",
+      "Incluye un momento claro de aceptación sin cesión amplia de derechos, manteniendo la validez legal."
+    ],
+    "implementation_notes": [
+      "Integra el checkbox en el componente de resumen de subida, usando CSS para hacerlo sutil en dispositivos móviles.",
+      "Asegura que el link a términos abra un drawer o sheet que no bloquee la pantalla, con un botón para cerrarlo fácilmente.",
+      "Usa eventos de analytics para rastrear el consentimiento y evitar problemas de auditoría."
+    ],
+    "risks": [
+      "Posible ignorancia del checkbox por usuarios apresurados, mitigado con microcopy claro y posicionamiento estratégico.",
+      "Riesgo de no cumplir estándares legales si el consentimiento no se registra correctamente, por lo que se debe probar thoroughly."
+    ]
+  }
+}
