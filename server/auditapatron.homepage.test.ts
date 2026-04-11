@@ -12,8 +12,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("y recupera la calma.");
     expect(homeSource).toContain("Sube tus documentos sin complicarte.");
     expect(homeSource).toContain("te muestra lo importante");
-    expect(homeSource).toContain("Empieza con el documento que ya tienes más a la mano.");
-    expect(homeSource).toContain("un recibo de nómina, un CFDI, tu contrato o un soporte IMSS/Infonavit");
+    expect(homeSource).toContain("El documento que ya tengas más a la mano siempre puede servir.");
+    expect(homeSource).toContain("Orden, claridad y control desde tu primer archivo");
     expect(homeSource).not.toContain("CompliLink Operativo");
   });
 
@@ -32,7 +32,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Quiero una guía rápida antes de subir");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Mini diagnóstico inicial");
-    expect(homeSource).toContain("un recibo de nómina, un CFDI, tu contrato o un soporte IMSS/Infonavit");
+    expect(homeSource).toContain("Señales de confianza");
+    expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI");
+    expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
   });

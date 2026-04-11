@@ -183,7 +183,7 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
 const faqs = [
   {
     id: "para-mi",
-    question: "¿Esto me puede servir si todavía no sé qué está mal en mis papeles?",
+    question: "¿Esto me puede servir si todavía no sé qué revisar primero?",
     answer:
       "Sí. AuditaPatron está pensado para empezar justo ahí: ordenar lo que ya tienes, explicarte lo importante con palabras simples y ayudarte a ver qué conviene revisar primero.",
   },
@@ -191,7 +191,7 @@ const faqs = [
     id: "primer-documento",
     question: "¿Qué documento conviene subir primero?",
     answer:
-      "El que ya tengas más a la mano y te dé contexto útil: un recibo de nómina, un CFDI, tu contrato o un soporte IMSS/Infonavit. Empezar es más importante que esperar el expediente perfecto.",
+      "El documento que ya tengas más a la mano siempre puede servir. Si sigues con duda, empieza por un recibo de nómina reciente porque suele dar contexto rápido sobre pagos, deducciones y fechas.",
   },
   {
     id: "privacidad",
@@ -203,7 +203,7 @@ const faqs = [
     id: "sin-tecnicismos",
     question: "¿Necesito saber de leyes o de nómina para usarlo?",
     answer:
-      "No. Está pensado para explicarte lo importante con palabras sencillas y pasos claros.",
+      "No. Está pensado para explicarte lo importante con palabras sencillas, pasos claros y una recomendación inicial del documento que más te conviene subir.",
   },
   {
     id: "mas-contexto",
@@ -216,41 +216,101 @@ const faqs = [
 const guidedFaqOptions = [
   {
     id: "para-mi",
-    label: "Quiero saber si esto me sirve",
-    description: "Empieza por aquí si todavía no tienes claro por dónde comenzar.",
+    label: "Quiero entender rápido si esto me puede ayudar",
+    description: "Te orienta con el primer archivo que suele abrir más contexto sin complicarte.",
   },
   {
     id: "primer-documento",
     label: "No sé qué documento subir primero",
-    description: "Te orienta con el archivo que más suele ayudar en el primer paso.",
+    description: "Te sugiere el archivo con mejor equilibrio entre facilidad, contexto y utilidad inicial.",
   },
   {
     id: "privacidad",
-    label: "Me preocupa mi privacidad",
-    description: "Aclara cómo se resguardan tus archivos y cómo mantienes el control.",
+    label: "Me preocupa mi privacidad y quiero empezar con calma",
+    description: "Aclara cómo se resguardan tus archivos y qué documento puedes usar para probar el flujo con control.",
   },
 ];
 
 const heroCopyVariants = {
   serenity: {
+    tabLabel: "Calma y protección",
     eyebrowMobile: "Calma, protección y control desde tu primer archivo",
     eyebrowDesktop: "Calma, protección y control desde tu primer archivo",
     titleLead: "Protege tu historia laboral",
     titleAccent: "y recupera la calma.",
     body:
       "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
+    ctaPrimary: "Comenzar con calma",
+    ctaSecondary: "Ver guía rápida antes de subir",
   },
-  respaldo: {
-    eyebrowMobile: "Más claridad desde tu primer archivo",
-    eyebrowDesktop: "Más claridad y respaldo desde tu primer archivo",
+  control: {
+    tabLabel: "Orden y control",
+    eyebrowMobile: "Orden, claridad y control desde tu primer archivo",
+    eyebrowDesktop: "Orden, claridad y control desde tu primer archivo",
     titleLead: "Pon tus documentos en orden",
-    titleAccent: "y gana control con calma.",
+    titleAccent: "y toma control con calma.",
     body:
       "Empieza con el archivo que ya tienes. AuditaPatron lo ordena, lo resguarda y te ayuda a entender lo importante para que sientas más control desde el primer paso.",
+    ctaPrimary: "Empezar a ordenar mis documentos",
+    ctaSecondary: "Quiero una guía rápida antes de subir",
   },
 } as const;
 
-const activeHeroVariant = heroCopyVariants.serenity;
+const socialProofItems = [
+  {
+    label: "Duda real compartida por personas usuarias",
+    quote: "Ya entendí mejor qué revisar primero.",
+    supportSignal: "Frase basada en feedback recurrente recogido durante pruebas de mensaje.",
+  },
+  {
+    label: "Necesidad frecuente al ordenar el expediente",
+    quote: "Por fin tengo mis documentos en un solo lugar.",
+    supportSignal: "Resume un patrón real de búsqueda de orden y disponibilidad.",
+  },
+  {
+    label: "Señal de confianza y claridad inicial",
+    quote: "Me dio paz empezar sin palabras complicadas.",
+    supportSignal: "Mantiene lenguaje sobrio y alineado con el tono de resguardo del producto.",
+  },
+] as const;
+
+const prediagnosticRecommendations: Record<string, { badge: string; document: string; reason: string; nextStep: string }> = {
+  "para-mi": {
+    badge: "Sugerencia inicial",
+    document: "Tu recibo de nómina más reciente o un CFDI",
+    reason:
+      "Suelen dar contexto rápido sobre pagos, deducciones, fechas y conceptos para que veas pronto si AuditaPatron te puede ayudar.",
+    nextStep: "Si después quieres más claridad, suma contrato o soporte IMSS/Infonavit y tu expediente gana contexto.",
+  },
+  "primer-documento": {
+    badge: "Primer archivo recomendado",
+    document: "Empieza por el documento que ya tienes a la mano; si dudas, un recibo de nómina reciente",
+    reason:
+      "Es fácil de ubicar y normalmente entrega una primera lectura útil sin esperar a reunir todo el expediente.",
+    nextStep: "Con uno o dos documentos más, AuditaPatron puede comparar mejor y devolverte una lectura más rica.",
+  },
+  "privacidad": {
+    badge: "Inicio con control",
+    document: "Un recibo reciente o tu contrato actual",
+    reason:
+      "Te permite probar el flujo con un archivo cotidiano, revisar cómo se resguarda y sentir control antes de subir más documentos.",
+    nextStep: "Cuando te sientas con confianza, agrega otros archivos para fortalecer tu expediente sin perder trazabilidad.",
+  },
+  "sin-tecnicismos": {
+    badge: "Recomendación simple",
+    document: "Tu recibo de nómina más reciente",
+    reason:
+      "Es de los archivos más fáciles de reconocer y suele dar una explicación inicial clara sin lenguaje técnico.",
+    nextStep: "Después puedes sumar CFDI o contrato para obtener comparaciones más útiles.",
+  },
+  "mas-contexto": {
+    badge: "Para enriquecer tu expediente",
+    document: "Dos o tres recibos de nómina seguidos",
+    reason:
+      "Ayudan a detectar patrones y diferencias que un solo archivo puede dejar ocultos.",
+    nextStep: "Si además agregas CFDI, contrato o soporte IMSS/Infonavit, tu expediente gana todavía más valor.",
+  },
+};
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -421,6 +481,8 @@ function SiteHeader() {
 
 function HeroSection() {
   const dossierReadiness = 58;
+  const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("serenity");
+  const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
 
   return (
     <section
@@ -430,13 +492,35 @@ function HeroSection() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
+          <div className="motion-enter-soft flex flex-wrap items-center justify-center gap-2 lg:justify-start" style={{ ["--motion-delay" as string]: "20ms" }}>
+            {(Object.entries(heroCopyVariants) as Array<[keyof typeof heroCopyVariants, (typeof heroCopyVariants)[keyof typeof heroCopyVariants]]>).map(([key, variant]) => {
+              const isActive = selectedHeroVariant === key;
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelectedHeroVariant(key)}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-teal-300 bg-teal-50 text-teal-900 shadow-[0_18px_40px_-32px_rgba(13,148,136,0.34)]"
+                      : "border-white/80 bg-white/75 text-slate-600 hover:border-teal-200 hover:text-slate-900"
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  {variant.tabLabel}
+                </button>
+              );
+            })}
+          </div>
+
           <div
-            className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/88 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.4)] sm:px-4 sm:py-2 sm:text-xs"
-            style={{ ["--motion-delay" as string]: "20ms" }}
+            className="motion-enter-soft mt-3 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/88 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.4)] sm:px-4 sm:py-2 sm:text-xs"
+            style={{ ["--motion-delay" as string]: "60ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                <span className="sm:hidden">{activeHeroVariant.eyebrowMobile}</span>
-                <span className="hidden sm:inline">{activeHeroVariant.eyebrowDesktop}</span>
+            <span className="sm:hidden">{activeHeroVariant.eyebrowMobile}</span>
+            <span className="hidden sm:inline">{activeHeroVariant.eyebrowDesktop}</span>
           </div>
 
           <h1
@@ -468,15 +552,15 @@ function HeroSection() {
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
               onClick={goToAuditFlow}
             >
-              {PRIMARY_CTA_LABEL}
+              {activeHeroVariant.ctaPrimary}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
             <Button
               variant="outline"
               className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
-              onClick={() => scrollToId("copiloto")}
+              onClick={() => scrollToId("preguntas")}
             >
-              Quiero ver cómo funciona
+              {activeHeroVariant.ctaSecondary}
             </Button>
           </div>
 
@@ -484,34 +568,38 @@ function HeroSection() {
             className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
-            <div className="flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
-              <div className="flex -space-x-2">
-                {[
-                  "bg-teal-100 text-teal-900",
-                  "bg-sky-100 text-sky-900",
-                  "bg-emerald-100 text-emerald-900",
-                ].map((tone, index) => (
-                  <span
-                    key={tone}
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white text-xs font-semibold shadow-sm ${tone}`}
-                  >
-                    {index === 0 ? "R" : index === 1 ? "C" : "N"}
-                  </span>
-                ))}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex -space-x-2">
+                  {[
+                    "bg-teal-100 text-teal-900",
+                    "bg-sky-100 text-sky-900",
+                    "bg-emerald-100 text-emerald-900",
+                  ].map((tone, index) => (
+                    <span
+                      key={tone}
+                      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white text-xs font-semibold shadow-sm ${tone}`}
+                    >
+                      {index === 0 ? "R" : index === 1 ? "C" : "N"}
+                    </span>
+                  ))}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales de confianza</p>
+                  <p className="mt-1 text-sm font-medium leading-6 text-slate-700">
+                    Referencias redactadas desde patrones reales de dudas y necesidades frecuentes, con tono sobrio y sin promesas infladas.
+                  </p>
+                </div>
               </div>
-              <p className="text-sm font-medium leading-6 text-slate-700">
-                Lo que más nos dicen quienes llegan con dudas parecidas: entender rápido qué revisar, ordenar sus archivos y sentir más tranquilidad desde el primer documento.
-              </p>
             </div>
 
-            <div className="mt-3 flex flex-wrap justify-center gap-2.5 text-sm text-slate-600 lg:justify-start">
-              {["“Ya entendí mejor qué revisar primero.”", "“Por fin tengo mis documentos en un solo lugar.”", "“Me dio paz empezar sin palabras complicadas.”"].map((item) => (
-                <span
-                  key={item}
-                  className="motion-hover-lift rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-sm"
-                >
-                  {item}
-                </span>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {socialProofItems.map((item) => (
+                <div key={item.quote} className="motion-hover-lift rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{item.label}</p>
+                  <p className="mt-2 text-sm font-medium leading-6 text-slate-800">“{item.quote}”</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{item.supportSignal}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -1287,6 +1375,7 @@ function PrivacySection() {
 
 function FAQSection() {
   const [selectedFaq, setSelectedFaq] = useState<string | undefined>("para-mi");
+  const activeRecommendation = prediagnosticRecommendations[selectedFaq ?? "para-mi"] ?? prediagnosticRecommendations["para-mi"];
 
   return (
     <section id="preguntas" className="bg-[#f7fafb] py-14 sm:py-16">
@@ -1299,7 +1388,7 @@ function FAQSection() {
             Empieza por la duda que hoy más te frena.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Si todavía no quieres subir un archivo, primero elige tu duda principal y te mostramos la respuesta más útil para avanzar con más confianza.
+            Si todavía no quieres subir un archivo, primero elige tu duda principal y te sugerimos el primer documento que más suele ayudarte a ganar contexto con baja fricción.
           </p>
 
           <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-[0_20px_60px_-52px_rgba(15,23,42,0.34)] sm:p-5">
@@ -1307,7 +1396,7 @@ function FAQSection() {
               Mini diagnóstico inicial
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Elige lo que más se parece a tu caso y abrimos primero la respuesta indicada.
+              Elige lo que más se parece a tu caso y te mostramos primero la respuesta útil junto con el documento que mejor suele abrir contexto.
             </p>
             <div className="mt-4 space-y-3">
               {guidedFaqOptions.map((option) => {
@@ -1335,12 +1424,19 @@ function FAQSection() {
                 );
               })}
             </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-teal-100 bg-teal-50/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeRecommendation.badge}</p>
+              <p className="mt-2 text-base font-semibold leading-7 text-slate-950">{activeRecommendation.document}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">{activeRecommendation.reason}</p>
+              <p className="mt-3 text-sm leading-6 text-teal-900">{activeRecommendation.nextStep}</p>
+            </div>
           </div>
         </div>
 
         <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 sm:p-6">
           <p className="mb-4 text-sm leading-6 text-slate-600">
-            Empieza por tu duda principal y revisa primero la respuesta más útil para ti.
+            Empieza por tu duda principal y revisa primero la respuesta más útil para ti. La recomendación del documento cambia según lo que elijas.
           </p>
           <Accordion type="single" collapsible value={selectedFaq} onValueChange={setSelectedFaq} className="space-y-3">
             {faqs.map((item) => (

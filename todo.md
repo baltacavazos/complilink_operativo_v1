@@ -667,3 +667,6 @@
 - [x] Implementar variante optimizada del hero con enfoque sereno y medible para futura comparación A/B
 - [x] Añadir módulo de prueba social sobria con testimonios o evidencia breve sin alterar la estructura visual
 - [x] Convertir el CTA secundario en una entrada guiada hacia FAQs o mini diagnóstico inicial
+- [x] Implementar variante A/B visible del hero para comparar mensaje sereno contra alternativa de control y respaldo
+- [x] Añadir testimonios o casos resumidos con señales de respaldo visible dentro de la landing
+- [x] Conectar la guía rápida a un prediagnóstico que sugiera el primer documento ideal para subir según la duda elegida

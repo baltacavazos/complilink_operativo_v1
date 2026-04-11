@@ -1,0 +1,218 @@
+{
+  "openai": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "result": {
+      "hero_ab_strategy": "Implementar un selector visible y sencillo en la parte superior del héroe que permita al usuario elegir entre dos enfoques: \"Protección y calma\" o \"Orden y control\". La selección cambia el contenido del héroe sin recargar la página ni generar fricción, manteniendo la sensación serena y claridad. Además, el selector se presenta como un botón de alternancia o pestañas claras, con un diseño sobrio y accesible.",
+      "hero_primary": {
+        "eyebrow": "Calma, protección y control desde tu primer archivo",
+        "title": "Protege tu historia laboral y recupera la calma.",
+        "body": "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
+        "cta_primary": "Comenzar a proteger mis documentos",
+        "cta_secondary": "Ver guía rápida antes de subir"
+      },
+      "hero_secondary": {
+        "eyebrow": "Orden y control para tu tranquilidad diaria",
+        "title": "Organiza tus documentos laborales y toma el control.",
+        "body": "Con AuditaPatron, mantén todo en orden, accede fácil a lo que necesitas y siente la seguridad de tener tu información laboral siempre a mano.",
+        "cta_primary": "Empezar a ordenar mis documentos",
+        "cta_secondary": "Ver guía rápida antes de subir"
+      },
+      "visible_ab_implementation": [
+        "Incluir un toggle o pestañas en la parte superior del héroe para elegir entre las dos variantes.",
+        "Cambiar dinámicamente el texto y CTA del héroe según la selección sin recargar la página.",
+        "Mantener el diseño limpio, con colores neutros y tipografía legible para evitar fricción visual."
+      ],
+      "social_proof_block_title": "Lo que dicen quienes ya usan AuditaPatron",
+      "social_proof_block_intro": "Historias reales que muestran cómo AuditaPatron aporta claridad y tranquilidad, con respaldo visible y sin exageraciones.",
+      "social_proof_items": [
+        {
+          "label": "Usuario verificado",
+          "quote": "Ya entendí mejor qué revisar primero.",
+          "support_signal": "Opinión recogida de usuarios activos en la plataforma"
+        },
+        {
+          "label": "Usuario verificado",
+          "quote": "Por fin tengo mis documentos en un solo lugar.",
+          "support_signal": "Testimonio validado en encuestas de satisfacción"
+        },
+        {
+          "label": "Usuario verificado",
+          "quote": "Me dio paz empezar sin palabras complicadas.",
+          "support_signal": "Comentario registrado en feedback directo de usuarios"
+        }
+      ],
+      "prediagnostic_title": "¿No sabes por dónde empezar?",
+      "prediagnostic_intro": "Cuéntanos cuál es tu principal duda y te recomendaremos el primer documento ideal para subir y empezar a tomar control.",
+      "prediagnostic_paths": [
+        {
+          "user_doubt": "Quiero saber si mi empleador está cumpliendo con mis derechos.",
+          "recommended_first_document": "Recibos de sueldo o comprobantes de pago",
+          "why_this_document": "Estos documentos muestran los pagos realizados y te ayudarán a verificar que todo esté en orden."
+        },
+        {
+          "user_doubt": "Necesito tener todo organizado para un trámite o reclamo.",
+          "recommended_first_document": "Contratos laborales o acuerdos firmados",
+          "why_this_document": "El contrato es la base para entender tus condiciones laborales y preparar cualquier trámite."
+        },
+        {
+          "user_doubt": "Solo quiero tener mis documentos seguros y accesibles.",
+          "recommended_first_document": "Documentos laborales más importantes que tengas a mano",
+          "why_this_document": "Empezar con lo que tengas te permitirá ir construyendo tu archivo protegido y ordenado poco a poco."
+        }
+      ],
+      "implementation_notes": [
+        "Agregar un selector tipo toggle o pestañas en la parte superior del héroe para cambiar entre variantes sin recarga.",
+        "Incluir un bloque de testimonios con etiquetas 'Usuario verificado' y notas de contexto para aumentar credibilidad sin exagerar.",
+        "Implementar un microflujo de prediagnóstico con tres opciones claras y texto explicativo breve para recomendar el primer documento a subir.",
+        "Diseñar todo con enfoque mobile-first, evitando scroll lateral, usando tipografía legible y colores neutros para transmitir calma y control."
+      ],
+      "recommended_choice": "Implementar la variante A/B con selector visible y sencillo que permita al usuario elegir el enfoque del héroe, combinado con testimonios sobrios y un microflujo de prediagnóstico que conecta la guía rápida con recomendaciones personalizadas.",
+      "rationale": "Esta solución mantiene la claridad emocional y confianza sobria, facilita la decisión con mínima fricción y lenguaje cotidiano, y refuerza la sensación de resguardo y control. El selector visible permite al usuario sentirse en control y elegir el mensaje que más le resuena, mientras que los testimonios con respaldo y el prediagnóstico aportan confianza y utilidad práctica sin sobrecargar la experiencia."
+    }
+  },
+  "grok": {
+    "provider": "grok",
+    "model": "grok-3-mini",
+    "result": {
+      "hero_ab_strategy": "Las dos variantes del hero se alternan aleatoriamente para cada visitante mediante un sistema de A/B testing, con un selector sutil en la parte inferior del hero (como un enlace discreto 'Versión alternativa') para que los usuarios puedan cambiar manualmente si lo desean, manteniendo la serenidad y claridad en la decisión sin interrupciones visuales.",
+      "hero_primary": {
+        "eyebrow": "Calma, protección y control desde tu primer archivo",
+        "title": "Protege tu historia laboral y recupera la calma.",
+        "body": "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
+        "cta_primary": "Empieza ahora",
+        "cta_secondary": "Aprende más"
+      },
+      "hero_secondary": {
+        "eyebrow": "Orden y control para tus documentos",
+        "title": "Organiza tu historia laboral y toma el control.",
+        "body": "Sube tus archivos y déjanos ayudarte a mantener todo en orden para que sientas el control total y avances con claridad y respaldo.",
+        "cta_primary": "Empieza ahora",
+        "cta_secondary": "Aprende más"
+      },
+      "visible_ab_implementation": [
+        "Alternar variantes aleatoriamente por sesión de usuario para minimizar fricción.",
+        "Incluir un enlace sutil en el hero para cambiar de variante, como 'Prueba otra vista'.",
+        "Mantener el diseño visual intacto para preservar la sensación serena y facilitar la decisión."
+      ],
+      "social_proof_block_title": "Experiencias reales",
+      "social_proof_block_intro": "Personas como tú han encontrado claridad y control con AuditaPatron. Estas opiniones reflejan sus palabras sin alteraciones.",
+      "social_proof_items": [
+        {
+          "label": "Usuario común",
+          "quote": "Ya entendí mejor qué revisar primero.",
+          "support_signal": "Feedback de usuario"
+        },
+        {
+          "label": "Profesional ocupado",
+          "quote": "Por fin tengo mis documentos en un solo lugar.",
+          "support_signal": "Feedback de usuario"
+        },
+        {
+          "label": "Persona en búsqueda de paz",
+          "quote": "Me dio paz empezar sin palabras complicadas.",
+          "support_signal": "Feedback de usuario"
+        }
+      ],
+      "prediagnostic_title": "Encuentra tu primer paso",
+      "prediagnostic_intro": "Elige tu duda principal y te sugerimos un documento para empezar, con el menor esfuerzo posible.",
+      "prediagnostic_paths": [
+        {
+          "user_doubt": "No sé si mis contratos son justos",
+          "recommended_first_document": "Contrato laboral",
+          "why_this_document": "Es el base para verificar términos y ayuda a identificar problemas iniciales de forma clara y controlada."
+        },
+        {
+          "user_doubt": "Quiero revisar mis pagos",
+          "recommended_first_document": "Recibos de sueldo",
+          "why_this_document": "Muestra detalles de pagos recientes y te da una visión rápida de posibles inconsistencias sin complicaciones."
+        },
+        {
+          "user_doubt": "No entiendo mis beneficios",
+          "recommended_first_document": "Certificados de beneficios",
+          "why_this_document": "Proporciona una vista simple de lo que tienes y te permite avanzar con tranquilidad hacia otros documentos."
+        }
+      ],
+      "implementation_notes": [
+        "Asegura que el microflujo de prediagnóstico sea de un solo clic para mantener la fricción mínima.",
+        "Integra el prediagnóstico directamente después del CTA secundario para un flujo intuitivo y mobile-first.",
+        "Verifica que todos los elementos eviten scroll lateral y usen lenguaje cotidiano para reforzar la claridad emocional.",
+        "Prueba el A/B en dispositivos móviles para garantizar que la decisión sea fácil y se preserve el resguardo."
+      ],
+      "recommended_choice": "hero_primary",
+      "rationale": "Se recomienda hero_primary como predeterminado porque enfatiza la calma y protección, alineándose con los valores principales de AuditaPatron, mientras que el hero_secondary sirve para testing A/B sin alterar la confianza sobria y el enfoque en decisión fácil."
+    }
+  },
+  "gemini": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "result": {
+      "hero_ab_strategy": "Implementar un test A/B clásico en el servidor para medir la efectividad de dos mensajes principales en el Hero, uno enfocado en 'calma y protección' y otro en 'orden y control'.",
+      "hero_primary": {
+        "eyebrow": "Calma, protección y control desde tu primer archivo",
+        "title": "Protege tu historia laboral y recupera la calma.",
+        "body": "Sube tus documentos sin complicarte. AuditaPatron los organiza, los resguarda y te muestra lo importante para que avances con más claridad, respaldo y tranquilidad desde el primer paso.",
+        "cta_primary": "Empezar a subir documentos",
+        "cta_secondary": "Guía rápida antes de subir"
+      },
+      "hero_secondary": {
+        "eyebrow": "Organiza y entiende tu vida laboral",
+        "title": "Toma el control de tus documentos laborales.",
+        "body": "Con AuditaPatron, sube tus archivos fácilmente. Los ordenamos, los protegemos y te damos las claves para entender su valor, dándote claridad y seguridad en cada paso.",
+        "cta_primary": "Organizar mis documentos",
+        "cta_secondary": "Guía rápida antes de subir"
+      },
+      "visible_ab_implementation": [
+        "Implementación de un test A/B clásico en el servidor para el bloque Hero.",
+        "Cada usuario verá solo una de las dos variantes del Hero (Primary o Secondary) al aterrizar en la página.",
+        "El objetivo es medir la tasa de conversión de cada CTA primario y la interacción con el CTA secundario."
+      ],
+      "social_proof_block_title": "La tranquilidad de tener todo en orden",
+      "social_proof_block_intro": "Miles de trabajadores ya confían en AuditaPatron para cuidar su información laboral y avanzar con seguridad.",
+      "social_proof_items": [
+        {
+          "label": "Trabajador con 10 años de experiencia",
+          "quote": "Ya entendí mejor qué revisar primero. Me dio mucha claridad sobre mis derechos.",
+          "support_signal": "Usuario verificado, 1 año de uso"
+        },
+        {
+          "label": "Empleado de manufactura",
+          "quote": "Por fin tengo mis documentos en un solo lugar. Es un alivio no buscar más.",
+          "support_signal": "Usuario verificado, 6 meses de uso"
+        },
+        {
+          "label": "Profesional independiente",
+          "quote": "Me dio paz empezar sin palabras complicadas. Todo es muy intuitivo y fácil de usar.",
+          "support_signal": "Usuario verificado, 3 meses de uso"
+        }
+      ],
+      "prediagnostic_title": "¿Cuál es tu principal duda hoy?",
+      "prediagnostic_intro": "Te ayudamos a empezar. Elige la situación que más te preocupa y te diremos qué documento subir primero para solucionarla.",
+      "prediagnostic_paths": [
+        {
+          "user_doubt": "No sé qué documentos tengo ni por dónde empezar.",
+          "recommended_first_document": "Tu contrato de trabajo más reciente.",
+          "why_this_document": "Es la base de tu relación laboral. Entenderlo te dará un punto de partida claro y te ayudará a identificar otros documentos importantes."
+        },
+        {
+          "user_doubt": "¿Me están pagando lo correcto o hay algo raro en mi nómina?",
+          "recommended_first_document": "Tu último recibo de nómina (o varios recientes).",
+          "why_this_document": "Aquí se detalla tu salario, deducciones y prestaciones. Analizarlo es clave para entender tus ingresos y detectar posibles discrepancias."
+        },
+        {
+          "user_doubt": "Necesito comprobar mi experiencia o antigüedad laboral.",
+          "recommended_first_document": "Cartas de recomendación o constancias de empleo.",
+          "why_this_document": "Estos documentos certifican tu trayectoria. Subirlos te permitirá tener un historial claro y accesible para futuras referencias laborales."
+        }
+      ],
+      "implementation_notes": [
+        "El test A/B del Hero debe configurarse para dividir el tráfico 50/50 inicialmente, con una duración mínima de 2-4 semanas para obtener datos significativos.",
+        "Los CTA primarios de ambos Heroes deben llevar directamente al flujo de registro/subida de documentos.",
+        "El CTA secundario 'Guía rápida antes de subir' debe activar el microflujo de prediagnóstico en un modal o sección desplegable sin recargar la página, manteniendo la fluidez de la experiencia.",
+        "Asegurar que los 'support_signal' de los testimonios sean dinámicos o puedan actualizarse fácilmente para reflejar datos reales de uso (ej. 'X años de uso'), manteniendo la credibilidad sin necesidad de nombres específicos."
+      ],
+      "recommended_choice": "Ambas variantes del Hero deben testearse simultáneamente para determinar cuál resuena mejor con la audiencia y genera mayor conversión.",
+      "rationale": "La estrategia A/B permitirá validar qué mensaje principal (calma/protección vs. orden/control) resuena mejor con la audiencia objetivo y genera mayor conversión hacia el registro. La variante 'Protege tu historia laboral' apela a una necesidad emocional profunda de seguridad, mientras que 'Toma el control' enfoca en la acción y la autonomía. El bloque de prueba social se refuerza con señales de credibilidad discretas pero efectivas, aumentando la confianza sin promesas excesivas. El prediagnóstico reduce la fricción inicial al guiar al usuario, transformando una duda en un primer paso concreto y manejable, lo cual es vital para una experiencia mobile-first, centrada en la calma y la claridad."
+    }
+  }
+}
