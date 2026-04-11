@@ -645,3 +645,9 @@
 - [x] Añadir prueba E2E Playwright del flujo crítico CEO → vista usuario → expediente → retorno a CEO
 - [x] Validar automáticamente descargas CSV/PDF del dashboard CEO con verificación de archivo descargado y contenido mínimo
 - [x] Instrumentar métricas y embudo operativo mínimo del dashboard CEO y flujos críticos asociados
+- [ ] Añadir panel maestro con métricas visibles solo para el usuario administrador principal de la consola CEO
+- [ ] Registrar de forma más clara los bloqueos de seguridad y guardrails del dashboard CEO para diagnóstico operativo
+- [ ] Ampliar pruebas Vitest y Playwright para escenarios de snapshot stale, reintentos y errores controlados del dashboard CEO
+- [x] Panel de métricas exclusivo para el usuario maestro en la consola CEO
+- [x] Registrar vistas de consola CEO y bloqueos de guardrails como eventos analíticos persistentes
+- [x] Ampliar cobertura Playwright para snapshot stale, reintentos y fallos de consola CEO

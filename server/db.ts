@@ -1491,6 +1491,80 @@ export async function getCeoDashboardSnapshot(filters: CeoDashboardSnapshotFilte
   };
 }
 
+export async function getCeoMasterMetrics() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const trackedActions = [
+    "dashboard.ceo.console_viewed",
+    "dashboard.ceo.guardrail_blocked",
+    "dashboard.ceo.export_generated",
+  ] as const;
+  const last7DaysThreshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [actionTotals, last7DaysRows, [uniqueActorsRow], [latestConsoleViewRow], [latestGuardrailRow], [latestExportRow]] =
+    await Promise.all([
+      db
+        .select({ action: auditLogs.action, total: count() })
+        .from(auditLogs)
+        .where(inArray(auditLogs.action, [...trackedActions]))
+        .groupBy(auditLogs.action),
+      db
+        .select({ action: auditLogs.action, total: count() })
+        .from(auditLogs)
+        .where(and(inArray(auditLogs.action, [...trackedActions]), gte(auditLogs.createdAt, last7DaysThreshold)))
+        .groupBy(auditLogs.action),
+      db
+        .select({ value: sql<number>`count(distinct ${auditLogs.actorUserId})` })
+        .from(auditLogs)
+        .where(inArray(auditLogs.action, [...trackedActions])),
+      db
+        .select({ createdAt: auditLogs.createdAt })
+        .from(auditLogs)
+        .where(eq(auditLogs.action, "dashboard.ceo.console_viewed"))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(1),
+      db
+        .select({ createdAt: auditLogs.createdAt })
+        .from(auditLogs)
+        .where(eq(auditLogs.action, "dashboard.ceo.guardrail_blocked"))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(1),
+      db
+        .select({ createdAt: auditLogs.createdAt })
+        .from(auditLogs)
+        .where(eq(auditLogs.action, "dashboard.ceo.export_generated"))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(1),
+    ]);
+
+  const toActionCountMap = <T extends { action: string; total: unknown }>(rows: T[]) =>
+    new Map(rows.map((row) => [row.action, Number(row.total ?? 0)]));
+
+  const totals = toActionCountMap(actionTotals);
+  const last7Days = toActionCountMap(last7DaysRows);
+
+  return {
+    generatedAt: new Date(),
+    summary: {
+      totalConsoleViews: totals.get("dashboard.ceo.console_viewed") ?? 0,
+      totalGuardrailBlocks: totals.get("dashboard.ceo.guardrail_blocked") ?? 0,
+      totalExports: totals.get("dashboard.ceo.export_generated") ?? 0,
+      uniqueActors: Number(uniqueActorsRow?.value ?? 0),
+    },
+    last7Days: {
+      consoleViews: last7Days.get("dashboard.ceo.console_viewed") ?? 0,
+      guardrailBlocks: last7Days.get("dashboard.ceo.guardrail_blocked") ?? 0,
+      exports: last7Days.get("dashboard.ceo.export_generated") ?? 0,
+    },
+    latestActivity: {
+      consoleViewedAt: latestConsoleViewRow?.createdAt ?? null,
+      guardrailBlockedAt: latestGuardrailRow?.createdAt ?? null,
+      exportGeneratedAt: latestExportRow?.createdAt ?? null,
+    },
+  };
+}
+
 export async function listTenantsForUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

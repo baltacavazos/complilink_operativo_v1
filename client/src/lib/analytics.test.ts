@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   trackCeoConsoleViewed,
   trackCeoExport,
+  trackCeoGuardrail,
+  trackCeoMasterMetricsViewed,
   trackCeoRefresh,
   trackCeoViewModeToggled,
   trackEvent,
@@ -57,7 +59,7 @@ describe("analytics helpers", () => {
     });
   });
 
-  it("emits standardized CEO analytics events for view, toggle, refresh and export", () => {
+  it("emits standardized CEO analytics events for view, toggle, refresh, export, guardrails and master metrics", () => {
     const track = vi.fn();
 
     globalScope.window = {
@@ -70,6 +72,15 @@ describe("analytics helpers", () => {
     trackCeoViewModeToggled("user_demo", { source: "dashboard_layout" });
     trackCeoRefresh("alertas", { hasFilters: true });
     trackCeoExport("pdf", "completed", { section: "puente" });
+    trackCeoGuardrail("blocked", {
+      section: "resumen",
+      actionKind: "export",
+      reason: "snapshot_stale",
+    });
+    trackCeoMasterMetricsViewed({
+      source: "ceo_dashboard",
+      uniqueActors: 2,
+    });
 
     expect(track).toHaveBeenNthCalledWith(1, "audipatron_ceo_console_viewed", {
       section: "resumen",
@@ -102,6 +113,28 @@ describe("analytics helpers", () => {
       step: "ceo_export_completed",
       kind: "pdf",
       section: "puente",
+    });
+    expect(track).toHaveBeenNthCalledWith(8, "audipatron_ceo_guardrail", {
+      status: "blocked",
+      reason: "snapshot_stale",
+      section: "resumen",
+      actionKind: "export",
+    });
+    expect(track).toHaveBeenNthCalledWith(9, "audipatron_funnel_step", {
+      step: "ceo_guardrail_blocked",
+      status: "blocked",
+      reason: "snapshot_stale",
+      section: "resumen",
+      actionKind: "export",
+    });
+    expect(track).toHaveBeenNthCalledWith(10, "audipatron_ceo_master_metrics_viewed", {
+      source: "ceo_dashboard",
+      uniqueActors: 2,
+    });
+    expect(track).toHaveBeenNthCalledWith(11, "audipatron_funnel_step", {
+      step: "ceo_master_metrics_viewed",
+      source: "ceo_dashboard",
+      uniqueActors: 2,
     });
   });
 });

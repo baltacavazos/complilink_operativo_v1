@@ -22,6 +22,7 @@ import {
   getCaseDetailForUser,
   getDashboardForUser,
   getCeoDashboardSnapshot,
+  getCeoMasterMetrics,
   getSystemSnapshot,
   getVisibleDocumentForUser,
   grantCaseAccess,
@@ -44,6 +45,7 @@ import {
   withDatabaseLock,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { ENV } from "./_core/env";
 import {
   AuthFlowError,
   clearEmailChallengeCookie,
@@ -100,6 +102,7 @@ const tenantMembershipStatusSchema = z.enum(["active", "revoked"]);
 const ceoCaseProgressStatusSchema = z.enum(["analysis", "conciliation", "litigation"]);
 const ceoCurrentAlertStatusSchema = z.enum(["open", "acknowledged", "resolved"]);
 const ceoCurrentMembershipStatusSchema = z.enum(["active", "revoked"]);
+const ceoConsoleSectionSchema = z.enum(["resumen", "bridge", "alertas", "accesos", "documentos"]);
 const ceoAllowedDateWindowDaysSchema = z.union([z.literal(7), z.literal(30), z.literal(90), z.literal(365)]);
 const ceoSnapshotFiltersSchema = z
   .object({
@@ -119,6 +122,28 @@ const CEO_SAFE_ERROR_COPY = {
   outOfScopeMembership: "No puedes modificar accesos fuera del caso visible en este bloque seguro.",
   genericRetry: "Ocurrió un error inesperado. Intenta nuevamente en unos segundos.",
 } as const;
+
+function isMasterCeoUser(user: { role: string | null; openId: string }) {
+  return user.role === "admin" && user.openId === ENV.ownerOpenId;
+}
+
+async function resolveCeoAuditTenantId(params: {
+  user: { id: number; openId: string; role: string | null; name: string | null; email: string | null };
+  tenantId?: string;
+}) {
+  if (params.tenantId) {
+    await assertTenantAdminAccess(params.user.id, params.tenantId);
+    return params.tenantId;
+  }
+
+  return (
+    await ensureTenantForUser({
+      userId: params.user.id,
+      userName: params.user.name ?? params.user.email ?? "CompliLink",
+      userEmail: params.user.email,
+    })
+  ).tenantId;
+}
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
@@ -1723,9 +1748,98 @@ export const appRouter = router({
     summary: protectedProcedure.query(async ({ ctx }) => {
       return getDashboardForUser(ctx.user.id);
     }),
-    ceoSnapshot: adminProcedure.input(ceoSnapshotFiltersSchema).query(async ({ input }) => {
-      return getCeoDashboardSnapshot(input ?? {});
+    ceoSnapshot: adminProcedure.input(ceoSnapshotFiltersSchema).query(async ({ ctx, input }) => {
+      const snapshot = await getCeoDashboardSnapshot(input ?? {});
+      return {
+        ...snapshot,
+        viewerCapabilities: {
+          isMasterUser: isMasterCeoUser(ctx.user),
+        },
+      };
     }),
+    ceoMasterMetrics: adminProcedure.query(async ({ ctx }) => {
+      if (!isMasterCeoUser(ctx.user)) {
+        throw new Error(CEO_SAFE_ERROR_COPY.forbidden);
+      }
+
+      return getCeoMasterMetrics();
+    }),
+    ceoRecordConsoleView: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3).optional(),
+          section: ceoConsoleSectionSchema,
+          snapshotGeneratedAt: z.string().datetime().optional(),
+          hasActiveFilters: z.boolean(),
+          visibleCount: z.number().int().min(0).max(50000),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-VIEW-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `${input.section}:${input.snapshotGeneratedAt ?? Date.now()}`,
+          action: "dashboard.ceo.console_viewed",
+          afterState: {
+            source: "ceo_dashboard",
+            section: input.section,
+            snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
+            hasActiveFilters: input.hasActiveFilters,
+            visibleCount: input.visibleCount,
+          },
+        });
+
+        return { ok: true };
+      }),
+    ceoRecordGuardrailEvent: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3).optional(),
+          section: ceoConsoleSectionSchema,
+          actionKind: z.enum(["alert", "membership", "case", "export", "refresh", "master_metrics"]),
+          reason: z.string().trim().min(1).max(120),
+          description: z.string().trim().min(1).max(240).optional(),
+          snapshotGeneratedAt: z.string().datetime().optional(),
+          hasActiveFilters: z.boolean(),
+          visibleCount: z.number().int().min(0).max(50000),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-GUARDRAIL-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `${input.actionKind}:${input.section}:${input.reason}`,
+          action: "dashboard.ceo.guardrail_blocked",
+          afterState: {
+            source: "ceo_dashboard",
+            section: input.section,
+            actionKind: input.actionKind,
+            reason: input.reason,
+            description: input.description ?? null,
+            snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
+            hasActiveFilters: input.hasActiveFilters,
+            visibleCount: input.visibleCount,
+          },
+        });
+
+        return { ok: true };
+      }),
     ceoRecordExportAudit: adminProcedure
       .input(
         z.object({
@@ -1740,19 +1854,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         assertCeoSnapshotFresh(input.snapshotGeneratedAt);
 
-        const auditTenantId =
-          input.tenantId ??
-          (
-            await ensureTenantForUser({
-              userId: ctx.user.id,
-              userName: ctx.user.name ?? ctx.user.email ?? "CompliLink",
-              userEmail: ctx.user.email,
-            })
-          ).tenantId;
-
-        if (input.tenantId) {
-          await assertTenantAdminAccess(ctx.user.id, input.tenantId);
-        }
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
 
         const entityId = `${input.format}:${input.section}:${input.snapshotGeneratedAt ?? Date.now()}`;
 

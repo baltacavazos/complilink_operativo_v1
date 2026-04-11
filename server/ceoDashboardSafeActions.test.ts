@@ -5,6 +5,7 @@ const dbMocks = vi.hoisted(() => ({
   addCaseEvent: vi.fn(),
   createAuditLog: vi.fn(),
   getCeoDashboardSnapshot: vi.fn(),
+  getCeoMasterMetrics: vi.fn(),
   updateCaseStatus: vi.fn(),
   updateOperationalAlertStatus: vi.fn(),
   updateTenantMembershipStatus: vi.fn(),
@@ -201,6 +202,25 @@ describe("Dashboard CEO safe actions", () => {
     vi.mocked(db.withDatabaseLock).mockImplementation(async ({ action }) => action());
 
     vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue(buildSnapshot() as never);
+    vi.mocked(db.getCeoMasterMetrics).mockResolvedValue({
+      generatedAt: new Date(TEST_SNAPSHOT_GENERATED_AT),
+      summary: {
+        totalConsoleViews: 12,
+        totalGuardrailBlocks: 4,
+        totalExports: 6,
+        uniqueActors: 2,
+      },
+      last7Days: {
+        consoleViews: 7,
+        guardrailBlocks: 2,
+        exports: 3,
+      },
+      latestActivity: {
+        consoleViewedAt: new Date("2026-04-08T09:30:00.000Z"),
+        guardrailBlockedAt: new Date("2026-04-08T09:28:00.000Z"),
+        exportGeneratedAt: new Date("2026-04-08T09:27:00.000Z"),
+      },
+    } as never);
     vi.mocked(db.updateOperationalAlertStatus).mockResolvedValue({
       previous: { id: 101, status: "open" },
       updated: {
@@ -519,6 +539,107 @@ describe("Dashboard CEO safe actions", () => {
 
     expect(db.assertTenantAdminAccess).not.toHaveBeenCalled();
     expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("expone métricas maestras solo para el usuario dueño del dashboard CEO", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        openId: process.env.OWNER_OPEN_ID ?? "complilink-owner",
+      }),
+    );
+
+    const result = await caller.dashboard.ceoMasterMetrics();
+
+    expect(db.getCeoMasterMetrics).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      summary: {
+        totalConsoleViews: 12,
+        totalGuardrailBlocks: 4,
+        totalExports: 6,
+        uniqueActors: 2,
+      },
+      last7Days: {
+        consoleViews: 7,
+        guardrailBlocks: 2,
+        exports: 3,
+      },
+    });
+  });
+
+  it("rechaza métricas maestras para administradores que no son el usuario dueño", async () => {
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        openId: "otro-admin",
+        email: "otro-admin@complilink.mx",
+      }),
+    );
+
+    await expect(caller.dashboard.ceoMasterMetrics()).rejects.toThrow(/no tienes permisos suficientes para realizar esta acción/i);
+    expect(db.getCeoMasterMetrics).not.toHaveBeenCalled();
+  });
+
+  it("registra vistas persistentes de la consola CEO en audit logs", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    const result = await caller.dashboard.ceoRecordConsoleView({
+      tenantId: "balt-1",
+      section: "alertas",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+      hasActiveFilters: true,
+      visibleCount: 5,
+    });
+
+    expect(db.assertTenantAdminAccess).toHaveBeenCalledWith(7, "balt-1");
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        actorUserId: 7,
+        action: "dashboard.ceo.console_viewed",
+        entityType: "system",
+        afterState: expect.objectContaining({
+          section: "alertas",
+          snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+          hasActiveFilters: true,
+          visibleCount: 5,
+        }),
+      }),
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("registra bloqueos persistentes de guardrails del dashboard CEO", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    const result = await caller.dashboard.ceoRecordGuardrailEvent({
+      section: "resumen",
+      actionKind: "export",
+      reason: "snapshot_stale",
+      description: "La vista quedó desactualizada y requiere refresh.",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+      hasActiveFilters: false,
+      visibleCount: 1,
+    });
+
+    expect(db.ensureTenantForUser).toHaveBeenCalledWith({
+      userId: 7,
+      userName: "CompliLink Owner",
+      userEmail: "owner@complilink.mx",
+    });
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        actorUserId: 7,
+        action: "dashboard.ceo.guardrail_blocked",
+        entityType: "system",
+        afterState: expect.objectContaining({
+          actionKind: "export",
+          reason: "snapshot_stale",
+          description: "La vista quedó desactualizada y requiere refresh.",
+          section: "resumen",
+        }),
+      }),
+    );
+    expect(result).toEqual({ ok: true });
   });
 
   it("bloquea estas mutaciones para usuarios sin rol admin", async () => {

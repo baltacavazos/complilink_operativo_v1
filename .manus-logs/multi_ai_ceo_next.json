@@ -1,0 +1,141 @@
+[
+  {
+    "provider": "chatgpt",
+    "ok": true,
+    "raw": "{\n  \"summary\": \"Implementar un panel maestro con métricas exclusivas para el admin principal, mejorar el registro de bloqueos de seguridad con campos claros para diagnóstico, y agregar pruebas Vitest y Playwright que cubran snapshots stale, reintentos y errores controlados. Mantener el alcance pequeño y sin afectar la experiencia actual, usando controles de acceso simples y pruebas enfocadas para robustez.\",\n  \"priority_order\": [\"master_metrics_panel\", \"guardrail_logging\", \"failure_testing\"],\n  \"master_metrics_panel\": {\n    \"must_show\": [\"usuarios activos\", \"errores críticos\", \"uso de recursos\", \"eventos de seguridad\"],\n    \"access_control\": \"Verificar rol de usuario en backend (tRPC) y frontend, mostrar solo si es admin principal\",\n    \"implementation_hint\": \"Agregar nuevo componente React con fetch tRPC, usar contexto de usuario para control de acceso, sin alterar dashboard existente\"\n  },\n  \"guardrail_logging\": {\n    \"events_to_record\": [\"bloqueos de seguridad\", \"intentos fallidos de acceso\", \"activación de guardrails\"],\n    \"fields\": [\"timestamp\", \"usuario\", \"tipo de bloqueo\", \"detalle del error\", \"contexto de la acción\"],\n    \"main_risks\": [\"falsos positivos que saturen logs\", \"falta de contexto para diagnóstico\", \"impacto en performance\"]\n  },\n  \"failure_testing\": {\n    \"vitest_cases\": [\"snapshot stale detection\", \"reintentos automáticos en fallo controlado\", \"manejo de errores esperados\"],\n    \"playwright_cases\": [\"simulación de errores en UI\", \"verificación de reintentos visuales\", \"captura de estados tras fallo\"],\n    \"main_risks\": [\"tests frágiles por snapshots\", \"falsos negativos en reintentos\", \"tests lentos o intermitentes\"]\n  },\n  \"recommended_sequence\": [\n    \"Implementar control de acceso y panel maestro para admin\",\n    \"Agregar logging detallado de bloqueos y guardrails\",\n    \"Desarrollar y validar pruebas Vitest y Playwright para robustez\"\n  ],\n  \"what_not_to_do\": [\n    \"No modificar el dashboard CEO existente ni su experiencia\",\n    \"No agregar métricas al panel que no sean críticas para admin principal\",\n    \"No sobrecargar logs con eventos irrelevantes\",\n    \"No crear tests demasiado generales o que ralenticen CI\"\n  ]\n}",
+    "parsed": {
+      "summary": "Implementar un panel maestro con métricas exclusivas para el admin principal, mejorar el registro de bloqueos de seguridad con campos claros para diagnóstico, y agregar pruebas Vitest y Playwright que cubran snapshots stale, reintentos y errores controlados. Mantener el alcance pequeño y sin afectar la experiencia actual, usando controles de acceso simples y pruebas enfocadas para robustez.",
+      "priority_order": [
+        "master_metrics_panel",
+        "guardrail_logging",
+        "failure_testing"
+      ],
+      "master_metrics_panel": {
+        "must_show": [
+          "usuarios activos",
+          "errores críticos",
+          "uso de recursos",
+          "eventos de seguridad"
+        ],
+        "access_control": "Verificar rol de usuario en backend (tRPC) y frontend, mostrar solo si es admin principal",
+        "implementation_hint": "Agregar nuevo componente React con fetch tRPC, usar contexto de usuario para control de acceso, sin alterar dashboard existente"
+      },
+      "guardrail_logging": {
+        "events_to_record": [
+          "bloqueos de seguridad",
+          "intentos fallidos de acceso",
+          "activación de guardrails"
+        ],
+        "fields": [
+          "timestamp",
+          "usuario",
+          "tipo de bloqueo",
+          "detalle del error",
+          "contexto de la acción"
+        ],
+        "main_risks": [
+          "falsos positivos que saturen logs",
+          "falta de contexto para diagnóstico",
+          "impacto en performance"
+        ]
+      },
+      "failure_testing": {
+        "vitest_cases": [
+          "snapshot stale detection",
+          "reintentos automáticos en fallo controlado",
+          "manejo de errores esperados"
+        ],
+        "playwright_cases": [
+          "simulación de errores en UI",
+          "verificación de reintentos visuales",
+          "captura de estados tras fallo"
+        ],
+        "main_risks": [
+          "tests frágiles por snapshots",
+          "falsos negativos en reintentos",
+          "tests lentos o intermitentes"
+        ]
+      },
+      "recommended_sequence": [
+        "Implementar control de acceso y panel maestro para admin",
+        "Agregar logging detallado de bloqueos y guardrails",
+        "Desarrollar y validar pruebas Vitest y Playwright para robustez"
+      ],
+      "what_not_to_do": [
+        "No modificar el dashboard CEO existente ni su experiencia",
+        "No agregar métricas al panel que no sean críticas para admin principal",
+        "No sobrecargar logs con eventos irrelevantes",
+        "No crear tests demasiado generales o que ralenticen CI"
+      ]
+    }
+  },
+  {
+    "provider": "grok",
+    "ok": true,
+    "raw": "{\n  \"summary\": \"Este plan mínimo y robusto para un proyecto React + Express + tRPC implementa un panel maestro con acceso restringido al admin principal, un registro claro de bloqueos de seguridad, y pruebas con Vitest y Playwright para manejar snapshots, reintentos y errores. Se prioriza la robustez sin alterar la experiencia actual, usando verificaciones simples en el backend y pruebas unitarias/end-to-end. El enfoque mantiene el alcance pequeño para evitar riesgos.\",\n  \"priority_order\": [\"master_metrics_panel\", \"guardrail_logging\", \"failure_testing\"],\n  \"master_metrics_panel\": {\n    \"must_show\": [\"user activity counts\", \"error rates\", \"system performance metrics\"],\n    \"access_control\": \"Verificar rol de usuario en tRPC middleware para asegurar solo el admin principal accede.\",\n    \"implementation_hint\": \"Crear un componente React condicional basado en el rol del usuario, fetch datos desde Express y renderizar solo si autorizado.\"\n  },\n  \"guardrail_logging\": {\n    \"events_to_record\": [\"security blocks\", \"guardrail triggers\"],\n    \"fields\": [\"timestamp\", \"user ID\", \"event type\", \"affected endpoint\"],\n    \"main_risks\": [\"exposición accidental de datos sensibles en logs\", \"sobrecarga de almacenamiento por logging excesivo\"]\n  },\n  \"failure_testing\": {\n    \"vitest_cases\": [\"snapshot tests for React components\", \"retry logic in async functions\"],\n    \"playwright_cases\": [\"end-to-end simulations of network errors\", \"controlled failure scenarios in user flows\"],\n    \"main_risks\": [\"pruebas incompletas que omitan edge cases\", \"falsos positivos que retrasen el desarrollo\"]\n  },\n  \"recommended_sequence\": [\"1. Implementar el panel maestro con acceso controlado\", \"2. Añadir logging de eventos en el backend\", \"3. Escribir y ejecutar pruebas Vitest y Playwright\", \"4. Revisar cambios en un entorno de staging para evitar interrupciones\"],\n  \"what_not_to_do\": [\"No alterar el dashboard existente sin pruebas previas\", \"Evitar agregar nuevas métricas o eventos no esenciales\", \"No exponer datos sensibles en interfaces o logs\"]\n}",
+    "parsed": {
+      "summary": "Este plan mínimo y robusto para un proyecto React + Express + tRPC implementa un panel maestro con acceso restringido al admin principal, un registro claro de bloqueos de seguridad, y pruebas con Vitest y Playwright para manejar snapshots, reintentos y errores. Se prioriza la robustez sin alterar la experiencia actual, usando verificaciones simples en el backend y pruebas unitarias/end-to-end. El enfoque mantiene el alcance pequeño para evitar riesgos.",
+      "priority_order": [
+        "master_metrics_panel",
+        "guardrail_logging",
+        "failure_testing"
+      ],
+      "master_metrics_panel": {
+        "must_show": [
+          "user activity counts",
+          "error rates",
+          "system performance metrics"
+        ],
+        "access_control": "Verificar rol de usuario en tRPC middleware para asegurar solo el admin principal accede.",
+        "implementation_hint": "Crear un componente React condicional basado en el rol del usuario, fetch datos desde Express y renderizar solo si autorizado."
+      },
+      "guardrail_logging": {
+        "events_to_record": [
+          "security blocks",
+          "guardrail triggers"
+        ],
+        "fields": [
+          "timestamp",
+          "user ID",
+          "event type",
+          "affected endpoint"
+        ],
+        "main_risks": [
+          "exposición accidental de datos sensibles en logs",
+          "sobrecarga de almacenamiento por logging excesivo"
+        ]
+      },
+      "failure_testing": {
+        "vitest_cases": [
+          "snapshot tests for React components",
+          "retry logic in async functions"
+        ],
+        "playwright_cases": [
+          "end-to-end simulations of network errors",
+          "controlled failure scenarios in user flows"
+        ],
+        "main_risks": [
+          "pruebas incompletas que omitan edge cases",
+          "falsos positivos que retrasen el desarrollo"
+        ]
+      },
+      "recommended_sequence": [
+        "1. Implementar el panel maestro con acceso controlado",
+        "2. Añadir logging de eventos en el backend",
+        "3. Escribir y ejecutar pruebas Vitest y Playwright",
+        "4. Revisar cambios en un entorno de staging para evitar interrupciones"
+      ],
+      "what_not_to_do": [
+        "No alterar el dashboard existente sin pruebas previas",
+        "Evitar agregar nuevas métricas o eventos no esenciales",
+        "No exponer datos sensibles en interfaces o logs"
+      ]
+    }
+  },
+  {
+    "provider": "gemini",
+    "ok": false,
+    "raw": "{\n  \"summary\": \"Este plan propone una implementación mínima y robusta para el panel de métricas de administrador, el registro de bloqueos de seguridad y las pruebas de fallo. Prioriza la visibilidad de seguridad y la estabilidad del sistema. Se enfoca en reutilizar la infraestructura existente (tRPC, tracking de eventos) y mantener un alcance pequeño para no romper la experiencia actual, asegurando un despliegue controlado y eficiente de las nuevas funcionalidades.\",\n  \"priority_order\": [\n    \"guardrail_logging\",\n    \"master_metrics_panel\",\n    \"failure_testing\"\n  ],\n  \"master_metrics_panel\": {\n    \"must_show\": [\n      \"Número total de usuarios activos (últimos 7/30 días)\",\n      \"Número de dashboards creados\",\n      \"Número de exportes CSV/PDF realizados\",\n      \"Errores de API (últimas 24h)\",\n      \"Tiempo promedio de carga del dashboard\",\n      \"Bloqueos de seguridad registrados (últimas 24h)\"\n    },\n    \"access_control\": \"Implementar un middleware de tRPC que verifique un rol de administrador (`isAdmin: true`) en el contexto de la sesión del usuario. La ruta del panel debe ser exclusiva para este rol, asegurando que los datos sensibles no se expongan si el control de acceso falla.\",\n    \"implementation_hint\": \"Crear un nuevo procedimiento tRPC (`admin.getMetrics`) que agregue datos de la base de datos o logs existentes. Desarrollar un componente React simple para mostrar estas métricas, reutilizando componentes de UI existentes y aprovechando el tracking básico de eventos para algunas métricas.\"\n  },\n  \"guardrail_logging\": {\n    \"events_to_record\": [\n      \"Intentos de acceso no autorizado (ej. rol incorrecto, token inválido)\",\n      \"Intentos de acceso a datos restringidos (ej. 'vista como usuario' con permisos insuficientes)\",\n      \"Fallos en la validación de entrada (ej. parámetros de consulta maliciosos)\",\n      \"Errores críticos de servidor (ej. fallos de base de datos, excepciones no controladas)\",\n      \"Superación de límites de tasa (rate limiting)\"\n    ],\n    \"fields\": [\n      \"timestamp\",\n      \"event_type\",\n      \"user_id\",\n      \"ip_address\",\n      \"endpoint\",\n      \"details\",\n      \"severity\"\n    ],\n    \"main_risks\": [\n      \"Sobrecarga del sistema de logs si no se gestiona correctamente el volumen de eventos.\",\n      \"Exposición accidental de información sensible en los logs si no se filtra adecuadamente.\",\n      \"Falta de correlación entre eventos si los campos registrados no son consistentes.\"\n    ]\n  },\n  \"failure_testing\": {\n    \"vitest_cases\": [\n      \"Stale snapshots: Verificar que los snapshots de componentes React se actualizan correctamente y fallan con cambios no intencionados.\",\n      \"Retry logic: Simular fallos temporales en llamadas a tRPC (ej. error 500) y verificar que la lógica de reintento funciona y se detiene.\",\n      \"Controlled errors: Testear que los componentes de UI manejan y muestran mensajes de error específicos de tRPC de manera controlada.\",\n      \"Edge cases: Validar el manejo de datos vacíos o nulos en los procedimientos tRPC.\"\n    ],\n    \"playwright_cases\": [\n      \"Stale data display: Simular datos desactualizados del backend y verificar que el dashboard muestra un indicador apropiado.\",\n      \"Network failures: Simular interrupciones de red durante la carga o exportación y verificar que la UI muestra un estado de error amigable.\",\n      \"Unauthorized access attempt: Intentar acceder al panel de administrador con un usuario no autorizado y verificar la redirección o mensaje de error.\",\n      \"Guardrail trigger: Simular un parámetro inválido en una URL y verificar que el sistema de logging registra el evento y la aplicación responde apropiadamente.\"\n    ],\n    \"main_risks\": [\n      \"Crear tests demasiado complejos o frágiles que requieran mantenimiento constante.\",\n      \"No cubrir escenarios de fallo realistas, llevando a una falsa sensación de seguridad.\",\n      \"Aumentar significativamente el tiempo de ejecución de CI/CD si los tests no están optimizados.\"\n    ]\n  },\n  \"recommended_sequence\": [\n    \"Configuración de Guardrail Logging: Implementar la infraestructura de logging para eventos de seguridad y guardrails.\",\n    \"Implementación del Panel de Métricas (Backend): Desarrollar los procedimientos tRPC para obtener las métricas, asegurando el control de acceso.\",\n    \"Implementación del Panel de Métricas (Frontend): Construir la UI del panel, conectándola a los procedimientos tRPC.\",\n    \"Pruebas de Fallo (Vitest): Escribir y ejecutar pruebas unitarias/de integración para la lógica de reintentos y manejo de errores.\",\n    \"Pruebas de Fallo (Playwright): Escribir y ejecutar pruebas E2E para escenarios de fallo de red, acceso no autorizado y activación de guardrails.\",\n    \"Refinamiento y Monitoreo: Ajustar el logging, las métricas y los tests basándose en el monitoreo en entornos de staging/producción.\"\n  ],\n  \"what_not_to_do\": [\n    \"No crear un sistema de roles y permisos complejo para el panel de métricas; un simple 'isAdmin: true' es suficiente por ahora.\",\n    \"No intentar integrar un sistema de alerta de logs sofisticado en esta fase; solo registrar claramente es el objetivo.\",\n    \"No refactorizar componentes existentes del dashboard CEO a menos que sea estrictamente necesario para las nuevas características.\",\n    \"No añadir métricas al panel que requieran una lógica de agregación de datos compleja o un nuevo ETL.\",\n    \"No introducir nuevas dependencias de logging o testing que no sean Vitest/Playwright.\"\n  ]\n}",
+    "error": "JSON inválido: Expected ',' or ']' after array element in JSON at position 914 (line 16 column 5)"
+  }
+]

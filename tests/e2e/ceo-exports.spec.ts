@@ -64,4 +64,87 @@ test.describe("Exportes CEO", () => {
     await expect(page.getByText(/reporte pdf generado/i)).toBeVisible();
     await expect(page.getByText(/reporte csv generado/i)).toBeVisible();
   });
+
+  test("bloquea exportes cuando el snapshot ejecutivo ya quedó stale", async ({ page }) => {
+    await loginAsOwner(page);
+    await page.addInitScript(() => {
+      const realNow = Date.now.bind(Date);
+      Date.now = () => realNow() + 30 * 60 * 1000;
+    });
+
+    await page.goto("/ceo");
+    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByRole("button", { name: /exportar csv/i })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /reporte pdf/i })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /actualizar/i })).toBeEnabled();
+    await expect(page.getByText(/última actualización/i)).toBeVisible();
+  });
+
+  test("permite reintentar la carga del snapshot CEO después de un fallo transitorio", async ({ page }) => {
+    await loginAsOwner(page);
+
+    let snapshotAttempts = 0;
+    await page.route("**/api/trpc/**", async (route) => {
+      const url = route.request().url();
+      if (url.includes("dashboard.ceoSnapshot")) {
+        snapshotAttempts += 1;
+        if (snapshotAttempts === 1) {
+          await route.fulfill({
+            status: 500,
+            contentType: "application/json",
+            body: JSON.stringify({ error: { message: "snapshot failed" } }),
+          });
+          return;
+        }
+      }
+
+      await route.continue();
+    });
+
+    await page.goto("/ceo");
+    await expect(page.getByText(/no fue posible cargar el snapshot ejecutivo del ceo/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /actualizar/i }).click();
+
+    await expect(page.getByText(/no fue posible cargar el snapshot ejecutivo del ceo/i)).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /exportar csv/i })).toBeEnabled();
+    expect(snapshotAttempts).toBeGreaterThanOrEqual(2);
+  });
+
+  test("mantiene la descarga y expone warning en consola si falla la auditoría del export", async ({ page }) => {
+    await loginAsOwner(page);
+
+    const consoleWarnings: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "warning") {
+        consoleWarnings.push(message.text());
+      }
+    });
+
+    await page.route("**/api/trpc/**", async (route) => {
+      const url = route.request().url();
+      if (url.includes("dashboard.ceoRecordExportAudit")) {
+        await route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { message: "audit failed" } }),
+        });
+        return;
+      }
+
+      await route.continue();
+    });
+
+    await page.goto("/ceo");
+    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+
+    const csvDownloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: /exportar csv/i }).click();
+    const csvDownload = await csvDownloadPromise;
+    const csvFile = await saveDownloadToTemp(csvDownload);
+
+    expect(csvFile.suggestedFilename).toMatch(/^ceo-resumen-\d{8}-\d{4}\.csv$/);
+    await expect(page.getByText(/no quedó registrada/i)).toBeVisible();
+    expect(consoleWarnings.some((entry) => entry.includes("No se pudo registrar la auditoría del export ejecutivo"))).toBeTruthy();
+  });
 });

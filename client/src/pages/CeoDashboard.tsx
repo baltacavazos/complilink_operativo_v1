@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { trackCeoConsoleViewed, trackCeoExport, trackCeoRefresh } from "@/lib/analytics";
+import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
@@ -412,9 +412,17 @@ export default function CeoDashboard() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+  const snapshotData = hasActiveFilters ? filteredSnapshotQuery.data : baseSnapshotQuery.data;
+  const isMasterUser = snapshotData?.viewerCapabilities?.isMasterUser ?? baseSnapshotQuery.data?.viewerCapabilities?.isMasterUser ?? false;
+  const masterMetricsQuery = trpc.dashboard.ceoMasterMetrics.useQuery(undefined, {
+    enabled: isAdmin && isMasterUser,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const recordConsoleViewMutation = trpc.dashboard.ceoRecordConsoleView.useMutation();
+  const recordGuardrailMutation = trpc.dashboard.ceoRecordGuardrailEvent.useMutation();
   const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
 
-  const snapshotData = hasActiveFilters ? filteredSnapshotQuery.data : baseSnapshotQuery.data;
   const snapshotError = hasActiveFilters ? filteredSnapshotQuery.error : baseSnapshotQuery.error;
   const isInitialLoading = !baseSnapshotQuery.data && baseSnapshotQuery.isLoading;
   const isFilterLoading = hasActiveFilters && !filteredSnapshotQuery.data && filteredSnapshotQuery.isLoading;
@@ -579,11 +587,12 @@ export default function CeoDashboard() {
   );
   const exportableSection = currentSection === "bridge" ? "resumen" : currentSection;
   const lastTrackedSectionViewRef = useRef<string | null>(null);
+  const lastTrackedMasterMetricsRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
 
-    const nextViewKey = `${currentSection}:${hasActiveFilters ? "filtered" : "global"}`;
+    const nextViewKey = `${currentSection}:${snapshotGeneratedAtIso ?? "pending"}:${hasActiveFilters ? "filtered" : "global"}`;
     if (lastTrackedSectionViewRef.current === nextViewKey) {
       return;
     }
@@ -594,7 +603,35 @@ export default function CeoDashboard() {
       hasActiveFilters,
       visibleCount: currentSectionCount,
     });
-  }, [currentSection, currentSectionCount, hasActiveFilters, isAdmin]);
+    void recordConsoleViewMutation
+      .mutateAsync({
+        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+        section: currentSection,
+        snapshotGeneratedAt: snapshotGeneratedAtIso ?? undefined,
+        hasActiveFilters,
+        visibleCount: currentSectionCount,
+      })
+      .catch((error) => {
+        console.warn("No se pudo registrar la vista persistente del dashboard CEO", error);
+      });
+  }, [currentSection, currentSectionCount, filters.tenantId, hasActiveFilters, isAdmin, recordConsoleViewMutation, snapshotGeneratedAtIso]);
+
+  useEffect(() => {
+    if (!isMasterUser || !masterMetricsQuery.data) return;
+
+    const nextMetricsKey = `${masterMetricsQuery.data.generatedAt}`;
+    if (lastTrackedMasterMetricsRef.current === nextMetricsKey) {
+      return;
+    }
+
+    lastTrackedMasterMetricsRef.current = nextMetricsKey;
+    trackCeoMasterMetricsViewed({
+      source: "ceo_dashboard",
+      totalConsoleViews: masterMetricsQuery.data.summary.totalConsoleViews,
+      totalGuardrailBlocks: masterMetricsQuery.data.summary.totalGuardrailBlocks,
+      totalExports: masterMetricsQuery.data.summary.totalExports,
+    });
+  }, [isMasterUser, masterMetricsQuery.data]);
 
   const safeCaseActions = useMemo(
     () =>
@@ -720,7 +757,33 @@ export default function CeoDashboard() {
     caseMutation.isPending && caseMutation.variables?.tenantId === tenantId && caseMutation.variables?.caseId === caseId;
   const isConfirmingExecutiveAction = alertMutation.isPending || membershipMutation.isPending || caseMutation.isPending;
 
-  function notifyExecutiveGuardrail() {
+  function notifyExecutiveGuardrail(actionKind: "alert" | "membership" | "case" | "export" | "refresh" | "master_metrics") {
+    const reason = isRefreshing ? "snapshot_refreshing" : snapshotError ? "snapshot_error" : isSnapshotStale ? "snapshot_stale" : "guardrail_active";
+
+    trackCeoGuardrail("blocked", {
+      source: "ceo_dashboard",
+      section: currentSection,
+      actionKind,
+      reason,
+      hasActiveFilters,
+      visibleCount: currentSectionCount,
+    });
+
+    void recordGuardrailMutation
+      .mutateAsync({
+        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+        section: currentSection,
+        actionKind,
+        reason,
+        description: executiveGuardrailDescription,
+        snapshotGeneratedAt: snapshotGeneratedAtIso ?? undefined,
+        hasActiveFilters,
+        visibleCount: currentSectionCount,
+      })
+      .catch((error) => {
+        console.warn("No se pudo registrar el bloqueo persistente del guardrail CEO", error);
+      });
+
     sonnerToast.error("Actualiza la vista antes de operar", {
       description: executiveGuardrailDescription,
     });
@@ -742,7 +805,7 @@ export default function CeoDashboard() {
 
   function requestAlertAction(alertId: number, title: string, status: string) {
     if (executiveActionsBlocked) {
-      notifyExecutiveGuardrail();
+      notifyExecutiveGuardrail("alert");
       return;
     }
 
@@ -767,7 +830,7 @@ export default function CeoDashboard() {
     userLabel: string,
   ) {
     if (executiveActionsBlocked) {
-      notifyExecutiveGuardrail();
+      notifyExecutiveGuardrail("membership");
       return;
     }
 
@@ -787,7 +850,7 @@ export default function CeoDashboard() {
 
   function requestCaseAction(tenantId: string, caseId: string, title: string, status: string) {
     if (executiveActionsBlocked) {
-      notifyExecutiveGuardrail();
+      notifyExecutiveGuardrail("case");
       return;
     }
 
@@ -809,7 +872,7 @@ export default function CeoDashboard() {
 
   async function executePendingExecutiveAction(action: PendingExecutiveAction) {
     if (executiveActionsBlocked || !snapshotGeneratedAtIso) {
-      notifyExecutiveGuardrail();
+      notifyExecutiveGuardrail(action.kind);
       setPendingExecutiveAction(null);
       return;
     }
@@ -1229,6 +1292,52 @@ export default function CeoDashboard() {
             <KpiCard label="Accesos vigentes" value={globalSummary.activeMemberships} helper={`${formatNumber(globalSummary.caseScopedMemberships)} por caso`} />
             <KpiCard label="Documentos pendientes" value={globalSummary.pendingDocuments} helper={`${formatNumber(globalSummary.supersededDocuments)} reemplazados`} />
           </section>
+
+          {isMasterUser ? (
+            <section className="rounded-[1.8rem] border border-violet-200/70 bg-[linear-gradient(135deg,rgba(245,243,255,0.98),rgba(238,242,255,0.94))] p-5 shadow-[0_26px_80px_-44px_rgba(76,29,149,0.3)]">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-3xl space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">Panel maestro</p>
+                  <h3 className="text-xl font-semibold tracking-tight text-slate-950">Métricas exclusivas del usuario dueño</h3>
+                  <p className="text-sm leading-6 text-slate-700">
+                    Este bloque concentra vistas ejecutivas, exportes y bloqueos de guardrails persistidos en la bitácora para el usuario maestro.
+                  </p>
+                </div>
+                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-slate-700 shadow-sm">
+                  {masterMetricsQuery.isLoading ? "Cargando métricas maestras…" : `Corte ${formatDateTime(masterMetricsQuery.data?.generatedAt ?? null)}`}
+                </div>
+              </div>
+
+              {masterMetricsQuery.error ? (
+                <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {masterMetricsQuery.error.message}
+                </div>
+              ) : (
+                <>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <KpiCard label="Vistas CEO" value={masterMetricsQuery.data?.summary.totalConsoleViews ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.consoleViews ?? 0)}`} />
+                    <KpiCard label="Guardrails bloqueados" value={masterMetricsQuery.data?.summary.totalGuardrailBlocks ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.guardrailBlocks ?? 0)}`} />
+                    <KpiCard label="Exportes trazados" value={masterMetricsQuery.data?.summary.totalExports ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.exports ?? 0)}`} />
+                    <KpiCard label="Actores únicos" value={masterMetricsQuery.data?.summary.uniqueActors ?? 0} helper="Usuarios administradores con interacción registrada" />
+                  </div>
+                  <div className="mt-4 grid gap-4 md:grid-cols-3">
+                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Última vista CEO</p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.consoleViewedAt ?? null)}</p>
+                    </div>
+                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último bloqueo</p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.guardrailBlockedAt ?? null)}</p>
+                    </div>
+                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último export</p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.exportGeneratedAt ?? null)}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </section>
+          ) : null}
 
           <div className="rounded-[1.4rem] border border-cyan-100 bg-cyan-50/80 px-4 py-3 text-sm leading-6 text-cyan-950">
             Las tarjetas superiores muestran <strong>contexto global</strong>. Los listados, paneles laterales y contadores de secciones muestran la <strong>vista filtrada</strong> para evitar perder el panorama completo.

@@ -1,4 +1,4 @@
-export type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
+type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
 
 type UmamiTracker = {
   track: (eventName: string, payload?: AnalyticsPayload) => void;
@@ -51,6 +51,12 @@ export function trackCeoConsoleViewed(section: string, payload?: AnalyticsPayloa
   });
 }
 
+export function trackCeoMasterMetricsViewed(payload?: AnalyticsPayload) {
+  trackEvent("audipatron_ceo_master_metrics_viewed", payload);
+
+  trackFunnelStep("ceo_master_metrics_viewed", payload);
+}
+
 export function trackCeoViewModeToggled(mode: "user_demo" | "ceo_master", payload?: AnalyticsPayload) {
   trackEvent("audipatron_ceo_view_mode_toggled", {
     mode,
@@ -68,6 +74,23 @@ export function trackCeoRefresh(section: string, payload?: AnalyticsPayload) {
     section,
     ...payload,
   });
+}
+
+export function trackCeoGuardrail(
+  status: "blocked" | "warning" | "resolved",
+  payload?: AnalyticsPayload,
+) {
+  trackEvent("audipatron_ceo_guardrail", {
+    status,
+    ...payload,
+  });
+
+  if (status === "blocked") {
+    trackFunnelStep("ceo_guardrail_blocked", {
+      status,
+      ...payload,
+    });
+  }
 }
 
 export function trackCeoExport(

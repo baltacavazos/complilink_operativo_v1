@@ -1,32 +1,29 @@
-const prompt = `Eres un arquitecto técnico senior revisando una app web interna con stack React + tRPC + Vitest + Playwright. Responde en español y en formato JSON válido.
-
-Contexto actual:
-- Existe un rol CEO maestro con modo "vista como usuario" para demos, sin perder permisos reales.
-- Ya se corrigió una regresión de exportación PDF mediante descarga explícita de blob.
-- Quedan tres frentes estrictamente acotados: (1) prueba E2E del flujo CEO -> vista usuario -> expediente -> regreso a CEO; (2) validación automática de exportes CSV/PDF descargados; (3) métricas y embudo de uso mínimos para soporte operativo.
-- Restricción: mantener el alcance en estabilidad y correcciones bloqueantes, sin abrir frentes nuevos.
+const prompt = `Contexto actual:
+- Ya existe un dashboard CEO con modo "vista como usuario", exportes CSV/PDF validados y un tracking básico de eventos.
+- El siguiente bloque aprobado tiene tres partes: (1) panel maestro con métricas visibles solo para el usuario administrador principal; (2) registro más claro de bloqueos de seguridad y guardrails para diagnóstico; (3) pruebas Vitest y Playwright para snapshot stale, reintentos y errores controlados.
+- Restricción: mantener el alcance pequeño, robusto y sin romper la experiencia actual.
 - Preferencia: explicaciones simples y directas.
 
-Quiero que propongas un plan de implementación mínimo y robusto para estos tres frentes.
+Quiero que propongas un plan mínimo y robusto para implementar estas tres mejoras en un proyecto React + Express + tRPC ya existente.
 
 Devuelve JSON con esta forma exacta:
 {
   "summary": "máximo 120 palabras",
   "priority_order": ["item1", "item2", "item3"],
-  "e2e": {
-    "critical_assertions": ["..."],
-    "test_strategy": "...",
-    "main_risks": ["..."]
-  },
-  "exports": {
-    "critical_assertions": ["..."],
-    "validation_strategy": "...",
-    "main_risks": ["..."]
-  },
-  "metrics": {
-    "events": ["..."],
-    "funnel": ["..."],
+  "master_metrics_panel": {
+    "must_show": ["..."],
+    "access_control": "...",
     "implementation_hint": "..."
+  },
+  "guardrail_logging": {
+    "events_to_record": ["..."],
+    "fields": ["..."],
+    "main_risks": ["..."]
+  },
+  "failure_testing": {
+    "vitest_cases": ["..."],
+    "playwright_cases": ["..."],
+    "main_risks": ["..."]
   },
   "recommended_sequence": ["..."],
   "what_not_to_do": ["..."]
