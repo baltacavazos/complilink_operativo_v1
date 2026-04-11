@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-04-11T17:53:53.508Z",
+  "promptSummary": "Comparativa multi-AI para telemetría de lock, reintento UI y pruebas del gate legal de /auditar",
+  "openai": {
+    "backend_changes": [
+      "Agregar métricas de telemetría para lock: instrumentar withDatabaseLock para emitir eventos cuando se adquiere el lock, cuando hay retrasos significativos (ej. >500ms) y cuando ocurre un conflicto de lock (timeout o rechazo).",
+      "Modificar consent.acceptLegalPackage para capturar y propagar errores específicos de lock (p.ej. LockTimeoutError o ConflictError) con códigos de error claros para que el frontend los distinga.",
+      "Registrar en logs estructurados los eventos de lock y conflictos para facilitar monitoreo y alertas operativas."
+    ],
+    "frontend_changes": [
+      "Extender handleAcceptLegalPackage para detectar errores específicos de lock/concurrencia basados en el código de error retornado por el backend.",
+      "Implementar un estado de reintento controlado que permita al usuario reintentar la aceptación legal solo si ocurrió un conflicto o timeout de lock, evitando duplicados gracias a la idempotencia backend.",
+      "Mostrar mensajes claros y diferenciados en la UI para: error de lock (p.ej. 'Otro usuario está aceptando, intenta nuevamente'), error genérico, y éxito.",
+      "Agregar un botón o CTA visible para reintentar la aceptación solo cuando el error sea de lock/concurrencia.",
+      "Emitir eventos analytics adicionales para reintentos y conflictos detectados."
+    ],
+    "tests": [
+      "Agregar pruebas unitarias en backend para simular lock exitoso, lock con retraso y lock con conflicto, verificando que se emitan métricas y se propaguen errores correctamente.",
+      "Agregar pruebas unitarias en frontend para handleAcceptLegalPackage que simulen respuestas de error de lock y validen que el estado de reintento y mensajes se actualicen correctamente.",
+      "Agregar prueba de integración/end-to-end con Vitest que simule dos solicitudes concurrentes de aceptación legal, verificando que solo una se acepte y la otra reciba error de lock, y que el frontend permita reintento sin duplicar aceptación.",
+      "Validar que la telemetría de lock se registre correctamente durante la prueba de concurrencia."
+    ],
+    "risks": [
+      "Incremento en la complejidad del manejo de errores en frontend puede introducir bugs si no se cubre bien el flujo de reintentos.",
+      "Posible aumento en latencia del endpoint consent.acceptLegalPackage debido a instrumentación de telemetría y manejo de lock.",
+      "Si la UI no comunica claramente el estado de lock/concurrencia, puede generar confusión en usuarios finales.",
+      "Errores no manejados adecuadamente podrían causar bloqueos o loops de reintento."
+    ],
+    "recommended_minimal_plan": [
+      "Primero instrumentar telemetría en backend para lock y exponer errores específicos sin cambiar la lógica idempotente.",
+      "Luego, modificar frontend para detectar esos errores y mostrar mensajes + botón de reintento controlado.",
+      "Finalmente, agregar pruebas unitarias y de integración para validar telemetría, manejo de errores y reintentos.",
+      "Desplegar en staging para monitorear telemetría y comportamiento antes de producción."
+    ]
+  },
+  "gemini": {
+    "backend_changes": [
+      "Modificar la utilidad `withDatabaseLock` (o su implementación subyacente) para que, en caso de no poder adquirir el lock dentro de un tiempo límite configurable, lance una excepción específica. Esta excepción debe ser mapeada a un `TRPCError` con `code: 'CONFLICT'` y un `cause` personalizado, por ejemplo, `{ type: 'CONCURRENCY_LOCK_FAILURE', message: 'Recurso bloqueado por otra operación.' }`.",
+      "Integrar un logger estructurado (e.g., Pino, Winston) en `withDatabaseLock` para registrar eventos clave: `lock_acquired` (con `lockKey`, `wait_time_ms`), `lock_released` (con `lockKey`), y `lock_contention_failure` (con `lockKey`, `error_type`, `attempt_count`). Esto proporcionará telemetría operativa sobre el uso y conflictos del lock.",
+      "Asegurar que `consent.acceptLegalPackage` capture la excepción de conflicto de lock y la propague como el `TRPCError` definido, manteniendo la idempotencia existente."
+    ],
+    "frontend_changes": [
+      "En `client/src/pages/Auditar.tsx`, modificar `handleAcceptLegalPackage()` para inspeccionar el objeto de error retornado por `acceptLegalPackageMutation.mutateAsync`. Si el error es un `TRPCError` con `code: 'CONFLICT'` y `cause.type === 'CONCURRENCY_LOCK_FAILURE'`, clasificarlo como un error de concurrencia.",
+      "Implementar un estado de error más granular en el frontend (e.g., `legalGateError: { message: string, type: 'concurrency' | 'transient' | 'fatal' | null }`).",
+      "Si el error es de tipo `concurrency` o `transient`, mostrar un mensaje claro al usuario (e.g., 'Parece que otro usuario está procesando esto. ¿Quieres reintentar?' o 'Hubo un problema temporal. Por favor, reintenta.') y un botón 'Reintentar'.",
+      "Implementar una lógica de reintento controlada: al hacer clic en 'Reintentar', se debe invocar `acceptLegalPackageMutation.mutateAsync` nuevamente. Considerar un contador de reintentos y un backoff exponencial simple (e.g., 1s, 2s, 4s, hasta 3 reintentos máximos).",
+      "Registrar eventos analytics `legal_package_retry_attempt` con `attempt_number` y `error_type` (concurrencia/transitorio) cuando se inicia un reintento."
+    ],
+    "tests": [
+      "**Backend (Vitest):** Escribir pruebas unitarias para la utilidad `withDatabaseLock` que verifiquen: adquisición y liberación exitosa del lock, fallo por timeout cuando el lock está retenido, y la generación de logs de telemetría en diferentes escenarios.",
+      "**Backend (Vitest):** Escribir una prueba de integración para `consent.acceptLegalPackage` que simule dos llamadas concurrentes. La primera debe tener éxito, y la segunda debe recibir el `TRPCError` de `CONCURRENCY_LOCK_FAILURE`. Luego, la segunda llamada debe poder reintentar y tener éxito (gracias a la idempotencia y la liberación del lock).",
+      "**Frontend (Vitest/React Testing Library):** Escribir pruebas unitarias para `handleAcceptLegalPackage` que: mockeen `acceptLegalPackageMutation.mutateAsync` para que falle con el error de concurrencia, verifiquen que el estado `legalGateError` se actualiza correctamente, y que el botón 'Reintentar' se renderiza.",
+      "**Frontend (Vitest/React Testing Library):** Probar la lógica de reintento: simular clics en el botón 'Reintentar' y verificar que `acceptLegalPackageMutation.mutateAsync` se invoca nuevamente y que los eventos analytics de reintento se registran."
+    ],
+    "risks": [
+      "**Complejidad en la lógica de reintento:** Un backoff mal configurado o un número excesivo de reintentos podría generar una carga innecesaria en el backend o una mala experiencia de usuario.",
+      "**Falsos positivos/negativos en la detección de concurrencia:** Una clasificación incorrecta de los errores podría llevar a reintentos innecesarios o a la falta de reintentos cuando serían útiles.",
+      "**Impacto en el rendimiento del lock:** La adición de telemetría detallada dentro de la lógica de lock podría introducir una sobrecarga mínima, aunque generalmente aceptable.",
+      "**Pruebas de concurrencia frágiles:** Las pruebas que simulan concurrencia pueden ser difíciles de escribir de manera robusta y pueden volverse 'flaky' si no se manejan cuidadosamente los tiempos y las aserciones."
+    ],
+    "recommended_minimal_plan": [
+      "**Paso 1 (Backend):** Modificar `withDatabaseLock` para que lance una excepción específica (e.g., `LockAcquisitionError`) si no puede adquirir el lock en un tiempo razonable. Mapear esta excepción a un `TRPCError` con `code: 'CONFLICT'` y `cause: { type: 'CONCURRENCY_LOCK_FAILURE' }` en `server/routers.ts`.",
+      "**Paso 2 (Backend):** Añadir `console.log` (o un logger básico) para `lock_acquired`, `lock_released` y `lock_contention_failure` dentro de `withDatabaseLock` para obtener visibilidad inicial.",
+      "**Paso 3 (Frontend):** En `handleAcceptLegalPackage`, implementar la lógica para detectar el `TRPCError` de `CONCURRENCY_LOCK_FAILURE` y actualizar el estado `legalGateError` con `type: 'concurrency'` y un mensaje adecuado.",
+      "**Paso 4 (Frontend):** En la UI de `/auditar`, renderizar condicionalmente un botón 'Reintentar' cuando `legalGateError.type === 'concurrency'`. Este botón simplemente invocará `handleAcceptLegalPackage` de nuevo (sin backoff inicial ni contador de reintentos).",
+      "**Paso 5 (Tests):** Escribir una prueba de integración Vitest para `consent.acceptLegalPackage` que valide el escenario de concurrencia: una llamada exitosa y otra que falla con el error de `CONCURRENCY_LOCK_FAILURE`.",
+      "**Paso 6 (Tests):** Escribir una prueba unitaria Vitest/RTL para el componente de la UI que verifique que el botón 'Reintentar' aparece cuando se simula un error de concurrencia y que al hacer clic se intenta la mutación de nuevo."
+    ]
+  },
+  "grok": {
+    "backend_changes": [
+      "En server/routers.ts, dentro de consent.acceptLegalPackage, agregar logging para eventos de lock: registrar cuando el lock se adquiere exitosamente, falla por concurrencia (e.g., using console.error o una librería como Winston), y cualquier timeout. Usar try-catch alrededor de withDatabaseLock para capturar excepciones y enviar métricas a un servicio como Sentry o un log centralizado.",
+      "Hacer que el handler devuelva errores específicos para conflictos de lock (e.g., un código de error personalizado como 'LOCK_CONFLICT') para que el frontend pueda mapearlos adecuadamente, sin alterar la idempotencia existente."
+    ],
+    "frontend_changes": [
+      "En client/src/pages/Auditar.tsx, dentro de handleAcceptLegalPackage, envolver mutateAsync en un try-catch que detecte errores de concurrencia (e.g., basado en el mensaje o código de error). Si se detecta, mostrar un mensaje claro como 'Conflicto de acceso, intente nuevamente' y agregar un botón de reintento que llame a una función de reintento controlada (e.g., con un delay de 2-5 segundos y un límite de intentos a 3).",
+      "Asegurar que el reintento no duplique aceptaciones verificando el estado actual antes de mutar (e.g., chequear si el paquete ya está aceptado via una query preliminar)."
+    ],
+    "tests": [
+      "Agregar pruebas unitarias con Vitest para el backend: Mockear withDatabaseLock en server/routers.ts para simular éxitos, fallos por concurrencia y timeouts, verificando que los logs se generen correctamente y que el handler mantenga la idempotencia.",
+      "En el frontend, escribir pruebas unitarias para Auditar.tsx: Simular errores de mutateAsync y validar que se muestren mensajes correctos y que el botón de reintento funcione sin causar múltiples mutaciones.",
+      "Implementar una prueba de flujo integrada: Usar Vitest con mocks para simular concurrencia (e.g., múltiples llamadas simultáneas a acceptLegalPackage) y validar que el sistema maneje reintentos, mantiene la idempotencia y registra telemetría."
+    ],
+    "risks": [
+      "Posible introducción de bugs en la lógica de reintento que podrían causar loops infinitos si no se limita correctamente el número de intentos.",
+      "Aumento en la carga del servidor si los reintentos son frecuentes, potencialmente exacerbando problemas de concurrencia.",
+      "Errores en la telemetría podrían generar falsos positivos o datos inexactos, complicando el monitoreo operativo sin afectar la funcionalidad principal."
+    ],
+    "recommended_minimal_plan": [
+      "Paso 1: Implementar cambios en el backend para agregar telemetría y errores específicos, validando manualmente con pruebas locales.",
+      "Paso 2: Actualizar el frontend para manejar errores y agregar lógica de reintento, probando en entorno de desarrollo.",
+      "Paso 3: Escribir y ejecutar pruebas unitarias y de flujo para cubrir los escenarios clave, asegurando cobertura al 80% mínimo antes de mergear.",
+      "Paso 4: Desplegar en staging, monitorear telemetría por 24 horas y realizar pruebas de carga para validar robustez."
+    ]
+  }
+}

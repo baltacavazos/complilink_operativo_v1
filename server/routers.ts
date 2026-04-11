@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import {
@@ -42,6 +43,7 @@ import {
   addDocumentRecord,
   getAuditarDraftById,
   updateDocumentPostProcessing,
+  isDatabaseLockContentionError,
   withDatabaseLock,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -3723,10 +3725,11 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const lockKey = `legal:${input.tenantId}:${input.caseId}:${LEGAL_ACCEPTANCE_VERSION}`;
 
-        return withDatabaseLock({
-          lockKey,
-          timeoutSeconds: 12,
-          action: async () => {
+        try {
+          return await withDatabaseLock({
+            lockKey,
+            timeoutSeconds: 12,
+            action: async () => {
             const detail = await getCaseDetailForUser({
               userId: ctx.user.id,
               tenantId: input.tenantId,
@@ -4007,7 +4010,34 @@ export const appRouter = router({
               acceptance: finalAcceptance,
             };
           },
-        });
+          });
+        } catch (error) {
+          if (isDatabaseLockContentionError(error)) {
+            console.warn(
+              `[LegalAcceptance] ${JSON.stringify({
+                event: "accept_legal_package_lock_conflict",
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                userId: ctx.user.id,
+                lockKey: error.lockKey,
+                timeoutSeconds: error.timeoutSeconds,
+                waitTimeMs: error.waitTimeMs,
+              })}`,
+            );
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Otro proceso está registrando esta aceptación. Espera unos segundos y vuelve a intentarlo.",
+              cause: {
+                type: "CONCURRENCY_LOCK_FAILURE",
+                lockKey: error.lockKey,
+                timeoutSeconds: error.timeoutSeconds,
+                waitTimeMs: error.waitTimeMs,
+              },
+            });
+          }
+
+          throw error;
+        }
       }),
     create: protectedProcedure
       .input(

@@ -25,6 +25,7 @@ const dbMocks = vi.hoisted(() => ({
   getDashboardForUser: vi.fn(),
   getCeoDashboardSnapshot: vi.fn(),
   getSystemSnapshot: vi.fn(),
+  isDatabaseLockContentionError: vi.fn(),
   getVisibleDocumentForUser: vi.fn(),
   grantCaseAccess: vi.fn(),
   listAccessibleUsersByTenant: vi.fn(),
@@ -226,6 +227,9 @@ describe("appRouter case workflows", () => {
     vi.mocked(db.addOperationalAlert).mockResolvedValue(undefined);
     vi.mocked(db.addConsentRecord).mockResolvedValue(undefined);
     vi.mocked(db.addPolicyRecord).mockResolvedValue(undefined);
+    vi.mocked(db.isDatabaseLockContentionError).mockImplementation(
+      (error) => Boolean(error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "DATABASE_LOCK_CONFLICT"),
+    );
     vi.mocked(db.withDatabaseLock).mockImplementation(async ({ action }) => action());
     vi.mocked(invokeLLM).mockResolvedValue({
       choices: [
@@ -1815,6 +1819,170 @@ describe("appRouter case workflows", () => {
         }),
       }),
     );
+  });
+
+  it("maps lock contention to a conflict error without persisting duplicate acceptance artifacts", async () => {
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    vi.mocked(db.withDatabaseLock).mockRejectedValueOnce({
+      code: "DATABASE_LOCK_CONFLICT",
+      lockKey: `legal:balt-1:CASE-BALT-1-DEMO001:${LEGAL_ACCEPTANCE_VERSION}`,
+      timeoutSeconds: 12,
+      waitTimeMs: 9_500,
+    });
+
+    await expect(
+      caller.consent.acceptLegalPackage({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        accepted: true,
+      }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "Otro proceso está registrando esta aceptación. Espera unos segundos y vuelve a intentarlo.",
+    });
+
+    expect(db.addConsentRecord).not.toHaveBeenCalled();
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+    expect(db.addCaseEvent).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("supports a controlled retry after lock contention and persists the legal package only once", async () => {
+    vi.mocked(db.addConsentRecord).mockImplementation(async (input) => ({
+      id: 800,
+      ...input,
+    }) as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    vi.mocked(db.withDatabaseLock)
+      .mockRejectedValueOnce({
+        code: "DATABASE_LOCK_CONFLICT",
+        lockKey: `legal:balt-1:CASE-BALT-1-DEMO001:${LEGAL_ACCEPTANCE_VERSION}`,
+        timeoutSeconds: 12,
+        waitTimeMs: 12_000,
+      })
+      .mockImplementationOnce(async ({ action }) => action());
+
+    await expect(
+      caller.consent.acceptLegalPackage({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        accepted: true,
+      }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+
+    const retryResult = await caller.consent.acceptLegalPackage({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      accepted: true,
+    });
+
+    expect(retryResult).toMatchObject({
+      success: true,
+      alreadyAccepted: false,
+      acceptance: {
+        isAccepted: true,
+        acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+      },
+    });
+    expect(db.withDatabaseLock).toHaveBeenCalledTimes(2);
+    expect(db.addConsentRecord).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
+    expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
+    expect(db.addCaseEvent).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the retry path idempotent once the legal package was already completed by another process", async () => {
+    const acceptedAt = new Date("2026-04-06T12:30:00.000Z");
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    vi.mocked(db.withDatabaseLock)
+      .mockRejectedValueOnce({
+        code: "DATABASE_LOCK_CONFLICT",
+        lockKey: `legal:balt-1:CASE-BALT-1-DEMO001:${LEGAL_ACCEPTANCE_VERSION}`,
+        timeoutSeconds: 12,
+        waitTimeMs: 7_000,
+      })
+      .mockImplementationOnce(async ({ action }) => action());
+
+    await expect(
+      caller.consent.acceptLegalPackage({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        accepted: true,
+      }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValueOnce({
+      ...demoCaseDetail,
+      events: [
+        {
+          eventType: "consent_updated",
+          metadata: JSON.stringify({
+            acceptance_version: LEGAL_ACCEPTANCE_VERSION,
+          }),
+        },
+      ],
+      consents: LEGAL_CONSENT_TYPES.map((consentType) => ({
+        legalBasis: `legal_package:${LEGAL_ACCEPTANCE_VERSION}:${consentType}`,
+        status: "granted",
+        notes: JSON.stringify({
+          acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+          consentType,
+          clientIp: "203.0.113.9",
+          userAgent: "Vitest Legal Retry",
+          actorEmail: "owner@complilink.mx",
+        }),
+        subjectName: "CompliLink Owner",
+        subjectRole: "platform_user",
+        documentId: null,
+        grantedAt: acceptedAt,
+        createdAt: acceptedAt,
+        updatedAt: acceptedAt,
+      })),
+    } as never);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce(
+      LEGAL_CONSENT_TYPES.map((consentType, index) => ({
+        id: index + 1,
+        payload: JSON.stringify({
+          schema_version: LEGAL_ACCEPTANCE_VERSION,
+          consent_type: consentType,
+        }),
+        createdAt: acceptedAt,
+        updatedAt: acceptedAt,
+        status: "ready",
+        schemaVersion: LEGAL_CONTRACT_SCHEMA_VERSION,
+      })) as never,
+    );
+    vi.mocked(db.findAuditLogEntry).mockResolvedValueOnce({
+      id: 88,
+      createdAt: acceptedAt,
+    } as never);
+
+    const retryResult = await caller.consent.acceptLegalPackage({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      accepted: true,
+    });
+
+    expect(retryResult).toMatchObject({
+      success: true,
+      alreadyAccepted: true,
+      acceptance: {
+        isAccepted: true,
+      },
+    });
+    expect(db.withDatabaseLock).toHaveBeenCalledTimes(2);
+    expect(db.addConsentRecord).not.toHaveBeenCalled();
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+    expect(db.addCaseEvent).not.toHaveBeenCalled();
+    expect(db.createAuditLog).not.toHaveBeenCalled();
   });
 
   it("creates document policies and exposes filtered audit entries", async () => {

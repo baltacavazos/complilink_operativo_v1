@@ -682,3 +682,9 @@
 - [x] AuditaPatron hero iteración 4: instrumentar scroll depth del hero y eventos de cambio de variante sin romper el tracking existente
 - [x] AuditaPatron hero iteración 4: reemplazar la tarjeta lateral por un carrusel de 3 hallazgos laborales resumidos
 - [x] Corregir en /auditar el error que impide asegurar la aceptación legal durante la mutación del flujo de auditoría
+- [ ] Añadir telemetría específica para fallos de lock y tiempos de espera en /auditar
+- [x] Implementar reintento controlado en la UI de /auditar cuando no se obtenga el lock
+- [ ] Cubrir con pruebas E2E el envío completo del consentimiento legal en /auditar
+- [x] Añadir telemetría operativa del lock de aceptación legal y mapear conflictos de concurrencia con error específico en backend
+- [x] Implementar reintento controlado en la UI de /auditar para fallos de concurrencia o lock sin duplicar aceptaciones
+- [x] Cubrir el gate legal de /auditar con pruebas Vitest y de flujo para concurrencia, reintento e idempotencia

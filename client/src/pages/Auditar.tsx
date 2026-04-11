@@ -39,6 +39,69 @@ import {
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_GATE_COPY, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
+type LegalGateErrorType = "validation" | "concurrency" | "transient" | "fatal";
+
+type LegalGateErrorState = {
+  message: string;
+  type: LegalGateErrorType;
+  retryCount: number;
+};
+
+const MAX_LEGAL_GATE_RETRIES = 3;
+
+function buildLegalGateErrorState(message: string, type: LegalGateErrorType, retryCount = 0): LegalGateErrorState {
+  return {
+    message,
+    type,
+    retryCount,
+  };
+}
+
+function extractLegalGateCauseType(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const causeType = (value as { type?: unknown }).type;
+  return typeof causeType === "string" ? causeType : null;
+}
+
+function resolveLegalGateError(error: unknown, retryCount = 0): LegalGateErrorState {
+  const fallbackMessage = "No fue posible registrar tu aceptación legal en este momento.";
+  const errorRecord = error as {
+    message?: string;
+    data?: {
+      code?: string;
+      cause?: unknown;
+    };
+    shape?: {
+      data?: {
+        code?: string;
+        cause?: unknown;
+      };
+    };
+  };
+  const message = typeof errorRecord?.message === "string" && errorRecord.message.trim().length > 0
+    ? errorRecord.message
+    : fallbackMessage;
+  const code = errorRecord?.data?.code ?? errorRecord?.shape?.data?.code ?? null;
+  const causeType = extractLegalGateCauseType(errorRecord?.data?.cause ?? errorRecord?.shape?.data?.cause);
+
+  if (code === "CONFLICT" || causeType === "CONCURRENCY_LOCK_FAILURE") {
+    return buildLegalGateErrorState(
+      "Otro proceso está registrando esta aceptación. Espera unos segundos y vuelve a intentarlo.",
+      "concurrency",
+      retryCount,
+    );
+  }
+
+  if (code === "TOO_MANY_REQUESTS" || code === "TIMEOUT" || message.toLowerCase().includes("intenta de nuevo")) {
+    return buildLegalGateErrorState(message, "transient", retryCount);
+  }
+
+  return buildLegalGateErrorState(message, "fatal", retryCount);
+}
+
 type DossierTarget = {
   type: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence";
   label: string;
@@ -1580,7 +1643,7 @@ export default function Auditar() {
   const [heliosCopilotOpen, setHeliosCopilotOpen] = useState(false);
   const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<HeliosCopilotMessage[]>([]);
   const [legalGateChecked, setLegalGateChecked] = useState(false);
-  const [legalGateError, setLegalGateError] = useState<string | null>(null);
+  const [legalGateError, setLegalGateError] = useState<LegalGateErrorState | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
@@ -2231,19 +2294,36 @@ export default function Auditar() {
         : previewStructuredExtraction.reviewNotes,
     };
   }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
-  const handleAcceptLegalPackage = async () => {
+  const handleAcceptLegalPackage = async ({ isRetry = false }: { isRetry?: boolean } = {}) => {
     if (!caseDetailInput) {
       return;
     }
 
     if (!legalGateChecked) {
-      setLegalGateError("Confirma la casilla para registrar tu aceptación y continuar con el expediente.");
+      setLegalGateError(
+        buildLegalGateErrorState(
+          "Confirma la casilla para registrar tu aceptación y continuar con el expediente.",
+          "validation",
+        ),
+      );
       return;
     }
+
+    const nextRetryCount = isRetry ? (legalGateError?.retryCount ?? 0) + 1 : 0;
 
     try {
       setLegalGateError(null);
       setSubmitError(null);
+
+      if (isRetry) {
+        trackFunnelStep("legal_package_retry_attempt", {
+          tenantId: caseDetailInput.tenantId,
+          caseId: caseDetailInput.caseId,
+          retryCount: nextRetryCount,
+          errorType: legalGateError?.type ?? "transient",
+        });
+      }
+
       await acceptLegalPackageMutation.mutateAsync({
         ...caseDetailInput,
         accepted: true,
@@ -2252,6 +2332,7 @@ export default function Auditar() {
         tenantId: caseDetailInput.tenantId,
         caseId: caseDetailInput.caseId,
         acceptedDocumentsCount: acceptedLegalDocumentsCount + legalPendingDocuments.length,
+        retryCount: nextRetryCount,
       });
       setLegalGateChecked(false);
       await Promise.all([
@@ -2260,9 +2341,24 @@ export default function Auditar() {
       ]);
       await caseDetailQuery.refetch();
     } catch (error) {
-      setLegalGateError(error instanceof Error ? error.message : "No fue posible registrar tu aceptación legal.");
+      const resolvedError = resolveLegalGateError(error, nextRetryCount);
+
+      if (resolvedError.type === "concurrency") {
+        trackFunnelStep("legal_package_lock_conflict", {
+          tenantId: caseDetailInput.tenantId,
+          caseId: caseDetailInput.caseId,
+          retryCount: nextRetryCount,
+        });
+      }
+
+      setLegalGateError(resolvedError);
     }
   };
+
+  const canRetryLegalGate =
+    Boolean(legalGateError) &&
+    (legalGateError?.type === "concurrency" || legalGateError?.type === "transient") &&
+    legalGateError.retryCount < MAX_LEGAL_GATE_RETRIES;
 
   const handleRevalidateSocialSecurity = async () => {
     if (!caseDetailInput) {
@@ -2271,7 +2367,12 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError("Antes de revalidar IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
+      setLegalGateError(
+        buildLegalGateErrorState(
+          "Antes de revalidar IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
+          "validation",
+        ),
+      );
       return;
     }
 
@@ -2297,7 +2398,12 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError("Antes de usar tu asistente laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.");
+      setLegalGateError(
+        buildLegalGateErrorState(
+          "Antes de usar tu asistente laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
+          "validation",
+        ),
+      );
       setHeliosCopilotMessages((current) =>
         appendHeliosCopilotMessage(current, {
           role: "assistant",
@@ -2604,7 +2710,12 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError("Para subir documentos y fortalecer tu expediente, primero acepta el paquete legal vigente.");
+      setLegalGateError(
+        buildLegalGateErrorState(
+          "Para subir documentos y fortalecer tu expediente, primero acepta el paquete legal vigente.",
+          "validation",
+        ),
+      );
       setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
       return;
     }
@@ -2648,7 +2759,12 @@ export default function Auditar() {
     }
 
     if (legalGateRequired) {
-      setLegalGateError("Antes de guardar documentos en tu expediente, acepta el paquete legal vigente.");
+      setLegalGateError(
+        buildLegalGateErrorState(
+          "Antes de guardar documentos en tu expediente, acepta el paquete legal vigente.",
+          "validation",
+        ),
+      );
       setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
       return;
     }
@@ -2968,7 +3084,24 @@ export default function Auditar() {
 
             {legalGateError ? (
               <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900">
-                {legalGateError}
+                <p>{legalGateError.message}</p>
+                {canRetryLegalGate ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full border-rose-300 bg-white text-rose-900 hover:bg-rose-100"
+                      onClick={() => void handleAcceptLegalPackage({ isRetry: true })}
+                      disabled={acceptLegalPackageMutation.isPending}
+                    >
+                      <RefreshCw className="mr-2 size-4" />
+                      Reintentar aceptación
+                    </Button>
+                    <span className="text-xs text-rose-700">
+                      Intentos restantes: {Math.max(MAX_LEGAL_GATE_RETRIES - legalGateError.retryCount, 0)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 

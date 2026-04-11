@@ -68,6 +68,40 @@ function readLockResult(rows: unknown, field: string) {
   return 0;
 }
 
+function emitDatabaseLockTelemetry(level: "info" | "warn", event: string, payload: Record<string, unknown>) {
+  const body = JSON.stringify({
+    source: "withDatabaseLock",
+    event,
+    ...payload,
+  });
+
+  if (level === "warn") {
+    console.warn(`[DatabaseLock] ${body}`);
+    return;
+  }
+
+  console.info(`[DatabaseLock] ${body}`);
+}
+
+export class DatabaseLockContentionError extends Error {
+  readonly code = "DATABASE_LOCK_CONFLICT";
+  readonly lockKey: string;
+  readonly timeoutSeconds: number;
+  readonly waitTimeMs: number;
+
+  constructor(params: { lockKey: string; timeoutSeconds: number; waitTimeMs: number }) {
+    super("No se pudo asegurar la aceptación legal en este momento. Intenta de nuevo.");
+    this.name = "DatabaseLockContentionError";
+    this.lockKey = params.lockKey;
+    this.timeoutSeconds = params.timeoutSeconds;
+    this.waitTimeMs = params.waitTimeMs;
+  }
+}
+
+export function isDatabaseLockContentionError(error: unknown): error is DatabaseLockContentionError {
+  return error instanceof DatabaseLockContentionError;
+}
+
 export async function withDatabaseLock<T>(params: {
   lockKey: string;
   timeoutSeconds?: number;
@@ -79,21 +113,45 @@ export async function withDatabaseLock<T>(params: {
   const lockKey = params.lockKey.trim().slice(0, 64);
   const timeoutSeconds = Math.max(1, Math.min(params.timeoutSeconds ?? 10, 30));
   const connection = await lockPool.getConnection();
+  const requestStartedAt = Date.now();
   let acquired = false;
+  let lockHeldStartedAt: number | null = null;
 
   try {
     const [acquiredRows] = await connection.query("SELECT GET_LOCK(?, ?) AS acquired", [lockKey, timeoutSeconds]);
+    const waitTimeMs = Date.now() - requestStartedAt;
     acquired = readLockResult(acquiredRows, "acquired") === 1;
 
     if (!acquired) {
-      throw new Error("No se pudo asegurar la aceptación legal en este momento. Intenta de nuevo.");
+      emitDatabaseLockTelemetry("warn", "lock_conflict", {
+        lockKey,
+        timeoutSeconds,
+        waitTimeMs,
+      });
+      throw new DatabaseLockContentionError({
+        lockKey,
+        timeoutSeconds,
+        waitTimeMs,
+      });
     }
+
+    lockHeldStartedAt = Date.now();
+    emitDatabaseLockTelemetry("info", "lock_acquired", {
+      lockKey,
+      timeoutSeconds,
+      waitTimeMs,
+    });
 
     return await params.action();
   } finally {
     if (acquired) {
       try {
         await connection.query("SELECT RELEASE_LOCK(?) AS released", [lockKey]);
+        emitDatabaseLockTelemetry("info", "lock_released", {
+          lockKey,
+          timeoutSeconds,
+          holdTimeMs: lockHeldStartedAt ? Date.now() - lockHeldStartedAt : null,
+        });
       } catch (error) {
         connection.destroy();
         throw error;
