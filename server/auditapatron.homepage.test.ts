@@ -8,10 +8,10 @@ describe("Auditapatron homepage and audit flow content", () => {
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
 
   it("shows a worker-centered value proposition with IMSS and Infonavit clarity", () => {
-    expect(homeSource).toContain("Recupera el control,");
-    expect(homeSource).toContain("la calma y tu respaldo laboral.");
-    expect(homeSource).toContain("Sube tus papeles sin complicarte.");
-    expect(homeSource).toContain("claridad, protección y respaldo experto");
+    expect(homeSource).toContain("Recupera la calma,");
+    expect(homeSource).toContain("y toma control de tu historia laboral.");
+    expect(homeSource).toContain("Sube tus documentos sin enredos.");
+    expect(homeSource).toContain("te explica lo importante con claridad");
     expect(homeSource).toContain("Empieza con el documento que ya tienes más a la mano.");
     expect(homeSource).toContain("Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit");
     expect(homeSource).not.toContain("CompliLink Operativo");
@@ -28,7 +28,8 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("preserves trust, privacy and FAQs while keeping Helios out of the public homepage copy", () => {
-    expect(homeSource).toContain("Tus archivos se cuidan para darte claridad, no para llenarte de dudas.");
+    expect(homeSource).toContain("Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.");
+    expect(homeSource).toContain("Prefiero aclarar mis dudas primero");
     expect(homeSource).toContain("Preguntas frecuentes");
     expect(homeSource).toContain("Recibos de nómina, CFDI, contrato, soporte IMSS, constancias de Infonavit");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");

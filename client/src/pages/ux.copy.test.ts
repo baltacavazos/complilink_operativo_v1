@@ -20,9 +20,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Helios ordena tu expediente y fortalece tu respaldo");
     expect(source).not.toContain("CompliLink");
     expect(source).not.toContain("ThemeToggle");
-    expect(source).toContain("Recupera el control");
-    expect(source).toContain("la calma y tu respaldo laboral.");
-    expect(source).toContain("Claridad, respaldo y control desde tu primer archivo");
+    expect(source).toContain("Recupera la calma,");
+    expect(source).toContain("y toma control de tu historia laboral.");
+    expect(source).toContain("Claridad, calma y control desde tu primer archivo");
+    expect(source).toContain("Calma y control desde tu primer archivo");
     expect(source).toContain('label: "Asistente"');
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");
@@ -31,7 +32,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Tus derechos laborales,");
     expect(source).toContain('const PRIMARY_CTA_LABEL = "Empieza ahora y protege tu futuro"');
     expect(source).toContain("Empieza ahora y protege tu futuro");
-    expect(source).toContain("Tu expediente crece y tu respaldo también.");
+    expect(source).toContain("Tu expediente se ordena y queda listo para cuando necesites volver a él.");
+    expect(source).toContain("Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.");
+    expect(source).toContain("Prefiero aclarar mis dudas primero");
     expect(source).toContain("Respuestas claras para empezar con confianza.");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#dbeeee]');

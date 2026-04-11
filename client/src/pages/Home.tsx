@@ -391,8 +391,8 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            <span className="sm:hidden">Claridad desde tu primer archivo</span>
-            <span className="hidden sm:inline">Claridad, respaldo y control desde tu primer archivo</span>
+            <span className="sm:hidden">Calma y control desde tu primer archivo</span>
+            <span className="hidden sm:inline">Claridad, calma y control desde tu primer archivo</span>
           </div>
 
           <h1
@@ -400,12 +400,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              Recupera el control,
-              <span className="mt-1 block text-teal-700">la calma y tu respaldo laboral.</span>
+              Recupera la calma,
+              <span className="mt-1 block text-teal-700">y toma control de tu historia laboral.</span>
             </span>
             <span className="hidden sm:block">
-              Recupera el control,
-              <span className="block text-teal-700">la calma y tu respaldo laboral.</span>
+              Recupera la calma,
+              <span className="block text-teal-700">y toma control de tu historia laboral.</span>
             </span>
           </h1>
 
@@ -413,7 +413,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube tus papeles sin complicarte. AuditaPatron los ordena, los resguarda y los convierte en claridad, protección y respaldo experto para que entiendas qué revisar y sientas más control sobre tu situación laboral.
+            Sube tus documentos sin enredos. AuditaPatron los ordena, los resguarda y te explica lo importante con claridad para que entiendas mejor tu situación y avances con más tranquilidad desde el primer archivo.
           </p>
 
           <div
@@ -509,8 +509,8 @@ function HeroSection() {
             <div className="mt-5 space-y-3">
               {[
                 "Subes tu recibo, contrato o soporte clave en minutos.",
-                "AuditaPatron te devuelve lo importante sin vueltas ni lenguaje complicado.",
-                "Tu expediente crece y tu respaldo también.",
+                "Recibes explicaciones claras, sin vueltas ni lenguaje complicado.",
+                "Tu expediente se ordena y queda listo para cuando necesites volver a él.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -1150,18 +1150,18 @@ function PrivacySection() {
             Tu privacidad es parte del producto
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Tus archivos se cuidan para darte claridad, no para llenarte de dudas.
+            Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cada documento suma contexto, orden y tranquilidad. La idea es simple: que puedas entender mejor tu situación y volver a tu expediente cuando lo necesites, con control y resguardo desde el inicio.
+            Cada archivo suma orden, contexto y una explicación más clara de tu situación. La idea es simple: que puedas volver a tu expediente cuando lo necesites y sentir que tus documentos están de tu lado desde el primer momento.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
-              "Tus documentos se acomodan para ayudarte, no para perderte.",
-              "La explicación busca ser clara, humana y tranquila.",
-              "Tu expediente sigue disponible para ti 24/7.",
-              "La confianza se construye desde el primer archivo.",
+              "Subes tus documentos en minutos, desde tu celular o computadora.",
+              "La información se acomoda para que entiendas qué tienes y qué conviene revisar.",
+              "Tu expediente sigue disponible para ti 24/7 cuando necesites volver a verlo.",
+              "Las explicaciones buscan darte calma y claridad, no más confusión.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-teal-100 bg-white p-4">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1309,7 +1309,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                 onClick={() => scrollToId("preguntas")}
               >
-                Quiero resolver mis dudas primero
+                Prefiero aclarar mis dudas primero
               </Button>
             </div>
           </div>

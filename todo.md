@@ -658,3 +658,7 @@
 - [ ] Hacer más fuerte el CTA principal y la tarjeta lateral con mensajes de progreso y deseo inmediato de probar el producto
 - [ ] Simplificar redundancias y humanizar el microcopy de confianza en la home sin cambios estructurales grandes
 - [x] Aplicar microajustes de copy emocionales en la landing de AuditaPatron sin modificar estructura ni layout
+- [x] Contrastar con Grok, ChatGPT y Gemini la mejor propuesta conjunta para un hero alternativo, un bloque de confianza reforzado y un CTA secundario más efectivo en la landing de AuditaPatron
+- [x] Implementar una variante más persuasiva del hero de la landing sin romper su estructura visual actual
+- [x] Reforzar el bloque de confianza de la landing con mensajes más concretos y tranquilizadores
+- [x] Ajustar el CTA secundario de la landing para capturar mejor a usuarios que aún llegan con dudas antes de entrar al flujo principal
