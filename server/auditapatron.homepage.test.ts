@@ -31,12 +31,20 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
     expect(homeSource).toContain("Ver qué documento subir primero");
     expect(homeSource).toContain("Guía rápida para empezar");
-    expect(homeSource).toContain("Mini diagnóstico inicial");
-    expect(homeSource).toContain("Señales de confianza");
-    expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI");
+    expect(homeSource).toContain("Mini prediagnóstico guiado");
+    expect(homeSource).toContain("Resultado instantáneo");
+    expect(homeSource).toContain("Carrusel de hallazgos laborales resumidos");
+    expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
+  });
+
+  it("includes the new hero instrumentation for variant changes, scroll depth and finding navigation", () => {
+    expect(homeSource).toContain("audipatron_hero_variant_changed");
+    expect(homeSource).toContain("audipatron_hero_scroll_depth_reached");
+    expect(homeSource).toContain("audipatron_hero_finding_changed");
+    expect(homeSource).toContain("audipatron_hero_finding_viewed");
   });
 
   it("ships an audit workspace with dynamic expediente clarity and revalidation for IMSS and Infonavit", () => {

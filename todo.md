@@ -675,3 +675,9 @@
 - [x] Implementar mini prediagnóstico inline dentro del hero de AuditaPatron para orientar al usuario desde el primer vistazo.
 - [x] Instrumentar medición de clics por variante del hero de AuditaPatron para comparar desempeño entre mensajes.
 - [x] Reforzar la tarjeta lateral del hero con un hallazgo laboral concreto que haga tangible el valor de la auditoría.
+- [x] Añadir un resultado instantáneo al mini prediagnóstico del hero que recomiende el documento exacto a subir y conduzca al flujo correspondiente.
+- [x] Instrumentar medición adicional de scroll y cambio de variante del hero, además de los clics ya registrados.
+- [x] Convertir el hallazgo lateral del hero en un carrusel con 3 hallazgos laborales resumidos para reforzar valor y credibilidad.
+- [x] AuditaPatron hero iteración 4: mostrar resultado instantáneo del prediagnóstico con documento exacto sugerido y CTA accionable
+- [x] AuditaPatron hero iteración 4: instrumentar scroll depth del hero y eventos de cambio de variante sin romper el tracking existente
+- [x] AuditaPatron hero iteración 4: reemplazar la tarjeta lateral por un carrusel de 3 hallazgos laborales resumidos

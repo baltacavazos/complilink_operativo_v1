@@ -18,7 +18,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent, trackFunnelStep } from "@/lib/analytics";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
@@ -281,22 +281,35 @@ const heroVariantReadiness = {
   control: 72,
 } as const;
 
-const heroSidebarFindings = {
-  alert: {
-    badge: "Hallazgo laboral que podrías detectar primero",
-    title: "Tu nómina dice una cosa y tu CFDI otra.",
+const heroFindingSlides = [
+  {
+    id: "nomina-cfdi",
+    badge: "Hallazgo laboral frecuente 01",
+    title: "Tu nómina y tu CFDI podrían no coincidir en el mismo periodo.",
     description:
-      "Comparar ambos puede mostrar conceptos, montos o periodos reportados de forma distinta para que ubiques dónde conviene revisar primero sin irte por todo el expediente.",
-    impact: "Empiezas con una discrepancia visible y conviertes la duda inicial en un punto concreto para actuar con más claridad.",
+      "Un primer cruce entre ambos suele destapar diferencias de conceptos, montos o fechas sin pedirte todo el expediente desde el inicio.",
+    impact: "Te devuelve una discrepancia visible para que tu primera revisión tenga un punto concreto de claridad.",
+    suggestedDocument: "Recibo de nómina + CFDI del mismo mes",
   },
-  control: {
-    badge: "Hallazgo laboral para recuperar control",
-    title: "Tus pagos o deducciones cambian más de lo normal.",
+  {
+    id: "deducciones-irregulares",
+    badge: "Hallazgo laboral frecuente 02",
+    title: "Algunas deducciones cambian de un mes a otro sin que se note a simple vista.",
     description:
-      "Cuando subes varios recibos seguidos, aparecen patrones que un solo documento no deja ver y eso te ayuda a entender qué cambió y desde cuándo.",
-    impact: "Ver el patrón te devuelve contexto para decidir con calma qué documento sumar después y qué vale la pena revisar primero.",
+      "Comparar dos o tres recibos seguidos ayuda a ver si el patrón cambió, desde cuándo pasó y en qué concepto conviene detenerse primero.",
+    impact: "Pasas de una sensación difusa a una línea temporal que te orienta mejor para seguir revisando.",
+    suggestedDocument: "Dos o tres recibos de nómina consecutivos",
   },
-} as const;
+  {
+    id: "laguna-contractual",
+    badge: "Hallazgo laboral frecuente 03",
+    title: "Tu contrato y lo que hoy aparece en tus comprobantes podrían no contar la misma historia.",
+    description:
+      "Ese contraste suele revelar diferencias de puesto, jornada, salario o esquema de pago que vale la pena mirar con calma.",
+    impact: "Te da una referencia más estable para entender qué cambió y cuál sería el siguiente documento útil.",
+    suggestedDocument: "Contrato actual + recibo reciente",
+  },
+] as const;
 
 const socialProofItems = [
   {
@@ -316,20 +329,34 @@ const socialProofItems = [
   },
 ] as const;
 
-const prediagnosticRecommendations: Record<string, { badge: string; document: string; reason: string; nextStep: string }> = {
+const prediagnosticRecommendations: Record<
+  string,
+  {
+    badge: string;
+    document: string;
+    reason: string;
+    nextStep: string;
+    resultTitle: string;
+    ctaLabel: string;
+  }
+> = {
   "para-mi": {
-    badge: "Sugerencia inicial",
-    document: "Tu recibo de nómina más reciente o un CFDI",
+    badge: "Resultado instantáneo",
+    document: "Tu recibo de nómina más reciente o un CFDI del mismo periodo",
     reason:
       "Suelen dar contexto rápido sobre pagos, deducciones, fechas y conceptos para que veas pronto si AuditaPatron te puede ayudar.",
-    nextStep: "Si después quieres más claridad, suma contrato o soporte IMSS/Infonavit y tu expediente gana contexto.",
+    nextStep: "Si después quieres más claridad, suma contrato o soporte IMSS/Infonavit y tu expediente gana contexto sin perder el hilo.",
+    resultTitle: "Empieza con la evidencia que más rápido revela pagos, deducciones y periodos.",
+    ctaLabel: "Quiero revisar ese documento",
   },
   "primer-documento": {
-    badge: "Primer archivo recomendado",
-    document: "Empieza por el documento que ya tienes a la mano; si dudas, un recibo de nómina reciente",
+    badge: "Documento exacto sugerido",
+    document: "El archivo que ya tienes a la mano; si dudas, un recibo de nómina reciente",
     reason:
       "Es fácil de ubicar y normalmente entrega una primera lectura útil sin esperar a reunir todo el expediente.",
     nextStep: "Con uno o dos documentos más, AuditaPatron puede comparar mejor y devolverte una lectura más rica.",
+    resultTitle: "Si quieres avanzar hoy, este suele ser el archivo con más tracción para arrancar.",
+    ctaLabel: "Empezar con ese archivo",
   },
   "privacidad": {
     badge: "Inicio con control",
@@ -337,6 +364,8 @@ const prediagnosticRecommendations: Record<string, { badge: string; document: st
     reason:
       "Te permite probar el flujo con un archivo cotidiano, revisar cómo se resguarda y sentir control antes de subir más documentos.",
     nextStep: "Cuando te sientas con confianza, agrega otros archivos para fortalecer tu expediente sin perder trazabilidad.",
+    resultTitle: "Puedes empezar con un archivo cotidiano y validar el resguardo antes de abrir más contexto.",
+    ctaLabel: "Probar con un archivo simple",
   },
   "sin-tecnicismos": {
     badge: "Recomendación simple",
@@ -344,6 +373,8 @@ const prediagnosticRecommendations: Record<string, { badge: string; document: st
     reason:
       "Es de los archivos más fáciles de reconocer y suele dar una explicación inicial clara sin lenguaje técnico.",
     nextStep: "Después puedes sumar CFDI o contrato para obtener comparaciones más útiles.",
+    resultTitle: "Este suele ser el documento más fácil de reconocer y de entender en una primera revisión.",
+    ctaLabel: "Quiero una revisión simple",
   },
   "mas-contexto": {
     badge: "Para enriquecer tu expediente",
@@ -351,6 +382,8 @@ const prediagnosticRecommendations: Record<string, { badge: string; document: st
     reason:
       "Ayudan a detectar patrones y diferencias que un solo archivo puede dejar ocultos.",
     nextStep: "Si además agregas CFDI, contrato o soporte IMSS/Infonavit, tu expediente gana todavía más valor.",
+    resultTitle: "Si ya tienes varios recibos, este paquete te da una lectura con más contexto desde el inicio.",
+    ctaLabel: "Subir varios recibos",
   },
 };
 
@@ -541,9 +574,12 @@ function SiteHeader() {
 function HeroSection() {
   const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("alert");
   const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
+  const [activeFindingIndex, setActiveFindingIndex] = useState(0);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
+  const heroScrollMilestonesRef = useRef<Set<number>>(new Set());
   const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
   const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
-  const activeSidebarFinding = heroSidebarFindings[selectedHeroVariant];
+  const activeFinding = heroFindingSlides[activeFindingIndex];
   const dossierReadiness = heroVariantReadiness[selectedHeroVariant];
 
   useEffect(() => {
@@ -554,7 +590,83 @@ function HeroSection() {
     });
   }, [selectedHeroPrediagnostic, selectedHeroVariant]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const thresholds = [25, 50, 75, 100] as const;
+
+    const handleScrollDepth = () => {
+      const section = heroSectionRef.current;
+      if (!section) {
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const progress = Math.min(100, Math.max(0, (-rect.top / Math.max(rect.height * 0.72, 180)) * 100));
+
+      thresholds.forEach((threshold) => {
+        if (progress >= threshold && !heroScrollMilestonesRef.current.has(threshold)) {
+          heroScrollMilestonesRef.current.add(threshold);
+
+          trackEvent("audipatron_hero_scroll_depth_reached", {
+            source: "hero",
+            hero_variant: selectedHeroVariant,
+            prediagnostic: selectedHeroPrediagnostic,
+            depth_percentage: threshold,
+          });
+
+          trackFunnelStep("hero_scroll_depth_reached", {
+            source: "hero",
+            hero_variant: selectedHeroVariant,
+            prediagnostic: selectedHeroPrediagnostic,
+            depth_percentage: threshold,
+          });
+        }
+      });
+    };
+
+    handleScrollDepth();
+    window.addEventListener("scroll", handleScrollDepth, { passive: true });
+    window.addEventListener("resize", handleScrollDepth);
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollDepth);
+      window.removeEventListener("resize", handleScrollDepth);
+    };
+  }, [selectedHeroPrediagnostic, selectedHeroVariant]);
+
+  useEffect(() => {
+    trackEvent("audipatron_hero_finding_viewed", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+      finding_id: activeFinding.id,
+      finding_index: activeFindingIndex + 1,
+    });
+  }, [activeFinding.id, activeFindingIndex, selectedHeroPrediagnostic, selectedHeroVariant]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveFindingIndex((current) => (current + 1) % heroFindingSlides.length);
+    }, 5600);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   function handleHeroVariantChange(variantKey: keyof typeof heroCopyVariants) {
+    if (variantKey === selectedHeroVariant) {
+      return;
+    }
+
+    const previousVariant = selectedHeroVariant;
     setSelectedHeroVariant(variantKey);
 
     trackEvent("audipatron_hero_variant_selected", {
@@ -563,9 +675,23 @@ function HeroSection() {
       prediagnostic: selectedHeroPrediagnostic,
     });
 
+    trackEvent("audipatron_hero_variant_changed", {
+      source: "hero",
+      from_variant: previousVariant,
+      to_variant: variantKey,
+      prediagnostic: selectedHeroPrediagnostic,
+    });
+
     trackFunnelStep("hero_variant_selected", {
       source: "hero",
       hero_variant: variantKey,
+      prediagnostic: selectedHeroPrediagnostic,
+    });
+
+    trackFunnelStep("hero_variant_changed", {
+      source: "hero",
+      from_variant: previousVariant,
+      to_variant: variantKey,
       prediagnostic: selectedHeroPrediagnostic,
     });
   }
@@ -597,8 +723,22 @@ function HeroSection() {
     scrollToId("preguntas");
   }
 
+  function handleHeroFindingChange(nextIndex: number, interaction: "previous" | "next" | "direct") {
+    setActiveFindingIndex(nextIndex);
+
+    trackEvent("audipatron_hero_finding_changed", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+      finding_id: heroFindingSlides[nextIndex]?.id,
+      finding_index: nextIndex + 1,
+      interaction,
+    });
+  }
+
   return (
     <section
+      ref={heroSectionRef}
       id="top"
       className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-8 pt-7 sm:pb-12 sm:pt-12 lg:pt-16"
     >
@@ -711,12 +851,39 @@ function HeroSection() {
                   {activePrediagnostic.badge}
                 </span>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Documento para empezar hoy
+                  Documento exacto sugerido
                 </span>
               </div>
-              <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.document}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
+              <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.resultTitle}</p>
+              <p className="mt-3 rounded-[1.15rem] border border-white bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-950 shadow-sm">
+                {activePrediagnostic.document}
+              </p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
               <p className="mt-3 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
+              <div className="mt-4 flex flex-col gap-3 border-t border-slate-200/80 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
+                    Variante activa: {activeHeroVariant.tabLabel}
+                  </span>
+                  <span className="rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
+                    Resultado listo en segundos
+                  </span>
+                </div>
+                <Button
+                  className="h-11 rounded-full bg-teal-600 px-5 text-sm font-semibold text-white hover:bg-teal-700"
+                  onClick={() =>
+                    goToAuditFlow({
+                      entry_point: "hero_prediagnostic_result",
+                      hero_variant: selectedHeroVariant,
+                      prediagnostic: selectedHeroPrediagnostic,
+                      cta_label: activePrediagnostic.ctaLabel,
+                    })
+                  }
+                >
+                  {activePrediagnostic.ctaLabel}
+                  <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -799,34 +966,89 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    {activeSidebarFinding.badge}
+                    Carrusel de hallazgos laborales resumidos
                   </p>
-                  <p className="mt-2 max-w-[14ch] text-[2.05rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:max-w-[15ch] sm:text-[2.35rem]">
-                    {activeSidebarFinding.title}
+                  <p className="mt-2 max-w-[15ch] text-[2.05rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
+                    Tres señales que suelen aparecer cuando empiezas a revisar tus documentos.
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
-                  Ejemplo útil
+                  {activeFindingIndex + 1}/{heroFindingSlides.length}
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                {activeSidebarFinding.description}
+                Recorre ejemplos breves para aterrizar qué tipo de hallazgo podría aparecer primero y con qué evidencia conviene abrir el expediente.
               </p>
-              <div className="mt-4 rounded-[1.15rem] border border-white/90 bg-white/92 px-4 py-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
-                  Qué te devuelve este primer paso
-                </p>
-                <p className="mt-1 text-sm leading-6 text-slate-800">{activeSidebarFinding.impact}</p>
-              </div>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-teal-800">Ruta de claridad sugerida hoy</p>
-                <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
-              </div>
-              <div className="mt-2 h-3 overflow-hidden rounded-full bg-white shadow-inner">
-                <div
-                  className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
-                  style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
-                />
+
+              <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeFinding.badge}</p>
+                <p className="mt-2 text-[1.35rem] font-semibold leading-7 tracking-[-0.03em] text-slate-950">{activeFinding.title}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{activeFinding.description}</p>
+
+                <div className="mt-4 rounded-[1.1rem] border border-slate-200 bg-slate-50/90 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Documento que suele revelar esta señal
+                  </p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-900">{activeFinding.suggestedDocument}</p>
+                </div>
+
+                <div className="mt-4 rounded-[1.1rem] border border-teal-100 bg-teal-50/70 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                    Qué ganas al verlo
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-teal-900">{activeFinding.impact}</p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-teal-800">Ruta de claridad sugerida hoy</p>
+                  <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
+                </div>
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner">
+                  <div
+                    className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                    style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
+                  />
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
+                    onClick={() =>
+                      handleHeroFindingChange(
+                        (activeFindingIndex - 1 + heroFindingSlides.length) % heroFindingSlides.length,
+                        "previous",
+                      )
+                    }
+                  >
+                    Anterior
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    {heroFindingSlides.map((finding, index) => {
+                      const isActive = index === activeFindingIndex;
+
+                      return (
+                        <button
+                          key={finding.id}
+                          type="button"
+                          aria-label={`Ver hallazgo ${index + 1}`}
+                          aria-pressed={isActive}
+                          className={`h-2.5 rounded-full transition ${isActive ? "w-8 bg-teal-600" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
+                          onClick={() => handleHeroFindingChange(index, "direct")}
+                        />
+                      );
+                    })}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
+                    onClick={() => handleHeroFindingChange((activeFindingIndex + 1) % heroFindingSlides.length, "next")}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
               </div>
             </div>
 

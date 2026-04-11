@@ -41,10 +41,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("feedback recurrente recogido durante pruebas de mensaje");
     expect(source).toContain("Ver qué documento subir primero");
     expect(source).toContain("Guía rápida para empezar");
-    expect(source).toContain("Mini diagnóstico inicial");
-    expect(source).toContain("Quiero entender rápido si esto me puede ayudar");
-    expect(source).toContain("Sugerencia inicial");
-    expect(source).toContain("Tu recibo de nómina más reciente o un CFDI");
+    expect(source).toContain("Mini prediagnóstico guiado");
+    expect(source).toContain("Quiero entender rápido si esto me sirve");
+    expect(source).toContain("Resultado instantáneo");
+    expect(source).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
+    expect(source).toContain("Carrusel de hallazgos laborales resumidos");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#dbeeee]');
     expect(source).toContain('bg-[#eef6f5]');

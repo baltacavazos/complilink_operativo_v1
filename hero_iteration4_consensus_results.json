@@ -1,0 +1,507 @@
+{
+  "generated_at": "2026-04-11 12:40:21",
+  "results": {
+    "chatgpt": {
+      "ok": true,
+      "model": "gpt-4.1-mini",
+      "response": {
+        "objetivo_general": "Mejorar la experiencia inicial del usuario para que reciba una recomendación clara y accionable sobre qué documento subir, aumentar la medición de interacción para optimizar el hero y enriquecer la información lateral sin saturar la pantalla móvil.",
+        "resultado_instantaneo": {
+          "enfoque": "Integrar dinámicamente el resultado del prediagnóstico justo debajo de las opciones para que el usuario vea al instante el documento recomendado, con un copy empoderador que motive a subirlo ahora, manteniendo claridad y urgencia sin alarmismo.",
+          "copy_recomendado": "Basado en tu elección, te recomendamos subir: {{documento}}. {{razon}}",
+          "mapeo_documentos": [
+            {
+              "opcion_id": "para-mi",
+              "documento": "tu recibo de nómina más reciente o un CFDI",
+              "razon": "Suelen dar contexto rápido sobre pagos, deducciones, fechas y conceptos para que veas pronto si AuditaPatron te puede ayudar.",
+              "cta": "Subir recibo o CFDI ahora"
+            },
+            {
+              "opcion_id": "primer-documento",
+              "documento": "el documento que ya tienes a la mano; si dudas, un recibo de nómina reciente",
+              "razon": "Es fácil de ubicar y normalmente entrega una primera lectura útil sin esperar a reunir todo el expediente.",
+              "cta": "Subir documento recomendado"
+            },
+            {
+              "opcion_id": "privacidad",
+              "documento": "un recibo reciente o tu contrato actual",
+              "razon": "Te permite probar el flujo con un archivo cotidiano, revisar cómo se resguarda y sentir control antes de subir más documentos.",
+              "cta": "Subir documento con control"
+            }
+          ],
+          "riesgo_principal": "Saturar el hero con demasiada información o múltiples CTAs que confundan al usuario, perdiendo foco en la acción principal."
+        },
+        "medicion": {
+          "eventos_recomendados": [
+            {
+              "name": "hero_scroll",
+              "trigger": "cuando el usuario hace scroll dentro del área del hero",
+              "payload": [
+                "scroll_depth_percentage",
+                "timestamp"
+              ],
+              "prioridad": "media"
+            },
+            {
+              "name": "hero_variant_change",
+              "trigger": "cuando el usuario cambia entre las variantes 'alert' y 'control'",
+              "payload": [
+                "variant_from",
+                "variant_to",
+                "timestamp"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "hero_cta_click",
+              "trigger": "clic en cualquier CTA del hero incluyendo resultado instantáneo",
+              "payload": [
+                "cta_label",
+                "variant_active",
+                "prediagnostic_option",
+                "timestamp"
+              ],
+              "prioridad": "alta"
+            }
+          ],
+          "guardrails": [
+            "No registrar eventos que afecten la performance del sitio móvil.",
+            "Limitar frecuencia de eventos scroll para evitar sobrecarga de datos.",
+            "Garantizar anonimato y privacidad en el tracking."
+          ]
+        },
+        "carrusel_hallazgos": {
+          "enfoque": "Sustituir la tarjeta lateral fija por un carrusel compacto que muestre tres hallazgos laborales clave, con textos resumidos y un diseño táctil amigable para móvil, que permita al usuario entender rápidamente sin saturar espacio.",
+          "slides": [
+            {
+              "title": "Discrepancias entre nómina y CFDI",
+              "description": "Detecta diferencias en conceptos, montos o periodos reportados para enfocar tu revisión.",
+              "impact": "Transforma dudas en puntos claros para actuar con confianza."
+            },
+            {
+              "title": "Cambios repetidos en pagos o deducciones",
+              "description": "Identifica patrones en varios recibos que un solo documento no muestra.",
+              "impact": "Te ayuda a entender qué cambió y desde cuándo para tomar mejores decisiones."
+            },
+            {
+              "title": "Condiciones pactadas vs realidad laboral",
+              "description": "Compara contrato, nómina y evidencia para verificar si se respetan tus derechos.",
+              "impact": "Recupera control y claridad sobre tu situación laboral actual."
+            }
+          ],
+          "microinteraccion": "Swipe horizontal con indicadores visuales y autoavance pausable para mantener atención sin distracción."
+        },
+        "recomendacion_integrada": {
+          "prioridad_implementacion": [
+            "Implementar resultado instantáneo del prediagnóstico para empujar acción clara.",
+            "Agregar medición de scroll y cambio de variante para análisis de comportamiento.",
+            "Reemplazar tarjeta lateral por carrusel compacto para mejor uso del espacio móvil."
+          ],
+          "copy_clave": [
+            "Basado en tu elección, te recomendamos subir: {{documento}}. {{razon}}",
+            "Empieza ahora y protege tu futuro con AuditaPatron.",
+            "Tus documentos, tu control y claridad desde el primer paso."
+          ],
+          "advertencias": [
+            "Evitar sobrecargar el hero con demasiados elementos simultáneos que reduzcan foco.",
+            "Mantener lenguaje claro, empático y sin tecnicismos legales que confundan.",
+            "Garantizar que el carrusel no distraiga del CTA principal ni reduzca la velocidad de carga."
+          ]
+        }
+      }
+    },
+    "grok": {
+      "ok": true,
+      "model": "grok-4-0709",
+      "response": {
+        "objetivo_general": "Optimizar el hero de AuditaPatron para aumentar conversiones mediante integración simultánea de resultado instantáneo personalizado, medición extendida y carrusel de hallazgos, priorizando simplicidad móvil, claridad en el flujo y empoderamiento del usuario sin saturar la pantalla.",
+        "resultado_instantaneo": {
+          "enfoque": "Integrar el resultado instantáneo justo debajo del mini prediagnóstico, mostrando una recomendación concisa y accionable basada en la opción seleccionada, con un CTA directo para subir el documento sugerido, manteniendo el flujo conversacional y empujando a la acción sin agregar pasos extras.",
+          "copy_recomendado": "Basado en tu selección, te recomendamos empezar con [documento]. Esto te dará claridad rápida sobre [razón clave]. ¡Sube ahora y toma control!",
+          "mapeo_documentos": [
+            {
+              "opcion_id": "para-mi",
+              "documento": "Recibo de nómina reciente o CFDI",
+              "razon": "Proporciona contexto inicial sobre pagos y deducciones para evaluar rápidamente si AuditaPatron te ayuda.",
+              "cta": "Subir recibo ahora"
+            },
+            {
+              "opcion_id": "primer-documento",
+              "documento": "Recibo de nómina reciente",
+              "razon": "Es fácil de obtener y ofrece una primera lectura útil sin necesidad de reunir todo el expediente.",
+              "cta": "Empezar con recibo"
+            },
+            {
+              "opcion_id": "privacidad",
+              "documento": "Recibo reciente o contrato actual",
+              "razon": "Permite probar el flujo con control, verificando resguardo de datos antes de agregar más archivos.",
+              "cta": "Probar con recibo"
+            }
+          ],
+          "riesgo_principal": "Evitar que el resultado instantáneo compita visualmente con el CTA principal, asegurando que aparezca solo tras selección y se colapse en móvil para no alargar el scroll."
+        },
+        "medicion": {
+          "eventos_recomendados": [
+            {
+              "name": "hero_scroll",
+              "trigger": "Usuario scrollea más del 50% del hero",
+              "payload": [
+                "variant",
+                "scroll_depth"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "hero_variant_change",
+              "trigger": "Cambio entre variantes alert y control",
+              "payload": [
+                "from_variant",
+                "to_variant"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "hero_cta_click",
+              "trigger": "Clic en CTA principal o secundario",
+              "payload": [
+                "variant",
+                "cta_type",
+                "prediagnostic_option"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "prediagnostic_selection",
+              "trigger": "Selección de opción en mini prediagnóstico",
+              "payload": [
+                "option_id",
+                "variant"
+              ],
+              "prioridad": "media"
+            },
+            {
+              "name": "carousel_interaction",
+              "trigger": "Interacción con carrusel (swipe o clic)",
+              "payload": [
+                "slide_index",
+                "variant"
+              ],
+              "prioridad": "baja"
+            }
+          ],
+          "guardrails": [
+            "Implementar tracking asíncrono para no impactar carga móvil",
+            "Asegurar anonimato en payloads sin datos personales",
+            "Limitar eventos a hero para no sobrecargar analytics",
+            "Probar en dispositivos móviles para validar triggers"
+          ]
+        },
+        "carrusel_hallazgos": {
+          "enfoque": "Transformar la tarjeta lateral en un carrusel compacto con 3 slides, visible solo en desktop y colapsado en móvil como acordeón opcional, rotando automáticamente para mostrar valor sin distraer del flujo principal ni saturar espacio.",
+          "slides": [
+            {
+              "title": "Diferencias entre nómina y CFDI",
+              "description": "Compara documentos para revelar pagos o conceptos reportados de forma distinta.",
+              "impact": "Te da un punto concreto para actuar con claridad y control."
+            },
+            {
+              "title": "Cambios repetidos en pagos",
+              "description": "Detecta patrones en recibos seguidos que un solo archivo no muestra.",
+              "impact": "Recupera contexto para decidir qué revisar primero."
+            },
+            {
+              "title": "Condiciones pactadas vs. realidad",
+              "description": "Contrasta contrato con nómina para verificar sueldo y prestaciones.",
+              "impact": "Fortalece tu expediente con evidencia comparable."
+            }
+          ],
+          "microinteraccion": "Auto-rotación cada 4 segundos con pausa en hover/swipe, indicadores de puntos sutiles y transición suave para mantener sobriedad y usabilidad móvil."
+        },
+        "recomendacion_integrada": {
+          "prioridad_implementacion": [
+            "1. Resultado instantáneo para impulsar acción inmediata",
+            "2. Medición extendida para validar impacto en conversión",
+            "3. Carrusel de hallazgos como elemento de valor secundario"
+          ],
+          "copy_clave": [
+            "Empieza con [documento] y toma control hoy",
+            "Detecta señales claras sin complicaciones",
+            "Tu expediente gana fuerza con cada archivo"
+          ],
+          "advertencias": [
+            "Mantener tono empoderador: urgencia sutil sin alarmismo",
+            "Probar en móvil para evitar saturación; priorizar colapso de elementos",
+            "Asegurar que integraciones no rompan tracking existente",
+            "Validar con A/B testing para medir uplift en conversiones"
+          ]
+        }
+      }
+    },
+    "gemini": {
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "response": {
+        "objetivo_general": "Aumentar la tasa de conversión del hero, clarificando el valor inmediato de AuditaPatron y empoderando al usuario con una guía de acción personalizada y tangible desde el primer contacto, mientras se optimiza la experiencia móvil y la recopilación de datos para futuras iteraciones.",
+        "resultado_instantaneo": {
+          "enfoque": "Tras seleccionar una opción del prediagnóstico, se mostrará una tarjeta o sección expandida con una recomendación de documento específica, la razón de su utilidad y un CTA directo para subirlo. Esto reemplazará el texto estático de las FAQs y se integrará visualmente para sentirse como un resultado personalizado y accionable.",
+          "copy_recomendado": "Tu primer paso claro para auditar tu situación:",
+          "mapeo_documentos": [
+            {
+              "opcion_id": "para-mi",
+              "documento": "Tu recibo de nómina más reciente",
+              "razon": "Es el archivo más común y suele dar contexto rápido sobre pagos, deducciones y fechas. Te ayuda a ver si AuditaPatron te sirve.",
+              "cta": "Sube mi recibo ahora"
+            },
+            {
+              "opcion_id": "primer-documento",
+              "documento": "El documento que ya tengas a la mano; si dudas, un recibo de nómina reciente",
+              "razon": "Es fácil de ubicar y entrega una primera lectura útil sin esperar a reunir todo. Con uno o dos más, AuditaPatron compara mejor.",
+              "cta": "Sube el que tengas"
+            },
+            {
+              "opcion_id": "privacidad",
+              "documento": "Un recibo reciente o tu contrato actual",
+              "razon": "Te permite probar el flujo con un archivo cotidiano, revisar cómo se resguarda y sentir control antes de subir más documentos.",
+              "cta": "Sube un documento de prueba"
+            }
+          ],
+          "riesgo_principal": "Sobrecargar la UI si el resultado no es conciso, generar frustración si el usuario no tiene el documento recomendado a mano, o que la recomendación no sea percibida como suficientemente 'instantánea' o personalizada."
+        },
+        "medicion": {
+          "eventos_recomendados": [
+            {
+              "name": "hero_scroll_depth",
+              "trigger": "Usuario hace scroll y supera el 25%, 50%, 75% y 100% del alto del hero.",
+              "payload": [
+                "variant",
+                "scroll_percentage"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "hero_variant_changed",
+              "trigger": "Usuario cambia manualmente la variante del hero (e.g., de 'alert' a 'control').",
+              "payload": [
+                "previous_variant",
+                "new_variant"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "prediagnostic_option_selected",
+              "trigger": "Usuario hace clic en una opción del prediagnóstico.",
+              "payload": [
+                "variant",
+                "option_id"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "instant_result_cta_clicked",
+              "trigger": "Usuario hace clic en el CTA del resultado instantáneo.",
+              "payload": [
+                "variant",
+                "option_id",
+                "recommended_document"
+              ],
+              "prioridad": "alta"
+            },
+            {
+              "name": "carousel_slide_viewed",
+              "trigger": "Usuario ve un slide del carrusel por X segundos o interactúa con él.",
+              "payload": [
+                "variant",
+                "slide_index",
+                "slide_title"
+              ],
+              "prioridad": "media"
+            },
+            {
+              "name": "carousel_interaction",
+              "trigger": "Usuario hace clic en flechas de navegación o puntos del carrusel.",
+              "payload": [
+                "variant",
+                "interaction_type",
+                "target_slide_index"
+              ],
+              "prioridad": "media"
+            }
+          ],
+          "guardrails": [
+            "Asegurar que la implementación de tracking no afecte el rendimiento de la página.",
+            "Garantizar la privacidad de los datos, no recolectar PII (Información Personal Identificable).",
+            "Definir claramente los umbrales de scroll para evitar eventos redundantes.",
+            "Priorizar la claridad de los datos sobre la cantidad; cada evento debe tener un propósito de análisis claro."
+          ]
+        },
+        "carrusel_hallazgos": {
+          "enfoque": "Un carrusel compacto y visualmente atractivo que reemplaza la tarjeta lateral. Mostrará 3 hallazgos laborales clave, rotando automáticamente cada pocos segundos, con indicadores de progreso/navegación y capacidad de interacción manual (swipe en móvil, flechas/puntos en desktop). El objetivo es demostrar la capacidad de AuditaPatron con ejemplos concretos y variados.",
+          "slides": [
+            {
+              "title": "Tu nómina vs. tu CFDI: ¿Coinciden?",
+              "description": "Detecta si hay diferencias en montos o conceptos reportados. Un hallazgo común que AuditaPatron te ayuda a ver.",
+              "impact": "Evitas perder dinero o derechos por discrepancias que no conocías."
+            },
+            {
+              "title": "Cambios inesperados en tus pagos",
+              "description": "Al subir varios recibos, AuditaPatron identifica patrones o deducciones que cambian sin aviso claro.",
+              "impact": "Entiendes el 'porqué' y el 'desde cuándo' para retomar el control."
+            },
+            {
+              "title": "Lo que te prometieron vs. la realidad",
+              "description": "Compara tu contrato con tus recibos y documentos IMSS/Infonavit para ver si las condiciones iniciales se cumplen.",
+              "impact": "Aseguras que lo pactado se respete y tu historial laboral esté en orden."
+            }
+          ],
+          "microinteraccion": "Carrusel con auto-avance (5-7 segundos), puntos de navegación en la parte inferior, flechas de 'anterior/siguiente' en desktop y swipe horizontal en móvil. Pausa automática al interactuar o al hacer hover."
+        },
+        "recomendacion_integrada": {
+          "prioridad_implementacion": [
+            "**Resultado Instantáneo del Prediagnóstico**: Impacto directo en la conversión y claridad del siguiente paso. Es crucial para capitalizar el interés inicial.",
+            "**Carrusel de Hallazgos**: Mejora la demostración de valor y engagement en el hero. Complementa el mensaje principal y refuerza la propuesta de valor.",
+            "**Medición Avanzada**: Fundamental para optimizar las dos mejoras anteriores y futuras iteraciones. Debe implementarse junto o inmediatamente después para recolectar datos desde el inicio."
+          ],
+          "copy_clave": [
+            "**Claridad y Control**: 'Revisa hoy tu historial laboral y actúa con más control.'",
+            "**Facilidad y Empoderamiento**: 'Empieza con el documento que ya tienes a la mano. AuditaPatron te guía.'",
+            "**Urgencia y Protección**: 'No dejes pasar señales de riesgo. AuditaPatron te ayuda a proteger tu futuro.'",
+            "**Simplicidad**: 'Sin tecnicismos, resultados claros.'"
+          ],
+          "advertencias": [
+            "**No saturar el hero**: Mantener la información concisa y visualmente limpia, especialmente en móvil. El resultado instantáneo debe aparecer *después* de la interacción, no de forma permanente.",
+            "**Coherencia visual y de tono**: Asegurar que las nuevas implementaciones mantengan la estética sobria y el tono de confianza/empoderamiento de AuditaPatron.",
+            "**Rendimiento en móvil**: Optimizar la carga y la interactividad del carrusel y el resultado instantáneo para una experiencia fluida en dispositivos móviles.",
+            "**Pruebas A/B exhaustivas**: Realizar pruebas A/B de cada mejora (o combinaciones) para validar su impacto en la conversión y el engagement antes de un lanzamiento completo.",
+            "**Claridad del CTA**: Asegurarse de que el CTA del resultado instantáneo sea muy claro y lleve directamente al flujo de subida de documentos."
+          ]
+        }
+      }
+    }
+  },
+  "consensus": {
+    "shared_themes": [
+      {
+        "provider": "chatgpt",
+        "objetivo_general": "Mejorar la experiencia inicial del usuario para que reciba una recomendación clara y accionable sobre qué documento subir, aumentar la medición de interacción para optimizar el hero y enriquecer la información lateral sin saturar la pantalla móvil.",
+        "resultado_enfoque": "Integrar dinámicamente el resultado del prediagnóstico justo debajo de las opciones para que el usuario vea al instante el documento recomendado, con un copy empoderador que motive a subirlo ahora, manteniendo claridad y urgencia sin alarmismo.",
+        "carrusel_enfoque": "Sustituir la tarjeta lateral fija por un carrusel compacto que muestre tres hallazgos laborales clave, con textos resumidos y un diseño táctil amigable para móvil, que permita al usuario entender rápidamente sin saturar espacio."
+      },
+      {
+        "provider": "grok",
+        "objetivo_general": "Optimizar el hero de AuditaPatron para aumentar conversiones mediante integración simultánea de resultado instantáneo personalizado, medición extendida y carrusel de hallazgos, priorizando simplicidad móvil, claridad en el flujo y empoderamiento del usuario sin saturar la pantalla.",
+        "resultado_enfoque": "Integrar el resultado instantáneo justo debajo del mini prediagnóstico, mostrando una recomendación concisa y accionable basada en la opción seleccionada, con un CTA directo para subir el documento sugerido, manteniendo el flujo conversacional y empujando a la acción sin agregar pasos extras.",
+        "carrusel_enfoque": "Transformar la tarjeta lateral en un carrusel compacto con 3 slides, visible solo en desktop y colapsado en móvil como acordeón opcional, rotando automáticamente para mostrar valor sin distraer del flujo principal ni saturar espacio."
+      },
+      {
+        "provider": "gemini",
+        "objetivo_general": "Aumentar la tasa de conversión del hero, clarificando el valor inmediato de AuditaPatron y empoderando al usuario con una guía de acción personalizada y tangible desde el primer contacto, mientras se optimiza la experiencia móvil y la recopilación de datos para futuras iteraciones.",
+        "resultado_enfoque": "Tras seleccionar una opción del prediagnóstico, se mostrará una tarjeta o sección expandida con una recomendación de documento específica, la razón de su utilidad y un CTA directo para subirlo. Esto reemplazará el texto estático de las FAQs y se integrará visualmente para sentirse como un resultado personalizado y accionable.",
+        "carrusel_enfoque": "Un carrusel compacto y visualmente atractivo que reemplaza la tarjeta lateral. Mostrará 3 hallazgos laborales clave, rotando automáticamente cada pocos segundos, con indicadores de progreso/navegación y capacidad de interacción manual (swipe en móvil, flechas/puntos en desktop). El objetivo es demostrar la capacidad de AuditaPatron con ejemplos concretos y variados."
+      }
+    ],
+    "copy_patterns": [
+      {
+        "provider": "chatgpt",
+        "copy_clave": [
+          "Basado en tu elección, te recomendamos subir: {{documento}}. {{razon}}",
+          "Empieza ahora y protege tu futuro con AuditaPatron.",
+          "Tus documentos, tu control y claridad desde el primer paso."
+        ]
+      },
+      {
+        "provider": "grok",
+        "copy_clave": [
+          "Empieza con [documento] y toma control hoy",
+          "Detecta señales claras sin complicaciones",
+          "Tu expediente gana fuerza con cada archivo"
+        ]
+      },
+      {
+        "provider": "gemini",
+        "copy_clave": [
+          "**Claridad y Control**: 'Revisa hoy tu historial laboral y actúa con más control.'",
+          "**Facilidad y Empoderamiento**: 'Empieza con el documento que ya tienes a la mano. AuditaPatron te guía.'",
+          "**Urgencia y Protección**: 'No dejes pasar señales de riesgo. AuditaPatron te ayuda a proteger tu futuro.'",
+          "**Simplicidad**: 'Sin tecnicismos, resultados claros.'"
+        ]
+      }
+    ],
+    "tracking_consensus": [
+      {
+        "provider": "chatgpt",
+        "event_names": [
+          "hero_scroll",
+          "hero_variant_change",
+          "hero_cta_click"
+        ],
+        "guardrails": [
+          "No registrar eventos que afecten la performance del sitio móvil.",
+          "Limitar frecuencia de eventos scroll para evitar sobrecarga de datos.",
+          "Garantizar anonimato y privacidad en el tracking."
+        ]
+      },
+      {
+        "provider": "grok",
+        "event_names": [
+          "hero_scroll",
+          "hero_variant_change",
+          "hero_cta_click",
+          "prediagnostic_selection",
+          "carousel_interaction"
+        ],
+        "guardrails": [
+          "Implementar tracking asíncrono para no impactar carga móvil",
+          "Asegurar anonimato en payloads sin datos personales",
+          "Limitar eventos a hero para no sobrecargar analytics",
+          "Probar en dispositivos móviles para validar triggers"
+        ]
+      },
+      {
+        "provider": "gemini",
+        "event_names": [
+          "hero_scroll_depth",
+          "hero_variant_changed",
+          "prediagnostic_option_selected",
+          "instant_result_cta_clicked",
+          "carousel_slide_viewed",
+          "carousel_interaction"
+        ],
+        "guardrails": [
+          "Asegurar que la implementación de tracking no afecte el rendimiento de la página.",
+          "Garantizar la privacidad de los datos, no recolectar PII (Información Personal Identificable).",
+          "Definir claramente los umbrales de scroll para evitar eventos redundantes.",
+          "Priorizar la claridad de los datos sobre la cantidad; cada evento debe tener un propósito de análisis claro."
+        ]
+      }
+    ],
+    "risks_to_avoid": [
+      {
+        "provider": "chatgpt",
+        "advertencias": [
+          "Evitar sobrecargar el hero con demasiados elementos simultáneos que reduzcan foco.",
+          "Mantener lenguaje claro, empático y sin tecnicismos legales que confundan.",
+          "Garantizar que el carrusel no distraiga del CTA principal ni reduzca la velocidad de carga."
+        ]
+      },
+      {
+        "provider": "grok",
+        "advertencias": [
+          "Mantener tono empoderador: urgencia sutil sin alarmismo",
+          "Probar en móvil para evitar saturación; priorizar colapso de elementos",
+          "Asegurar que integraciones no rompan tracking existente",
+          "Validar con A/B testing para medir uplift en conversiones"
+        ]
+      },
+      {
+        "provider": "gemini",
+        "advertencias": [
+          "**No saturar el hero**: Mantener la información concisa y visualmente limpia, especialmente en móvil. El resultado instantáneo debe aparecer *después* de la interacción, no de forma permanente.",
+          "**Coherencia visual y de tono**: Asegurar que las nuevas implementaciones mantengan la estética sobria y el tono de confianza/empoderamiento de AuditaPatron.",
+          "**Rendimiento en móvil**: Optimizar la carga y la interactividad del carrusel y el resultado instantáneo para una experiencia fluida en dispositivos móviles.",
+          "**Pruebas A/B exhaustivas**: Realizar pruebas A/B de cada mejora (o combinaciones) para validar su impacto en la conversión y el engagement antes de un lanzamiento completo.",
+          "**Claridad del CTA**: Asegurarse de que el CTA del resultado instantáneo sea muy claro y lleve directamente al flujo de subida de documentos."
+        ]
+      }
+    ]
+  }
+}
