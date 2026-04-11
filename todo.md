@@ -737,3 +737,11 @@
 - [x] Corregir la inconsistencia entre la prueba reforzada de Dropbox y la ejecución real del script de backup que falla con 401 en create_folder_v2
 - [x] Investigar y corregir la discrepancia entre la prueba reforzada de Dropbox y la ejecución real del script de respaldo que devolvió 401 en create_folder_v2
 - [x] Cerrar el frente de Dropbox dejando README de respaldo, CONFIGURACION.md, ARQUITECTURA.md y documentación de servicios activos integrados en el paquete operativo
+- [x] Definir con ChatGPT, Grok y Gemini el siguiente incremento prioritario de desarrollo según valor operativo, riesgo y capacidad de entrega inmediata
+- [ ] Implementar el siguiente incremento prioritario seleccionado con pruebas, validación técnica y checkpoint: optimización mobile-first del flujo /auditar con autoavance seguro, preferencia visible cámara/archivos y menos acciones secundarias
+
+- [x] Implementar export recuperable de base de datos para AuditaPatron con artefacto utilizable fuera del entorno actual
+- [x] Validar una restauración de prueba o verificación equivalente del export para confirmar recuperabilidad
+- [x] Documentar el flujo operativo de export, validación y recuperación mínima
+- [x] Dejar preparada la base para automatizar backups a partir del export recuperable
+- [x] Actualizar y ejecutar pruebas Vitest del sprint de resiliencia operativa

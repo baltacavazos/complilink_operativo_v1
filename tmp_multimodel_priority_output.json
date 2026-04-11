@@ -1,0 +1,159 @@
+{
+  "prompt": "Contexto del proyecto:\n- Plataforma web AuditaPatron, con flujo principal /auditar ya operativo y Dropbox cerrado/estable.\n- El proyecto quedó listo para retomar desarrollo principal.\n- Restricciones: mantener TypeScript/LSP estables, priorizar valor operativo real, no romper flujos existentes, y favorecer entregables recuperables/operables hoy.\n- El usuario quiere enfoque multimodelo y optimización de créditos.\n\nPendientes candidatos extraídos de la bitácora y del contexto heredado:\n1. Bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico.\n2. Export recuperable de base de datos para completar la estrategia de recuperación/backup.\n3. Automatizar ejecución de backups en milestones concretos.\n4. Gestión operativa de alertas con estados accionables.\n5. Confirmar contrato técnico remoto de Helios/adaptador endurecido.\n\nTu tarea:\n- Evalúa cuál debe ser el siguiente frente inmediato MÁS importante a implementar ahora.\n- Considera: impacto operativo, reducción de riesgo, dependencia para futuras funciones, velocidad de entrega, facilidad de prueba y recuperación ante fallos.\n- Devuelve JSON estricto con este esquema:\n{\n  \"recommended_front\": \"uno de los cinco candidatos o una reformulación muy cercana\",\n  \"ranking\": [\n    {\"front\": \"...\", \"score\": 0-100, \"why\": \"...\"}\n  ],\n  \"scope_for_next_iteration\": [\"3 a 6 entregables concretos\"],\n  \"main_risks\": [\"...\"],\n  \"why_now\": \"...\",\n  \"defer_for_later\": [\"...\"],\n  \"confidence\": \"low|medium|high\"\n}\n- El ranking debe incluir los 5 frentes.\n- Sé práctico: prioriza lo que más fortalezca operación y recuperación en el corto plazo.\n- Responde solo JSON válido.",
+  "results": {
+    "openai": {
+      "recommended_front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+      "ranking": [
+        {
+          "front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+          "score": 95,
+          "why": "Clave para asegurar la integridad y recuperación de datos, base para automatización y monitoreo, impacto directo en reducción de riesgo y operatividad."
+        },
+        {
+          "front": "Automatizar ejecución de backups en milestones concretos",
+          "score": 85,
+          "why": "Complementa el export recuperable, mejora la confiabilidad y reduce la intervención manual, pero depende de tener export funcional."
+        },
+        {
+          "front": "Bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico",
+          "score": 75,
+          "why": "Fundamental para diagnóstico y seguimiento, pero menos crítico que asegurar recuperación de datos primero."
+        },
+        {
+          "front": "Gestión operativa de alertas con estados accionables",
+          "score": 65,
+          "why": "Mejora la respuesta ante incidencias, pero depende de tener monitoreo y bitácora robustos."
+        },
+        {
+          "front": "Confirmar contrato técnico remoto de Helios/adaptador endurecido",
+          "score": 50,
+          "why": "Importante para integración futura, pero no impacta directamente en la operatividad y recuperación inmediata."
+        }
+      ],
+      "scope_for_next_iteration": [
+        "Implementar exportación completa y recuperable de base de datos en formato estándar",
+        "Validar integridad y restauración de datos exportados en entorno controlado",
+        "Documentar proceso de exportación y recuperación para el equipo operativo",
+        "Establecer pruebas automáticas básicas para export y restauración",
+        "Definir criterios mínimos para éxito de export y recuperación",
+        "Integrar export con sistema actual sin romper flujos existentes"
+      ],
+      "main_risks": [
+        "Fallas en exportación que comprometan integridad de datos",
+        "Incompatibilidad con flujos actuales o TypeScript/LSP",
+        "Falta de pruebas que detecten errores en recuperación",
+        "Retrasos por complejidad técnica no anticipada"
+      ],
+      "why_now": "Garantizar la capacidad de recuperación de datos es la base para minimizar riesgos operativos y habilitar futuras automatizaciones y monitoreo, asegurando continuidad y estabilidad del proyecto.",
+      "defer_for_later": [
+        "Automatización de backups (depende de export funcional)",
+        "Bitácora y monitoreo (mejor con backups confiables)",
+        "Gestión de alertas (requiere monitoreo previo)",
+        "Confirmación de contrato técnico remoto (no crítico inmediato)"
+      ],
+      "confidence": "high"
+    },
+    "gemini": {
+      "recommended_front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+      "ranking": [
+        {
+          "front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+          "score": 100,
+          "why": "Mitiga el riesgo más crítico y catastrófico: la pérdida de datos. Es la base para la continuidad del negocio y la recuperación ante desastres. Sin datos, no hay plataforma ni valor operativo."
+        },
+        {
+          "front": "Automatizar ejecución de backups en milestones concretos",
+          "score": 95,
+          "why": "Complementa directamente el punto anterior, haciendo que la estrategia de backup sea fiable, consistente y menos propensa a errores humanos. Es el siguiente paso lógico e indispensable para una estrategia de recuperación robusta."
+        },
+        {
+          "front": "Bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico",
+          "score": 90,
+          "why": "Proporciona visibilidad esencial sobre el estado y comportamiento de la plataforma. Es crucial para diagnosticar problemas, entender el rendimiento y tomar decisiones informadas, lo que reduce el tiempo de inactividad y mejora la estabilidad operativa."
+        },
+        {
+          "front": "Gestión operativa de alertas con estados accionables",
+          "score": 80,
+          "why": "Transforma la información de la bitácora y el monitoreo en inteligencia accionable, permitiendo una respuesta proactiva a los problemas. Depende de tener una bitácora y monitoreo efectivos para ser útil."
+        },
+        {
+          "front": "Confirmar contrato técnico remoto de Helios/adaptador endurecido",
+          "score": 60,
+          "why": "Importante para la robustez de un componente específico, pero menos crítico para la salud operativa general y la capacidad de recuperación de la plataforma en comparación con la protección de datos y la visibilidad del sistema. Es más una tarea de descubrimiento/confirmación que de implementación directa."
+        }
+      ],
+      "scope_for_next_iteration": [
+        "Implementar script/herramienta para exportación completa de la base de datos (e.g., pg_dump, mysqldump).",
+        "Verificar la integridad y recuperabilidad del export realizando una restauración de prueba en un entorno aislado.",
+        "Definir e implementar un cronograma básico para backups automatizados (diarios/semanales) mediante un scheduler (e.g., cron, cloud scheduler).",
+        "Establecer una ubicación de almacenamiento segura y externa para los backups (e.g., bucket S3).",
+        "Implementar un framework de logging mínimo para eventos clave de la aplicación y errores.",
+        "Mostrar métricas básicas de salud del sistema (e.g., uptime, tasa de errores) en un dashboard simple."
+      ],
+      "main_risks": [
+        "La estrategia de backup queda incompleta o no es verdaderamente recuperable.",
+        "Problemas de integridad de datos en los backups, haciéndolos inútiles.",
+        "Vulnerabilidades de seguridad en el almacenamiento de los backups.",
+        "Sobrediseño o complejidad excesiva en la implementación inicial de monitoreo, retrasando la entrega de valor.",
+        "Inestabilidad del entorno de desarrollo (TypeScript/LSP) debido a cambios no controlados."
+      ],
+      "why_now": "El proyecto está listo para retomar el desarrollo principal, pero sin una estrategia de recuperación robusta y visibilidad operativa básica, cualquier nuevo desarrollo introduce un riesgo inaceptable. Asegurar los datos y obtener información sobre las operaciones son prerrequisitos fundamentales para un crecimiento sostenible y para entregar 'valor operativo real'. El futuro enfoque multimodelo y la optimización de créditos generarán más datos y exigirán mayor estabilidad, haciendo que estos pasos fundacionales sean críticos ahora.",
+      "defer_for_later": [
+        "Dashboards de monitoreo avanzados y reglas de alerta complejas.",
+        "Optimización profunda del adaptador de Helios más allá del endurecimiento básico (hasta que se logre la estabilidad del core).",
+        "Auditorías completas y detalladas (más allá de los logs operativos mínimos).",
+        "Algoritmos complejos de optimización de créditos (hasta que la estabilidad operativa básica y la integridad de los datos estén garantizadas)."
+      ],
+      "confidence": "high"
+    },
+    "grok": {
+      "recommended_front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+      "ranking": [
+        {
+          "front": "Export recuperable de base de datos para completar la estrategia de recuperación/backup",
+          "score": 90,
+          "why": "Alta reducción de riesgo de pérdida de datos, impacto directo en la operación al habilitar backups manuales rápidos y recuperables, fácil de probar en entornos existentes sin romper flujos, y es una base para futuras automatizaciones; prioriza valor operativo inmediato."
+        },
+        {
+          "front": "Bitácora operativa centralizada mínima y superficie inicial de monitoreo para diagnóstico",
+          "score": 85,
+          "why": "Mejora el diagnóstico y monitoreo en tiempo real, reduciendo riesgos operativos a través de visibilidad, pero depende menos de urgencia inmediata que los backups; es rápido de implementar y facilita pruebas, fortaleciendo la operación general."
+        },
+        {
+          "front": "Automatizar ejecución de backups en milestones concretos",
+          "score": 80,
+          "why": "Construye sobre el export de BD para reducir riesgos a largo plazo, pero tiene dependencia de implementar el export primero; ofrece alto impacto operativo una vez listo, con velocidad de entrega media y fácil recuperación si se falla."
+        },
+        {
+          "front": "Gestión operativa de alertas con estados accionables",
+          "score": 70,
+          "why": "Aumenta la reactividad a problemas, reduciendo riesgos mediante notificaciones, pero es menos crítico que backups o monitoreo básico; velocidad de entrega variable y fácil de probar, aunque no es prioritario para recuperación inmediata."
+        },
+        {
+          "front": "Confirmar contrato técnico remoto de Helios/adaptador endurecido",
+          "score": 60,
+          "why": "Bajo impacto operativo en el corto plazo, ya que es más una verificación para futuras integraciones; reduce riesgos para expansiones, pero no fortalece la operación actual, con entrega rápida posible, aunque no esencial ahora."
+        }
+      ],
+      "scope_for_next_iteration": [
+        "Implementar una función de export manual de la base de datos usando herramientas existentes en TypeScript",
+        "Desarrollar un script de prueba para verificar la integridad del export en un entorno de staging",
+        "Integrar el export con el flujo principal de /auditar para un acceso operable",
+        "Documentar el proceso de export y recuperación para facilitar uso inmediato",
+        "Realizar pruebas de recuperación con datos de prueba para asegurar operabilidad"
+      ],
+      "main_risks": [
+        "Posible fallo en el export que genere datos corruptos, aumentando el riesgo de pérdida si no se prueba adecuadamente",
+        "Dependencia de herramientas externas para el export, lo que podría introducir inestabilidades si no se maneja con TypeScript/LSP estables",
+        "Interrupción temporal de flujos existentes si el desarrollo no se aísla correctamente"
+      ],
+      "why_now": "Este frente fortalece la recuperación de datos en el corto plazo, reduce riesgos operativos críticos sin depender de otras tareas, y alinea con el enfoque en entregables operables hoy, permitiendo una base sólida para futuras optimizaciones multimodelo y automatizaciones.",
+      "defer_for_later": [
+        "Confirmar contrato técnico remoto de Helios/adaptador endurecido, ya que no impacta la operación inmediata",
+        "Automatizar ejecución de backups en milestones concretos, que depende del export y puede esperar una iteración"
+      ],
+      "confidence": "high"
+    }
+  },
+  "errors": {}
+}

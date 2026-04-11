@@ -10,6 +10,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "backup:export": "tsx scripts/export-database-backup.mjs",
+    "backup:validate": "tsx scripts/validate-database-backup.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"

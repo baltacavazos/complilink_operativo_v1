@@ -1,0 +1,39 @@
+{
+  "status_code": 200,
+  "body": {
+    "id": "chatcmpl-DTatyCWVdT0qDsGAzun1sHxJ08ey2",
+    "object": "chat.completion",
+    "created": 1775945734,
+    "model": "gpt-4o-mini-2024-07-18",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"winner\": \"A\",\n  \"title\": \"Mejora del flujo móvil en /auditar\",\n  \"why_now\": \"Implementar un flujo móvil optimizado generará una experiencia más fluida para los usuarios, aumentando la eficiencia y satisfacción en el proceso de auditoría.\",\n  \"user_value\": \"Los usuarios podrán auditar documentos de manera más rápida y sencilla, lo que mejorará la retención y el uso de la plataforma.\",\n  \"delivery_scope\": [\n    \"Implementar autoavance seguro tras la captura del archivo.\",\n    \"Añadir preferencia visible para seleccionar entre cámara y archivos.\",\n    \"Reducir acciones secundarias para mejorar la usabilidad.\"\n  ],\n  \"risk_guardrails\": [\n    \"Realizar pruebas exhaustivas en diferentes dispositivos móviles.\",\n    \"Implementar un sistema de retroalimentación para detectar problemas rápidamente.\",\n    \"Asegurar que el flujo sea compatible con las versiones anteriores de la plataforma.\"\n  ],\n  \"defer_reason_for_others\": {\n    \"A\": \"\",\n    \"B\": \"El endurecimiento de calidad es importante, pero no impacta directamente la experiencia del usuario en el corto plazo.\",\n    \"C\": \"Completar extras de respaldo es necesario, pero no ofrece un valor inmediato al usuario final.\"\n  },\n  \"suggested_first_files\": [\n    \"documentación de requisitos del flujo móvil\",\n    \"diseños de interfaz de usuario\",\n    \"plan de pruebas para el nuevo flujo\"\n  ],\n  \"success_metrics\": [\n    \"Tasa de finalización del flujo de auditoría móvil\",\n    \"Tiempo promedio para completar una auditoría en móvil\",\n    \"Satisfacción del usuario medida a través de encuestas post-auditoría\"\n  ]\n}",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 351,
+      "completion_tokens": 356,
+      "total_tokens": 707,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_9a00d2658e"
+  }
+}

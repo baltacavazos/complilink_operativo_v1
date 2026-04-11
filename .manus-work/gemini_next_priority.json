@@ -1,0 +1,33 @@
+{
+  "status_code": 200,
+  "body": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "{\n  \"winner\": \"A\",\n  \"title\": \"Optimización del Flujo Móvil de Auditoría para Conversión y Experiencia 'Bulletproof'\",\n  \"why_now\": \"El flujo principal de /auditar ya está funcional y la landing es estable. La experiencia móvil es crítica para nuestra base de usuarios, quienes a menudo necesitan capturar documentos sobre la marcha. Mejorar este flujo directamente impacta la tasa de conversión y la satisfacción del usuario en nuestra propuesta de valor central, siendo el punto de mayor apalancamiento para el crecimiento inmediato.\",\n  \"user_value\": \"Una experiencia de captura y carga de documentos significativamente más fluida y rápida en dispositivos móviles. Reducción de la fricción y la carga cognitiva, lo que lleva a tasas de finalización de auditorías más altas y una percepción de la plataforma como moderna y eficiente.\",\n  \"delivery_scope\": [\n    \"Implementar lógica de autoavance robusta post-captura/selección basada en la calidad de la señal del documento.\",\n    \"Añadir una preferencia visible y de un toque para elegir entre cámara y archivos existentes.\",\n    \"Simplificar y automatizar acciones secundarias (ej. recorte, rotación) para reducir interrupciones.\"\n  ],\n  \"risk_guardrails\": [\n    \"Realizar pruebas A/B o un despliegue escalonado para el autoavance, asegurando que no haya falsos positivos o documentos omitidos.\",\n    \"Garantizar la compatibilidad con versiones anteriores y una degradación elegante para dispositivos/navegadores más antiguos.\",\n    \"Monitorear de cerca las tasas de error y la retroalimentación del usuario post-lanzamiento, especialmente en el procesamiento de documentos.\"\n  ],\n  \"defer_reason_for_others\": {\n    \"A\": \"N/A (Esta es la opción ganadora)\",\n    \"B\": \"Aunque el endurecimiento de la calidad es crucial, el enfoque actual es maximizar la interacción del usuario con el flujo principal. Podemos programar un 'sprint de calidad' dedicado después de que esta mejora orientada al usuario esté activa y estable. Las pruebas existentes proporcionan una base.\",\n    \"C\": \"El frente de respaldo en Dropbox ya está 'operacionalmente cerrado'. Estas son mejoras importantes para la resiliencia interna, pero no impactan directamente la capacidad del usuario para utilizar el producto o el crecimiento inmediato de la plataforma. Pueden priorizarse en un sprint de operaciones internas posterior.\"\n  },\n  \"suggested_first_files\": [\n    \"src/components/AuditarFlow/MobileCapture.vue\",\n    \"src/utils/documentProcessing.js\",\n    \"src/styles/mobileAuditar.css\"\n  ],\n  \"success_metrics\": [\n    \"Incremento del X% en la tasa de finalización del flujo /auditar en dispositivos móviles.\",\n    \"Reducción del Y% en el tiempo promedio dedicado al paso de carga de documentos para usuarios móviles.\",\n    \"Aumento en la puntuación de satisfacción del usuario (CSAT) o NPS relacionado con la experiencia móvil.\",\n    \"No hay un aumento significativo en los errores de procesamiento de documentos o solicitudes de reanálisis desde dispositivos móviles.\"\n  ]\n}"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 364,
+      "candidatesTokenCount": 695,
+      "totalTokenCount": 2694,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 364
+        }
+      ],
+      "thoughtsTokenCount": 1635
+    },
+    "modelVersion": "gemini-2.5-flash",
+    "responseId": "J8jaaeSVCY-6_uMP8oSe-Qs"
+  }
+}
