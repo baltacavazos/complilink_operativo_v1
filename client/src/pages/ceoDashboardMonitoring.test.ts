@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
+  filterAuditFeed,
   getAuditActionLabel,
   getAuditActionTone,
+  getAuditDrilldownDescriptor,
+  getAuditEventFamily,
+  getAuditEventSeverity,
   getAuditRejectionReason,
   type AuditFeedItem,
 } from "./ceoDashboardMonitoring";
@@ -12,9 +17,9 @@ function buildAuditItem(overrides: Partial<AuditFeedItem> = {}): AuditFeedItem {
   return {
     id: overrides.id ?? 1,
     tenantId: overrides.tenantId ?? "tenant-demo",
-    caseId: overrides.caseId ?? "case-001",
+    caseId: Object.prototype.hasOwnProperty.call(overrides, "caseId") ? (overrides.caseId ?? null) : "case-001",
     traceId: overrides.traceId ?? "trace-001",
-    documentId: overrides.documentId ?? null,
+    documentId: Object.prototype.hasOwnProperty.call(overrides, "documentId") ? (overrides.documentId ?? null) : null,
     actorUserId: overrides.actorUserId ?? 7,
     entityType: overrides.entityType ?? "document",
     entityId: overrides.entityId ?? "doc-001",
@@ -63,5 +68,83 @@ describe("ceoDashboardMonitoring", () => {
 
     expect(getAuditRejectionReason(rejected)).toBe("rate_limit_exceeded");
     expect(getAuditRejectionReason(regular)).toBeNull();
+  });
+
+  it("clasifica familia y severidad para los filtros rápidos del feed", () => {
+    const rejected = buildAuditItem({ action: "document.guardrail_rejected", entityType: "document" });
+    const access = buildAuditItem({ action: "access.membership_updated", entityType: "access" });
+    const document = buildAuditItem({ action: "document.uploaded", entityType: "document" });
+
+    expect(getAuditEventFamily(rejected)).toBe("guardrail");
+    expect(getAuditEventSeverity(rejected)).toBe("high");
+    expect(getAuditEventFamily(access)).toBe("access");
+    expect(getAuditEventSeverity(access)).toBe("medium");
+    expect(getAuditEventFamily(document)).toBe("document");
+    expect(getAuditEventSeverity(document)).toBe("normal");
+  });
+
+  it("filtra la bitácora por familia y severidad sin mezclar eventos ajenos", () => {
+    const items = [
+      buildAuditItem({ id: 1, action: "document.guardrail_rejected", entityType: "document" }),
+      buildAuditItem({ id: 2, action: "document.uploaded", entityType: "document" }),
+      buildAuditItem({ id: 3, action: "access.membership_updated", entityType: "access" }),
+      buildAuditItem({ id: 4, action: "policy.create", entityType: "policy" }),
+    ];
+
+    expect(filterAuditFeed(items, { family: "guardrail", severity: "all" }).map((item) => item.id)).toEqual([1]);
+    expect(filterAuditFeed(items, { family: "all", severity: "medium" }).map((item) => item.id)).toEqual([3, 4]);
+    expect(filterAuditFeed(items, { family: "document", severity: "normal" }).map((item) => item.id)).toEqual([2]);
+  });
+
+  it("genera alertas ejecutivas cuando se acumulan rechazos por tenant o por caso", () => {
+    const items = [
+      buildAuditItem({ id: 1, tenantId: "tenant-a", caseId: "case-001", action: "document.guardrail_rejected" }),
+      buildAuditItem({ id: 2, tenantId: "tenant-a", caseId: "case-001", action: "document.guardrail_rejected" }),
+      buildAuditItem({ id: 3, tenantId: "tenant-a", caseId: "case-002", action: "document.guardrail_rejected" }),
+      buildAuditItem({ id: 4, tenantId: "tenant-b", caseId: "case-010", action: "document.uploaded" }),
+    ];
+
+    expect(buildAuditExecutiveAlerts(items)).toEqual([
+      {
+        scope: "tenant",
+        scopeId: "tenant-a",
+        tenantId: "tenant-a",
+        caseId: null,
+        rejectionCount: 3,
+        severity: "high",
+        title: "Fricción repetida en tenant-a",
+        description: "Se acumularon 3 rechazos operativos recientes en el tenant y conviene revisar saturación, deduplicación o reglas de entrada.",
+      },
+      {
+        scope: "case",
+        scopeId: "case-001",
+        tenantId: "tenant-a",
+        caseId: "case-001",
+        rejectionCount: 2,
+        severity: "medium",
+        title: "Caso case-001 con rechazos repetidos",
+        description: "El caso visible suma 2 rechazos operativos recientes; conviene revisar el motivo antes de seguir operando.",
+      },
+    ]);
+  });
+
+  it("propone el drill-down correcto según el tipo de evento auditado", () => {
+    expect(getAuditDrilldownDescriptor(buildAuditItem({ documentId: "doc-123", action: "document.uploaded" }))).toEqual({
+      path: "/ceo/documentos",
+      label: "Ver documento relacionado",
+      helper: "Documento doc-123",
+    });
+
+    expect(getAuditDrilldownDescriptor(buildAuditItem({ entityType: "access", action: "access.membership_updated", caseId: "case-002" }))).toEqual({
+      path: "/ceo/accesos",
+      label: "Ver acceso del caso",
+      helper: "Caso case-002",
+    });
+
+    expect(getAuditDrilldownDescriptor(buildAuditItem({ entityType: "alert", action: "alert.raised", caseId: null }))).toEqual({
+      path: "/ceo/alertas",
+      label: "Ver alertas relacionadas",
+      helper: "Abrir la vista de alertas filtrada",
+    });
   });
 });

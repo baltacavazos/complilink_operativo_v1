@@ -15,10 +15,20 @@ import {
 import { trpc } from "@/lib/trpc";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
 import {
+  buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
+  filterAuditFeed,
   getAuditActionLabel,
   getAuditActionTone,
+  getAuditDrilldownDescriptor,
+  getAuditEventSeverity,
+  getAuditFamilyLabel,
   getAuditRejectionReason,
+  getAuditSeverityLabel,
+  type AuditEventFamily,
+  type AuditEventSeverity,
+  type AuditExecutiveAlert,
+  type AuditFeedItem,
 } from "@/pages/ceoDashboardMonitoring";
 import {
   AlertTriangle,
@@ -235,6 +245,21 @@ const DATE_WINDOW_OPTIONS = [
   { value: "365", label: "Últimos 12 meses" },
 ];
 
+const AUDIT_FAMILY_FILTER_OPTIONS: Array<{ value: AuditEventFamily; label: string }> = [
+  { value: "all", label: "Todos" },
+  { value: "guardrail", label: "Guardrails" },
+  { value: "document", label: "Documentos" },
+  { value: "access", label: "Accesos" },
+  { value: "policy", label: "Políticas" },
+];
+
+const AUDIT_SEVERITY_FILTER_OPTIONS: Array<{ value: AuditEventSeverity; label: string }> = [
+  { value: "all", label: "Toda severidad" },
+  { value: "high", label: "Alta" },
+  { value: "medium", label: "Media" },
+  { value: "normal", label: "Normal" },
+];
+
 function getCurrentSectionCount(
   section: SectionKey,
   snapshot: {
@@ -265,6 +290,8 @@ export default function CeoDashboard() {
   const isAdmin = user?.role === "admin";
   const utils = trpc.useUtils();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
+  const [auditSeverityFilter, setAuditSeverityFilter] = useState<AuditEventSeverity>("all");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -326,7 +353,7 @@ export default function CeoDashboard() {
     () => ({
       tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
       caseId: filters.caseId !== "all" ? filters.caseId : undefined,
-      limit: 14,
+      limit: 30,
     }),
     [filters.caseId, filters.tenantId],
   );
@@ -385,11 +412,16 @@ export default function CeoDashboard() {
   const globalSummary = baseSnapshotQuery.data?.summary;
   const auditTrail = auditTrailQuery.data ?? [];
   const auditSummary = useMemo(() => buildAuditMonitoringSummary(auditTrail), [auditTrail]);
-  const recentOperationalEvents = useMemo(() => auditTrail.slice(0, 6), [auditTrail]);
+  const filteredAuditTrail = useMemo(
+    () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
+    [auditFamilyFilter, auditSeverityFilter, auditTrail],
+  );
+  const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 6), [filteredAuditTrail]);
   const latestGuardrailEvent = useMemo(
     () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
     [auditTrail],
   );
+  const auditExecutiveAlerts = useMemo(() => buildAuditExecutiveAlerts(auditTrail).slice(0, 4), [auditTrail]);
 
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
@@ -569,6 +601,32 @@ export default function CeoDashboard() {
     setFilters(DEFAULT_FILTER_STATE);
     setQueryDraft("");
     setDebouncedQuery("");
+  };
+
+  const clearAuditFeedFilters = () => {
+    setAuditFamilyFilter("all");
+    setAuditSeverityFilter("all");
+  };
+
+  const focusAuditItem = (item: AuditFeedItem) => {
+    const descriptor = getAuditDrilldownDescriptor(item);
+    setFilters((previous) => ({
+      ...previous,
+      tenantId: item.tenantId,
+      caseId: item.caseId ?? "all",
+    }));
+    setLocation(descriptor.path);
+  };
+
+  const focusExecutiveAlert = (alert: AuditExecutiveAlert) => {
+    setFilters((previous) => ({
+      ...previous,
+      tenantId: alert.tenantId,
+      caseId: alert.caseId ?? "all",
+    }));
+    setAuditFamilyFilter("guardrail");
+    setAuditSeverityFilter(alert.severity === "normal" ? "all" : alert.severity);
+    setLocation("/ceo");
   };
 
   const isAlertBusy = (alertId: number) => alertMutation.isPending && alertMutation.variables?.alertId === alertId;
@@ -1245,53 +1303,141 @@ export default function CeoDashboard() {
                 </div>
                 <div className="mt-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
                   <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h4 className="text-base font-semibold text-slate-950">Eventos recientes</h4>
-                        <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail.</p>
+                        <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail y segmentables sin salir del tablero.</p>
                       </div>
-                      <Badge className="rounded-full border border-white bg-white text-slate-700">Tenant/caso</Badge>
+                      <Badge className="rounded-full border border-white bg-white text-slate-700">
+                        {`${formatNumber(recentOperationalEvents.length)} de ${formatNumber(auditTrail.length)} visibles`}
+                      </Badge>
                     </div>
-                    <div className="mt-4 space-y-3">
-                      {recentOperationalEvents.length > 0 ? (
-                        recentOperationalEvents.map((item) => {
-                          const tone = getAuditActionTone(item.action);
-                          const rejectionReason = getAuditRejectionReason(item);
-                          return (
-                            <article key={item.id} className={`rounded-[1.2rem] border p-4 ${tone.card}`}>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge className={`rounded-full border ${tone.badge}`}>{getAuditActionLabel(item.action)}</Badge>
-                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.entityType}</Badge>
-                                {item.caseId ? (
-                                  <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.caseId}</Badge>
+                    <div className="mt-4 space-y-4">
+                      <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white/80 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros rápidos</p>
+                            <p className="mt-1 text-sm text-slate-500">Combina familia de evento y severidad para aislar fricción, accesos o documentos sin tocar el filtro global.</p>
+                          </div>
+                          {(auditFamilyFilter !== "all" || auditSeverityFilter !== "all") ? (
+                            <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearAuditFeedFilters}>
+                              <X className="mr-2 h-4 w-4" />
+                              Limpiar vista rápida
+                            </Button>
+                          ) : null}
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {AUDIT_FAMILY_FILTER_OPTIONS.map((option) => {
+                              const active = auditFamilyFilter === option.value;
+                              return (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant="outline"
+                                  className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
+                                  onClick={() => setAuditFamilyFilter(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {AUDIT_SEVERITY_FILTER_OPTIONS.map((option) => {
+                              const active = auditSeverityFilter === option.value;
+                              return (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant="outline"
+                                  className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
+                                  onClick={() => setAuditSeverityFilter(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {recentOperationalEvents.length > 0 ? (
+                          recentOperationalEvents.map((item) => {
+                            const tone = getAuditActionTone(item.action);
+                            const rejectionReason = getAuditRejectionReason(item);
+                            const severity = getAuditEventSeverity(item);
+                            const drilldown = getAuditDrilldownDescriptor(item);
+                            return (
+                              <article key={item.id} className={`rounded-[1.2rem] border p-4 ${tone.card}`}>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge className={`rounded-full border ${tone.badge}`}>{getAuditActionLabel(item.action)}</Badge>
+                                  <Badge className={`rounded-full border ${getSeverityBadgeClass(severity)}`}>{getAuditSeverityLabel(severity)}</Badge>
+                                  <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.entityType}</Badge>
+                                  {item.caseId ? (
+                                    <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.caseId}</Badge>
+                                  ) : null}
+                                </div>
+                                <p className="mt-3 text-sm font-semibold text-slate-950">{item.tenantId}</p>
+                                <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
+                                {item.documentId ? <p className="mt-1 text-sm text-slate-600">Documento {item.documentId}</p> : null}
+                                <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
+                                {rejectionReason ? (
+                                  <p className="mt-2 text-sm text-amber-950">
+                                    <strong>Motivo:</strong> {rejectionReason}
+                                  </p>
                                 ) : null}
-                              </div>
-                              <p className="mt-3 text-sm font-semibold text-slate-950">{item.tenantId}</p>
-                              <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
-                              <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
-                              {rejectionReason ? (
-                                <p className="mt-2 text-sm text-amber-950">
-                                  <strong>Motivo:</strong> {rejectionReason}
-                                </p>
-                              ) : null}
-                            </article>
-                          );
-                        })
-                      ) : (
-                        <SectionEmptyState
-                          title="No hay eventos operativos para la vista actual"
-                          description="Ajusta tenant o caso para recuperar trazabilidad reciente desde la bitácora de auditoría ya persistida."
-                          onClear={clearAllFilters}
-                        />
-                      )}
+                                <div className="mt-3 flex flex-wrap items-center gap-3">
+                                  <Button type="button" variant="outline" className="rounded-full bg-white/90 text-slate-700" onClick={() => focusAuditItem(item)}>
+                                    {drilldown.label}
+                                  </Button>
+                                  <span className="text-xs font-medium text-slate-500">{drilldown.helper}</span>
+                                </div>
+                              </article>
+                            );
+                          })
+                        ) : (
+                          <SectionEmptyState
+                            title="No hay eventos operativos para la combinación rápida actual"
+                            description="Quita filtros rápidos de familia o severidad, o bien relaja tenant y caso para recuperar trazabilidad reciente desde la auditoría persistida."
+                            onClear={clearAuditFeedFilters}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                     <div>
                       <h4 className="text-base font-semibold text-slate-950">Lectura rápida</h4>
-                      <p className="mt-1 text-sm text-slate-500">Resumen ejecutivo mínimo para monitorear fricción y trazabilidad.</p>
+                      <p className="mt-1 text-sm text-slate-500">Resumen ejecutivo mínimo para monitorear fricción, trazabilidad y acumulación de rechazos operativos.</p>
                     </div>
                     <div className="mt-4 space-y-3">
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Alertas ejecutivas derivadas</p>
+                          <Badge className="rounded-full border border-amber-200 bg-white text-amber-800">{formatNumber(auditExecutiveAlerts.length)}</Badge>
+                        </div>
+                        <div className="mt-3 space-y-3">
+                          {auditExecutiveAlerts.length > 0 ? (
+                            auditExecutiveAlerts.map((alert) => (
+                              <article key={`${alert.scope}-${alert.scopeId}`} className="rounded-2xl border border-white/80 bg-white/90 p-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{getAuditSeverityLabel(alert.severity)}</Badge>
+                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{alert.scope === "case" ? "Caso" : "Tenant"}</Badge>
+                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{formatNumber(alert.rejectionCount)} rechazos</Badge>
+                                </div>
+                                <p className="mt-3 text-sm font-semibold text-slate-950">{alert.title}</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">{alert.description}</p>
+                                <Button type="button" variant="outline" className="mt-3 rounded-full bg-white text-slate-700" onClick={() => focusExecutiveAlert(alert)}>
+                                  Revisar contexto
+                                </Button>
+                              </article>
+                            ))
+                          ) : (
+                            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
+                          )}
+                        </div>
+                      </div>
                       <div className="rounded-2xl bg-white p-4 shadow-sm">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Accesos auditados</p>
                         <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.accessEvents)}</p>

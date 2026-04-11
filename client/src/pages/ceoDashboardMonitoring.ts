@@ -23,8 +23,39 @@ export type AuditMonitoringSummary = {
   distinctCases: number;
 };
 
+export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
+export type AuditEventSeverity = "all" | "high" | "medium" | "normal";
+
+export type AuditExecutiveAlert = {
+  scope: "tenant" | "case";
+  scopeId: string;
+  tenantId: string;
+  caseId: string | null;
+  rejectionCount: number;
+  severity: Exclude<AuditEventSeverity, "all">;
+  title: string;
+  description: string;
+};
+
+export type AuditDrilldownDescriptor = {
+  path: "/ceo" | "/ceo/alertas" | "/ceo/accesos" | "/ceo/documentos";
+  label: string;
+  helper: string;
+};
+
 function uniqueCount(values: Array<string | null | undefined>) {
   return new Set(values.filter((value): value is string => Boolean(value))).size;
+}
+
+function normalizeActionFamily(action: string): Exclude<AuditEventFamily, "all"> {
+  if (action === "document.guardrail_rejected") return "guardrail";
+  if (action.startsWith("document.")) return "document";
+  if (action.startsWith("access.")) return "access";
+  if (action.startsWith("policy.")) return "policy";
+  if (action.startsWith("alert.")) return "alert";
+  if (action.startsWith("case.")) return "case";
+  if (action.startsWith("dashboard.")) return "dashboard";
+  return "other";
 }
 
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
@@ -89,4 +120,151 @@ export function getAuditRejectionReason(item: AuditFeedItem) {
   if (!item.afterState || typeof item.afterState !== "object") return null;
   const reason = (item.afterState as { reason?: unknown }).reason;
   return typeof reason === "string" && reason.length > 0 ? reason : null;
+}
+
+export function getAuditEventFamily(item: AuditFeedItem): Exclude<AuditEventFamily, "all"> {
+  return normalizeActionFamily(item.action);
+}
+
+export function getAuditFamilyLabel(family: AuditEventFamily) {
+  if (family === "all") return "Todos";
+  if (family === "guardrail") return "Guardrails";
+  if (family === "document") return "Documentos";
+  if (family === "access") return "Accesos";
+  if (family === "policy") return "Políticas";
+  if (family === "alert") return "Alertas";
+  if (family === "case") return "Casos";
+  if (family === "dashboard") return "Tablero";
+  return "Otros";
+}
+
+export function getAuditEventSeverity(item: AuditFeedItem): Exclude<AuditEventSeverity, "all"> {
+  if (item.action === "document.guardrail_rejected") return "high";
+  if (item.action.startsWith("alert.")) return "high";
+  if (item.action.startsWith("access.") || item.action.startsWith("policy.") || item.action.startsWith("case.")) return "medium";
+  return "normal";
+}
+
+export function getAuditSeverityLabel(severity: AuditEventSeverity) {
+  if (severity === "all") return "Toda severidad";
+  if (severity === "high") return "Alta";
+  if (severity === "medium") return "Media";
+  return "Normal";
+}
+
+export function filterAuditFeed(
+  items: AuditFeedItem[],
+  selection: {
+    family: AuditEventFamily;
+    severity: AuditEventSeverity;
+  },
+) {
+  return items.filter((item) => {
+    if (selection.family !== "all" && getAuditEventFamily(item) !== selection.family) return false;
+    if (selection.severity !== "all" && getAuditEventSeverity(item) !== selection.severity) return false;
+    return true;
+  });
+}
+
+function getAlertSeverityByCount(count: number): Exclude<AuditEventSeverity, "all"> {
+  if (count >= 3) return "high";
+  if (count >= 2) return "medium";
+  return "normal";
+}
+
+export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
+  const guardrailRejections = items.filter((item) => item.action === "document.guardrail_rejected");
+  const byTenant = new Map<string, { tenantId: string; count: number }>();
+  const byCase = new Map<string, { tenantId: string; caseId: string; count: number }>();
+
+  for (const item of guardrailRejections) {
+    const tenantBucket = byTenant.get(item.tenantId) ?? { tenantId: item.tenantId, count: 0 };
+    tenantBucket.count += 1;
+    byTenant.set(item.tenantId, tenantBucket);
+
+    if (item.caseId) {
+      const caseKey = `${item.tenantId}::${item.caseId}`;
+      const caseBucket = byCase.get(caseKey) ?? { tenantId: item.tenantId, caseId: item.caseId, count: 0 };
+      caseBucket.count += 1;
+      byCase.set(caseKey, caseBucket);
+    }
+  }
+
+  const alerts: AuditExecutiveAlert[] = [];
+
+  for (const tenant of Array.from(byTenant.values())) {
+    if (tenant.count < 2) continue;
+    const severity = getAlertSeverityByCount(tenant.count);
+    alerts.push({
+      scope: "tenant",
+      scopeId: tenant.tenantId,
+      tenantId: tenant.tenantId,
+      caseId: null,
+      rejectionCount: tenant.count,
+      severity,
+      title: `Fricción repetida en ${tenant.tenantId}`,
+      description:
+        severity === "high"
+          ? `Se acumularon ${tenant.count} rechazos operativos recientes en el tenant y conviene revisar saturación, deduplicación o reglas de entrada.`
+          : `Ya van ${tenant.count} rechazos operativos recientes en el tenant visible y la fricción amerita seguimiento.`,
+    });
+  }
+
+  for (const entry of Array.from(byCase.values())) {
+    if (entry.count < 2) continue;
+    const severity = getAlertSeverityByCount(entry.count);
+    alerts.push({
+      scope: "case",
+      scopeId: entry.caseId,
+      tenantId: entry.tenantId,
+      caseId: entry.caseId,
+      rejectionCount: entry.count,
+      severity,
+      title: `Caso ${entry.caseId} con rechazos repetidos`,
+      description:
+        severity === "high"
+          ? `El caso visible acumula ${entry.count} rechazos operativos recientes y ya presenta una fricción alta que merece intervención.`
+          : `El caso visible suma ${entry.count} rechazos operativos recientes; conviene revisar el motivo antes de seguir operando.`,
+    });
+  }
+
+  return alerts.sort((left, right) => {
+    const severityOrder = { high: 0, medium: 1, normal: 2 } satisfies Record<Exclude<AuditEventSeverity, "all">, number>;
+    if (severityOrder[left.severity] !== severityOrder[right.severity]) {
+      return severityOrder[left.severity] - severityOrder[right.severity];
+    }
+    return right.rejectionCount - left.rejectionCount;
+  });
+}
+
+export function getAuditDrilldownDescriptor(item: AuditFeedItem): AuditDrilldownDescriptor {
+  if (item.documentId || item.entityType === "document" || item.action.startsWith("document.")) {
+    return {
+      path: "/ceo/documentos",
+      label: item.documentId ? "Ver documento relacionado" : "Ver flujo documental",
+      helper: item.documentId ? `Documento ${item.documentId}` : "Abrir la vista documental filtrada",
+    };
+  }
+
+  if (item.entityType === "access" || item.action.startsWith("access.")) {
+    return {
+      path: "/ceo/accesos",
+      label: item.caseId ? "Ver acceso del caso" : "Ver accesos relacionados",
+      helper: item.caseId ? `Caso ${item.caseId}` : "Abrir la vista de accesos filtrada",
+    };
+  }
+
+  if (item.entityType === "alert" || item.action.startsWith("alert.")) {
+    return {
+      path: "/ceo/alertas",
+      label: item.caseId ? "Ver alerta del caso" : "Ver alertas relacionadas",
+      helper: item.caseId ? `Caso ${item.caseId}` : "Abrir la vista de alertas filtrada",
+    };
+  }
+
+  return {
+    path: "/ceo",
+    label: item.caseId ? "Abrir caso relacionado" : "Abrir contexto del tenant",
+    helper: item.caseId ? `Caso ${item.caseId}` : `Tenant ${item.tenantId}`,
+  };
 }

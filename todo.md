@@ -587,3 +587,13 @@
 - [x] Añadir bitácora operativa mínima en el tablero CEO con consulta reutilizando audit trail y filtros de tenant/caso
 - [x] Exponer una superficie inicial de monitoreo ejecutivo con métricas de trazabilidad y eventos recientes
 - [x] Cubrir la nueva bitácora operativa del tablero CEO con Vitest
+- [x] Contrastar con ChatGPT, Grok y Gemini la siguiente evolución de la bitácora operativa del tablero CEO antes de implementarla
+- [x] Añadir filtros rápidos por tipo de evento y severidad en la bitácora operativa del tablero CEO
+- [x] Enlazar cada evento reciente de la bitácora operativa hacia su caso o documento correspondiente
+- [x] Incorporar alertas ejecutivas cuando se acumulen rechazos operativos por tenant o caso
+- [x] Cubrir con Vitest la evolución de filtros, drill-down y alertas de la bitácora CEO
+- [ ] Operativa multi-IA: corregir o sustituir la clave de Gemini, actualmente rechazada por la API como filtrada, para recuperar el contraste triple completo
+- [x] Añadir filtros rápidos por tipo de evento y severidad en la bitácora operativa del Dashboard CEO
+- [x] Incorporar enlaces operativos desde cada evento reciente hacia el caso o documento correspondiente dentro de la consola CEO
+- [x] Crear alertas ejecutivas derivadas de acumulación de rechazos operativos por tenant o por caso en la bitácora CEO
+- [x] Extender pruebas Vitest del módulo de monitoreo CEO para cubrir filtros rápidos, drill-down y alertas derivadas
