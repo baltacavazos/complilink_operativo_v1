@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildBridgeSmokeComparisonSummary,
   buildBridgeSmokeHistorySummary,
   filterBridgeSmokeHistory,
   getBridgeSmokeAlertSeverityTone,
@@ -93,6 +94,91 @@ describe("ceoBridgeSmokeHistory", () => {
     expect(getBridgeSmokeHistoryStatusLabel("passed")).toBe("Conforme");
     expect(getBridgeSmokeHistoryStatusTone("failed")).toContain("amber");
     expect(getBridgeSmokeHistoryContext(entries[2])).toBe("fetch failed");
+  });
+
+  it("calcula comparativos diarios y semanales contra la ventana previa", () => {
+    const nowMs = new Date("2026-04-12T12:00:00.000Z").getTime();
+    const entries = [
+      buildEntry({
+        testedAt: "2026-04-12T11:00:00.000Z",
+        testedAtMs: new Date("2026-04-12T11:00:00.000Z").getTime(),
+        status: "passed",
+        passed: true,
+      }),
+      buildEntry({
+        testedAt: "2026-04-12T09:00:00.000Z",
+        testedAtMs: new Date("2026-04-12T09:00:00.000Z").getTime(),
+        status: "failed",
+        passed: false,
+        healthStatus: 500,
+        webhookStatus: 500,
+        verified: false,
+      }),
+      buildEntry({
+        testedAt: "2026-04-11T14:00:00.000Z",
+        testedAtMs: new Date("2026-04-11T14:00:00.000Z").getTime(),
+        status: "passed",
+        passed: true,
+      }),
+      buildEntry({
+        testedAt: "2026-04-09T12:00:00.000Z",
+        testedAtMs: new Date("2026-04-09T12:00:00.000Z").getTime(),
+        status: "error",
+        passed: false,
+        healthStatus: null,
+        webhookStatus: null,
+        verified: null,
+        error: "timeout",
+      }),
+      buildEntry({
+        testedAt: "2026-04-07T12:00:00.000Z",
+        testedAtMs: new Date("2026-04-07T12:00:00.000Z").getTime(),
+        status: "passed",
+        passed: true,
+      }),
+      buildEntry({
+        testedAt: "2026-04-02T12:00:00.000Z",
+        testedAtMs: new Date("2026-04-02T12:00:00.000Z").getTime(),
+        status: "failed",
+        passed: false,
+        healthStatus: 500,
+        webhookStatus: 500,
+        verified: false,
+      }),
+    ];
+
+    expect(buildBridgeSmokeComparisonSummary(entries, nowMs)).toEqual({
+      daily: {
+        label: "Últimas 24 h vs 24 h previas",
+        totalRuns: 3,
+        passedRuns: 2,
+        failedRuns: 1,
+        errorRuns: 0,
+        successRate: 67,
+        consecutiveFailures: 0,
+        latestStatus: "passed",
+        totalDelta: 3,
+        successRateDelta: 67,
+        passedDelta: 2,
+        failedDelta: 1,
+        errorDelta: 0,
+      },
+      weekly: {
+        label: "Últimos 7 días vs 7 días previos",
+        totalRuns: 5,
+        passedRuns: 3,
+        failedRuns: 1,
+        errorRuns: 1,
+        successRate: 60,
+        consecutiveFailures: 0,
+        latestStatus: "passed",
+        totalDelta: 4,
+        successRateDelta: 60,
+        passedDelta: 3,
+        failedDelta: 0,
+        errorDelta: 1,
+      },
+    });
   });
 
   it("filtra por ventana temporal y severidad sin romper el filtro de estado", () => {

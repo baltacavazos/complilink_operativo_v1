@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export type CeoDashboardSection = "resumen" | "alertas" | "accesos" | "documentos";
+export type CeoDashboardSection = "resumen" | "bridge" | "alertas" | "accesos" | "documentos";
 
 export type CeoDashboardSnapshot = {
   generatedAt: Date | string;
@@ -91,10 +91,16 @@ export type CeoDashboardSnapshot = {
   }>;
 };
 
-type CeoExportTable = {
+export type CeoExportTable = {
   title: string;
   columns: string[];
   rows: string[][];
+};
+
+export type CeoCustomExportPayload = {
+  title?: string;
+  summaryRows: Array<[string, string]>;
+  tables: CeoExportTable[];
 };
 
 const CEO_EXPORT_MAX_CELL_LENGTH = 240;
@@ -112,6 +118,7 @@ type BuildExportArgs = {
   appliedFilters: string[];
   actorLabel: string;
   exportedAt?: Date;
+  customExport?: CeoCustomExportPayload;
 };
 
 export type CeoExportGuardInput = {
@@ -197,6 +204,7 @@ function escapeCsv(value: unknown) {
 }
 
 export function getCeoSectionLabel(section: CeoDashboardSection) {
+  if (section === "bridge") return "Bridge operativo";
   if (section === "alertas") return "Alertas";
   if (section === "accesos") return "Accesos";
   if (section === "documentos") return "Documentos";
@@ -217,7 +225,11 @@ function buildFilename(section: CeoDashboardSection, kind: "csv" | "pdf", export
   return `ceo-${section}-${parts}-${time}.${kind}`;
 }
 
-export function buildCeoExportTables(section: CeoDashboardSection, snapshot: CeoDashboardSnapshot): CeoExportTable[] {
+export function buildCeoExportTables(
+  section: CeoDashboardSection,
+  snapshot: CeoDashboardSnapshot,
+  customExport?: CeoCustomExportPayload,
+): CeoExportTable[] {
   const tenantTable: CeoExportTable = {
     title: "Salud por tenant",
     columns: ["Tenant", "Estado", "Casos activos", "Alertas abiertas", "Accesos vigentes", "Documentos pendientes"],
@@ -290,45 +302,67 @@ export function buildCeoExportTables(section: CeoDashboardSection, snapshot: Ceo
     ]),
   };
 
+  if (section === "bridge") {
+    return customExport?.tables ?? [
+      {
+        title: "Bridge operativo",
+        columns: ["Estado"],
+        rows: [["Sin datos de exportación bridge disponibles"]],
+      },
+    ];
+  }
   if (section === "alertas") return [alertTable];
   if (section === "accesos") return [membershipTable];
   if (section === "documentos") return [documentTable];
   return [tenantTable, caseTable, alertTable, membershipTable, documentTable];
 }
 
-export function buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel, exportedAt = new Date() }: BuildExportArgs): CeoPdfModel {
+export function buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel, exportedAt = new Date(), customExport }: BuildExportArgs): CeoPdfModel {
   const currentSection = getCeoSectionLabel(section);
   const filename = buildFilename(section, "pdf", exportedAt);
   const filtersLabel = appliedFilters.length > 0 ? appliedFilters.join(" | ") : "Sin filtros activos";
-  const tables = buildCeoExportTables(section, snapshot).map((table) => ({
+  const tables = buildCeoExportTables(section, snapshot, customExport).map((table) => ({
     title: sanitizeCell(table.title),
     columns: table.columns.map((column) => sanitizeCell(column)),
     rows: table.rows.map((row) => row.map((cell) => sanitizeCell(cell))),
   }));
+  const summaryRows: Array<[string, string]> =
+    section === "bridge" && customExport
+      ? [
+          ["Vista", sanitizeCell(currentSection)],
+          ["Exportado por", sanitizeCell(actorLabel)],
+          ["Generado", formatDateTime(exportedAt)],
+          ["Snapshot", formatDateTime(snapshot.generatedAt)],
+          ["Filtros", sanitizeCell(filtersLabel)],
+          ...customExport.summaryRows.map(
+            ([label, value]): [string, string] => [sanitizeCell(label), sanitizeCell(value)],
+          ),
+        ]
+      : [
+          ["Vista", sanitizeCell(currentSection)],
+          ["Exportado por", sanitizeCell(actorLabel)],
+          ["Generado", formatDateTime(exportedAt)],
+          ["Snapshot", formatDateTime(snapshot.generatedAt)],
+          ["Filtros", sanitizeCell(filtersLabel)],
+          ["Tenants activos", formatNumber(snapshot.summary.totalTenants)],
+          ["Casos activos", formatNumber(snapshot.summary.activeCases)],
+          ["Alertas abiertas", formatNumber(snapshot.summary.openAlerts)],
+          ["Alertas críticas", formatNumber(snapshot.summary.criticalAlerts)],
+          ["Accesos vigentes", formatNumber(snapshot.summary.activeMemberships)],
+          ["Documentos pendientes", formatNumber(snapshot.summary.pendingDocuments)],
+          ["Documentos totales", formatNumber(snapshot.summary.totalDocuments)],
+        ];
 
   return {
-    title: `Reporte ejecutivo CEO · ${currentSection}`,
+    title: sanitizeCell(customExport?.title ?? `Reporte ejecutivo CEO · ${currentSection}`),
     filename,
-    summaryRows: [
-      ["Vista", sanitizeCell(currentSection)],
-      ["Exportado por", sanitizeCell(actorLabel)],
-      ["Generado", formatDateTime(exportedAt)],
-      ["Snapshot", formatDateTime(snapshot.generatedAt)],
-      ["Filtros", sanitizeCell(filtersLabel)],
-      ["Tenants activos", formatNumber(snapshot.summary.totalTenants)],
-      ["Casos activos", formatNumber(snapshot.summary.activeCases)],
-      ["Alertas abiertas", formatNumber(snapshot.summary.openAlerts)],
-      ["Alertas críticas", formatNumber(snapshot.summary.criticalAlerts)],
-      ["Accesos vigentes", formatNumber(snapshot.summary.activeMemberships)],
-      ["Documentos pendientes", formatNumber(snapshot.summary.pendingDocuments)],
-      ["Documentos totales", formatNumber(snapshot.summary.totalDocuments)],
-    ],
+    summaryRows,
     tables,
   };
 }
 
-export function buildCeoCsvReport({ section, snapshot, appliedFilters, actorLabel, exportedAt = new Date() }: BuildExportArgs) {
-  const model = buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel, exportedAt });
+export function buildCeoCsvReport({ section, snapshot, appliedFilters, actorLabel, exportedAt = new Date(), customExport }: BuildExportArgs) {
+  const model = buildCeoPdfModel({ section, snapshot, appliedFilters, actorLabel, exportedAt, customExport });
   const lines: string[] = [];
 
   lines.push([escapeCsv("Reporte ejecutivo CEO"), escapeCsv(model.title)].join(","));

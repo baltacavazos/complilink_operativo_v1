@@ -16,6 +16,7 @@ import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMaste
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import {
+  buildBridgeSmokeComparisonSummary,
   buildBridgeSmokeHistorySummary,
   filterBridgeSmokeHistory,
   getBridgeSmokeAlertSeverityTone,
@@ -32,7 +33,12 @@ import {
   type BridgeSmokeHistorySeverityFilter,
   type BridgeSmokeHistoryTimeWindow,
 } from "@/pages/ceoBridgeSmokeHistory";
-import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
+import {
+  downloadCeoCsvReport,
+  downloadCeoPdfReport,
+  getCeoExportBlockReason,
+  type CeoCustomExportPayload,
+} from "@/pages/ceoDashboardExports";
 import {
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
@@ -481,8 +487,7 @@ export default function CeoDashboard() {
     isSnapshotStale,
     hasSnapshotError: Boolean(snapshotError),
   });
-  const currentSectionExportGuardReason =
-    currentSection === "bridge" ? "La exportación del panel bridge quedará disponible en una siguiente iteración." : exportGuardReason;
+  const currentSectionExportGuardReason = exportGuardReason;
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
@@ -542,6 +547,7 @@ export default function CeoDashboard() {
     () => buildBridgeSmokeHistorySummary(filteredBridgeSmokeHistory),
     [filteredBridgeSmokeHistory],
   );
+  const bridgeSmokeComparisons = useMemo(() => buildBridgeSmokeComparisonSummary(bridgeSmokeHistory), [bridgeSmokeHistory]);
   const bridgeSmokeExecutiveSummary = useMemo(() => {
     const technicalErrors = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "critical").length;
     const contractualFailures = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "warning").length;
@@ -588,6 +594,111 @@ export default function CeoDashboard() {
       smokeStatusLabel,
     };
   }, [bridgeOverview.rows, bridgeSmokeStatus]);
+  const bridgeExportPayload = useMemo<CeoCustomExportPayload>(
+    () => ({
+      title: "Reporte ejecutivo CEO · Bridge operativo",
+      summaryRows: [
+        ["Expedientes trazados", formatNumber(bridgeOverview.summary.trackedDocuments)],
+        ["Conformes", formatNumber(bridgeOverview.summary.healthy)],
+        ["Pendientes de retorno", formatNumber(bridgeOverview.summary.pending)],
+        ["Advertencias activas", formatNumber(bridgeOverview.summary.warning)],
+        ["Críticos", formatNumber(bridgeOverview.summary.critical)],
+        ["Entregas con retorno", formatNumber(bridgeOperationalSummary.delivered)],
+        ["Rechazos visibles", formatNumber(bridgeOperationalSummary.rejected)],
+        ["Reintentos activos", formatNumber(bridgeOperationalSummary.retries)],
+        ["Pendientes de ack", formatNumber(bridgeOperationalSummary.awaitingAck)],
+        ["Smoke recurrente", bridgeOperationalSummary.smokeStatusLabel],
+        ["Última corrida smoke", bridgeSmokeStatus?.testedAt ? formatDateTime(bridgeSmokeStatus.testedAt) : "Sin registro"],
+        ["Estado de alerta", getBridgeSmokeAlertVisualStateLabel(bridgeSmokeAlerting?.visualState ?? "stable")],
+      ],
+      tables: [
+        {
+          title: "Expedientes bridge visibles",
+          columns: ["Documento", "Tenant", "Caso", "Salud", "Resultado", "Retorno", "Intentos", "Última actividad", "Trace ID"],
+          rows: bridgeOverview.rows.map((item) => [
+            item.documentName,
+            item.tenantName,
+            item.caseTitle || item.caseId || "—",
+            item.health,
+            item.outcomeCategory,
+            item.latestReturnStatus || item.latestReturnEvent || item.dispatchStatus,
+            formatNumber(item.attempts),
+            formatDateTime(item.lastActivityAt),
+            item.traceId || "—",
+          ]),
+        },
+        {
+          title: "Incidencias priorizadas",
+          columns: ["Documento", "Tenant", "Caso", "Severidad", "Detalle", "Alertas abiertas", "Última actividad"],
+          rows: bridgeOverview.issues.map((item) => [
+            item.documentName,
+            item.tenantName,
+            item.caseTitle || item.caseId || "—",
+            item.health,
+            item.errorMessage || item.guardrailReason || item.warnings.join(" | ") || item.latestReturnStatus || item.dispatchStatus,
+            formatNumber(item.openAlertCount),
+            formatDateTime(item.lastActivityAt),
+          ]),
+        },
+        {
+          title: "Historial smoke reciente",
+          columns: ["Corrida", "Estado", "Severidad", "Health", "Webhook", "Firma", "Base URL", "Contexto"],
+          rows: filteredBridgeSmokeHistory.map((entry) => [
+            entry.testedAt ? formatDateTime(entry.testedAt) : "Sin fecha",
+            getBridgeSmokeHistoryStatusLabel(entry.status),
+            getBridgeSmokeHistorySeverityLabel(getBridgeSmokeHistorySeverity(entry)),
+            entry.healthStatus !== null ? String(entry.healthStatus) : "—",
+            entry.webhookStatus !== null ? String(entry.webhookStatus) : "—",
+            entry.verified === null ? "—" : entry.verified ? "Verificada" : "No verificada",
+            entry.baseUrl || bridgeSmokeStatus?.baseUrl || "—",
+            getBridgeSmokeHistoryContext(entry),
+          ]),
+        },
+        {
+          title: "Resumen smoke filtrado",
+          columns: ["Métrica", "Valor"],
+          rows: [
+            ["Corridas visibles", formatNumber(filteredBridgeSmokeHistorySummary.totalRuns)],
+            ["Corridas conformes", formatNumber(filteredBridgeSmokeHistorySummary.passedRuns)],
+            ["Corridas con fallo contractual", formatNumber(filteredBridgeSmokeHistorySummary.failedRuns)],
+            ["Errores técnicos", formatNumber(filteredBridgeSmokeHistorySummary.errorRuns)],
+            ["Éxito visible", `${formatNumber(filteredBridgeSmokeHistorySummary.successRate)}%`],
+            ["Racha visible de fallos", formatNumber(filteredBridgeSmokeHistorySummary.consecutiveFailures)],
+            ["Fallo técnico acumulado", formatNumber(bridgeSmokeExecutiveSummary.technicalErrors)],
+            ["Fallo contractual acumulado", formatNumber(bridgeSmokeExecutiveSummary.contractualFailures)],
+            ["Última corrida conforme", bridgeSmokeExecutiveSummary.lastPassingRun?.testedAt ? formatDateTime(bridgeSmokeExecutiveSummary.lastPassingRun.testedAt) : "Sin corrida conforme"],
+          ],
+        },
+      ],
+    }),
+    [
+      bridgeOperationalSummary.awaitingAck,
+      bridgeOperationalSummary.delivered,
+      bridgeOperationalSummary.rejected,
+      bridgeOperationalSummary.retries,
+      bridgeOperationalSummary.smokeStatusLabel,
+      bridgeOverview.issues,
+      bridgeOverview.rows,
+      bridgeOverview.summary.critical,
+      bridgeOverview.summary.healthy,
+      bridgeOverview.summary.pending,
+      bridgeOverview.summary.trackedDocuments,
+      bridgeOverview.summary.warning,
+      bridgeSmokeAlerting?.visualState,
+      bridgeSmokeExecutiveSummary.contractualFailures,
+      bridgeSmokeExecutiveSummary.lastPassingRun,
+      bridgeSmokeExecutiveSummary.technicalErrors,
+      bridgeSmokeStatus?.baseUrl,
+      bridgeSmokeStatus?.testedAt,
+      filteredBridgeSmokeHistory,
+      filteredBridgeSmokeHistorySummary.consecutiveFailures,
+      filteredBridgeSmokeHistorySummary.errorRuns,
+      filteredBridgeSmokeHistorySummary.failedRuns,
+      filteredBridgeSmokeHistorySummary.passedRuns,
+      filteredBridgeSmokeHistorySummary.successRate,
+      filteredBridgeSmokeHistorySummary.totalRuns,
+    ],
+  );
 
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
@@ -689,7 +800,7 @@ export default function CeoDashboard() {
     () => (currentSection === "bridge" ? bridgeOverview.rows.length : getCurrentSectionCount(currentSection, snapshotData)),
     [bridgeOverview.rows.length, currentSection, snapshotData],
   );
-  const exportableSection = currentSection === "bridge" ? "resumen" : currentSection;
+  const exportableSection = currentSection;
   const lastTrackedSectionViewRef = useRef<string | null>(null);
   const lastTrackedMasterMetricsRef = useRef<string | null>(null);
 
@@ -1103,12 +1214,14 @@ export default function CeoDashboard() {
               snapshot: snapshotData,
               appliedFilters,
               actorLabel,
+              customExport: exportableSection === "bridge" ? bridgeExportPayload : undefined,
             })
           : downloadCeoCsvReport({
               section: exportableSection,
               snapshot: snapshotData,
               appliedFilters,
               actorLabel,
+              customExport: exportableSection === "bridge" ? bridgeExportPayload : undefined,
             });
 
       try {
@@ -2419,6 +2532,54 @@ export default function CeoDashboard() {
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Éxito visible: {formatNumber(filteredBridgeSmokeHistorySummary.successRate)}%</span>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Racha visible: {formatNumber(filteredBridgeSmokeHistorySummary.consecutiveFailures)}</span>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Corridas 24h: {formatNumber(bridgeSmokeStatus?.summary.last24Hours ?? 0)}</span>
+                  </div>
+                  <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                    {[
+                      { title: "Comparativo diario", data: bridgeSmokeComparisons.daily },
+                      { title: "Comparativo semanal", data: bridgeSmokeComparisons.weekly },
+                    ].map((comparison) => (
+                      <article key={comparison.title} className="rounded-[1.3rem] border border-slate-200 bg-slate-50/80 p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{comparison.title}</p>
+                            <p className="mt-2 text-sm text-slate-600">{comparison.data.label}</p>
+                          </div>
+                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">
+                            {formatNumber(comparison.data.totalRuns)} corridas
+                          </Badge>
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-[1rem] border border-white bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Éxito actual</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(comparison.data.successRate)}%</p>
+                            <p className={`mt-2 text-xs font-semibold ${comparison.data.successRateDelta >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                              {comparison.data.successRateDelta >= 0 ? "+" : ""}{formatNumber(comparison.data.successRateDelta)} pts vs ventana previa
+                            </p>
+                          </div>
+                          <div className="rounded-[1rem] border border-white bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Volumen actual</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(comparison.data.totalRuns)}</p>
+                            <p className={`mt-2 text-xs font-semibold ${comparison.data.totalDelta >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                              {comparison.data.totalDelta >= 0 ? "+" : ""}{formatNumber(comparison.data.totalDelta)} corridas vs ventana previa
+                            </p>
+                          </div>
+                          <div className="rounded-[1rem] border border-white bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Conformes / contractuales</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-950">{formatNumber(comparison.data.passedRuns)} / {formatNumber(comparison.data.failedRuns)}</p>
+                            <p className="mt-2 text-xs text-slate-500">
+                              Δ {comparison.data.passedDelta >= 0 ? "+" : ""}{formatNumber(comparison.data.passedDelta)} conformes · Δ {comparison.data.failedDelta >= 0 ? "+" : ""}{formatNumber(comparison.data.failedDelta)} contractuales
+                            </p>
+                          </div>
+                          <div className="rounded-[1rem] border border-white bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Errores técnicos / racha</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-950">{formatNumber(comparison.data.errorRuns)} / {formatNumber(comparison.data.consecutiveFailures)}</p>
+                            <p className="mt-2 text-xs text-slate-500">
+                              Δ {comparison.data.errorDelta >= 0 ? "+" : ""}{formatNumber(comparison.data.errorDelta)} errores · racha actual {formatNumber(comparison.data.consecutiveFailures)}
+                            </p>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
                   </div>
                   <div className="mt-5 space-y-3">
                     {filteredBridgeSmokeHistory.length > 0 ? (

@@ -1907,7 +1907,7 @@ export const appRouter = router({
       .input(
         z.object({
           tenantId: z.string().min(3).optional(),
-          section: z.enum(["resumen", "alertas", "accesos", "documentos"]),
+          section: z.enum(["resumen", "bridge", "alertas", "accesos", "documentos"]),
           format: z.enum(["csv", "pdf"]),
           snapshotGeneratedAt: z.string().datetime(),
           appliedFilters: z.array(z.string().min(1).max(160)).max(12),

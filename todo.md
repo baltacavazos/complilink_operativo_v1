@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Exportación ejecutiva del reporte del bridge en CSV y PDF desde la Consola CEO
+- [x] Notificaciones proactivas del bridge ante transición a alerta crítica y a recovery
+- [x] Comparativo histórico del bridge por día y semana en la Consola CEO
+
 - [x] Ejecutar la conexión real del bridge AuditaPatrón ↔ CompliLink con migración pendiente, configuración validada y prueba smoke end-to-end.
 
 - [x] Generar un PDF final con el mensaje de retorno para el otro chat y dejarlo listo para enviar.
@@ -825,3 +829,6 @@
 - [x] Implementar edición del umbral de fallos consecutivos desde la UI CEO con trazabilidad operativa.
 - [x] Incorporar filtros por ventana temporal y severidad en el historial operativo del bridge dentro de la consola CEO.
 - [x] Consolidar alertas operativas del bridge en un reporte ejecutivo único dentro de la consola CEO.
+- [ ] Implementar exportación CSV/PDF del reporte ejecutivo del bridge desde la Consola CEO.
+- [ ] Incorporar notificaciones proactivas cuando el bridge entre en alerta crítica o recovery.
+- [ ] Agregar comparativo histórico del bridge por día y semana para detectar degradaciones recurrentes.

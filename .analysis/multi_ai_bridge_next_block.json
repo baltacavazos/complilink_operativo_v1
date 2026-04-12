@@ -1,0 +1,285 @@
+{
+  "project": "complilink_operativo_v1",
+  "generated_at": "2026-04-12T07:55:00.467470Z",
+  "prompt": "Proyecto: CompliLink Operativo v1.\nObjetivo inmediato: diseñar el siguiente bloque de mejoras operativas para la Consola CEO del bridge CompliLink ↔ AuditaPatron.\n\nEstado técnico actual:\n1. Ya existe una Consola CEO en client/src/pages/CeoDashboard.tsx con una sección bridge operativa.\n2. El bridge ya cuenta con smoke monitoring, historial filtrable, umbral editable y reporte ejecutivo básico.\n3. El backend del smoke monitoring vive en server/bridgeSmokeMonitoring.ts y ya calcula alerting, threshold audit y estado visual.\n4. El router tRPC principal vive en server/routers.ts.\n5. Existe un helper de exportación ejecutiva genérico en client/src/pages/ceoDashboardExports.ts para otras secciones del dashboard.\n6. Existe un helper de notificaciones al owner en server/_core/notification.ts.\n7. El usuario aprobó continuar con estas tres mejoras siguientes:\n   A. Exportación del reporte ejecutivo del bridge.\n   B. Notificaciones proactivas cuando el bridge entra en alerta crítica o recovery.\n   C. Comparativo histórico por día y por semana para detectar degradaciones recurrentes.\n\nRestricciones y criterios:\n- Mantener una UX ejecutiva, sobria y simple.\n- Aprovechar al máximo la arquitectura actual.\n- Priorizar bajo riesgo, claridad operativa y auditabilidad.\n- Evitar duplicar lógica entre frontend y backend si puede centralizarse de forma razonable.\n- Indicar archivos concretos a tocar.\n- Sugerir estructura mínima de datos, pruebas vitest necesarias y orden recomendado de implementación.\n- Responder en español.\n- Entregar JSON válido, sin markdown, con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del enfoque\",\n  \"bridge_export\": {\n    \"recommended_ux\": \"...\",\n    \"formats\": [\"csv\", \"pdf\"],\n    \"implementation_note\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"proactive_notifications\": {\n    \"trigger_points\": [\"...\"],\n    \"delivery_strategy\": \"...\",\n    \"implementation_note\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"historical_comparison\": {\n    \"recommended_ux\": \"...\",\n    \"comparison_windows\": [\"day\", \"week\"],\n    \"key_metrics\": [\"...\"],\n    \"implementation_note\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"test_plan\": [\"...\"],\n  \"top_risks\": [\"...\"],\n  \"recommended_order\": [\"...\"],\n  \"one_sentence_summary\": \"...\"\n}",
+  "results": [
+    {
+      "ok": true,
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"model_view\": \"centralized backend logic con frontend ejecutivo\",\n  \"bridge_export\": {\n    \"recommended_ux\": \"Botón claro y sobrio en la sección bridge operativa para descargar reporte ejecutivo en formatos CSV y PDF, con modal confirmatorio simple.\",\n    \"formats\": [\"csv\", \"pdf\"],\n    \"implementation_note\": \"Extender helper client/src/pages/ceoDashboardExports.ts para incluir exportación específica del bridge usando datos ya calculados en backend; agregar endpoint tRPC para obtener datos consolidados del reporte ejecutivo.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"client/src/pages/ceoDashboardExports.ts\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"proactive_notifications\": {\n    \"trigger_points\": [\n      \"bridge entra en estado alerta crítica\",\n      \"bridge recupera estado normal (recovery)\"\n    ],\n    \"delivery_strategy\": \"Enviar notificación inmediata al owner usando helper server/_core/notification.ts desde backend al detectar cambio de estado en bridgeSmokeMonitoring.ts\",\n    \"implementation_note\": \"Agregar lógica en server/bridgeSmokeMonitoring.ts para detectar cambios de estado y disparar notificaciones; exponer estado actualizado vía tRPC para frontend; evitar lógica duplicada en frontend.\",\n    \"files\": [\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/_core/notification.ts\",\n      \"server/routers.ts\"\n    ],\n    \"risk_level\": \"medium\"\n  },\n  \"historical_comparison\": {\n    \"recommended_ux\": \"Gráficos sencillos y tablas filtrables en la consola CEO que permitan seleccionar vista diaria o semanal para comparar métricas clave y detectar degradaciones recurrentes.\",\n    \"comparison_windows\": [\"day\", \"week\"],\n    \"key_metrics\": [\n      \"alerting\",\n      \"threshold audit\",\n      \"estado visual\"\n    ],\n    \"implementation_note\": \"Extender backend para agregar agregaciones históricas por día y semana; exponer vía tRPC; reutilizar componentes gráficos existentes o mínimos nuevos en client/src/pages/CeoDashboard.tsx; mantener filtros simples y auditables.\",\n    \"files\": [\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/routers.ts\",\n      \"client/src/pages/CeoDashboard.tsx\"\n    ],\n    \"risk_level\": \"medium\"\n  },\n  \"test_plan\": [\n    \"Vitest para endpoint tRPC de exportación: validar formatos CSV y PDF, contenido y estructura.\",\n    \"Vitest para lógica de detección de cambio de estado en bridgeSmokeMonitoring.ts y envío de notificaciones.\",\n    \"Vitest para agregaciones históricas diarias y semanales, validando consistencia y límites.\",\n    \"Pruebas de integración frontend-backend para exportación y visualización histórica.\"\n  ],\n  \"top_risks\": [\n    \"Duplicación o inconsistencia de lógica entre frontend y backend.\",\n    \"Falsos positivos o negativos en detección de alertas críticas y recovery.\",\n    \"Sobrecarga de datos históricos que impacte rendimiento o UX.\",\n    \"Errores en formatos de exportación que afecten auditabilidad.\"\n  ],\n  \"recommended_order\": [\n    \"Implementar exportación ejecutiva (bajo riesgo, base para reportes).\",\n    \"Agregar notificaciones proactivas (medio riesgo, impacto operativo).\",\n    \"Desarrollar comparativo histórico (medio riesgo, mayor complejidad).\"\n  ],\n  \"one_sentence_summary\": \"Mejorar la Consola CEO con exportación ejecutiva robusta, notificaciones proactivas basadas en estado crítico/recovery y análisis histórico diario/semanal centralizado en backend para máxima claridad y bajo riesgo.\"\n}",
+      "parsed": {
+        "model_view": "centralized backend logic con frontend ejecutivo",
+        "bridge_export": {
+          "recommended_ux": "Botón claro y sobrio en la sección bridge operativa para descargar reporte ejecutivo en formatos CSV y PDF, con modal confirmatorio simple.",
+          "formats": [
+            "csv",
+            "pdf"
+          ],
+          "implementation_note": "Extender helper client/src/pages/ceoDashboardExports.ts para incluir exportación específica del bridge usando datos ya calculados en backend; agregar endpoint tRPC para obtener datos consolidados del reporte ejecutivo.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "client/src/pages/ceoDashboardExports.ts",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts"
+          ],
+          "risk_level": "low"
+        },
+        "proactive_notifications": {
+          "trigger_points": [
+            "bridge entra en estado alerta crítica",
+            "bridge recupera estado normal (recovery)"
+          ],
+          "delivery_strategy": "Enviar notificación inmediata al owner usando helper server/_core/notification.ts desde backend al detectar cambio de estado en bridgeSmokeMonitoring.ts",
+          "implementation_note": "Agregar lógica en server/bridgeSmokeMonitoring.ts para detectar cambios de estado y disparar notificaciones; exponer estado actualizado vía tRPC para frontend; evitar lógica duplicada en frontend.",
+          "files": [
+            "server/bridgeSmokeMonitoring.ts",
+            "server/_core/notification.ts",
+            "server/routers.ts"
+          ],
+          "risk_level": "medium"
+        },
+        "historical_comparison": {
+          "recommended_ux": "Gráficos sencillos y tablas filtrables en la consola CEO que permitan seleccionar vista diaria o semanal para comparar métricas clave y detectar degradaciones recurrentes.",
+          "comparison_windows": [
+            "day",
+            "week"
+          ],
+          "key_metrics": [
+            "alerting",
+            "threshold audit",
+            "estado visual"
+          ],
+          "implementation_note": "Extender backend para agregar agregaciones históricas por día y semana; exponer vía tRPC; reutilizar componentes gráficos existentes o mínimos nuevos en client/src/pages/CeoDashboard.tsx; mantener filtros simples y auditables.",
+          "files": [
+            "server/bridgeSmokeMonitoring.ts",
+            "server/routers.ts",
+            "client/src/pages/CeoDashboard.tsx"
+          ],
+          "risk_level": "medium"
+        },
+        "test_plan": [
+          "Vitest para endpoint tRPC de exportación: validar formatos CSV y PDF, contenido y estructura.",
+          "Vitest para lógica de detección de cambio de estado en bridgeSmokeMonitoring.ts y envío de notificaciones.",
+          "Vitest para agregaciones históricas diarias y semanales, validando consistencia y límites.",
+          "Pruebas de integración frontend-backend para exportación y visualización histórica."
+        ],
+        "top_risks": [
+          "Duplicación o inconsistencia de lógica entre frontend y backend.",
+          "Falsos positivos o negativos en detección de alertas críticas y recovery.",
+          "Sobrecarga de datos históricos que impacte rendimiento o UX.",
+          "Errores en formatos de exportación que afecten auditabilidad."
+        ],
+        "recommended_order": [
+          "Implementar exportación ejecutiva (bajo riesgo, base para reportes).",
+          "Agregar notificaciones proactivas (medio riesgo, impacto operativo).",
+          "Desarrollar comparativo histórico (medio riesgo, mayor complejidad)."
+        ],
+        "one_sentence_summary": "Mejorar la Consola CEO con exportación ejecutiva robusta, notificaciones proactivas basadas en estado crítico/recovery y análisis histórico diario/semanal centralizado en backend para máxima claridad y bajo riesgo."
+      },
+      "status_code": 200
+    },
+    {
+      "ok": true,
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"model_view\": \"Visibilidad Ejecutiva Proactiva\",\n  \"bridge_export\": {\n    \"recommended_ux\": \"Añadir un botón 'Exportar Reporte' junto al reporte ejecutivo existente en la Consola CEO. Al hacer clic, se presentará una opción para seleccionar el formato (CSV o PDF) y descargar el archivo. La interfaz debe ser limpia y directa, manteniendo la sobriedad ejecutiva.\",\n    \"formats\": [\"csv\", \"pdf\"],\n    \"implementation_note\": \"Extender la lógica de generación de datos del reporte ejecutivo en `server/bridgeSmokeMonitoring.ts` para consolidar toda la información necesaria. Crear una nueva función en `client/src/pages/ceoDashboardExports.ts` que orqueste la llamada a un nuevo procedimiento tRPC (`server/routers.ts`). Este procedimiento backend será responsable de formatear los datos para CSV y, para PDF, utilizar una librería de generación de documentos (ej. `pdfkit` o `puppeteer` para HTML a PDF) para asegurar un formato consistente y profesional. Reutilizar la estructura de datos del reporte existente para minimizar cambios.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"client/src/pages/ceoDashboardExports.ts\",\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/routers.ts\",\n      \"server/bridge/bridgeReportGenerator.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"proactive_notifications\": {\n    \"trigger_points\": [\n      \"Transición a 'Alerta Crítica': Cuando el estado del bridge cambia de normal/advertencia a crítico.\",\n      \"Transición a 'Recovery': Cuando el estado del bridge cambia de crítico/alerta a normal/saludable.\"\n    ],\n    \"delivery_strategy\": \"Las notificaciones se enviarán por correo electrónico al CEO/propietario designado, aprovechando el helper `server/_core/notification.ts`. Adicionalmente, se podría considerar una notificación in-app (ej. un toast o un badge en el icono de campana) para visibilidad inmediata en la consola.\",\n    \"implementation_note\": \"Modificar `server/bridgeSmokeMonitoring.ts` para introducir un mecanismo de seguimiento del 'último estado conocido' del bridge. Tras cada ciclo de monitoreo, si se detecta una transición a 'Alerta Crítica' o 'Recovery', se invocará el helper `server/_core/notification.ts` con un mensaje predefinido y claro. Es crucial asegurar que las notificaciones solo se envíen en la *transición* del estado, no en cada chequeo mientras el estado persiste, para evitar la sobre-notificación.\",\n    \"files\": [\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/_core/notification.ts\"\n    ],\n    \"risk_level\": \"medium\"\n  },\n  \"historical_comparison\": {\n    \"recommended_ux\": \"Integrar una nueva sección o un widget en la Consola CEO del bridge. Esta sección mostrará gráficos de línea o barras simples (ej. sparklines) que permitan visualizar la evolución de métricas clave. Se incluirá un selector simple ('Comparar por: Día / Semana') para alternar la granularidad. El objetivo es una visualización rápida de tendencias y anomalías.\",\n    \"comparison_windows\": [\"day\", \"week\"],\n    \"key_metrics\": [\n      \"Disponibilidad (uptime)\",\n      \"Latencia promedio de operaciones\",\n      \"Tasa de errores\",\n      \"Volumen de operaciones (throughput)\"\n    ],\n    \"implementation_note\": \"En `server/bridgeSmokeMonitoring.ts`, se deberá implementar la lógica para agregar y recuperar datos históricos de las métricas clave. Esto podría requerir una persistencia más granular de los datos de monitoreo si no se dispone ya de ella. Se creará un nuevo procedimiento tRPC en `server/routers.ts` para exponer estos datos agregados. En el frontend, `client/src/pages/CeoDashboard.tsx` consumirá este nuevo endpoint y utilizará una librería de gráficos ligera para renderizar las comparativas.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/routers.ts\",\n      \"server/db/migrations/add_bridge_metrics_history.ts\"\n    ],\n    \"risk_level\": \"medium\"\n  },\n  \"test_plan\": [\n    \"Tests unitarios para la lógica de generación de reportes y agregación de datos históricos (Vitest).\",\n    \"Tests de integración para los nuevos procedimientos tRPC (exportación, datos históricos).\",\n    \"Tests E2E para la funcionalidad de exportación y la visualización de comparativas históricas.\",\n    \"Pruebas manuales de envío y recepción de notificaciones proactivas, verificando contenido y frecuencia.\",\n    \"Pruebas de rendimiento para la consulta de datos históricos, especialmente en ventanas semanales.\"\n  ],\n  \"top_risks\": [\n    \"Sobre-notificación (spam) si la lógica de detección de transición de estado no es robusta.\",\n    \"Degradación del rendimiento en la consulta y agregación de datos históricos si la base de datos no está optimizada.\",\n    \"Inconsistencia de datos en las comparativas históricas si la recolección o agregación es defectuosa.\",\n    \"Complejidad en la generación de PDFs con formato ejecutivo y consistente en el backend.\"\n  ],\n  \"recommended_order\": [\n    \"1. Exportación del reporte ejecutivo del bridge (A): Bajo riesgo, alto valor inmediato, reutiliza patrones existentes.\",\n    \"2. Notificaciones proactivas (B): Crítico para la visibilidad ejecutiva, requiere gestión cuidadosa del estado, pero se basa en la lógica de monitoreo existente.\",\n    \"3. Comparativo histórico (C): Mayor complejidad por la agregación de datos y posibles cambios de persistencia, pero ofrece insights profundos a largo plazo.\"\n  ],\n  \"one_sentence_summary\": \"Mejoras en la Consola CEO para el bridge CompliLink ↔ AuditaPatron, añadiendo exportación ejecutiva, notificaciones proactivas y comparativas históricas para una visibilidad y control superiores.\"\n}",
+      "parsed": {
+        "model_view": "Visibilidad Ejecutiva Proactiva",
+        "bridge_export": {
+          "recommended_ux": "Añadir un botón 'Exportar Reporte' junto al reporte ejecutivo existente en la Consola CEO. Al hacer clic, se presentará una opción para seleccionar el formato (CSV o PDF) y descargar el archivo. La interfaz debe ser limpia y directa, manteniendo la sobriedad ejecutiva.",
+          "formats": [
+            "csv",
+            "pdf"
+          ],
+          "implementation_note": "Extender la lógica de generación de datos del reporte ejecutivo en `server/bridgeSmokeMonitoring.ts` para consolidar toda la información necesaria. Crear una nueva función en `client/src/pages/ceoDashboardExports.ts` que orqueste la llamada a un nuevo procedimiento tRPC (`server/routers.ts`). Este procedimiento backend será responsable de formatear los datos para CSV y, para PDF, utilizar una librería de generación de documentos (ej. `pdfkit` o `puppeteer` para HTML a PDF) para asegurar un formato consistente y profesional. Reutilizar la estructura de datos del reporte existente para minimizar cambios.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "client/src/pages/ceoDashboardExports.ts",
+            "server/bridgeSmokeMonitoring.ts",
+            "server/routers.ts",
+            "server/bridge/bridgeReportGenerator.ts"
+          ],
+          "risk_level": "low"
+        },
+        "proactive_notifications": {
+          "trigger_points": [
+            "Transición a 'Alerta Crítica': Cuando el estado del bridge cambia de normal/advertencia a crítico.",
+            "Transición a 'Recovery': Cuando el estado del bridge cambia de crítico/alerta a normal/saludable."
+          ],
+          "delivery_strategy": "Las notificaciones se enviarán por correo electrónico al CEO/propietario designado, aprovechando el helper `server/_core/notification.ts`. Adicionalmente, se podría considerar una notificación in-app (ej. un toast o un badge en el icono de campana) para visibilidad inmediata en la consola.",
+          "implementation_note": "Modificar `server/bridgeSmokeMonitoring.ts` para introducir un mecanismo de seguimiento del 'último estado conocido' del bridge. Tras cada ciclo de monitoreo, si se detecta una transición a 'Alerta Crítica' o 'Recovery', se invocará el helper `server/_core/notification.ts` con un mensaje predefinido y claro. Es crucial asegurar que las notificaciones solo se envíen en la *transición* del estado, no en cada chequeo mientras el estado persiste, para evitar la sobre-notificación.",
+          "files": [
+            "server/bridgeSmokeMonitoring.ts",
+            "server/_core/notification.ts"
+          ],
+          "risk_level": "medium"
+        },
+        "historical_comparison": {
+          "recommended_ux": "Integrar una nueva sección o un widget en la Consola CEO del bridge. Esta sección mostrará gráficos de línea o barras simples (ej. sparklines) que permitan visualizar la evolución de métricas clave. Se incluirá un selector simple ('Comparar por: Día / Semana') para alternar la granularidad. El objetivo es una visualización rápida de tendencias y anomalías.",
+          "comparison_windows": [
+            "day",
+            "week"
+          ],
+          "key_metrics": [
+            "Disponibilidad (uptime)",
+            "Latencia promedio de operaciones",
+            "Tasa de errores",
+            "Volumen de operaciones (throughput)"
+          ],
+          "implementation_note": "En `server/bridgeSmokeMonitoring.ts`, se deberá implementar la lógica para agregar y recuperar datos históricos de las métricas clave. Esto podría requerir una persistencia más granular de los datos de monitoreo si no se dispone ya de ella. Se creará un nuevo procedimiento tRPC en `server/routers.ts` para exponer estos datos agregados. En el frontend, `client/src/pages/CeoDashboard.tsx` consumirá este nuevo endpoint y utilizará una librería de gráficos ligera para renderizar las comparativas.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "server/bridgeSmokeMonitoring.ts",
+            "server/routers.ts",
+            "server/db/migrations/add_bridge_metrics_history.ts"
+          ],
+          "risk_level": "medium"
+        },
+        "test_plan": [
+          "Tests unitarios para la lógica de generación de reportes y agregación de datos históricos (Vitest).",
+          "Tests de integración para los nuevos procedimientos tRPC (exportación, datos históricos).",
+          "Tests E2E para la funcionalidad de exportación y la visualización de comparativas históricas.",
+          "Pruebas manuales de envío y recepción de notificaciones proactivas, verificando contenido y frecuencia.",
+          "Pruebas de rendimiento para la consulta de datos históricos, especialmente en ventanas semanales."
+        ],
+        "top_risks": [
+          "Sobre-notificación (spam) si la lógica de detección de transición de estado no es robusta.",
+          "Degradación del rendimiento en la consulta y agregación de datos históricos si la base de datos no está optimizada.",
+          "Inconsistencia de datos en las comparativas históricas si la recolección o agregación es defectuosa.",
+          "Complejidad en la generación de PDFs con formato ejecutivo y consistente en el backend."
+        ],
+        "recommended_order": [
+          "1. Exportación del reporte ejecutivo del bridge (A): Bajo riesgo, alto valor inmediato, reutiliza patrones existentes.",
+          "2. Notificaciones proactivas (B): Crítico para la visibilidad ejecutiva, requiere gestión cuidadosa del estado, pero se basa en la lógica de monitoreo existente.",
+          "3. Comparativo histórico (C): Mayor complejidad por la agregación de datos y posibles cambios de persistencia, pero ofrece insights profundos a largo plazo."
+        ],
+        "one_sentence_summary": "Mejoras en la Consola CEO para el bridge CompliLink ↔ AuditaPatron, añadiendo exportación ejecutiva, notificaciones proactivas y comparativas históricas para una visibilidad y control superiores."
+      },
+      "status_code": 200
+    },
+    {
+      "ok": true,
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"model_view\": \"EnfoqueMinimalRobust\",\n  \"bridge_export\": {\n    \"recommended_ux\": \"Botón de exportación discreto en la sección bridge de la Consola CEO para descargar reportes de manera inmediata.\",\n    \"formats\": [\"csv\", \"pdf\"],\n    \"implementation_note\": \"Extender el helper existente en client/src/pages/ceoDashboardExports.ts para incluir datos del bridge desde server/bridgeSmokeMonitoring.ts, minimizando duplicación de lógica.\",\n    \"files\": [\"client/src/pages/ceoDashboardExports.ts\", \"client/src/pages/CeoDashboard.tsx\"],\n    \"risk_level\": \"low\"\n  },\n  \"proactive_notifications\": {\n    \"trigger_points\": [\"alerta crítica\", \"recovery\"],\n    \"delivery_strategy\": \"Utilizar el helper existente en server/_core/notification.ts para enviar notificaciones al owner vía email o sistema interno, activadas por cambios en el estado del bridge.\",\n    \"implementation_note\": \"Integrar verificación de trigger_points en server/bridgeSmokeMonitoring.ts para llamar al helper de notificaciones, centralizando la lógica en el backend.\",\n    \"files\": [\"server/bridgeSmokeMonitoring.ts\", \"server/_core/notification.ts\"],\n    \"risk_level\": \"low\"\n  },\n  \"historical_comparison\": {\n    \"recommended_ux\": \"Sección simple con gráficos o tablas comparativas en la Consola CEO, mostrando tendencias diarias y semanales sin sobrecargar la interfaz.\",\n    \"comparison_windows\": [\"day\", \"week\"],\n    \"key_metrics\": [\"tasa de alerting\", \"valores de threshold\", \"estado visual\"],\n    \"implementation_note\": \"Añadir consultas históricas en server/routers.ts para obtener datos del bridge y renderizarlos en client/src/pages/CeoDashboard.tsx, reutilizando la arquitectura existente.\",\n    \"files\": [\"client/src/pages/CeoDashboard.tsx\", \"server/routers.ts\"],\n    \"risk_level\": \"medium\"\n  },\n  \"test_plan\": [\"Probar exportación de reportes en formatos csv y pdf con datos de prueba\", \"Verificar envío de notificaciones en escenarios de alerta crítica y recovery\", \"Validar precisión de comparativas históricas para day y week con datos mockeados\"],\n  \"top_risks\": [\"Posibles falsos positivos en notificaciones proactivas\", \"Inconsistencias en datos históricos que afecten comparativas\", \"Sobrecarga de rendimiento al exportar grandes volúmenes de datos\"],\n  \"recommended_order\": [\"bridge_export\", \"proactive_notifications\", \"historical_comparison\"],\n  \"one_sentence_summary\": \"Propuesta de mejoras operativas mínimas para la Consola CEO de CompliLink, enfocadas en exportación de reportes, notificaciones proactivas y comparativas históricas, aprovechando la arquitectura existente para mantener bajo riesgo.\"\n}",
+      "parsed": {
+        "model_view": "EnfoqueMinimalRobust",
+        "bridge_export": {
+          "recommended_ux": "Botón de exportación discreto en la sección bridge de la Consola CEO para descargar reportes de manera inmediata.",
+          "formats": [
+            "csv",
+            "pdf"
+          ],
+          "implementation_note": "Extender el helper existente en client/src/pages/ceoDashboardExports.ts para incluir datos del bridge desde server/bridgeSmokeMonitoring.ts, minimizando duplicación de lógica.",
+          "files": [
+            "client/src/pages/ceoDashboardExports.ts",
+            "client/src/pages/CeoDashboard.tsx"
+          ],
+          "risk_level": "low"
+        },
+        "proactive_notifications": {
+          "trigger_points": [
+            "alerta crítica",
+            "recovery"
+          ],
+          "delivery_strategy": "Utilizar el helper existente en server/_core/notification.ts para enviar notificaciones al owner vía email o sistema interno, activadas por cambios en el estado del bridge.",
+          "implementation_note": "Integrar verificación de trigger_points en server/bridgeSmokeMonitoring.ts para llamar al helper de notificaciones, centralizando la lógica en el backend.",
+          "files": [
+            "server/bridgeSmokeMonitoring.ts",
+            "server/_core/notification.ts"
+          ],
+          "risk_level": "low"
+        },
+        "historical_comparison": {
+          "recommended_ux": "Sección simple con gráficos o tablas comparativas en la Consola CEO, mostrando tendencias diarias y semanales sin sobrecargar la interfaz.",
+          "comparison_windows": [
+            "day",
+            "week"
+          ],
+          "key_metrics": [
+            "tasa de alerting",
+            "valores de threshold",
+            "estado visual"
+          ],
+          "implementation_note": "Añadir consultas históricas en server/routers.ts para obtener datos del bridge y renderizarlos en client/src/pages/CeoDashboard.tsx, reutilizando la arquitectura existente.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "server/routers.ts"
+          ],
+          "risk_level": "medium"
+        },
+        "test_plan": [
+          "Probar exportación de reportes en formatos csv y pdf con datos de prueba",
+          "Verificar envío de notificaciones en escenarios de alerta crítica y recovery",
+          "Validar precisión de comparativas históricas para day y week con datos mockeados"
+        ],
+        "top_risks": [
+          "Posibles falsos positivos en notificaciones proactivas",
+          "Inconsistencias en datos históricos que afecten comparativas",
+          "Sobrecarga de rendimiento al exportar grandes volúmenes de datos"
+        ],
+        "recommended_order": [
+          "bridge_export",
+          "proactive_notifications",
+          "historical_comparison"
+        ],
+        "one_sentence_summary": "Propuesta de mejoras operativas mínimas para la Consola CEO de CompliLink, enfocadas en exportación de reportes, notificaciones proactivas y comparativas históricas, aprovechando la arquitectura existente para mantener bajo riesgo."
+      },
+      "status_code": 200
+    }
+  ],
+  "summary": {
+    "successful_providers": [
+      "openai",
+      "gemini",
+      "xai"
+    ],
+    "models_used": {
+      "openai": "gpt-4.1-mini",
+      "gemini": "gemini-2.5-flash",
+      "xai": "grok-3-mini"
+    },
+    "consensus": {
+      "recommended_order": [
+        "1. Exportación del reporte ejecutivo del bridge (A): Bajo riesgo, alto valor inmediato, reutiliza patrones existentes.",
+        "2. Notificaciones proactivas (B): Crítico para la visibilidad ejecutiva, requiere gestión cuidadosa del estado, pero se basa en la lógica de monitoreo existente.",
+        "3. Comparativo histórico (C): Mayor complejidad por la agregación de datos y posibles cambios de persistencia, pero ofrece insights profundos a largo plazo.",
+        "Agregar notificaciones proactivas (medio riesgo, impacto operativo).",
+        "Desarrollar comparativo histórico (medio riesgo, mayor complejidad).",
+        "Implementar exportación ejecutiva (bajo riesgo, base para reportes).",
+        "bridge_export",
+        "historical_comparison",
+        "proactive_notifications"
+      ],
+      "common_files": [
+        "server/bridgeSmokeMonitoring.ts",
+        "client/src/pages/CeoDashboard.tsx",
+        "server/routers.ts",
+        "client/src/pages/ceoDashboardExports.ts",
+        "server/_core/notification.ts",
+        "server/bridge/bridgeReportGenerator.ts",
+        "server/db/migrations/add_bridge_metrics_history.ts"
+      ],
+      "common_test_themes": [
+        "Probar exportación de reportes en formatos csv y pdf con datos de prueba",
+        "Pruebas de integración frontend-backend para exportación y visualización histórica.",
+        "Pruebas de rendimiento para la consulta de datos históricos, especialmente en ventanas semanales.",
+        "Pruebas manuales de envío y recepción de notificaciones proactivas, verificando contenido y frecuencia.",
+        "Tests E2E para la funcionalidad de exportación y la visualización de comparativas históricas.",
+        "Tests de integración para los nuevos procedimientos tRPC (exportación, datos históricos).",
+        "Tests unitarios para la lógica de generación de reportes y agregación de datos históricos (Vitest).",
+        "Validar precisión de comparativas históricas para day y week con datos mockeados",
+        "Verificar envío de notificaciones en escenarios de alerta crítica y recovery",
+        "Vitest para agregaciones históricas diarias y semanales, validando consistencia y límites.",
+        "Vitest para endpoint tRPC de exportación: validar formatos CSV y PDF, contenido y estructura.",
+        "Vitest para lógica de detección de cambio de estado en bridgeSmokeMonitoring.ts y envío de notificaciones."
+      ],
+      "shared_direction": [
+        "Mejorar la Consola CEO con exportación ejecutiva robusta, notificaciones proactivas basadas en estado crítico/recovery y análisis histórico diario/semanal centralizado en backend para máxima claridad y bajo riesgo.",
+        "Mejoras en la Consola CEO para el bridge CompliLink ↔ AuditaPatron, añadiendo exportación ejecutiva, notificaciones proactivas y comparativas históricas para una visibilidad y control superiores.",
+        "Propuesta de mejoras operativas mínimas para la Consola CEO de CompliLink, enfocadas en exportación de reportes, notificaciones proactivas y comparativas históricas, aprovechando la arquitectura existente para mantener bajo riesgo."
+      ]
+    }
+  }
+}

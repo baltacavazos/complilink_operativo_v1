@@ -25,6 +25,15 @@ export type BridgeSmokeHistoryFilters = {
   nowMs?: number;
 };
 
+export type BridgeSmokeComparisonWindowSummary = ReturnType<typeof buildBridgeSmokeHistorySummary> & {
+  label: string;
+  totalDelta: number;
+  successRateDelta: number;
+  passedDelta: number;
+  failedDelta: number;
+  errorDelta: number;
+};
+
 const BRIDGE_SMOKE_TIME_WINDOW_MS: Record<Exclude<BridgeSmokeHistoryTimeWindow, "all">, number> = {
   "24h": 24 * 60 * 60 * 1000,
   "72h": 72 * 60 * 60 * 1000,
@@ -88,6 +97,32 @@ export function buildBridgeSmokeHistorySummary(entries: BridgeSmokeHistoryEntry[
     successRate: totalRuns === 0 ? 0 : Math.round((passedRuns / totalRuns) * 100),
     consecutiveFailures,
     latestStatus: entries[0]?.status ?? null,
+  };
+}
+
+export function buildBridgeSmokeComparisonSummary(entries: BridgeSmokeHistoryEntry[], nowMs = Date.now()) {
+  const buildWindowComparison = (windowMs: number, label: string): BridgeSmokeComparisonWindowSummary => {
+    const currentEntries = entries.filter((entry) => entry.testedAtMs !== null && nowMs - entry.testedAtMs <= windowMs);
+    const previousEntries = entries.filter(
+      (entry) => entry.testedAtMs !== null && nowMs - entry.testedAtMs > windowMs && nowMs - entry.testedAtMs <= windowMs * 2,
+    );
+    const currentSummary = buildBridgeSmokeHistorySummary(currentEntries);
+    const previousSummary = buildBridgeSmokeHistorySummary(previousEntries);
+
+    return {
+      label,
+      ...currentSummary,
+      totalDelta: currentSummary.totalRuns - previousSummary.totalRuns,
+      successRateDelta: currentSummary.successRate - previousSummary.successRate,
+      passedDelta: currentSummary.passedRuns - previousSummary.passedRuns,
+      failedDelta: currentSummary.failedRuns - previousSummary.failedRuns,
+      errorDelta: currentSummary.errorRuns - previousSummary.errorRuns,
+    };
+  };
+
+  return {
+    daily: buildWindowComparison(BRIDGE_SMOKE_TIME_WINDOW_MS["24h"], "Últimas 24 h vs 24 h previas"),
+    weekly: buildWindowComparison(BRIDGE_SMOKE_TIME_WINDOW_MS["7d"], "Últimos 7 días vs 7 días previos"),
   };
 }
 
