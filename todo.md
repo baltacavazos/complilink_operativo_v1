@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Generar un PDF final con el mensaje de retorno para el otro chat y dejarlo listo para enviar.
+
+- [x] Revisar el PDF de retorno para el chat de Auditapatrón y validar si el mensaje está listo para enviarse o requiere ajustes.
+
 - [x] Revalidar el token de Dropbox y confirmar si ya permite continuar con el respaldo obligatorio
 
 - [x] Autoiniciar el análisis en /auditar al seleccionar foto o archivo cuando el contexto mínimo ya esté resuelto
@@ -765,3 +769,11 @@
 - [x] Microfeedback visual breve tras el autoavance de revisión preliminar para reforzar que el flujo continúa solo
 - [x] Lectura ejecutiva en la Consola CEO para selector Cámara/Archivo y embudo móvil reutilizando la analítica existente
 - [x] Actualizar pruebas de analítica y monitoreo CEO para cubrir la nueva lectura operativa
+
+- [x] Analizar el PDF de reconexión de AuditaPatron con el nuevo Helios y extraer requisitos accionables
+- [x] Contrastar el plan de reconexión con ChatGPT, Grok y Gemini para obtener consenso
+- [x] Proponer un plan priorizado de conexión y definir si el otro chat necesita retroalimentación específica
+
+- [ ] Revisar el PDF de respuesta del otro chat sobre Auditapatrón → nuevo Helios y extraer validaciones, correcciones y riesgos
+- [ ] Comparar el feedback recibido con el plan de reconexión ya propuesto
+- [ ] Determinar qué falta confirmar antes de programar la conexión con Helios
