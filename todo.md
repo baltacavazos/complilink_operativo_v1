@@ -841,3 +841,7 @@
 - [x] Implementar agenda automática para el bloque bridge del dashboard CEO
 - [x] Agregar presets reutilizables de filtros, exportación y correo para el bloque bridge sin rehacer la interfaz existente
 - [x] Añadir cobertura de pruebas y validación operativa para agenda automática y presets del bridge
+- [x] Definir checklist estricta de salida V1 para AuditaPatron antes de publicar
+- [x] Revisar qué funcionalidades y mensajes deben mostrarse o posponerse en la primera publicación
+- [x] Priorizar backlog inmediato post-lanzamiento con foco en impacto y velocidad de ejecución
+- [x] Resolver el bloqueo operativo del worker del bridge verificando y corrigiendo la migración faltante de ceo_bridge_schedules antes de publicar V1
