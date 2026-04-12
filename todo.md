@@ -860,3 +860,15 @@
 - [x] Endurecer control de acceso del backend en puntos críticos del scheduler bridge y consola CEO si hay huecos reales
 - [x] Revisar preparación para alto volumen de descargas y carga documental sin ampliar alcance funcional
 - [x] Ampliar pruebas focalizadas de robustez, concurrencia y edge cases previos a pruebas de V1
+- [x] Contrastar con Grok, ChatGPT y Gemini el enfoque mínimo de validación operativa post-freeze
+- [x] Validar manual y técnicamente los flujos críticos de acceso CEO, exportes y cambios de permisos
+- [x] Revisar preparación del flujo documental y de descargas ante uso intensivo sin ampliar alcance funcional
+- [x] Identificar el bloqueo restante de la validación integral y definir la corrección mínima si realmente aplica
+- [ ] Contrastar con Grok, ChatGPT y Gemini las prioridades mínimas de robustez del siguiente bloque sin integrar todavía Helios
+- [ ] Auditar los flujos más sensibles de carga documental, descargas y procesamiento para identificar el siguiente endurecimiento mínimo
+- [ ] Ampliar pruebas focalizadas para comportamiento bajo uso intensivo y picos operativos
+- [ ] Preparar el siguiente paquete de mejoras mínimas listas para prueba real sin abrir frente de conectores de Helios
+- [x] Ejecutar endurecimiento mínimo post-freeze en flujos críticos de carga documental, descarga y procesamiento operativo.
+- [x] Revisar y cerrar huecos de robustez y seguridad en helpers de acceso y arranque operativo relacionados con carga realista.
+- [x] Ampliar pruebas focalizadas para el siguiente bloque mínimo de robustez V1.
+- [ ] Renovar o reemplazar el DROPBOX_API_KEY vencido para recuperar la suite completa de secretos y respaldos automáticos.
