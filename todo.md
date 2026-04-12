@@ -871,4 +871,8 @@
 - [x] Ejecutar endurecimiento mínimo post-freeze en flujos críticos de carga documental, descarga y procesamiento operativo.
 - [x] Revisar y cerrar huecos de robustez y seguridad en helpers de acceso y arranque operativo relacionados con carga realista.
 - [x] Ampliar pruebas focalizadas para el siguiente bloque mínimo de robustez V1.
-- [ ] Renovar o reemplazar el DROPBOX_API_KEY vencido para recuperar la suite completa de secretos y respaldos automáticos.
+- [x] Renovar o reemplazar el DROPBOX_API_KEY vencido para recuperar la suite completa de secretos y respaldos automáticos.
+- [x] Contrastar con Grok, ChatGPT y Gemini la siguiente prioridad mínima de robustez para carga realista.
+- [x] Auditar el siguiente cuello de botella mínimo en acceso tenant-caso, documentos o exportaciones para elegir el endurecimiento más rentable.
+- [x] Implementar el siguiente ajuste mínimo de robustez sin abrir frentes adicionales.
+- [x] Ampliar pruebas focalizadas del nuevo bloque y validar estado operativo.

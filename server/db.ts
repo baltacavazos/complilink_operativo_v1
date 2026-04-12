@@ -621,7 +621,22 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const membership = await assertTenantAccess(userId, tenantId);
+  const memberships = await db
+    .select()
+    .from(tenantMemberships)
+    .where(
+      and(
+        eq(tenantMemberships.userId, userId),
+        eq(tenantMemberships.tenantId, tenantId),
+        eq(tenantMemberships.status, "active"),
+      ),
+    );
+
+  if (!memberships[0]) {
+    throw new Error("Access denied for tenant");
+  }
+
+  const tenantWideMembership = memberships.find((membership) => membership.accessScope === "tenant");
 
   const caseGrant = await db
     .select()
@@ -640,28 +655,11 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
     return caseGrant[0];
   }
 
-  if (membership.accessScope === "tenant") {
-    return membership;
+  if (tenantWideMembership) {
+    return tenantWideMembership;
   }
 
-  const tenantWide = await db
-    .select()
-    .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.status, "active"),
-        eq(tenantMemberships.accessScope, "tenant"),
-      ),
-    )
-    .limit(1);
-
-  if (!tenantWide[0]) {
-    throw new Error("Access denied for case");
-  }
-
-  return tenantWide[0];
+  throw new Error("Access denied for case");
 }
 
 export async function assertActiveTenantMember(userId: number, tenantId: string) {

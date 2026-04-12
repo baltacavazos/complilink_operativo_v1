@@ -1,0 +1,117 @@
+[
+  {
+    "provider": "openai",
+    "result": {
+      "recommended_target": "assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts",
+      "priority_rank": [
+        {
+          "target": "assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts",
+          "score": 9,
+          "why": "Reducir consultas repetidas y validar acceso de forma consolidada mejora robustez y rendimiento bajo carga sin grandes refactors."
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 6,
+          "why": "Mejora seguridad y control de acceso, pero depende de assertCaseAccess y es menos crítico para carga."
+        },
+        {
+          "target": "Deduplicación/transientes de carga documental en routers.ts",
+          "score": 5,
+          "why": "Ya existe deduplicación parcial; mejoras adicionales tienen impacto menor y pueden ser más complejas."
+        },
+        {
+          "target": "Exportes CEO",
+          "score": 3,
+          "why": "Ya están protegidos y auditados; menor prioridad para siguiente cambio mínimo."
+        }
+      ],
+      "minimum_change": "Implementar memoización local por request en assertCaseAccess para evitar consultas repetidas de acceso tenant-caso durante la misma petición.",
+      "tests_to_add": [
+        "server/db.access.test.ts: pruebas que validen que memoización no altera resultados y reduce consultas repetidas"
+      ],
+      "risks": [
+        "Posible cacheo incorrecto si no se limpia memoización por request",
+        "Impacto limitado si acceso cambia dinámicamente dentro de la misma petición, aunque poco probable"
+      ],
+      "confidence": "high"
+    }
+  },
+  {
+    "provider": "gemini",
+    "result": {
+      "recommended_target": "Optimización de acceso a casos y tenants (assertCaseAccess)",
+      "priority_rank": [
+        {
+          "target": "assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts",
+          "score": 95,
+          "why": "Reduce consultas repetidas a la base de datos para validación de acceso por tenant y caso, mejorando el rendimiento bajo carga y la robustez de un componente crítico de seguridad y autorización. Impacta múltiples flujos de datos y es un cuello de botella conocido."
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 70,
+          "why": "Depende directamente de la robustez de assertCaseAccess. La optimización directa de filtros de visibilidad o la interacción con storageGet podría ser más compleja y de menor retorno incremental sin abordar primero el acceso subyacente."
+        },
+        {
+          "target": "Deduplicación/transientes de carga documental en routers.ts",
+          "score": 50,
+          "why": "Ya existe deduplicación temporal, lo que sugiere que este frente ya ha sido parcialmente abordado. Mejoras adicionales podrían ser más complejas o de menor retorno incremental en comparación con la optimización del acceso a casos."
+        },
+        {
+          "target": "Exportes CEO",
+          "score": 30,
+          "why": "Ya cuenta con protecciones como 'stale guard' y auditoría, lo que sugiere que su robustez es comparativamente alta y el retorno de inversión para un 'endurecimiento mínimo' sería bajo en este momento."
+        }
+      ],
+      "minimum_change": "Implementar memoización local por request para los resultados de 'getAccessibleCaseIds' y 'assertCaseAccess' dentro del contexto de una solicitud API, evitando múltiples consultas redundantes a la base de datos para el mismo usuario y caso en una única operación.",
+      "tests_to_add": [
+        "Pruebas de carga y concurrencia para endpoints que utilizan 'assertCaseAccess' (e.g., 'getCaseDetailForUser', 'listVisibleDocuments') para validar la mejora de rendimiento.",
+        "Pruebas unitarias para verificar que la memoización funciona correctamente y reduce las llamadas a la base de datos sin alterar la lógica de acceso.",
+        "Pruebas de regresión para asegurar que los permisos de acceso no se vean afectados por la memoización y que no se introduzcan datos obsoletos."
+      ],
+      "risks": [
+        "Posible introducción de errores de caché si la memoización no se implementa correctamente (e.g., caché de datos obsoletos dentro de la misma solicitud si el estado de acceso cambia dinámicamente).",
+        "Aumento marginal del consumo de memoria por solicitud si los datos cacheados son inesperadamente grandes, aunque para IDs de casos y permisos debería ser mínimo.",
+        "Complejidad en la depuración si la lógica de acceso se vuelve opaca debido a la capa de memoización."
+      ],
+      "confidence": "high"
+    }
+  },
+  {
+    "provider": "grok",
+    "result": {
+      "recommended_target": "assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts",
+      "priority_rank": [
+        {
+          "target": "assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts",
+          "score": 9,
+          "why": "Reduce consultas repetidas en validaciones de acceso, mejorando robustez bajo concurrencia con impacto controlado en db.ts"
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 7,
+          "why": "Depende de assertCaseAccess, pero añade complejidad en filtros de visibilidad sin reducción directa de consultas"
+        },
+        {
+          "target": "Deduplicación/transientes de carga documental en routers.ts",
+          "score": 5,
+          "why": "Ya implementada, poco valor adicional en robustez bajo carga sin abrir nuevos frentes"
+        },
+        {
+          "target": "Exportes CEO",
+          "score": 3,
+          "why": "Ya protegidos con guards, bajo impacto en reducción de consultas o concurrencia"
+        }
+      ],
+      "minimum_change": "Implementar memoización local por request en assertCaseAccess para cachear resultados de getAccessibleCaseIds y evitar consultas repetidas en el mismo ciclo de request.",
+      "tests_to_add": [
+        "Test de memoización: Verificar que consultas repetidas en un request usen cache y no generen queries extras.",
+        "Test de concurrencia: Simular múltiples requests concurrentes y medir reducción en tiempo de respuesta para getCaseDetailForUser."
+      ],
+      "risks": [
+        "Posible inconsistencia si el cache no se invalida correctamente al final del request.",
+        "Aumento mínimo en uso de memoria por request si hay muchos casos accedidos."
+      ],
+      "confidence": "high"
+    }
+  }
+]

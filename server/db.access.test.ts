@@ -9,13 +9,24 @@ vi.mock("drizzle-orm/mysql2", () => ({
   drizzle: vi.fn(() => ({
     select: () => ({
       from: () => ({
-        where: () => ({
-          limit: async () => {
-            const result = state.selectResults[state.selectCalls] ?? [];
-            state.selectCalls += 1;
-            return result;
-          },
-        }),
+        where: () => {
+          let consumed = false;
+          const consume = async () => {
+            if (!consumed) {
+              consumed = true;
+              const result = state.selectResults[state.selectCalls] ?? [];
+              state.selectCalls += 1;
+              return result;
+            }
+            return state.selectResults[state.selectCalls - 1] ?? [];
+          };
+
+          return {
+            limit: async () => consume(),
+            then: (resolve: (value: Array<Record<string, unknown>>) => unknown, reject?: (reason: unknown) => unknown) =>
+              consume().then(resolve, reject),
+          };
+        },
       }),
     }),
   })),
@@ -74,7 +85,7 @@ describe("db access guards", () => {
     expect(state.selectCalls).toBe(2);
   });
 
-  it("preserves tenant-wide fallback when the first active membership is case-scoped", async () => {
+  it("preserves tenant-wide fallback when the memberships include both case and tenant scope", async () => {
     const caseScopedMembership = {
       id: 16,
       userId: 7,
@@ -92,11 +103,38 @@ describe("db access guards", () => {
       status: "active",
     };
 
-    state.selectResults = [[caseScopedMembership], [], [tenantWideMembership]];
+    state.selectResults = [[caseScopedMembership, tenantWideMembership], []];
 
     const { assertCaseAccess } = await import("./db");
 
     await expect(assertCaseAccess(7, "tenant-a", "CASE-002")).resolves.toEqual(tenantWideMembership);
-    expect(state.selectCalls).toBe(3);
+    expect(state.selectCalls).toBe(2);
+  });
+
+  it("preserves explicit case grant precedence over a tenant-wide membership", async () => {
+    const tenantWideMembership = {
+      id: 18,
+      userId: 7,
+      tenantId: "tenant-a",
+      role: "manager",
+      accessScope: "tenant",
+      status: "active",
+    };
+    const explicitCaseGrant = {
+      id: 19,
+      userId: 7,
+      tenantId: "tenant-a",
+      caseId: "CASE-003",
+      role: "reviewer",
+      accessScope: "case",
+      status: "active",
+    };
+
+    state.selectResults = [[tenantWideMembership], [explicitCaseGrant]];
+
+    const { assertCaseAccess } = await import("./db");
+
+    await expect(assertCaseAccess(7, "tenant-a", "CASE-003")).resolves.toEqual(explicitCaseGrant);
+    expect(state.selectCalls).toBe(2);
   });
 });
