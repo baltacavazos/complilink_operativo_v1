@@ -1,4 +1,6 @@
 import { Buffer } from "node:buffer";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
@@ -145,6 +147,101 @@ async function resolveCeoAuditTenantId(params: {
       userEmail: params.user.email,
     })
   ).tenantId;
+}
+
+const BRIDGE_SMOKE_RESULTS_PATH = resolve(process.cwd(), "bridge_smoke_test_results.json");
+
+function getBridgeSmokePayloadRecord(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function getBridgeSmokeString(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getBridgeSmokeNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function getBridgeSmokeBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : null;
+}
+
+function readLatestBridgeSmokeStatus() {
+  const fallback = {
+    availability: "missing" as const,
+    testedAt: null,
+    baseUrl: null,
+    ageMinutes: null,
+    health: {
+      status: null,
+      statusText: null,
+      responseContract: null,
+      ok: false,
+    },
+    webhook: {
+      status: null,
+      verified: null,
+      processingStatus: null,
+      event: null,
+      responseContract: null,
+      receivedAt: null,
+      ok: false,
+    },
+    contractCheck: {
+      passed: false,
+      expectedHealthStatus: 200,
+      expectedWebhookStatus: 202,
+      expectedContract: "auditapatron.bridge.ack.v1",
+    },
+  };
+
+  try {
+    const raw = readFileSync(BRIDGE_SMOKE_RESULTS_PATH, "utf8");
+    const payload = getBridgeSmokePayloadRecord(JSON.parse(raw));
+    if (!payload) return fallback;
+
+    const health = getBridgeSmokePayloadRecord(payload.health);
+    const healthBody = getBridgeSmokePayloadRecord(health?.body);
+    const webhook = getBridgeSmokePayloadRecord(payload.webhook);
+    const webhookBody = getBridgeSmokePayloadRecord(webhook?.body);
+    const contractCheck = getBridgeSmokePayloadRecord(payload.contractCheck);
+    const testedAt = getBridgeSmokeString(payload.testedAt);
+    const testedAtMs = testedAt ? new Date(testedAt).getTime() : Number.NaN;
+
+    return {
+      availability: "ready" as const,
+      testedAt,
+      baseUrl: getBridgeSmokeString(payload.baseUrl),
+      ageMinutes: Number.isFinite(testedAtMs) ? Math.max(0, Math.round((Date.now() - testedAtMs) / 60000)) : null,
+      health: {
+        status: getBridgeSmokeNumber(health?.status),
+        statusText: getBridgeSmokeString(healthBody?.status),
+        responseContract: getBridgeSmokeString(healthBody?.responseContract),
+        ok: getBridgeSmokeNumber(health?.status) === 200,
+      },
+      webhook: {
+        status: getBridgeSmokeNumber(webhook?.status),
+        verified: getBridgeSmokeBoolean(webhookBody?.verified),
+        processingStatus: getBridgeSmokeString(webhookBody?.processingStatus),
+        event: getBridgeSmokeString(webhookBody?.event),
+        responseContract: getBridgeSmokeString(webhookBody?.responseContract),
+        receivedAt: getBridgeSmokeString(webhookBody?.receivedAt),
+        ok: getBridgeSmokeNumber(webhook?.status) === 202 && getBridgeSmokeBoolean(webhookBody?.verified) === true,
+      },
+      contractCheck: {
+        passed: getBridgeSmokeBoolean(contractCheck?.passed) === true,
+        expectedHealthStatus: getBridgeSmokeNumber(contractCheck?.expectedHealthStatus) ?? 200,
+        expectedWebhookStatus: getBridgeSmokeNumber(contractCheck?.expectedWebhookStatus) ?? 202,
+        expectedContract: getBridgeSmokeString(contractCheck?.expectedContract) ?? "auditapatron.bridge.ack.v1",
+      },
+    };
+  } catch {
+    return {
+      ...fallback,
+      availability: "error" as const,
+    };
+  }
 }
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
@@ -1764,6 +1861,9 @@ export const appRouter = router({
       }
 
       return getCeoMasterMetrics();
+    }),
+    ceoBridgeSmokeStatus: adminProcedure.query(async () => {
+      return readLatestBridgeSmokeStatus();
     }),
     ceoRecordConsoleView: adminProcedure
       .input(

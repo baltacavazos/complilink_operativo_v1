@@ -412,6 +412,11 @@ export default function CeoDashboard() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+  const bridgeSmokeStatusQuery = trpc.dashboard.ceoBridgeSmokeStatus.useQuery(undefined, {
+    enabled: isAdmin,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
   const snapshotData = hasActiveFilters ? filteredSnapshotQuery.data : baseSnapshotQuery.data;
   const isMasterUser = snapshotData?.viewerCapabilities?.isMasterUser ?? baseSnapshotQuery.data?.viewerCapabilities?.isMasterUser ?? false;
   const masterMetricsQuery = trpc.dashboard.ceoMasterMetrics.useQuery(undefined, {
@@ -484,6 +489,40 @@ export default function CeoDashboard() {
       }),
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
+  const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
+  const bridgeOperationalSummary = useMemo(() => {
+    const delivered = bridgeOverview.rows.filter((item) => Boolean(item.returnedAt)).length;
+    const rejected = bridgeOverview.rows.filter(
+      (item) =>
+        item.latestReturnEvent === "rejected" || item.latestReturnStatus === "rejected" || item.outcomeCategory === "permanent_failure",
+    ).length;
+    const retries = bridgeOverview.rows.filter((item) => item.retryScheduled || item.outcomeCategory === "retry_scheduled").length;
+    const awaitingAck = bridgeOverview.rows.filter(
+      (item) => !item.returnedAt && (item.dispatchStatus === "sent" || item.dispatchStatus === "accepted" || item.outcomeCategory === "pending_return"),
+    ).length;
+    const smokeAgeMinutes = bridgeSmokeStatus?.ageMinutes ?? null;
+    const smokeIsStale = smokeAgeMinutes !== null && smokeAgeMinutes > 60;
+    const smokeStatusLabel =
+      bridgeSmokeStatus?.availability === "ready"
+        ? bridgeSmokeStatus.contractCheck.passed
+          ? smokeIsStale
+            ? "OK con atraso"
+            : "OK"
+          : "Fallo"
+        : bridgeSmokeStatus?.availability === "error"
+          ? "Lectura pendiente"
+          : "Sin registro";
+
+    return {
+      delivered,
+      rejected,
+      retries,
+      awaitingAck,
+      smokeAgeMinutes,
+      smokeIsStale,
+      smokeStatusLabel,
+    };
+  }, [bridgeOverview.rows, bridgeSmokeStatus]);
 
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
@@ -801,6 +840,7 @@ export default function CeoDashboard() {
       visibleCount: currentSectionCount,
     });
     await utils.dashboard.ceoSnapshot.invalidate();
+    await utils.dashboard.ceoBridgeSmokeStatus.invalidate();
   }
 
   function requestAlertAction(alertId: number, title: string, status: string) {
@@ -2020,6 +2060,96 @@ export default function CeoDashboard() {
                     </div>
                     <p className="mt-3 text-sm text-emerald-900/80">Retornos procesados sin alertas abiertas en el expediente visible.</p>
                   </article>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <GitBranch className="h-5 w-5 text-slate-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Entregas con retorno</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeOperationalSummary.delivered)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-600">Documentos del carril bridge que ya registraron webhook o confirmación final visible.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-orange-200 bg-orange-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <ShieldX className="h-5 w-5 text-orange-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-orange-700">Rechazos</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-orange-950">{formatNumber(bridgeOperationalSummary.rejected)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-orange-900/80">Incluye rechazos de retorno, fallos definitivos y contratos que requieren intervención manual.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-violet-200 bg-violet-50/80 p-4">
+                    <div className="flex items-center gap-3">
+                      <RefreshCw className="h-5 w-5 text-violet-600" />
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-700">Reintentos activos</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-violet-950">{formatNumber(bridgeOperationalSummary.retries)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-violet-900/80">Eventos marcados con retry o con nueva tentativa pendiente antes del siguiente intento de entrega.</p>
+                  </article>
+                  <article className="rounded-[1.4rem] border border-sky-200 bg-white/95 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Último smoke test recurrente</p>
+                        <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{bridgeOperationalSummary.smokeStatusLabel}</p>
+                      </div>
+                      <Badge
+                        className={`rounded-full border ${
+                          bridgeSmokeStatus?.availability === "ready"
+                            ? bridgeSmokeStatus.contractCheck.passed && !bridgeOperationalSummary.smokeIsStale
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : bridgeSmokeStatus.contractCheck.passed
+                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                : "border-rose-200 bg-rose-50 text-rose-700"
+                            : bridgeSmokeStatus?.availability === "error"
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-slate-200 bg-slate-50 text-slate-600"
+                        }`}
+                      >
+                        {bridgeSmokeStatusQuery.isLoading
+                          ? "Cargando"
+                          : bridgeSmokeStatus?.availability === "ready"
+                            ? bridgeSmokeStatus.contractCheck.passed
+                              ? bridgeOperationalSummary.smokeIsStale
+                                ? "desactualizado"
+                                : "vigente"
+                              : "falló"
+                            : bridgeSmokeStatus?.availability === "error"
+                              ? "lectura"
+                              : "sin registro"}
+                      </Badge>
+                    </div>
+                    <div className="mt-3 space-y-2 text-sm text-slate-600">
+                      <p>
+                        {bridgeSmokeStatus?.testedAt
+                          ? `Última corrida: ${formatDateTime(bridgeSmokeStatus.testedAt)}${bridgeOperationalSummary.smokeAgeMinutes !== null ? ` · hace ${formatNumber(bridgeOperationalSummary.smokeAgeMinutes)} min` : ""}`
+                          : "Todavía no hay una corrida persistida del smoke test bridge para esta vista."}
+                      </p>
+                      <p>
+                        Health {bridgeSmokeStatus?.health.status ?? "—"} · Webhook {bridgeSmokeStatus?.webhook.status ?? "—"} · Contrato esperado {bridgeSmokeStatus?.contractCheck.expectedContract ?? "auditapatron.bridge.ack.v1"}
+                      </p>
+                      <p>
+                        {bridgeSmokeStatus?.availability === "ready"
+                          ? bridgeSmokeStatus.contractCheck.passed
+                            ? "El último contrato de smoke confirma ack 200/202 y firma verificada del webhook." 
+                            : "El smoke persistido no pasó la validación contractual completa; conviene revisar el carril antes de operar." 
+                          : bridgeSmokeStatus?.availability === "error"
+                            ? "Se detectó un problema al leer el último resultado persistido del smoke test." 
+                            : "Aún no existe un resultado persistido del smoke test para el carril bridge."}
+                      </p>
+                    </div>
+                  </article>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Pendientes de ack: {formatNumber(bridgeOperationalSummary.awaitingAck)}</span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con retorno visible: {formatNumber(bridgeOverview.summary.withReturn)}</span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con warnings: {formatNumber(bridgeOverview.summary.withWarnings)}</span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Retry programado: {formatNumber(bridgeOverview.summary.retryScheduled)}</span>
                 </div>
               </section>
 

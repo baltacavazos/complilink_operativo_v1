@@ -168,6 +168,38 @@ describe("auditaPatronReturnWebhook", () => {
     expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
   });
 
+  it("rechaza el webhook público con firma inválida y conserva el contrato de error", async () => {
+    const payload = buildIncomingUploadPayload();
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": "firma-invalida",
+      },
+      body,
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      verified: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "authentication_failed",
+        },
+      ],
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+  });
+
   it("rechaza el webhook público si faltan campos contractuales aunque la firma sea válida", async () => {
     const payload = buildIncomingUploadPayload({
       fileUrl: undefined,
@@ -337,6 +369,55 @@ describe("auditaPatronReturnWebhook", () => {
       responseContract: "auditapatron.bridge.ack.v1",
     });
     expect(dbMocks.updateDocumentPostProcessing).not.toHaveBeenCalled();
+  });
+
+  it("responde 500 y marca failed_processing cuando el retorno autenticado falla durante el procesamiento", async () => {
+    dbMocks.registerCompliLinkWebhookEvent.mockResolvedValue({
+      created: true,
+      event: {
+        id: 903,
+      },
+    });
+    dbMocks.upsertCanonicalContract.mockRejectedValueOnce(new Error("storage unavailable"));
+
+    const payload = buildReturnPayload({
+      event: "document.processed.v1",
+      eventId: "evt-bridge-003",
+      idempotencyKey: "evt-bridge-003",
+      correlationId: "corr-bridge-003",
+    });
+    const body = JSON.stringify(payload);
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body,
+    });
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      received: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "internal_error",
+        },
+      ],
+    });
+    expect(dbMocks.updateCompliLinkWebhookEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 903,
+        status: "failed_processing",
+        failureReason: expect.stringContaining("storage unavailable"),
+      }),
+    );
   });
 
   it("rechaza payloads inválidos con issues[] y código 400", async () => {

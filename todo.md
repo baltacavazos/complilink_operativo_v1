@@ -806,3 +806,6 @@
 - [x] Corregir la firma saliente del bridge AuditaPatrón para usar HMAC sobre `timestamp.body` y limpiar headers no contractuales.
 - [x] Implementar o exponer los endpoints públicos `GET /api/auditapatron/health` y `POST /api/auditapatron/webhook` en CompliLink.
 - [x] Actualizar pruebas del bridge y ejecutar validación técnica con smoke test documentado.
+- [x] Panel operativo del bridge: ampliar el dashboard CEO con métricas agregadas de entregas, rechazos, reintentos y estado del último smoke test recurrente.
+- [x] Smoke test recurrente automatizado del bridge: ejecutar el smoke test en forma periódica y persistir su resultado operativo.
+- [x] Pruebas E2E ampliadas del bridge: cubrir flujo completo, firma inválida, errores y duplicados/idempotencia.
