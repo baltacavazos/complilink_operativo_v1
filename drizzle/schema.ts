@@ -1,5 +1,6 @@
 import {
   bigint,
+  foreignKey,
   index,
   int,
   mysqlEnum,
@@ -212,9 +213,7 @@ export const compliLinkWebhookEvents = mysqlTable(
       .notNull()
       .references(() => laborCases.caseId),
     traceId: varchar("traceId", { length: 96 }).notNull(),
-    documentId: varchar("documentId", { length: 64 })
-      .notNull()
-      .references(() => caseDocuments.documentId),
+    documentId: varchar("documentId", { length: 64 }).notNull(),
     eventKey: varchar("eventKey", { length: 64 }).notNull(),
     eventName: varchar("eventName", { length: 128 }).notNull(),
     compliLinkId: varchar("compliLinkId", { length: 128 }),
@@ -229,6 +228,11 @@ export const compliLinkWebhookEvents = mysqlTable(
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   (table) => [
+    foreignKey({
+      columns: [table.documentId],
+      foreignColumns: [caseDocuments.documentId],
+      name: "cl_we_doc_fk",
+    }),
     uniqueIndex("complilink_webhook_events_event_key_uq").on(table.eventKey),
     index("complilink_webhook_events_document_idx").on(table.documentId),
     index("complilink_webhook_events_trace_idx").on(table.traceId),

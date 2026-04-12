@@ -15,6 +15,20 @@
       "when": 1775431532137,
       "tag": "0001_new_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775961037017,
+      "tag": "0002_spotty_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775961782549,
+      "tag": "0003_mysterious_star_brand",
+      "breakpoints": true
     }
   ]
 }

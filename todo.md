@@ -785,3 +785,10 @@
 - [x] Fase 1 bridge AuditaPatrón → CompliLink: contrastar la solución con Grok, ChatGPT y Gemini antes de cerrar el diseño técnico.
 - [x] Fase 1 bridge AuditaPatrón → CompliLink: implementar los ajustes backend y de persistencia acordados.
 - [x] Fase 1 bridge AuditaPatrón → CompliLink: validar con Vitest, revisión técnica y PDF intercambiable para el otro chat si se requiere.
+- [ ] Coordinar con el otro chat de CompliLink las definiciones externas pendientes del bridge: contrato final de retorno, catálogo de eventos, reglas de idempotencia y ejemplos canónicos de éxito/error.
+- [x] Preparar y entregar un PDF breve para el otro chat de CompliLink con las confirmaciones técnicas pendientes del bridge.
+- [ ] Incorporar la respuesta del otro chat de CompliLink cuando llegue y ajustar el contrato final del bridge según sus definiciones.
+- [x] Generar la migración SQL de la nueva tabla de eventos del bridge para dejar lista la persistencia de fase 1.
+- [x] Añadir una prueba específica del webhook de retorno que cubra idempotencia y duplicados reales.
+- [x] Aplicar la migración aprobada `drizzle/0002_spotty_blob.sql` sobre la base de datos y verificar el estado operativo del bridge tras la autorización del usuario.
+- [x] Resolver el bloqueo de migración por nombre de foreign key demasiado largo en `complilink_webhook_events` y reaplicar el esquema sin desalinear Drizzle.
