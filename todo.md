@@ -778,3 +778,10 @@
 - [ ] Comparar el feedback recibido con el plan de reconexión ya propuesto
 - [ ] Determinar qué falta confirmar antes de programar la conexión con Helios
 - [x] Ejecutar el análisis del PDF definitivo del bridge Auditapatrón, contrastarlo con visión multimodelo y traducirlo a un plan técnico accionable.
+- [ ] Implementar la fase 1 del bridge Auditapatrón ↔ Helios con contrato backend, autenticación entre servicios, persistencia del handoff, idempotencia y endpoint de envío.
+- [ ] Cubrir la fase 1 del bridge con pruebas Vitest y validación técnica del proyecto.
+- [ ] Preparar un PDF de consulta para el otro chat si durante la fase 1 aparece un bloqueo externo de integración.
+- [x] Fase 1 bridge AuditaPatrón → CompliLink: levantar el mapa exacto de intervención backend, incluyendo punto de salida, webhook de retorno, trazabilidad e idempotencia.
+- [x] Fase 1 bridge AuditaPatrón → CompliLink: contrastar la solución con Grok, ChatGPT y Gemini antes de cerrar el diseño técnico.
+- [x] Fase 1 bridge AuditaPatrón → CompliLink: implementar los ajustes backend y de persistencia acordados.
+- [x] Fase 1 bridge AuditaPatrón → CompliLink: validar con Vitest, revisión técnica y PDF intercambiable para el otro chat si se requiere.

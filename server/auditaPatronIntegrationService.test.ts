@@ -198,6 +198,7 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.attempts).toBe(1);
     expect(result.responseBody).toContain("accepted");
     expect(result.payload.event).toBe("document.uploaded");
+    expect(result.payload.correlationId).toMatch(/^[0-9a-f-]{36}$/i);
     expect(result.observabilityEnvelope.targetHost).toContain("127.0.0.1");
     expect(result.observabilityEnvelope.targetPath).toBe("/engine/webhook");
     expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
@@ -208,6 +209,7 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.observabilityEnvelope.dispatchId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     );
+    expect(result.observabilityEnvelope.correlationId).toBe(result.payload.correlationId);
   });
 
   it("retries only for 5xx responses and eventually succeeds", async () => {

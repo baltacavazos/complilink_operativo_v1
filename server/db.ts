@@ -8,6 +8,7 @@ import {
   caseAccess,
   caseDocuments,
   caseEvents,
+  compliLinkWebhookEvents,
   consentRecords,
   documentPolicies,
   InsertAuditLog,
@@ -15,6 +16,7 @@ import {
   InsertCaseAccess,
   InsertCaseDocument,
   InsertCaseEvent,
+  InsertCompliLinkWebhookEvent,
   InsertConsentRecord,
   InsertDocumentPolicy,
   InsertLaborCase,
@@ -1707,6 +1709,73 @@ export async function getDocumentById(documentId: string) {
 
   const rows = await db.select().from(caseDocuments).where(eq(caseDocuments.documentId, documentId)).limit(1);
   return rows[0];
+}
+
+export async function registerCompliLinkWebhookEvent(entry: InsertCompliLinkWebhookEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  try {
+    await db.insert(compliLinkWebhookEvents).values(entry);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.toLowerCase().includes("duplicate entry")) {
+      const existing = await db
+        .select()
+        .from(compliLinkWebhookEvents)
+        .where(eq(compliLinkWebhookEvents.eventKey, entry.eventKey))
+        .limit(1);
+
+      return {
+        created: false as const,
+        event: existing[0] ?? null,
+      };
+    }
+
+    throw error;
+  }
+
+  const inserted = await db
+    .select()
+    .from(compliLinkWebhookEvents)
+    .where(eq(compliLinkWebhookEvents.eventKey, entry.eventKey))
+    .limit(1);
+
+  return {
+    created: true as const,
+    event: inserted[0] ?? null,
+  };
+}
+
+export async function updateCompliLinkWebhookEvent(params: {
+  id: number;
+  status: (typeof compliLinkWebhookEvents.status.enumValues)[number];
+  processedAt?: Date | null;
+  failureReason?: string | null;
+  compliLinkId?: string | null;
+  correlationId?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(compliLinkWebhookEvents)
+    .set({
+      status: params.status,
+      processedAt: params.processedAt ?? undefined,
+      failureReason: params.failureReason ?? null,
+      compliLinkId: params.compliLinkId ?? undefined,
+      correlationId: params.correlationId ?? undefined,
+    })
+    .where(eq(compliLinkWebhookEvents.id, params.id));
+
+  const updated = await db
+    .select()
+    .from(compliLinkWebhookEvents)
+    .where(eq(compliLinkWebhookEvents.id, params.id))
+    .limit(1);
+
+  return updated[0] ?? null;
 }
 
 export async function updateDocumentPostProcessing(params: {

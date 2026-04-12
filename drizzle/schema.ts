@@ -201,6 +201,41 @@ export const caseDocuments = mysqlTable(
   ],
 );
 
+export const compliLinkWebhookEvents = mysqlTable(
+  "complilink_webhook_events",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    tenantId: varchar("tenantId", { length: 64 })
+      .notNull()
+      .references(() => tenants.tenantId),
+    caseId: varchar("caseId", { length: 64 })
+      .notNull()
+      .references(() => laborCases.caseId),
+    traceId: varchar("traceId", { length: 96 }).notNull(),
+    documentId: varchar("documentId", { length: 64 })
+      .notNull()
+      .references(() => caseDocuments.documentId),
+    eventKey: varchar("eventKey", { length: 64 }).notNull(),
+    eventName: varchar("eventName", { length: 128 }).notNull(),
+    compliLinkId: varchar("compliLinkId", { length: 128 }),
+    correlationId: varchar("correlationId", { length: 128 }),
+    sourceTimestamp: varchar("sourceTimestamp", { length: 64 }),
+    sourceSignature: varchar("sourceSignature", { length: 255 }),
+    rawPayload: text("rawPayload").notNull(),
+    status: mysqlEnum("status", ["processing", "processed", "failed_processing"]).default("processing").notNull(),
+    failureReason: varchar("failureReason", { length: 255 }),
+    processedAt: timestamp("processedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("complilink_webhook_events_event_key_uq").on(table.eventKey),
+    index("complilink_webhook_events_document_idx").on(table.documentId),
+    index("complilink_webhook_events_trace_idx").on(table.traceId),
+    index("complilink_webhook_events_status_idx").on(table.status),
+  ],
+);
+
 export const documentPolicies = mysqlTable(
   "document_policies",
   {
@@ -341,6 +376,8 @@ export type CaseEvent = typeof caseEvents.$inferSelect;
 export type InsertCaseEvent = typeof caseEvents.$inferInsert;
 export type CaseDocument = typeof caseDocuments.$inferSelect;
 export type InsertCaseDocument = typeof caseDocuments.$inferInsert;
+export type CompliLinkWebhookEvent = typeof compliLinkWebhookEvents.$inferSelect;
+export type InsertCompliLinkWebhookEvent = typeof compliLinkWebhookEvents.$inferInsert;
 export type DocumentPolicy = typeof documentPolicies.$inferSelect;
 export type InsertDocumentPolicy = typeof documentPolicies.$inferInsert;
 export type ConsentRecord = typeof consentRecords.$inferSelect;

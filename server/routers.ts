@@ -3063,6 +3063,11 @@ export const appRouter = router({
               dispatched_at: engineDispatch.dispatchedAt,
               attempts: engineDispatch.attempts,
               http_status: engineDispatch.httpStatus,
+              dispatch_id: engineDispatch.observabilityEnvelope.dispatchId,
+              correlation_id: engineDispatch.observabilityEnvelope.correlationId,
+              outcome_category: engineDispatch.observabilityEnvelope.outcomeCategory,
+              target_host: engineDispatch.observabilityEnvelope.targetHost,
+              target_path: engineDispatch.observabilityEnvelope.targetPath,
             }),
             eventAt: new Date(engineDispatch.dispatchedAt),
           });
@@ -3557,6 +3562,11 @@ export const appRouter = router({
               dispatched_at: engineDispatch.dispatchedAt,
               attempts: engineDispatch.attempts,
               http_status: engineDispatch.httpStatus,
+              dispatch_id: engineDispatch.observabilityEnvelope.dispatchId,
+              correlation_id: engineDispatch.observabilityEnvelope.correlationId,
+              outcome_category: engineDispatch.observabilityEnvelope.outcomeCategory,
+              target_host: engineDispatch.observabilityEnvelope.targetHost,
+              target_path: engineDispatch.observabilityEnvelope.targetPath,
             }),
             eventAt: new Date(engineDispatch.dispatchedAt),
           });

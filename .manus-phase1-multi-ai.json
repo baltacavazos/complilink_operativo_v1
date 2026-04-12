@@ -1,0 +1,160 @@
+{
+  "system_prompt": "Eres un arquitecto senior de integraciones backend. Debes evaluar una fase 1 de integración bidireccional entre AuditaPatrón y CompliLink. Tu objetivo es detectar vacíos de idempotencia, trazabilidad, consistencia operativa, riesgo de duplicados, persistencia faltante, y proponer el cambio mínimo pero correcto para endurecer la fase 1. Responde únicamente JSON válido con las llaves: summary, strengths, risks, recommended_changes, db_changes_needed, router_changes_needed, webhook_changes_needed, integration_service_changes_needed, tests_needed, confidence. Cada lista debe contener strings concisos.",
+  "user_prompt": "Analiza el siguiente mapa backend real ya auditado y recomienda el diseño técnico de fase 1.\n\nContexto:\n# Mapa backend de fase 1: AuditaPatrón ↔ CompliLink\n\n## Punto de salida principal\n\nEl envío saliente hacia CompliLink ya existe en dos flujos del router:\n\n| Flujo | Ubicación | Momento del disparo | Evidencia persistida |\n| --- | --- | --- | --- |\n| Confirmación de borrador analizado | `server/routers.ts` líneas ~3011-3035 | Después de persistir `document`, `classification`, `shared_engine` y `helios_v1` | `case_events` con `stage: complilink_dispatch` cuando `status=sent`; `audit_logs` con `action: document.engine_dispatch` |\n| Carga documental directa | `server/routers.ts` líneas ~3506-3530 | Después de persistir `document`, `classification`, `shared_engine` y `helios_v1` | `case_events` con `stage: complilink_dispatch` cuando `status=sent`; `audit_logs` con `action: document.engine_dispatch` |\n\nEn ambos casos se llama a `sendDocumentToAuditaPatronEngine(...)` desde `server/auditaPatronIntegrationService.ts`.\n\n## Contrato saliente actual\n\nEl payload saliente usa el evento `document.uploaded` y contiene `documentId`, `sourceUserId`, `docType`, `fileUrl`, `sha256`, `mimeType`, `uploadedAt`, `fileSizeBytes`, `auditId`, `caseId` y `metadata`. La firma HMAC se calcula como `sha256(timestamp.body)` y viaja en headers `X-AuditaPatron-Timestamp` y `X-AuditaPatron-Signature`.\n\n## Política actual de reintentos y observabilidad\n\n| Componente | Estado actual |\n| --- | --- |\n| Reintentos | Solo ante 5xx, con demoras por defecto de 30s, 60s y 120s |\n| Estados de salida | `sent`, `failed`, `skipped` |\n| Observabilidad | `dispatchId`, `targetHost`, `targetPath`, `outcomeCategory`, `retryScheduled`, `retryDelayMs`, `remoteSmokeEnabled`, `httpStatusCode` |\n| Trazabilidad funcional | `case_events`, `audit_logs`, `canonical_contracts` |\n| Alerta operativa | Se crea alerta `upload_pending` cuando el envío no queda en `sent` |\n\n## Punto de entrada principal\n\nEl webhook de retorno ya existe en `server/auditaPatronReturnWebhook.ts` y se registra en `POST /api/auditapatron/complilink-webhook`.\n\nAcepta eventos soportados: `document.processing.started`, `document.analysis.completed`, `contract.analysis.detailed`, `document.analyzed` y `audit.completed`.\n\n## Qué hace hoy el webhook de retorno\n\n| Paso | Comportamiento |\n| --- | --- |\n| Verificación | Revalida HMAC y antigüedad del timestamp (ventana de 5 minutos) |\n| Validación | Exige `event` y `documentId`, y rechaza eventos no soportados |\n| Resolución | Busca el documento por `documentId` |\n| Actualización documental | Refresca `documentType`, `classificationConfidence` y `processedAt` salvo en `document.processing.started` |\n| Persistencia canónica | Guarda payload normalizado en `canonical_contracts` como `contractType: audit` |\n| Timeline | Inserta `case_event` con título y descripción según el evento retornado |\n| Alertamiento | Abre `operational_alert` si llegan `guardrailWarnings` o `guardrailsFlags` |\n| Auditoría | Registra `audit_log` con acción `complilink.return_webhook.<event>` |\n\n## Hallazgo clave de idempotencia\n\nNo se observó una capa dedicada de idempotencia para el webhook de retorno. La traza actual depende de `case_events`, `audit_logs` y `canonical_contracts`, pero no aparece una tabla ni una restricción única específica para `dispatchId`, `eventId` o un identificador de retorno equivalente.\n\n## Hipótesis de intervención de fase 1\n\nLa intervención backend más precisa parece concentrarse en tres superficies:\n\n1. `server/auditaPatronIntegrationService.ts` para robustecer envío, firmas, reintentos y metadatos de idempotencia.\n2. `server/auditaPatronReturnWebhook.ts` para endurecer deduplicación/idempotencia del retorno y su persistencia.\n3. `server/routers.ts` para consolidar ambos puntos de disparo y, si conviene, extraer una sola rutina compartida de dispatch/persistencia.\n\n\nNecesito que evalúes específicamente:\n1. Si hay un hueco real de idempotencia en el webhook de retorno.\n2. Si conviene agregar una tabla o usar un mecanismo existente.\n3. Si los dos puntos de salida del router deben consolidarse en una sola rutina.\n4. Qué metadatos mínimos deberían persistirse para reintentos, deduplicación y trazabilidad.\n5. Qué pruebas automatizadas son indispensables antes de cerrar la fase 1.\n\nResponde solo JSON válido y no incluyas markdown.",
+  "outputs": {
+    "chatgpt": {
+      "summary": "El diseño actual cubre bien la trazabilidad y persistencia de eventos salientes y entrantes, pero presenta un vacío real de idempotencia en el webhook de retorno. Se recomienda una intervención mínima pero robusta para evitar duplicados y endurecer la consistencia operativa, principalmente mediante la introducción de una capa explícita de idempotencia y la consolidación de la lógica de dispatch.",
+      "strengths": [
+        "Persistencia exhaustiva de eventos y logs en ambos sentidos",
+        "Reintentos automáticos ante fallos temporales en el envío saliente",
+        "Observabilidad y alertamiento operativo adecuados",
+        "Validación de firmas y timestamps en el webhook de retorno",
+        "Normalización de payloads en canonical_contracts"
+      ],
+      "risks": [
+        "Falta de idempotencia explícita en el webhook de retorno puede causar duplicados en caso de reenvíos",
+        "No hay restricción única ni tabla dedicada para eventos entrantes por eventId o dispatchId",
+        "Posible inconsistencia si el mismo evento se procesa más de una vez (race conditions o reintentos de CompliLink)",
+        "Duplicidad de lógica de dispatch en routers puede dificultar mantenimiento y trazabilidad",
+        "Metadatos de reintentos y deduplicación no están centralizados"
+      ],
+      "recommended_changes": [
+        "Agregar una tabla dedicada de idempotencia para eventos entrantes del webhook, con clave única por eventId o combinación de eventType+documentId+timestamp",
+        "Registrar cada evento entrante antes de procesarlo; si ya existe, rechazar o ignorar el procesamiento",
+        "Consolidar los dos puntos de salida del router en una rutina compartida para el dispatch y persistencia de eventos salientes",
+        "Persistir metadatos de reintentos, dispatchId y eventId en ambos sentidos para trazabilidad cruzada",
+        "Asegurar que los logs de auditoría y case_events referencien el idempotency key o eventId",
+        "Agregar pruebas automatizadas de idempotencia, duplicados y consistencia de estados"
+      ],
+      "db_changes_needed": [
+        "Crear tabla auditapatron_webhook_idempotency con columnas: eventId, eventType, documentId, receivedAt, payloadHash, processedAt, PRIMARY KEY(eventId)",
+        "Agregar índices por documentId y eventType para consultas rápidas",
+        "Asegurar que dispatchId y eventId estén presentes en canonical_contracts y audit_logs"
+      ],
+      "router_changes_needed": [
+        "Extraer la lógica de dispatch a una función compartida en auditaPatronIntegrationService",
+        "Reemplazar llamadas directas en ambos flujos del router por la rutina consolidada",
+        "Asegurar que los metadatos de dispatch y resultado se persistan de forma uniforme"
+      ],
+      "webhook_changes_needed": [
+        "Antes de procesar el evento, intentar insertar en auditapatron_webhook_idempotency; si falla por clave duplicada, abortar procesamiento",
+        "Persistir el payload hash y timestamp para trazabilidad y debugging",
+        "Registrar en audit_logs y case_events el eventId y resultado de idempotencia",
+        "Agregar métricas y alertas para eventos duplicados detectados"
+      ],
+      "integration_service_changes_needed": [
+        "Incluir dispatchId y eventId en todos los payloads y logs relacionados",
+        "Registrar los intentos de envío y sus resultados con referencia cruzada a dispatchId",
+        "Asegurar que los reintentos no generen duplicados en la capa de persistencia",
+        "Exponer funciones utilitarias para generación y validación de idempotency keys"
+      ],
+      "tests_needed": [
+        "Pruebas de reenvío del mismo evento entrante para asegurar idempotencia (no duplicados)",
+        "Pruebas de race condition en el webhook para eventos simultáneos",
+        "Pruebas de reintentos salientes y su correlación con dispatchId",
+        "Pruebas de consistencia de estados entre case_events, audit_logs y canonical_contracts",
+        "Pruebas de rechazo de eventos con firmas o timestamps inválidos",
+        "Pruebas de consolidación de lógica de dispatch en el router"
+      ],
+      "confidence": "alta"
+    },
+    "grok": {
+      "summary": "La fase 1 presenta una integración bidireccional sólida pero con vacíos en idempotencia del webhook de retorno, duplicación de lógica en routers y persistencia insuficiente para deduplicación. Se recomiendan cambios mínimos para endurecer idempotencia, trazabilidad y consistencia sin alterar flujos existentes.",
+      "strengths": [
+        "Envío saliente existente con reintentos y observabilidad básica.",
+        "Webhook de retorno valida HMAC y timestamps.",
+        "Persistencia en case_events, audit_logs y canonical_contracts para trazabilidad.",
+        "Alertas operativas para fallos y warnings."
+      ],
+      "risks": [
+        "Falta de idempotencia en webhook permite procesamientos duplicados si se reenvían eventos.",
+        "Dos puntos de salida en routers pueden llevar a inconsistencias operativas.",
+        "Persistencia insuficiente para deduplicación de eventos entrantes aumenta riesgo de duplicados.",
+        "Reintentos limitados solo a 5xx no cubren todos los escenarios de fallo transitorio."
+      ],
+      "recommended_changes": [
+        "Agregar capa de idempotencia en webhook usando una nueva tabla para rastrear eventos procesados.",
+        "Consolidar lógica de dispatch en routers.ts en una rutina compartida.",
+        "Enriquecer metadatos persistidos con eventId, dispatchId y retryCount para mejor trazabilidad.",
+        "Expandir reintentos a incluir 429 y timeouts con backoff exponencial."
+      ],
+      "db_changes_needed": [
+        "Crear tabla idempotency_keys con columnas: eventId (unique), documentId, processedAt, status (processed/pending).",
+        "Agregar índice único en canonical_contracts por eventId si no existe.",
+        "Incluir retryCount y lastRetryAt en case_events para trazabilidad de reintentos."
+      ],
+      "router_changes_needed": [
+        "Extraer sendDocumentToAuditaPatronEngine a una función compartida.",
+        "Unificar lógica de persistencia post-dispatch en ambos flujos para evitar duplicados."
+      ],
+      "webhook_changes_needed": [
+        "Antes de procesar, chequear idempotency_keys por eventId; si existe, skip o return 200.",
+        "Persistir eventId en canonical_contracts y case_events para deduplicación.",
+        "Ampliar validación para rechazar eventos con timestamps fuera de ventana extendida a 10min si needed."
+      ],
+      "integration_service_changes_needed": [
+        "Incluir eventId único en payload saliente para correlación bidireccional.",
+        "Mejorar reintentos: agregar backoff exponencial y límites de intentos (e.g., max 5).",
+        "Loggear metadatos adicionales: eventId, retryAttempt en audit_logs."
+      ],
+      "tests_needed": [
+        "Unit tests para verificación de idempotencia en webhook (duplicados skip).",
+        "Integration tests para flujos de envío y retorno end-to-end.",
+        "Tests de reintentos simulando 5xx, 429 y timeouts.",
+        "Tests de deduplicación: enviar mismo evento múltiple veces y verificar no duplicados en DB."
+      ],
+      "confidence": "High"
+    },
+    "gemini": {
+      "summary": "La fase 1 de integración entre AuditaPatrón y CompliLink presenta un riesgo crítico de duplicación de datos y inconsistencia debido a la ausencia de una capa de idempotencia en el webhook de retorno. Aunque la trazabilidad saliente es buena, la consolidación de los puntos de disparo y la mejora de los metadatos de persistencia son necesarias para endurecer la integración. La introducción de un mecanismo de idempotencia dedicado y un `correlationId` son fundamentales para la robustez y la trazabilidad end-to-end.",
+      "strengths": [
+        "Mecanismo de reintentos existente para errores 5xx en el envío saliente.",
+        "Buena observabilidad de los envíos salientes con `dispatchId`, `outcomeCategory` y `httpStatusCode`.",
+        "Registro y auditoría exhaustivos mediante `case_events`, `audit_logs` y `canonical_contracts`.",
+        "Uso de firma HMAC para seguridad en ambos sentidos de la comunicación.",
+        "Alertamiento operativo para envíos fallidos (`upload_pending`) y advertencias de CompliLink (`guardrailWarnings`, `guardrailsFlags`)."
+      ],
+      "risks": [
+        "**Duplicación de Datos Crítica:** El webhook de retorno carece de idempotencia, lo que puede llevar a múltiples inserciones en `canonical_contracts`, `case_events` y `audit_logs` si CompliLink reenvía eventos.",
+        "**Inconsistencia de Datos:** Múltiples procesamientos del mismo evento pueden causar actualizaciones redundantes o incorrectas en los campos del `documento` (`documentType`, `classificationConfidence`, `processedAt`), especialmente si los eventos llegan desordenados o con valores diferentes.",
+        "**Sobrecarga Operativa:** La necesidad de limpiar datos duplicados o investigar estados inconsistentes generará trabajo manual y retrasos.",
+        "**Trazabilidad End-to-End Limitada:** La ausencia de un `correlationId` dificulta vincular un evento de webhook de retorno específico con su envío saliente original.",
+        "**Inconsistencia en el Disparo Saliente:** Aunque se llama a un servicio compartido, la lógica de disparo en `server/routers.ts` podría tener sutiles diferencias que, si no se consolidan, podrían introducir comportamientos inconsistentes."
+      ],
+      "recommended_changes": [
+        "Implementar una capa de idempotencia dedicada para el webhook de retorno de CompliLink.",
+        "Consolidar la lógica de disparo saliente en `server/routers.ts` en una única rutina compartida.",
+        "Enriquecer los metadatos persistidos para los envíos salientes y los eventos de webhook entrantes para mejorar la trazabilidad y la gestión de reintentos.",
+        "Introducir un `correlationId` para una trazabilidad completa de la transacción entre AuditaPatrón y CompliLink."
+      ],
+      "db_changes_needed": [
+        "Crear una nueva tabla `complilink_webhook_events_received` con una restricción única en un identificador de evento de CompliLink (ej. `complilink_event_id`) o un hash del payload relevante, para la deduplicación. Columnas sugeridas: `id` (PK), `complilink_event_id` (UNIQUE), `document_id`, `event_type`, `received_at`, `processed_at`, `status` (`processing`, `processed`, `duplicate`, `failed_validation`, `failed_processing`), `raw_payload` (JSONB), `hmac_signature`, `correlation_id` (FK opcional).",
+        "Crear una nueva tabla `audita_patron_dispatches` para centralizar el estado de los envíos salientes, incluyendo: `dispatch_id` (PK), `document_id`, `case_id`, `audit_id`, `status` (`sent`, `failed`, `skipped`, `pending_retry`), `last_attempt_at`, `next_attempt_at`, `retry_count`, `http_status_code`, `error_message`, `correlation_id` (UNIQUE).",
+        "Actualizar `case_events` y `audit_logs` para incluir opcionalmente `complilink_event_id` y `correlation_id` para una trazabilidad más granular."
+      ],
+      "router_changes_needed": [
+        "Extraer una función común en `server/routers.ts` que encapsule la llamada a `sendDocumentToAuditaPatronEngine(...)` y la persistencia asociada (incluyendo la nueva tabla `audita_patron_dispatches`).",
+        "Modificar ambos flujos de disparo (`Confirmación de borrador analizado` y `Carga documental directa`) para que utilicen esta nueva función común, asegurando un comportamiento consistente y una única fuente de verdad para la lógica de envío y persistencia."
+      ],
+      "webhook_changes_needed": [
+        "Implementar una capa de idempotencia al inicio del webhook: antes de cualquier procesamiento, intentar registrar el evento entrante en `complilink_webhook_events_received`. Si el registro falla por duplicidad (violación de restricción única), registrar como duplicado, actualizar el estado y retornar una respuesta exitosa (200/202) sin procesar el evento nuevamente.",
+        "Persistir el `rawPayload` completo del webhook en la tabla `complilink_webhook_events_received` para auditoría y depuración.",
+        "Extraer y persistir el `correlationId` (si CompliLink lo devuelve) para vincular el evento de retorno con el envío original.",
+        "Actualizar el `status` del evento en `complilink_webhook_events_received` a `processed` o `failed_processing` al finalizar el procesamiento."
+      ],
+      "integration_service_changes_needed": [
+        "Generar un `correlationId` (ej. UUID) al inicio de cada envío en `sendDocumentToAuditaPatronEngine(...)` y persistirlo en la nueva tabla `audita_patron_dispatches`.",
+        "Incluir el `correlationId` en el payload o los headers salientes hacia CompliLink, si el contrato lo permite, para que pueda ser devuelto en el webhook.",
+        "Mejorar la persistencia de los intentos de envío en `audita_patron_dispatches` para incluir `status`, `lastAttemptAt`, `nextAttemptAt`, `retryCount`, `httpStatusCode` y `errorMessage`."
+      ],
+      "tests_needed": [
+        "**Unit Tests:** Validación de HMAC (saliente y entrante), lógica de reintentos, validación de payload del webhook.",
+        "**Integration Tests (Saliente):** Simular envío exitoso, reintentos por 5xx, fallos por no-5xx, creación de alerta `upload_pending`, y verificación de la consolidación de los puntos de disparo del router.",
+        "**Integration Tests (Webhook Entrante):** Procesamiento exitoso de eventos, **manejo crítico de eventos duplicados (idempotencia)**, rechazo por HMAC/timestamp inválido, rechazo por payload inválido/faltante, creación de alertas por `guardrailWarnings`/`guardrailsFlags`.",
+        "**End-to-End Tests:** Simular un ciclo completo desde el disparo en AuditaPatrón hasta la recepción y procesamiento del webhook de CompliLink, verificando todas las actualizaciones de datos y la trazabilidad mediante `correlationId`."
+      ],
+      "confidence": "High"
+    }
+  },
+  "errors": {}
+}

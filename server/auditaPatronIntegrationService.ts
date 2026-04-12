@@ -43,11 +43,14 @@ export type AuditaPatronEnginePayload = {
   fileSizeBytes?: number;
   auditId?: string;
   caseId?: string;
+  dispatchId?: string;
+  correlationId?: string;
   metadata?: AuditaPatronMetadata;
 };
 
 export type AuditaPatronBridgeObservabilityEnvelope = {
   dispatchId: string;
+  correlationId: string;
   targetHost: string | null;
   targetPath: string | null;
   outcomeCategory: "success" | "retry_scheduled" | "permanent_failure" | "skipped";
@@ -74,6 +77,7 @@ export type CompliLinkReturnEnvelope = {
   event: SupportedCompliLinkReturnEvent;
   documentId: string;
   compliLinkId?: string;
+  correlationId?: string;
   status?: string;
   timestamp?: string;
   documentType?: string;
@@ -152,6 +156,7 @@ function isRemoteBridgeSmokeEnabled() {
 
 function buildObservabilityEnvelope(params: {
   dispatchId: string;
+  correlationId: string;
   targetHost: string | null;
   targetPath: string | null;
   outcomeCategory: AuditaPatronBridgeObservabilityEnvelope["outcomeCategory"];
@@ -162,6 +167,7 @@ function buildObservabilityEnvelope(params: {
 }) {
   return {
     dispatchId: params.dispatchId,
+    correlationId: params.correlationId,
     targetHost: params.targetHost,
     targetPath: params.targetPath,
     outcomeCategory: params.outcomeCategory,
@@ -271,9 +277,16 @@ export function buildAuditaPatronEnginePayload(params: {
   auditId?: string;
   caseId?: string;
   docType?: string;
+  dispatchId?: string;
+  correlationId?: string;
 }): AuditaPatronEnginePayload {
   const uploadedAt = normalizeIsoDate(params.uploadedAt);
-  const metadata = params.metadata && Object.keys(params.metadata).length > 0 ? params.metadata : undefined;
+  const enrichedMetadata = {
+    ...(params.metadata ?? {}),
+    ...(params.dispatchId ? { dispatchId: params.dispatchId } : {}),
+    ...(params.correlationId ? { correlationId: params.correlationId } : {}),
+  } satisfies AuditaPatronMetadata;
+  const metadata = Object.keys(enrichedMetadata).length > 0 ? enrichedMetadata : undefined;
 
   return {
     event: AUDITAPATRON_ENGINE_EVENT,
@@ -287,6 +300,8 @@ export function buildAuditaPatronEnginePayload(params: {
     fileSizeBytes: params.documentContract.size_bytes,
     auditId: params.auditId ?? params.caseContract.trace_id,
     caseId: params.caseId ?? params.documentContract.case_id,
+    dispatchId: params.dispatchId,
+    correlationId: params.correlationId,
     metadata,
   };
 }
@@ -358,9 +373,14 @@ export async function sendDocumentToAuditaPatronEngine(
   },
   overrides?: Partial<AuditaPatronEngineConfig>,
 ): Promise<AuditaPatronEngineDispatchResult> {
-  const payload = buildAuditaPatronEnginePayload(params);
   const config = getAuditaPatronEngineConfig(overrides);
   const dispatchId = randomUUID();
+  const correlationId = randomUUID();
+  const payload = buildAuditaPatronEnginePayload({
+    ...params,
+    dispatchId,
+    correlationId,
+  });
   const { targetHost, targetPath } = parseWebhookTarget(config.webhookUrl);
   const remoteSmokeEnabled = isRemoteBridgeSmokeEnabled();
 
@@ -375,6 +395,7 @@ export async function sendDocumentToAuditaPatronEngine(
       payload,
       observabilityEnvelope: buildObservabilityEnvelope({
         dispatchId,
+        correlationId,
         targetHost,
         targetPath,
         outcomeCategory: "skipped",
@@ -433,6 +454,7 @@ export async function sendDocumentToAuditaPatronEngine(
           payload,
           observabilityEnvelope: buildObservabilityEnvelope({
             dispatchId,
+            correlationId,
             targetHost,
             targetPath,
             outcomeCategory: "success",
@@ -460,11 +482,13 @@ export async function sendDocumentToAuditaPatronEngine(
           status: "failed",
           attempts,
           reason: lastReason,
-          observabilityEnvelope: buildObservabilityEnvelope({
-            dispatchId,
-            targetHost,
-            targetPath,
-            outcomeCategory: "retry_scheduled",
+              observabilityEnvelope: buildObservabilityEnvelope({
+                dispatchId,
+                correlationId,
+                targetHost,
+                targetPath,
+                outcomeCategory: "retry_scheduled",
+
             retryScheduled: true,
             retryDelayMs,
             remoteSmokeEnabled,
@@ -484,11 +508,13 @@ export async function sendDocumentToAuditaPatronEngine(
         reason: lastReason,
         responseBody: lastResponseBody,
         payload,
-        observabilityEnvelope: buildObservabilityEnvelope({
-          dispatchId,
-          targetHost,
-          targetPath,
-          outcomeCategory: "permanent_failure",
+          observabilityEnvelope: buildObservabilityEnvelope({
+            dispatchId,
+            correlationId,
+            targetHost,
+            targetPath,
+            outcomeCategory: "permanent_failure",
+
           retryScheduled: false,
           retryDelayMs: null,
           remoteSmokeEnabled,
@@ -524,6 +550,7 @@ export async function sendDocumentToAuditaPatronEngine(
     payload,
     observabilityEnvelope: buildObservabilityEnvelope({
       dispatchId,
+      correlationId,
       targetHost,
       targetPath,
       outcomeCategory: "permanent_failure",
