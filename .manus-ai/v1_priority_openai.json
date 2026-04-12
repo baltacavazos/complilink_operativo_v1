@@ -3,133 +3,133 @@
     {
       "rank": 1,
       "name": "Endurecer trazabilidad y seguridad",
-      "why_now": "Garantizar la integridad y confianza en la auditoría es crítico para la aceptación en piloto y para cumplir con regulaciones; sin esto, la plataforma no es viable.",
+      "why_now": "Garantizar la integridad y confianza del sistema es crítico para un piloto controlado y para evitar riesgos legales o de cumplimiento.",
       "scope": [
         "Implementar hash chain en auditoría",
-        "Endurecer RBAC granular por tenant y caso",
-        "Reforzar validaciones de entrada y reglas de negocio"
+        "Refinar y endurecer RBAC granular por tenant y caso",
+        "Reforzar validaciones de entrada y reglas de negocio críticas"
       ],
       "dependencies": [
-        "Existencia de auditoría básica y RBAC actual",
-        "Estructuras de datos para auditoría y casos"
+        "Auditoría existente",
+        "Modelo RBAC actual",
+        "Validaciones básicas ya implementadas"
       ],
-      "risk_if_skipped": "Riesgo alto de brechas de seguridad, pérdida de confianza, y fallas en cumplimiento normativo que invalidan piloto.",
+      "risk_if_skipped": "Riesgo alto de brechas de seguridad, pérdida de confianza y errores no detectados que pueden invalidar resultados del piloto.",
       "pilot_impact": "high"
     },
     {
       "rank": 2,
       "name": "Estabilizar operación y resiliencia",
-      "why_now": "Una operación estable con monitoreo y alertas es indispensable para detectar y reaccionar ante fallas durante el piloto, evitando interrupciones críticas.",
+      "why_now": "Un piloto requiere monitoreo básico, alertas y capacidad de recuperación para evitar caídas o pérdida de datos durante pruebas reales.",
       "scope": [
         "Implementar alertas operativas con estados accionables",
-        "Centralizar bitácora operativa y establecer monitoreo básico",
-        "Definir y documentar estrategia inicial de backup y recuperación"
+        "Centralizar bitácora operativa y monitoreo mínimo",
+        "Definir y validar estrategia básica de backup y recuperación"
       ],
       "dependencies": [
-        "Logs y eventos operativos existentes",
-        "Infraestructura para alertas y monitoreo"
+        "Logs y eventos existentes",
+        "Infraestructura de almacenamiento y base de datos"
       ],
-      "risk_if_skipped": "Alta probabilidad de fallas no detectadas, pérdida de datos o tiempos de recuperación largos que afectan la experiencia piloto.",
+      "risk_if_skipped": "Fallas operativas no detectadas a tiempo, pérdida de datos o interrupciones que comprometen la experiencia piloto.",
       "pilot_impact": "high"
     },
     {
       "rank": 3,
-      "name": "Simplificar producto y flujos UX para piloto",
-      "why_now": "Reducir complejidad y dejar flujos autoexplicativos facilita la adopción y reduce soporte durante el piloto, acelerando feedback valioso.",
+      "name": "Simplificar y cerrar flujos mínimos para piloto",
+      "why_now": "Reducir complejidad y enfocarse en lo esencial permite entregar una experiencia autoexplicativa y confiable para usuarios piloto sin distracciones.",
       "scope": [
-        "Eliminar features no críticos para piloto",
-        "Refinar flujos clave para claridad y simplicidad",
-        "Documentar y validar flujos mínimos indispensables"
+        "Depurar CompliLink para solo funcionalidades críticas",
+        "Asegurar flujos autoexplicativos y sin ambigüedades",
+        "Cerrar funcionalidades no esenciales para piloto"
       ],
       "dependencies": [
-        "Estado actual de UI y flujos",
-        "Feedback inicial de usuarios internos"
+        "Estado actual de funcionalidades",
+        "Feedback inicial de usuarios y testers"
       ],
-      "risk_if_skipped": "Usuarios piloto pueden confundirse o frustrarse, aumentando el riesgo de rechazo o mala percepción del producto.",
+      "risk_if_skipped": "Confusión o frustración en usuarios piloto, dilución de foco y mayor esfuerzo de soporte.",
       "pilot_impact": "medium"
     },
     {
       "rank": 4,
       "name": "Validar e implementar plan integral de integración AuditaPatron ↔ CompliLink MX",
-      "why_now": "La integración es clave para la operativa real y debe estar estable y probada para evitar bloqueos en piloto y garantizar continuidad futura.",
+      "why_now": "La integración es clave para la operativa piloto y para sentar bases para evolución futura sin rehacer arquitectura.",
       "scope": [
-        "Presentar plan detallado de integración",
+        "Presentar plan integral de integración",
         "Implementar puntos críticos de integración",
         "Realizar pruebas técnicas y de integración"
       ],
       "dependencies": [
-        "APIs y contratos existentes",
-        "Mecanismos de firma HMAC y reintentos"
+        "Módulos de integración existentes",
+        "Firmas HMAC y mecanismos de idempotencia"
       ],
-      "risk_if_skipped": "Fallas o incompatibilidades en integración pueden detener el piloto o generar datos inconsistentes.",
+      "risk_if_skipped": "Fallas en flujo documental y de datos entre sistemas, afectando la experiencia y resultados del piloto.",
       "pilot_impact": "high"
     },
     {
       "rank": 5,
       "name": "Preparar backend y API para transición móvil",
-      "why_now": "Asegurar que la arquitectura y contratos sean reutilizables evita retrabajos costosos y facilita la evolución post-piloto.",
+      "why_now": "Asegurar que la arquitectura y contratos sean reutilizables evita retrabajo y facilita evolución post piloto.",
       "scope": [
-        "Revisar y documentar APIs para consumo móvil",
-        "Separar lógica de presentación y negocio",
-        "Establecer contratos estables y versionados"
+        "Revisar y documentar API para consumo móvil",
+        "Eliminar lógica duplicada o dependencias web específicas",
+        "Establecer contratos claros y estables"
       ],
       "dependencies": [
-        "Estado actual del backend y APIs",
-        "Estrategia de versionado"
+        "Estado actual del backend y API",
+        "Estrategia de desarrollo móvil futura"
       ],
-      "risk_if_skipped": "La transición a móvil será más costosa y lenta, con riesgo de duplicación de lógica y errores.",
+      "risk_if_skipped": "Dificultad para migrar a móvil, aumento de costos y tiempos en evolución post piloto.",
       "pilot_impact": "medium"
     }
   ],
   "recommended_next_block": {
     "name": "Endurecer trazabilidad y seguridad",
-    "why": "Es la base para la confianza y cumplimiento, imprescindible para cualquier piloto y para evitar riesgos legales y reputacionales.",
+    "why": "Es la base para confianza, cumplimiento y estabilidad del piloto; sin esto, el piloto no es viable ni confiable.",
     "deliverables": [
       "Implementación de hash chain en auditoría",
       "RBAC granular y validado por tenant y caso",
-      "Validaciones de entrada reforzadas y reglas de negocio estrictas"
+      "Validaciones de entrada reforzadas y reglas de negocio críticas aplicadas"
     ],
     "tests": [
       "Pruebas unitarias y de integración para hash chain",
-      "Pruebas de acceso RBAC con escenarios multi-tenant",
-      "Pruebas de validación de datos y reglas de negocio"
+      "Pruebas de acceso RBAC con escenarios multi-tenant y multi-caso",
+      "Pruebas de validación de entrada con casos límite y ataques comunes"
     ],
     "not_now": [
-      "Agregar nuevas funcionalidades o flujos complejos",
-      "Implementar versionado documental avanzado",
-      "Desarrollar funcionalidades móviles"
+      "Agregar nuevas funcionalidades no críticas",
+      "Optimización UI/UX cosmética",
+      "Versionado o supersedencia documental avanzada"
     ]
   },
   "mobile_transition": {
-    "recommendation": "Mantener backend y API desacoplados y bien documentados, con contratos estables y versionados, evitando lógica de negocio en frontend web para facilitar reutilización en Android/iOS.",
-    "rationale": "Una API limpia y estable permite que las apps móviles consuman la misma lógica sin duplicación, acelerando desarrollo y manteniendo coherencia.",
+    "recommendation": "Mantener backend y API desacoplados, con contratos claros y reutilizables, evitando lógica específica de UI o plataforma en backend.",
+    "rationale": "Esto facilita la reutilización directa en apps móviles y reduce retrabajo, asegurando que la V1 sea base sólida para evolución.",
     "prerequisites": [
-      "Separación clara entre backend y frontend",
-      "Documentación y versionado de APIs",
-      "Pruebas automatizadas para contratos API"
+      "Definición clara de contratos API",
+      "Eliminación de dependencias web específicas en backend",
+      "Documentación técnica actualizada y estable"
     ],
     "anti_patterns": [
-      "Incluir lógica de negocio en frontend web",
-      "Cambios frecuentes y no versionados en APIs",
-      "Duplicar lógica en apps móviles en lugar de reutilizar backend"
+      "Incluir lógica UI o estado de sesión web en backend",
+      "Duplicar lógica para móvil en backend",
+      "Cambiar contratos API sin versión ni compatibilidad"
     ]
   },
   "v1_exit_criteria": [
-    "Hash chain implementado y auditado en bitácora",
-    "RBAC granular probado y aplicado en todos los dominios críticos",
-    "Validaciones de entrada y reglas de negocio cubiertas con pruebas",
-    "Alertas operativas configuradas y monitoreo básico activo",
-    "Plan de backup documentado y probado mínimamente",
-    "Flujos UX simplificados y validados con usuarios internos",
-    "Integración AuditaPatron ↔ CompliLink MX estable y probada",
-    "APIs backend documentadas y listas para consumo móvil",
-    "Cobertura de pruebas críticas con Vitest confirmada"
+    "Auditoría con hash chain implementada y validada",
+    "RBAC granular funcionando y testeado en escenarios reales",
+    "Alertas operativas básicas configuradas y monitoreadas",
+    "Backup y recuperación probados en entorno piloto",
+    "Flujos críticos simplificados y autoexplicativos para usuarios piloto",
+    "Integración AuditaPatron ↔ CompliLink MX validada con pruebas técnicas",
+    "Backend/API documentados y preparados para consumo móvil",
+    "Pruebas automatizadas críticas cubriendo seguridad y operación"
   ],
   "warnings": [
-    "No agregar nuevas funcionalidades o complejidades antes de cerrar seguridad y operación",
-    "Evitar cambios disruptivos en arquitectura que retrasen piloto",
-    "No iniciar desarrollo móvil hasta tener APIs estables y versionadas",
-    "No posponer pruebas automatizadas en áreas críticas",
-    "No ignorar alertas operativas ni monitoreo básico para piloto"
+    "No agregar nuevas funcionalidades o mejoras cosméticas antes de cerrar seguridad y operación",
+    "Evitar cambios disruptivos en arquitectura que retrasen salida a piloto",
+    "No posponer pruebas críticas de integración y seguridad",
+    "No iniciar desarrollo móvil antes de estabilizar backend y API",
+    "No implementar versionado documental complejo en esta etapa"
   ]
 }

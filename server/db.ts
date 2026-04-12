@@ -621,7 +621,7 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await assertTenantAccess(userId, tenantId);
+  const membership = await assertTenantAccess(userId, tenantId);
 
   const caseGrant = await db
     .select()
@@ -638,6 +638,10 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
 
   if (caseGrant[0]) {
     return caseGrant[0];
+  }
+
+  if (membership.accessScope === "tenant") {
+    return membership;
   }
 
   const tenantWide = await db
@@ -686,11 +690,28 @@ export async function assertCaseWriteAccess(userId: number, tenantId: string, ca
 }
 
 export async function assertTenantAdminAccess(userId: number, tenantId: string) {
-  const membership = await assertTenantAccess(userId, tenantId);
-  if (!hasAdminCapability(membership)) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const membership = await db
+    .select()
+    .from(tenantMemberships)
+    .where(
+      and(
+        eq(tenantMemberships.userId, userId),
+        eq(tenantMemberships.tenantId, tenantId),
+        eq(tenantMemberships.status, "active"),
+        eq(tenantMemberships.accessScope, "tenant"),
+        or(eq(tenantMemberships.role, "tenant_admin"), eq(tenantMemberships.role, "manager")),
+      ),
+    )
+    .limit(1);
+
+  if (!membership[0] || !hasAdminCapability(membership[0])) {
     throw new Error("Admin access denied for tenant");
   }
-  return membership;
+
+  return membership[0];
 }
 
 export async function createCaseRecord(input: InsertLaborCase) {

@@ -851,3 +851,12 @@
 - [x] Añadir búsqueda por texto sobre error, traceId o agenda en la bitácora visible del scheduler bridge
 - [x] Persistir los filtros de la bitácora visible del scheduler bridge en la URL o preferencias del usuario
 - [x] Incorporar exportación del subconjunto filtrado desde la bitácora visible del scheduler bridge
+- [x] Congelar el alcance de V1 y excluir cualquier funcionalidad extra no bloqueante para pruebas
+- [x] Auditar con ChatGPT, Grok y Gemini los riesgos reales restantes de operación, estabilidad y salida a pruebas de V1
+- [x] Corregir únicamente bloqueos técnicos y endurecimientos críticos para dejar la plataforma lista para iniciar pruebas
+- [x] Ejecutar validación técnica y pruebas finales enfocadas en readiness de V1 antes del siguiente checkpoint
+- [x] Endurecer RBAC para impedir que membresías con accessScope=case obtengan privilegios administrativos a nivel tenant
+- [x] Validar con Grok, ChatGPT y Gemini el endurecimiento mínimo de V1 para robustez operativa sin agregar extras
+- [x] Endurecer control de acceso del backend en puntos críticos del scheduler bridge y consola CEO si hay huecos reales
+- [x] Revisar preparación para alto volumen de descargas y carga documental sin ampliar alcance funcional
+- [x] Ampliar pruebas focalizadas de robustez, concurrencia y edge cases previos a pruebas de V1
