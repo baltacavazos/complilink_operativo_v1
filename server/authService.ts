@@ -258,7 +258,19 @@ export function clearEmailChallengeCookie(req: Request, res: Response) {
   res.clearCookie(EMAIL_LOGIN_COOKIE, { ...cookieOptions, maxAge: -1 });
 }
 
-async function sendEmailCodeWithResend(params: { email: string; code: string }) {
+type ResendAttachment = {
+  filename: string;
+  content: string;
+  contentType?: string;
+};
+
+export async function sendEmailWithResend(params: {
+  to: string[];
+  subject: string;
+  html: string;
+  text: string;
+  attachments?: ResendAttachment[];
+}) {
   if (!ENV.resendApiKey) {
     throw new Error("RESEND_API_KEY is not configured");
   }
@@ -274,10 +286,15 @@ async function sendEmailCodeWithResend(params: { email: string; code: string }) 
     },
     body: JSON.stringify({
       from: ENV.resendFromEmail,
-      to: [params.email],
-      subject: "Tu código de acceso a CompliLink",
-      html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>CompliLink</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p></div>`,
-      text: `Tu código de acceso a CompliLink es ${params.code}. Expira en 10 minutos.`,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      text: params.text,
+      attachments: params.attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        content_type: attachment.contentType,
+      })),
     }),
   });
 
@@ -285,6 +302,15 @@ async function sendEmailCodeWithResend(params: { email: string; code: string }) 
     const errorText = await response.text();
     throw new Error(`Resend rejected the request: ${response.status} ${errorText}`);
   }
+}
+
+async function sendEmailCodeWithResend(params: { email: string; code: string }) {
+  await sendEmailWithResend({
+    to: [params.email],
+    subject: "Tu código de acceso a CompliLink",
+    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>CompliLink</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p></div>`,
+    text: `Tu código de acceso a CompliLink es ${params.code}. Expira en 10 minutos.`,
+  });
 }
 
 export async function startEmailLogin(params: { req: Request; res: Response; email: string; name?: string | null }) {

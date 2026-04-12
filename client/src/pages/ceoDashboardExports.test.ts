@@ -329,6 +329,55 @@ describe("ceoDashboardExports", () => {
     expect(createElement).toHaveBeenCalledWith("a");
   });
 
+  it("incluye los metadatos ejecutivos del bridge y los filtros smoke en el artefacto exportable reutilizable", () => {
+    const exportedAt = new Date("2026-04-10T19:08:00.000Z");
+    const model = buildCeoPdfModel({
+      section: "bridge",
+      snapshot: buildSnapshot(),
+      appliedFilters: [
+        "Tenant: Balt Demo",
+        "Smoke estado: Errores",
+        "Smoke ventana: 7 días",
+        "Smoke severidad: Técnicos",
+      ],
+      actorLabel: "CEO Demo",
+      exportedAt,
+      customExport: {
+        title: "Reporte ejecutivo CEO · Bridge operativo",
+        summaryRows: [
+          ["Estado de alerta", "Alerta activa"],
+          ["Filtro smoke · estado", "Errores"],
+          ["Filtro smoke · ventana", "7 días"],
+          ["Filtro smoke · severidad", "Técnicos"],
+        ],
+        tables: [
+          {
+            title: "Bridge operativo",
+            columns: ["Indicador", "Valor"],
+            rows: [["Corridas con incidencia", "3"]],
+          },
+        ],
+      },
+    });
+
+    expect(model.filename).toBe(buildExpectedFilename("bridge", "pdf", exportedAt));
+    expect(model.summaryRows).toEqual(
+      expect.arrayContaining([
+        ["Vista", "Bridge operativo"],
+        ["Filtros", "Tenant: Balt Demo | Smoke estado: Errores | Smoke ventana: 7 días | Smoke severidad: Técnicos"],
+        ["Estado de alerta", "Alerta activa"],
+        ["Filtro smoke · severidad", "Técnicos"],
+      ]),
+    );
+    expect(model.tables).toEqual([
+      {
+        title: "Bridge operativo",
+        columns: ["Indicador", "Valor"],
+        rows: [["Corridas con incidencia", "3"]],
+      },
+    ]);
+  });
+
   it("recorta texto exportable excesivo para evitar celdas PDF o CSV patológicas", () => {
     const snapshot = buildSnapshot();
     const longLabel = `Hallazgo ${"X".repeat(400)}`;

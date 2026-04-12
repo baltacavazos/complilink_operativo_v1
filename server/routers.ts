@@ -53,6 +53,7 @@ import {
   clearEmailChallengeCookie,
   completeEmailLogin,
   isGoogleOAuthConfigured,
+  sendEmailWithResend,
   startEmailLogin,
 } from "./authService";
 import { systemRouter } from "./_core/systemRouter";
@@ -1939,6 +1940,85 @@ export const appRouter = router({
             snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
             appliedFilters: input.appliedFilters,
             visibleCount: input.visibleCount,
+          },
+        });
+
+        return { ok: true };
+      }),
+    ceoEmailBridgeExport: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3).optional(),
+          snapshotGeneratedAt: z.string().datetime(),
+          appliedFilters: z.array(z.string().min(1).max(160)).max(12),
+          visibleCount: z.number().int().min(0).max(50000),
+          recipients: z.array(z.string().email()).min(1).max(5),
+          message: z.string().trim().max(1000).optional(),
+          attachments: z
+            .array(
+              z.object({
+                filename: z.string().trim().min(1).max(255),
+                content: z.string().min(10),
+                contentType: z.string().trim().min(3).max(128),
+              }),
+            )
+            .min(1)
+            .max(2),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        assertCeoSnapshotFresh(input.snapshotGeneratedAt);
+
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        const snapshotLabel = new Date(input.snapshotGeneratedAt).toLocaleString("es-MX", {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: "UTC",
+        });
+        const filtersLabel = input.appliedFilters.length > 0 ? input.appliedFilters.join(" | ") : "Sin filtros activos";
+        const actorLabel = ctx.user.name?.trim() || ctx.user.email?.trim() || "Equipo CEO";
+
+        await sendEmailWithResend({
+          to: input.recipients,
+          subject: "CompliLink · Export bridge operativo",
+          html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a"><h2 style="margin-bottom:12px">Bridge operativo · Consola CEO</h2><p>Se adjunta la exportación solicitada del bridge operativo.</p><p><strong>Exportado por:</strong> ${actorLabel}</p><p><strong>Snapshot:</strong> ${snapshotLabel} UTC</p><p><strong>Filtros:</strong> ${filtersLabel}</p><p><strong>Registros visibles:</strong> ${input.visibleCount}</p>${input.message ? `<p><strong>Mensaje:</strong> ${input.message}</p>` : ""}<p style="margin-top:18px;color:#475569">AuditaPatron · Entrega generada desde la Consola CEO.</p></div>`,
+          text: [
+            "Bridge operativo · Consola CEO",
+            "Se adjunta la exportación solicitada del bridge operativo.",
+            `Exportado por: ${actorLabel}`,
+            `Snapshot: ${snapshotLabel} UTC`,
+            `Filtros: ${filtersLabel}`,
+            `Registros visibles: ${input.visibleCount}`,
+            input.message ? `Mensaje: ${input.message}` : null,
+            "AuditaPatron · Entrega generada desde la Consola CEO.",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          attachments: input.attachments,
+        });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-EXPORT-EMAIL-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `email:bridge:${input.snapshotGeneratedAt}`,
+          action: "dashboard.ceo.export_emailed",
+          afterState: {
+            source: "ceo_dashboard",
+            section: "bridge",
+            delivery: "email",
+            snapshotGeneratedAt: input.snapshotGeneratedAt,
+            appliedFilters: input.appliedFilters,
+            visibleCount: input.visibleCount,
+            recipientCount: input.recipients.length,
+            recipients: input.recipients,
+            attachments: input.attachments.map((attachment) => attachment.filename),
           },
         });
 

@@ -409,7 +409,7 @@ export function downloadCeoCsvReport(args: BuildExportArgs) {
   return csv.filename;
 }
 
-export function downloadCeoPdfReport(args: BuildExportArgs) {
+export function buildCeoPdfReport(args: BuildExportArgs) {
   const model = buildCeoPdfModel(args);
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -473,7 +473,14 @@ export function downloadCeoPdfReport(args: BuildExportArgs) {
     });
   }
 
-  const pdfBlob = doc.output("blob");
-  saveBlob(model.filename, pdfBlob, "application/pdf");
-  return model.filename;
+  return {
+    filename: model.filename,
+    blob: doc.output("blob"),
+  };
+}
+
+export function downloadCeoPdfReport(args: BuildExportArgs) {
+  const pdf = buildCeoPdfReport(args);
+  saveBlob(pdf.filename, pdf.blob, "application/pdf");
+  return pdf.filename;
 }

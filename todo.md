@@ -829,6 +829,9 @@
 - [x] Implementar edición del umbral de fallos consecutivos desde la UI CEO con trazabilidad operativa.
 - [x] Incorporar filtros por ventana temporal y severidad en el historial operativo del bridge dentro de la consola CEO.
 - [x] Consolidar alertas operativas del bridge en un reporte ejecutivo único dentro de la consola CEO.
-- [ ] Implementar exportación CSV/PDF del reporte ejecutivo del bridge desde la Consola CEO.
-- [ ] Incorporar notificaciones proactivas cuando el bridge entre en alerta crítica o recovery.
-- [ ] Agregar comparativo histórico del bridge por día y semana para detectar degradaciones recurrentes.
+- [x] Implementar exportación CSV/PDF del reporte ejecutivo del bridge desde la Consola CEO.
+- [x] Incorporar notificaciones proactivas cuando el bridge entre en alerta crítica o recovery.
+- [x] Agregar comparativo histórico del bridge por día y semana para detectar degradaciones recurrentes.
+- [x] Envío por correo del PDF/CSV exportado del bridge a destinatarios configurables desde la Consola CEO
+- [x] Gráfico de tendencia de éxito/fallo en el comparativo diario y semanal del bridge
+- [x] Filtros exportables del bridge por ventana, severidad y tenant desde la Consola CEO

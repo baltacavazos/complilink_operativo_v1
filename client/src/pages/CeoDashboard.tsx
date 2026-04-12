@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavigationItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,8 @@ import {
   type BridgeSmokeHistoryTimeWindow,
 } from "@/pages/ceoBridgeSmokeHistory";
 import {
+  buildCeoCsvReport,
+  buildCeoPdfReport,
   downloadCeoCsvReport,
   downloadCeoPdfReport,
   getCeoExportBlockReason,
@@ -67,6 +70,7 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  Send,
   ShieldCheck,
   ShieldX,
   Siren,
@@ -76,6 +80,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast as sonnerToast } from "sonner";
 import { useLocation } from "wouter";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("es-MX").format(value ?? 0);
@@ -90,6 +95,22 @@ function formatDateTime(value: Date | string | null | undefined) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+async function blobToBase64(blob: Blob) {
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("No fue posible serializar el archivo exportable."));
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("No fue posible serializar el archivo exportable."));
+        return;
+      }
+      resolve(result.split(",", 2)[1] ?? "");
+    };
+    reader.readAsDataURL(blob);
+  });
 }
 
 function getSeverityBadgeClass(severity: string) {
@@ -360,6 +381,7 @@ export default function CeoDashboard() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [exportKind, setExportKind] = useState<"csv" | "pdf" | null>(null);
+  const [emailExportPending, setEmailExportPending] = useState(false);
   const [pendingExecutiveAction, setPendingExecutiveAction] = useState<PendingExecutiveAction | null>(null);
   const [snapshotPulseAt, setSnapshotPulseAt] = useState(() => Date.now());
 
@@ -454,6 +476,7 @@ export default function CeoDashboard() {
   const recordConsoleViewMutation = trpc.dashboard.ceoRecordConsoleView.useMutation();
   const recordGuardrailMutation = trpc.dashboard.ceoRecordGuardrailEvent.useMutation();
   const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
+  const emailBridgeExportMutation = trpc.dashboard.ceoEmailBridgeExport.useMutation();
   const bridgeSmokeThresholdMutation = trpc.dashboard.ceoUpdateBridgeSmokeThreshold.useMutation();
 
   const snapshotError = hasActiveFilters ? filteredSnapshotQuery.error : baseSnapshotQuery.error;
@@ -548,6 +571,34 @@ export default function CeoDashboard() {
     [filteredBridgeSmokeHistory],
   );
   const bridgeSmokeComparisons = useMemo(() => buildBridgeSmokeComparisonSummary(bridgeSmokeHistory), [bridgeSmokeHistory]);
+  const bridgeSmokeTrendChartConfig = useMemo<ChartConfig>(
+    () => ({
+      passedRuns: {
+        label: "Conformes",
+        color: "oklch(0.62 0.17 152)",
+      },
+      issueRuns: {
+        label: "Con incidencia",
+        color: "oklch(0.64 0.19 26)",
+      },
+    }),
+    [],
+  );
+  const bridgeSmokeTrendChartData = useMemo(
+    () => [
+      {
+        period: bridgeSmokeComparisons.daily.label,
+        passedRuns: bridgeSmokeComparisons.daily.passedRuns,
+        issueRuns: bridgeSmokeComparisons.daily.failedRuns + bridgeSmokeComparisons.daily.errorRuns,
+      },
+      {
+        period: bridgeSmokeComparisons.weekly.label,
+        passedRuns: bridgeSmokeComparisons.weekly.passedRuns,
+        issueRuns: bridgeSmokeComparisons.weekly.failedRuns + bridgeSmokeComparisons.weekly.errorRuns,
+      },
+    ],
+    [bridgeSmokeComparisons.daily, bridgeSmokeComparisons.weekly],
+  );
   const bridgeSmokeExecutiveSummary = useMemo(() => {
     const technicalErrors = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "critical").length;
     const contractualFailures = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "warning").length;
@@ -610,6 +661,9 @@ export default function CeoDashboard() {
         ["Smoke recurrente", bridgeOperationalSummary.smokeStatusLabel],
         ["Última corrida smoke", bridgeSmokeStatus?.testedAt ? formatDateTime(bridgeSmokeStatus.testedAt) : "Sin registro"],
         ["Estado de alerta", getBridgeSmokeAlertVisualStateLabel(bridgeSmokeAlerting?.visualState ?? "stable")],
+        ["Filtro smoke · estado", getBridgeSmokeHistoryFilterLabel(bridgeSmokeHistoryFilter)],
+        ["Filtro smoke · ventana", getBridgeSmokeHistoryTimeWindowLabel(bridgeSmokeTimeWindow)],
+        ["Filtro smoke · severidad", getBridgeSmokeHistorySeverityLabel(bridgeSmokeSeverityFilter)],
       ],
       tables: [
         {
@@ -1179,6 +1233,102 @@ export default function CeoDashboard() {
     }
   }
 
+  async function handleEmailBridgeExport() {
+    if (exportableSection !== "bridge") {
+      sonnerToast.info("El envío por correo sólo está disponible en el bridge operativo.");
+      return;
+    }
+    if (currentSectionExportGuardReason || !snapshotData || !snapshotGeneratedAtIso) {
+      sonnerToast.error("El envío por correo está bloqueado", {
+        description:
+          currentSectionExportGuardReason ?? "Espera a que el snapshot ejecutivo termine de cargar antes de compartir el reporte.",
+      });
+      return;
+    }
+
+    const recipientInput = window.prompt(
+      "Ingresa uno o varios correos separados por coma para enviar el export bridge.",
+      user?.email ?? "",
+    );
+    if (recipientInput === null) {
+      return;
+    }
+
+    const recipients = recipientInput
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean)
+      .filter((value, index, collection) => collection.indexOf(value) === index);
+
+    const invalidRecipients = recipients.filter((value) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+    if (recipients.length === 0 || invalidRecipients.length > 0) {
+      sonnerToast.error("Captura al menos un correo válido para compartir el reporte.");
+      return;
+    }
+
+    const messageDraft = window.prompt("Mensaje opcional para acompañar el correo.", "") ?? "";
+    const actorLabel = user?.name || user?.email || "Operación ejecutiva";
+    const appliedFilters = [
+      ...activeFilterChips.map((chip) => chip.label),
+      ...(exportableSection === "bridge"
+        ? [
+            `Smoke estado: ${getBridgeSmokeHistoryFilterLabel(bridgeSmokeHistoryFilter)}`,
+            `Smoke ventana: ${getBridgeSmokeHistoryTimeWindowLabel(bridgeSmokeTimeWindow)}`,
+            `Smoke severidad: ${getBridgeSmokeHistorySeverityLabel(bridgeSmokeSeverityFilter)}`,
+          ]
+        : []),
+    ];
+
+    try {
+      setEmailExportPending(true);
+      const pdf = buildCeoPdfReport({
+        section: exportableSection,
+        snapshot: snapshotData,
+        appliedFilters,
+        actorLabel,
+        customExport: bridgeExportPayload,
+      });
+      const csv = buildCeoCsvReport({
+        section: exportableSection,
+        snapshot: snapshotData,
+        appliedFilters,
+        actorLabel,
+        customExport: bridgeExportPayload,
+      });
+
+      await emailBridgeExportMutation.mutateAsync({
+        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+        snapshotGeneratedAt: snapshotGeneratedAtIso,
+        appliedFilters,
+        visibleCount: currentSectionCount,
+        recipients,
+        message: messageDraft.trim() || undefined,
+        attachments: [
+          {
+            filename: pdf.filename,
+            content: await blobToBase64(pdf.blob),
+            contentType: "application/pdf",
+          },
+          {
+            filename: csv.filename,
+            content: await blobToBase64(new Blob([csv.content], { type: "text/csv;charset=utf-8" })),
+            contentType: "text/csv",
+          },
+        ],
+      });
+
+      sonnerToast.success("Reporte bridge enviado por correo", {
+        description: `Destinatarios: ${recipients.join(", ")}`,
+      });
+    } catch (error) {
+      sonnerToast.error("No fue posible enviar el reporte por correo", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    } finally {
+      setEmailExportPending(false);
+    }
+  }
+
   async function handleExport(kind: "csv" | "pdf") {
     if (currentSectionExportGuardReason || !snapshotData) {
       trackCeoExport(kind, "blocked", {
@@ -1196,7 +1346,16 @@ export default function CeoDashboard() {
     }
 
     const actorLabel = user?.name || user?.email || "Operación ejecutiva";
-    const appliedFilters = activeFilterChips.map((chip) => chip.label);
+    const appliedFilters = [
+      ...activeFilterChips.map((chip) => chip.label),
+      ...(exportableSection === "bridge"
+        ? [
+            `Smoke estado: ${getBridgeSmokeHistoryFilterLabel(bridgeSmokeHistoryFilter)}`,
+            `Smoke ventana: ${getBridgeSmokeHistoryTimeWindowLabel(bridgeSmokeTimeWindow)}`,
+            `Smoke severidad: ${getBridgeSmokeHistorySeverityLabel(bridgeSmokeSeverityFilter)}`,
+          ]
+        : []),
+    ];
 
     trackCeoExport(kind, "requested", {
       section: exportableSection,
@@ -1298,6 +1457,24 @@ export default function CeoDashboard() {
           >
             {exportKind === "pdf" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             Reporte PDF
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-full bg-white"
+            title={
+              exportableSection !== "bridge"
+                ? "Disponible únicamente para el bridge operativo"
+                : currentSectionExportGuardReason ?? undefined
+            }
+            disabled={
+              exportableSection !== "bridge" || Boolean(currentSectionExportGuardReason) || exportKind !== null || emailExportPending
+            }
+            onClick={() => {
+              void handleEmailBridgeExport();
+            }}
+          >
+            {emailExportPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+            Enviar por correo
           </Button>
           <Button variant="outline" className="rounded-full" onClick={() => void handleRefresh()}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -2580,6 +2757,29 @@ export default function CeoDashboard() {
                         </div>
                       </article>
                     ))}
+                  </div>
+                  <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_18px_45px_-32px_rgba(15,23,42,0.2)]">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tendencia visual</p>
+                        <p className="mt-2 text-sm text-slate-600">Resume la relación entre corridas conformes e incidencias visibles en las ventanas diaria y semanal que también gobiernan la exportación actual.</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Diario: {formatNumber(bridgeSmokeComparisons.daily.successRate)}%</span>
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Semanal: {formatNumber(bridgeSmokeComparisons.weekly.successRate)}%</span>
+                      </div>
+                    </div>
+                    <ChartContainer config={bridgeSmokeTrendChartConfig} className="mt-4 h-[260px] w-full">
+                      <LineChart data={bridgeSmokeTrendChartData} margin={{ left: 8, right: 8, top: 12, bottom: 0 }}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis dataKey="period" tickLine={false} axisLine={false} tickMargin={10} />
+                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={34} />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                        <ChartLegend content={<ChartLegendContent />} />
+                        <Line type="monotone" dataKey="passedRuns" stroke="var(--color-passedRuns)" strokeWidth={3} dot={{ r: 4, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                        <Line type="monotone" dataKey="issueRuns" stroke="var(--color-issueRuns)" strokeWidth={3} dot={{ r: 4, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                      </LineChart>
+                    </ChartContainer>
                   </div>
                   <div className="mt-5 space-y-3">
                     {filteredBridgeSmokeHistory.length > 0 ? (
