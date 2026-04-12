@@ -33,8 +33,6 @@ export type AuditMonitoringSummary = {
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
 export type AuditEventSeverity = "all" | "high" | "medium" | "normal";
-export type AuditOperationalScope = "all" | "downloads" | "exports";
-export type AuditOperationalOutcome = "all" | "success" | "denied" | "emailed";
 
 export type AuditExecutiveAlert = {
   source: "guardrail" | "access_risk";
@@ -43,7 +41,8 @@ export type AuditExecutiveAlert = {
   tenantId: string;
   caseId: string | null;
   count: number;
-  countLabel: string;
+  rejectionCount: number;
+  countLabel: "rechazos" | "señales";
   severity: Exclude<AuditEventSeverity, "all">;
   title: string;
   description: string;
@@ -56,6 +55,18 @@ export type AuditDrilldownDescriptor = {
 };
 
 type AuditStateRecord = Record<string, unknown>;
+
+type AccessRiskBucket = {
+  tenantId: string;
+  caseId: string | null;
+  scope: "tenant" | "case";
+  scopeId: string;
+  kind: string;
+  title: string;
+  description: string;
+  count: number;
+  severity: Exclude<AuditEventSeverity, "all">;
+};
 
 function uniqueCount(values: Array<string | null | undefined>) {
   return new Set(values.filter((value): value is string => Boolean(value))).size;
@@ -110,6 +121,24 @@ function normalizeCaptureMode(value: unknown): "camera" | "file" | null {
   return value === "camera" || value === "file" ? value : null;
 }
 
+function readString(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeAccessRiskSeverity(value: unknown): Exclude<AuditEventSeverity, "all"> {
+  if (value === "critical" || value === "high") return "high";
+  if (value === "warning" || value === "medium") return "medium";
+  return "normal";
+}
+
+function pickMoreSevereAlert(
+  left: Exclude<AuditEventSeverity, "all">,
+  right: Exclude<AuditEventSeverity, "all">,
+): Exclude<AuditEventSeverity, "all"> {
+  const order = { high: 0, medium: 1, normal: 2 } satisfies Record<Exclude<AuditEventSeverity, "all">, number>;
+  return order[left] <= order[right] ? left : right;
+}
+
 function getCaptureModeFromItem(item: AuditFeedItem) {
   const state = parseAuditState(item.afterState);
   return normalizeCaptureMode(state?.captureMode);
@@ -156,7 +185,7 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     totalEvents: items.length,
     guardrailRejections: items.filter((item) => item.action === "document.guardrail_rejected").length,
     documentEvents: items.filter((item) => item.entityType === "document").length,
-    accessEvents: items.filter((item) => item.entityType === "access").length,
+    accessEvents: items.filter((item) => item.action.startsWith("access.") || item.entityType === "access").length,
     policyEvents: items.filter((item) => item.entityType === "policy").length,
     distinctCases: uniqueCount(items.map((item) => item.caseId)),
     previewAnalyzedEvents: previewAnalyzedEvents.length,
@@ -253,54 +282,6 @@ export function getAuditSeverityLabel(severity: AuditEventSeverity) {
   return "Normal";
 }
 
-export function isAuditDownloadOrExport(item: AuditFeedItem) {
-  return item.action === "document.access" || item.action === "document.access_denied" || item.action === "dashboard.ceo.export_generated" || item.action === "dashboard.ceo.export_emailed";
-}
-
-export function getAuditOperationalScope(item: AuditFeedItem): Exclude<AuditOperationalScope, "all"> | null {
-  if (item.action === "document.access" || item.action === "document.access_denied") return "downloads";
-  if (item.action === "dashboard.ceo.export_generated" || item.action === "dashboard.ceo.export_emailed") return "exports";
-  return null;
-}
-
-export function getAuditOperationalScopeLabel(scope: AuditOperationalScope) {
-  if (scope === "all") return "Todo el flujo";
-  if (scope === "downloads") return "Descargas";
-  return "Exportaciones";
-}
-
-export function getAuditOperationalOutcome(item: AuditFeedItem): Exclude<AuditOperationalOutcome, "all"> | null {
-  if (item.action === "document.access") return "success";
-  if (item.action === "document.access_denied") return "denied";
-  if (item.action === "dashboard.ceo.export_generated") return "success";
-  if (item.action === "dashboard.ceo.export_emailed") return "emailed";
-  return null;
-}
-
-export function getAuditOperationalOutcomeLabel(outcome: AuditOperationalOutcome) {
-  if (outcome === "all") return "Todos los resultados";
-  if (outcome === "success") return "Correctos";
-  if (outcome === "denied") return "Denegados";
-  return "Enviados por correo";
-}
-
-export function filterAuditOperationalFeed(
-  items: AuditFeedItem[],
-  selection: {
-    scope: AuditOperationalScope;
-    outcome: AuditOperationalOutcome;
-    actorUserId?: number | null;
-  },
-) {
-  return items.filter((item) => {
-    if (!isAuditDownloadOrExport(item)) return false;
-    if (selection.scope !== "all" && getAuditOperationalScope(item) !== selection.scope) return false;
-    if (selection.outcome !== "all" && getAuditOperationalOutcome(item) !== selection.outcome) return false;
-    if (selection.actorUserId && item.actorUserId !== selection.actorUserId) return false;
-    return true;
-  });
-}
-
 export function filterAuditFeed(
   items: AuditFeedItem[],
   selection: {
@@ -321,30 +302,10 @@ function getAlertSeverityByCount(count: number): Exclude<AuditEventSeverity, "al
   return "normal";
 }
 
-function normalizeAnomalySeverity(value: unknown): Exclude<AuditEventSeverity, "all"> {
-  if (value === "critical") return "high";
-  if (value === "warning") return "medium";
-  return "normal";
-}
-
-export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
+function buildGuardrailExecutiveAlerts(items: AuditFeedItem[]): AuditExecutiveAlert[] {
   const guardrailRejections = items.filter((item) => item.action === "document.guardrail_rejected");
-  const anomalySignals = items.filter((item) => item.action === "access.anomaly_detected");
   const byTenant = new Map<string, { tenantId: string; count: number }>();
   const byCase = new Map<string, { tenantId: string; caseId: string; count: number }>();
-  const anomalyBuckets = new Map<
-    string,
-    {
-      scope: "tenant" | "case";
-      scopeId: string;
-      tenantId: string;
-      caseId: string | null;
-      count: number;
-      severity: Exclude<AuditEventSeverity, "all">;
-      title: string;
-      description: string;
-    }
-  >();
 
   for (const item of guardrailRejections) {
     const tenantBucket = byTenant.get(item.tenantId) ?? { tenantId: item.tenantId, count: 0 };
@@ -359,40 +320,6 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
     }
   }
 
-  for (const item of anomalySignals) {
-    const state = parseAuditState(item.afterState);
-    const rawKind = typeof state?.kind === "string" && state.kind.trim().length > 0 ? state.kind.trim() : "access_anomaly";
-    const scope = item.caseId ? "case" : "tenant";
-    const scopeId = item.caseId ?? item.tenantId;
-    const bucketKey = `${scope}:${scopeId}:${rawKind}`;
-    const severity = normalizeAnomalySeverity(state?.severity);
-    const title = typeof state?.title === "string" && state.title.trim().length > 0 ? state.title.trim() : "Anomalía de acceso detectada";
-    const description =
-      typeof state?.description === "string" && state.description.trim().length > 0
-        ? state.description.trim()
-        : "Se detectó una señal anómala en descargas o exportaciones auditadas.";
-
-    const bucket =
-      anomalyBuckets.get(bucketKey) ?? {
-        scope,
-        scopeId,
-        tenantId: item.tenantId,
-        caseId: item.caseId ?? null,
-        count: 0,
-        severity,
-        title,
-        description,
-      };
-
-    bucket.count += 1;
-    if (severity === "high" || (severity === "medium" && bucket.severity === "normal")) {
-      bucket.severity = severity;
-    }
-    bucket.title = title;
-    bucket.description = description;
-    anomalyBuckets.set(bucketKey, bucket);
-  }
-
   const alerts: AuditExecutiveAlert[] = [];
 
   for (const tenant of Array.from(byTenant.values())) {
@@ -405,7 +332,8 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
       tenantId: tenant.tenantId,
       caseId: null,
       count: tenant.count,
-      countLabel: tenant.count === 1 ? "rechazo" : "rechazos",
+      rejectionCount: tenant.count,
+      countLabel: "rechazos",
       severity,
       title: `Fricción repetida en ${tenant.tenantId}`,
       description:
@@ -425,7 +353,8 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
       tenantId: entry.tenantId,
       caseId: entry.caseId,
       count: entry.count,
-      countLabel: entry.count === 1 ? "rechazo" : "rechazos",
+      rejectionCount: entry.count,
+      countLabel: "rechazos",
       severity,
       title: `Caso ${entry.caseId} con rechazos repetidos`,
       description:
@@ -435,24 +364,66 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
     });
   }
 
-  for (const anomaly of Array.from(anomalyBuckets.values())) {
-    alerts.push({
-      source: "access_risk",
-      scope: anomaly.scope,
-      scopeId: anomaly.scopeId,
-      tenantId: anomaly.tenantId,
-      caseId: anomaly.caseId,
-      count: anomaly.count,
-      countLabel: anomaly.count === 1 ? "señal" : "señales",
-      severity: anomaly.severity,
-      title: anomaly.title,
-      description:
-        anomaly.count > 1 ? `${anomaly.description} Esta señal se repitió ${anomaly.count} veces en la ventana visible.` : anomaly.description,
-    });
+  return alerts;
+}
+
+function buildAccessRiskExecutiveAlerts(items: AuditFeedItem[]): AuditExecutiveAlert[] {
+  const anomalies = items.filter((item) => item.action === "access.anomaly_detected");
+  const buckets = new Map<string, AccessRiskBucket>();
+
+  for (const item of anomalies) {
+    const state = parseAuditState(item.afterState);
+    const scope = item.caseId ? "case" : "tenant";
+    const scopeId = item.caseId ?? item.tenantId;
+    const title = readString(state?.title) ?? "Señal de acceso inusual";
+    const description =
+      readString(state?.description) ??
+      "Se detectó una señal reciente de acceso fuera del patrón esperado y conviene revisar el contexto visible.";
+    const kind = readString(state?.kind) ?? title.toLowerCase();
+    const severity = normalizeAccessRiskSeverity(state?.severity);
+    const bucketKey = [item.tenantId, item.caseId ?? "__tenant__", scope, kind, title].join("::");
+    const current =
+      buckets.get(bucketKey) ??
+      ({
+        tenantId: item.tenantId,
+        caseId: item.caseId ?? null,
+        scope,
+        scopeId,
+        kind,
+        title,
+        description,
+        count: 0,
+        severity,
+      } satisfies AccessRiskBucket);
+
+    current.count += 1;
+    current.severity = pickMoreSevereAlert(current.severity, severity);
+    buckets.set(bucketKey, current);
   }
 
+  return Array.from(buckets.values()).map((bucket) => ({
+    source: "access_risk",
+    scope: bucket.scope,
+    scopeId: bucket.scopeId,
+    tenantId: bucket.tenantId,
+    caseId: bucket.caseId,
+    count: bucket.count,
+    rejectionCount: bucket.count,
+    countLabel: "señales",
+    severity: bucket.severity,
+    title: bucket.title,
+    description:
+      bucket.count > 1
+        ? `${bucket.description} Esta señal se repitió ${bucket.count} veces en la ventana visible.`
+        : bucket.description,
+  }));
+}
+
+export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
+  const alerts = [...buildGuardrailExecutiveAlerts(items), ...buildAccessRiskExecutiveAlerts(items)];
+  const severityOrder = { high: 0, medium: 1, normal: 2 } satisfies Record<Exclude<AuditEventSeverity, "all">, number>;
+
   return alerts.sort((left, right) => {
-    const severityOrder = { high: 0, medium: 1, normal: 2 } satisfies Record<Exclude<AuditEventSeverity, "all">, number>;
     if (severityOrder[left.severity] !== severityOrder[right.severity]) {
       return severityOrder[left.severity] - severityOrder[right.severity];
     }

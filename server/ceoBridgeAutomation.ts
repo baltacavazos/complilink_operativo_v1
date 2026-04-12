@@ -380,52 +380,6 @@ async function runSingleCeoBridgeSchedule(job: {
   });
 }
 
-function flattenBridgeScheduleErrorSignals(error: unknown) {
-  const signals: string[] = [];
-  let current: unknown = error;
-
-  for (let depth = 0; depth < 4 && current; depth += 1) {
-    if (typeof current === "string") {
-      signals.push(current);
-      break;
-    }
-
-    if (current instanceof Error) {
-      signals.push(current.message);
-      current = "cause" in current ? (current as Error & { cause?: unknown }).cause : undefined;
-      continue;
-    }
-
-    if (typeof current === "object") {
-      const record = current as Record<string, unknown>;
-      for (const key of ["message", "code", "sql", "query"]) {
-        if (typeof record[key] === "string") {
-          signals.push(record[key] as string);
-        }
-      }
-      current = record.cause;
-      continue;
-    }
-
-    signals.push(String(current));
-    break;
-  }
-
-  return signals.join(" | ").toLowerCase();
-}
-
-export function isMissingCeoBridgeScheduleTableError(error: unknown) {
-  const normalized = flattenBridgeScheduleErrorSignals(error);
-  const mentionsBridgeScheduleTable =
-    normalized.includes("ceo_bridge_schedules") || normalized.includes("ceo_bridge_presets");
-  const missingTableSignals =
-    normalized.includes("doesn't exist") ||
-    normalized.includes("no such table") ||
-    normalized.includes("er_no_such_table");
-
-  return mentionsBridgeScheduleTable && missingTableSignals;
-}
-
 export async function processDueCeoBridgeSchedules() {
   if (scheduleRunInFlight) return;
   scheduleRunInFlight = true;
@@ -435,8 +389,8 @@ export async function processDueCeoBridgeSchedules() {
     try {
       dueSchedules = await listDueCeoBridgeSchedules(new Date(), 5);
     } catch (error) {
-      if (isMissingCeoBridgeScheduleTableError(error)) {
-        console.info("[CEO Bridge Schedule] Worker paused: faltan tablas de agenda del bridge en la base de datos.");
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("doesn't exist") || message.includes("Failed query")) {
         return;
       }
       throw error;
@@ -448,35 +402,12 @@ export async function processDueCeoBridgeSchedules() {
       } catch (error) {
         const executedAt = new Date();
         const nextRunAt = computeNextBridgeScheduleRunAt(job.schedule.cronExpression, job.schedule.timezone, executedAt);
-        const errorMessage = error instanceof Error ? error.message : "Error desconocido al ejecutar la agenda automática del bridge.";
-
-        const auditTenantId = job.schedule.tenantId ?? "global";
-
-        await createAuditLog({
-          tenantId: auditTenantId,
-          caseId: null,
-          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-SCHEDULE-${job.schedule.id}-FAILED`),
-          actorUserId: job.schedule.userId,
-          entityType: "system",
-          entityId: `bridge-schedule:${job.schedule.id}`,
-          action: "dashboard.ceo.bridge_schedule_failed",
-          afterState: {
-            scheduleId: job.schedule.id,
-            presetId: job.preset.id,
-            presetName: job.preset.name,
-            lastRunAt: executedAt.toISOString(),
-            nextRunAt: nextRunAt.toISOString(),
-            lastRunError: errorMessage,
-            error: errorMessage,
-          },
-        });
-
         await recordCeoBridgeScheduleRun({
           id: job.schedule.id,
           lastRunAt: executedAt,
           nextRunAt,
           lastRunStatus: "failed",
-          lastRunError: errorMessage,
+          lastRunError: error instanceof Error ? error.message : "Error desconocido al ejecutar la agenda automática del bridge.",
         });
       }
     }
@@ -494,10 +425,6 @@ export function startCeoBridgeScheduleWorker() {
     });
   }, BRIDGE_SCHEDULER_INTERVAL_MS);
   processDueCeoBridgeSchedules().catch((error) => {
-    if (isMissingCeoBridgeScheduleTableError(error)) {
-      console.info("[CEO Bridge Schedule] Initial scan skipped: faltan tablas de agenda del bridge.");
-      return;
-    }
     console.error("[CEO Bridge Schedule] Initial scan error", error);
   });
 }

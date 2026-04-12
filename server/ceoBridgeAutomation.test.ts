@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeNextBridgeScheduleRunAt,
-  isMissingCeoBridgeScheduleTableError,
   validateBridgeScheduleCronExpression,
   validateBridgeScheduleTimezone,
 } from "./ceoBridgeAutomation";
@@ -35,18 +34,5 @@ describe("ceoBridgeAutomation", () => {
     const nextRun = computeNextBridgeScheduleRunAt("0 30 8 * * *", "UTC", new Date("2026-04-12T09:05:00.000Z"));
 
     expect(nextRun.toISOString()).toBe("2026-04-13T08:30:00.000Z");
-  });
-
-  it("detecta tablas faltantes del bridge aunque el detalle venga en la causa anidada", () => {
-    const error = new Error("Failed query");
-    Object.assign(error, {
-      cause: new Error("Table 'tenant.ceo_bridge_schedules' doesn't exist"),
-    });
-
-    expect(isMissingCeoBridgeScheduleTableError(error)).toBe(true);
-  });
-
-  it("no marca como faltante un error ajeno al bridge", () => {
-    expect(isMissingCeoBridgeScheduleTableError(new Error("connection timeout"))).toBe(false);
   });
 });

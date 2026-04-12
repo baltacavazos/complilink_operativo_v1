@@ -621,22 +621,7 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const memberships = await db
-    .select()
-    .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.status, "active"),
-      ),
-    );
-
-  if (!memberships[0]) {
-    throw new Error("Access denied for tenant");
-  }
-
-  const tenantWideMembership = memberships.find((membership) => membership.accessScope === "tenant");
+  await assertTenantAccess(userId, tenantId);
 
   const caseGrant = await db
     .select()
@@ -655,11 +640,24 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
     return caseGrant[0];
   }
 
-  if (tenantWideMembership) {
-    return tenantWideMembership;
+  const tenantWide = await db
+    .select()
+    .from(tenantMemberships)
+    .where(
+      and(
+        eq(tenantMemberships.userId, userId),
+        eq(tenantMemberships.tenantId, tenantId),
+        eq(tenantMemberships.status, "active"),
+        eq(tenantMemberships.accessScope, "tenant"),
+      ),
+    )
+    .limit(1);
+
+  if (!tenantWide[0]) {
+    throw new Error("Access denied for case");
   }
 
-  throw new Error("Access denied for case");
+  return tenantWide[0];
 }
 
 export async function assertActiveTenantMember(userId: number, tenantId: string) {
@@ -675,10 +673,6 @@ function hasWriteCapability(membership: { accessLevel?: string | null; role?: st
   );
 }
 
-function hasElevatedDocumentReadCapability(membership: { accessLevel?: string | null; role?: string | null }) {
-  return hasWriteCapability(membership);
-}
-
 function hasAdminCapability(membership: { role?: string | null }) {
   return membership.role === "tenant_admin" || membership.role === "manager";
 }
@@ -692,28 +686,11 @@ export async function assertCaseWriteAccess(userId: number, tenantId: string, ca
 }
 
 export async function assertTenantAdminAccess(userId: number, tenantId: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-
-  const membership = await db
-    .select()
-    .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.status, "active"),
-        eq(tenantMemberships.accessScope, "tenant"),
-        or(eq(tenantMemberships.role, "tenant_admin"), eq(tenantMemberships.role, "manager")),
-      ),
-    )
-    .limit(1);
-
-  if (!membership[0] || !hasAdminCapability(membership[0])) {
+  const membership = await assertTenantAccess(userId, tenantId);
+  if (!hasAdminCapability(membership)) {
     throw new Error("Admin access denied for tenant");
   }
-
-  return membership[0];
+  return membership;
 }
 
 export async function createCaseRecord(input: InsertLaborCase) {
@@ -1465,12 +1442,14 @@ export async function getCeoDashboardSnapshot(filters: CeoDashboardSnapshotFilte
         tenantId: operationalAlerts.tenantId,
         tenantName: tenants.displayName,
         caseId: operationalAlerts.caseId,
+        traceId: operationalAlerts.traceId,
         severity: operationalAlerts.severity,
         category: operationalAlerts.category,
         title: operationalAlerts.title,
         description: operationalAlerts.description,
         status: operationalAlerts.status,
         raisedAt: operationalAlerts.raisedAt,
+        updatedAt: operationalAlerts.updatedAt,
         resolvedAt: operationalAlerts.resolvedAt,
       })
       .from(operationalAlerts)
@@ -1649,9 +1628,9 @@ export async function getCeoDashboardSnapshot(filters: CeoDashboardSnapshotFilte
         alert.caseTitle,
         alert.tenantId,
         alert.tenantName,
-        alert.severity,
         alert.category,
         alert.status,
+        alert.traceId,
       ]),
   );
 
@@ -1811,7 +1790,7 @@ export async function listTenantsForUser(userId: number) {
   return db.select().from(tenants).where(inArray(tenants.tenantId, tenantIds)).orderBy(tenants.displayName);
 }
 
-export async function listAuditTrail(params: { userId: number; tenantId?: string; caseId?: string; actorUserId?: number; limit?: number }) {
+export async function listAuditTrail(params: { userId: number; tenantId?: string; caseId?: string; limit?: number }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -1829,7 +1808,6 @@ export async function listAuditTrail(params: { userId: number; tenantId?: string
       and(
         inArray(auditLogs.tenantId, tenantIds),
         params.caseId ? eq(auditLogs.caseId, params.caseId) : undefined,
-        params.actorUserId ? eq(auditLogs.actorUserId, params.actorUserId) : undefined,
       ),
     )
     .orderBy(desc(auditLogs.createdAt))
@@ -1996,7 +1974,9 @@ export async function listVisibleDocuments(params: { userId: number; tenantId: s
     .where(and(eq(caseDocuments.tenantId, params.tenantId), eq(caseDocuments.caseId, params.caseId)))
     .orderBy(desc(caseDocuments.createdAt));
 
-  const hasElevatedAccess = hasElevatedDocumentReadCapability(membership);
+  const hasElevatedAccess =
+    ("accessLevel" in membership && (membership.accessLevel === "owner" || membership.accessLevel === "editor")) ||
+    ("role" in membership && (membership.role === "tenant_admin" || membership.role === "manager"));
 
   const visibleDocuments = hasElevatedAccess
     ? docs
@@ -2019,37 +1999,13 @@ export async function getVisibleDocumentForUser(params: {
   caseId: string;
   documentId: string;
 }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  const visibleDocuments = await listVisibleDocuments({
+    userId: params.userId,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+  });
 
-  const membership = await assertCaseAccess(params.userId, params.tenantId, params.caseId);
-
-  const documents = hasElevatedDocumentReadCapability(membership)
-    ? await db
-        .select()
-        .from(caseDocuments)
-        .where(
-          and(
-            eq(caseDocuments.tenantId, params.tenantId),
-            eq(caseDocuments.caseId, params.caseId),
-            eq(caseDocuments.documentId, params.documentId),
-          ),
-        )
-        .limit(1)
-    : await db
-        .select()
-        .from(caseDocuments)
-        .where(
-          and(
-            eq(caseDocuments.tenantId, params.tenantId),
-            eq(caseDocuments.caseId, params.caseId),
-            eq(caseDocuments.documentId, params.documentId),
-            or(eq(caseDocuments.visibility, "case_team"), eq(caseDocuments.visibility, "restricted")),
-          ),
-        )
-        .limit(1);
-  const document = documents[0];
-
+  const document = visibleDocuments.find((item) => item.documentId === params.documentId);
   if (!document) {
     throw new Error("Document not accessible");
   }

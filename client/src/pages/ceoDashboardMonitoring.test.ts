@@ -134,6 +134,7 @@ describe("ceoDashboardMonitoring", () => {
         tenantId: "tenant-a",
         caseId: null,
         count: 3,
+        rejectionCount: 3,
         countLabel: "rechazos",
         severity: "high",
         title: "Fricción repetida en tenant-a",
@@ -146,56 +147,11 @@ describe("ceoDashboardMonitoring", () => {
         tenantId: "tenant-a",
         caseId: "case-001",
         count: 2,
+        rejectionCount: 2,
         countLabel: "rechazos",
         severity: "medium",
         title: "Caso case-001 con rechazos repetidos",
         description: "El caso visible suma 2 rechazos operativos recientes; conviene revisar el motivo antes de seguir operando.",
-      },
-    ]);
-  });
-
-  it("incorpora anomalías de acceso auditadas al resumen ejecutivo con agregación por alcance", () => {
-    const items = [
-      buildAuditItem({
-        id: 1,
-        tenantId: "tenant-risk",
-        caseId: "case-risk",
-        action: "access.anomaly_detected",
-        entityType: "system",
-        afterState: {
-          kind: "restricted_document_focus",
-          severity: "critical",
-          title: "Concentración inusual sobre documentos restringidos",
-          description: "La persona operadora accedió a 3 documentos restringidos en 20 minutos.",
-        },
-      }),
-      buildAuditItem({
-        id: 2,
-        tenantId: "tenant-risk",
-        caseId: "case-risk",
-        action: "access.anomaly_detected",
-        entityType: "system",
-        afterState: {
-          kind: "restricted_document_focus",
-          severity: "critical",
-          title: "Concentración inusual sobre documentos restringidos",
-          description: "La persona operadora accedió a 3 documentos restringidos en 20 minutos.",
-        },
-      }),
-    ];
-
-    expect(buildAuditExecutiveAlerts(items)).toEqual([
-      {
-        source: "access_risk",
-        scope: "case",
-        scopeId: "case-risk",
-        tenantId: "tenant-risk",
-        caseId: "case-risk",
-        count: 2,
-        countLabel: "señales",
-        severity: "high",
-        title: "Concentración inusual sobre documentos restringidos",
-        description: "La persona operadora accedió a 3 documentos restringidos en 20 minutos. Esta señal se repitió 2 veces en la ventana visible.",
       },
     ]);
   });

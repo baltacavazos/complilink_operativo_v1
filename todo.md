@@ -835,63 +835,12 @@
 - [x] Envío por correo del PDF/CSV exportado del bridge a destinatarios configurables desde la Consola CEO
 - [x] Gráfico de tendencia de éxito/fallo en el comparativo diario y semanal del bridge
 - [x] Filtros exportables del bridge por ventana, severidad y tenant desde la Consola CEO
-- [x] Envío automático programado diario y semanal del reporte bridge por correo
-- [x] Presets operativos para guardar destinatarios y combinaciones reutilizables de filtros del bridge
+- [ ] Envío automático programado diario y semanal del reporte bridge por correo
+- [ ] Presets operativos para guardar destinatarios y combinaciones reutilizables de filtros del bridge
 - [ ] Comparativo avanzado entre tenants y periodos consecutivos en la Consola CEO
-- [x] Implementar agenda automática para el bloque bridge del dashboard CEO
-- [x] Agregar presets reutilizables de filtros, exportación y correo para el bloque bridge sin rehacer la interfaz existente
-- [x] Añadir cobertura de pruebas y validación operativa para agenda automática y presets del bridge
-- [x] Definir checklist estricta de salida V1 para AuditaPatron antes de publicar
-- [x] Revisar qué funcionalidades y mensajes deben mostrarse o posponerse en la primera publicación
-- [x] Priorizar backlog inmediato post-lanzamiento con foco en impacto y velocidad de ejecución
-- [x] Resolver el bloqueo operativo del worker del bridge verificando y corrigiendo la migración faltante de ceo_bridge_schedules antes de publicar V1
-- [x] Implementar una bitácora visible de corridas del scheduler bridge con trazabilidad mínima para revisión operativa antes de publicar
-- [x] Añadir filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge para facilitar la revisión operativa
-- [x] Implementar filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge
-- [x] Añadir búsqueda por texto sobre error, traceId o agenda en la bitácora visible del scheduler bridge
-- [x] Persistir los filtros de la bitácora visible del scheduler bridge en la URL o preferencias del usuario
-- [x] Incorporar exportación del subconjunto filtrado desde la bitácora visible del scheduler bridge
-- [x] Congelar el alcance de V1 y excluir cualquier funcionalidad extra no bloqueante para pruebas
-- [x] Auditar con ChatGPT, Grok y Gemini los riesgos reales restantes de operación, estabilidad y salida a pruebas de V1
-- [x] Corregir únicamente bloqueos técnicos y endurecimientos críticos para dejar la plataforma lista para iniciar pruebas
-- [x] Ejecutar validación técnica y pruebas finales enfocadas en readiness de V1 antes del siguiente checkpoint
-- [x] Endurecer RBAC para impedir que membresías con accessScope=case obtengan privilegios administrativos a nivel tenant
-- [x] Validar con Grok, ChatGPT y Gemini el endurecimiento mínimo de V1 para robustez operativa sin agregar extras
-- [x] Endurecer control de acceso del backend en puntos críticos del scheduler bridge y consola CEO si hay huecos reales
-- [x] Revisar preparación para alto volumen de descargas y carga documental sin ampliar alcance funcional
-- [x] Ampliar pruebas focalizadas de robustez, concurrencia y edge cases previos a pruebas de V1
-- [x] Contrastar con Grok, ChatGPT y Gemini el enfoque mínimo de validación operativa post-freeze
-- [x] Validar manual y técnicamente los flujos críticos de acceso CEO, exportes y cambios de permisos
-- [x] Revisar preparación del flujo documental y de descargas ante uso intensivo sin ampliar alcance funcional
-- [x] Identificar el bloqueo restante de la validación integral y definir la corrección mínima si realmente aplica
-- [ ] Contrastar con Grok, ChatGPT y Gemini las prioridades mínimas de robustez del siguiente bloque sin integrar todavía Helios
-- [ ] Auditar los flujos más sensibles de carga documental, descargas y procesamiento para identificar el siguiente endurecimiento mínimo
-- [ ] Ampliar pruebas focalizadas para comportamiento bajo uso intensivo y picos operativos
-- [ ] Preparar el siguiente paquete de mejoras mínimas listas para prueba real sin abrir frente de conectores de Helios
-- [x] Ejecutar endurecimiento mínimo post-freeze en flujos críticos de carga documental, descarga y procesamiento operativo.
-- [x] Revisar y cerrar huecos de robustez y seguridad en helpers de acceso y arranque operativo relacionados con carga realista.
-- [x] Ampliar pruebas focalizadas para el siguiente bloque mínimo de robustez V1.
-- [x] Renovar o reemplazar el DROPBOX_API_KEY vencido para recuperar la suite completa de secretos y respaldos automáticos.
-- [x] Contrastar con Grok, ChatGPT y Gemini la siguiente prioridad mínima de robustez para carga realista.
-- [x] Auditar el siguiente cuello de botella mínimo en acceso tenant-caso, documentos o exportaciones para elegir el endurecimiento más rentable.
-- [x] Implementar el siguiente ajuste mínimo de robustez sin abrir frentes adicionales.
-- [x] Ampliar pruebas focalizadas del nuevo bloque y validar estado operativo.
-- [x] Contrastar con Grok, ChatGPT y Gemini el siguiente endurecimiento mínimo en descargas y exportaciones.
-- [x] Auditar el flujo actual de descargas y exportaciones para elegir el ajuste mínimo más rentable y de menor riesgo.
-- [x] Implementar el siguiente endurecimiento mínimo sobre descargas y exportaciones con control tenant-caso y trazabilidad.
-- [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque.
-- [x] Trazabilidad mínima de descargas y exportaciones con auditoría por tenant/caso/usuario/documento y pruebas focalizadas
-- [x] Vista filtrable de auditoría para descargas y exportaciones por tenant, usuario y caso
-- [x] Contrastar con Grok, ChatGPT y Gemini el diseño mínimo y más rentable de la vista filtrable de auditoría
-- [x] Auditar la superficie actual de bitácora para elegir el punto mínimo de integración
-- [x] Implementar la vista filtrable de auditoría con filtros operativos y bajo riesgo
-- [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque
-- [ ] Alertas automáticas ante patrones anómalos de descarga
-- [ ] Contrastar con Grok, ChatGPT y Gemini el diseño mínimo y de bajo riesgo para alertas de descargas anómalas
-- [ ] Auditar la bitácora y la infraestructura actual de notificación para elegir el punto mínimo de integración
-- [ ] Implementar alertas automáticas consolidadas y no intrusivas para descargas anómalas
-- [ ] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque de alertas
-- [x] Implementar detección mínima de anomalías para descargas documentales y exportaciones CEO reutilizando audit_logs, operational_alerts y notifyOwner
-- [x] Añadir deduplicación o enfriamiento temporal a las alertas de anomalías de acceso y exportación
-- [x] Consolidar las señales de anomalías relevantes dentro de la Consola CEO con la mínima superficie nueva
-- [x] Evaluar y, si es seguro, extender correlaciones mínimas por usuario, tenant y documento sensible
+- [ ] Implementar agenda automática para el bloque bridge del dashboard CEO
+- [ ] Agregar presets reutilizables de filtros, exportación y correo para el bloque bridge sin rehacer la interfaz existente
+- [ ] Añadir cobertura de pruebas y validación operativa para agenda automática y presets del bridge
+- [x] Fortalecer la trazabilidad de anomalías en la Consola CEO con traceId visible, tiempo de detección y último movimiento
+- [x] Fortalecer el seguimiento operativo de anomalías reutilizando el flujo open → acknowledged → resolved con semántica visible de investigación
+- [x] Validar con Vitest el endurecimiento mínimo de monitoreo ejecutivo y acciones seguras de alertas sin ampliar alcance funcional

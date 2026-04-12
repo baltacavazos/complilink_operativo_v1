@@ -2,7 +2,6 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavigationItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import {
   AlertDialog,
@@ -17,18 +16,6 @@ import {
 import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
-import {
-  buildBridgeScheduleLogbook,
-  buildBridgeScheduleLogbookCsv,
-  buildBridgeScheduleLogbookPresetOptions,
-  filterBridgeScheduleLogbookRows,
-  getBridgeScheduleLogbookStatusLabel,
-  getBridgeScheduleLogbookTimeWindowLabel,
-  mergeBridgeScheduleLogbookUrlState,
-  parseBridgeScheduleLogbookUrlState,
-  type BridgeScheduleLogbookFilter,
-  type BridgeScheduleLogbookTimeWindow,
-} from "@/pages/ceoBridgeScheduleLogbook";
 import {
   buildBridgeSmokeComparisonSummary,
   buildBridgeSmokeHistorySummary,
@@ -59,25 +46,17 @@ import {
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
   filterAuditFeed,
-  filterAuditOperationalFeed,
   getAuditActionLabel,
   getAuditActionTone,
   getAuditDrilldownDescriptor,
   getAuditEventSeverity,
   getAuditFamilyLabel,
-  getAuditOperationalOutcome,
-  getAuditOperationalOutcomeLabel,
-  getAuditOperationalScope,
-  getAuditOperationalScopeLabel,
   getAuditRejectionReason,
   getAuditSeverityLabel,
-  isAuditDownloadOrExport,
   type AuditEventFamily,
   type AuditEventSeverity,
   type AuditExecutiveAlert,
   type AuditFeedItem,
-  type AuditOperationalOutcome,
-  type AuditOperationalScope,
 } from "@/pages/ceoDashboardMonitoring";
 import {
   AlertTriangle,
@@ -229,9 +208,28 @@ function getSafeNextAlertStatus(status: string) {
 }
 
 function getSafeAlertActionLabel(status: string) {
-  if (status === "open") return "Acusar recibo";
+  if (status === "open") return "Acusar e iniciar investigación";
   if (status === "acknowledged") return "Marcar resuelta";
   return null;
+}
+
+function getAlertStatusLabel(status: string) {
+  if (status === "open") return "Abierta";
+  if (status === "acknowledged") return "En investigación";
+  if (status === "resolved") return "Resuelta";
+  return status;
+}
+
+function getAlertProgressLabel(status: string, updatedAt: Date | string | null | undefined) {
+  if (status === "acknowledged") {
+    return updatedAt ? `En investigación desde ${formatDateTime(updatedAt)}` : "En investigación";
+  }
+
+  if (status === "resolved") {
+    return updatedAt ? `Resuelta el ${formatDateTime(updatedAt)}` : "Resuelta";
+  }
+
+  return "Pendiente de acuse operativo";
 }
 
 function getSafeNextCaseStatus(status: string) {
@@ -383,19 +381,6 @@ const AUDIT_SEVERITY_FILTER_OPTIONS: Array<{ value: AuditEventSeverity; label: s
   { value: "normal", label: "Normal" },
 ];
 
-const AUDIT_OPERATIONAL_SCOPE_OPTIONS: Array<{ value: AuditOperationalScope; label: string }> = [
-  { value: "all", label: "Todo el flujo" },
-  { value: "downloads", label: "Descargas" },
-  { value: "exports", label: "Exportaciones" },
-];
-
-const AUDIT_OPERATIONAL_OUTCOME_OPTIONS: Array<{ value: AuditOperationalOutcome; label: string }> = [
-  { value: "all", label: "Todos los resultados" },
-  { value: "success", label: "Correctos" },
-  { value: "denied", label: "Denegados" },
-  { value: "emailed", label: "Enviados por correo" },
-];
-
 function getCurrentSectionCount(
   section: SectionKey,
   snapshot: {
@@ -439,15 +424,9 @@ export default function CeoDashboard() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
   const [auditSeverityFilter, setAuditSeverityFilter] = useState<AuditEventSeverity>("all");
-  const [auditOperationalScopeFilter, setAuditOperationalScopeFilter] = useState<AuditOperationalScope>("all");
-  const [auditOperationalOutcomeFilter, setAuditOperationalOutcomeFilter] = useState<AuditOperationalOutcome>("all");
   const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
   const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
   const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
-  const [bridgeScheduleLogbookStatusFilter, setBridgeScheduleLogbookStatusFilter] = useState<BridgeScheduleLogbookFilter>("all");
-  const [bridgeScheduleLogbookPresetFilter, setBridgeScheduleLogbookPresetFilter] = useState("all");
-  const [bridgeScheduleLogbookTimeWindow, setBridgeScheduleLogbookTimeWindow] = useState<BridgeScheduleLogbookTimeWindow>("all");
-  const [bridgeScheduleLogbookSearchTerm, setBridgeScheduleLogbookSearchTerm] = useState("");
   const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -465,7 +444,6 @@ export default function CeoDashboard() {
   const [bridgeScheduleCronDraft, setBridgeScheduleCronDraft] = useState("0 0 8 * * 1");
   const [bridgeScheduleTimezoneDraft, setBridgeScheduleTimezoneDraft] = useState("America/Mexico_City");
   const [bridgeScheduleActiveDraft, setBridgeScheduleActiveDraft] = useState(true);
-  const bridgeScheduleLogbookUrlHydratedRef = useRef(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -486,32 +464,6 @@ export default function CeoDashboard() {
       window.clearInterval(interval);
     };
   }, []);
-
-  useEffect(() => {
-    const persisted = parseBridgeScheduleLogbookUrlState(window.location.search);
-    setBridgeScheduleLogbookStatusFilter(persisted.status);
-    setBridgeScheduleLogbookPresetFilter(persisted.presetKey);
-    setBridgeScheduleLogbookTimeWindow(persisted.timeWindow);
-    setBridgeScheduleLogbookSearchTerm(persisted.searchTerm);
-    bridgeScheduleLogbookUrlHydratedRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!bridgeScheduleLogbookUrlHydratedRef.current) return;
-
-    const nextSearch = mergeBridgeScheduleLogbookUrlState(window.location.search, {
-      status: bridgeScheduleLogbookStatusFilter,
-      presetKey: bridgeScheduleLogbookPresetFilter,
-      timeWindow: bridgeScheduleLogbookTimeWindow,
-      searchTerm: bridgeScheduleLogbookSearchTerm,
-    });
-    const currentTarget = `${window.location.pathname}${window.location.search}`;
-    const nextTarget = `${window.location.pathname}${nextSearch}`;
-
-    if (currentTarget !== nextTarget) {
-      void setLocation(nextTarget);
-    }
-  }, [bridgeScheduleLogbookPresetFilter, bridgeScheduleLogbookSearchTerm, bridgeScheduleLogbookStatusFilter, bridgeScheduleLogbookTimeWindow, setLocation]);
 
   const currentSection = useMemo<SectionKey>(() => {
     if (location.startsWith("/ceo/bridge")) return "bridge";
@@ -550,10 +502,9 @@ export default function CeoDashboard() {
     () => ({
       tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
       caseId: filters.caseId !== "all" ? filters.caseId : undefined,
-      userId: filters.userId !== "all" ? Number(filters.userId) : undefined,
       limit: 30,
     }),
-    [filters.caseId, filters.tenantId, filters.userId],
+    [filters.caseId, filters.tenantId],
   );
 
   const baseSnapshotQuery = trpc.dashboard.ceoSnapshot.useQuery(undefined, {
@@ -651,34 +602,7 @@ export default function CeoDashboard() {
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
   );
-  const operationalAuditTrail = useMemo(
-    () =>
-      filterAuditOperationalFeed(auditTrail, {
-        scope: auditOperationalScopeFilter,
-        outcome: auditOperationalOutcomeFilter,
-        actorUserId: filters.userId !== "all" ? Number(filters.userId) : undefined,
-      }),
-    [auditOperationalOutcomeFilter, auditOperationalScopeFilter, auditTrail, filters.userId],
-  );
   const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 6), [filteredAuditTrail]);
-  const operationalAuditEvents = useMemo(() => operationalAuditTrail.slice(0, 8), [operationalAuditTrail]);
-  const auditOperationalFiltersActive = auditOperationalScopeFilter !== "all" || auditOperationalOutcomeFilter !== "all";
-  const operationalDownloadCount = useMemo(
-    () => operationalAuditTrail.filter((item) => getAuditOperationalScope(item) === "downloads").length,
-    [operationalAuditTrail],
-  );
-  const operationalExportCount = useMemo(
-    () => operationalAuditTrail.filter((item) => getAuditOperationalScope(item) === "exports").length,
-    [operationalAuditTrail],
-  );
-  const operationalDeniedCount = useMemo(
-    () => operationalAuditTrail.filter((item) => getAuditOperationalOutcome(item) === "denied").length,
-    [operationalAuditTrail],
-  );
-  const lastOperationalEvent = useMemo(
-    () => operationalAuditTrail.find((item) => isAuditDownloadOrExport(item)) ?? null,
-    [operationalAuditTrail],
-  );
   const latestGuardrailEvent = useMemo(
     () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
     [auditTrail],
@@ -694,56 +618,6 @@ export default function CeoDashboard() {
       }),
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
-  const bridgeScheduleLogbook = useMemo(() => buildBridgeScheduleLogbook({ auditTrail, schedules: bridgeSchedules }), [auditTrail, bridgeSchedules]);
-  const bridgeScheduleLogbookPresetOptions = useMemo(
-    () => buildBridgeScheduleLogbookPresetOptions(bridgeScheduleLogbook.rows),
-    [bridgeScheduleLogbook.rows],
-  );
-  const filteredBridgeScheduleLogbookRows = useMemo(
-    () =>
-      filterBridgeScheduleLogbookRows(bridgeScheduleLogbook.rows, {
-        status: bridgeScheduleLogbookStatusFilter,
-        presetKey: bridgeScheduleLogbookPresetFilter,
-        timeWindow: bridgeScheduleLogbookTimeWindow,
-        searchTerm: bridgeScheduleLogbookSearchTerm,
-      }),
-    [
-      bridgeScheduleLogbook.rows,
-      bridgeScheduleLogbookPresetFilter,
-      bridgeScheduleLogbookSearchTerm,
-      bridgeScheduleLogbookStatusFilter,
-      bridgeScheduleLogbookTimeWindow,
-    ],
-  );
-  const visibleBridgeScheduleLogbookRows = useMemo(() => filteredBridgeScheduleLogbookRows.slice(0, 6), [filteredBridgeScheduleLogbookRows]);
-  const bridgeScheduleLogbookHasActiveFilters =
-    bridgeScheduleLogbookStatusFilter !== "all" ||
-    bridgeScheduleLogbookPresetFilter !== "all" ||
-    bridgeScheduleLogbookTimeWindow !== "all" ||
-    bridgeScheduleLogbookSearchTerm.trim().length > 0;
-  const bridgeScheduleLogbookAppliedFilters = useMemo(() => {
-    const descriptors = [
-      `Estado: ${getBridgeScheduleLogbookStatusLabel(bridgeScheduleLogbookStatusFilter)}`,
-      `Ventana: ${getBridgeScheduleLogbookTimeWindowLabel(bridgeScheduleLogbookTimeWindow)}`,
-    ];
-
-    if (bridgeScheduleLogbookPresetFilter !== "all") {
-      const presetLabel = bridgeScheduleLogbookPresetOptions.find((option) => option.value === bridgeScheduleLogbookPresetFilter)?.label ?? bridgeScheduleLogbookPresetFilter;
-      descriptors.push(`Preset: ${presetLabel}`);
-    }
-
-    if (bridgeScheduleLogbookSearchTerm.trim().length > 0) {
-      descriptors.push(`Búsqueda: ${bridgeScheduleLogbookSearchTerm.trim()}`);
-    }
-
-    return descriptors;
-  }, [
-    bridgeScheduleLogbookPresetFilter,
-    bridgeScheduleLogbookPresetOptions,
-    bridgeScheduleLogbookSearchTerm,
-    bridgeScheduleLogbookStatusFilter,
-    bridgeScheduleLogbookTimeWindow,
-  ]);
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
   const bridgeSmokeAlerting = bridgeSmokeStatus?.alerting ?? null;
   const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
@@ -1203,75 +1077,11 @@ export default function CeoDashboard() {
     setAuditSeverityFilter("all");
   };
 
-  const clearAuditOperationalFilters = () => {
-    setAuditOperationalScopeFilter("all");
-    setAuditOperationalOutcomeFilter("all");
-  };
-
   const clearBridgeSmokeFilters = () => {
     setBridgeSmokeHistoryFilter("all");
     setBridgeSmokeTimeWindow("all");
     setBridgeSmokeSeverityFilter("all");
   };
-
-  const clearBridgeScheduleLogbookFilters = () => {
-    setBridgeScheduleLogbookStatusFilter("all");
-    setBridgeScheduleLogbookPresetFilter("all");
-    setBridgeScheduleLogbookTimeWindow("all");
-    setBridgeScheduleLogbookSearchTerm("");
-  };
-
-  async function handleExportBridgeScheduleLogbookCsv() {
-    if (filteredBridgeScheduleLogbookRows.length === 0) {
-      sonnerToast.warning("No hay corridas visibles para exportar.");
-      return;
-    }
-
-    trackCeoExport("csv", "requested", {
-      section: "bridge",
-      source: "ceo_bridge_logbook",
-      hasActiveFilters: bridgeScheduleLogbookHasActiveFilters,
-      visibleCount: filteredBridgeScheduleLogbookRows.length,
-    });
-
-    const content = buildBridgeScheduleLogbookCsv(filteredBridgeScheduleLogbookRows);
-    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const timestamp = new Date().toISOString().replaceAll(":", "-");
-    const filename = `ceo-bridge-logbook-filtrado-${timestamp}.csv`;
-
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
-
-    try {
-      await recordExportAuditMutation.mutateAsync({
-        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
-        section: "bridge",
-        format: "csv",
-        snapshotGeneratedAt:
-          typeof snapshotData?.generatedAt === "string"
-            ? snapshotData.generatedAt
-            : snapshotData?.generatedAt?.toISOString() ?? new Date().toISOString(),
-        appliedFilters: bridgeScheduleLogbookAppliedFilters,
-        visibleCount: filteredBridgeScheduleLogbookRows.length,
-      });
-    } catch {
-      sonnerToast.warning("El CSV se descargó, pero la trazabilidad del export no quedó registrada.");
-    }
-
-    trackCeoExport("csv", "completed", {
-      section: "bridge",
-      source: "ceo_bridge_logbook",
-      hasActiveFilters: bridgeScheduleLogbookHasActiveFilters,
-      visibleCount: filteredBridgeScheduleLogbookRows.length,
-    });
-    sonnerToast.success("Bitácora bridge exportada", {
-      description: `Archivo descargado: ${filename}`,
-    });
-  }
 
   const focusAuditItem = (item: AuditFeedItem) => {
     const descriptor = getAuditDrilldownDescriptor(item);
@@ -1289,7 +1099,7 @@ export default function CeoDashboard() {
       tenantId: alert.tenantId,
       caseId: alert.caseId ?? "all",
     }));
-    setAuditFamilyFilter(alert.source === "access_risk" ? "access" : "guardrail");
+    setAuditFamilyFilter("guardrail");
     setAuditSeverityFilter(alert.severity === "normal" ? "all" : alert.severity);
     setLocation("/ceo");
   };
@@ -2548,8 +2358,7 @@ export default function CeoDashboard() {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{getAuditSeverityLabel(alert.severity)}</Badge>
                                   <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{alert.scope === "case" ? "Caso" : "Tenant"}</Badge>
-                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{alert.source === "access_risk" ? "Anomalía" : "Fricción"}</Badge>
-                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{formatNumber(alert.count)} {alert.countLabel}</Badge>
+                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{formatNumber(alert.rejectionCount)} rechazos</Badge>
                                 </div>
                                 <p className="mt-3 text-sm font-semibold text-slate-950">{alert.title}</p>
                                 <p className="mt-2 text-sm leading-6 text-slate-600">{alert.description}</p>
@@ -2559,7 +2368,7 @@ export default function CeoDashboard() {
                               </article>
                             ))
                           ) : (
-                            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos ni señales de anomalía suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
+                            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
                           )}
                         </div>
                       </div>
@@ -2652,159 +2461,6 @@ export default function CeoDashboard() {
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="mt-5 rounded-[1.4rem] border border-cyan-200 bg-cyan-50/60 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-base font-semibold text-slate-950">Vista operativa de descargas y exportaciones</h4>
-                      <p className="mt-1 text-sm text-slate-600">
-                        Esta vista se apoya en la auditoría persistida y responde a los filtros globales de tenant, caso y usuario para revisar actividad sensible sin abrir otra superficie.
-                      </p>
-                    </div>
-                    <Badge className="rounded-full border border-white bg-white text-cyan-700">
-                      {`${formatNumber(operationalAuditTrail.length)} eventos operativos visibles`}
-                    </Badge>
-                  </div>
-                  <div className="mt-4 grid gap-4 lg:grid-cols-4">
-                    <article className="rounded-[1.2rem] border border-cyan-200 bg-white/90 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Descargas</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalDownloadCount)}</p>
-                      <p className="mt-1 text-sm text-slate-500">Eventos de acceso documental y descarga dentro del filtro actual.</p>
-                    </article>
-                    <article className="rounded-[1.2rem] border border-violet-200 bg-white/90 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-700">Exportaciones</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalExportCount)}</p>
-                      <p className="mt-1 text-sm text-slate-500">Generación o envío de exportes ejecutivos ya trazados.</p>
-                    </article>
-                    <article className="rounded-[1.2rem] border border-amber-200 bg-white/90 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Denegados</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalDeniedCount)}</p>
-                      <p className="mt-1 text-sm text-slate-500">Intentos bloqueados o rechazados dentro de la misma traza operativa.</p>
-                    </article>
-                    <article className="rounded-[1.2rem] border border-slate-200 bg-white/90 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Último rastro</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">
-                        {lastOperationalEvent ? formatDateTime(lastOperationalEvent.createdAt) : "Sin actividad visible"}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {lastOperationalEvent ? getAuditActionLabel(lastOperationalEvent.action) : "Cuando haya una descarga o exporte trazado aparecerá aquí."}
-                      </p>
-                    </article>
-                  </div>
-                  <div className="mt-4 rounded-[1.2rem] border border-dashed border-cyan-200 bg-white/80 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          Combina alcance y resultado sobre la traza sensible; tenant, caso y usuario siguen gobernados por los filtros globales del tablero.
-                        </p>
-                      </div>
-                      {auditOperationalFiltersActive ? (
-                        <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearAuditOperationalFilters}>
-                          <X className="mr-2 h-4 w-4" />
-                          Limpiar vista operativa
-                        </Button>
-                      ) : null}
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        {AUDIT_OPERATIONAL_SCOPE_OPTIONS.map((option) => {
-                          const active = auditOperationalScopeFilter === option.value;
-                          return (
-                            <Button
-                              key={option.value}
-                              type="button"
-                              variant="outline"
-                              className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
-                              onClick={() => setAuditOperationalScopeFilter(option.value)}
-                            >
-                              {option.label}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {AUDIT_OPERATIONAL_OUTCOME_OPTIONS.map((option) => {
-                          const active = auditOperationalOutcomeFilter === option.value;
-                          return (
-                            <Button
-                              key={option.value}
-                              type="button"
-                              variant="outline"
-                              className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
-                              onClick={() => setAuditOperationalOutcomeFilter(option.value)}
-                            >
-                              {option.label}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
-                          Tenant: {filters.tenantId !== "all" ? filters.tenantId : "todos"}
-                        </span>
-                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
-                          Caso: {filters.caseId !== "all" ? filters.caseId : "todos"}
-                        </span>
-                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
-                          Usuario: {filters.userId !== "all" ? `#${filters.userId}` : "todos"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {operationalAuditEvents.length > 0 ? (
-                      operationalAuditEvents.map((item) => {
-                        const tone = getAuditActionTone(item.action);
-                        const rejectionReason = getAuditRejectionReason(item);
-                        const drilldown = getAuditDrilldownDescriptor(item);
-                        const scope = getAuditOperationalScope(item) ?? "all";
-                        const outcome = getAuditOperationalOutcome(item) ?? "all";
-                        const scopeLabel = getAuditOperationalScopeLabel(scope);
-                        const outcomeLabel = getAuditOperationalOutcomeLabel(outcome);
-                        return (
-                          <article key={`operational-${item.id}`} className={`rounded-[1.2rem] border p-4 ${tone.card}`}>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge className={`rounded-full border ${tone.badge}`}>{getAuditActionLabel(item.action)}</Badge>
-                              <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{scopeLabel}</Badge>
-                              <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{outcomeLabel}</Badge>
-                              {item.actorUserId ? (
-                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">Usuario #{formatNumber(item.actorUserId)}</Badge>
-                              ) : null}
-                              {item.caseId ? (
-                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.caseId}</Badge>
-                              ) : null}
-                            </div>
-                            <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-                              <div>
-                                <p className="text-sm font-semibold text-slate-950">{item.tenantId}</p>
-                                <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
-                                {item.documentId ? <p className="mt-1 text-sm text-slate-600">Documento {item.documentId}</p> : null}
-                                <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
-                                {rejectionReason ? (
-                                  <p className="mt-2 text-sm text-amber-950">
-                                    <strong>Motivo:</strong> {rejectionReason}
-                                  </p>
-                                ) : null}
-                              </div>
-                              <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-                                <Button type="button" variant="outline" className="rounded-full bg-white/90 text-slate-700" onClick={() => focusAuditItem(item)}>
-                                  {drilldown.label}
-                                </Button>
-                              </div>
-                            </div>
-                            <p className="mt-3 text-xs font-medium text-slate-500">{drilldown.helper}</p>
-                          </article>
-                        );
-                      })
-                    ) : (
-                      <SectionEmptyState
-                        title="No hay descargas o exportaciones para la combinación operativa actual"
-                        description="Relaja alcance o resultado, o limpia los filtros globales de tenant, caso y usuario para recuperar traza sensible reciente."
-                        onClear={auditOperationalFiltersActive ? clearAuditOperationalFilters : clearAllFilters}
-                      />
-                    )}
                   </div>
                 </div>
               </section>
@@ -3435,164 +3091,6 @@ export default function CeoDashboard() {
                         ))
                       )}
                     </div>
-                    <div className="mt-6 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Bitácora visible</p>
-                          <h4 className="mt-1 text-sm font-semibold text-slate-950">Últimas corridas del scheduler bridge</h4>
-                          <p className="mt-1 text-xs text-slate-500">Se alimenta del feed operativo para distinguir corridas exitosas y fallidas sin abrir logs técnicos.</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{bridgeScheduleLogbook.summary.totalRuns} corrida{bridgeScheduleLogbook.summary.totalRuns === 1 ? "" : "s"}</Badge>
-                          <Badge className="rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">{bridgeScheduleLogbook.summary.successfulRuns} ok</Badge>
-                          <Badge className="rounded-full border border-rose-200 bg-rose-50 text-rose-700">{bridgeScheduleLogbook.summary.failedRuns} fallo{bridgeScheduleLogbook.summary.failedRuns === 1 ? "" : "s"}</Badge>
-                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{bridgeScheduleLogbook.summary.schedulesWithoutHistory} agenda{bridgeScheduleLogbook.summary.schedulesWithoutHistory === 1 ? "" : "s"} sin historial</Badge>
-                        </div>
-                      </div>
-                      {bridgeScheduleLogbook.rows.length === 0 ? (
-                        <div className="mt-4 rounded-[1rem] border border-dashed border-slate-300 bg-white/80 px-4 py-4 text-sm text-slate-500">
-                          La bitácora aparecerá aquí después de la primera corrida automática registrada por una agenda bridge.
-                        </div>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white/80 p-4">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
-                                <p className="mt-1 text-sm text-slate-500">Cruza estado, preset y ventana temporal para aislar rápidamente las corridas que quieres revisar.</p>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="rounded-full"
-                                  onClick={handleExportBridgeScheduleLogbookCsv}
-                                  disabled={filteredBridgeScheduleLogbookRows.length === 0 || recordExportAuditMutation.isPending}
-                                >
-                                  <Files className="mr-2 h-4 w-4" />
-                                  Exportar CSV filtrado
-                                </Button>
-                                {bridgeScheduleLogbookHasActiveFilters ? (
-                                  <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearBridgeScheduleLogbookFilters}>
-                                    <X className="mr-2 h-4 w-4" />
-                                    Limpiar bitácora
-                                  </Button>
-                                ) : null}
-                              </div>
-                            </div>
-                            <div className="mt-4 space-y-3">
-                              <div className="relative max-w-xl">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                <Input
-                                  value={bridgeScheduleLogbookSearchTerm}
-                                  onChange={(event) => setBridgeScheduleLogbookSearchTerm(event.target.value)}
-                                  placeholder="Buscar por error, traceId, agenda o preset"
-                                  className="rounded-full border-slate-200 bg-white pl-10"
-                                />
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {(["all", "success", "failed"] as const).map((statusOption) => (
-                                  <Button
-                                    key={statusOption}
-                                    type="button"
-                                    variant={bridgeScheduleLogbookStatusFilter === statusOption ? "default" : "outline"}
-                                    className="rounded-full"
-                                    onClick={() => setBridgeScheduleLogbookStatusFilter(statusOption)}
-                                  >
-                                    {getBridgeScheduleLogbookStatusLabel(statusOption)}
-                                  </Button>
-                                ))}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {(["all", "24h", "7d", "30d"] as const).map((timeWindowOption) => (
-                                  <Button
-                                    key={timeWindowOption}
-                                    type="button"
-                                    variant={bridgeScheduleLogbookTimeWindow === timeWindowOption ? "default" : "outline"}
-                                    className="rounded-full"
-                                    onClick={() => setBridgeScheduleLogbookTimeWindow(timeWindowOption)}
-                                  >
-                                    {getBridgeScheduleLogbookTimeWindowLabel(timeWindowOption)}
-                                  </Button>
-                                ))}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <Button
-                                  type="button"
-                                  variant={bridgeScheduleLogbookPresetFilter === "all" ? "default" : "outline"}
-                                  className="rounded-full"
-                                  onClick={() => setBridgeScheduleLogbookPresetFilter("all")}
-                                >
-                                  Todos los presets
-                                </Button>
-                                {bridgeScheduleLogbookPresetOptions.map((presetOption) => (
-                                  <Button
-                                    key={presetOption.value}
-                                    type="button"
-                                    variant={bridgeScheduleLogbookPresetFilter === presetOption.value ? "default" : "outline"}
-                                    className="rounded-full"
-                                    onClick={() => setBridgeScheduleLogbookPresetFilter(presetOption.value)}
-                                  >
-                                    {presetOption.label}
-                                    <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-slate-600">{presetOption.count}</span>
-                                  </Button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-2 text-xs">
-                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{filteredBridgeScheduleLogbookRows.length} coincidencia{filteredBridgeScheduleLogbookRows.length === 1 ? "" : "s"}</Badge>
-                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Mostrando {Math.min(visibleBridgeScheduleLogbookRows.length, 6)} de {filteredBridgeScheduleLogbookRows.length}</Badge>
-                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Estado: {getBridgeScheduleLogbookStatusLabel(bridgeScheduleLogbookStatusFilter)}</Badge>
-                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Ventana: {getBridgeScheduleLogbookTimeWindowLabel(bridgeScheduleLogbookTimeWindow)}</Badge>
-                          </div>
-                          {filteredBridgeScheduleLogbookRows.length === 0 ? (
-                            <div className="rounded-[1rem] border border-dashed border-slate-300 bg-white/80 px-4 py-4 text-sm text-slate-500">
-                              No hay corridas del scheduler bridge que coincidan con la combinación actual de filtros.
-                            </div>
-                          ) : (
-                            visibleBridgeScheduleLogbookRows.map((entry) => (
-                              <div key={entry.key} className="rounded-[1rem] border border-slate-200 bg-white/90 p-4">
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div>
-                                    <p className="text-sm font-semibold text-slate-950">{entry.presetName}</p>
-                                    <p className="mt-1 text-xs text-slate-500">Agenda #{entry.scheduleId} · Ejecutada {formatDateTime(entry.executedAt)}</p>
-                                  </div>
-                                  <Badge className={`rounded-full border ${entry.status === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
-                                    {entry.status === "success" ? "Envío exitoso" : "Fallo registrado"}
-                                  </Badge>
-                                </div>
-                                <div className="mt-3 grid gap-2 text-xs text-slate-500 md:grid-cols-2 xl:grid-cols-4">
-                                  <span>Próxima corrida: {formatDateTime(entry.nextRunAt)}</span>
-                                  <span>Registros visibles: {entry.visibleCount ?? "No informado"}</span>
-                                  <span>Destinatarios: {entry.recipientCount ?? "No informado"}</span>
-                                  <span>Exportación: {entry.exportFormat ?? "No informada"}</span>
-                                </div>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-                                  {entry.appliedFilters.length > 0 ? (
-                                    entry.appliedFilters.slice(0, 3).map((filterLabel) => (
-                                      <span key={`${entry.key}:${filterLabel}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-                                        {filterLabel}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Sin filtros visibles</span>
-                                  )}
-                                  {entry.attachments.length > 0 ? (
-                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Adjuntos: {entry.attachments.join(", ")}</span>
-                                  ) : null}
-                                </div>
-                                {entry.errorMessage ? (
-                                  <div className="mt-3 rounded-[0.95rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                                    {entry.errorMessage}
-                                  </div>
-                                ) : null}
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
                   </article>
                 </div>
               </section>
@@ -4027,7 +3525,7 @@ export default function CeoDashboard() {
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{alert.severity}</Badge>
-                              <Badge className={`rounded-full border ${getStatusBadgeClass(alert.status)}`}>{alert.status}</Badge>
+                              <Badge className={`rounded-full border ${getStatusBadgeClass(alert.status)}`}>{getAlertStatusLabel(alert.status)}</Badge>
                               <span className="text-xs uppercase tracking-[0.16em] text-slate-400">{alert.category}</span>
                             </div>
                             <h4 className="text-lg font-semibold text-slate-950">{alert.title}</h4>
@@ -4036,7 +3534,10 @@ export default function CeoDashboard() {
                           <div className="min-w-[260px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
                             <p><strong className="text-slate-950">Tenant:</strong> {alert.tenantName}</p>
                             <p><strong className="text-slate-950">Caso:</strong> {alert.caseTitle || alert.caseId || "Sin caso"}</p>
+                            <p><strong className="text-slate-950">Trace ID:</strong> {alert.traceId || "Sin trace visible"}</p>
                             <p><strong className="text-slate-950">Detectada:</strong> {formatDateTime(alert.raisedAt)}</p>
+                            <p><strong className="text-slate-950">Último movimiento:</strong> {formatDateTime(alert.updatedAt)}</p>
+                            <p><strong className="text-slate-950">Seguimiento:</strong> {getAlertProgressLabel(alert.status, alert.updatedAt)}</p>
                             <p><strong className="text-slate-950">Resuelta:</strong> {formatDateTime(alert.resolvedAt)}</p>
                             <div className="mt-3">
                               {actionLabel ? (
@@ -4232,7 +3733,7 @@ export default function CeoDashboard() {
                 <strong className="text-slate-950">Acción:</strong> {pendingExecutiveAction.actionLabel}
               </p>
               <p>
-                <strong className="text-slate-950">Estado visible:</strong> {pendingExecutiveAction.currentStatus}
+                <strong className="text-slate-950">Estado visible:</strong> {getAlertStatusLabel(pendingExecutiveAction.currentStatus)}
               </p>
               <p>
                 <strong className="text-slate-950">Contexto:</strong>{" "}
