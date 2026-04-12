@@ -892,3 +892,6 @@
 - [ ] Implementar alertas automáticas consolidadas y no intrusivas para descargas anómalas
 - [ ] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque de alertas
 - [x] Implementar detección mínima de anomalías para descargas documentales y exportaciones CEO reutilizando audit_logs, operational_alerts y notifyOwner
+- [x] Añadir deduplicación o enfriamiento temporal a las alertas de anomalías de acceso y exportación
+- [x] Consolidar las señales de anomalías relevantes dentro de la Consola CEO con la mínima superficie nueva
+- [x] Evaluar y, si es seguro, extender correlaciones mínimas por usuario, tenant y documento sensible

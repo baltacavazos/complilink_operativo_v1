@@ -37,11 +37,13 @@ export type AuditOperationalScope = "all" | "downloads" | "exports";
 export type AuditOperationalOutcome = "all" | "success" | "denied" | "emailed";
 
 export type AuditExecutiveAlert = {
+  source: "guardrail" | "access_risk";
   scope: "tenant" | "case";
   scopeId: string;
   tenantId: string;
   caseId: string | null;
-  rejectionCount: number;
+  count: number;
+  countLabel: string;
   severity: Exclude<AuditEventSeverity, "all">;
   title: string;
   description: string;
@@ -319,10 +321,30 @@ function getAlertSeverityByCount(count: number): Exclude<AuditEventSeverity, "al
   return "normal";
 }
 
+function normalizeAnomalySeverity(value: unknown): Exclude<AuditEventSeverity, "all"> {
+  if (value === "critical") return "high";
+  if (value === "warning") return "medium";
+  return "normal";
+}
+
 export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
   const guardrailRejections = items.filter((item) => item.action === "document.guardrail_rejected");
+  const anomalySignals = items.filter((item) => item.action === "access.anomaly_detected");
   const byTenant = new Map<string, { tenantId: string; count: number }>();
   const byCase = new Map<string, { tenantId: string; caseId: string; count: number }>();
+  const anomalyBuckets = new Map<
+    string,
+    {
+      scope: "tenant" | "case";
+      scopeId: string;
+      tenantId: string;
+      caseId: string | null;
+      count: number;
+      severity: Exclude<AuditEventSeverity, "all">;
+      title: string;
+      description: string;
+    }
+  >();
 
   for (const item of guardrailRejections) {
     const tenantBucket = byTenant.get(item.tenantId) ?? { tenantId: item.tenantId, count: 0 };
@@ -337,17 +359,53 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
     }
   }
 
+  for (const item of anomalySignals) {
+    const state = parseAuditState(item.afterState);
+    const rawKind = typeof state?.kind === "string" && state.kind.trim().length > 0 ? state.kind.trim() : "access_anomaly";
+    const scope = item.caseId ? "case" : "tenant";
+    const scopeId = item.caseId ?? item.tenantId;
+    const bucketKey = `${scope}:${scopeId}:${rawKind}`;
+    const severity = normalizeAnomalySeverity(state?.severity);
+    const title = typeof state?.title === "string" && state.title.trim().length > 0 ? state.title.trim() : "Anomalía de acceso detectada";
+    const description =
+      typeof state?.description === "string" && state.description.trim().length > 0
+        ? state.description.trim()
+        : "Se detectó una señal anómala en descargas o exportaciones auditadas.";
+
+    const bucket =
+      anomalyBuckets.get(bucketKey) ?? {
+        scope,
+        scopeId,
+        tenantId: item.tenantId,
+        caseId: item.caseId ?? null,
+        count: 0,
+        severity,
+        title,
+        description,
+      };
+
+    bucket.count += 1;
+    if (severity === "high" || (severity === "medium" && bucket.severity === "normal")) {
+      bucket.severity = severity;
+    }
+    bucket.title = title;
+    bucket.description = description;
+    anomalyBuckets.set(bucketKey, bucket);
+  }
+
   const alerts: AuditExecutiveAlert[] = [];
 
   for (const tenant of Array.from(byTenant.values())) {
     if (tenant.count < 2) continue;
     const severity = getAlertSeverityByCount(tenant.count);
     alerts.push({
+      source: "guardrail",
       scope: "tenant",
       scopeId: tenant.tenantId,
       tenantId: tenant.tenantId,
       caseId: null,
-      rejectionCount: tenant.count,
+      count: tenant.count,
+      countLabel: tenant.count === 1 ? "rechazo" : "rechazos",
       severity,
       title: `Fricción repetida en ${tenant.tenantId}`,
       description:
@@ -361,11 +419,13 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
     if (entry.count < 2) continue;
     const severity = getAlertSeverityByCount(entry.count);
     alerts.push({
+      source: "guardrail",
       scope: "case",
       scopeId: entry.caseId,
       tenantId: entry.tenantId,
       caseId: entry.caseId,
-      rejectionCount: entry.count,
+      count: entry.count,
+      countLabel: entry.count === 1 ? "rechazo" : "rechazos",
       severity,
       title: `Caso ${entry.caseId} con rechazos repetidos`,
       description:
@@ -375,12 +435,28 @@ export function buildAuditExecutiveAlerts(items: AuditFeedItem[]) {
     });
   }
 
+  for (const anomaly of Array.from(anomalyBuckets.values())) {
+    alerts.push({
+      source: "access_risk",
+      scope: anomaly.scope,
+      scopeId: anomaly.scopeId,
+      tenantId: anomaly.tenantId,
+      caseId: anomaly.caseId,
+      count: anomaly.count,
+      countLabel: anomaly.count === 1 ? "señal" : "señales",
+      severity: anomaly.severity,
+      title: anomaly.title,
+      description:
+        anomaly.count > 1 ? `${anomaly.description} Esta señal se repitió ${anomaly.count} veces en la ventana visible.` : anomaly.description,
+    });
+  }
+
   return alerts.sort((left, right) => {
     const severityOrder = { high: 0, medium: 1, normal: 2 } satisfies Record<Exclude<AuditEventSeverity, "all">, number>;
     if (severityOrder[left.severity] !== severityOrder[right.severity]) {
       return severityOrder[left.severity] - severityOrder[right.severity];
     }
-    return right.rejectionCount - left.rejectionCount;
+    return right.count - left.count;
   });
 }
 

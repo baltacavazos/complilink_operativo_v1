@@ -1289,7 +1289,7 @@ export default function CeoDashboard() {
       tenantId: alert.tenantId,
       caseId: alert.caseId ?? "all",
     }));
-    setAuditFamilyFilter("guardrail");
+    setAuditFamilyFilter(alert.source === "access_risk" ? "access" : "guardrail");
     setAuditSeverityFilter(alert.severity === "normal" ? "all" : alert.severity);
     setLocation("/ceo");
   };
@@ -2548,7 +2548,8 @@ export default function CeoDashboard() {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Badge className={`rounded-full border ${getSeverityBadgeClass(alert.severity)}`}>{getAuditSeverityLabel(alert.severity)}</Badge>
                                   <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{alert.scope === "case" ? "Caso" : "Tenant"}</Badge>
-                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{formatNumber(alert.rejectionCount)} rechazos</Badge>
+                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{alert.source === "access_risk" ? "Anomalía" : "Fricción"}</Badge>
+                                  <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">{formatNumber(alert.count)} {alert.countLabel}</Badge>
                                 </div>
                                 <p className="mt-3 text-sm font-semibold text-slate-950">{alert.title}</p>
                                 <p className="mt-2 text-sm leading-6 text-slate-600">{alert.description}</p>
@@ -2558,7 +2559,7 @@ export default function CeoDashboard() {
                               </article>
                             ))
                           ) : (
-                            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
+                            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Aún no se acumulan rechazos ni señales de anomalía suficientes por tenant o caso para disparar una alerta ejecutiva derivada.</p>
                           )}
                         </div>
                       </div>

@@ -1,0 +1,67 @@
+{
+  "openai": {
+    "recommended_approach": "A) deduplicación/cooldown temporal para no crear alertas repetidas del mismo tipo",
+    "thresholds": [
+      "Cooldown de 30 minutos para alertas del mismo tipo y usuario",
+      "Mantener umbrales actuales para disparo de alertas"
+    ],
+    "where_to_hook": [
+      "En el módulo de generación de operational_alerts, justo antes de crear una nueva alerta"
+    ],
+    "risk_notes": [
+      "Riesgo bajo ya que no se modifica la lógica de detección ni los umbrales existentes",
+      "Evita ruido y alertas redundantes que pueden saturar a los owners",
+      "No afecta la auditoría ni la notificación actual, solo reduce alertas duplicadas"
+    ],
+    "tests": [
+      "Generar múltiples eventos idénticos en corto periodo y verificar que solo se cree una alerta durante el cooldown",
+      "Verificar que alertas de distinto tipo o usuario se creen normalmente",
+      "Confirmar que la notificación al owner se envía solo una vez por alerta deduplicada"
+    ]
+  },
+  "gemini": {
+    "recommended_approach": "A) deduplicación/cooldown temporal para no crear alertas repetidas del mismo tipo",
+    "thresholds": [
+      "Mantener umbrales existentes: 5 denegados en 10 min, 3 IPs en 30 min, 6 descargas/exportes en 10 min.",
+      "Añadir un periodo de cooldown de 30-60 minutos para cada tipo de alerta por entidad (usuario/documento/IP) una vez que se ha disparado."
+    ],
+    "where_to_hook": [
+      "En el servicio de generación de operational_alerts, justo antes de la creación de la alerta.",
+      "Utilizar un almacén de estado temporal (ej. Redis, caché en memoria distribuida) para registrar la última alerta disparada por tipo/entidad y su timestamp."
+    ],
+    "risk_notes": [
+      "Riesgo bajo: Impacto mínimo en la lógica de detección existente, solo en la frecuencia de notificación.",
+      "Posible sobre-supresión de alertas si el cooldown es demasiado largo, lo que podría ocultar ataques persistentes o evolutivos.",
+      "Necesidad de gestionar el estado de cooldown de forma eficiente para evitar sobrecarga del sistema o inconsistencias."
+    ],
+    "tests": [
+      "Pruebas unitarias para la lógica de deduplicación y gestión del periodo de cooldown.",
+      "Pruebas de integración para verificar que las alertas se suprimen correctamente después de la primera ocurrencia dentro del periodo de cooldown.",
+      "Pruebas de carga para asegurar que la gestión del estado de cooldown no introduce latencia excesiva en el pipeline de alertas.",
+      "Monitorización post-despliegue para ajustar los tiempos de cooldown y verificar que no se pierden alertas críticas."
+    ]
+  },
+  "grok": {
+    "recommended_approach": "B) Exponer mejor estas señales en la Consola CEO reutilizando recentAlerts/auditTrail",
+    "thresholds": [
+      "Reutilizar umbrales existentes: 5 denegados en 10 min, 3 IPs en 30 min, 6 descargas/exportes en 10 min",
+      "No introducir nuevos umbrales para minimizar cambios"
+    ],
+    "where_to_hook": [
+      "Integrar en el endpoint de Consola CEO que ya carga recentAlerts y auditTrail",
+      "Agregar un filtro o sección dedicada para alertas de access_risk en el frontend de CEO dashboard",
+      "Reutilizar el modelo OperationalAlert existente sin modificaciones en backend"
+    ],
+    "risk_notes": [
+      "Bajo riesgo: solo cambios en UI y queries existentes, sin lógica nueva en backend",
+      "Alta reutilización: aprovecha recentAlerts/auditTrail sin rediseño",
+      "Posible impacto mínimo en performance si se limita a paginación existente"
+    ],
+    "tests": [
+      "Unit test: Verificar que recentAlerts incluye category=access_risk en la query",
+      "Integration test: Cargar Consola CEO y confirmar visualización de alertas de acceso",
+      "E2E test: Simular disparo de alerta y verificar notificación en dashboard CEO",
+      "Regresión test: Asegurar que umbrales existentes no se alteren"
+    ]
+  }
+}

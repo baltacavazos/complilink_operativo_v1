@@ -596,6 +596,48 @@ describe("Dashboard CEO safe actions", () => {
     );
   });
 
+  it("evita duplicar la alerta de burst CEO mientras el cooldown siga activo", async () => {
+    vi.mocked(db.listAuditTrail).mockResolvedValue(
+      [
+        ...Array.from({ length: 6 }, (_, index) => ({
+          action: "dashboard.ceo.export_generated",
+          createdAt: new Date(`2026-04-08T09:${25 + index}:00.000Z`),
+          afterState: JSON.stringify({ clientIp: "203.0.113.25" }),
+        })),
+        {
+          action: "access.anomaly_detected",
+          createdAt: new Date("2026-04-08T09:31:00.000Z"),
+          afterState: JSON.stringify({ kind: "burst_access" }),
+        },
+      ] as never,
+    );
+
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "203.0.113.25",
+      "user-agent": "Vitest CEO Export",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.dashboard.ceoRecordExportAudit({
+      tenantId: "balt-1",
+      section: "bridge",
+      format: "csv",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+      appliedFilters: ["Tenant: Balt Demo"],
+      visibleCount: 6,
+    });
+
+    expect(db.addOperationalAlert).not.toHaveBeenCalled();
+    expect(notificationMocks.notifyOwner).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: "dashboard.ceo.export_generated",
+      }),
+    );
+  });
+
   it("bloquea la reactivación de un acceso revocado desde la consola CEO", async () => {
     vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue({
       ...buildSnapshot(),
@@ -790,6 +832,64 @@ describe("Dashboard CEO safe actions", () => {
     });
   });
 
+  it("eleva una anomalía crítica cuando se concentra el acceso sobre documentos restringidos", async () => {
+    vi.mocked(db.getVisibleDocumentForUser).mockResolvedValue({
+      documentId: "DOC-777",
+      originalName: "anexo-restringido.pdf",
+      mimeType: "application/pdf",
+      visibility: "restricted",
+      consentStatus: "granted",
+      integrityStatus: "verified",
+      sha256: "restricted777",
+      traceId: "trace.balt-1.CASE-BALT-1-DEMO001.DOC-777",
+      storageKey: "docs/DOC-777.pdf",
+    } as never);
+    vi.mocked(db.listAuditTrail).mockResolvedValue(
+      Array.from({ length: 3 }, (_, index) => ({
+        action: "document.access",
+        createdAt: new Date(`2026-04-08T09:${30 + index}:00.000Z`),
+        afterState: JSON.stringify({ clientIp: "198.51.100.18", visibility: "restricted" }),
+      })) as never,
+    );
+
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "198.51.100.18",
+      "user-agent": "Vitest Documents",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.documents.access({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      documentId: "DOC-777",
+    });
+
+    expect(db.addOperationalAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        category: "access_risk",
+        severity: "critical",
+        title: expect.stringMatching(/documentos restringidos/i),
+      }),
+    );
+    expect(notificationMocks.notifyOwner).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringMatching(/document\.access/i),
+      }),
+    );
+    expect(db.createAuditLog).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: "access.anomaly_detected",
+        afterState: expect.objectContaining({
+          kind: "restricted_document_focus",
+          sourceAction: "document.access",
+        }),
+      }),
+    );
+  });
+
   it("registra una anomalía crítica cuando se acumulan accesos documentales denegados", async () => {
     vi.mocked(db.getVisibleDocumentForUser).mockRejectedValue(new Error("Document not accessible"));
     vi.mocked(db.listAuditTrail).mockResolvedValue(
@@ -837,6 +937,48 @@ describe("Dashboard CEO safe actions", () => {
           kind: "repeated_denied",
           sourceAction: "document.access_denied",
         }),
+      }),
+    );
+  });
+
+  it("evita duplicar la alerta por accesos denegados cuando ya existe una reciente", async () => {
+    vi.mocked(db.getVisibleDocumentForUser).mockRejectedValue(new Error("Document not accessible"));
+    vi.mocked(db.listAuditTrail).mockResolvedValue(
+      [
+        ...Array.from({ length: 5 }, (_, index) => ({
+          action: "document.access_denied",
+          createdAt: new Date(`2026-04-08T09:${26 + index}:00.000Z`),
+          afterState: JSON.stringify({ clientIp: "198.51.100.77" }),
+        })),
+        {
+          action: "access.anomaly_detected",
+          createdAt: new Date("2026-04-08T09:31:00.000Z"),
+          afterState: JSON.stringify({ kind: "repeated_denied" }),
+        },
+      ] as never,
+    );
+
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "198.51.100.77",
+      "user-agent": "Vitest Denied Document",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.documents.access({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        documentId: "DOC-404",
+      }),
+    ).rejects.toThrow(/Document not accessible/i);
+
+    expect(db.addOperationalAlert).not.toHaveBeenCalled();
+    expect(notificationMocks.notifyOwner).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: "document.access_denied",
       }),
     );
   });

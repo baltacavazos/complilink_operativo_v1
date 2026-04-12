@@ -319,7 +319,7 @@ function getActorDisplayLabel(user: { id: number; name?: string | null; email?: 
 type AuditTrailEntry = Awaited<ReturnType<typeof listAuditTrail>>[number];
 
 type AccessRiskSignal = {
-  kind: "repeated_denied" | "multi_ip" | "burst_access";
+  kind: "repeated_denied" | "multi_ip" | "burst_access" | "restricted_document_focus";
   severity: "critical" | "warning";
   title: string;
   description: string;
@@ -334,9 +334,12 @@ const ACCESS_RISK_RELEVANT_ACTIONS = new Set([...Array.from(ACCESS_RISK_BURST_AC
 const ACCESS_RISK_BURST_WINDOW_MS = 10 * 60 * 1000;
 const ACCESS_RISK_MULTI_IP_WINDOW_MS = 30 * 60 * 1000;
 const ACCESS_RISK_DENIED_WINDOW_MS = 10 * 60 * 1000;
+const ACCESS_RISK_ALERT_COOLDOWN_MS = 30 * 60 * 1000;
+const ACCESS_RISK_RESTRICTED_WINDOW_MS = 20 * 60 * 1000;
 const ACCESS_RISK_BURST_THRESHOLD = 6;
 const ACCESS_RISK_MULTI_IP_THRESHOLD = 3;
 const ACCESS_RISK_DENIED_THRESHOLD = 5;
+const ACCESS_RISK_RESTRICTED_THRESHOLD = 3;
 
 function parseAuditAfterState(row: AuditTrailEntry) {
   if (!row.afterState) return null;
@@ -371,6 +374,19 @@ function readAuditClientIp(row: AuditTrailEntry) {
   return typeof clientIp === "string" && clientIp.trim().length > 0 ? clientIp.trim() : null;
 }
 
+function readAuditVisibility(row: AuditTrailEntry) {
+  const afterState = parseAuditAfterState(row);
+  const visibility = afterState?.visibility;
+  return typeof visibility === "string" && visibility.trim().length > 0 ? visibility.trim() : null;
+}
+
+function readAccessRiskKind(row: AuditTrailEntry) {
+  if (row.action !== "access.anomaly_detected") return null;
+  const afterState = parseAuditAfterState(row);
+  const kind = afterState?.kind;
+  return typeof kind === "string" && kind.trim().length > 0 ? kind.trim() : null;
+}
+
 function detectAccessRiskSignal(params: {
   history: AuditTrailEntry[];
   sourceAction: string;
@@ -400,6 +416,21 @@ function detectAccessRiskSignal(params: {
       severity: "critical" as const,
       title: "Acceso sensible desde múltiples IPs",
       description: `${params.actorLabel} alcanzó ${distinctIps.length} IPs distintas en 30 minutos entre descargas, exportaciones o intentos de acceso.`,
+    } satisfies AccessRiskSignal;
+  }
+
+  const restrictedAccessCount = relevantHistory.filter(
+    (entry) =>
+      entry.action === "document.access" &&
+      readAuditVisibility(entry) === "restricted" &&
+      isWithinWindow(entry.createdAt, ACCESS_RISK_RESTRICTED_WINDOW_MS, params.referenceMs),
+  ).length;
+  if (params.sourceAction === "document.access" && restrictedAccessCount === ACCESS_RISK_RESTRICTED_THRESHOLD) {
+    return {
+      kind: "restricted_document_focus" as const,
+      severity: "critical" as const,
+      title: "Concentración inusual sobre documentos restringidos",
+      description: `${params.actorLabel} accedió a ${restrictedAccessCount} documentos restringidos en 20 minutos.`,
     } satisfies AccessRiskSignal;
   }
 
@@ -446,6 +477,11 @@ async function maybeCreateAccessRiskAlert(params: {
     });
 
     if (!signal) return;
+
+    const hasRecentSimilarSignal = history.some(
+      (entry) => readAccessRiskKind(entry) === signal.kind && isWithinWindow(entry.createdAt, ACCESS_RISK_ALERT_COOLDOWN_MS, referenceMs),
+    );
+    if (hasRecentSimilarSignal) return;
 
     const raisedAt = new Date(referenceMs);
     const traceId = buildTraceId(params.tenantId, params.caseId ?? undefined, `ACCESS-RISK-${signal.kind}-${referenceMs}`);
