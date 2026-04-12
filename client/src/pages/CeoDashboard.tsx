@@ -59,17 +59,25 @@ import {
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
   filterAuditFeed,
+  filterAuditOperationalFeed,
   getAuditActionLabel,
   getAuditActionTone,
   getAuditDrilldownDescriptor,
   getAuditEventSeverity,
   getAuditFamilyLabel,
+  getAuditOperationalOutcome,
+  getAuditOperationalOutcomeLabel,
+  getAuditOperationalScope,
+  getAuditOperationalScopeLabel,
   getAuditRejectionReason,
   getAuditSeverityLabel,
+  isAuditDownloadOrExport,
   type AuditEventFamily,
   type AuditEventSeverity,
   type AuditExecutiveAlert,
   type AuditFeedItem,
+  type AuditOperationalOutcome,
+  type AuditOperationalScope,
 } from "@/pages/ceoDashboardMonitoring";
 import {
   AlertTriangle,
@@ -375,6 +383,19 @@ const AUDIT_SEVERITY_FILTER_OPTIONS: Array<{ value: AuditEventSeverity; label: s
   { value: "normal", label: "Normal" },
 ];
 
+const AUDIT_OPERATIONAL_SCOPE_OPTIONS: Array<{ value: AuditOperationalScope; label: string }> = [
+  { value: "all", label: "Todo el flujo" },
+  { value: "downloads", label: "Descargas" },
+  { value: "exports", label: "Exportaciones" },
+];
+
+const AUDIT_OPERATIONAL_OUTCOME_OPTIONS: Array<{ value: AuditOperationalOutcome; label: string }> = [
+  { value: "all", label: "Todos los resultados" },
+  { value: "success", label: "Correctos" },
+  { value: "denied", label: "Denegados" },
+  { value: "emailed", label: "Enviados por correo" },
+];
+
 function getCurrentSectionCount(
   section: SectionKey,
   snapshot: {
@@ -418,6 +439,8 @@ export default function CeoDashboard() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
   const [auditSeverityFilter, setAuditSeverityFilter] = useState<AuditEventSeverity>("all");
+  const [auditOperationalScopeFilter, setAuditOperationalScopeFilter] = useState<AuditOperationalScope>("all");
+  const [auditOperationalOutcomeFilter, setAuditOperationalOutcomeFilter] = useState<AuditOperationalOutcome>("all");
   const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
   const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
   const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
@@ -527,9 +550,10 @@ export default function CeoDashboard() {
     () => ({
       tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
       caseId: filters.caseId !== "all" ? filters.caseId : undefined,
+      userId: filters.userId !== "all" ? Number(filters.userId) : undefined,
       limit: 30,
     }),
-    [filters.caseId, filters.tenantId],
+    [filters.caseId, filters.tenantId, filters.userId],
   );
 
   const baseSnapshotQuery = trpc.dashboard.ceoSnapshot.useQuery(undefined, {
@@ -627,7 +651,34 @@ export default function CeoDashboard() {
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
   );
+  const operationalAuditTrail = useMemo(
+    () =>
+      filterAuditOperationalFeed(auditTrail, {
+        scope: auditOperationalScopeFilter,
+        outcome: auditOperationalOutcomeFilter,
+        actorUserId: filters.userId !== "all" ? Number(filters.userId) : undefined,
+      }),
+    [auditOperationalOutcomeFilter, auditOperationalScopeFilter, auditTrail, filters.userId],
+  );
   const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 6), [filteredAuditTrail]);
+  const operationalAuditEvents = useMemo(() => operationalAuditTrail.slice(0, 8), [operationalAuditTrail]);
+  const auditOperationalFiltersActive = auditOperationalScopeFilter !== "all" || auditOperationalOutcomeFilter !== "all";
+  const operationalDownloadCount = useMemo(
+    () => operationalAuditTrail.filter((item) => getAuditOperationalScope(item) === "downloads").length,
+    [operationalAuditTrail],
+  );
+  const operationalExportCount = useMemo(
+    () => operationalAuditTrail.filter((item) => getAuditOperationalScope(item) === "exports").length,
+    [operationalAuditTrail],
+  );
+  const operationalDeniedCount = useMemo(
+    () => operationalAuditTrail.filter((item) => getAuditOperationalOutcome(item) === "denied").length,
+    [operationalAuditTrail],
+  );
+  const lastOperationalEvent = useMemo(
+    () => operationalAuditTrail.find((item) => isAuditDownloadOrExport(item)) ?? null,
+    [operationalAuditTrail],
+  );
   const latestGuardrailEvent = useMemo(
     () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
     [auditTrail],
@@ -1150,6 +1201,11 @@ export default function CeoDashboard() {
   const clearAuditFeedFilters = () => {
     setAuditFamilyFilter("all");
     setAuditSeverityFilter("all");
+  };
+
+  const clearAuditOperationalFilters = () => {
+    setAuditOperationalScopeFilter("all");
+    setAuditOperationalOutcomeFilter("all");
   };
 
   const clearBridgeSmokeFilters = () => {
@@ -2595,6 +2651,159 @@ export default function CeoDashboard() {
                         </p>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div className="mt-5 rounded-[1.4rem] border border-cyan-200 bg-cyan-50/60 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-slate-950">Vista operativa de descargas y exportaciones</h4>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Esta vista se apoya en la auditoría persistida y responde a los filtros globales de tenant, caso y usuario para revisar actividad sensible sin abrir otra superficie.
+                      </p>
+                    </div>
+                    <Badge className="rounded-full border border-white bg-white text-cyan-700">
+                      {`${formatNumber(operationalAuditTrail.length)} eventos operativos visibles`}
+                    </Badge>
+                  </div>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-4">
+                    <article className="rounded-[1.2rem] border border-cyan-200 bg-white/90 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Descargas</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalDownloadCount)}</p>
+                      <p className="mt-1 text-sm text-slate-500">Eventos de acceso documental y descarga dentro del filtro actual.</p>
+                    </article>
+                    <article className="rounded-[1.2rem] border border-violet-200 bg-white/90 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-700">Exportaciones</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalExportCount)}</p>
+                      <p className="mt-1 text-sm text-slate-500">Generación o envío de exportes ejecutivos ya trazados.</p>
+                    </article>
+                    <article className="rounded-[1.2rem] border border-amber-200 bg-white/90 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Denegados</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(operationalDeniedCount)}</p>
+                      <p className="mt-1 text-sm text-slate-500">Intentos bloqueados o rechazados dentro de la misma traza operativa.</p>
+                    </article>
+                    <article className="rounded-[1.2rem] border border-slate-200 bg-white/90 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Último rastro</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        {lastOperationalEvent ? formatDateTime(lastOperationalEvent.createdAt) : "Sin actividad visible"}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {lastOperationalEvent ? getAuditActionLabel(lastOperationalEvent.action) : "Cuando haya una descarga o exporte trazado aparecerá aquí."}
+                      </p>
+                    </article>
+                  </div>
+                  <div className="mt-4 rounded-[1.2rem] border border-dashed border-cyan-200 bg-white/80 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Combina alcance y resultado sobre la traza sensible; tenant, caso y usuario siguen gobernados por los filtros globales del tablero.
+                        </p>
+                      </div>
+                      {auditOperationalFiltersActive ? (
+                        <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearAuditOperationalFilters}>
+                          <X className="mr-2 h-4 w-4" />
+                          Limpiar vista operativa
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {AUDIT_OPERATIONAL_SCOPE_OPTIONS.map((option) => {
+                          const active = auditOperationalScopeFilter === option.value;
+                          return (
+                            <Button
+                              key={option.value}
+                              type="button"
+                              variant="outline"
+                              className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
+                              onClick={() => setAuditOperationalScopeFilter(option.value)}
+                            >
+                              {option.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {AUDIT_OPERATIONAL_OUTCOME_OPTIONS.map((option) => {
+                          const active = auditOperationalOutcomeFilter === option.value;
+                          return (
+                            <Button
+                              key={option.value}
+                              type="button"
+                              variant="outline"
+                              className={`rounded-full ${active ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-900 hover:text-white" : "bg-white text-slate-700"}`}
+                              onClick={() => setAuditOperationalOutcomeFilter(option.value)}
+                            >
+                              {option.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
+                          Tenant: {filters.tenantId !== "all" ? filters.tenantId : "todos"}
+                        </span>
+                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
+                          Caso: {filters.caseId !== "all" ? filters.caseId : "todos"}
+                        </span>
+                        <span className="rounded-full border border-white bg-white px-3 py-1.5">
+                          Usuario: {filters.userId !== "all" ? `#${filters.userId}` : "todos"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    {operationalAuditEvents.length > 0 ? (
+                      operationalAuditEvents.map((item) => {
+                        const tone = getAuditActionTone(item.action);
+                        const rejectionReason = getAuditRejectionReason(item);
+                        const drilldown = getAuditDrilldownDescriptor(item);
+                        const scope = getAuditOperationalScope(item) ?? "all";
+                        const outcome = getAuditOperationalOutcome(item) ?? "all";
+                        const scopeLabel = getAuditOperationalScopeLabel(scope);
+                        const outcomeLabel = getAuditOperationalOutcomeLabel(outcome);
+                        return (
+                          <article key={`operational-${item.id}`} className={`rounded-[1.2rem] border p-4 ${tone.card}`}>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`rounded-full border ${tone.badge}`}>{getAuditActionLabel(item.action)}</Badge>
+                              <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{scopeLabel}</Badge>
+                              <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{outcomeLabel}</Badge>
+                              {item.actorUserId ? (
+                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">Usuario #{formatNumber(item.actorUserId)}</Badge>
+                              ) : null}
+                              {item.caseId ? (
+                                <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{item.caseId}</Badge>
+                              ) : null}
+                            </div>
+                            <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-950">{item.tenantId}</p>
+                                <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
+                                {item.documentId ? <p className="mt-1 text-sm text-slate-600">Documento {item.documentId}</p> : null}
+                                <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
+                                {rejectionReason ? (
+                                  <p className="mt-2 text-sm text-amber-950">
+                                    <strong>Motivo:</strong> {rejectionReason}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+                                <Button type="button" variant="outline" className="rounded-full bg-white/90 text-slate-700" onClick={() => focusAuditItem(item)}>
+                                  {drilldown.label}
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="mt-3 text-xs font-medium text-slate-500">{drilldown.helper}</p>
+                          </article>
+                        );
+                      })
+                    ) : (
+                      <SectionEmptyState
+                        title="No hay descargas o exportaciones para la combinación operativa actual"
+                        description="Relaja alcance o resultado, o limpia los filtros globales de tenant, caso y usuario para recuperar traza sensible reciente."
+                        onClear={auditOperationalFiltersActive ? clearAuditOperationalFilters : clearAllFilters}
+                      />
+                    )}
                   </div>
                 </div>
               </section>

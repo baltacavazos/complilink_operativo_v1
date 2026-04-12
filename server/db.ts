@@ -1811,7 +1811,7 @@ export async function listTenantsForUser(userId: number) {
   return db.select().from(tenants).where(inArray(tenants.tenantId, tenantIds)).orderBy(tenants.displayName);
 }
 
-export async function listAuditTrail(params: { userId: number; tenantId?: string; caseId?: string; limit?: number }) {
+export async function listAuditTrail(params: { userId: number; tenantId?: string; caseId?: string; actorUserId?: number; limit?: number }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -1829,6 +1829,7 @@ export async function listAuditTrail(params: { userId: number; tenantId?: string
       and(
         inArray(auditLogs.tenantId, tenantIds),
         params.caseId ? eq(auditLogs.caseId, params.caseId) : undefined,
+        params.actorUserId ? eq(auditLogs.actorUserId, params.actorUserId) : undefined,
       ),
     )
     .orderBy(desc(auditLogs.createdAt))

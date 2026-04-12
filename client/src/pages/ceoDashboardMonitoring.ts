@@ -33,6 +33,8 @@ export type AuditMonitoringSummary = {
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
 export type AuditEventSeverity = "all" | "high" | "medium" | "normal";
+export type AuditOperationalScope = "all" | "downloads" | "exports";
+export type AuditOperationalOutcome = "all" | "success" | "denied" | "emailed";
 
 export type AuditExecutiveAlert = {
   scope: "tenant" | "case";
@@ -247,6 +249,54 @@ export function getAuditSeverityLabel(severity: AuditEventSeverity) {
   if (severity === "high") return "Alta";
   if (severity === "medium") return "Media";
   return "Normal";
+}
+
+export function isAuditDownloadOrExport(item: AuditFeedItem) {
+  return item.action === "document.access" || item.action === "document.access_denied" || item.action === "dashboard.ceo.export_generated" || item.action === "dashboard.ceo.export_emailed";
+}
+
+export function getAuditOperationalScope(item: AuditFeedItem): Exclude<AuditOperationalScope, "all"> | null {
+  if (item.action === "document.access" || item.action === "document.access_denied") return "downloads";
+  if (item.action === "dashboard.ceo.export_generated" || item.action === "dashboard.ceo.export_emailed") return "exports";
+  return null;
+}
+
+export function getAuditOperationalScopeLabel(scope: AuditOperationalScope) {
+  if (scope === "all") return "Todo el flujo";
+  if (scope === "downloads") return "Descargas";
+  return "Exportaciones";
+}
+
+export function getAuditOperationalOutcome(item: AuditFeedItem): Exclude<AuditOperationalOutcome, "all"> | null {
+  if (item.action === "document.access") return "success";
+  if (item.action === "document.access_denied") return "denied";
+  if (item.action === "dashboard.ceo.export_generated") return "success";
+  if (item.action === "dashboard.ceo.export_emailed") return "emailed";
+  return null;
+}
+
+export function getAuditOperationalOutcomeLabel(outcome: AuditOperationalOutcome) {
+  if (outcome === "all") return "Todos los resultados";
+  if (outcome === "success") return "Correctos";
+  if (outcome === "denied") return "Denegados";
+  return "Enviados por correo";
+}
+
+export function filterAuditOperationalFeed(
+  items: AuditFeedItem[],
+  selection: {
+    scope: AuditOperationalScope;
+    outcome: AuditOperationalOutcome;
+    actorUserId?: number | null;
+  },
+) {
+  return items.filter((item) => {
+    if (!isAuditDownloadOrExport(item)) return false;
+    if (selection.scope !== "all" && getAuditOperationalScope(item) !== selection.scope) return false;
+    if (selection.outcome !== "all" && getAuditOperationalOutcome(item) !== selection.outcome) return false;
+    if (selection.actorUserId && item.actorUserId !== selection.actorUserId) return false;
+    return true;
+  });
 }
 
 export function filterAuditFeed(

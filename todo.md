@@ -881,3 +881,8 @@
 - [x] Implementar el siguiente endurecimiento mínimo sobre descargas y exportaciones con control tenant-caso y trazabilidad.
 - [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque.
 - [x] Trazabilidad mínima de descargas y exportaciones con auditoría por tenant/caso/usuario/documento y pruebas focalizadas
+- [x] Vista filtrable de auditoría para descargas y exportaciones por tenant, usuario y caso
+- [x] Contrastar con Grok, ChatGPT y Gemini el diseño mínimo y más rentable de la vista filtrable de auditoría
+- [x] Auditar la superficie actual de bitácora para elegir el punto mínimo de integración
+- [x] Implementar la vista filtrable de auditoría con filtros operativos y bajo riesgo
+- [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque
