@@ -1,4 +1,4 @@
-import type { AuditFeedItem } from "@/pages/ceoDashboardMonitoring";
+import type { AuditFeedItem } from "./ceoDashboardMonitoring";
 
 export type BridgeScheduleListItem = {
   id: number;
@@ -15,6 +15,8 @@ export type BridgeScheduleListItem = {
 };
 
 export type BridgeScheduleLogbookStatus = "success" | "failed";
+export type BridgeScheduleLogbookFilter = "all" | BridgeScheduleLogbookStatus;
+export type BridgeScheduleLogbookTimeWindow = "all" | "24h" | "7d" | "30d";
 
 export type BridgeScheduleLogbookRow = {
   key: string;
@@ -47,6 +49,25 @@ export type BridgeScheduleLogbookSummary = {
 export type BridgeScheduleLogbookPanel = {
   summary: BridgeScheduleLogbookSummary;
   rows: BridgeScheduleLogbookRow[];
+};
+
+export type BridgeScheduleLogbookFilters = {
+  status?: BridgeScheduleLogbookFilter;
+  presetKey?: string;
+  timeWindow?: BridgeScheduleLogbookTimeWindow;
+  nowMs?: number;
+};
+
+export type BridgeScheduleLogbookPresetOption = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+const BRIDGE_SCHEDULE_LOGBOOK_TIME_WINDOW_MS: Record<Exclude<BridgeScheduleLogbookTimeWindow, "all">, number> = {
+  "24h": 24 * 60 * 60 * 1000,
+  "7d": 7 * 24 * 60 * 60 * 1000,
+  "30d": 30 * 24 * 60 * 60 * 1000,
 };
 
 function parseObject(value: unknown): Record<string, unknown> | null {
@@ -88,6 +109,98 @@ function readScheduleId(item: AuditFeedItem, state: Record<string, unknown> | nu
 
 function readExecutedAt(item: AuditFeedItem, state: Record<string, unknown> | null) {
   return readString(state?.lastRunAt) ?? readString(state?.executedAt) ?? new Date(item.createdAt).toISOString();
+}
+
+function buildPresetKey(row: Pick<BridgeScheduleLogbookRow, "presetId" | "presetName">) {
+  if (typeof row.presetId === "number" && Number.isFinite(row.presetId)) {
+    return `preset:${row.presetId}`;
+  }
+
+  return `name:${row.presetName.toLowerCase()}`;
+}
+
+export function filterBridgeScheduleLogbookRows(
+  rows: BridgeScheduleLogbookRow[],
+  options: BridgeScheduleLogbookFilters = {},
+  nowMs = Date.now(),
+) {
+  const normalized = {
+    status: options.status ?? "all",
+    presetKey: options.presetKey ?? "all",
+    timeWindow: options.timeWindow ?? "all",
+    nowMs: options.nowMs ?? nowMs,
+  } satisfies Required<BridgeScheduleLogbookFilters>;
+
+  return rows.filter((row) => {
+    if (normalized.status !== "all" && row.status !== normalized.status) {
+      return false;
+    }
+
+    if (normalized.presetKey !== "all" && buildPresetKey(row) !== normalized.presetKey) {
+      return false;
+    }
+
+    if (normalized.timeWindow !== "all") {
+      const executedAtMs = new Date(row.executedAt).getTime();
+      if (Number.isNaN(executedAtMs)) {
+        return false;
+      }
+
+      if (normalized.nowMs - executedAtMs > BRIDGE_SCHEDULE_LOGBOOK_TIME_WINDOW_MS[normalized.timeWindow]) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+export function buildBridgeScheduleLogbookPresetOptions(rows: BridgeScheduleLogbookRow[]) {
+  const presetMap = new Map<string, BridgeScheduleLogbookPresetOption>();
+
+  for (const row of rows) {
+    const key = buildPresetKey(row);
+    const existing = presetMap.get(key);
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+
+    presetMap.set(key, {
+      value: key,
+      label: row.presetName,
+      count: 1,
+    });
+  }
+
+  return Array.from(presetMap.values()).sort((left, right) => {
+    if (right.count !== left.count) return right.count - left.count;
+    return left.label.localeCompare(right.label, "es");
+  });
+}
+
+export function getBridgeScheduleLogbookStatusLabel(status: BridgeScheduleLogbookFilter) {
+  switch (status) {
+    case "success":
+      return "Envíos exitosos";
+    case "failed":
+      return "Fallos registrados";
+    default:
+      return "Todos los estados";
+  }
+}
+
+export function getBridgeScheduleLogbookTimeWindowLabel(timeWindow: BridgeScheduleLogbookTimeWindow) {
+  switch (timeWindow) {
+    case "24h":
+      return "24 h";
+    case "7d":
+      return "7 días";
+    case "30d":
+      return "30 días";
+    default:
+      return "Todo el histórico";
+  }
 }
 
 export function buildBridgeScheduleLogbook(params: {

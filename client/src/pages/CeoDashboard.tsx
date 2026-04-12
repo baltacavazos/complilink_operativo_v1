@@ -16,7 +16,15 @@ import {
 import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
-import { buildBridgeScheduleLogbook } from "@/pages/ceoBridgeScheduleLogbook";
+import {
+  buildBridgeScheduleLogbook,
+  buildBridgeScheduleLogbookPresetOptions,
+  filterBridgeScheduleLogbookRows,
+  getBridgeScheduleLogbookStatusLabel,
+  getBridgeScheduleLogbookTimeWindowLabel,
+  type BridgeScheduleLogbookFilter,
+  type BridgeScheduleLogbookTimeWindow,
+} from "@/pages/ceoBridgeScheduleLogbook";
 import {
   buildBridgeSmokeComparisonSummary,
   buildBridgeSmokeHistorySummary,
@@ -409,6 +417,9 @@ export default function CeoDashboard() {
   const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
   const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
   const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
+  const [bridgeScheduleLogbookStatusFilter, setBridgeScheduleLogbookStatusFilter] = useState<BridgeScheduleLogbookFilter>("all");
+  const [bridgeScheduleLogbookPresetFilter, setBridgeScheduleLogbookPresetFilter] = useState("all");
+  const [bridgeScheduleLogbookTimeWindow, setBridgeScheduleLogbookTimeWindow] = useState<BridgeScheduleLogbookTimeWindow>("all");
   const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -601,6 +612,19 @@ export default function CeoDashboard() {
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
   const bridgeScheduleLogbook = useMemo(() => buildBridgeScheduleLogbook({ auditTrail, schedules: bridgeSchedules }), [auditTrail, bridgeSchedules]);
+  const bridgeScheduleLogbookPresetOptions = useMemo(
+    () => buildBridgeScheduleLogbookPresetOptions(bridgeScheduleLogbook.rows),
+    [bridgeScheduleLogbook.rows],
+  );
+  const filteredBridgeScheduleLogbookRows = useMemo(
+    () =>
+      filterBridgeScheduleLogbookRows(bridgeScheduleLogbook.rows, {
+        status: bridgeScheduleLogbookStatusFilter,
+        presetKey: bridgeScheduleLogbookPresetFilter,
+        timeWindow: bridgeScheduleLogbookTimeWindow,
+      }).slice(0, 6),
+    [bridgeScheduleLogbook.rows, bridgeScheduleLogbookPresetFilter, bridgeScheduleLogbookStatusFilter, bridgeScheduleLogbookTimeWindow],
+  );
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
   const bridgeSmokeAlerting = bridgeSmokeStatus?.alerting ?? null;
   const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
@@ -1064,6 +1088,12 @@ export default function CeoDashboard() {
     setBridgeSmokeHistoryFilter("all");
     setBridgeSmokeTimeWindow("all");
     setBridgeSmokeSeverityFilter("all");
+  };
+
+  const clearBridgeScheduleLogbookFilters = () => {
+    setBridgeScheduleLogbookStatusFilter("all");
+    setBridgeScheduleLogbookPresetFilter("all");
+    setBridgeScheduleLogbookTimeWindow("all");
   };
 
   const focusAuditItem = (item: AuditFeedItem) => {
@@ -3094,44 +3124,119 @@ export default function CeoDashboard() {
                         </div>
                       ) : (
                         <div className="mt-4 space-y-3">
-                          {bridgeScheduleLogbook.rows.slice(0, 6).map((entry) => (
-                            <div key={entry.key} className="rounded-[1rem] border border-slate-200 bg-white/90 p-4">
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-950">{entry.presetName}</p>
-                                  <p className="mt-1 text-xs text-slate-500">Agenda #{entry.scheduleId} · Ejecutada {formatDateTime(entry.executedAt)}</p>
-                                </div>
-                                <Badge className={`rounded-full border ${entry.status === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
-                                  {entry.status === "success" ? "Envío exitoso" : "Fallo registrado"}
-                                </Badge>
+                          <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white/80 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
+                                <p className="mt-1 text-sm text-slate-500">Cruza estado, preset y ventana temporal para aislar rápidamente las corridas que quieres revisar.</p>
                               </div>
-                              <div className="mt-3 grid gap-2 text-xs text-slate-500 md:grid-cols-2 xl:grid-cols-4">
-                                <span>Próxima corrida: {formatDateTime(entry.nextRunAt)}</span>
-                                <span>Registros visibles: {entry.visibleCount ?? "No informado"}</span>
-                                <span>Destinatarios: {entry.recipientCount ?? "No informado"}</span>
-                                <span>Exportación: {entry.exportFormat ?? "No informada"}</span>
-                              </div>
-                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-                                {entry.appliedFilters.length > 0 ? (
-                                  entry.appliedFilters.slice(0, 3).map((filterLabel) => (
-                                    <span key={`${entry.key}:${filterLabel}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-                                      {filterLabel}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Sin filtros visibles</span>
-                                )}
-                                {entry.attachments.length > 0 ? (
-                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Adjuntos: {entry.attachments.join(", ")}</span>
-                                ) : null}
-                              </div>
-                              {entry.errorMessage ? (
-                                <div className="mt-3 rounded-[0.95rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                                  {entry.errorMessage}
-                                </div>
+                              {(bridgeScheduleLogbookStatusFilter !== "all" || bridgeScheduleLogbookPresetFilter !== "all" || bridgeScheduleLogbookTimeWindow !== "all") ? (
+                                <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearBridgeScheduleLogbookFilters}>
+                                  <X className="mr-2 h-4 w-4" />
+                                  Limpiar bitácora
+                                </Button>
                               ) : null}
                             </div>
-                          ))}
+                            <div className="mt-4 space-y-3">
+                              <div className="flex flex-wrap gap-2">
+                                {(["all", "success", "failed"] as const).map((statusOption) => (
+                                  <Button
+                                    key={statusOption}
+                                    type="button"
+                                    variant={bridgeScheduleLogbookStatusFilter === statusOption ? "default" : "outline"}
+                                    className="rounded-full"
+                                    onClick={() => setBridgeScheduleLogbookStatusFilter(statusOption)}
+                                  >
+                                    {getBridgeScheduleLogbookStatusLabel(statusOption)}
+                                  </Button>
+                                ))}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {(["all", "24h", "7d", "30d"] as const).map((timeWindowOption) => (
+                                  <Button
+                                    key={timeWindowOption}
+                                    type="button"
+                                    variant={bridgeScheduleLogbookTimeWindow === timeWindowOption ? "default" : "outline"}
+                                    className="rounded-full"
+                                    onClick={() => setBridgeScheduleLogbookTimeWindow(timeWindowOption)}
+                                  >
+                                    {getBridgeScheduleLogbookTimeWindowLabel(timeWindowOption)}
+                                  </Button>
+                                ))}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  type="button"
+                                  variant={bridgeScheduleLogbookPresetFilter === "all" ? "default" : "outline"}
+                                  className="rounded-full"
+                                  onClick={() => setBridgeScheduleLogbookPresetFilter("all")}
+                                >
+                                  Todos los presets
+                                </Button>
+                                {bridgeScheduleLogbookPresetOptions.map((presetOption) => (
+                                  <Button
+                                    key={presetOption.value}
+                                    type="button"
+                                    variant={bridgeScheduleLogbookPresetFilter === presetOption.value ? "default" : "outline"}
+                                    className="rounded-full"
+                                    onClick={() => setBridgeScheduleLogbookPresetFilter(presetOption.value)}
+                                  >
+                                    {presetOption.label}
+                                    <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-slate-600">{presetOption.count}</span>
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{filteredBridgeScheduleLogbookRows.length} visible{filteredBridgeScheduleLogbookRows.length === 1 ? "" : "s"}</Badge>
+                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Estado: {getBridgeScheduleLogbookStatusLabel(bridgeScheduleLogbookStatusFilter)}</Badge>
+                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Ventana: {getBridgeScheduleLogbookTimeWindowLabel(bridgeScheduleLogbookTimeWindow)}</Badge>
+                          </div>
+                          {filteredBridgeScheduleLogbookRows.length === 0 ? (
+                            <div className="rounded-[1rem] border border-dashed border-slate-300 bg-white/80 px-4 py-4 text-sm text-slate-500">
+                              No hay corridas del scheduler bridge que coincidan con la combinación actual de filtros.
+                            </div>
+                          ) : (
+                            filteredBridgeScheduleLogbookRows.map((entry) => (
+                              <div key={entry.key} className="rounded-[1rem] border border-slate-200 bg-white/90 p-4">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-950">{entry.presetName}</p>
+                                    <p className="mt-1 text-xs text-slate-500">Agenda #{entry.scheduleId} · Ejecutada {formatDateTime(entry.executedAt)}</p>
+                                  </div>
+                                  <Badge className={`rounded-full border ${entry.status === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+                                    {entry.status === "success" ? "Envío exitoso" : "Fallo registrado"}
+                                  </Badge>
+                                </div>
+                                <div className="mt-3 grid gap-2 text-xs text-slate-500 md:grid-cols-2 xl:grid-cols-4">
+                                  <span>Próxima corrida: {formatDateTime(entry.nextRunAt)}</span>
+                                  <span>Registros visibles: {entry.visibleCount ?? "No informado"}</span>
+                                  <span>Destinatarios: {entry.recipientCount ?? "No informado"}</span>
+                                  <span>Exportación: {entry.exportFormat ?? "No informada"}</span>
+                                </div>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
+                                  {entry.appliedFilters.length > 0 ? (
+                                    entry.appliedFilters.slice(0, 3).map((filterLabel) => (
+                                      <span key={`${entry.key}:${filterLabel}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                                        {filterLabel}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Sin filtros visibles</span>
+                                  )}
+                                  {entry.attachments.length > 0 ? (
+                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Adjuntos: {entry.attachments.join(", ")}</span>
+                                  ) : null}
+                                </div>
+                                {entry.errorMessage ? (
+                                  <div className="mt-3 rounded-[0.95rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                                    {entry.errorMessage}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ))
+                          )}
                         </div>
                       )}
                     </div>

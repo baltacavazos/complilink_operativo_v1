@@ -846,3 +846,5 @@
 - [x] Priorizar backlog inmediato post-lanzamiento con foco en impacto y velocidad de ejecución
 - [x] Resolver el bloqueo operativo del worker del bridge verificando y corrigiendo la migración faltante de ceo_bridge_schedules antes de publicar V1
 - [x] Implementar una bitácora visible de corridas del scheduler bridge con trazabilidad mínima para revisión operativa antes de publicar
+- [x] Añadir filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge para facilitar la revisión operativa
+- [x] Implementar filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge

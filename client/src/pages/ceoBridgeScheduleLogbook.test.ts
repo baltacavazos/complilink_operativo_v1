@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-
-import { buildBridgeScheduleLogbook, type BridgeScheduleListItem } from "./ceoBridgeScheduleLogbook";
+import {
+  buildBridgeScheduleLogbook,
+  buildBridgeScheduleLogbookPresetOptions,
+  filterBridgeScheduleLogbookRows,
+  type BridgeScheduleListItem,
+} from "./ceoBridgeScheduleLogbook";
 import type { AuditFeedItem } from "./ceoDashboardMonitoring";
 
 function createAuditItem(overrides: Partial<AuditFeedItem>): AuditFeedItem {
@@ -165,5 +169,79 @@ describe("buildBridgeScheduleLogbook", () => {
       tenantId: "tenant-1",
       errorMessage: null,
     });
+  });
+});
+
+describe("filterBridgeScheduleLogbookRows", () => {
+  const rows = [
+    {
+      key: "a",
+      scheduleId: 10,
+      presetId: 99,
+      presetName: "Bridge semanal",
+      tenantId: "tenant-1",
+      status: "success" as const,
+      executedAt: "2026-04-12T12:00:00.000Z",
+      nextRunAt: null,
+      traceId: "trace-a",
+      errorMessage: null,
+      visibleCount: 4,
+      recipientCount: 2,
+      exportFormat: "pdf",
+      attachments: [],
+      appliedFilters: [],
+    },
+    {
+      key: "b",
+      scheduleId: 20,
+      presetId: 100,
+      presetName: "Bridge diario",
+      tenantId: "tenant-1",
+      status: "failed" as const,
+      executedAt: "2026-04-10T12:00:00.000Z",
+      nextRunAt: null,
+      traceId: "trace-b",
+      errorMessage: "SMTP timeout",
+      visibleCount: null,
+      recipientCount: null,
+      exportFormat: null,
+      attachments: [],
+      appliedFilters: [],
+    },
+    {
+      key: "c",
+      scheduleId: 30,
+      presetId: 99,
+      presetName: "Bridge semanal",
+      tenantId: "tenant-2",
+      status: "failed" as const,
+      executedAt: "2026-03-01T12:00:00.000Z",
+      nextRunAt: null,
+      traceId: "trace-c",
+      errorMessage: "Webhook error",
+      visibleCount: null,
+      recipientCount: null,
+      exportFormat: null,
+      attachments: [],
+      appliedFilters: [],
+    },
+  ];
+
+  it("aplica filtros combinados por estado, preset y ventana temporal usando AND", () => {
+    const filtered = filterBridgeScheduleLogbookRows(rows, {
+      status: "failed",
+      presetKey: "preset:100",
+      timeWindow: "7d",
+      nowMs: new Date("2026-04-12T13:00:00.000Z").getTime(),
+    });
+
+    expect(filtered).toEqual([rows[1]]);
+  });
+
+  it("expone presets únicos con conteos para construir chips o botones simples", () => {
+    expect(buildBridgeScheduleLogbookPresetOptions(rows)).toEqual([
+      { value: "preset:99", label: "Bridge semanal", count: 2 },
+      { value: "preset:100", label: "Bridge diario", count: 1 },
+    ]);
   });
 });
