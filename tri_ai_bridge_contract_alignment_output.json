@@ -1,0 +1,340 @@
+{
+  "contract_summary": "Contrato externo final del bridge AuditaPatrón → CompliLink (fuente autoritativa: PDF adjunto):\n- Endpoint de entrada hacia CompliLink: POST /api/integrations/auditapatron/bridge.\n- Autenticación aceptada: Authorization: Bearer <shared-secret> o x-auditapatron-token: <shared-secret>.\n- Firma opcional preparada: x-auditapatron-signature = HMAC-SHA256(raw_body).\n- Payload de entrada obligatorio: providerId (int), userId (int), title (string), mimeType (string), y al menos uno de base64Data o fileUrl.\n- Payload opcional incluye: documentId, category, obligation, originalFileName, notes, sourceModule, sourceCaseId, sourceDocumentId, uploadedAt, traceId, processingStatus, idempotencyKey, tags, operationalContext.\n- Regla de idempotencia contractual: clave canónica eventId; claves de respaldo correlationId + eventName; retención 7 días; ante duplicado devolver mismo acuse sin reprocesar.\n- Catálogo final de eventos de retorno normalizado: document.processed.v1, document.rejected.v1, document.retry_requested.v1.\n- Política de reintentos: solo document.retry_requested.v1 es retryable; document.processed.v1 y document.rejected.v1 son finales.\n- Respuestas HTTP esperadas del receptor: 200 con acuse enriquecido (received, intakeId, documentId, processingStatus, traceId, correlationId, remoteEventId, receivedAt, memoryLinks, recommendedNextAction, responseContract), 400 por payload inválido con issues[], 403 por autenticación fallida, 500 por error interno.\n- Existe además un contrato consultable GET /api/integrations/auditapatron/bridge/contract que devuelve contractReady, target, responseContract, target=auditapatron, deliveryMode=outbound_webhook, method=POST, contentType=application/json.",
+  "implementation_summary": "Resumen de implementación actual observado en el código:\n- server/auditaPatronIntegrationService.ts construye un payload saliente con evento fijo document.uploaded y campos: documentId, sourceUserId, docType, fileUrl, sha256, mimeType, uploadedAt, fileSizeBytes, auditId, caseId, dispatchId, correlationId, metadata.\n- En ese mismo archivo, los eventos de retorno soportados hoy son: document.processing.started, document.analysis.completed, contract.analysis.detailed, document.analyzed, audit.completed.\n- La verificación de firma actual usa timestamp + payloadBody + secret, leyendo X-AuditaPatron-Signature y X-AuditaPatron-Timestamp.\n- server/auditaPatronReturnWebhook.ts registra el webhook entrante en POST /api/auditapatron/complilink-webhook.\n- Ese webhook exige firma válida y responde 401 cuando la verificación falla.\n- El webhook actual valida payload.event y payload.documentId, y devuelve 400 por missing_fields o unknown_event.\n- La idempotencia actual del webhook entrante se construye con un hash sha256 de: event, documentId, compliLinkId, correlationId, timestamp, signature y rawBody; luego se persiste con registerCompliLinkWebhookEvent.\n- Si detecta duplicado, responde 200 con { success: true, duplicate: true, event, documentId, caseId, traceId, correlationId }.\n- Si procesa bien, responde 200 con { success: true, event, documentId, caseId, traceId, correlationId }.\n- buildEventDescriptor todavía mapea eventos antiguos de análisis (processing.started, analysis.completed, analyzed, contract.analysis.detailed), no el catálogo final del PDF.\n- El webhook de retorno está modelado como entrada desde CompliLink hacia el proyecto actual, no como el contrato de entrada contractual final hacia CompliLink descrito en el PDF.",
+  "models": {
+    "chatgpt": {
+      "status": "ok",
+      "elapsed_seconds": 10.73,
+      "result": {
+        "overall_alignment": "low",
+        "obligatory_gaps": [
+          {
+            "area": "Endpoint",
+            "contract_requirement": "POST /api/integrations/auditapatron/bridge",
+            "current_behavior": "POST /api/auditapatron/complilink-webhook",
+            "impact": "high",
+            "recommended_change": "Implement the required ingress endpoint for CompliLink."
+          },
+          {
+            "area": "Payload",
+            "contract_requirement": "Payload must include providerId, userId, title, mimeType, and at least one of base64Data or fileUrl.",
+            "current_behavior": "Current payload does not include providerId, userId, title, and base64Data.",
+            "impact": "high",
+            "recommended_change": "Update the payload construction to include the required fields."
+          },
+          {
+            "area": "Event Mapping",
+            "contract_requirement": "Support events: document.processed.v1, document.rejected.v1, document.retry_requested.v1.",
+            "current_behavior": "Current events are document.processing.started, document.analysis.completed, etc.",
+            "impact": "high",
+            "recommended_change": "Map the new event names as specified in the contract."
+          },
+          {
+            "area": "Idempotency",
+            "contract_requirement": "Idempotency based on eventId; return same acknowledgment on duplicates.",
+            "current_behavior": "Current implementation uses a different idempotency key and returns a different response on duplicates.",
+            "impact": "medium",
+            "recommended_change": "Align the idempotency logic with the contract requirements."
+          },
+          {
+            "area": "Authentication",
+            "contract_requirement": "Authorization: Bearer <shared-secret> or x-auditapatron-token: <shared-secret>",
+            "current_behavior": "Current implementation uses X-AuditaPatron-Signature and X-AuditaPatron-Timestamp.",
+            "impact": "high",
+            "recommended_change": "Implement the required authentication methods as per the contract."
+          }
+        ],
+        "optional_gaps": [
+          {
+            "area": "Payload",
+            "recommendation": "Consider including optional fields such as documentId, category, obligation, etc.",
+            "reason": "These fields could enhance the functionality and provide more context."
+          }
+        ],
+        "schema_assessment": {
+          "needs_db_change": true,
+          "reason": "The current database schema does not support the required fields outlined in the contract.",
+          "suggested_minimum_fields": [
+            "providerId",
+            "userId",
+            "title",
+            "base64Data",
+            "fileUrl"
+          ]
+        },
+        "endpoint_plan": {
+          "should_keep_existing_return_webhook": false,
+          "new_or_updated_ingress_endpoint": "/api/integrations/auditapatron/bridge",
+          "new_or_updated_contract_endpoint": "/api/integrations/auditapatron/bridge/contract",
+          "notes": "The existing webhook should be replaced with the new ingress endpoint."
+        },
+        "security_assessment": {
+          "auth_mode_to_support_now": [
+            "Bearer Token",
+            "x-auditapatron-token"
+          ],
+          "signature_mode": "HMAC-SHA256",
+          "response_code_change_needed": "Yes, responses must align with the contract specifications."
+        },
+        "event_mapping": {
+          "replace_existing_return_events": true,
+          "final_event_names": [
+            "document.processed.v1",
+            "document.rejected.v1",
+            "document.retry_requested.v1"
+          ],
+          "transition_note": "Existing events must be replaced with the final event names from the contract."
+        },
+        "test_plan": [
+          "Test the new ingress endpoint for correct payload handling.",
+          "Validate authentication methods.",
+          "Ensure idempotency works as specified.",
+          "Test event mapping and responses."
+        ],
+        "minimal_patch_order": [
+          "Implement new ingress endpoint.",
+          "Update payload construction.",
+          "Align event mapping.",
+          "Adjust authentication methods.",
+          "Implement idempotency logic."
+        ],
+        "verdict": "Significant changes are required to align the current implementation with the contract specifications."
+      }
+    },
+    "grok": {
+      "status": "ok",
+      "elapsed_seconds": 65.22,
+      "result": {
+        "overall_alignment": "medium",
+        "obligatory_gaps": [
+          {
+            "area": "outbound_payload_structure",
+            "contract_requirement": "Mandatory fields: providerId (int), userId (int), title (string), mimeType (string), and at least one of base64Data or fileUrl; no fixed 'event' field specified",
+            "current_behavior": "Fixed event 'document.uploaded' with fields: documentId, sourceUserId, docType, fileUrl, sha256, mimeType, uploadedAt, fileSizeBytes, auditId, caseId, dispatchId, correlationId, metadata",
+            "impact": "high",
+            "recommended_change": "Update outbound payload builder in auditaPatronIntegrationService.ts to match contract fields; map sourceUserId to userId, docType to title or category, add providerId; remove unsupported fields like sha256 and fileSizeBytes unless mapping to optional"
+          },
+          {
+            "area": "return_events",
+            "contract_requirement": "Supported return events: document.processed.v1, document.rejected.v1, document.retry_requested.v1",
+            "current_behavior": "Supports old events: document.processing.started, document.analysis.completed, contract.analysis.detailed, document.analyzed, audit.completed",
+            "impact": "high",
+            "recommended_change": "Update buildEventDescriptor and auditaPatronReturnWebhook.ts to handle and map only the new event catalog; deprecate old event handling"
+          },
+          {
+            "area": "idempotency",
+            "contract_requirement": "Canonical key: eventId; backups: correlationId + eventName; 7-day retention; return same ack on duplicate without reprocessing",
+            "current_behavior": "For inbound return webhook: SHA256 hash of event, documentId, compliLinkId, correlationId, timestamp, signature, rawBody; persists with registerCompliLinkWebhookEvent; responds with duplicate flag",
+            "impact": "medium",
+            "recommended_change": "Align inbound idempotency logic in auditaPatronReturnWebhook.ts to use contract keys (add eventId if provided in returns); ensure 7-day retention and no-reprocess behavior"
+          },
+          {
+            "area": "signature_verification",
+            "contract_requirement": "Optional x-auditapatron-signature = HMAC-SHA256(raw_body) for ingress to CompliLink",
+            "current_behavior": "For inbound return webhook: Verifies timestamp + payloadBody + secret using X-AuditaPatron-Signature and X-AuditaPatron-Timestamp",
+            "impact": "medium",
+            "recommended_change": "For outbound sending, add optional signature generation as per contract; for inbound, consider aligning to contract style if return webhooks adopt similar (minimal change: keep current unless specified)"
+          },
+          {
+            "area": "response_structure",
+            "contract_requirement": "Receiver responses: 200 with enriched ack (received, intakeId, etc.), 400 with issues[], 403 auth failed, 500 internal",
+            "current_behavior": "Inbound webhook responses: 200 with {success, duplicate, event, etc.}, 400 for missing_fields or unknown_event, 401 for auth failed",
+            "impact": "medium",
+            "recommended_change": "Update auditaPatronReturnWebhook.ts responses to match contract style: use 403 instead of 401, add issues[] to 400, enrich 200 ack with contract fields like processingStatus, traceId"
+          }
+        ],
+        "optional_gaps": [
+          {
+            "area": "optional_payload_fields",
+            "recommendation": "Incorporate contract optional fields like documentId, category, obligation, idempotencyKey into outbound payload where current data maps (e.g., map auditId to sourceCaseId)",
+            "reason": "Enhances compatibility and provides more context without being mandatory; current metadata could be adapted"
+          },
+          {
+            "area": "retry_policy",
+            "recommendation": "Implement handling for document.retry_requested.v1 in return webhook to trigger resends",
+            "reason": "Contract specifies only this event is retryable; current lacks explicit retry logic, but adding it improves robustness optionally"
+          },
+          {
+            "area": "contract_endpoint",
+            "recommendation": "Add a GET endpoint mirroring /api/integrations/auditapatron/bridge/contract if this side needs to expose similar metadata",
+            "reason": "Contract has it for CompliLink side; optional for symmetry in bidirectional integration"
+          }
+        ],
+        "schema_assessment": {
+          "needs_db_change": true,
+          "reason": "New return events and potential new fields in payloads (e.g., providerId, eventId for idempotency) require schema updates to store and query properly; current persistence in registerCompliLinkWebhookEvent may need extension",
+          "suggested_minimum_fields": [
+            "eventId",
+            "processingStatus",
+            "traceId",
+            "correlationId",
+            "intakeId",
+            "receivedAt"
+          ]
+        },
+        "endpoint_plan": {
+          "should_keep_existing_return_webhook": true,
+          "new_or_updated_ingress_endpoint": "/api/auditapatron/complilink-webhook (update existing for new events and responses)",
+          "new_or_updated_contract_endpoint": "/api/integrations/auditapatron/bridge/contract (new if exposing on this side, else N/A)",
+          "notes": "Keep existing return webhook as it's the inbound from CompliLink; update sending logic to target contract's /api/integrations/auditapatron/bridge; no need for new ingress on this side since contract is for CompliLink ingress"
+        },
+        "security_assessment": {
+          "auth_mode_to_support_now": [
+            "Authorization: Bearer <shared-secret>",
+            "x-auditapatron-token: <shared-secret>"
+          ],
+          "signature_mode": "Optional HMAC-SHA256(raw_body) for outbound; retain current timestamp-based for inbound unless harmonizing",
+          "response_code_change_needed": "Change 401 to 403 for auth failures in inbound webhook to align with contract"
+        },
+        "event_mapping": {
+          "replace_existing_return_events": true,
+          "final_event_names": [
+            "document.processed.v1",
+            "document.rejected.v1",
+            "document.retry_requested.v1"
+          ],
+          "transition_note": "Map old events to new where possible (e.g., analysis.completed to processed.v1) during transition; fully replace in buildEventDescriptor for new catalog"
+        },
+        "test_plan": [
+          "Validate outbound payload against contract schema with unit tests for mandatory fields",
+          "Test idempotency by sending duplicate requests and verifying ack without reprocessing",
+          "Simulate return webhooks with new events and check processing/mapping",
+          "Test auth modes and signature verification end-to-end",
+          "Integration test for error responses (400, 403, 500) matching contract",
+          "Load test for 7-day idempotency retention"
+        ],
+        "minimal_patch_order": [
+          "Update outbound payload structure in auditaPatronIntegrationService.ts",
+          "Revise return event handling in auditaPatronReturnWebhook.ts and buildEventDescriptor",
+          "Align idempotency logic and response structures in auditaPatronReturnWebhook.ts",
+          "Add support for contract auth and optional signature in outbound sending",
+          "Apply DB schema changes for new fields/events",
+          "Deploy and test with contract GET endpoint if implementing"
+        ],
+        "verdict": "Implementation requires targeted updates to align with contract, focusing on payload, events, and responses; minimal changes can achieve compliance without full redesign"
+      }
+    },
+    "gemini": {
+      "status": "ok",
+      "elapsed_seconds": 41.2,
+      "result": {
+        "overall_alignment": "low",
+        "obligatory_gaps": [
+          {
+            "area": "Outgoing Payload Structure",
+            "contract_requirement": "Mandatory fields: providerId (int), userId (int), title (string), mimeType (string), and at least one of base64Data or fileUrl. Optional: idempotencyKey (canonical eventId).",
+            "current_behavior": "Outgoing payload includes: documentId, sourceUserId, docType, fileUrl, sha256, mimeType, uploadedAt, fileSizeBytes, auditId, caseId, dispatchId, correlationId, metadata. Missing providerId, title, and idempotencyKey. Sends extra fields not in contract.",
+            "impact": "high",
+            "recommended_change": "Update server/auditaPatronIntegrationService.ts to: 1) Add 'providerId' and 'title'. 2) Rename 'sourceUserId' to 'userId'. 3) Ensure 'fileUrl' or 'base64Data' is present. 4) Remove uncontracted fields (docType, sha256, fileSizeBytes, auditId, dispatchId, metadata). 5) Generate and include 'idempotencyKey' (mapping to eventId) in the payload."
+          },
+          {
+            "area": "Outgoing Authentication",
+            "contract_requirement": "Authorization: Bearer <shared-secret> or x-auditapatron-token: <shared-secret> for POST /api/integrations/auditapatron/bridge.",
+            "current_behavior": "No explicit mention of this authentication for outgoing calls from AuditaPatrón to CompliLink. The current system's incoming webhook uses signature verification, which is a different flow.",
+            "impact": "high",
+            "recommended_change": "Implement one of the specified authentication methods (e.g., Authorization: Bearer) in server/auditaPatronIntegrationService.ts when making calls to CompliLink's ingress endpoint."
+          },
+          {
+            "area": "Outgoing Idempotency Key",
+            "contract_requirement": "Canonical idempotency key: eventId (to be sent in 'idempotencyKey' field). Backup keys: correlationId + eventName. Retention: 7 days.",
+            "current_behavior": "Outgoing payload sends 'correlationId' but does not send 'idempotencyKey' or 'eventId' as the canonical key for CompliLink's idempotency mechanism.",
+            "impact": "high",
+            "recommended_change": "Generate a unique 'eventId' and include it in the outgoing payload as 'idempotencyKey' when calling CompliLink. Ensure 'correlationId' is also sent as a backup."
+          },
+          {
+            "area": "Asynchronous Return Event Catalog",
+            "contract_requirement": "Normalized return events: document.processed.v1, document.rejected.v1, document.retry_requested.v1.",
+            "current_behavior": "The incoming webhook (server/auditaPatronReturnWebhook.ts) processes events like: document.processing.started, document.analysis.completed, contract.analysis.detailed, document.analyzed, audit.completed.",
+            "impact": "high",
+            "recommended_change": "Update server/auditaPatronReturnWebhook.ts and buildEventDescriptor to recognize and process the new event names. Deprecate or remove handling for the old event names."
+          },
+          {
+            "area": "Asynchronous Return Event Retry Policy",
+            "contract_requirement": "Only document.retry_requested.v1 is retryable; document.processed.v1 and document.rejected.v1 are final.",
+            "current_behavior": "The current system's incoming webhook does not explicitly define or implement this retry policy for the new event names.",
+            "impact": "medium",
+            "recommended_change": "Implement logic in server/auditaPatronReturnWebhook.ts to specifically handle 'document.retry_requested.v1' for retries and mark 'document.processed.v1' and 'document.rejected.v1' as final, preventing further processing attempts."
+          },
+          {
+            "area": "Synchronous Response Handling from CompliLink",
+            "contract_requirement": "Expects 200 with enriched ack (received, intakeId, documentId, processingStatus, traceId, correlationId, remoteEventId, receivedAt, memoryLinks, recommendedNextAction, responseContract), 400 with issues[], 403 for auth failed, 500 for internal error.",
+            "current_behavior": "The client calling CompliLink (likely server/auditaPatronIntegrationService.ts) is not described as handling these specific response structures or error types.",
+            "impact": "high",
+            "recommended_change": "Update the client in server/auditaPatronIntegrationService.ts to parse the 200 OK response for the specified enriched ack fields and to correctly handle 400, 403, and 500 HTTP error responses from CompliLink."
+          }
+        ],
+        "optional_gaps": [
+          {
+            "area": "Outgoing Signature",
+            "recommendation": "Implement x-auditapatron-signature = HMAC-SHA256(raw_body) for outgoing requests to CompliLink.",
+            "reason": "This signature is optional per contract but provides enhanced message integrity and non-repudiation, which is a good security practice."
+          },
+          {
+            "area": "Incoming Webhook Authentication/Signature Method",
+            "recommendation": "Verify with CompliLink the exact authentication/signature method they will use for their outgoing webhooks to AuditaPatrón.",
+            "reason": "The contract specifies signature for AuditaPatrón sending to CompliLink. The current system's incoming webhook expects X-AuditaPatron-Signature and X-AuditaPatron-Timestamp. If CompliLink uses a different method for its outgoing webhooks, the current system's webhook needs to adapt."
+          },
+          {
+            "area": "Incoming Webhook Response Code for Auth Failure",
+            "recommendation": "Consider changing the current system's incoming webhook response from 401 to 403 for authentication/signature failures.",
+            "reason": "While the contract specifies CompliLink's behavior, aligning response codes for similar issues (authentication failure) can improve consistency and interoperability, though the contract does not dictate AuditaPatrón's webhook responses."
+          }
+        ],
+        "schema_assessment": {
+          "needs_db_change": true,
+          "reason": "New mandatory outgoing fields (providerId, title), new optional outgoing fields (idempotencyKey), and new incoming synchronous response fields (intakeId, remoteEventId, memoryLinks, recommendedNextAction, responseContract) will need to be stored.",
+          "suggested_minimum_fields": [
+            "providerId",
+            "title",
+            "idempotencyKey",
+            "intakeId",
+            "remoteEventId",
+            "recommendedNextAction",
+            "responseContract"
+          ]
+        },
+        "endpoint_plan": {
+          "should_keep_existing_return_webhook": true,
+          "new_or_updated_ingress_endpoint": "POST /api/integrations/auditapatron/bridge (This is the endpoint AuditaPatrón *calls* on CompliLink)",
+          "new_or_updated_contract_endpoint": "GET /api/integrations/auditapatron/bridge/contract (This is the endpoint AuditaPatrón *calls* on CompliLink)",
+          "notes": "The existing POST /api/auditapatron/complilink-webhook should be retained as the target for CompliLink's asynchronous return events, but its internal logic for event processing, idempotency, and retry policy must be updated to align with the contract's specified return events. The current system must also implement a client to call CompliLink's ingress and contract endpoints."
+        },
+        "security_assessment": {
+          "auth_mode_to_support_now": [
+            "Authorization: Bearer <shared-secret>",
+            "x-auditapatron-token: <shared-secret>"
+          ],
+          "signature_mode": "HMAC-SHA256(raw_body) (optional for outgoing calls to CompliLink)",
+          "response_code_change_needed": "The client calling CompliLink must correctly handle 400, 403, and 500 responses. The existing incoming webhook responds with 401 for signature failure; consider aligning with 403 if CompliLink expects it for authentication failures from AuditaPatrón's webhook."
+        },
+        "event_mapping": {
+          "replace_existing_return_events": true,
+          "final_event_names": [
+            "document.processed.v1",
+            "document.rejected.v1",
+            "document.retry_requested.v1"
+          ],
+          "transition_note": "The current system must cease processing legacy events (document.processing.started, document.analysis.completed, etc.) and fully transition to the new normalized event catalog for all incoming webhooks from CompliLink."
+        },
+        "test_plan": [
+          "Integration tests for outgoing payload construction and authentication.",
+          "Integration tests for calling POST /api/integrations/auditapatron/bridge and handling 200, 400, 403, 500 responses.",
+          "Idempotency tests for outgoing calls to CompliLink, verifying 'idempotencyKey' behavior.",
+          "Unit and integration tests for POST /api/auditapatron/complilink-webhook to correctly process new return event names.",
+          "Tests for retry logic based on 'document.retry_requested.v1'.",
+          "Negative tests for invalid payloads and authentication failures on outgoing calls.",
+          "Tests for GET /api/integrations/auditapatron/bridge/contract client implementation."
+        ],
+        "minimal_patch_order": [
+          "Update server/auditaPatronIntegrationService.ts to construct the correct outgoing payload (add 'providerId', 'title', rename 'sourceUserId' to 'userId', remove extra fields, add 'idempotencyKey').",
+          "Implement authentication (Authorization: Bearer or x-auditapatron-token) in server/auditaPatronIntegrationService.ts for outgoing calls.",
+          "Implement client logic in server/auditaPatronIntegrationService.ts to call POST /api/integrations/auditapatron/bridge and parse its synchronous 200 OK response (including 'intakeId', 'documentId', etc.) and handle 4xx/5xx errors.",
+          "Update server/auditaPatronReturnWebhook.ts and buildEventDescriptor to recognize and process 'document.processed.v1', 'document.rejected.v1', 'document.retry_requested.v1'.",
+          "Implement retry policy logic for 'document.retry_requested.v1' in server/auditaPatronReturnWebhook.ts.",
+          "Perform necessary database schema changes to support new fields."
+        ],
+        "verdict": "Significant refactoring and new feature development are required to align the existing implementation with the contractual obligations. The current system's architecture appears to be primarily focused on receiving webhooks, while the contract defines the interface for *sending* data to CompliLink. A new client component is needed, and the existing webhook must be updated for new event types. The overall alignment is low."
+      }
+    }
+  }
+}

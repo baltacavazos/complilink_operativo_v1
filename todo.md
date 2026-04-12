@@ -792,3 +792,9 @@
 - [x] Añadir una prueba específica del webhook de retorno que cubra idempotencia y duplicados reales.
 - [x] Aplicar la migración aprobada `drizzle/0002_spotty_blob.sql` sobre la base de datos y verificar el estado operativo del bridge tras la autorización del usuario.
 - [x] Resolver el bloqueo de migración por nombre de foreign key demasiado largo en `complilink_webhook_events` y reaplicar el esquema sin desalinear Drizzle.
+- [x] Generar un PDF breve con la lista exacta de datos requeridos del otro chat para cerrar el contrato funcional del bridge AuditaPatrón → CompliLink.
+- [x] Revisar el PDF con el contrato externo final del bridge AuditaPatrón → CompliLink y alinear implementación, respuestas HTTP y pruebas con la definición adjunta.
+- [x] Ajustar el payload saliente hacia CompliLink al contrato final del bridge, incluyendo autenticación requerida, clave de idempotencia contractual y manejo del acuse HTTP enriquecido.
+- [x] Actualizar el webhook de retorno del bridge para soportar el catálogo final de eventos document.processed.v1, document.rejected.v1 y document.retry_requested.v1.
+- [x] Revisar y extender la persistencia del bridge para conservar los campos contractuales mínimos nuevos que exija la alineación.
+- [x] Ampliar las pruebas del bridge con casos de éxito, error contractual, firma/autenticación y duplicados según el PDF final.

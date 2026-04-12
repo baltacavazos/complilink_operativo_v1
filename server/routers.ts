@@ -208,10 +208,9 @@ function assertCeoSnapshotFresh(snapshotGeneratedAt: string) {
   }
 }
 const complilinkReturnEventNames = new Set([
-  "document.processing.started",
-  "document.analysis.completed",
-  "document.analyzed",
-  "contract.analysis.detailed",
+  "document.processed.v1",
+  "document.rejected.v1",
+  "document.retry_requested.v1",
 ]);
 
 function parseEventMetadata(metadata: string | null) {

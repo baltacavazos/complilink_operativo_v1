@@ -45,6 +45,31 @@ async function startWebhookServer() {
   return server;
 }
 
+function buildReturnPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    event: "document.processed.v1",
+    eventId: "evt-bridge-001",
+    idempotencyKey: "evt-bridge-001",
+    documentId: "DOC-BRIDGE-001",
+    compliLinkId: "cmp-001",
+    correlationId: "corr-bridge-001",
+    status: "completed",
+    timestamp: "2026-04-11T18:20:00.000Z",
+    documentType: "contrato_laboral",
+    confidenceScore: 87,
+    extractedFields: {
+      salario_diario: 420,
+    },
+    analysisResults: {
+      clauseCount: 9,
+    },
+    metadata: {
+      source: "complilink-mx",
+    },
+    ...overrides,
+  };
+}
+
 describe("auditaPatronReturnWebhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -80,7 +105,7 @@ describe("auditaPatronReturnWebhook", () => {
     );
   });
 
-  it("procesa solo una vez un mismo webhook firmado cuando llega duplicado", async () => {
+  it("procesa solo una vez un mismo webhook autenticado por token cuando llega duplicado", async () => {
     dbMocks.registerCompliLinkWebhookEvent
       .mockResolvedValueOnce({
         created: true,
@@ -95,29 +120,8 @@ describe("auditaPatronReturnWebhook", () => {
         },
       });
 
-    const payload = {
-      event: "document.analysis.completed",
-      documentId: "DOC-BRIDGE-001",
-      compliLinkId: "cmp-001",
-      correlationId: "corr-bridge-001",
-      status: "completed",
-      timestamp: "2026-04-11T18:20:00.000Z",
-      documentType: "contrato_laboral",
-      confidenceScore: 87,
-      extractedFields: {
-        salario_diario: 420,
-      },
-      analysisResults: {
-        clauseCount: 9,
-      },
-      metadata: {
-        source: "complilink-mx",
-      },
-    };
-
+    const payload = buildReturnPayload();
     const body = JSON.stringify(payload);
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
 
     const server = await startWebhookServer();
     const address = server.address() as AddressInfo;
@@ -127,8 +131,7 @@ describe("auditaPatronReturnWebhook", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-AuditaPatron-Timestamp": timestamp,
-        "X-AuditaPatron-Signature": signature,
+        Authorization: "Bearer return-webhook-secret-123456",
       },
       body,
     });
@@ -136,8 +139,7 @@ describe("auditaPatronReturnWebhook", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-AuditaPatron-Timestamp": timestamp,
-        "X-AuditaPatron-Signature": signature,
+        Authorization: "Bearer return-webhook-secret-123456",
       },
       body,
     });
@@ -146,17 +148,24 @@ describe("auditaPatronReturnWebhook", () => {
     expect(secondResponse.status).toBe(200);
 
     await expect(firstResponse.json()).resolves.toMatchObject({
-      success: true,
-      event: "document.analysis.completed",
+      received: true,
+      intakeId: "901",
       documentId: "DOC-BRIDGE-001",
+      processingStatus: "processed",
+      traceId: "trace.bridge.case-001",
       correlationId: "corr-bridge-001",
+      remoteEventId: "evt-bridge-001",
+      responseContract: "auditapatron.bridge.ack.v1",
     });
     await expect(secondResponse.json()).resolves.toMatchObject({
-      success: true,
-      duplicate: true,
-      event: "document.analysis.completed",
+      received: true,
+      intakeId: "901",
       documentId: "DOC-BRIDGE-001",
+      processingStatus: "processed",
+      traceId: "trace.bridge.case-001",
       correlationId: "corr-bridge-001",
+      remoteEventId: "evt-bridge-001",
+      responseContract: "auditapatron.bridge.ack.v1",
     });
 
     expect(dbMocks.registerCompliLinkWebhookEvent).toHaveBeenCalledTimes(2);
@@ -170,20 +179,95 @@ describe("auditaPatronReturnWebhook", () => {
     const firstInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[0]?.[0];
     const secondInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[1]?.[0];
 
-    expect(firstInsert?.eventKey).toBeTruthy();
+    expect(firstInsert?.eventKey).toBe("event:evt-bridge-001");
     expect(firstInsert?.eventKey).toBe(secondInsert?.eventKey);
     expect(firstInsert).toMatchObject({
       tenantId: "tenant-bridge",
       caseId: "CASE-BRIDGE-001",
       traceId: "trace.bridge.case-001",
       documentId: "DOC-BRIDGE-001",
-      eventName: "document.analysis.completed",
+      eventName: "document.processed.v1",
       compliLinkId: "cmp-001",
       correlationId: "corr-bridge-001",
       sourceTimestamp: "2026-04-11T18:20:00.000Z",
-      sourceSignature: signature,
       rawPayload: body,
       status: "processing",
     });
+  });
+
+  it("acepta autenticación por firma para eventos retry_requested y conserva el acuse contractual", async () => {
+    dbMocks.registerCompliLinkWebhookEvent.mockResolvedValue({
+      created: true,
+      event: {
+        id: 902,
+      },
+    });
+
+    const payload = buildReturnPayload({
+      event: "document.retry_requested.v1",
+      eventId: "evt-bridge-002",
+      idempotencyKey: "evt-bridge-002",
+      correlationId: "corr-bridge-002",
+    });
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      received: true,
+      intakeId: "902",
+      documentId: "DOC-BRIDGE-001",
+      processingStatus: "retry_requested",
+      correlationId: "corr-bridge-002",
+      remoteEventId: "evt-bridge-002",
+      recommendedNextAction: "retry_dispatch",
+      responseContract: "auditapatron.bridge.ack.v1",
+    });
+    expect(dbMocks.updateDocumentPostProcessing).not.toHaveBeenCalled();
+  });
+
+  it("rechaza payloads inválidos con issues[] y código 400", async () => {
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auditapatron-token": "return-webhook-secret-123456",
+      },
+      body: JSON.stringify({
+        documentId: "DOC-BRIDGE-001",
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      received: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "missing_field",
+          field: "event",
+        },
+      ],
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
   });
 });

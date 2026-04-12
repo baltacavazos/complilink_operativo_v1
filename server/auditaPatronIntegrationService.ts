@@ -6,15 +6,16 @@ import {
   buildSharedEngineEnvelope,
 } from "./caseContracts";
 
-const AUDITAPATRON_ENGINE_EVENT = "document.uploaded" as const;
+const AUDITAPATRON_ENGINE_EVENT_NAME = "document.uploaded" as const;
 const DEFAULT_RETRY_DELAYS_MS = [30_000, 60_000, 120_000] as const;
 const SUPPORTED_RETURN_EVENTS = [
-  "document.processing.started",
-  "document.analysis.completed",
-  "contract.analysis.detailed",
-  "document.analyzed",
-  "audit.completed",
+  "document.processed.v1",
+  "document.rejected.v1",
+  "document.retry_requested.v1",
 ] as const;
+const COMPLILINK_BRIDGE_RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
+const DEFAULT_PROCESSING_STATUS = "queued" as const;
+const DEFAULT_SOURCE_MODULE = "complilink_operativo" as const;
 
 export type SupportedCompliLinkReturnEvent = (typeof SUPPORTED_RETURN_EVENTS)[number];
 
@@ -31,21 +32,45 @@ export type AuditaPatronEngineConfig = {
 export type AuditaPatronMetadataValue = string | number | boolean | null;
 export type AuditaPatronMetadata = Record<string, AuditaPatronMetadataValue>;
 
+export type CompliLinkBridgeResponseAck = {
+  received: boolean;
+  intakeId?: string | null;
+  documentId?: string | null;
+  processingStatus?: string | null;
+  traceId?: string | null;
+  correlationId?: string | null;
+  remoteEventId?: string | null;
+  receivedAt?: string | null;
+  memoryLinks?: unknown;
+  recommendedNextAction?: string | null;
+  responseContract?: string | null;
+  issues?: Array<Record<string, unknown>>;
+};
+
 export type AuditaPatronEnginePayload = {
-  event: typeof AUDITAPATRON_ENGINE_EVENT;
-  documentId: string;
-  sourceUserId: string;
-  docType: string;
-  fileUrl: string;
-  sha256: string;
+  providerId: number;
+  userId: number;
+  title: string;
   mimeType: string;
-  uploadedAt: string;
-  fileSizeBytes?: number;
-  auditId?: string;
-  caseId?: string;
-  dispatchId?: string;
+  fileUrl?: string;
+  base64Data?: string;
+  documentId?: string;
+  category?: string;
+  obligation?: string;
+  originalFileName?: string;
+  notes?: string;
+  sourceModule?: string;
+  sourceCaseId?: string;
+  sourceDocumentId?: string;
+  uploadedAt?: string;
+  traceId?: string;
+  processingStatus?: string;
+  eventName?: string;
+  eventId?: string;
+  idempotencyKey?: string;
   correlationId?: string;
-  metadata?: AuditaPatronMetadata;
+  tags?: string[];
+  operationalContext?: Record<string, unknown>;
 };
 
 export type AuditaPatronBridgeObservabilityEnvelope = {
@@ -69,6 +94,7 @@ export type AuditaPatronEngineDispatchResult = {
   reason?: string;
   errorMessage?: string;
   responseBody?: string | null;
+  responseAck?: CompliLinkBridgeResponseAck | null;
   payload: AuditaPatronEnginePayload;
   observabilityEnvelope: AuditaPatronBridgeObservabilityEnvelope;
 };
@@ -78,6 +104,8 @@ export type CompliLinkReturnEnvelope = {
   documentId: string;
   compliLinkId?: string;
   correlationId?: string;
+  eventId?: string;
+  idempotencyKey?: string;
   status?: string;
   timestamp?: string;
   documentType?: string;
@@ -212,6 +240,29 @@ function normalizeSignatureHeader(signatureHeader?: string | null) {
   return signatureHeader.replace(/^hmac-sha256:/i, "").trim();
 }
 
+function toOptionalString(value: AuditaPatronMetadataValue | undefined) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function toOptionalNumber(value: AuditaPatronMetadataValue | undefined) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function safeJsonParse<T>(value: string | null): T | null {
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
 function inferCompliLinkDocType(params: {
   documentContract: CanonicalDocumentContract;
   metadata?: AuditaPatronMetadata;
@@ -281,33 +332,69 @@ export function buildAuditaPatronEnginePayload(params: {
   correlationId?: string;
 }): AuditaPatronEnginePayload {
   const uploadedAt = normalizeIsoDate(params.uploadedAt);
-  const enrichedMetadata = {
-    ...(params.metadata ?? {}),
-    ...(params.dispatchId ? { dispatchId: params.dispatchId } : {}),
-    ...(params.correlationId ? { correlationId: params.correlationId } : {}),
-  } satisfies AuditaPatronMetadata;
-  const metadata = Object.keys(enrichedMetadata).length > 0 ? enrichedMetadata : undefined;
-
-  return {
-    event: AUDITAPATRON_ENGINE_EVENT,
-    documentId: params.documentContract.document_id,
-    sourceUserId: String(params.sourceUserId),
-    docType: params.docType ?? inferCompliLinkDocType({ documentContract: params.documentContract, metadata }),
-    fileUrl: params.documentContract.storage_url,
-    sha256: params.documentContract.sha256,
-    mimeType: params.documentContract.mime_type,
-    uploadedAt,
-    fileSizeBytes: params.documentContract.size_bytes,
+  const providerId =
+    toOptionalNumber(params.metadata?.providerId) ??
+    toOptionalNumber(params.metadata?.sourceProviderId) ??
+    Number(params.sourceUserId);
+  const userId = Number(params.sourceUserId);
+  const inferredDocType = params.docType ?? inferCompliLinkDocType({
+    documentContract: params.documentContract,
+    metadata: params.metadata,
+  });
+  const title =
+    toOptionalString(params.metadata?.title) ??
+    toOptionalString(params.metadata?.descriptiveDocType) ??
+    params.documentContract.original_name ??
+    inferredDocType;
+  const category = toOptionalString(params.metadata?.category) ?? inferredDocType;
+  const notes = toOptionalString(params.metadata?.notes);
+  const obligation = toOptionalString(params.metadata?.obligation);
+  const eventId = params.dispatchId ?? randomUUID();
+  const correlationId = params.correlationId ?? randomUUID();
+  const tags = [category, obligation].filter((value): value is string => Boolean(value));
+  const operationalContext = {
+    traceId: params.caseContract.trace_id,
     auditId: params.auditId ?? params.caseContract.trace_id,
     caseId: params.caseId ?? params.documentContract.case_id,
     dispatchId: params.dispatchId,
-    correlationId: params.correlationId,
-    metadata,
+    sha256: params.documentContract.sha256,
+    fileSizeBytes: params.documentContract.size_bytes,
+    documentType: params.documentContract.document_type,
+    sharedEnvelopeDocumentCount: params.sharedEngineEnvelope?.document_contracts?.length ?? 1,
+  } satisfies Record<string, unknown>;
+
+  return {
+    providerId: Number.isFinite(providerId) ? providerId : userId,
+    userId: Number.isFinite(userId) ? userId : 0,
+    title,
+    mimeType: params.documentContract.mime_type,
+    fileUrl: params.documentContract.storage_url,
+    documentId: params.documentContract.document_id,
+    category,
+    obligation,
+    originalFileName: params.documentContract.original_name ?? undefined,
+    notes,
+    sourceModule: toOptionalString(params.metadata?.sourceModule) ?? DEFAULT_SOURCE_MODULE,
+    sourceCaseId: params.caseId ?? params.documentContract.case_id,
+    sourceDocumentId: params.documentContract.document_id,
+    uploadedAt,
+    traceId: params.caseContract.trace_id,
+    processingStatus: DEFAULT_PROCESSING_STATUS,
+    eventName: AUDITAPATRON_ENGINE_EVENT_NAME,
+    eventId,
+    idempotencyKey: eventId,
+    correlationId,
+    tags: tags.length > 0 ? tags : undefined,
+    operationalContext,
   };
 }
 
 export function buildAuditaPatronEngineSignature(timestamp: string, payloadBody: string, hmacSecret: string) {
   return createHmac("sha256", hmacSecret).update(`${timestamp}.${payloadBody}`).digest("hex");
+}
+
+export function buildAuditaPatronBodySignature(payloadBody: string, hmacSecret: string) {
+  return createHmac("sha256", hmacSecret).update(payloadBody).digest("hex");
 }
 
 export function isSupportedCompliLinkReturnEvent(event: string): event is SupportedCompliLinkReturnEvent {
@@ -422,26 +509,30 @@ export async function sendDocumentToAuditaPatronEngine(
   let lastResponseBody: string | null = null;
   let lastErrorMessage: string | undefined;
   let lastReason: string | undefined;
+  let lastResponseAck: CompliLinkBridgeResponseAck | null = null;
   let finalTimestamp = buildUnixTimestamp();
 
   for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
     attempts += 1;
     finalTimestamp = buildUnixTimestamp();
-    const signature = buildAuditaPatronEngineSignature(finalTimestamp, body, config.hmacSecret);
+    const signature = buildAuditaPatronBodySignature(body, config.hmacSecret);
 
     try {
       const response = await fetch(config.webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${config.hmacSecret}`,
+          "x-auditapatron-token": config.hmacSecret,
+          "x-auditapatron-signature": `hmac-sha256:${signature}`,
           "X-AuditaPatron-Timestamp": finalTimestamp,
-          "X-AuditaPatron-Signature": signature,
         },
         body,
       });
 
       lastHttpStatus = response.status;
       lastResponseBody = await response.text();
+      lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(lastResponseBody);
 
       if (response.ok) {
         const result = {
@@ -451,6 +542,7 @@ export async function sendDocumentToAuditaPatronEngine(
           attempts,
           httpStatus: response.status,
           responseBody: lastResponseBody,
+          responseAck: lastResponseAck,
           payload,
           observabilityEnvelope: buildObservabilityEnvelope({
             dispatchId,
@@ -474,7 +566,11 @@ export async function sendDocumentToAuditaPatronEngine(
         return result;
       }
 
-      lastReason = "webhook_rejected";
+      lastReason = response.status === 400
+        ? "contract_validation_failed"
+        : response.status === 403
+          ? "authentication_failed"
+          : "webhook_rejected";
 
       if (shouldRetry(response.status) && attemptIndex < config.retryDelaysMs.length) {
         const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
@@ -507,6 +603,7 @@ export async function sendDocumentToAuditaPatronEngine(
         httpStatus: response.status,
         reason: lastReason,
         responseBody: lastResponseBody,
+        responseAck: lastResponseAck,
         payload,
           observabilityEnvelope: buildObservabilityEnvelope({
             dispatchId,
@@ -547,6 +644,7 @@ export async function sendDocumentToAuditaPatronEngine(
     reason: lastReason ?? "network_error",
     errorMessage: lastErrorMessage,
     responseBody: lastResponseBody,
+    responseAck: lastResponseAck,
     payload,
     observabilityEnvelope: buildObservabilityEnvelope({
       dispatchId,

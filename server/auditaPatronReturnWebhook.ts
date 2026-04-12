@@ -18,6 +18,8 @@ import {
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
 
+const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
+
 type RawBodyRequest = Request & {
   rawBody?: string;
 };
@@ -47,19 +49,127 @@ function extractCorrelationId(payload: Partial<CompliLinkReturnEnvelope>) {
   return null;
 }
 
+function extractEventId(payload: Partial<CompliLinkReturnEnvelope>) {
+  const metadata = payload.metadata;
+  const metadataRecord = metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? (metadata as Record<string, unknown>)
+    : null;
+  const candidates = [
+    payload.eventId,
+    payload.idempotencyKey,
+    typeof metadataRecord?.eventId === "string" ? metadataRecord.eventId : null,
+    typeof metadataRecord?.idempotencyKey === "string" ? metadataRecord.idempotencyKey : null,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
+  }
+
+  return null;
+}
+
+function hasSharedSecretAuth(req: Request) {
+  const expectedSecret = ENV.auditapatronEngineHmacSecret.trim();
+  if (!expectedSecret) return false;
+
+  const bearerHeader = req.header("authorization");
+  if (bearerHeader?.startsWith("Bearer ") && bearerHeader.slice(7).trim() === expectedSecret) {
+    return true;
+  }
+
+  return req.header("x-auditapatron-token")?.trim() === expectedSecret;
+}
+
+function verifyReturnWebhookAuthentication(req: RawBodyRequest, rawBody: string) {
+  if (hasSharedSecretAuth(req)) {
+    return { ok: true as const, reason: null, mode: "shared_secret" as const };
+  }
+
+  const verification = verifySignedWebhook({
+    signatureHeader: req.header("X-AuditaPatron-Signature"),
+    timestampHeader: req.header("X-AuditaPatron-Timestamp"),
+    payloadBody: rawBody,
+    hmacSecret: ENV.auditapatronEngineHmacSecret,
+  });
+
+  return {
+    ok: verification.ok,
+    reason: verification.reason,
+    mode: "signature" as const,
+  };
+}
+
+function buildWebhookIssues(code: string, detail: string, field?: string) {
+  return [
+    {
+      code,
+      detail,
+      ...(field ? { field } : {}),
+    },
+  ];
+}
+
+function deriveProcessingStatus(event: CompliLinkReturnEnvelope["event"]) {
+  if (event === "document.processed.v1") return "processed";
+  if (event === "document.rejected.v1") return "rejected";
+  return "retry_requested";
+}
+
+function buildWebhookAck(params: {
+  payload: Partial<CompliLinkReturnEnvelope>;
+  document: { documentId: string; caseId: string; traceId: string };
+  intakeId: string;
+  receivedAt: Date;
+  correlationId: string | null;
+  duplicate?: boolean;
+}) {
+  return {
+    received: true,
+    intakeId: params.intakeId,
+    documentId: params.document.documentId,
+    processingStatus:
+      params.payload.event && isSupportedCompliLinkReturnEvent(params.payload.event)
+        ? deriveProcessingStatus(params.payload.event)
+        : "received",
+    traceId: params.document.traceId,
+    correlationId: params.correlationId,
+    remoteEventId: extractEventId(params.payload) ?? params.payload.compliLinkId ?? null,
+    receivedAt: params.receivedAt.toISOString(),
+    memoryLinks: {
+      caseId: params.document.caseId,
+      duplicate: Boolean(params.duplicate),
+    },
+    recommendedNextAction:
+      params.payload.event === "document.retry_requested.v1" ? "retry_dispatch" : "none",
+    responseContract: RESPONSE_CONTRACT,
+  };
+}
+
 function buildWebhookEventKey(params: {
   payload: Partial<CompliLinkReturnEnvelope>;
   rawBody: string;
   signatureHeader?: string | null;
   timestampHeader?: string | null;
 }) {
+  const canonicalEventId = extractEventId(params.payload);
+  if (canonicalEventId) {
+    return `event:${canonicalEventId}`;
+  }
+
+  const correlationId = extractCorrelationId(params.payload);
+  if (params.payload.event && correlationId) {
+    return `correlation:${params.payload.event}:${correlationId}`;
+  }
+
   return createHash("sha256")
     .update(
       JSON.stringify({
         event: params.payload.event ?? null,
         documentId: params.payload.documentId ?? null,
         compliLinkId: params.payload.compliLinkId ?? null,
-        correlationId: extractCorrelationId(params.payload),
+        correlationId,
         timestamp: params.payload.timestamp ?? params.timestampHeader ?? null,
         signature: params.signatureHeader ?? null,
         rawBody: params.rawBody,
@@ -98,51 +208,39 @@ function mapIncomingDocumentType(payload: Partial<CompliLinkReturnEnvelope>, exi
 }
 
 function buildEventDescriptor(payload: CompliLinkReturnEnvelope) {
-  if (payload.event === "document.processing.started") {
-    return {
-      eventType: "note_added" as const,
-      title: "Procesamiento iniciado",
-      description: "CompliLink MX confirmó que comenzó a procesar este documento.",
-    };
-  }
-
-  if (payload.event === "document.analysis.completed" || payload.event === "document.analyzed") {
+  if (payload.event === "document.processed.v1") {
     return {
       eventType: "document_classified" as const,
-      title: "Análisis documental completado",
-      description: "CompliLink MX devolvió clasificación, extracción y resultados estructurados del documento.",
+      title: "Documento procesado por CompliLink",
+      description: "CompliLink MX devolvió un resultado final de procesamiento documental para este expediente.",
     };
   }
 
-  if (payload.event === "contract.analysis.detailed") {
+  if (payload.event === "document.rejected.v1") {
     return {
       eventType: "note_added" as const,
-      title: "Análisis profundo de contrato recibido",
-      description: "Se recibió un análisis más profundo del contrato con cláusulas, riesgos y estimaciones preliminares.",
+      title: "Documento rechazado por CompliLink",
+      description: "CompliLink MX rechazó el documento y devolvió observaciones para corrección o reemplazo.",
     };
   }
 
   return {
     eventType: "note_added" as const,
-    title: "Actualización de auditoría recibida",
-    description: "CompliLink MX devolvió un estado adicional para el expediente vinculado.",
+    title: "Reintento solicitado por CompliLink",
+    description: "CompliLink MX solicitó reenviar o reprocesar el documento asociado al expediente.",
   };
 }
 
 async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response) {
   try {
     const rawBody = req.rawBody ?? JSON.stringify(req.body ?? {});
-    const verification = verifySignedWebhook({
-      signatureHeader: req.header("X-AuditaPatron-Signature"),
-      timestampHeader: req.header("X-AuditaPatron-Timestamp"),
-      payloadBody: rawBody,
-      hmacSecret: ENV.auditapatronEngineHmacSecret,
-    });
+    const verification = verifyReturnWebhookAuthentication(req, rawBody);
 
     if (!verification.ok) {
-      res.status(401).json({
-        success: false,
-        reason: verification.reason,
+      res.status(403).json({
+        received: false,
+        issues: buildWebhookIssues("authentication_failed", verification.reason ?? "Invalid bridge credentials or signature."),
+        responseContract: RESPONSE_CONTRACT,
       });
       return;
     }
@@ -153,17 +251,21 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
 
     if (!payload.event || !payload.documentId) {
       res.status(400).json({
-        success: false,
-        reason: "missing_fields",
+        received: false,
+        issues: [
+          ...(!payload.event ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
+          ...(!payload.documentId ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId") : []),
+        ],
+        responseContract: RESPONSE_CONTRACT,
       });
       return;
     }
 
     if (!isSupportedCompliLinkReturnEvent(payload.event)) {
       res.status(400).json({
-        success: false,
-        reason: "unknown_event",
-        event: payload.event,
+        received: false,
+        issues: buildWebhookIssues("unknown_event", `Unsupported event '${payload.event}'.`, "event"),
+        responseContract: RESPONSE_CONTRACT,
       });
       return;
     }
@@ -171,10 +273,10 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
     const document = await getDocumentById(payload.documentId);
 
     if (!document) {
-      res.status(404).json({
-        success: false,
-        reason: "document_not_found",
-        documentId: payload.documentId,
+      res.status(400).json({
+        received: false,
+        issues: buildWebhookIssues("document_not_found", `No local document exists for '${payload.documentId}'.`, "documentId"),
+        responseContract: RESPONSE_CONTRACT,
       });
       return;
     }
@@ -203,15 +305,16 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
     });
 
     if (!registeredWebhookEvent.created) {
-      res.status(200).json({
-        success: true,
-        duplicate: true,
-        event: payload.event,
-        documentId: document.documentId,
-        caseId: document.caseId,
-        traceId: document.traceId,
-        correlationId,
-      });
+      res.status(200).json(
+        buildWebhookAck({
+          payload,
+          document,
+          intakeId: String(registeredWebhookEvent.event?.id ?? eventKey),
+          receivedAt,
+          correlationId,
+          duplicate: true,
+        }),
+      );
       return;
     }
 
@@ -220,7 +323,7 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
       throw new Error("No se pudo materializar el registro idempotente del webhook.");
     }
 
-    const shouldRefreshDocumentState = payload.event !== "document.processing.started";
+    const shouldRefreshDocumentState = payload.event !== "document.retry_requested.v1";
     const normalizedDocumentType = mapIncomingDocumentType(payload, {
       originalName: document.originalName,
       mimeType: document.mimeType,
@@ -243,6 +346,7 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
       const canonicalReturnPayload = {
         source: "complilink_mx",
         event: payload.event,
+        eventId: extractEventId(payload),
         eventKey,
         documentId: payload.documentId,
         compliLinkId: payload.compliLinkId ?? null,
@@ -298,7 +402,7 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
           tenantId: document.tenantId,
           caseId: document.caseId,
           traceId: document.traceId,
-          severity: payload.event === "contract.analysis.detailed" ? "critical" : "warning",
+          severity: payload.event === "document.rejected.v1" ? "critical" : "warning",
           category: "integrity_gap",
           title: "Resultado con advertencias de revisión",
           description: `Se recibieron advertencias desde CompliLink MX para ${document.originalName}: ${guardrails.join(" | ")}`,
@@ -326,14 +430,15 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
         correlationId,
       });
 
-      res.status(200).json({
-        success: true,
-        event: payload.event,
-        documentId: document.documentId,
-        caseId: document.caseId,
-        traceId: document.traceId,
-        correlationId,
-      });
+      res.status(200).json(
+        buildWebhookAck({
+          payload,
+          document,
+          intakeId: String(webhookEvent.id),
+          receivedAt,
+          correlationId,
+        }),
+      );
       return;
     } catch (processingError) {
       await updateCompliLinkWebhookEvent({
@@ -349,8 +454,9 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
   } catch (error) {
     console.error("[CompliLink Return Webhook]", error);
     res.status(500).json({
-      success: false,
-      reason: "internal_error",
+      received: false,
+      issues: buildWebhookIssues("internal_error", "An unexpected error occurred while processing the bridge event."),
+      responseContract: RESPONSE_CONTRACT,
     });
   }
 }
