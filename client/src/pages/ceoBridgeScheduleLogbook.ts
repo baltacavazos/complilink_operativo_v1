@@ -55,6 +55,7 @@ export type BridgeScheduleLogbookFilters = {
   status?: BridgeScheduleLogbookFilter;
   presetKey?: string;
   timeWindow?: BridgeScheduleLogbookTimeWindow;
+  searchTerm?: string;
   nowMs?: number;
 };
 
@@ -64,10 +65,24 @@ export type BridgeScheduleLogbookPresetOption = {
   count: number;
 };
 
+export type BridgeScheduleLogbookUrlState = {
+  status: BridgeScheduleLogbookFilter;
+  presetKey: string;
+  timeWindow: BridgeScheduleLogbookTimeWindow;
+  searchTerm: string;
+};
+
 const BRIDGE_SCHEDULE_LOGBOOK_TIME_WINDOW_MS: Record<Exclude<BridgeScheduleLogbookTimeWindow, "all">, number> = {
   "24h": 24 * 60 * 60 * 1000,
   "7d": 7 * 24 * 60 * 60 * 1000,
   "30d": 30 * 24 * 60 * 60 * 1000,
+};
+
+const BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE: BridgeScheduleLogbookUrlState = {
+  status: "all",
+  presetKey: "all",
+  timeWindow: "all",
+  searchTerm: "",
 };
 
 function parseObject(value: unknown): Record<string, unknown> | null {
@@ -85,7 +100,7 @@ function parseObject(value: unknown): Record<string, unknown> | null {
 }
 
 function readString(value: unknown) {
-  return typeof value === "string" && value.trim().length > 0 ? value : null;
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
 function readNumber(value: unknown) {
@@ -119,6 +134,101 @@ function buildPresetKey(row: Pick<BridgeScheduleLogbookRow, "presetId" | "preset
   return `name:${row.presetName.toLowerCase()}`;
 }
 
+function normalizeSearchTerm(value: string | null | undefined) {
+  return value?.trim().toLocaleLowerCase("es") ?? "";
+}
+
+function buildBridgeScheduleLogbookSearchIndex(row: BridgeScheduleLogbookRow) {
+  return [
+    row.presetName,
+    `agenda ${row.scheduleId}`,
+    String(row.scheduleId),
+    row.traceId ?? "",
+    row.errorMessage ?? "",
+    row.exportFormat ?? "",
+    row.tenantId ?? "",
+    ...row.appliedFilters,
+    ...row.attachments,
+  ]
+    .join(" ")
+    .toLocaleLowerCase("es");
+}
+
+function escapeCsvCell(value: string | number | null | undefined) {
+  const normalized = value == null ? "" : String(value);
+  if (!/[",\n]/.test(normalized)) {
+    return normalized;
+  }
+
+  return `"${normalized.replaceAll('"', '""')}"`;
+}
+
+function isBridgeScheduleLogbookStatus(value: string | null | undefined): value is BridgeScheduleLogbookFilter {
+  return value === "all" || value === "success" || value === "failed";
+}
+
+function isBridgeScheduleLogbookTimeWindow(value: string | null | undefined): value is BridgeScheduleLogbookTimeWindow {
+  return value === "all" || value === "24h" || value === "7d" || value === "30d";
+}
+
+export function getBridgeScheduleLogbookDefaultUrlState(): BridgeScheduleLogbookUrlState {
+  return { ...BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE };
+}
+
+export function parseBridgeScheduleLogbookUrlState(search: string | null | undefined): BridgeScheduleLogbookUrlState {
+  const params = new URLSearchParams(search ?? "");
+  const rawStatus = params.get("bridgeLogStatus");
+  const rawPresetKey = params.get("bridgeLogPreset");
+  const rawTimeWindow = params.get("bridgeLogWindow");
+  const rawSearchTerm = params.get("bridgeLogQuery");
+
+  return {
+    status: isBridgeScheduleLogbookStatus(rawStatus) ? rawStatus : BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE.status,
+    presetKey: rawPresetKey?.trim() || BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE.presetKey,
+    timeWindow: isBridgeScheduleLogbookTimeWindow(rawTimeWindow) ? rawTimeWindow : BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE.timeWindow,
+    searchTerm: rawSearchTerm?.trim() ?? BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE.searchTerm,
+  };
+}
+
+export function mergeBridgeScheduleLogbookUrlState(
+  currentSearch: string | null | undefined,
+  state: Partial<BridgeScheduleLogbookUrlState>,
+) {
+  const baseState = {
+    ...BRIDGE_SCHEDULE_LOGBOOK_DEFAULT_URL_STATE,
+    ...parseBridgeScheduleLogbookUrlState(currentSearch),
+    ...state,
+  } satisfies BridgeScheduleLogbookUrlState;
+  const params = new URLSearchParams(currentSearch ?? "");
+
+  if (baseState.status === "all") {
+    params.delete("bridgeLogStatus");
+  } else {
+    params.set("bridgeLogStatus", baseState.status);
+  }
+
+  if (baseState.presetKey === "all") {
+    params.delete("bridgeLogPreset");
+  } else {
+    params.set("bridgeLogPreset", baseState.presetKey);
+  }
+
+  if (baseState.timeWindow === "all") {
+    params.delete("bridgeLogWindow");
+  } else {
+    params.set("bridgeLogWindow", baseState.timeWindow);
+  }
+
+  if (baseState.searchTerm.trim().length === 0) {
+    params.delete("bridgeLogQuery");
+  } else {
+    params.set("bridgeLogQuery", baseState.searchTerm.trim());
+  }
+
+  const serialized = params.toString();
+  return serialized.length > 0 ? `?${serialized}` : "";
+}
+
 export function filterBridgeScheduleLogbookRows(
   rows: BridgeScheduleLogbookRow[],
   options: BridgeScheduleLogbookFilters = {},
@@ -128,6 +238,7 @@ export function filterBridgeScheduleLogbookRows(
     status: options.status ?? "all",
     presetKey: options.presetKey ?? "all",
     timeWindow: options.timeWindow ?? "all",
+    searchTerm: normalizeSearchTerm(options.searchTerm),
     nowMs: options.nowMs ?? nowMs,
   } satisfies Required<BridgeScheduleLogbookFilters>;
 
@@ -149,6 +260,10 @@ export function filterBridgeScheduleLogbookRows(
       if (normalized.nowMs - executedAtMs > BRIDGE_SCHEDULE_LOGBOOK_TIME_WINDOW_MS[normalized.timeWindow]) {
         return false;
       }
+    }
+
+    if (normalized.searchTerm.length > 0 && !buildBridgeScheduleLogbookSearchIndex(row).includes(normalized.searchTerm)) {
+      return false;
     }
 
     return true;
@@ -177,6 +292,42 @@ export function buildBridgeScheduleLogbookPresetOptions(rows: BridgeScheduleLogb
     if (right.count !== left.count) return right.count - left.count;
     return left.label.localeCompare(right.label, "es");
   });
+}
+
+export function buildBridgeScheduleLogbookCsv(rows: BridgeScheduleLogbookRow[]) {
+  const header = [
+    "Ejecutada",
+    "Estado",
+    "Preset",
+    "Agenda",
+    "Trace ID",
+    "Tenant",
+    "Proxima corrida",
+    "Registros visibles",
+    "Destinatarios",
+    "Exportacion",
+    "Error",
+    "Filtros aplicados",
+    "Adjuntos",
+  ];
+
+  const lines = rows.map((row) => [
+    row.executedAt,
+    row.status,
+    row.presetName,
+    row.scheduleId,
+    row.traceId,
+    row.tenantId,
+    row.nextRunAt,
+    row.visibleCount,
+    row.recipientCount,
+    row.exportFormat,
+    row.errorMessage,
+    row.appliedFilters.join(" | "),
+    row.attachments.join(" | "),
+  ]);
+
+  return [header, ...lines].map((line) => line.map((cell) => escapeCsvCell(cell)).join(",")).join("\n");
 }
 
 export function getBridgeScheduleLogbookStatusLabel(status: BridgeScheduleLogbookFilter) {

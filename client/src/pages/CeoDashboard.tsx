@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavigationItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import {
   AlertDialog,
@@ -18,10 +19,13 @@ import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import {
   buildBridgeScheduleLogbook,
+  buildBridgeScheduleLogbookCsv,
   buildBridgeScheduleLogbookPresetOptions,
   filterBridgeScheduleLogbookRows,
   getBridgeScheduleLogbookStatusLabel,
   getBridgeScheduleLogbookTimeWindowLabel,
+  mergeBridgeScheduleLogbookUrlState,
+  parseBridgeScheduleLogbookUrlState,
   type BridgeScheduleLogbookFilter,
   type BridgeScheduleLogbookTimeWindow,
 } from "@/pages/ceoBridgeScheduleLogbook";
@@ -420,6 +424,7 @@ export default function CeoDashboard() {
   const [bridgeScheduleLogbookStatusFilter, setBridgeScheduleLogbookStatusFilter] = useState<BridgeScheduleLogbookFilter>("all");
   const [bridgeScheduleLogbookPresetFilter, setBridgeScheduleLogbookPresetFilter] = useState("all");
   const [bridgeScheduleLogbookTimeWindow, setBridgeScheduleLogbookTimeWindow] = useState<BridgeScheduleLogbookTimeWindow>("all");
+  const [bridgeScheduleLogbookSearchTerm, setBridgeScheduleLogbookSearchTerm] = useState("");
   const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -437,6 +442,7 @@ export default function CeoDashboard() {
   const [bridgeScheduleCronDraft, setBridgeScheduleCronDraft] = useState("0 0 8 * * 1");
   const [bridgeScheduleTimezoneDraft, setBridgeScheduleTimezoneDraft] = useState("America/Mexico_City");
   const [bridgeScheduleActiveDraft, setBridgeScheduleActiveDraft] = useState(true);
+  const bridgeScheduleLogbookUrlHydratedRef = useRef(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -457,6 +463,32 @@ export default function CeoDashboard() {
       window.clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    const persisted = parseBridgeScheduleLogbookUrlState(window.location.search);
+    setBridgeScheduleLogbookStatusFilter(persisted.status);
+    setBridgeScheduleLogbookPresetFilter(persisted.presetKey);
+    setBridgeScheduleLogbookTimeWindow(persisted.timeWindow);
+    setBridgeScheduleLogbookSearchTerm(persisted.searchTerm);
+    bridgeScheduleLogbookUrlHydratedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!bridgeScheduleLogbookUrlHydratedRef.current) return;
+
+    const nextSearch = mergeBridgeScheduleLogbookUrlState(window.location.search, {
+      status: bridgeScheduleLogbookStatusFilter,
+      presetKey: bridgeScheduleLogbookPresetFilter,
+      timeWindow: bridgeScheduleLogbookTimeWindow,
+      searchTerm: bridgeScheduleLogbookSearchTerm,
+    });
+    const currentTarget = `${window.location.pathname}${window.location.search}`;
+    const nextTarget = `${window.location.pathname}${nextSearch}`;
+
+    if (currentTarget !== nextTarget) {
+      void setLocation(nextTarget);
+    }
+  }, [bridgeScheduleLogbookPresetFilter, bridgeScheduleLogbookSearchTerm, bridgeScheduleLogbookStatusFilter, bridgeScheduleLogbookTimeWindow, setLocation]);
 
   const currentSection = useMemo<SectionKey>(() => {
     if (location.startsWith("/ceo/bridge")) return "bridge";
@@ -622,9 +654,45 @@ export default function CeoDashboard() {
         status: bridgeScheduleLogbookStatusFilter,
         presetKey: bridgeScheduleLogbookPresetFilter,
         timeWindow: bridgeScheduleLogbookTimeWindow,
-      }).slice(0, 6),
-    [bridgeScheduleLogbook.rows, bridgeScheduleLogbookPresetFilter, bridgeScheduleLogbookStatusFilter, bridgeScheduleLogbookTimeWindow],
+        searchTerm: bridgeScheduleLogbookSearchTerm,
+      }),
+    [
+      bridgeScheduleLogbook.rows,
+      bridgeScheduleLogbookPresetFilter,
+      bridgeScheduleLogbookSearchTerm,
+      bridgeScheduleLogbookStatusFilter,
+      bridgeScheduleLogbookTimeWindow,
+    ],
   );
+  const visibleBridgeScheduleLogbookRows = useMemo(() => filteredBridgeScheduleLogbookRows.slice(0, 6), [filteredBridgeScheduleLogbookRows]);
+  const bridgeScheduleLogbookHasActiveFilters =
+    bridgeScheduleLogbookStatusFilter !== "all" ||
+    bridgeScheduleLogbookPresetFilter !== "all" ||
+    bridgeScheduleLogbookTimeWindow !== "all" ||
+    bridgeScheduleLogbookSearchTerm.trim().length > 0;
+  const bridgeScheduleLogbookAppliedFilters = useMemo(() => {
+    const descriptors = [
+      `Estado: ${getBridgeScheduleLogbookStatusLabel(bridgeScheduleLogbookStatusFilter)}`,
+      `Ventana: ${getBridgeScheduleLogbookTimeWindowLabel(bridgeScheduleLogbookTimeWindow)}`,
+    ];
+
+    if (bridgeScheduleLogbookPresetFilter !== "all") {
+      const presetLabel = bridgeScheduleLogbookPresetOptions.find((option) => option.value === bridgeScheduleLogbookPresetFilter)?.label ?? bridgeScheduleLogbookPresetFilter;
+      descriptors.push(`Preset: ${presetLabel}`);
+    }
+
+    if (bridgeScheduleLogbookSearchTerm.trim().length > 0) {
+      descriptors.push(`Búsqueda: ${bridgeScheduleLogbookSearchTerm.trim()}`);
+    }
+
+    return descriptors;
+  }, [
+    bridgeScheduleLogbookPresetFilter,
+    bridgeScheduleLogbookPresetOptions,
+    bridgeScheduleLogbookSearchTerm,
+    bridgeScheduleLogbookStatusFilter,
+    bridgeScheduleLogbookTimeWindow,
+  ]);
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
   const bridgeSmokeAlerting = bridgeSmokeStatus?.alerting ?? null;
   const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
@@ -1094,7 +1162,60 @@ export default function CeoDashboard() {
     setBridgeScheduleLogbookStatusFilter("all");
     setBridgeScheduleLogbookPresetFilter("all");
     setBridgeScheduleLogbookTimeWindow("all");
+    setBridgeScheduleLogbookSearchTerm("");
   };
+
+  async function handleExportBridgeScheduleLogbookCsv() {
+    if (filteredBridgeScheduleLogbookRows.length === 0) {
+      sonnerToast.warning("No hay corridas visibles para exportar.");
+      return;
+    }
+
+    trackCeoExport("csv", "requested", {
+      section: "bridge",
+      source: "ceo_bridge_logbook",
+      hasActiveFilters: bridgeScheduleLogbookHasActiveFilters,
+      visibleCount: filteredBridgeScheduleLogbookRows.length,
+    });
+
+    const content = buildBridgeScheduleLogbookCsv(filteredBridgeScheduleLogbookRows);
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().replaceAll(":", "-");
+    const filename = `ceo-bridge-logbook-filtrado-${timestamp}.csv`;
+
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+
+    try {
+      await recordExportAuditMutation.mutateAsync({
+        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+        section: "bridge",
+        format: "csv",
+        snapshotGeneratedAt:
+          typeof snapshotData?.generatedAt === "string"
+            ? snapshotData.generatedAt
+            : snapshotData?.generatedAt?.toISOString() ?? new Date().toISOString(),
+        appliedFilters: bridgeScheduleLogbookAppliedFilters,
+        visibleCount: filteredBridgeScheduleLogbookRows.length,
+      });
+    } catch {
+      sonnerToast.warning("El CSV se descargó, pero la trazabilidad del export no quedó registrada.");
+    }
+
+    trackCeoExport("csv", "completed", {
+      section: "bridge",
+      source: "ceo_bridge_logbook",
+      hasActiveFilters: bridgeScheduleLogbookHasActiveFilters,
+      visibleCount: filteredBridgeScheduleLogbookRows.length,
+    });
+    sonnerToast.success("Bitácora bridge exportada", {
+      description: `Archivo descargado: ${filename}`,
+    });
+  }
 
   const focusAuditItem = (item: AuditFeedItem) => {
     const descriptor = getAuditDrilldownDescriptor(item);
@@ -3130,14 +3251,35 @@ export default function CeoDashboard() {
                                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
                                 <p className="mt-1 text-sm text-slate-500">Cruza estado, preset y ventana temporal para aislar rápidamente las corridas que quieres revisar.</p>
                               </div>
-                              {(bridgeScheduleLogbookStatusFilter !== "all" || bridgeScheduleLogbookPresetFilter !== "all" || bridgeScheduleLogbookTimeWindow !== "all") ? (
-                                <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearBridgeScheduleLogbookFilters}>
-                                  <X className="mr-2 h-4 w-4" />
-                                  Limpiar bitácora
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full"
+                                  onClick={handleExportBridgeScheduleLogbookCsv}
+                                  disabled={filteredBridgeScheduleLogbookRows.length === 0 || recordExportAuditMutation.isPending}
+                                >
+                                  <Files className="mr-2 h-4 w-4" />
+                                  Exportar CSV filtrado
                                 </Button>
-                              ) : null}
+                                {bridgeScheduleLogbookHasActiveFilters ? (
+                                  <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearBridgeScheduleLogbookFilters}>
+                                    <X className="mr-2 h-4 w-4" />
+                                    Limpiar bitácora
+                                  </Button>
+                                ) : null}
+                              </div>
                             </div>
                             <div className="mt-4 space-y-3">
+                              <div className="relative max-w-xl">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <Input
+                                  value={bridgeScheduleLogbookSearchTerm}
+                                  onChange={(event) => setBridgeScheduleLogbookSearchTerm(event.target.value)}
+                                  placeholder="Buscar por error, traceId, agenda o preset"
+                                  className="rounded-full border-slate-200 bg-white pl-10"
+                                />
+                              </div>
                               <div className="flex flex-wrap gap-2">
                                 {(["all", "success", "failed"] as const).map((statusOption) => (
                                   <Button
@@ -3189,7 +3331,8 @@ export default function CeoDashboard() {
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2 text-xs">
-                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{filteredBridgeScheduleLogbookRows.length} visible{filteredBridgeScheduleLogbookRows.length === 1 ? "" : "s"}</Badge>
+                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{filteredBridgeScheduleLogbookRows.length} coincidencia{filteredBridgeScheduleLogbookRows.length === 1 ? "" : "s"}</Badge>
+                            <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Mostrando {Math.min(visibleBridgeScheduleLogbookRows.length, 6)} de {filteredBridgeScheduleLogbookRows.length}</Badge>
                             <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Estado: {getBridgeScheduleLogbookStatusLabel(bridgeScheduleLogbookStatusFilter)}</Badge>
                             <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Ventana: {getBridgeScheduleLogbookTimeWindowLabel(bridgeScheduleLogbookTimeWindow)}</Badge>
                           </div>
@@ -3198,7 +3341,7 @@ export default function CeoDashboard() {
                               No hay corridas del scheduler bridge que coincidan con la combinación actual de filtros.
                             </div>
                           ) : (
-                            filteredBridgeScheduleLogbookRows.map((entry) => (
+                            visibleBridgeScheduleLogbookRows.map((entry) => (
                               <div key={entry.key} className="rounded-[1rem] border border-slate-200 bg-white/90 p-4">
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                   <div>

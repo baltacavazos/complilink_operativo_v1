@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
+
 import {
   buildBridgeScheduleLogbook,
+  buildBridgeScheduleLogbookCsv,
   buildBridgeScheduleLogbookPresetOptions,
   filterBridgeScheduleLogbookRows,
+  getBridgeScheduleLogbookDefaultUrlState,
+  mergeBridgeScheduleLogbookUrlState,
+  parseBridgeScheduleLogbookUrlState,
   type BridgeScheduleListItem,
 } from "./ceoBridgeScheduleLogbook";
 import type { AuditFeedItem } from "./ceoDashboardMonitoring";
@@ -205,8 +210,8 @@ describe("filterBridgeScheduleLogbookRows", () => {
       visibleCount: null,
       recipientCount: null,
       exportFormat: null,
-      attachments: [],
-      appliedFilters: [],
+      attachments: ["error-log.txt"],
+      appliedFilters: ["sin adjuntos"],
     },
     {
       key: "c",
@@ -238,10 +243,87 @@ describe("filterBridgeScheduleLogbookRows", () => {
     expect(filtered).toEqual([rows[1]]);
   });
 
+  it("permite búsqueda libre por error, traceId, agenda o preset sin distinguir mayúsculas", () => {
+    expect(filterBridgeScheduleLogbookRows(rows, { searchTerm: "smtp" })).toEqual([rows[1]]);
+    expect(filterBridgeScheduleLogbookRows(rows, { searchTerm: "TRACE-C" })).toEqual([rows[2]]);
+    expect(filterBridgeScheduleLogbookRows(rows, { searchTerm: "agenda 10" })).toEqual([rows[0]]);
+    expect(filterBridgeScheduleLogbookRows(rows, { searchTerm: "bridge semanal" })).toEqual([rows[0], rows[2]]);
+  });
+
   it("expone presets únicos con conteos para construir chips o botones simples", () => {
     expect(buildBridgeScheduleLogbookPresetOptions(rows)).toEqual([
       { value: "preset:99", label: "Bridge semanal", count: 2 },
       { value: "preset:100", label: "Bridge diario", count: 1 },
     ]);
+  });
+});
+
+describe("bridge schedule logbook URL state", () => {
+  it("expone un estado por defecto limpio", () => {
+    expect(getBridgeScheduleLogbookDefaultUrlState()).toEqual({
+      status: "all",
+      presetKey: "all",
+      timeWindow: "all",
+      searchTerm: "",
+    });
+  });
+
+  it("parsea y serializa filtros persistidos en la URL sin conservar defaults innecesarios", () => {
+    const parsed = parseBridgeScheduleLogbookUrlState("?bridgeLogStatus=failed&bridgeLogPreset=preset%3A99&bridgeLogWindow=7d&bridgeLogQuery=smtp");
+
+    expect(parsed).toEqual({
+      status: "failed",
+      presetKey: "preset:99",
+      timeWindow: "7d",
+      searchTerm: "smtp",
+    });
+
+    expect(
+      mergeBridgeScheduleLogbookUrlState("?tenantId=tenant-1", {
+        status: "failed",
+        presetKey: "preset:99",
+        timeWindow: "7d",
+        searchTerm: "smtp",
+      }),
+    ).toBe("?tenantId=tenant-1&bridgeLogStatus=failed&bridgeLogPreset=preset%3A99&bridgeLogWindow=7d&bridgeLogQuery=smtp");
+
+    expect(
+      mergeBridgeScheduleLogbookUrlState("?tenantId=tenant-1&bridgeLogStatus=failed&bridgeLogWindow=7d&bridgeLogQuery=smtp", {
+        status: "all",
+        presetKey: "all",
+        timeWindow: "all",
+        searchTerm: "",
+      }),
+    ).toBe("?tenantId=tenant-1");
+  });
+});
+
+describe("buildBridgeScheduleLogbookCsv", () => {
+  it("exporta el subconjunto filtrado como CSV legible y escapado", () => {
+    const csv = buildBridgeScheduleLogbookCsv([
+      {
+        key: "b",
+        scheduleId: 20,
+        presetId: 100,
+        presetName: "Bridge diario",
+        tenantId: "tenant-1",
+        status: "failed",
+        executedAt: "2026-04-10T12:00:00.000Z",
+        nextRunAt: null,
+        traceId: "trace-b",
+        errorMessage: "SMTP timeout, retry later",
+        visibleCount: null,
+        recipientCount: null,
+        exportFormat: null,
+        attachments: ["error-log.txt", "bridge.csv"],
+        appliedFilters: ["sin adjuntos", "tenant:1"],
+      },
+    ]);
+
+    expect(csv).toContain("Ejecutada,Estado,Preset,Agenda,Trace ID");
+    expect(csv).toContain('Bridge diario,20,trace-b,tenant-1');
+    expect(csv).toContain('"SMTP timeout, retry later"');
+    expect(csv).toContain('sin adjuntos | tenant:1');
+    expect(csv).toContain('error-log.txt | bridge.csv');
   });
 });

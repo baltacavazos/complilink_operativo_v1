@@ -848,3 +848,6 @@
 - [x] Implementar una bitácora visible de corridas del scheduler bridge con trazabilidad mínima para revisión operativa antes de publicar
 - [x] Añadir filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge para facilitar la revisión operativa
 - [x] Implementar filtros por estado, preset y ventana temporal en la bitácora visible del scheduler bridge
+- [x] Añadir búsqueda por texto sobre error, traceId o agenda en la bitácora visible del scheduler bridge
+- [x] Persistir los filtros de la bitácora visible del scheduler bridge en la URL o preferencias del usuario
+- [x] Incorporar exportación del subconjunto filtrado desde la bitácora visible del scheduler bridge
