@@ -798,3 +798,4 @@
 - [x] Actualizar el webhook de retorno del bridge para soportar el catálogo final de eventos document.processed.v1, document.rejected.v1 y document.retry_requested.v1.
 - [x] Revisar y extender la persistencia del bridge para conservar los campos contractuales mínimos nuevos que exija la alineación.
 - [x] Ampliar las pruebas del bridge con casos de éxito, error contractual, firma/autenticación y duplicados según el PDF final.
+- [x] Generar un PDF con el mensaje exacto, checklist técnico y pasos de validación que deben enviarse al otro chat de Auditapatrón para concluir la conexión del bridge con CompliLink.
