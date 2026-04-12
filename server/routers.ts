@@ -18,6 +18,10 @@ import {
   createAuditLog,
   createAuditLogs,
   createCaseRecord,
+  createCeoBridgePreset,
+  createCeoBridgeSchedule,
+  deleteCeoBridgePreset,
+  deleteCeoBridgeSchedule,
   ensureTenantForUser,
   findAuditLogEntry,
   getCaseDetailForUser,
@@ -31,11 +35,15 @@ import {
   listAuditTrail,
   listCanonicalContractsByType,
   listCasesForUser,
+  listCeoBridgePresets,
+  listCeoBridgeSchedules,
   listTenantsForUser,
   listVisibleDocuments,
   persistAuditarViewState,
   seedDemoCaseIfEmpty,
   updateCaseStatus,
+  updateCeoBridgePreset,
+  updateCeoBridgeSchedule,
   updateOperationalAlertStatus,
   updateTenantMembershipStatus,
   upsertCanonicalContract,
@@ -60,6 +68,11 @@ import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
+import {
+  computeNextBridgeScheduleRunAt,
+  validateBridgeScheduleCronExpression,
+  validateBridgeScheduleTimezone,
+} from "./ceoBridgeAutomation";
 import { storageGet, storagePut } from "./storage";
 import {
   buildCanonicalCaseContract,
@@ -118,6 +131,31 @@ const ceoSnapshotFiltersSchema = z
     query: z.string().trim().min(1).max(160).optional(),
   })
   .optional();
+const ceoBridgePresetFiltersSchema = z.object({
+  tenantId: z.string().trim().min(1).max(80).optional(),
+  severity: z.string().trim().min(1).max(40).optional(),
+  caseId: z.string().trim().min(1).max(120).optional(),
+  userId: z.number().int().positive().optional(),
+  dateWindowDays: ceoAllowedDateWindowDaysSchema.optional(),
+  query: z.string().trim().min(1).max(160).optional(),
+});
+const ceoBridgePresetSchema = z.object({
+  tenantId: z.string().trim().min(3).max(80).optional(),
+  name: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(255).optional(),
+  filters: ceoBridgePresetFiltersSchema.optional(),
+  exportFormat: z.enum(["csv", "pdf"]),
+  emailRecipients: z.array(z.string().email()).max(5).optional(),
+  emailMessage: z.string().trim().max(1000).optional(),
+  smokeThreshold: z.number().int().min(1).max(99).optional(),
+});
+const ceoBridgeScheduleSchema = z.object({
+  presetId: z.number().int().positive(),
+  tenantId: z.string().trim().min(3).max(80).optional(),
+  cronExpression: z.string().trim().min(9).max(64),
+  timezone: z.string().trim().min(2).max(64),
+  isActive: z.boolean(),
+});
 const CEO_SAFE_ERROR_COPY = {
   forbidden: "No tienes permisos suficientes para realizar esta acción.",
   staleData: "Los datos han cambiado. Actualiza la vista e intenta nuevamente.",
@@ -2020,6 +2058,248 @@ export const appRouter = router({
             recipients: input.recipients,
             attachments: input.attachments.map((attachment) => attachment.filename),
           },
+        });
+
+        return { ok: true };
+      }),
+    ceoListBridgePresets: adminProcedure
+      .input(
+        z
+          .object({
+            tenantId: z.string().trim().min(3).max(80).optional(),
+          })
+          .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+        return listCeoBridgePresets({
+          userId: ctx.user.id,
+          tenantId: input?.tenantId,
+        });
+      }),
+    ceoCreateBridgePreset: adminProcedure
+      .input(ceoBridgePresetSchema)
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        const preset = await createCeoBridgePreset({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          name: input.name,
+          description: input.description,
+          filters: input.filters,
+          exportFormat: input.exportFormat,
+          emailRecipients: input.emailRecipients,
+          emailMessage: input.emailMessage,
+          smokeThreshold: input.smokeThreshold,
+        });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-PRESET-${preset.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-preset:${preset.id}`,
+          action: "dashboard.ceo.bridge_preset_created",
+          afterState: preset,
+        });
+
+        return preset;
+      }),
+    ceoUpdateBridgePreset: adminProcedure
+      .input(ceoBridgePresetSchema.extend({ id: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        const preset = await updateCeoBridgePreset({
+          id: input.id,
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          name: input.name,
+          description: input.description,
+          filters: input.filters,
+          exportFormat: input.exportFormat,
+          emailRecipients: input.emailRecipients,
+          emailMessage: input.emailMessage,
+          smokeThreshold: input.smokeThreshold,
+        });
+
+        if (!preset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Preset bridge no encontrado." });
+        }
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-PRESET-${preset.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-preset:${preset.id}`,
+          action: "dashboard.ceo.bridge_preset_updated",
+          afterState: preset,
+        });
+
+        return preset;
+      }),
+    ceoDeleteBridgePreset: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), tenantId: z.string().trim().min(3).max(80).optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+        await deleteCeoBridgePreset({ id: input.id, userId: ctx.user.id });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-PRESET-${input.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-preset:${input.id}`,
+          action: "dashboard.ceo.bridge_preset_deleted",
+          afterState: { id: input.id },
+        });
+
+        return { ok: true };
+      }),
+    ceoListBridgeSchedules: adminProcedure
+      .input(
+        z
+          .object({
+            tenantId: z.string().trim().min(3).max(80).optional(),
+          })
+          .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+        return listCeoBridgeSchedules({
+          userId: ctx.user.id,
+          tenantId: input?.tenantId,
+        });
+      }),
+    ceoCreateBridgeSchedule: adminProcedure
+      .input(ceoBridgeScheduleSchema)
+      .mutation(async ({ ctx, input }) => {
+        if (!validateBridgeScheduleCronExpression(input.cronExpression)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "La expresión cron del bridge no es válida." });
+        }
+        if (!validateBridgeScheduleTimezone(input.timezone)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "La zona horaria del bridge no es válida." });
+        }
+
+        const presets = await listCeoBridgePresets({ userId: ctx.user.id });
+        const preset = presets.find((item) => item.id === input.presetId);
+        if (!preset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Preset bridge no encontrado para esta agenda." });
+        }
+
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId ?? preset.tenantId ?? undefined,
+        });
+        const nextRunAt = input.isActive
+          ? computeNextBridgeScheduleRunAt(input.cronExpression, input.timezone)
+          : null;
+
+        const schedule = await createCeoBridgeSchedule({
+          presetId: input.presetId,
+          userId: ctx.user.id,
+          tenantId: input.tenantId ?? preset.tenantId,
+          cronExpression: input.cronExpression,
+          timezone: input.timezone,
+          nextRunAt,
+          isActive: input.isActive,
+        });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-SCHEDULE-${schedule.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-schedule:${schedule.id}`,
+          action: "dashboard.ceo.bridge_schedule_created",
+          afterState: schedule,
+        });
+
+        return schedule;
+      }),
+    ceoUpdateBridgeSchedule: adminProcedure
+      .input(ceoBridgeScheduleSchema.extend({ id: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!validateBridgeScheduleCronExpression(input.cronExpression)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "La expresión cron del bridge no es válida." });
+        }
+        if (!validateBridgeScheduleTimezone(input.timezone)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "La zona horaria del bridge no es válida." });
+        }
+
+        const presets = await listCeoBridgePresets({ userId: ctx.user.id });
+        const preset = presets.find((item) => item.id === input.presetId);
+        if (!preset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Preset bridge no encontrado para esta agenda." });
+        }
+
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId ?? preset.tenantId ?? undefined,
+        });
+        const nextRunAt = input.isActive
+          ? computeNextBridgeScheduleRunAt(input.cronExpression, input.timezone)
+          : null;
+
+        const schedule = await updateCeoBridgeSchedule({
+          id: input.id,
+          presetId: input.presetId,
+          userId: ctx.user.id,
+          tenantId: input.tenantId ?? preset.tenantId,
+          cronExpression: input.cronExpression,
+          timezone: input.timezone,
+          nextRunAt,
+          isActive: input.isActive,
+        });
+
+        if (!schedule) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Agenda automática bridge no encontrada." });
+        }
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-SCHEDULE-${schedule.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-schedule:${schedule.id}`,
+          action: "dashboard.ceo.bridge_schedule_updated",
+          afterState: schedule,
+        });
+
+        return schedule;
+      }),
+    ceoDeleteBridgeSchedule: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), tenantId: z.string().trim().min(3).max(80).optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+        await deleteCeoBridgeSchedule({ id: input.id, userId: ctx.user.id });
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-SCHEDULE-${input.id}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `bridge-schedule:${input.id}`,
+          action: "dashboard.ceo.bridge_schedule_deleted",
+          afterState: { id: input.id },
         });
 
         return { ok: true };

@@ -319,6 +319,58 @@ export const auditLogs = mysqlTable(
   ],
 );
 
+export const ceoBridgePresets = mysqlTable(
+  "ceo_bridge_presets",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id),
+    tenantId: varchar("tenantId", { length: 64 }).references(() => tenants.tenantId),
+    name: varchar("name", { length: 120 }).notNull(),
+    description: varchar("description", { length: 255 }),
+    filtersJson: text("filtersJson").notNull(),
+    exportFormat: mysqlEnum("exportFormat", ["csv", "pdf"]).default("csv").notNull(),
+    emailRecipientsJson: text("emailRecipientsJson"),
+    emailMessage: text("emailMessage"),
+    smokeThreshold: int("smokeThreshold").default(3).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    index("ceo_bridge_presets_user_idx").on(table.userId, table.updatedAt),
+    index("ceo_bridge_presets_tenant_idx").on(table.tenantId),
+  ],
+);
+
+export const ceoBridgeSchedules = mysqlTable(
+  "ceo_bridge_schedules",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    presetId: int("presetId")
+      .notNull()
+      .references(() => ceoBridgePresets.id),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id),
+    tenantId: varchar("tenantId", { length: 64 }).references(() => tenants.tenantId),
+    cronExpression: varchar("cronExpression", { length: 64 }).notNull(),
+    timezone: varchar("timezone", { length: 64 }).default("UTC").notNull(),
+    nextRunAt: timestamp("nextRunAt"),
+    lastRunAt: timestamp("lastRunAt"),
+    lastRunStatus: varchar("lastRunStatus", { length: 32 }),
+    lastRunError: text("lastRunError"),
+    isActive: int("isActive").default(1).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    index("ceo_bridge_schedules_user_active_idx").on(table.userId, table.isActive, table.nextRunAt),
+    index("ceo_bridge_schedules_preset_idx").on(table.presetId),
+    index("ceo_bridge_schedules_tenant_idx").on(table.tenantId),
+  ],
+);
+
 export const operationalAlerts = mysqlTable(
   "operational_alerts",
   {
@@ -388,6 +440,10 @@ export type ConsentRecord = typeof consentRecords.$inferSelect;
 export type InsertConsentRecord = typeof consentRecords.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type CeoBridgePreset = typeof ceoBridgePresets.$inferSelect;
+export type InsertCeoBridgePreset = typeof ceoBridgePresets.$inferInsert;
+export type CeoBridgeSchedule = typeof ceoBridgeSchedules.$inferSelect;
+export type InsertCeoBridgeSchedule = typeof ceoBridgeSchedules.$inferInsert;
 export type OperationalAlert = typeof operationalAlerts.$inferSelect;
 export type InsertOperationalAlert = typeof operationalAlerts.$inferInsert;
 export type CanonicalContract = typeof canonicalContracts.$inferSelect;

@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
+import { startCeoBridgeScheduleWorker } from "../ceoBridgeAutomation";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -67,6 +68,7 @@ async function startServer() {
   }
 
   server.listen(port, () => {
+    startCeoBridgeScheduleWorker();
     console.log(`Server running on http://localhost:${port}/`);
   });
 }

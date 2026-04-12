@@ -1,0 +1,610 @@
+[
+  {
+    "provider": "openai",
+    "ok": true,
+    "data": {
+      "recommended_data_model": {
+        "tables": [
+          {
+            "name": "bridge_export_presets",
+            "purpose": "Almacenar presets reutilizables de filtros, formato de exportación y configuración de correo para la sección bridge del dashboard CEO",
+            "columns": [
+              "id INT PRIMARY KEY AUTO_INCREMENT",
+              "user_id INT NOT NULL",
+              "tenant_id INT NULL",
+              "name VARCHAR(100) NOT NULL",
+              "filters JSON NOT NULL",
+              "export_format ENUM('CSV','PDF') NOT NULL",
+              "email_recipients JSON NULL",
+              "email_message TEXT NULL",
+              "created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
+              "updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+            ],
+            "indexes": [
+              "INDEX idx_user_id (user_id)",
+              "INDEX idx_tenant_id (tenant_id)"
+            ]
+          },
+          {
+            "name": "bridge_export_schedules",
+            "purpose": "Definir agendas automáticas para exportar y enviar por correo el reporte bridge según presets y frecuencia",
+            "columns": [
+              "id INT PRIMARY KEY AUTO_INCREMENT",
+              "preset_id INT NOT NULL",
+              "user_id INT NOT NULL",
+              "tenant_id INT NULL",
+              "cron_expression VARCHAR(100) NOT NULL",
+              "last_executed_at DATETIME NULL",
+              "is_active BOOLEAN NOT NULL DEFAULT TRUE",
+              "created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
+              "updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+            ],
+            "indexes": [
+              "INDEX idx_preset_id (preset_id)",
+              "INDEX idx_user_id (user_id)",
+              "INDEX idx_tenant_id (tenant_id)"
+            ]
+          }
+        ],
+        "notes": [
+          "Usar JSON para filtros y destinatarios permite flexibilidad sin alterar esquema frecuente.",
+          "Relación user_id y tenant_id para control de acceso y multi-tenant.",
+          "Cron expression para máxima flexibilidad en agenda.",
+          "Presets y schedules separados para reutilización y claridad.",
+          "Auditoría se mantiene con ceoRecordExportAudit y ceoEmailBridgeExport."
+        ]
+      },
+      "backend_contract": {
+        "procedures": [
+          {
+            "name": "bridgeExportPresetCreate",
+            "type": "mutation",
+            "purpose": "Crear un preset reutilizable con filtros, formato y configuración de correo",
+            "input_summary": [
+              "user_id",
+              "tenant_id (opcional)",
+              "name",
+              "filters JSON",
+              "export_format ('CSV'|'PDF')",
+              "email_recipients JSON (opcional)",
+              "email_message (opcional)"
+            ],
+            "output_summary": [
+              "preset_id",
+              "status"
+            ]
+          },
+          {
+            "name": "bridgeExportPresetList",
+            "type": "query",
+            "purpose": "Listar presets disponibles para usuario y tenant",
+            "input_summary": [
+              "user_id",
+              "tenant_id (opcional)"
+            ],
+            "output_summary": [
+              "array de presets con id, name, filtros, export_format, email_recipients, email_message"
+            ]
+          },
+          {
+            "name": "bridgeExportScheduleCreate",
+            "type": "mutation",
+            "purpose": "Crear agenda automática para exportar y enviar reporte bridge usando un preset",
+            "input_summary": [
+              "user_id",
+              "tenant_id (opcional)",
+              "preset_id",
+              "cron_expression"
+            ],
+            "output_summary": [
+              "schedule_id",
+              "status"
+            ]
+          },
+          {
+            "name": "bridgeExportScheduleList",
+            "type": "query",
+            "purpose": "Listar agendas automáticas activas para usuario y tenant",
+            "input_summary": [
+              "user_id",
+              "tenant_id (opcional)"
+            ],
+            "output_summary": [
+              "array de schedules con id, preset_id, cron_expression, is_active"
+            ]
+          },
+          {
+            "name": "bridgeExportScheduleExecute",
+            "type": "mutation",
+            "purpose": "Ejecutar manual o programáticamente una agenda: generar snapshot, validar frescura, enviar correo y registrar auditoría",
+            "input_summary": [
+              "schedule_id"
+            ],
+            "output_summary": [
+              "status",
+              "audit_record_id"
+            ]
+          }
+        ],
+        "automation_execution_strategy": "Un job cron backend (Node.js) que periódicamente consulta bridge_export_schedules activas, verifica si toca ejecutar según cron_expression y last_executed_at, llama bridgeExportScheduleExecute para cada una, actualiza last_executed_at y registra auditoría. Idempotencia garantizada por validación de snapshot fresco y control de ejecución."
+      },
+      "frontend_extension": {
+        "minimal_ui_changes": [
+          "Agregar selector de preset en el modal de exportación y envío por correo del bridge.",
+          "Botón o toggle para crear/editar presets desde la UI actual sin alterar filtros existentes.",
+          "Sección simple para gestionar agendas automáticas (crear/activar/desactivar) con selector de preset y frecuencia (cron simplificado)."
+        ],
+        "avoid": [
+          "Rehacer la interfaz actual de filtros o exportación.",
+          "Usar prompts nativos para entrada de destinatarios o mensajes; reemplazar por formularios controlados.",
+          "Cambios disruptivos en UX que compliquen el flujo actual de exportación y envío."
+        ]
+      },
+      "guardrails": [
+        "Validar que los filtros JSON sean compatibles con el backend actual para exportación.",
+        "Limitar destinatarios a máximo 5 y adjuntos a 2 para mantener consistencia con ceoEmailBridgeExport.",
+        "Auditar siempre exportaciones y envíos automáticos con acción diferenciada para trazabilidad.",
+        "Controlar permisos de usuario para crear/usar presets y agendas solo sobre su tenant.",
+        "Implementar validaciones estrictas en backend para evitar ejecuciones duplicadas o fuera de horario."
+      ],
+      "test_plan": [
+        "Pruebas unitarias para creación, listado y edición de presets y agendas en backend.",
+        "Pruebas de integración para ejecución automática vía job cron y validación de auditoría.",
+        "Pruebas end-to-end en frontend para flujo de selección de preset, exportación y envío por correo.",
+        "Pruebas de límite de destinatarios y adjuntos en presets y envíos.",
+        "Pruebas de seguridad para acceso multi-tenant y permisos de usuario."
+      ],
+      "migration_strategy": [
+        "Crear tablas bridge_export_presets y bridge_export_schedules con migración incremental.",
+        "No modificar tablas existentes ni procedimientos actuales; solo agregar nuevos endpoints y jobs.",
+        "Migrar datos manualmente si existen presets externos o configuraciones similares (opcional).",
+        "Desplegar backend y frontend en paralelo, manteniendo coexistencia con flujo actual.",
+        "Monitorear logs y auditoría para detectar uso y errores durante transición."
+      ],
+      "risks": [
+        "Complejidad en manejo de cron_expression y ejecución idempotente puede generar ejecuciones duplicadas o fallidas.",
+        "Usuarios pueden confundirse con presets si no se integra UI de forma clara y sencilla.",
+        "Posible incremento en carga backend por ejecuciones automáticas si no se controla frecuencia.",
+        "Cambios en estructura JSON de filtros pueden romper compatibilidad con presets antiguos.",
+        "Falta de validación estricta puede permitir presets con configuraciones inválidas o inseguras."
+      ],
+      "final_recommendation": "Implementar tablas dedicadas para presets y agendas con JSON flexible para filtros y correo, exponer procedimientos backend para CRUD y ejecución, y agregar UI mínima para gestión y selección de presets y agendas. Ejecutar agenda automática con job cron backend que respete idempotencia y auditoría. Mantener coexistencia con flujo actual para transición suave y controlada, priorizando trazabilidad y experiencia sobria para usuarios CEO."
+    }
+  },
+  {
+    "provider": "gemini",
+    "ok": true,
+    "model": "gemini-2.5-flash",
+    "data": {
+      "recommended_data_model": {
+        "tables": [
+          {
+            "name": "ceoDashboardPreset",
+            "purpose": "Almacenar configuraciones reutilizables (filtros, formato de exportación, umbral de alerta) para el dashboard CEO, definidas por el usuario.",
+            "columns": [
+              "id: UUID (PK)",
+              "userId: UUID (FK a users.id)",
+              "tenantId: UUID (FK a tenants.id, opcional, para futura compartición)",
+              "name: VARCHAR(255)",
+              "description: TEXT (opcional)",
+              "filters: JSONB (contiene filtros globales y específicos del bridge)",
+              "exportFormat: ENUM('CSV', 'PDF', 'BOTH')",
+              "alertingThreshold: INT",
+              "createdAt: DATETIME",
+              "updatedAt: DATETIME"
+            ],
+            "indexes": [
+              "idx_ceoDashboardPreset_userId",
+              "idx_ceoDashboardPreset_tenantId"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule",
+            "purpose": "Almacenar la agenda de ejecución automática de reportes del dashboard CEO, referenciando un preset.",
+            "columns": [
+              "id: UUID (PK)",
+              "userId: UUID (FK a users.id)",
+              "tenantId: UUID (FK a tenants.id)",
+              "presetId: UUID (FK a ceoDashboardPreset.id)",
+              "cronSchedule: VARCHAR(255) (expresión CRON para recurrencia)",
+              "recipients: JSONB (array de strings de emails)",
+              "message: TEXT (opcional, mensaje del correo)",
+              "enabled: BOOLEAN (default true)",
+              "lastRunAt: DATETIME (nullable, última ejecución)",
+              "nextRunAt: DATETIME (nullable, próxima ejecución programada)",
+              "status: ENUM('PENDING', 'RUNNING', 'COMPLETED', 'FAILED')",
+              "createdAt: DATETIME",
+              "updatedAt: DATETIME"
+            ],
+            "indexes": [
+              "idx_ceoDashboardSchedule_userId",
+              "idx_ceoDashboardSchedule_tenantId",
+              "idx_ceoDashboardSchedule_presetId",
+              "idx_ceoDashboardSchedule_nextRunAt_enabled"
+            ]
+          }
+        ],
+        "notes": [
+          "El uso de JSONB para 'filters' y 'recipients' permite flexibilidad en la evolución del esquema sin migraciones de base de datos.",
+          "Las claves foráneas deben configurarse con 'ON DELETE RESTRICT' o 'SET NULL' para mantener la integridad referencial, dependiendo de la política de negocio al eliminar usuarios/tenants/presets."
+        ]
+      },
+      "backend_contract": {
+        "procedures": [
+          {
+            "name": "ceoDashboardPreset.create",
+            "type": "mutation",
+            "purpose": "Crear un nuevo preset de configuración del dashboard CEO.",
+            "input_summary": [
+              "name",
+              "description?",
+              "filters",
+              "exportFormat",
+              "alertingThreshold"
+            ],
+            "output_summary": [
+              "presetId: UUID"
+            ]
+          },
+          {
+            "name": "ceoDashboardPreset.getById",
+            "type": "query",
+            "purpose": "Obtener los detalles completos de un preset específico.",
+            "input_summary": [
+              "presetId: UUID"
+            ],
+            "output_summary": [
+              "preset: ceoDashboardPreset object"
+            ]
+          },
+          {
+            "name": "ceoDashboardPreset.list",
+            "type": "query",
+            "purpose": "Listar presets disponibles para el usuario/tenant actual.",
+            "input_summary": [
+              "tenantId?: UUID"
+            ],
+            "output_summary": [
+              "presets: Array<{id: UUID, name: string, description?: string}>"
+            ]
+          },
+          {
+            "name": "ceoDashboardPreset.update",
+            "type": "mutation",
+            "purpose": "Actualizar un preset existente.",
+            "input_summary": [
+              "presetId: UUID",
+              "partialPreset: Partial<ceoDashboardPreset>"
+            ],
+            "output_summary": [
+              "success: boolean"
+            ]
+          },
+          {
+            "name": "ceoDashboardPreset.delete",
+            "type": "mutation",
+            "purpose": "Eliminar un preset existente.",
+            "input_summary": [
+              "presetId: UUID"
+            ],
+            "output_summary": [
+              "success: boolean"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.create",
+            "type": "mutation",
+            "purpose": "Crear una nueva agenda para el envío automático de reportes.",
+            "input_summary": [
+              "presetId: UUID",
+              "cronSchedule: string",
+              "recipients: string[]",
+              "message?: string",
+              "enabled?: boolean"
+            ],
+            "output_summary": [
+              "scheduleId: UUID"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.getById",
+            "type": "query",
+            "purpose": "Obtener los detalles de una agenda específica.",
+            "input_summary": [
+              "scheduleId: UUID"
+            ],
+            "output_summary": [
+              "schedule: ceoDashboardSchedule object"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.list",
+            "type": "query",
+            "purpose": "Listar agendas programadas para el usuario/tenant actual.",
+            "input_summary": [
+              "tenantId?: UUID"
+            ],
+            "output_summary": [
+              "schedules: Array<{id: UUID, presetName: string, cronSchedule: string, nextRunAt: DATETIME, enabled: boolean}>"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.update",
+            "type": "mutation",
+            "purpose": "Actualizar una agenda existente.",
+            "input_summary": [
+              "scheduleId: UUID",
+              "partialSchedule: Partial<ceoDashboardSchedule>"
+            ],
+            "output_summary": [
+              "success: boolean"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.delete",
+            "type": "mutation",
+            "purpose": "Eliminar una agenda existente.",
+            "input_summary": [
+              "scheduleId: UUID"
+            ],
+            "output_summary": [
+              "success: boolean"
+            ]
+          },
+          {
+            "name": "ceoDashboardSchedule.runNow",
+            "type": "mutation",
+            "purpose": "Ejecutar manualmente una agenda programada de forma inmediata.",
+            "input_summary": [
+              "scheduleId: UUID"
+            ],
+            "output_summary": [
+              "jobId: UUID (referencia a la ejecución en cola)"
+            ]
+          }
+        ],
+        "automation_execution_strategy": "Se implementará un proceso worker separado (e.g., un servicio Express dedicado o un cronjob externo) que se ejecuta periódicamente. Este worker consultará la tabla `ceoDashboardSchedule` para identificar agendas `enabled` cuya `nextRunAt` haya pasado o sea inminente. Para cada agenda, cargará el `ceoDashboardPreset` asociado y llamará al procedimiento tRPC `ceoEmailBridgeExport` existente con los parámetros del preset (filtros, formato) y de la agenda (destinatarios, mensaje). Después de la ejecución, actualizará `lastRunAt`, recalculará `nextRunAt` (usando la expresión CRON) y el `status` en `ceoDashboardSchedule`. Se asegurará la idempotencia y el manejo de errores para evitar duplicados y registrar fallos."
+      },
+      "frontend_extension": {
+        "minimal_ui_changes": [
+          "Un nuevo botón 'Guardar Preset' en la barra superior del dashboard, que abre un modal para nombrar y guardar la configuración actual (filtros, umbral, formato de exportación).",
+          "Un selector (dropdown o modal) 'Cargar Preset' para aplicar una configuración guardada, poblando los filtros y el umbral del dashboard.",
+          "Un botón 'Programar Reporte' adyacente a 'Enviar por correo', que abre un modal para seleccionar un preset (o usar la configuración actual), definir destinatarios, mensaje y una expresión CRON para la recurrencia.",
+          "Dos nuevas vistas/modales de gestión: 'Administrar Presets' (listado, edición, eliminación) y 'Administrar Agendas' (listado, edición, eliminación, ejecución manual 'Run Now')."
+        ],
+        "avoid": [
+          "Rediseñar completamente la interfaz del dashboard CEO.",
+          "Implementar un generador de CRON complejo en el frontend; en su lugar, ofrecer un campo de texto para CRON y quizás opciones predefinidas simples (diario, semanal, mensual).",
+          "Mantener la generación de adjuntos PDF/CSV en cliente para los reportes programados; esto debe ser manejado exclusivamente por el backend para consistencia y escalabilidad."
+        ]
+      },
+      "guardrails": [
+        "**Autorización:** Asegurar que los usuarios solo puedan crear, ver, actualizar o eliminar sus propios presets y agendas, o aquellos compartidos dentro de su `tenantId` si se implementa esa funcionalidad.",
+        "**Validación de Entrada:** Implementar validación estricta para expresiones CRON, formatos de email, y la estructura de los objetos `filters` para prevenir inyecciones o errores de formato.",
+        "**Auditoría:** Extender la auditoría existente para registrar la creación, actualización y eliminación de presets y agendas. Las ejecuciones automáticas deben invocar los procedimientos de auditoría `ceoRecordExportAudit` y `ceoEmailBridgeExport`.",
+        "**Idempotencia:** El worker de automatización debe ser idempotente para evitar el envío de correos duplicados si se ejecuta varias veces para el mismo evento programado.",
+        "**Manejo de Errores:** Implementar un manejo robusto de errores en el worker de automatización, registrando fallos y actualizando el `status` de la agenda para facilitar la depuración.",
+        "**Límites de Recursos:** Considerar límites para el número de agendas por usuario/tenant y el número de destinatarios por agenda para prevenir abusos o sobrecarga del sistema."
+      ],
+      "test_plan": [
+        "**Unit Tests:** Para los modelos de Drizzle, la lógica de validación de CRON, y los procedimientos tRPC de CRUD para presets y agendas.",
+        "**Integration Tests:** Validar el flujo completo de creación/actualización/eliminación de presets y agendas a través de tRPC. Probar la integración del worker con `ceoEmailBridgeExport`.",
+        "**End-to-End Tests:** Simular la interacción del usuario en el frontend para guardar/cargar presets y programar/gestionar agendas. Verificar el envío de correos y los registros de auditoría para ejecuciones manuales y programadas (simulando el paso del tiempo).",
+        "**Performance Tests:** Evaluar el rendimiento del listado de presets/agendas y el impacto de un gran número de agendas concurrentes en el worker y el servicio de correo.",
+        "**Security Tests:** Verificar las reglas de autorización y la robustez de la validación de entrada."
+      ],
+      "migration_strategy": [
+        "**Migraciones de Base de Datos:** Utilizar Drizzle-kit para generar y aplicar las migraciones de esquema para las nuevas tablas `ceoDashboardPreset` y `ceoDashboardSchedule`.",
+        "**Feature Flagging:** Implementar 'feature flags' para los nuevos elementos de la interfaz de usuario y los procedimientos backend, permitiendo un despliegue gradual y controlado de las funcionalidades.",
+        "**Compatibilidad con Versiones Anteriores:** Asegurar que las funcionalidades existentes de exportación y envío de correo (generación en cliente y `window.prompt`) sigan siendo completamente operativas y no se vean afectadas por las nuevas implementaciones.",
+        "**Despliegue del Worker:** Desplegar el proceso worker de automatización de forma independiente, con monitoreo y capacidad de escalado."
+      ],
+      "risks": [
+        "**Complejidad de CRON:** La curva de aprendizaje para los usuarios con las expresiones CRON puede ser alta. Podría requerir una mejora futura de la UI para una selección de recurrencia más amigable.",
+        "**Rendimiento del Worker:** Un gran volumen de agendas o la complejidad de la generación de reportes podrían sobrecargar el worker o el servicio de correo. Se necesitará monitoreo y posible implementación de colas de mensajes (e.g., RabbitMQ, SQS) para desacoplar y escalar.",
+        "**Seguridad de los Filtros:** Si los filtros pueden contener datos sensibles o lógicas complejas, asegurar que su almacenamiento y procesamiento sean seguros para evitar vulnerabilidades.",
+        "**Fiabilidad del Worker:** El worker de automatización es un punto crítico. Debe ser robusto, tolerante a fallos y tener mecanismos de reintento.",
+        "**Consistencia de Datos:** Asegurar que la eliminación de un preset no rompa las agendas que lo referencian (manejo de `ON DELETE` en FKs)."
+      ],
+      "final_recommendation": "La implementación propuesta es incremental y pragmática, aprovechando la infraestructura tRPC y los procedimientos de exportación/auditoría existentes. Se introduce un modelo de datos claro para presets y agendas, un worker de automatización desacoplado y extensiones de UI mínimas a través de modales. Esto permite una UX sobria y mantiene la trazabilidad y auditoría, priorizando la estabilidad y la compatibilidad con el código actual. La clave será un worker robusto y una validación estricta de las entradas."
+    }
+  },
+  {
+    "provider": "xai",
+    "ok": true,
+    "data": {
+      "recommended_data_model": {
+        "tables": [
+          {
+            "name": "ceo_bridge_presets",
+            "purpose": "Almacenar presets reutilizables de filtros, opciones de exportación y configuración de correo para la sección bridge, asociadas a usuarios o tenants para reutilización sin rehacer UI existente.",
+            "columns": [
+              "id: uuid primary key",
+              "userId: uuid foreign key to users",
+              "tenantId: uuid foreign key to tenants (opcional)",
+              "name: string (e.g., 'Preset Semanal')",
+              "filters: jsonb (global y smoke history filters)",
+              "exportFormat: string (CSV, PDF, or both)",
+              "emailRecipients: array<string> (1-5 emails)",
+              "emailMessage: text (opcional)",
+              "smokeThreshold: number (umbral de alerting)",
+              "createdAt: timestamp",
+              "updatedAt: timestamp"
+            ],
+            "indexes": [
+              "userId",
+              "tenantId",
+              "name"
+            ]
+          },
+          {
+            "name": "ceo_bridge_schedules",
+            "purpose": "Almacenar agendas automáticas para exportar y enviar reportes bridge basados en presets, con triggers cron-like para ejecución periódica.",
+            "columns": [
+              "id: uuid primary key",
+              "presetId: uuid foreign key to ceo_bridge_presets",
+              "cronSchedule: string (e.g., '0 9 * * 1' for weekly Mondays at 9AM)",
+              "nextRunAt: timestamp (para tracking idempotente)",
+              "isActive: boolean",
+              "createdAt: timestamp",
+              "updatedAt: timestamp"
+            ],
+            "indexes": [
+              "presetId",
+              "nextRunAt"
+            ]
+          }
+        ],
+        "notes": [
+          "Usar jsonb para filters para flexibilidad y compatibilidad con filtros existentes sin alterar esquema actual.",
+          "Integrar con tabla de auditoría existente para registrar creaciones/ediciones de presets y ejecuciones de schedules.",
+          "No requiere cambios en tablas existentes como users o tenants; enlazar via foreign keys."
+        ]
+      },
+      "backend_contract": {
+        "procedures": [
+          {
+            "name": "getBridgePresets",
+            "type": "query",
+            "purpose": "Obtener lista de presets para un usuario/tenant.",
+            "input_summary": [
+              "userId (inferido de auth), tenantId (opcional)"
+            ],
+            "output_summary": [
+              "array of presets with id, name, filters, etc."
+            ]
+          },
+          {
+            "name": "createBridgePreset",
+            "type": "mutation",
+            "purpose": "Crear un nuevo preset basado en configuración actual de UI.",
+            "input_summary": [
+              "name, filters (json), exportFormat, emailRecipients, emailMessage, smokeThreshold, tenantId (opcional)"
+            ],
+            "output_summary": [
+              "created preset id"
+            ]
+          },
+          {
+            "name": "updateBridgePreset",
+            "type": "mutation",
+            "purpose": "Actualizar preset existente de forma idempotente.",
+            "input_summary": [
+              "presetId, partial updates to fields"
+            ],
+            "output_summary": [
+              "updated preset"
+            ]
+          },
+          {
+            "name": "deleteBridgePreset",
+            "type": "mutation",
+            "purpose": "Eliminar preset, con chequeo de schedules dependientes.",
+            "input_summary": [
+              "presetId"
+            ],
+            "output_summary": [
+              "success boolean"
+            ]
+          },
+          {
+            "name": "getBridgeSchedules",
+            "type": "query",
+            "purpose": "Obtener agendas para presets de un usuario.",
+            "input_summary": [
+              "userId (inferido)"
+            ],
+            "output_summary": [
+              "array of schedules with preset details"
+            ]
+          },
+          {
+            "name": "createBridgeSchedule",
+            "type": "mutation",
+            "purpose": "Crear agenda para un preset, calculando nextRunAt.",
+            "input_summary": [
+              "presetId, cronSchedule, isActive"
+            ],
+            "output_summary": [
+              "created schedule id"
+            ]
+          },
+          {
+            "name": "updateBridgeSchedule",
+            "type": "mutation",
+            "purpose": "Actualizar agenda, recalculando nextRunAt idempotente.",
+            "input_summary": [
+              "scheduleId, partial updates"
+            ],
+            "output_summary": [
+              "updated schedule"
+            ]
+          },
+          {
+            "name": "deleteBridgeSchedule",
+            "type": "mutation",
+            "purpose": "Eliminar agenda.",
+            "input_summary": [
+              "scheduleId"
+            ],
+            "output_summary": [
+              "success boolean"
+            ]
+          },
+          {
+            "name": "executeScheduledExport",
+            "type": "mutation",
+            "purpose": "Ejecutar exportación y email basado en schedule (llamado por cron), usando ceoEmailBridgeExport existente y registrando auditoría.",
+            "input_summary": [
+              "scheduleId"
+            ],
+            "output_summary": [
+              "execution log id"
+            ]
+          }
+        ],
+        "automation_execution_strategy": "Implementar un cron job en Express usando node-cron para polling de ceo_bridge_schedules por nextRunAt, ejecutar executeScheduledExport si es debido, actualizar nextRunAt atómicamente para idempotencia; evitar workers externos para cambios mínimos."
+      },
+      "frontend_extension": {
+        "minimal_ui_changes": [
+          "Agregar dropdown junto a botones existentes para seleccionar/cargar preset (carga filters, threshold, etc. en UI actual).",
+          "Botón 'Guardar como Preset' que abre prompt simple para nombre y guarda estado actual via createBridgePreset.",
+          "Sección collapsible en dashboard para gestionar presets (lista con edit/delete) y agendas (agregar cron via input simple, toggle active).",
+          "Integrar con prompts existentes para email, pero prellenar desde preset si seleccionado."
+        ],
+        "avoid": [
+          "Rehacer layout de filtros o botones superiores.",
+          "Modales complejos; usar window.prompt/confirm para inputs sobrios.",
+          "Cambios en generación de PDF/CSV; mantener en cliente.",
+          "Sobrecargar UI con vistas avanzadas; mantener sobria para CEOs."
+        ]
+      },
+      "guardrails": [
+        "Validar auth y ownership en todos procedures (userId/tenantId).",
+        "Registrar auditoría en creaciones/ediciones de presets/schedules usando ceoRecordExportAudit extendido con acción como 'dashboard.ceo.preset_created'.",
+        "Limitar emailRecipients a 1-5, validar emails.",
+        "Idempotencia en schedules: usar transacciones para chequeo y update de nextRunAt.",
+        "Rate limiting en ejecuciones automáticas para prevenir spam."
+      ],
+      "test_plan": [
+        "Unit tests para procedures tRPC: CRUD presets/schedules, validaciones de input.",
+        "Integration tests: Flujo completo de crear preset, schedule, simular cron y verificar email/auditoría.",
+        "E2E tests en frontend: Cargar preset actualiza filters/UI, schedule triggers export.",
+        "Edge cases: Schedules inactivos, presets sin email, fallos en snapshot fresco.",
+        "Auditoría checks: Cada acción registra correctamente."
+      ],
+      "migration_strategy": [
+        "Crear tablas nuevas via Drizzle migration; no datos existentes para migrar.",
+        "Desplegar backend primero, luego frontend con feature flag para presets/schedules.",
+        "Seed datos de prueba en dev/staging."
+      ],
+      "risks": [
+        "Cron job podría fallar si server restarts; mitigar con polling al inicio.",
+        "Aumento en emails automáticos; monitorear con logs y límites.",
+        "Compatibilidad con filtros existentes; asegurar jsonb mapea correctamente.",
+        "UX confusión si presets no cargan estado perfectamente; testear thoroughly."
+      ],
+      "final_recommendation": "Implementar como extensiones incrementales: nuevas tablas para presets/schedules, tRPC procedures para CRUD, cron en Express para automation, y UI mínima integrada a botones existentes. Enfocarse en auditoría y idempotencia para robustez."
+    }
+  }
+]

@@ -97,6 +97,38 @@ function formatDateTime(value: Date | string | null | undefined) {
   }).format(date);
 }
 
+type BridgePresetFiltersDraft = {
+  tenantId?: string;
+  severity?: string;
+  caseId?: string;
+  userId?: number;
+  dateWindowDays?: 7 | 30 | 90 | 365;
+  query?: string;
+};
+
+function parseEmailRecipients(raw: string) {
+  return raw
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .filter((value, index, collection) => collection.indexOf(value) === index);
+}
+
+function formatBridgePresetSummary(filters: BridgePresetFiltersDraft | null | undefined) {
+  if (!filters) return "Sin filtros persistidos";
+
+  const segments = [
+    filters.tenantId ? `Tenant ${filters.tenantId}` : null,
+    filters.severity ? `Severidad ${filters.severity}` : null,
+    filters.caseId ? `Caso ${filters.caseId}` : null,
+    filters.userId ? `Usuario ${filters.userId}` : null,
+    filters.dateWindowDays ? `Ventana ${filters.dateWindowDays} días` : null,
+    filters.query ? `Búsqueda “${filters.query}”` : null,
+  ].filter(Boolean);
+
+  return segments.length > 0 ? segments.join(" · ") : "Sin filtros persistidos";
+}
+
 async function blobToBase64(blob: Blob) {
   return await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -384,6 +416,15 @@ export default function CeoDashboard() {
   const [emailExportPending, setEmailExportPending] = useState(false);
   const [pendingExecutiveAction, setPendingExecutiveAction] = useState<PendingExecutiveAction | null>(null);
   const [snapshotPulseAt, setSnapshotPulseAt] = useState(() => Date.now());
+  const [bridgePresetNameDraft, setBridgePresetNameDraft] = useState("");
+  const [bridgePresetDescriptionDraft, setBridgePresetDescriptionDraft] = useState("");
+  const [bridgePresetExportFormatDraft, setBridgePresetExportFormatDraft] = useState<"csv" | "pdf">("pdf");
+  const [bridgePresetEmailRecipientsDraft, setBridgePresetEmailRecipientsDraft] = useState("");
+  const [bridgePresetEmailMessageDraft, setBridgePresetEmailMessageDraft] = useState("");
+  const [bridgeSchedulePresetIdDraft, setBridgeSchedulePresetIdDraft] = useState("");
+  const [bridgeScheduleCronDraft, setBridgeScheduleCronDraft] = useState("0 0 8 * * 1");
+  const [bridgeScheduleTimezoneDraft, setBridgeScheduleTimezoneDraft] = useState("America/Mexico_City");
+  const [bridgeScheduleActiveDraft, setBridgeScheduleActiveDraft] = useState(true);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -436,6 +477,8 @@ export default function CeoDashboard() {
   }, [debouncedQuery, filters]);
 
   const hasActiveFilters = Object.keys(snapshotFilters).length > 0;
+  const currentTenantScope = filters.tenantId !== "all" ? filters.tenantId : undefined;
+  const bridgePresetFilters = useMemo<BridgePresetFiltersDraft>(() => ({ ...snapshotFilters }), [snapshotFilters]);
   const auditTrailFilters = useMemo(
     () => ({
       tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
@@ -478,6 +521,23 @@ export default function CeoDashboard() {
   const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
   const emailBridgeExportMutation = trpc.dashboard.ceoEmailBridgeExport.useMutation();
   const bridgeSmokeThresholdMutation = trpc.dashboard.ceoUpdateBridgeSmokeThreshold.useMutation();
+  const bridgePresetsQuery = trpc.dashboard.ceoListBridgePresets.useQuery(currentTenantScope ? { tenantId: currentTenantScope } : undefined, {
+    enabled: isAdmin,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const bridgeSchedulesQuery = trpc.dashboard.ceoListBridgeSchedules.useQuery(currentTenantScope ? { tenantId: currentTenantScope } : undefined, {
+    enabled: isAdmin,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const createBridgePresetMutation = trpc.dashboard.ceoCreateBridgePreset.useMutation();
+  const deleteBridgePresetMutation = trpc.dashboard.ceoDeleteBridgePreset.useMutation();
+  const createBridgeScheduleMutation = trpc.dashboard.ceoCreateBridgeSchedule.useMutation();
+  const updateBridgeScheduleMutation = trpc.dashboard.ceoUpdateBridgeSchedule.useMutation();
+  const deleteBridgeScheduleMutation = trpc.dashboard.ceoDeleteBridgeSchedule.useMutation();
+  const bridgePresets = bridgePresetsQuery.data ?? [];
+  const bridgeSchedules = bridgeSchedulesQuery.data ?? [];
 
   const snapshotError = hasActiveFilters ? filteredSnapshotQuery.error : baseSnapshotQuery.error;
   const isInitialLoading = !baseSnapshotQuery.data && baseSnapshotQuery.isLoading;
@@ -1076,6 +1136,12 @@ export default function CeoDashboard() {
     }
   }, [bridgeSmokeAlerting?.threshold]);
 
+  useEffect(() => {
+    if (bridgeSchedulePresetIdDraft) return;
+    if (bridgePresets.length === 0) return;
+    setBridgeSchedulePresetIdDraft(String(bridgePresets[0].id));
+  }, [bridgePresets, bridgeSchedulePresetIdDraft]);
+
   async function handleRefresh() {
     trackCeoRefresh(currentSection, {
       source: "ceo_dashboard",
@@ -1230,6 +1296,176 @@ export default function CeoDashboard() {
       });
     } finally {
       setPendingExecutiveAction(null);
+    }
+  }
+
+  function handleApplyBridgePreset(preset: {
+    name: string;
+    description: string | null;
+    filters: BridgePresetFiltersDraft;
+    exportFormat: "csv" | "pdf";
+    emailRecipients: string[];
+    emailMessage: string | null;
+    smokeThreshold: number;
+  }) {
+    setFilters({
+      tenantId: preset.filters.tenantId ?? "all",
+      severity: preset.filters.severity ?? "all",
+      caseId: preset.filters.caseId ?? "all",
+      userId: preset.filters.userId ? String(preset.filters.userId) : "all",
+      dateWindowDays: preset.filters.dateWindowDays ? String(preset.filters.dateWindowDays) : "all",
+    });
+    setQueryDraft(preset.filters.query ?? "");
+    setDebouncedQuery(preset.filters.query ?? "");
+    setBridgeSmokeThresholdDraft(String(preset.smokeThreshold));
+    setBridgePresetNameDraft(preset.name);
+    setBridgePresetDescriptionDraft(preset.description ?? "");
+    setBridgePresetExportFormatDraft(preset.exportFormat);
+    setBridgePresetEmailRecipientsDraft(preset.emailRecipients.join(", "));
+    setBridgePresetEmailMessageDraft(preset.emailMessage ?? "");
+    void setLocation("/ceo/bridge");
+    sonnerToast.success("Preset aplicado", {
+      description: `Se cargó ${preset.name} con sus filtros y parámetros de reporte bridge.`,
+    });
+  }
+
+  async function handleSaveBridgePreset() {
+    const name = bridgePresetNameDraft.trim();
+    if (name.length < 3) {
+      sonnerToast.error("Nombre insuficiente", {
+        description: "Asigna al menos 3 caracteres para guardar el preset del bridge.",
+      });
+      return;
+    }
+
+    const rawRecipients = bridgePresetEmailRecipientsDraft
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const recipients = parseEmailRecipients(bridgePresetEmailRecipientsDraft);
+    const invalidRecipients = rawRecipients.filter((value) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+    if (invalidRecipients.length > 0) {
+      sonnerToast.error("Correos inválidos", {
+        description: `Revisa: ${invalidRecipients.join(", ")}`,
+      });
+      return;
+    }
+
+    const smokeThreshold = Number(bridgeSmokeThresholdDraft.trim());
+    if (!Number.isInteger(smokeThreshold) || smokeThreshold < 1 || smokeThreshold > 99) {
+      sonnerToast.error("Umbral inválido", {
+        description: "El preset bridge requiere un umbral entero entre 1 y 99.",
+      });
+      return;
+    }
+
+    try {
+      const preset = await createBridgePresetMutation.mutateAsync({
+        tenantId: currentTenantScope,
+        name,
+        description: bridgePresetDescriptionDraft.trim() || undefined,
+        filters: bridgePresetFilters,
+        exportFormat: bridgePresetExportFormatDraft,
+        emailRecipients: recipients,
+        emailMessage: bridgePresetEmailMessageDraft.trim() || undefined,
+        smokeThreshold,
+      });
+      await utils.dashboard.ceoListBridgePresets.invalidate();
+      setBridgeSchedulePresetIdDraft(String(preset.id));
+      sonnerToast.success("Preset bridge guardado", {
+        description: `${preset.name} ya quedó disponible para reutilizar filtros, exportación y correo.`,
+      });
+    } catch (error) {
+      sonnerToast.error("No fue posible guardar el preset", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
+
+  async function handleCreateBridgeSchedule() {
+    const presetId = Number(bridgeSchedulePresetIdDraft);
+    if (!Number.isInteger(presetId) || presetId < 1) {
+      sonnerToast.error("Selecciona un preset", {
+        description: "Primero elige uno de los presets guardados para programar la agenda automática.",
+      });
+      return;
+    }
+
+    try {
+      await createBridgeScheduleMutation.mutateAsync({
+        presetId,
+        tenantId: currentTenantScope,
+        cronExpression: bridgeScheduleCronDraft.trim(),
+        timezone: bridgeScheduleTimezoneDraft.trim(),
+        isActive: bridgeScheduleActiveDraft,
+      });
+      await utils.dashboard.ceoListBridgeSchedules.invalidate();
+      sonnerToast.success("Agenda automática creada", {
+        description: "La automatización del bridge quedó registrada y empezará a correr según la siguiente ventana válida.",
+      });
+    } catch (error) {
+      sonnerToast.error("No fue posible crear la agenda", {
+        description: error instanceof Error ? error.message : "Verifica el cron y la zona horaria antes de intentar nuevamente.",
+      });
+    }
+  }
+
+  async function handleToggleBridgeSchedule(schedule: {
+    id: number;
+    presetId: number;
+    tenantId: string | null;
+    cronExpression: string;
+    timezone: string;
+    isActive: boolean;
+  }) {
+    try {
+      await updateBridgeScheduleMutation.mutateAsync({
+        id: schedule.id,
+        presetId: schedule.presetId,
+        tenantId: schedule.tenantId ?? undefined,
+        cronExpression: schedule.cronExpression,
+        timezone: schedule.timezone,
+        isActive: !schedule.isActive,
+      });
+      await utils.dashboard.ceoListBridgeSchedules.invalidate();
+      sonnerToast.success(schedule.isActive ? "Agenda pausada" : "Agenda reactivada");
+    } catch (error) {
+      sonnerToast.error("No fue posible actualizar la agenda", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
+
+  async function handleDeleteBridgePreset(preset: { id: number; tenantId: string | null; name: string }) {
+    if (!window.confirm(`¿Eliminar el preset bridge “${preset.name}”? También se eliminarán sus agendas asociadas.`)) {
+      return;
+    }
+
+    try {
+      await deleteBridgePresetMutation.mutateAsync({ id: preset.id, tenantId: preset.tenantId ?? undefined });
+      await utils.dashboard.ceoListBridgePresets.invalidate();
+      await utils.dashboard.ceoListBridgeSchedules.invalidate();
+      sonnerToast.success("Preset bridge eliminado");
+    } catch (error) {
+      sonnerToast.error("No fue posible eliminar el preset", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
+    }
+  }
+
+  async function handleDeleteBridgeSchedule(schedule: { id: number; tenantId: string | null }) {
+    if (!window.confirm("¿Eliminar esta agenda automática del bridge?")) {
+      return;
+    }
+
+    try {
+      await deleteBridgeScheduleMutation.mutateAsync({ id: schedule.id, tenantId: schedule.tenantId ?? undefined });
+      await utils.dashboard.ceoListBridgeSchedules.invalidate();
+      sonnerToast.success("Agenda automática eliminada");
+    } catch (error) {
+      sonnerToast.error("No fue posible eliminar la agenda", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos segundos.",
+      });
     }
   }
 
@@ -2627,6 +2863,216 @@ export default function CeoDashboard() {
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con warnings: {formatNumber(bridgeOverview.summary.withWarnings)}</span>
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Retry programado: {formatNumber(bridgeOverview.summary.retryScheduled)}</span>
                   <span data-testid="bridge-smoke-threshold-pill" className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Umbral operativo smoke: {formatNumber(bridgeSmokeAlerting?.threshold ?? 0)}</span>
+                </div>
+                <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                  <article className="rounded-[1.6rem] border border-slate-200 bg-white/95 p-5 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Presets bridge</p>
+                        <h3 className="mt-1 text-lg font-semibold text-slate-950">Guardar filtros, formato y destinatarios</h3>
+                        <p className="mt-1 text-sm text-slate-600">El preset reutiliza los filtros visibles del bridge y el umbral operativo actual.</p>
+                      </div>
+                      <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700">{bridgePresets.length} preset{bridgePresets.length === 1 ? "" : "s"}</Badge>
+                    </div>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <label>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Nombre del preset</span>
+                        <input
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgePresetNameDraft}
+                          onChange={(event) => setBridgePresetNameDraft(event.target.value)}
+                          placeholder="Cierre semanal bridge"
+                        />
+                      </label>
+                      <label>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Formato por defecto</span>
+                        <select
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgePresetExportFormatDraft}
+                          onChange={(event) => setBridgePresetExportFormatDraft(event.target.value as "csv" | "pdf")}
+                        >
+                          <option value="pdf">PDF ejecutivo</option>
+                          <option value="csv">CSV operativo</option>
+                        </select>
+                      </label>
+                      <label className="md:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Descripción breve</span>
+                        <input
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgePresetDescriptionDraft}
+                          onChange={(event) => setBridgePresetDescriptionDraft(event.target.value)}
+                          placeholder="Reporte recurrente para seguimiento ejecutivo del carril bridge"
+                        />
+                      </label>
+                      <label className="md:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Destinatarios sugeridos</span>
+                        <input
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgePresetEmailRecipientsDraft}
+                          onChange={(event) => setBridgePresetEmailRecipientsDraft(event.target.value)}
+                          placeholder="ceo@empresa.com, operaciones@empresa.com"
+                        />
+                      </label>
+                      <label className="md:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Mensaje opcional</span>
+                        <textarea
+                          className="mt-2 min-h-[88px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgePresetEmailMessageDraft}
+                          onChange={(event) => setBridgePresetEmailMessageDraft(event.target.value)}
+                          placeholder="Resumen operativo del bridge para revisión ejecutiva."
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600">
+                      <p className="font-medium text-slate-900">Filtros que se guardarán ahora</p>
+                      <p className="mt-1">{formatBridgePresetSummary(bridgePresetFilters)}</p>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Button type="button" className="rounded-full" disabled={createBridgePresetMutation.isPending} onClick={() => void handleSaveBridgePreset()}>
+                        {createBridgePresetMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Files className="mr-2 h-4 w-4" />}
+                        Guardar preset actual
+                      </Button>
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      {bridgePresets.length === 0 ? (
+                        <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-sm text-slate-500">
+                          Aún no existen presets bridge para este alcance. Guarda el estado actual para reutilizar filtros y destinatarios.
+                        </div>
+                      ) : (
+                        bridgePresets.map((preset) => (
+                          <div key={preset.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-950">{preset.name}</p>
+                                <p className="mt-1 text-xs text-slate-500">{preset.description ?? formatBridgePresetSummary(preset.filters)}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="rounded-full border border-white bg-white text-slate-700">{preset.exportFormat.toUpperCase()}</Badge>
+                                <Badge className="rounded-full border border-white bg-white text-slate-700">Umbral {preset.smokeThreshold}</Badge>
+                              </div>
+                            </div>
+                            <p className="mt-3 text-xs text-slate-500">Filtros: {formatBridgePresetSummary(preset.filters)}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" className="rounded-full bg-white" onClick={() => handleApplyBridgePreset(preset)}>
+                                Aplicar
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full bg-white"
+                                disabled={deleteBridgePresetMutation.isPending}
+                                onClick={() => void handleDeleteBridgePreset(preset)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </article>
+                  <article className="rounded-[1.6rem] border border-slate-200 bg-white/95 p-5 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Agenda automática</p>
+                        <h3 className="mt-1 text-lg font-semibold text-slate-950">Programar envío recurrente del bridge</h3>
+                        <p className="mt-1 text-sm text-slate-600">Usa cron de 6 campos y zona horaria IANA para ejecutar el bridge sin intervención manual.</p>
+                      </div>
+                      <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700">{bridgeSchedules.length} agenda{bridgeSchedules.length === 1 ? "" : "s"}</Badge>
+                    </div>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <label className="md:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Preset a ejecutar</span>
+                        <select
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgeSchedulePresetIdDraft}
+                          onChange={(event) => setBridgeSchedulePresetIdDraft(event.target.value)}
+                        >
+                          <option value="">Selecciona un preset bridge</option>
+                          {bridgePresets.map((preset) => (
+                            <option key={preset.id} value={preset.id}>
+                              {preset.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Cron (6 campos)</span>
+                        <input
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgeScheduleCronDraft}
+                          onChange={(event) => setBridgeScheduleCronDraft(event.target.value)}
+                          placeholder="0 0 8 * * 1"
+                        />
+                      </label>
+                      <label>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Zona horaria</span>
+                        <input
+                          className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                          value={bridgeScheduleTimezoneDraft}
+                          onChange={(event) => setBridgeScheduleTimezoneDraft(event.target.value)}
+                          placeholder="America/Mexico_City"
+                        />
+                      </label>
+                    </div>
+                    <label className="mt-4 flex items-center gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700">
+                      <input type="checkbox" checked={bridgeScheduleActiveDraft} onChange={(event) => setBridgeScheduleActiveDraft(event.target.checked)} />
+                      Dejar la agenda activa desde su creación
+                    </label>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Button type="button" className="rounded-full" disabled={createBridgeScheduleMutation.isPending || bridgePresets.length === 0} onClick={() => void handleCreateBridgeSchedule()}>
+                        {createBridgeScheduleMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Clock3 className="mr-2 h-4 w-4" />}
+                        Programar agenda
+                      </Button>
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      {bridgeSchedules.length === 0 ? (
+                        <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-sm text-slate-500">
+                          No hay agendas bridge registradas todavía. Guarda al menos un preset y programa su primer cron.
+                        </div>
+                      ) : (
+                        bridgeSchedules.map((schedule) => (
+                          <div key={schedule.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-950">{schedule.presetName ?? `Preset ${schedule.presetId}`}</p>
+                                <p className="mt-1 text-xs text-slate-500">Cron {schedule.cronExpression} · {schedule.timezone}</p>
+                              </div>
+                              <Badge className={`rounded-full border ${schedule.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>
+                                {schedule.isActive ? "Activa" : "Pausada"}
+                              </Badge>
+                            </div>
+                            <div className="mt-3 grid gap-2 text-xs text-slate-500 md:grid-cols-2">
+                              <span>Próxima corrida: {formatDateTime(schedule.nextRunAt)}</span>
+                              <span>Última corrida: {formatDateTime(schedule.lastRunAt)}</span>
+                              <span>Estatus previo: {schedule.lastRunStatus ?? "Sin historial"}</span>
+                              <span>Error previo: {schedule.lastRunError ?? "Sin error registrado"}</span>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full bg-white"
+                                disabled={updateBridgeScheduleMutation.isPending}
+                                onClick={() => void handleToggleBridgeSchedule(schedule)}
+                              >
+                                {schedule.isActive ? "Pausar" : "Reactivar"}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full bg-white"
+                                disabled={deleteBridgeScheduleMutation.isPending}
+                                onClick={() => void handleDeleteBridgeSchedule(schedule)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </article>
                 </div>
               </section>
 

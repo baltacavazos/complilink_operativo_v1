@@ -835,3 +835,9 @@
 - [x] Envío por correo del PDF/CSV exportado del bridge a destinatarios configurables desde la Consola CEO
 - [x] Gráfico de tendencia de éxito/fallo en el comparativo diario y semanal del bridge
 - [x] Filtros exportables del bridge por ventana, severidad y tenant desde la Consola CEO
+- [x] Envío automático programado diario y semanal del reporte bridge por correo
+- [x] Presets operativos para guardar destinatarios y combinaciones reutilizables de filtros del bridge
+- [ ] Comparativo avanzado entre tenants y periodos consecutivos en la Consola CEO
+- [x] Implementar agenda automática para el bloque bridge del dashboard CEO
+- [x] Agregar presets reutilizables de filtros, exportación y correo para el bloque bridge sin rehacer la interfaz existente
+- [x] Añadir cobertura de pruebas y validación operativa para agenda automática y presets del bridge

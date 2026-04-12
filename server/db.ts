@@ -6,6 +6,8 @@ import {
   auditLogs,
   canonicalContracts,
   caseAccess,
+  ceoBridgePresets,
+  ceoBridgeSchedules,
   caseDocuments,
   caseEvents,
   compliLinkWebhookEvents,
@@ -14,6 +16,8 @@ import {
   InsertAuditLog,
   InsertCanonicalContract,
   InsertCaseAccess,
+  InsertCeoBridgePreset,
+  InsertCeoBridgeSchedule,
   InsertCaseDocument,
   InsertCaseEvent,
   InsertCompliLinkWebhookEvent,
@@ -258,6 +262,48 @@ function parseJsonSafely<T>(value: string): T | null {
   }
 }
 
+export type CeoBridgeDateWindowDays = 7 | 30 | 90 | 365;
+
+export type CeoBridgePresetFilters = {
+  tenantId?: string;
+  severity?: string;
+  caseId?: string;
+  userId?: number;
+  dateWindowDays?: CeoBridgeDateWindowDays;
+  query?: string;
+};
+
+export type CeoBridgePresetRecord = {
+  id: number;
+  userId: number;
+  tenantId: string | null;
+  name: string;
+  description: string | null;
+  filters: CeoBridgePresetFilters;
+  exportFormat: "csv" | "pdf";
+  emailRecipients: string[];
+  emailMessage: string | null;
+  smokeThreshold: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CeoBridgeScheduleRecord = {
+  id: number;
+  presetId: number;
+  userId: number;
+  tenantId: string | null;
+  cronExpression: string;
+  timezone: string;
+  nextRunAt: string | null;
+  lastRunAt: string | null;
+  lastRunStatus: string | null;
+  lastRunError: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type AuditarViewStateRecord = {
   historyFilter?: "all" | "document" | "response" | "summary";
   mobileOnboardingIndex?: number;
@@ -304,6 +350,88 @@ function normalizeAuditarViewState(value: unknown): AuditarViewStateRecord {
     mobileOnboardingIndex,
     selectedRecommendedTargetType,
     preferredCaptureMode,
+  };
+}
+
+function normalizeCeoBridgePresetFilters(value: unknown): CeoBridgePresetFilters {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  const record = value as Record<string, unknown>;
+  const dateWindowDays =
+    record.dateWindowDays === 7 ||
+    record.dateWindowDays === 30 ||
+    record.dateWindowDays === 90 ||
+    record.dateWindowDays === 365
+      ? (record.dateWindowDays as CeoBridgeDateWindowDays)
+      : undefined;
+
+  return {
+    tenantId: typeof record.tenantId === "string" && record.tenantId.trim() ? record.tenantId.trim() : undefined,
+    severity: typeof record.severity === "string" && record.severity.trim() ? record.severity.trim() : undefined,
+    caseId: typeof record.caseId === "string" && record.caseId.trim() ? record.caseId.trim() : undefined,
+    userId:
+      typeof record.userId === "number" && Number.isFinite(record.userId) && record.userId > 0
+        ? Math.trunc(record.userId)
+        : undefined,
+    dateWindowDays,
+    query: typeof record.query === "string" && record.query.trim() ? record.query.trim().slice(0, 160) : undefined,
+  };
+}
+
+function normalizeRecipientEmails(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter((entry): entry is string => typeof entry === "string")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
+function serializeTimestamp(value: Date | string | null | undefined) {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  return value.toISOString();
+}
+
+function normalizeCeoBridgePresetRow(
+  row: typeof ceoBridgePresets.$inferSelect,
+): CeoBridgePresetRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    tenantId: row.tenantId ?? null,
+    name: row.name,
+    description: row.description ?? null,
+    filters: normalizeCeoBridgePresetFilters(parseJsonSafely(row.filtersJson) ?? {}),
+    exportFormat: row.exportFormat,
+    emailRecipients: normalizeRecipientEmails(parseJsonSafely(row.emailRecipientsJson ?? "[]") ?? []),
+    emailMessage: row.emailMessage ?? null,
+    smokeThreshold: Math.max(1, Math.min(row.smokeThreshold ?? 3, 99)),
+    createdAt: serializeTimestamp(row.createdAt) ?? new Date().toISOString(),
+    updatedAt: serializeTimestamp(row.updatedAt) ?? new Date().toISOString(),
+  };
+}
+
+function normalizeCeoBridgeScheduleRow(
+  row: typeof ceoBridgeSchedules.$inferSelect,
+): CeoBridgeScheduleRecord {
+  return {
+    id: row.id,
+    presetId: row.presetId,
+    userId: row.userId,
+    tenantId: row.tenantId ?? null,
+    cronExpression: row.cronExpression,
+    timezone: row.timezone,
+    nextRunAt: serializeTimestamp(row.nextRunAt),
+    lastRunAt: serializeTimestamp(row.lastRunAt),
+    lastRunStatus: row.lastRunStatus ?? null,
+    lastRunError: row.lastRunError ?? null,
+    isActive: Boolean(row.isActive),
+    createdAt: serializeTimestamp(row.createdAt) ?? new Date().toISOString(),
+    updatedAt: serializeTimestamp(row.updatedAt) ?? new Date().toISOString(),
   };
 }
 
@@ -2002,6 +2130,287 @@ export async function seedDemoCaseIfEmpty(userId: number) {
   });
 
   return true;
+}
+
+export async function listCeoBridgePresets(params: { userId: number; tenantId?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const filters = [eq(ceoBridgePresets.userId, params.userId)];
+  if (params.tenantId) {
+    filters.push(eq(ceoBridgePresets.tenantId, params.tenantId));
+  }
+
+  const rows = await db
+    .select()
+    .from(ceoBridgePresets)
+    .where(and(...filters))
+    .orderBy(desc(ceoBridgePresets.updatedAt), desc(ceoBridgePresets.id));
+
+  return rows.map(normalizeCeoBridgePresetRow);
+}
+
+export async function createCeoBridgePreset(input: {
+  userId: number;
+  tenantId?: string | null;
+  name: string;
+  description?: string | null;
+  filters?: CeoBridgePresetFilters;
+  exportFormat: "csv" | "pdf";
+  emailRecipients?: string[];
+  emailMessage?: string | null;
+  smokeThreshold?: number | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const payload: InsertCeoBridgePreset = {
+    userId: input.userId,
+    tenantId: input.tenantId ?? null,
+    name: input.name.trim().slice(0, 120),
+    description: input.description?.trim().slice(0, 255) ?? null,
+    filtersJson: toJson(normalizeCeoBridgePresetFilters(input.filters ?? {})),
+    exportFormat: input.exportFormat,
+    emailRecipientsJson: toJson(normalizeRecipientEmails(input.emailRecipients ?? [])),
+    emailMessage: input.emailMessage?.trim() ? input.emailMessage.trim().slice(0, 1000) : null,
+    smokeThreshold: Math.max(1, Math.min(input.smokeThreshold ?? 3, 99)),
+  };
+
+  await db.insert(ceoBridgePresets).values(payload);
+
+  const rows = await db
+    .select()
+    .from(ceoBridgePresets)
+    .where(eq(ceoBridgePresets.userId, input.userId))
+    .orderBy(desc(ceoBridgePresets.id))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Failed to create CEO bridge preset");
+  return normalizeCeoBridgePresetRow(rows[0]);
+}
+
+export async function updateCeoBridgePreset(input: {
+  id: number;
+  userId: number;
+  tenantId?: string | null;
+  name: string;
+  description?: string | null;
+  filters?: CeoBridgePresetFilters;
+  exportFormat: "csv" | "pdf";
+  emailRecipients?: string[];
+  emailMessage?: string | null;
+  smokeThreshold?: number | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(ceoBridgePresets)
+    .where(and(eq(ceoBridgePresets.id, input.id), eq(ceoBridgePresets.userId, input.userId)))
+    .limit(1);
+
+  if (existing.length === 0) return null;
+
+  const payload: Partial<InsertCeoBridgePreset> = {
+    tenantId: input.tenantId ?? null,
+    name: input.name.trim().slice(0, 120),
+    description: input.description?.trim().slice(0, 255) ?? null,
+    filtersJson: toJson(normalizeCeoBridgePresetFilters(input.filters ?? {})),
+    exportFormat: input.exportFormat,
+    emailRecipientsJson: toJson(normalizeRecipientEmails(input.emailRecipients ?? [])),
+    emailMessage: input.emailMessage?.trim() ? input.emailMessage.trim().slice(0, 1000) : null,
+    smokeThreshold: Math.max(1, Math.min(input.smokeThreshold ?? 3, 99)),
+  };
+
+  await db
+    .update(ceoBridgePresets)
+    .set(payload)
+    .where(and(eq(ceoBridgePresets.id, input.id), eq(ceoBridgePresets.userId, input.userId)));
+
+  const rows = await db.select().from(ceoBridgePresets).where(eq(ceoBridgePresets.id, input.id)).limit(1);
+  return rows.length > 0 ? normalizeCeoBridgePresetRow(rows[0]) : null;
+}
+
+export async function deleteCeoBridgePreset(params: { id: number; userId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(ceoBridgeSchedules).where(eq(ceoBridgeSchedules.presetId, params.id));
+  await db.delete(ceoBridgePresets).where(and(eq(ceoBridgePresets.id, params.id), eq(ceoBridgePresets.userId, params.userId)));
+
+  return true;
+}
+
+export async function getCeoBridgePresetById(params: { id: number; userId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select()
+    .from(ceoBridgePresets)
+    .where(and(eq(ceoBridgePresets.id, params.id), eq(ceoBridgePresets.userId, params.userId)))
+    .limit(1);
+
+  return rows.length > 0 ? normalizeCeoBridgePresetRow(rows[0]) : null;
+}
+
+export async function listCeoBridgeSchedules(params: { userId: number; tenantId?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const filters = [eq(ceoBridgeSchedules.userId, params.userId)];
+  if (params.tenantId) {
+    filters.push(eq(ceoBridgeSchedules.tenantId, params.tenantId));
+  }
+
+  const rows = await db
+    .select({
+      schedule: ceoBridgeSchedules,
+      presetName: ceoBridgePresets.name,
+    })
+    .from(ceoBridgeSchedules)
+    .innerJoin(ceoBridgePresets, eq(ceoBridgePresets.id, ceoBridgeSchedules.presetId))
+    .where(and(...filters))
+    .orderBy(desc(ceoBridgeSchedules.updatedAt), desc(ceoBridgeSchedules.id));
+
+  return rows.map((row) => ({
+    ...normalizeCeoBridgeScheduleRow(row.schedule),
+    presetName: row.presetName,
+  }));
+}
+
+export async function createCeoBridgeSchedule(input: {
+  presetId: number;
+  userId: number;
+  tenantId?: string | null;
+  cronExpression: string;
+  timezone: string;
+  nextRunAt: Date | null;
+  isActive: boolean;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const payload: InsertCeoBridgeSchedule = {
+    presetId: input.presetId,
+    userId: input.userId,
+    tenantId: input.tenantId ?? null,
+    cronExpression: input.cronExpression.trim().slice(0, 64),
+    timezone: input.timezone.trim().slice(0, 64) || "UTC",
+    nextRunAt: input.nextRunAt,
+    isActive: input.isActive ? 1 : 0,
+  };
+
+  await db.insert(ceoBridgeSchedules).values(payload);
+
+  const rows = await db
+    .select()
+    .from(ceoBridgeSchedules)
+    .where(eq(ceoBridgeSchedules.userId, input.userId))
+    .orderBy(desc(ceoBridgeSchedules.id))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Failed to create CEO bridge schedule");
+  return normalizeCeoBridgeScheduleRow(rows[0]);
+}
+
+export async function updateCeoBridgeSchedule(input: {
+  id: number;
+  userId: number;
+  presetId: number;
+  tenantId?: string | null;
+  cronExpression: string;
+  timezone: string;
+  nextRunAt: Date | null;
+  isActive: boolean;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(ceoBridgeSchedules)
+    .where(and(eq(ceoBridgeSchedules.id, input.id), eq(ceoBridgeSchedules.userId, input.userId)))
+    .limit(1);
+
+  if (existing.length === 0) return null;
+
+  await db
+    .update(ceoBridgeSchedules)
+    .set({
+      presetId: input.presetId,
+      tenantId: input.tenantId ?? null,
+      cronExpression: input.cronExpression.trim().slice(0, 64),
+      timezone: input.timezone.trim().slice(0, 64) || "UTC",
+      nextRunAt: input.nextRunAt,
+      isActive: input.isActive ? 1 : 0,
+      lastRunError: input.isActive ? null : existing[0].lastRunError,
+    })
+    .where(and(eq(ceoBridgeSchedules.id, input.id), eq(ceoBridgeSchedules.userId, input.userId)));
+
+  const rows = await db.select().from(ceoBridgeSchedules).where(eq(ceoBridgeSchedules.id, input.id)).limit(1);
+  return rows.length > 0 ? normalizeCeoBridgeScheduleRow(rows[0]) : null;
+}
+
+export async function deleteCeoBridgeSchedule(params: { id: number; userId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(ceoBridgeSchedules).where(and(eq(ceoBridgeSchedules.id, params.id), eq(ceoBridgeSchedules.userId, params.userId)));
+  return true;
+}
+
+export async function listDueCeoBridgeSchedules(now: Date, limit = 5) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select({
+      schedule: ceoBridgeSchedules,
+      preset: ceoBridgePresets,
+      userEmail: users.email,
+      userName: users.name,
+    })
+    .from(ceoBridgeSchedules)
+    .innerJoin(ceoBridgePresets, eq(ceoBridgePresets.id, ceoBridgeSchedules.presetId))
+    .innerJoin(users, eq(users.id, ceoBridgeSchedules.userId))
+    .where(
+      and(
+        eq(ceoBridgeSchedules.isActive, 1),
+        lte(ceoBridgeSchedules.nextRunAt, now),
+      ),
+    )
+    .orderBy(ceoBridgeSchedules.nextRunAt)
+    .limit(limit);
+
+  return rows.map((row) => ({
+    schedule: normalizeCeoBridgeScheduleRow(row.schedule),
+    preset: normalizeCeoBridgePresetRow(row.preset),
+    userEmail: row.userEmail,
+    userName: row.userName ?? null,
+  }));
+}
+
+export async function recordCeoBridgeScheduleRun(input: {
+  id: number;
+  lastRunAt: Date;
+  nextRunAt: Date | null;
+  lastRunStatus: string;
+  lastRunError?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(ceoBridgeSchedules)
+    .set({
+      lastRunAt: input.lastRunAt,
+      nextRunAt: input.nextRunAt,
+      lastRunStatus: input.lastRunStatus.slice(0, 32),
+      lastRunError: input.lastRunError?.slice(0, 2000) ?? null,
+    })
+    .where(eq(ceoBridgeSchedules.id, input.id));
 }
 
 export async function getSystemSnapshot(userId: number) {
