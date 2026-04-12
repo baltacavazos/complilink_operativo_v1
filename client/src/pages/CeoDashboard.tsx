@@ -16,6 +16,7 @@ import {
 import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
+import { buildBridgeScheduleLogbook } from "@/pages/ceoBridgeScheduleLogbook";
 import {
   buildBridgeSmokeComparisonSummary,
   buildBridgeSmokeHistorySummary,
@@ -599,6 +600,7 @@ export default function CeoDashboard() {
       }),
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
+  const bridgeScheduleLogbook = useMemo(() => buildBridgeScheduleLogbook({ auditTrail, schedules: bridgeSchedules }), [auditTrail, bridgeSchedules]);
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
   const bridgeSmokeAlerting = bridgeSmokeStatus?.alerting ?? null;
   const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
@@ -3070,6 +3072,67 @@ export default function CeoDashboard() {
                             </div>
                           </div>
                         ))
+                      )}
+                    </div>
+                    <div className="mt-6 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Bitácora visible</p>
+                          <h4 className="mt-1 text-sm font-semibold text-slate-950">Últimas corridas del scheduler bridge</h4>
+                          <p className="mt-1 text-xs text-slate-500">Se alimenta del feed operativo para distinguir corridas exitosas y fallidas sin abrir logs técnicos.</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{bridgeScheduleLogbook.summary.totalRuns} corrida{bridgeScheduleLogbook.summary.totalRuns === 1 ? "" : "s"}</Badge>
+                          <Badge className="rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700">{bridgeScheduleLogbook.summary.successfulRuns} ok</Badge>
+                          <Badge className="rounded-full border border-rose-200 bg-rose-50 text-rose-700">{bridgeScheduleLogbook.summary.failedRuns} fallo{bridgeScheduleLogbook.summary.failedRuns === 1 ? "" : "s"}</Badge>
+                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{bridgeScheduleLogbook.summary.schedulesWithoutHistory} agenda{bridgeScheduleLogbook.summary.schedulesWithoutHistory === 1 ? "" : "s"} sin historial</Badge>
+                        </div>
+                      </div>
+                      {bridgeScheduleLogbook.rows.length === 0 ? (
+                        <div className="mt-4 rounded-[1rem] border border-dashed border-slate-300 bg-white/80 px-4 py-4 text-sm text-slate-500">
+                          La bitácora aparecerá aquí después de la primera corrida automática registrada por una agenda bridge.
+                        </div>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {bridgeScheduleLogbook.rows.slice(0, 6).map((entry) => (
+                            <div key={entry.key} className="rounded-[1rem] border border-slate-200 bg-white/90 p-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-950">{entry.presetName}</p>
+                                  <p className="mt-1 text-xs text-slate-500">Agenda #{entry.scheduleId} · Ejecutada {formatDateTime(entry.executedAt)}</p>
+                                </div>
+                                <Badge className={`rounded-full border ${entry.status === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+                                  {entry.status === "success" ? "Envío exitoso" : "Fallo registrado"}
+                                </Badge>
+                              </div>
+                              <div className="mt-3 grid gap-2 text-xs text-slate-500 md:grid-cols-2 xl:grid-cols-4">
+                                <span>Próxima corrida: {formatDateTime(entry.nextRunAt)}</span>
+                                <span>Registros visibles: {entry.visibleCount ?? "No informado"}</span>
+                                <span>Destinatarios: {entry.recipientCount ?? "No informado"}</span>
+                                <span>Exportación: {entry.exportFormat ?? "No informada"}</span>
+                              </div>
+                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
+                                {entry.appliedFilters.length > 0 ? (
+                                  entry.appliedFilters.slice(0, 3).map((filterLabel) => (
+                                    <span key={`${entry.key}:${filterLabel}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                                      {filterLabel}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Sin filtros visibles</span>
+                                )}
+                                {entry.attachments.length > 0 ? (
+                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">Adjuntos: {entry.attachments.join(", ")}</span>
+                                ) : null}
+                              </div>
+                              {entry.errorMessage ? (
+                                <div className="mt-3 rounded-[0.95rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                                  {entry.errorMessage}
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </article>

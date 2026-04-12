@@ -845,3 +845,4 @@
 - [x] Revisar qué funcionalidades y mensajes deben mostrarse o posponerse en la primera publicación
 - [x] Priorizar backlog inmediato post-lanzamiento con foco en impacto y velocidad de ejecución
 - [x] Resolver el bloqueo operativo del worker del bridge verificando y corrigiendo la migración faltante de ceo_bridge_schedules antes de publicar V1
+- [x] Implementar una bitácora visible de corridas del scheduler bridge con trazabilidad mínima para revisión operativa antes de publicar

@@ -1,0 +1,84 @@
+{
+  "prompt": "Actúa como arquitecto senior full-stack y SRE para una app React + Express + tRPC + Drizzle + MySQL.\n\nNecesito una recomendación mínima y segura para implementar una **bitácora visible de corridas del scheduler bridge** antes de publicar V1.\n\nHechos confirmados del proyecto:\n1. Existe un worker en `server/ceoBridgeAutomation.ts` que cada minuto ejecuta `processDueCeoBridgeSchedules()`.\n2. Cuando una corrida sale bien, envía email, actualiza `ceo_bridge_schedules.lastRunAt/lastRunStatus/lastRunError/nextRunAt` y además crea un audit log con acción `dashboard.ceo.bridge_schedule_executed` y detalles como `scheduleId`, `presetId`, `presetName`, `snapshotGeneratedAt`, `appliedFilters`, `visibleCount`, `recipientCount`, `recipients`, `exportFormat` y `attachments`.\n3. Cuando una corrida falla, hoy solo actualiza `ceo_bridge_schedules` con `lastRunAt`, `lastRunStatus='failed'`, `lastRunError` y `nextRunAt`; NO crea audit log explícito de fallo.\n4. Ya existe una UI de monitoreo bridge basada en `auditLogs`, concretamente `client/src/pages/ceoBridgeMonitoring.ts`, y también existe un patrón de historial visible en `client/src/pages/ceoBridgeSmokeHistory.ts`.\n5. El dashboard CEO ya gestiona la sección bridge y formularios de presets/agendas.\n6. El objetivo NO es construir una plataforma completa de observabilidad. Solo queremos una bitácora visible, útil y mínima para operadores en V1.\n\nRestricciones:\n- Minimizar cambios de esquema y riesgo de regresión.\n- Mantener compatibilidad con el scheduler actual.\n- Preferir reutilizar `auditLogs` y piezas de UI ya existentes si eso alcanza.\n- Añadir solo las pruebas Vitest imprescindibles.\n\nDevuelve solo JSON válido con este esquema exacto:\n{\n  \"recommended_minimum_design\": \"string\",\n  \"backend_changes\": [\"string\"],\n  \"ui_changes\": [\"string\"],\n  \"data_source_strategy\": \"string\",\n  \"tests_to_add\": [\"string\"],\n  \"avoid_for_v1\": [\"string\"],\n  \"confidence\": \"low|medium|high\"\n}\n\nCriterios:\n- Prioriza la vía de menor costo y menor riesgo.\n- Si basta con completar audit logs de éxito+fallo y derivar la bitácora desde allí, dilo claramente.\n- Solo propone una tabla nueva si realmente es necesaria para V1.\n- No expliques nada fuera del JSON.",
+  "models": {
+    "chatgpt": {
+      "provider": "chatgpt",
+      "ok": true,
+      "data": {
+        "recommended_minimum_design": "Extender la creación de audit logs para que también registre explícitamente las corridas fallidas del scheduler con acción 'dashboard.ceo.bridge_schedule_failed' y detalles mínimos del error, reutilizando la tabla auditLogs existente para que la UI actual pueda mostrar ambas corridas exitosas y fallidas sin cambios de esquema ni tablas nuevas.",
+        "backend_changes": [
+          "Modificar processDueCeoBridgeSchedules() para crear un audit log con acción 'dashboard.ceo.bridge_schedule_failed' y detalles relevantes cuando la corrida falle.",
+          "Mantener la creación actual de audit log para corridas exitosas sin cambios.",
+          "Asegurar que los campos mínimos para fallo en audit log sean: scheduleId, lastRunError, lastRunAt."
+        ],
+        "ui_changes": [
+          "Actualizar client/src/pages/ceoBridgeMonitoring.ts para filtrar y mostrar audit logs con acciones 'dashboard.ceo.bridge_schedule_executed' y 'dashboard.ceo.bridge_schedule_failed' en la bitácora visible.",
+          "Ajustar etiquetas o íconos para diferenciar visualmente corridas exitosas y fallidas."
+        ],
+        "data_source_strategy": "Reutilizar exclusivamente la tabla auditLogs para ambas corridas exitosas y fallidas, sin crear tablas nuevas ni modificar esquema existente.",
+        "tests_to_add": [
+          "Vitest para verificar que al fallar una corrida se crea correctamente un audit log con acción 'dashboard.ceo.bridge_schedule_failed' y campos esperados.",
+          "Vitest para validar que la UI muestra correctamente ambos tipos de audit logs en la bitácora."
+        ],
+        "avoid_for_v1": [
+          "Crear tablas nuevas para logs de corridas.",
+          "Cambios en el esquema de ceo_bridge_schedules más allá de los ya existentes.",
+          "Implementar plataforma completa de observabilidad o métricas avanzadas."
+        ],
+        "confidence": "high"
+      }
+    },
+    "grok": {
+      "provider": "grok",
+      "ok": true,
+      "model": "grok-3-mini-beta",
+      "data": {
+        "recommended_minimum_design": "Extender los audit logs existentes para incluir registros de fallos en el worker, manteniendo la consistencia con los logs de éxito, y reutilizar la UI actual para mostrar la bitácora sin cambios mayores.",
+        "backend_changes": [
+          "Modificar server/ceoBridgeAutomation.ts en el worker para que, en caso de fallo, cree un audit log con acción como 'dashboard.ceo.bridge_schedule_failed' e incluya detalles similares a los de éxito, más el campo lastRunError."
+        ],
+        "ui_changes": [
+          "Ninguno, ya que la UI en client/src/pages/ceoBridgeMonitoring.ts y client/src/pages/ceoBridgeSmokeHistory.ts puede reutilizar los audit logs existentes para mostrar la bitácora completa."
+        ],
+        "data_source_strategy": "Reutilizar la tabla de auditLogs existente para almacenar y consultar tanto logs de éxito como de fallo, evitando cualquier cambio de esquema.",
+        "tests_to_add": [
+          "Añadir una prueba Vitest unitaria en el backend para verificar que el worker crea correctamente un audit log en escenarios de fallo."
+        ],
+        "avoid_for_v1": [
+          "Crear una nueva tabla para logs, implementar características de monitoreo avanzado o cualquier cambio que no sea estrictamente necesario."
+        ],
+        "confidence": "high"
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "data": {
+        "recommended_minimum_design": "Leverage the existing `auditLogs` table to record both successful and failed scheduler bridge runs. The UI will then query these logs to display a combined run history, differentiating between success and failure states.",
+        "backend_changes": [
+          "Modify `server/ceoBridgeAutomation.ts` (specifically `processDueCeoBridgeSchedules` or its helper functions) to create an `auditLog` entry when a schedule run fails. The `action` should be `dashboard.ceo.bridge_schedule_failed` and the `details` payload should include `scheduleId`, `presetId`, `presetName`, `error` (from `lastRunError`), and `lastRunAt`.",
+          "Review the existing `auditLog` creation for successful runs (`dashboard.ceo.bridge_schedule_executed`) to ensure it consistently includes all necessary display details like `scheduleId`, `presetId`, `presetName`, `snapshotGeneratedAt`, `visibleCount`, `recipientCount`, etc., and that common fields are named consistently with failure logs."
+        ],
+        "ui_changes": [
+          "Update the tRPC router to expose an endpoint that can query `auditLogs` for both `dashboard.ceo.bridge_schedule_executed` and `dashboard.ceo.bridge_schedule_failed` actions. This endpoint should support filtering by `scheduleId` if a per-schedule history is desired, or provide a global view.",
+          "Modify `client/src/pages/ceoBridgeMonitoring.ts` (or create a new, dedicated component/page if `monitoring` is too high-level for detailed history) to fetch and display these combined audit logs.",
+          "Implement UI logic to clearly differentiate between successful and failed run entries (e.g., using distinct icons, color-coding, or status labels).",
+          "Display relevant details from the `details` JSON payload for each log entry, such as `presetName`, `snapshotGeneratedAt`, `visibleCount`, `recipientCount` for successes, and the `error` message for failures. Consider reusing the list-based display pattern from `client/src/pages/ceoBridgeSmokeHistory.ts`."
+        ],
+        "data_source_strategy": "The `auditLogs` table will serve as the single, unified source of truth for all scheduler bridge run history (both successes and failures).",
+        "tests_to_add": [
+          "Vitest test for `processDueCeoBridgeSchedules()`: Verify that upon successful execution of a schedule, an `auditLog` with action `dashboard.ceo.bridge_schedule_executed` is created with the expected `details` payload.",
+          "Vitest test for `processDueCeoBridgeSchedules()`: Verify that upon a failed execution of a schedule, an `auditLog` with action `dashboard.ceo.bridge_schedule_failed` is created, containing the `scheduleId`, `presetId`, `presetName`, and the `error` message in its `details` payload.",
+          "Integration test for the tRPC endpoint responsible for fetching scheduler bridge run logs, ensuring it correctly retrieves and combines `auditLogs` for both success and failure actions."
+        ],
+        "avoid_for_v1": [
+          "Creating a new dedicated database table (e.g., `ceo_bridge_run_logs`) for scheduler run history.",
+          "Implementing advanced observability features such as complex filtering, sorting, pagination beyond basic needs, or graphical representations of run data.",
+          "Building a full-fledged real-time monitoring dashboard with WebSockets or server-sent events; simple polling for updates is sufficient for V1."
+        ],
+        "confidence": "high"
+      }
+    }
+  }
+}
