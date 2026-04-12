@@ -15,6 +15,15 @@ import {
 import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
+import {
+  buildBridgeSmokeHistorySummary,
+  filterBridgeSmokeHistory,
+  getBridgeSmokeHistoryContext,
+  getBridgeSmokeHistoryFilterLabel,
+  getBridgeSmokeHistoryStatusLabel,
+  getBridgeSmokeHistoryStatusTone,
+  type BridgeSmokeHistoryFilter,
+} from "@/pages/ceoBridgeSmokeHistory";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
 import {
   buildAuditExecutiveAlerts,
@@ -329,6 +338,7 @@ export default function CeoDashboard() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
   const [auditSeverityFilter, setAuditSeverityFilter] = useState<AuditEventSeverity>("all");
+  const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -490,6 +500,13 @@ export default function CeoDashboard() {
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
+  const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
+  const bridgeSmokeHistorySummary = useMemo(() => buildBridgeSmokeHistorySummary(bridgeSmokeHistory), [bridgeSmokeHistory]);
+  const bridgeSmokeTrend = useMemo(() => bridgeSmokeHistory.slice(0, 10), [bridgeSmokeHistory]);
+  const filteredBridgeSmokeHistory = useMemo(
+    () => filterBridgeSmokeHistory(bridgeSmokeHistory, bridgeSmokeHistoryFilter).slice(0, 8),
+    [bridgeSmokeHistory, bridgeSmokeHistoryFilter],
+  );
   const bridgeOperationalSummary = useMemo(() => {
     const delivered = bridgeOverview.rows.filter((item) => Boolean(item.returnedAt)).length;
     const rejected = bridgeOverview.rows.filter(
@@ -2151,6 +2168,131 @@ export default function CeoDashboard() {
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con warnings: {formatNumber(bridgeOverview.summary.withWarnings)}</span>
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Retry programado: {formatNumber(bridgeOverview.summary.retryScheduled)}</span>
                 </div>
+              </section>
+
+              <section className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Historial smoke test</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Evolución reciente del carril bridge</h3>
+                    </div>
+                    <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700">
+                      {formatNumber(bridgeSmokeHistorySummary.totalRuns)} corridas visibles
+                    </Badge>
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {(["all", "passed", "failed", "error"] as const).map((filterOption) => {
+                      const count =
+                        filterOption === "all"
+                          ? bridgeSmokeHistorySummary.totalRuns
+                          : filterOption === "passed"
+                            ? bridgeSmokeHistorySummary.passedRuns
+                            : filterOption === "failed"
+                              ? bridgeSmokeHistorySummary.failedRuns
+                              : bridgeSmokeHistorySummary.errorRuns;
+
+                      return (
+                        <Button
+                          key={filterOption}
+                          type="button"
+                          variant={bridgeSmokeHistoryFilter === filterOption ? "default" : "outline"}
+                          className="rounded-full"
+                          onClick={() => setBridgeSmokeHistoryFilter(filterOption)}
+                        >
+                          {getBridgeSmokeHistoryFilterLabel(filterOption)} · {formatNumber(count)}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-3 text-xs text-slate-500">
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Éxito reciente: {formatNumber(bridgeSmokeHistorySummary.successRate)}%</span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Racha actual de fallos: {formatNumber(bridgeSmokeHistorySummary.consecutiveFailures)}</span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Corridas 24h: {formatNumber(bridgeSmokeStatus?.summary.last24Hours ?? 0)}</span>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {filteredBridgeSmokeHistory.length > 0 ? (
+                      filteredBridgeSmokeHistory.map((entry) => (
+                        <article key={`${entry.testedAt ?? "sin-fecha"}-${entry.status}-${entry.runMode ?? "na"}`} className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge className={`rounded-full border ${getBridgeSmokeHistoryStatusTone(entry.status)}`}>
+                                  {getBridgeSmokeHistoryStatusLabel(entry.status)}
+                                </Badge>
+                                {entry.runMode ? (
+                                  <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{entry.runMode}</Badge>
+                                ) : null}
+                              </div>
+                              <p className="text-sm font-semibold text-slate-950">{entry.baseUrl || bridgeSmokeStatus?.baseUrl || "Base URL no registrada"}</p>
+                              <p className="text-sm text-slate-600">{getBridgeSmokeHistoryContext(entry)}</p>
+                              <p className="text-xs text-slate-500">{entry.testedAt ? formatDateTime(entry.testedAt) : "Fecha no disponible"}</p>
+                            </div>
+                            <div className="min-w-[220px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                              <p><strong className="text-slate-950">Health:</strong> {entry.healthStatus ?? "—"}</p>
+                              <p><strong className="text-slate-950">Webhook:</strong> {entry.webhookStatus ?? "—"}</p>
+                              <p><strong className="text-slate-950">Verificado:</strong> {entry.verified === null ? "Sin dato" : entry.verified ? "Sí" : "No"}</p>
+                            </div>
+                          </div>
+                        </article>
+                      ))
+                    ) : (
+                      <div className="rounded-[1.4rem] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-sm text-slate-500">
+                        {bridgeSmokeStatusQuery.isLoading
+                          ? "Cargando historial reciente del smoke test bridge..."
+                          : "Todavía no hay corridas persistidas que coincidan con el filtro actual."}
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tendencia reciente</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Pulso del smoke test</h3>
+                    </div>
+                    <Clock3 className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Últimas 10 corridas</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {bridgeSmokeTrend.length > 0 ? (
+                        bridgeSmokeTrend.map((entry) => (
+                          <span
+                            key={`${entry.testedAt ?? "sin-fecha"}-${entry.status}-trend`}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${getBridgeSmokeHistoryStatusTone(entry.status)}`}
+                            title={entry.testedAt ? formatDateTime(entry.testedAt) : "Fecha no disponible"}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-current" />
+                            {entry.testedAt ? new Intl.DateTimeFormat("es-MX", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" }).format(new Date(entry.testedAt)) : "Sin fecha"}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500">La tendencia aparecerá cuando el smoke test deje corridas persistidas en JSONL.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-3 text-sm text-slate-600">
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Estado más reciente</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                        {bridgeSmokeHistorySummary.latestStatus ? getBridgeSmokeHistoryStatusLabel(bridgeSmokeHistorySummary.latestStatus) : "Sin historial"}
+                      </p>
+                      <p className="mt-2">Útil para confirmar si el carril cayó por error técnico o por incumplimiento contractual del ack.</p>
+                    </div>
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Errores técnicos</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeHistorySummary.errorRuns)}</p>
+                      <p className="mt-2">Aquí caen timeouts, lecturas nulas o caídas del endpoint antes de validar el contrato.</p>
+                    </div>
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Fallos contractuales</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeHistorySummary.failedRuns)}</p>
+                      <p className="mt-2">Señal para revisar divergencias entre health, webhook y ack esperado 200/202.</p>
+                    </div>
+                  </div>
+                </article>
               </section>
 
               <section className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">

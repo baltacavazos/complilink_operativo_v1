@@ -809,3 +809,7 @@
 - [x] Panel operativo del bridge: ampliar el dashboard CEO con métricas agregadas de entregas, rechazos, reintentos y estado del último smoke test recurrente.
 - [x] Smoke test recurrente automatizado del bridge: ejecutar el smoke test en forma periódica y persistir su resultado operativo.
 - [x] Pruebas E2E ampliadas del bridge: cubrir flujo completo, firma inválida, errores y duplicados/idempotencia.
+- [x] Siguiente bloque bridge: añadir historial operativo con tendencias recientes y filtros básicos dentro de la consola CEO.
+- [ ] Siguiente bloque bridge: disparar alertas al propietario cuando el smoke test falle de forma consecutiva según umbral operativo.
+- [ ] Siguiente bloque bridge: ampliar cobertura de navegador del panel CEO para validar render y refresco del estado operativo del bridge.
+- [x] Añadir historial operativo del bridge en la consola CEO con tendencias recientes y filtros básicos del smoke test
