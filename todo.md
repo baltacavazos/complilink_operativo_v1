@@ -820,3 +820,8 @@
 - [x] Añadir cobertura de navegador del panel CEO bridge para validar render y refresco del estado del smoke test.
 - [x] Mostrar en la consola CEO el estado de alerta activa o recovery del bridge con severidad visual y umbrales visibles en la tendencia reciente.
 - [x] Exponer el umbral operativo de fallos consecutivos del smoke test bridge como configuración controlada sin hardcode en código.
+- [x] Identificar y entregar la URL HTTPS exacta del endpoint de Auditapatrón para recibir el handoff de CompliLink por POST con Bearer token.
+- [x] Generar un PDF con la URL exacta del endpoint de Auditapatrón para el handoff de CompliLink, incluyendo método POST, autenticación Bearer y ejemplo de uso.
+- [x] Implementar edición del umbral de fallos consecutivos desde la UI CEO con trazabilidad operativa.
+- [x] Incorporar filtros por ventana temporal y severidad en el historial operativo del bridge dentro de la consola CEO.
+- [x] Consolidar alertas operativas del bridge en un reporte ejecutivo único dentro de la consola CEO.

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const DEFAULT_RESULTS_PATH = resolve(process.cwd(), "bridge_smoke_test_results.json");
@@ -6,6 +6,7 @@ const DEFAULT_HISTORY_PATH = resolve(process.cwd(), "bridge_smoke_test_history.j
 const DEFAULT_ALERT_STATE_PATH = resolve(process.cwd(), "bridge_smoke_test_alert_state.json");
 const DEFAULT_HISTORY_LIMIT = 30;
 const DEFAULT_ALERT_THRESHOLD = 3;
+const MAX_ALERT_THRESHOLD = 20;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export type BridgeSmokeHistoryStatus = "passed" | "failed" | "error";
@@ -29,6 +30,13 @@ export type BridgeSmokeHistoryEntry = {
   webhookStatus: number | null;
   verified: boolean | null;
   error: string | null;
+};
+
+export type BridgeSmokeThresholdAuditInfo = {
+  userId: number | null;
+  userName: string | null;
+  userEmail: string | null;
+  updatedAt: string | null;
 };
 
 export type BridgeSmokeMonitoringSnapshot = {
@@ -83,11 +91,16 @@ export type BridgeSmokeMonitoringSnapshot = {
     lastRecoveryAlertAt: string | null;
     lastObservedStatus: BridgeSmokeHistoryStatus | null;
     lastObservedConsecutiveFailures: number;
+    thresholdAudit: BridgeSmokeThresholdAuditInfo;
   };
 };
 
 type BridgeSmokeAlertStateFile = {
   threshold: number | null;
+  thresholdUpdatedAt: string | null;
+  thresholdUpdatedByUserId: number | null;
+  thresholdUpdatedByName: string | null;
+  thresholdUpdatedByEmail: string | null;
   alertActive: boolean;
   activatedAt: string | null;
   recoveredAt: string | null;
@@ -96,6 +109,24 @@ type BridgeSmokeAlertStateFile = {
   lastNotifiedStatus: string | null;
   lastObservedStatus: BridgeSmokeHistoryStatus | null;
   lastObservedConsecutiveFailures: number | null;
+};
+
+export type UpdateBridgeSmokeAlertThresholdOptions = {
+  threshold: number;
+  actor: {
+    userId: number;
+    userName?: string | null;
+    userEmail?: string | null;
+  };
+  alertStatePath?: string;
+  updatedAt?: string;
+};
+
+export type UpdateBridgeSmokeAlertThresholdResult = {
+  previousThreshold: number;
+  threshold: number;
+  changed: boolean;
+  thresholdAudit: BridgeSmokeThresholdAuditInfo;
 };
 
 function getPayloadRecord(value: unknown) {
@@ -136,6 +167,19 @@ function getHistoryStatus(input: { passed: boolean; error: string | null; health
 function getDefaultAlertThreshold() {
   const value = Number.parseInt(process.env.BRIDGE_SMOKE_ALERT_THRESHOLD ?? "", 10);
   return Number.isFinite(value) && value > 0 ? value : DEFAULT_ALERT_THRESHOLD;
+}
+
+function normalizeThreshold(value: number | null | undefined) {
+  if (!Number.isFinite(value) || value === null || value === undefined) {
+    return null;
+  }
+
+  const normalized = Math.trunc(value);
+  if (normalized < 1 || normalized > MAX_ALERT_THRESHOLD) {
+    return null;
+  }
+
+  return normalized;
 }
 
 function buildFallbackSnapshot(): BridgeSmokeMonitoringSnapshot {
@@ -191,6 +235,12 @@ function buildFallbackSnapshot(): BridgeSmokeMonitoringSnapshot {
       lastRecoveryAlertAt: null,
       lastObservedStatus: null,
       lastObservedConsecutiveFailures: 0,
+      thresholdAudit: {
+        userId: null,
+        userName: null,
+        userEmail: null,
+        updatedAt: null,
+      },
     },
   };
 }
@@ -237,7 +287,7 @@ function parseLatestSnapshot(raw: string, nowMs: number) {
     },
     alerting: {
       ...fallback.alerting,
-      threshold: getPayloadNumber(alerting?.threshold) ?? fallback.alerting.threshold,
+      threshold: normalizeThreshold(getPayloadNumber(alerting?.threshold)) ?? fallback.alerting.threshold,
       notificationsConfigured: getPayloadBoolean(alerting?.notificationsConfigured) ?? false,
       action: (getPayloadString(alerting?.action) as BridgeSmokeAlertAction | null) ?? "none",
       delivered: getPayloadBoolean(alerting?.delivered) ?? false,
@@ -320,9 +370,13 @@ function buildHistorySummary(entries: BridgeSmokeHistoryEntry[], nowMs: number) 
   };
 }
 
-function readAlertState(alertStatePath: string): BridgeSmokeAlertStateFile {
-  const fallback: BridgeSmokeAlertStateFile = {
+function buildDefaultAlertState(): BridgeSmokeAlertStateFile {
+  return {
     threshold: null,
+    thresholdUpdatedAt: null,
+    thresholdUpdatedByUserId: null,
+    thresholdUpdatedByName: null,
+    thresholdUpdatedByEmail: null,
     alertActive: false,
     activatedAt: null,
     recoveredAt: null,
@@ -332,6 +386,10 @@ function readAlertState(alertStatePath: string): BridgeSmokeAlertStateFile {
     lastObservedStatus: null,
     lastObservedConsecutiveFailures: null,
   };
+}
+
+function readAlertState(alertStatePath: string): BridgeSmokeAlertStateFile {
+  const fallback = buildDefaultAlertState();
 
   if (!existsSync(alertStatePath)) return fallback;
 
@@ -342,7 +400,11 @@ function readAlertState(alertStatePath: string): BridgeSmokeAlertStateFile {
     const lastObservedStatus = getPayloadString(payload.lastObservedStatus);
 
     return {
-      threshold: getPayloadNumber(payload.threshold),
+      threshold: normalizeThreshold(getPayloadNumber(payload.threshold)),
+      thresholdUpdatedAt: getPayloadString(payload.thresholdUpdatedAt),
+      thresholdUpdatedByUserId: getPayloadNumber(payload.thresholdUpdatedByUserId),
+      thresholdUpdatedByName: getPayloadString(payload.thresholdUpdatedByName),
+      thresholdUpdatedByEmail: getPayloadString(payload.thresholdUpdatedByEmail),
       alertActive: getPayloadBoolean(payload.alertActive) ?? false,
       activatedAt: getPayloadString(payload.activatedAt),
       recoveredAt: getPayloadString(payload.recoveredAt),
@@ -358,6 +420,19 @@ function readAlertState(alertStatePath: string): BridgeSmokeAlertStateFile {
   } catch {
     return fallback;
   }
+}
+
+function buildThresholdAudit(alertState: BridgeSmokeAlertStateFile): BridgeSmokeThresholdAuditInfo {
+  return {
+    userId: alertState.thresholdUpdatedByUserId,
+    userName: alertState.thresholdUpdatedByName,
+    userEmail: alertState.thresholdUpdatedByEmail,
+    updatedAt: alertState.thresholdUpdatedAt,
+  };
+}
+
+function writeAlertState(alertStatePath: string, state: BridgeSmokeAlertStateFile) {
+  writeFileSync(alertStatePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
 function buildAlertingSnapshot(input: {
@@ -422,6 +497,7 @@ function buildAlertingSnapshot(input: {
     lastRecoveryAlertAt: input.alertState.lastRecoveryAlertAt,
     lastObservedStatus,
     lastObservedConsecutiveFailures,
+    thresholdAudit: buildThresholdAudit(input.alertState),
   } satisfies BridgeSmokeMonitoringSnapshot["alerting"];
 }
 
@@ -484,4 +560,36 @@ export function readBridgeSmokeMonitoringSnapshot(options?: {
       }),
     };
   }
+}
+
+export function updateBridgeSmokeAlertThreshold(
+  options: UpdateBridgeSmokeAlertThresholdOptions,
+): UpdateBridgeSmokeAlertThresholdResult {
+  const normalizedThreshold = normalizeThreshold(options.threshold);
+  if (!normalizedThreshold) {
+    throw new Error(`El umbral del bridge debe estar entre 1 y ${MAX_ALERT_THRESHOLD}.`);
+  }
+
+  const alertStatePath = options.alertStatePath ?? DEFAULT_ALERT_STATE_PATH;
+  const existingState = readAlertState(alertStatePath);
+  const previousThreshold = existingState.threshold ?? getDefaultAlertThreshold();
+  const updatedAt = options.updatedAt ?? new Date().toISOString();
+
+  const nextState: BridgeSmokeAlertStateFile = {
+    ...existingState,
+    threshold: normalizedThreshold,
+    thresholdUpdatedAt: updatedAt,
+    thresholdUpdatedByUserId: options.actor.userId,
+    thresholdUpdatedByName: options.actor.userName?.trim() || null,
+    thresholdUpdatedByEmail: options.actor.userEmail?.trim() || null,
+  };
+
+  writeAlertState(alertStatePath, nextState);
+
+  return {
+    previousThreshold,
+    threshold: normalizedThreshold,
+    changed: previousThreshold !== normalizedThreshold,
+    thresholdAudit: buildThresholdAudit(nextState),
+  };
 }

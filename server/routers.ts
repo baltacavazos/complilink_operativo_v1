@@ -58,7 +58,7 @@ import {
 import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { readBridgeSmokeMonitoringSnapshot } from "./bridgeSmokeMonitoring";
+import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 import { storageGet, storagePut } from "./storage";
 import {
   buildCanonicalCaseContract,
@@ -1773,6 +1773,60 @@ export const appRouter = router({
     ceoBridgeSmokeStatus: adminProcedure.query(async () => {
       return readLatestBridgeSmokeStatus();
     }),
+    ceoUpdateBridgeSmokeThreshold: adminProcedure
+      .input(
+        z.object({
+          threshold: z.number().int().min(1).max(20),
+          snapshotGeneratedAt: z.string().datetime().optional(),
+          tenantId: z.string().min(3).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (input.snapshotGeneratedAt) {
+          assertCeoSnapshotFresh(input.snapshotGeneratedAt);
+        }
+
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+
+        const previousSnapshot = readLatestBridgeSmokeStatus();
+        const thresholdUpdate = updateBridgeSmokeAlertThreshold({
+          threshold: input.threshold,
+          actor: {
+            userId: ctx.user.id,
+            userName: ctx.user.name,
+            userEmail: ctx.user.email,
+          },
+        });
+        const updatedSnapshot = readLatestBridgeSmokeStatus();
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-BRIDGE-SMOKE-THRESHOLD-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: "bridge_smoke_alert_threshold",
+          action: "dashboard.ceo.bridge_smoke_threshold_updated",
+          beforeState: {
+            threshold: previousSnapshot.alerting.threshold,
+            thresholdAudit: previousSnapshot.alerting.thresholdAudit,
+            snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
+          },
+          afterState: {
+            threshold: updatedSnapshot.alerting.threshold,
+            thresholdAudit: thresholdUpdate.thresholdAudit,
+            changed: thresholdUpdate.changed,
+            previousThreshold: thresholdUpdate.previousThreshold,
+            visualState: updatedSnapshot.alerting.visualState,
+            statusLabel: updatedSnapshot.alerting.statusLabel,
+          },
+        });
+
+        return updatedSnapshot;
+      }),
     ceoRecordConsoleView: adminProcedure
       .input(
         z.object({

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { readBridgeSmokeMonitoringSnapshot } from "./bridgeSmokeMonitoring";
+import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 
 const tempDirs: string[] = [];
 
@@ -285,6 +285,53 @@ describe("readBridgeSmokeMonitoringSnapshot", () => {
       visualState: "stable",
       severity: "neutral",
       statusLabel: "Sin alertas activas",
+    });
+  });
+
+  it("persiste un umbral editable con trazabilidad y lo refleja en el snapshot", () => {
+    const dir = createTempDir();
+    const alertStatePath = join(dir, "bridge_smoke_test_alert_state.json");
+    process.env.BRIDGE_SMOKE_ALERT_THRESHOLD = "4";
+
+    const update = updateBridgeSmokeAlertThreshold({
+      alertStatePath,
+      threshold: 6,
+      actor: {
+        userId: 7,
+        userName: "CompliLink Owner",
+        userEmail: "owner@complilink.mx",
+      },
+      updatedAt: "2026-04-11T12:30:00.000Z",
+    });
+
+    expect(update).toMatchObject({
+      previousThreshold: 4,
+      threshold: 6,
+      changed: true,
+      thresholdAudit: {
+        userId: 7,
+        userName: "CompliLink Owner",
+        userEmail: "owner@complilink.mx",
+        updatedAt: "2026-04-11T12:30:00.000Z",
+      },
+    });
+
+    const snapshot = readBridgeSmokeMonitoringSnapshot({
+      resultsPath: join(dir, "missing_results.json"),
+      historyPath: join(dir, "missing_history.jsonl"),
+      alertStatePath,
+      nowMs: new Date("2026-04-11T12:31:00.000Z").getTime(),
+    });
+
+    expect(snapshot.alerting).toMatchObject({
+      threshold: 6,
+      thresholdAudit: {
+        userId: 7,
+        userName: "CompliLink Owner",
+        userEmail: "owner@complilink.mx",
+        updatedAt: "2026-04-11T12:30:00.000Z",
+      },
+      visualState: "stable",
     });
   });
 });

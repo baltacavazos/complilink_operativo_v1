@@ -2,6 +2,8 @@ export type BridgeSmokeHistoryStatus = "passed" | "failed" | "error";
 export type BridgeSmokeHistoryFilter = "all" | BridgeSmokeHistoryStatus;
 export type BridgeSmokeAlertSeverity = "neutral" | "warning" | "critical" | "success";
 export type BridgeSmokeAlertVisualState = "stable" | "watch" | "active_alert" | "recovered";
+export type BridgeSmokeHistoryTimeWindow = "all" | "24h" | "72h" | "7d";
+export type BridgeSmokeHistorySeverityFilter = "all" | "success" | "warning" | "critical";
 
 export type BridgeSmokeHistoryEntry = {
   testedAt: string | null;
@@ -16,9 +18,54 @@ export type BridgeSmokeHistoryEntry = {
   error: string | null;
 };
 
-export function filterBridgeSmokeHistory(entries: BridgeSmokeHistoryEntry[], filter: BridgeSmokeHistoryFilter) {
-  if (filter === "all") return entries;
-  return entries.filter((entry) => entry.status === filter);
+export type BridgeSmokeHistoryFilters = {
+  status?: BridgeSmokeHistoryFilter;
+  timeWindow?: BridgeSmokeHistoryTimeWindow;
+  severity?: BridgeSmokeHistorySeverityFilter;
+  nowMs?: number;
+};
+
+const BRIDGE_SMOKE_TIME_WINDOW_MS: Record<Exclude<BridgeSmokeHistoryTimeWindow, "all">, number> = {
+  "24h": 24 * 60 * 60 * 1000,
+  "72h": 72 * 60 * 60 * 1000,
+  "7d": 7 * 24 * 60 * 60 * 1000,
+};
+
+export function getBridgeSmokeHistorySeverity(entry: BridgeSmokeHistoryEntry): BridgeSmokeHistorySeverityFilter {
+  if (entry.status === "passed") return "success";
+  if (entry.status === "failed") return "warning";
+  return "critical";
+}
+
+export function filterBridgeSmokeHistory(
+  entries: BridgeSmokeHistoryEntry[],
+  filterOrOptions: BridgeSmokeHistoryFilter | BridgeSmokeHistoryFilters,
+  nowMs = Date.now(),
+) {
+  const options =
+    typeof filterOrOptions === "string"
+      ? ({ status: filterOrOptions, timeWindow: "all", severity: "all", nowMs } satisfies BridgeSmokeHistoryFilters)
+      : ({ status: "all", timeWindow: "all", severity: "all", nowMs, ...filterOrOptions } satisfies BridgeSmokeHistoryFilters);
+
+  return entries.filter((entry) => {
+    if (options.status !== "all" && entry.status !== options.status) {
+      return false;
+    }
+
+    if (options.severity !== "all" && getBridgeSmokeHistorySeverity(entry) !== options.severity) {
+      return false;
+    }
+
+    if (options.timeWindow !== "all") {
+      const entryTime = entry.testedAtMs;
+      const maxAgeMs = BRIDGE_SMOKE_TIME_WINDOW_MS[options.timeWindow];
+      if (entryTime === null || (options.nowMs ?? nowMs) - entryTime > maxAgeMs) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 }
 
 export function buildBridgeSmokeHistorySummary(entries: BridgeSmokeHistoryEntry[]) {
@@ -54,6 +101,32 @@ export function getBridgeSmokeHistoryFilterLabel(filter: BridgeSmokeHistoryFilte
       return "Errores";
     default:
       return "Todos";
+  }
+}
+
+export function getBridgeSmokeHistoryTimeWindowLabel(timeWindow: BridgeSmokeHistoryTimeWindow) {
+  switch (timeWindow) {
+    case "24h":
+      return "24 h";
+    case "72h":
+      return "72 h";
+    case "7d":
+      return "7 días";
+    default:
+      return "Todo el histórico";
+  }
+}
+
+export function getBridgeSmokeHistorySeverityLabel(severity: BridgeSmokeHistorySeverityFilter) {
+  switch (severity) {
+    case "success":
+      return "Conformes";
+    case "warning":
+      return "Contractuales";
+    case "critical":
+      return "Técnicos";
+    default:
+      return "Todas las severidades";
   }
 }
 

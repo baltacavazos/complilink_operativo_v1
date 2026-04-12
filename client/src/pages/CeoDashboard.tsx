@@ -23,9 +23,14 @@ import {
   getBridgeSmokeAlertVisualStateLabel,
   getBridgeSmokeHistoryContext,
   getBridgeSmokeHistoryFilterLabel,
+  getBridgeSmokeHistorySeverity,
+  getBridgeSmokeHistorySeverityLabel,
   getBridgeSmokeHistoryStatusLabel,
   getBridgeSmokeHistoryStatusTone,
+  getBridgeSmokeHistoryTimeWindowLabel,
   type BridgeSmokeHistoryFilter,
+  type BridgeSmokeHistorySeverityFilter,
+  type BridgeSmokeHistoryTimeWindow,
 } from "@/pages/ceoBridgeSmokeHistory";
 import { downloadCeoCsvReport, downloadCeoPdfReport, getCeoExportBlockReason } from "@/pages/ceoDashboardExports";
 import {
@@ -342,6 +347,9 @@ export default function CeoDashboard() {
   const [auditFamilyFilter, setAuditFamilyFilter] = useState<AuditEventFamily>("all");
   const [auditSeverityFilter, setAuditSeverityFilter] = useState<AuditEventSeverity>("all");
   const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
+  const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
+  const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
+  const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -440,6 +448,7 @@ export default function CeoDashboard() {
   const recordConsoleViewMutation = trpc.dashboard.ceoRecordConsoleView.useMutation();
   const recordGuardrailMutation = trpc.dashboard.ceoRecordGuardrailEvent.useMutation();
   const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
+  const bridgeSmokeThresholdMutation = trpc.dashboard.ceoUpdateBridgeSmokeThreshold.useMutation();
 
   const snapshotError = hasActiveFilters ? filteredSnapshotQuery.error : baseSnapshotQuery.error;
   const isInitialLoading = !baseSnapshotQuery.data && baseSnapshotQuery.isLoading;
@@ -521,9 +530,31 @@ export default function CeoDashboard() {
     [bridgeSmokeAlerting?.activatedAt, bridgeSmokeAlerting?.recoveredAt, bridgeSmokeStatus?.testedAt],
   );
   const filteredBridgeSmokeHistory = useMemo(
-    () => filterBridgeSmokeHistory(bridgeSmokeHistory, bridgeSmokeHistoryFilter).slice(0, 8),
-    [bridgeSmokeHistory, bridgeSmokeHistoryFilter],
+    () =>
+      filterBridgeSmokeHistory(bridgeSmokeHistory, {
+        status: bridgeSmokeHistoryFilter,
+        timeWindow: bridgeSmokeTimeWindow,
+        severity: bridgeSmokeSeverityFilter,
+      }).slice(0, 8),
+    [bridgeSmokeHistory, bridgeSmokeHistoryFilter, bridgeSmokeSeverityFilter, bridgeSmokeTimeWindow],
   );
+  const filteredBridgeSmokeHistorySummary = useMemo(
+    () => buildBridgeSmokeHistorySummary(filteredBridgeSmokeHistory),
+    [filteredBridgeSmokeHistory],
+  );
+  const bridgeSmokeExecutiveSummary = useMemo(() => {
+    const technicalErrors = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "critical").length;
+    const contractualFailures = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "warning").length;
+    const conformingRuns = bridgeSmokeHistory.filter((entry) => getBridgeSmokeHistorySeverity(entry) === "success").length;
+    const lastPassingRun = bridgeSmokeHistory.find((entry) => entry.status === "passed") ?? null;
+
+    return {
+      technicalErrors,
+      contractualFailures,
+      conformingRuns,
+      lastPassingRun,
+    };
+  }, [bridgeSmokeHistory]);
   const bridgeOperationalSummary = useMemo(() => {
     const delivered = bridgeOverview.rows.filter((item) => Boolean(item.returnedAt)).length;
     const rejected = bridgeOverview.rows.filter(
@@ -802,6 +833,12 @@ export default function CeoDashboard() {
     setAuditSeverityFilter("all");
   };
 
+  const clearBridgeSmokeFilters = () => {
+    setBridgeSmokeHistoryFilter("all");
+    setBridgeSmokeTimeWindow("all");
+    setBridgeSmokeSeverityFilter("all");
+  };
+
   const focusAuditItem = (item: AuditFeedItem) => {
     const descriptor = getAuditDrilldownDescriptor(item);
     setFilters((previous) => ({
@@ -867,6 +904,13 @@ export default function CeoDashboard() {
     sonnerToast.success(title, { description });
   }
 
+  useEffect(() => {
+    const nextThreshold = bridgeSmokeAlerting?.threshold;
+    if (typeof nextThreshold === "number" && Number.isFinite(nextThreshold)) {
+      setBridgeSmokeThresholdDraft(String(nextThreshold));
+    }
+  }, [bridgeSmokeAlerting?.threshold]);
+
   async function handleRefresh() {
     trackCeoRefresh(currentSection, {
       source: "ceo_dashboard",
@@ -875,6 +919,38 @@ export default function CeoDashboard() {
     });
     await utils.dashboard.ceoSnapshot.invalidate();
     await utils.dashboard.ceoBridgeSmokeStatus.invalidate();
+  }
+
+  async function handleBridgeSmokeThresholdSubmit() {
+    if (executiveActionsBlocked) {
+      notifyExecutiveGuardrail("case");
+      return;
+    }
+
+    const normalizedThreshold = Number(bridgeSmokeThresholdDraft.trim());
+    if (!Number.isInteger(normalizedThreshold) || normalizedThreshold < 1 || normalizedThreshold > 20) {
+      sonnerToast.error("Umbral inválido", {
+        description: "Usa un número entero entre 1 y 20 para el smoke test del bridge.",
+      });
+      return;
+    }
+
+    try {
+      const nextSnapshot = await bridgeSmokeThresholdMutation.mutateAsync({
+        threshold: normalizedThreshold,
+        snapshotGeneratedAt: snapshotGeneratedAtIso ?? undefined,
+        tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
+      });
+      await utils.dashboard.ceoBridgeSmokeStatus.invalidate();
+      setBridgeSmokeThresholdDraft(String(nextSnapshot.alerting.threshold));
+      sonnerToast.success("Umbral operativo actualizado", {
+        description: `El bridge ahora alertará al alcanzar ${formatNumber(nextSnapshot.alerting.threshold)} fallos consecutivos.`,
+      });
+    } catch (error) {
+      sonnerToast.error("No fue posible actualizar el umbral", {
+        description: error instanceof Error ? error.message : "Intenta nuevamente tras refrescar la consola CEO.",
+      });
+    }
   }
 
   function requestAlertAction(alertId: number, title: string, status: string) {
@@ -2208,6 +2284,50 @@ export default function CeoDashboard() {
                           <p className="text-xs opacity-80">{bridgeSmokeAlertTimestamp}</p>
                         </div>
                       </div>
+                      <div className="mt-4 grid gap-3 rounded-[1rem] border border-white/80 bg-white/70 p-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Sensibilidad de alerting</p>
+                          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeAlerting?.threshold ?? 0)}</p>
+                          <p className="mt-2 text-sm text-slate-600">Define cuántos fallos consecutivos necesita el smoke del bridge antes de escalar una alerta operativa.</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-end gap-3">
+                            <label className="min-w-[180px] flex-1">
+                              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Nuevo umbral</span>
+                              <input
+                                data-testid="bridge-smoke-threshold-input"
+                                type="number"
+                                min={1}
+                                max={20}
+                                step={1}
+                                className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400"
+                                value={bridgeSmokeThresholdDraft}
+                                disabled={bridgeSmokeThresholdMutation.isPending}
+                                onChange={(event) => setBridgeSmokeThresholdDraft(event.target.value)}
+                              />
+                            </label>
+                            <Button
+                              type="button"
+                              className="rounded-full"
+                              disabled={bridgeSmokeThresholdMutation.isPending || executiveActionsBlocked}
+                              onClick={() => {
+                                void handleBridgeSmokeThresholdSubmit();
+                              }}
+                            >
+                              {bridgeSmokeThresholdMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              Guardar umbral
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                            <span className="rounded-full border border-white bg-white px-3 py-1.5">
+                              Último cambio: {bridgeSmokeAlerting?.thresholdAudit.updatedAt ? formatDateTime(bridgeSmokeAlerting.thresholdAudit.updatedAt) : "Sin cambios manuales"}
+                            </span>
+                            <span className="rounded-full border border-white bg-white px-3 py-1.5">
+                              Responsable: {bridgeSmokeAlerting?.thresholdAudit.userName ?? bridgeSmokeAlerting?.thresholdAudit.userEmail ?? "Sistema"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </article>
                 </div>
@@ -2231,33 +2351,73 @@ export default function CeoDashboard() {
                       {formatNumber(bridgeSmokeHistorySummary.totalRuns)} corridas visibles
                     </Badge>
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {(["all", "passed", "failed", "error"] as const).map((filterOption) => {
-                      const count =
-                        filterOption === "all"
-                          ? bridgeSmokeHistorySummary.totalRuns
-                          : filterOption === "passed"
-                            ? bridgeSmokeHistorySummary.passedRuns
-                            : filterOption === "failed"
-                              ? bridgeSmokeHistorySummary.failedRuns
-                              : bridgeSmokeHistorySummary.errorRuns;
-
-                      return (
-                        <Button
-                          key={filterOption}
-                          type="button"
-                          variant={bridgeSmokeHistoryFilter === filterOption ? "default" : "outline"}
-                          className="rounded-full"
-                          onClick={() => setBridgeSmokeHistoryFilter(filterOption)}
-                        >
-                          {getBridgeSmokeHistoryFilterLabel(filterOption)} · {formatNumber(count)}
+                  <div className="mt-5 space-y-3 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros operativos</p>
+                        <p className="mt-1 text-sm text-slate-500">Cruza estado, ventana temporal y severidad para aislar rápidamente si el problema es contractual o técnico.</p>
+                      </div>
+                      {(bridgeSmokeHistoryFilter !== "all" || bridgeSmokeTimeWindow !== "all" || bridgeSmokeSeverityFilter !== "all") ? (
+                        <Button variant="ghost" className="rounded-full text-slate-700" onClick={clearBridgeSmokeFilters}>
+                          <X className="mr-2 h-4 w-4" />
+                          Limpiar vista smoke
                         </Button>
-                      );
-                    })}
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(["all", "passed", "failed", "error"] as const).map((filterOption) => {
+                        const count =
+                          filterOption === "all"
+                            ? bridgeSmokeHistorySummary.totalRuns
+                            : filterOption === "passed"
+                              ? bridgeSmokeHistorySummary.passedRuns
+                              : filterOption === "failed"
+                                ? bridgeSmokeHistorySummary.failedRuns
+                                : bridgeSmokeHistorySummary.errorRuns;
+
+                        return (
+                          <Button
+                            key={filterOption}
+                            type="button"
+                            variant={bridgeSmokeHistoryFilter === filterOption ? "default" : "outline"}
+                            className="rounded-full"
+                            onClick={() => setBridgeSmokeHistoryFilter(filterOption)}
+                          >
+                            {getBridgeSmokeHistoryFilterLabel(filterOption)} · {formatNumber(count)}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(["all", "24h", "72h", "7d"] as const).map((timeWindowOption) => (
+                        <Button
+                          key={timeWindowOption}
+                          type="button"
+                          variant={bridgeSmokeTimeWindow === timeWindowOption ? "default" : "outline"}
+                          className="rounded-full"
+                          onClick={() => setBridgeSmokeTimeWindow(timeWindowOption)}
+                        >
+                          {getBridgeSmokeHistoryTimeWindowLabel(timeWindowOption)}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(["all", "success", "warning", "critical"] as const).map((severityOption) => (
+                        <Button
+                          key={severityOption}
+                          type="button"
+                          variant={bridgeSmokeSeverityFilter === severityOption ? "default" : "outline"}
+                          className="rounded-full"
+                          onClick={() => setBridgeSmokeSeverityFilter(severityOption)}
+                        >
+                          {getBridgeSmokeHistorySeverityLabel(severityOption)}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                   <div className="mt-5 flex flex-wrap gap-3 text-xs text-slate-500">
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Éxito reciente: {formatNumber(bridgeSmokeHistorySummary.successRate)}%</span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Racha actual de fallos: {formatNumber(bridgeSmokeHistorySummary.consecutiveFailures)}</span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Éxito visible: {formatNumber(filteredBridgeSmokeHistorySummary.successRate)}%</span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Racha visible: {formatNumber(filteredBridgeSmokeHistorySummary.consecutiveFailures)}</span>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Corridas 24h: {formatNumber(bridgeSmokeStatus?.summary.last24Hours ?? 0)}</span>
                   </div>
                   <div className="mt-5 space-y-3">
@@ -2269,6 +2429,9 @@ export default function CeoDashboard() {
                               <div className="flex flex-wrap items-center gap-2">
                                 <Badge className={`rounded-full border ${getBridgeSmokeHistoryStatusTone(entry.status)}`}>
                                   {getBridgeSmokeHistoryStatusLabel(entry.status)}
+                                </Badge>
+                                <Badge className={`rounded-full border ${getSeverityBadgeClass(getBridgeSmokeHistorySeverity(entry))}`}>
+                                  {getBridgeSmokeHistorySeverityLabel(getBridgeSmokeHistorySeverity(entry))}
                                 </Badge>
                                 {entry.runMode ? (
                                   <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{entry.runMode}</Badge>
@@ -2299,8 +2462,8 @@ export default function CeoDashboard() {
                 <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tendencia reciente</p>
-                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Pulso del smoke test</h3>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Reporte ejecutivo bridge</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Lectura consolidada del smoke test</h3>
                     </div>
                     <Clock3 className="h-5 w-5 text-slate-400" />
                   </div>
@@ -2341,15 +2504,29 @@ export default function CeoDashboard() {
                       <p className="mt-2">{bridgeSmokeAlerting?.detail ?? "Útil para confirmar si el carril cayó por error técnico o por incumplimiento contractual del ack."}</p>
                       <p className="mt-2 text-xs opacity-80">{bridgeSmokeAlertTimestamp}</p>
                     </div>
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Errores técnicos</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeHistorySummary.errorRuns)}</p>
-                      <p className="mt-2">Aquí caen timeouts, lecturas nulas o caídas del endpoint antes de validar el contrato.</p>
-                    </div>
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Fallos contractuales</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeHistorySummary.failedRuns)}</p>
-                      <p className="mt-2">Señal para revisar divergencias entre health, webhook y ack esperado 200/202.</p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Errores técnicos</p>
+                        <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeExecutiveSummary.technicalErrors)}</p>
+                        <p className="mt-2">Aquí caen timeouts, lecturas nulas o caídas del endpoint antes de validar el contrato.</p>
+                      </div>
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Fallos contractuales</p>
+                        <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeExecutiveSummary.contractualFailures)}</p>
+                        <p className="mt-2">Señal para revisar divergencias entre health, webhook y ack esperado 200/202.</p>
+                      </div>
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Corridas conformes</p>
+                        <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeExecutiveSummary.conformingRuns)}</p>
+                        <p className="mt-2">Útil para medir continuidad operativa sin abrir el detalle completo del historial.</p>
+                      </div>
+                      <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Última recuperación visible</p>
+                        <p className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                          {bridgeSmokeExecutiveSummary.lastPassingRun?.testedAt ? formatDateTime(bridgeSmokeExecutiveSummary.lastPassingRun.testedAt) : "Sin recuperación visible"}
+                        </p>
+                        <p className="mt-2">Marca la última corrida conforme registrada para comunicar recuperación en comités operativos.</p>
+                      </div>
                     </div>
                   </div>
                 </article>

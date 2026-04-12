@@ -1,0 +1,272 @@
+{
+  "prompt_summary": "Proyecto: CompliLink Operativo v1.\nObjetivo inmediato: implementar tres mejoras en la consola CEO del bridge operativo CompliLink ↔ AuditaPatron.\n\nContexto técnico actual:\n1. Ya existe una vista CEO en client/src/pages/CeoDashboard.tsx con una sección 'bridge'.\n2. El backend expone dashboard.ceoBridgeSmokeStatus en server/routers.ts y lee el snapshot desde server/bridgeSmokeMonitoring.ts.\n3. El estado actual del smoke test ya calcula:\n   - threshold\n   - alertActive\n   - visualState\n   - severity\n   - statusLabel\n   - detail\n   - activatedAt / recoveredAt\n   - lastObservedConsecutiveFailures\n4. El historial del smoke test en client/src/pages/ceoBridgeSmokeHistory.ts hoy solo filtra por: all | passed | failed | error.\n5. La UI actual ya muestra badges de umbral, racha, historial reciente y tendencia.\n6. No existe todavía una mutación tRPC para editar el umbral desde la UI CEO.\n\nBloques a diseñar con enfoque mínimo, robusto y ejecutivo:\nA. Edición del umbral desde la UI CEO con trazabilidad operativa.\nB. Filtros por ventana temporal y severidad en el historial del bridge.\nC. Reporte ejecutivo único consolidando alertas operativas del bridge.\n\nRestricciones:\n- Mantener diseño simple, ejecutivo, no recargar la consola.\n- Cambios de bajo riesgo, aprovechando la arquitectura ya existente.\n- Priorizar claridad, auditabilidad y facilidad de operación.\n- Sugerir archivos concretos a tocar, estructura de datos mínima, pruebas vitest necesarias y UX recomendada.\n- Responder en español.\n- Entregar JSON válido, sin markdown, con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del enfoque\",\n  \"threshold_edit\": {\n    \"recommended_ux\": \"...\",\n    \"backend_change\": \"...\",\n    \"auditability\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"history_filters\": {\n    \"recommended_ux\": \"...\",\n    \"filter_dimensions\": [\"...\"],\n    \"implementation_note\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"executive_report\": {\n    \"recommended_ux\": \"...\",\n    \"key_metrics\": [\"...\"],\n    \"implementation_note\": \"...\",\n    \"files\": [\"...\"],\n    \"risk_level\": \"low|medium|high\"\n  },\n  \"test_plan\": [\"...\"],\n  \"top_risks\": [\"...\"],\n  \"recommended_order\": [\"...\"],\n  \"one_sentence_summary\": \"...\"\n}",
+  "system_prompt": "Eres un arquitecto técnico senior y diseñador de producto B2B. Debes proponer cambios mínimos, robustos y fáciles de operar por dirección. Responde únicamente JSON válido.",
+  "results": [
+    {
+      "ok": true,
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"model_view\": \"mejoras mínimas y robustas para consola CEO CompliLink\",\n  \"threshold_edit\": {\n    \"recommended_ux\": \"Agregar un input numérico simple con botón guardar en sección bridge, mostrando el valor actual y validación básica; al guardar, mostrar confirmación y registrar usuario y timestamp.\",\n    \"backend_change\": \"Crear mutación tRPC 'bridge.updateThreshold' que reciba nuevo umbral, valide rango, actualice configuración y registre auditoría con usuario y timestamp.\",\n    \"auditability\": \"Registrar en base de datos o log la acción de cambio con usuario, valor anterior, nuevo valor y timestamp para trazabilidad operativa.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/auditLog.ts (nuevo módulo o extensión)\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"history_filters\": {\n    \"recommended_ux\": \"Añadir dropdowns compactos para filtrar por ventana temporal (últimas 24h, 7d, 30d) y severidad (all, low, medium, high) encima de la tabla de historial.\",\n    \"filter_dimensions\": [\"ventana temporal\", \"severidad\"],\n    \"implementation_note\": \"Extender query existente para aceptar parámetros opcionales de tiempo y severidad, filtrar datos en backend para eficiencia y actualizar UI con resultados filtrados.\",\n    \"files\": [\n      \"client/src/pages/ceoBridgeSmokeHistory.ts\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"executive_report\": {\n    \"recommended_ux\": \"Agregar pestaña o sección desplegable en consola CEO con resumen ejecutivo único, mostrando alertas activas, umbral actual, rachas críticas y tendencias recientes en formato tarjeta simple.\",\n    \"key_metrics\": [\n      \"alertActive\",\n      \"threshold\",\n      \"lastObservedConsecutiveFailures\",\n      \"severity\",\n      \"statusLabel\",\n      \"activatedAt\",\n      \"recoveredAt\"\n    ],\n    \"implementation_note\": \"Crear endpoint backend que consolide datos relevantes, reutilizando lógica existente, y exponerlo en frontend para renderizar resumen ejecutivo con actualización periódica o manual.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"test_plan\": [\n    \"Vitest para mutación tRPC bridge.updateThreshold validando permisos, rango y auditoría.\",\n    \"Vitest para query de historial con filtros temporales y severidad, verificando resultados correctos.\",\n    \"Test de integración UI para edición de umbral y confirmación visual.\",\n    \"Test UI para filtros en historial y correcta actualización de tabla.\",\n    \"Test UI para renderizado correcto del reporte ejecutivo con datos consolidados.\"\n  ],\n  \"top_risks\": [\n    \"Validación insuficiente del umbral que permita valores inválidos.\",\n    \"Carga excesiva en backend si filtros no se aplican correctamente en consulta.\",\n    \"Confusión en UX si filtros o edición no son claros o generan errores sin feedback.\",\n    \"Falta de registro adecuado en auditoría que dificulte trazabilidad.\"\n  ],\n  \"recommended_order\": [\n    \"Implementar mutación tRPC para edición de umbral con auditoría.\",\n    \"Agregar UI para edición de umbral en consola CEO.\",\n    \"Extender backend y UI para filtros en historial.\",\n    \"Desarrollar reporte ejecutivo consolidado.\",\n    \"Realizar pruebas unitarias e integración.\"\n  ],\n  \"one_sentence_summary\": \"Proponer mejoras simples y auditables para edición de umbral, filtros avanzados en historial y reporte ejecutivo consolidado en consola CEO, con bajo riesgo y máxima claridad operativa.\"\n}",
+      "parsed": {
+        "model_view": "mejoras mínimas y robustas para consola CEO CompliLink",
+        "threshold_edit": {
+          "recommended_ux": "Agregar un input numérico simple con botón guardar en sección bridge, mostrando el valor actual y validación básica; al guardar, mostrar confirmación y registrar usuario y timestamp.",
+          "backend_change": "Crear mutación tRPC 'bridge.updateThreshold' que reciba nuevo umbral, valide rango, actualice configuración y registre auditoría con usuario y timestamp.",
+          "auditability": "Registrar en base de datos o log la acción de cambio con usuario, valor anterior, nuevo valor y timestamp para trazabilidad operativa.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts",
+            "server/auditLog.ts (nuevo módulo o extensión)"
+          ],
+          "risk_level": "low"
+        },
+        "history_filters": {
+          "recommended_ux": "Añadir dropdowns compactos para filtrar por ventana temporal (últimas 24h, 7d, 30d) y severidad (all, low, medium, high) encima de la tabla de historial.",
+          "filter_dimensions": [
+            "ventana temporal",
+            "severidad"
+          ],
+          "implementation_note": "Extender query existente para aceptar parámetros opcionales de tiempo y severidad, filtrar datos en backend para eficiencia y actualizar UI con resultados filtrados.",
+          "files": [
+            "client/src/pages/ceoBridgeSmokeHistory.ts",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts"
+          ],
+          "risk_level": "low"
+        },
+        "executive_report": {
+          "recommended_ux": "Agregar pestaña o sección desplegable en consola CEO con resumen ejecutivo único, mostrando alertas activas, umbral actual, rachas críticas y tendencias recientes en formato tarjeta simple.",
+          "key_metrics": [
+            "alertActive",
+            "threshold",
+            "lastObservedConsecutiveFailures",
+            "severity",
+            "statusLabel",
+            "activatedAt",
+            "recoveredAt"
+          ],
+          "implementation_note": "Crear endpoint backend que consolide datos relevantes, reutilizando lógica existente, y exponerlo en frontend para renderizar resumen ejecutivo con actualización periódica o manual.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts"
+          ],
+          "risk_level": "low"
+        },
+        "test_plan": [
+          "Vitest para mutación tRPC bridge.updateThreshold validando permisos, rango y auditoría.",
+          "Vitest para query de historial con filtros temporales y severidad, verificando resultados correctos.",
+          "Test de integración UI para edición de umbral y confirmación visual.",
+          "Test UI para filtros en historial y correcta actualización de tabla.",
+          "Test UI para renderizado correcto del reporte ejecutivo con datos consolidados."
+        ],
+        "top_risks": [
+          "Validación insuficiente del umbral que permita valores inválidos.",
+          "Carga excesiva en backend si filtros no se aplican correctamente en consulta.",
+          "Confusión en UX si filtros o edición no son claros o generan errores sin feedback.",
+          "Falta de registro adecuado en auditoría que dificulte trazabilidad."
+        ],
+        "recommended_order": [
+          "Implementar mutación tRPC para edición de umbral con auditoría.",
+          "Agregar UI para edición de umbral en consola CEO.",
+          "Extender backend y UI para filtros en historial.",
+          "Desarrollar reporte ejecutivo consolidado.",
+          "Realizar pruebas unitarias e integración."
+        ],
+        "one_sentence_summary": "Proponer mejoras simples y auditables para edición de umbral, filtros avanzados en historial y reporte ejecutivo consolidado en consola CEO, con bajo riesgo y máxima claridad operativa."
+      },
+      "status_code": 200
+    },
+    {
+      "ok": true,
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"model_view\": \"Consola CEO Optimizada\",\n  \"threshold_edit\": {\n    \"recommended_ux\": \"Añadir un botón 'Editar Umbral' junto al valor actual del umbral en la sección 'bridge'. Al hacer clic, se abrirá un modal simple con un campo de entrada numérico para el nuevo umbral, y botones 'Guardar'/'Cancelar'. Tras guardar, se mostrará una confirmación y se actualizará el valor, incluyendo la fecha y el usuario de la última modificación para trazabilidad.\",\n    \"backend_change\": \"Crear una nueva mutación tRPC `dashboard.updateCeoBridgeThreshold` que reciba el nuevo valor. Esta mutación debe persistir el umbral en un archivo de configuración dedicado o base de datos ligera, y actualizar la lógica de `server/bridgeSmokeMonitoring.ts` para leer este valor persistente. Adicionalmente, registrará el cambio en un log de auditoría.\",\n    \"auditability\": \"Registrar cada cambio de umbral con `timestamp`, `user_id` (o rol), `old_threshold` y `new_threshold` en un log persistente (ej. archivo JSON append-only o tabla de auditoría). La UI mostrará 'Última modificación por [Usuario/Rol] el [Fecha/Hora]'.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"client/src/components/CeoBridgeThresholdEditModal.tsx\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"server/utils/auditLog.ts\",\n      \"client/src/utils/trpc.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"history_filters\": {\n    \"recommended_ux\": \"En la sección de historial del bridge, añadir dos selectores desplegables: 'Período' (opciones: 'Últimas 24h', 'Últimos 7 días', 'Últimos 30 días', 'Personalizado' con selectores de fecha) y 'Severidad' (opciones: 'Todas', 'Crítica', 'Alta', 'Media', 'Baja'). Los filtros se aplicarán dinámicamente al historial mostrado.\",\n    \"filter_dimensions\": [\n      \"time_window (last24h, last7d, last30d, custom_range)\",\n      \"severity (CRITICAL, HIGH, MEDIUM, LOW, ALL)\"\n    ],\n    \"implementation_note\": \"Extender la query tRPC existente para el historial (`dashboard.ceoBridgeSmokeHistory`) para aceptar parámetros de `time_window` y `severity`. Modificar la lógica de `server/bridgeSmokeMonitoring.ts` para aplicar estos filtros al recuperar y procesar los datos históricos, utilizando los campos `activatedAt` y `severity` ya existentes.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"client/src/components/CeoBridgeHistoryFilters.tsx\",\n      \"client/src/pages/ceoBridgeSmokeHistory.ts\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"executive_report\": {\n    \"recommended_ux\": \"Crear una nueva sección en `CeoDashboard.tsx` titulada 'Reporte Ejecutivo de Alertas'. Esta sección mostrará un resumen conciso con métricas clave. Incluirá un botón 'Ver Detalle Completo' que redirigirá al historial con filtros preaplicados para el período del reporte.\",\n    \"key_metrics\": [\n      \"total_alerts_period (número total de alertas en el período seleccionado)\",\n      \"active_alerts_count (número de alertas actualmente activas)\",\n      \"severity_distribution (distribución de alertas por severidad en el período)\",\n      \"average_recovery_time (tiempo medio de recuperación para alertas resueltas en el período)\",\n      \"longest_active_alert_duration (duración de la alerta más prolongada en el período)\"\n    ],\n    \"implementation_note\": \"Crear una nueva query tRPC `dashboard.ceoBridgeExecutiveReport` que agregue las métricas clave del historial de smoke tests. Esta query recibirá un parámetro de `time_window` para definir el período del reporte y realizará los cálculos necesarios a partir de los datos disponibles en `server/bridgeSmokeMonitoring.ts`.\",\n    \"files\": [\n      \"client/src/pages/CeoDashboard.tsx\",\n      \"client/src/components/CeoBridgeExecutiveReport.tsx\",\n      \"server/routers.ts\",\n      \"server/bridgeSmokeMonitoring.ts\",\n      \"client/src/utils/trpc.ts\"\n    ],\n    \"risk_level\": \"medium\"\n  },\n  \"test_plan\": [\n    \"**Edición de Umbral:** Pruebas unitarias para la mutación tRPC (validación de entrada, persistencia). Pruebas E2E para el flujo completo (UI, guardado, actualización, log de auditoría).\",\n    \"**Filtros de Historial:** Pruebas unitarias para la lógica de filtrado en backend (ventanas temporales, severidades, combinaciones). Pruebas E2E para verificar la aplicación correcta de filtros en la UI.\",\n    \"**Reporte Ejecutivo:** Pruebas unitarias para la lógica de agregación de métricas (casos límite, datos vacíos, datos mixtos). Pruebas E2E para asegurar que las métricas reflejan con precisión los datos históricos subyacentes.\",\n    \"**General:** Pruebas de integración para los endpoints tRPC. Pruebas de componentes UI (ej. Storybook para nuevos componentes).\"\n  ],\n  \"top_risks\": [\n    \"**Consistencia de Datos:** Asegurar que el umbral actualizado se refleje atómicamente y de inmediato en la lógica de monitoreo.\",\n    \"**Rendimiento:** Posible degradación del rendimiento al filtrar o generar reportes sobre un historial muy extenso si la capa de persistencia no es eficiente.\",\n    \"**Integridad del Log de Auditoría:** Garantizar que los registros de auditoría sean inmutables y capturen correctamente todos los cambios.\",\n    \"**Complejidad UX:** Evitar sobrecargar la consola CEO con demasiadas opciones o interacciones complejas (mitigado con modales y desplegables simples).\"\n  ],\n  \"recommended_order\": [\n    \"A. Edición del umbral desde la UI CEO con trazabilidad operativa (establece control básico y auditabilidad).\",\n    \"B. Filtros por ventana temporal y severidad en el historial del bridge (mejora la exploración de datos existentes).\",\n    \"C. Reporte ejecutivo único consolidando alertas operativas del bridge (proporciona visión de alto nivel basada en datos ya disponibles).\"\n  ],\n  \"one_sentence_summary\": \"Implementar control de umbral con trazabilidad, filtros avanzados en el historial y un reporte ejecutivo consolidado para la consola CEO, priorizando simplicidad y robustez.\"\n}",
+      "parsed": {
+        "model_view": "Consola CEO Optimizada",
+        "threshold_edit": {
+          "recommended_ux": "Añadir un botón 'Editar Umbral' junto al valor actual del umbral en la sección 'bridge'. Al hacer clic, se abrirá un modal simple con un campo de entrada numérico para el nuevo umbral, y botones 'Guardar'/'Cancelar'. Tras guardar, se mostrará una confirmación y se actualizará el valor, incluyendo la fecha y el usuario de la última modificación para trazabilidad.",
+          "backend_change": "Crear una nueva mutación tRPC `dashboard.updateCeoBridgeThreshold` que reciba el nuevo valor. Esta mutación debe persistir el umbral en un archivo de configuración dedicado o base de datos ligera, y actualizar la lógica de `server/bridgeSmokeMonitoring.ts` para leer este valor persistente. Adicionalmente, registrará el cambio en un log de auditoría.",
+          "auditability": "Registrar cada cambio de umbral con `timestamp`, `user_id` (o rol), `old_threshold` y `new_threshold` en un log persistente (ej. archivo JSON append-only o tabla de auditoría). La UI mostrará 'Última modificación por [Usuario/Rol] el [Fecha/Hora]'.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "client/src/components/CeoBridgeThresholdEditModal.tsx",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts",
+            "server/utils/auditLog.ts",
+            "client/src/utils/trpc.ts"
+          ],
+          "risk_level": "low"
+        },
+        "history_filters": {
+          "recommended_ux": "En la sección de historial del bridge, añadir dos selectores desplegables: 'Período' (opciones: 'Últimas 24h', 'Últimos 7 días', 'Últimos 30 días', 'Personalizado' con selectores de fecha) y 'Severidad' (opciones: 'Todas', 'Crítica', 'Alta', 'Media', 'Baja'). Los filtros se aplicarán dinámicamente al historial mostrado.",
+          "filter_dimensions": [
+            "time_window (last24h, last7d, last30d, custom_range)",
+            "severity (CRITICAL, HIGH, MEDIUM, LOW, ALL)"
+          ],
+          "implementation_note": "Extender la query tRPC existente para el historial (`dashboard.ceoBridgeSmokeHistory`) para aceptar parámetros de `time_window` y `severity`. Modificar la lógica de `server/bridgeSmokeMonitoring.ts` para aplicar estos filtros al recuperar y procesar los datos históricos, utilizando los campos `activatedAt` y `severity` ya existentes.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "client/src/components/CeoBridgeHistoryFilters.tsx",
+            "client/src/pages/ceoBridgeSmokeHistory.ts",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts"
+          ],
+          "risk_level": "low"
+        },
+        "executive_report": {
+          "recommended_ux": "Crear una nueva sección en `CeoDashboard.tsx` titulada 'Reporte Ejecutivo de Alertas'. Esta sección mostrará un resumen conciso con métricas clave. Incluirá un botón 'Ver Detalle Completo' que redirigirá al historial con filtros preaplicados para el período del reporte.",
+          "key_metrics": [
+            "total_alerts_period (número total de alertas en el período seleccionado)",
+            "active_alerts_count (número de alertas actualmente activas)",
+            "severity_distribution (distribución de alertas por severidad en el período)",
+            "average_recovery_time (tiempo medio de recuperación para alertas resueltas en el período)",
+            "longest_active_alert_duration (duración de la alerta más prolongada en el período)"
+          ],
+          "implementation_note": "Crear una nueva query tRPC `dashboard.ceoBridgeExecutiveReport` que agregue las métricas clave del historial de smoke tests. Esta query recibirá un parámetro de `time_window` para definir el período del reporte y realizará los cálculos necesarios a partir de los datos disponibles en `server/bridgeSmokeMonitoring.ts`.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "client/src/components/CeoBridgeExecutiveReport.tsx",
+            "server/routers.ts",
+            "server/bridgeSmokeMonitoring.ts",
+            "client/src/utils/trpc.ts"
+          ],
+          "risk_level": "medium"
+        },
+        "test_plan": [
+          "**Edición de Umbral:** Pruebas unitarias para la mutación tRPC (validación de entrada, persistencia). Pruebas E2E para el flujo completo (UI, guardado, actualización, log de auditoría).",
+          "**Filtros de Historial:** Pruebas unitarias para la lógica de filtrado en backend (ventanas temporales, severidades, combinaciones). Pruebas E2E para verificar la aplicación correcta de filtros en la UI.",
+          "**Reporte Ejecutivo:** Pruebas unitarias para la lógica de agregación de métricas (casos límite, datos vacíos, datos mixtos). Pruebas E2E para asegurar que las métricas reflejan con precisión los datos históricos subyacentes.",
+          "**General:** Pruebas de integración para los endpoints tRPC. Pruebas de componentes UI (ej. Storybook para nuevos componentes)."
+        ],
+        "top_risks": [
+          "**Consistencia de Datos:** Asegurar que el umbral actualizado se refleje atómicamente y de inmediato en la lógica de monitoreo.",
+          "**Rendimiento:** Posible degradación del rendimiento al filtrar o generar reportes sobre un historial muy extenso si la capa de persistencia no es eficiente.",
+          "**Integridad del Log de Auditoría:** Garantizar que los registros de auditoría sean inmutables y capturen correctamente todos los cambios.",
+          "**Complejidad UX:** Evitar sobrecargar la consola CEO con demasiadas opciones o interacciones complejas (mitigado con modales y desplegables simples)."
+        ],
+        "recommended_order": [
+          "A. Edición del umbral desde la UI CEO con trazabilidad operativa (establece control básico y auditabilidad).",
+          "B. Filtros por ventana temporal y severidad en el historial del bridge (mejora la exploración de datos existentes).",
+          "C. Reporte ejecutivo único consolidando alertas operativas del bridge (proporciona visión de alto nivel basada en datos ya disponibles)."
+        ],
+        "one_sentence_summary": "Implementar control de umbral con trazabilidad, filtros avanzados en el historial y un reporte ejecutivo consolidado para la consola CEO, priorizando simplicidad y robustez."
+      },
+      "status_code": 200
+    },
+    {
+      "ok": true,
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"model_view\": \"EnfoqueMinimoRobust\",\n  \"threshold_edit\": {\n    \"recommended_ux\": \"Agregar un input numérico simple en la sección 'bridge' de CeoDashboard.tsx con un botón de guardar que confirme el cambio y muestre un toast de éxito o error.\",\n    \"backend_change\": \"Crear una nueva mutación tRPC en server/routers.ts para actualizar el umbral, utilizando el snapshot existente en server/bridgeSmokeMonitoring.ts para validar y guardar el nuevo valor.\",\n    \"auditability\": \"Registrar en un log simple (por ejemplo, en el backend) el usuario que realiza el cambio, el valor anterior y nuevo, junto con el timestamp para asegurar trazabilidad.\",\n    \"files\": [\"server/routers.ts\", \"client/src/pages/CeoDashboard.tsx\"],\n    \"risk_level\": \"low\"\n  },\n  \"history_filters\": {\n    \"recommended_ux\": \"Incorporar dropdowns intuitivos en ceoBridgeSmokeHistory.ts para seleccionar ventana temporal (ej. últimas 24h, 7 días) y severidad (ej. baja, media, alta), con un botón de aplicar filtro que actualice la vista dinámicamente.\",\n    \"filter_dimensions\": [\"ventana_temporal\", \"severidad\"],\n    \"implementation_note\": \"Extender el filtro actual en ceoBridgeSmokeHistory.ts para incluir parámetros de fecha y severidad, reutilizando la lógica existente de filtrado por estado.\",\n    \"files\": [\"client/src/pages/ceoBridgeSmokeHistory.ts\"],\n    \"risk_level\": \"low\"\n  },\n  \"executive_report\": {\n    \"recommended_ux\": \"Mostrar un panel resumido en CeoDashboard.tsx con tarjetas de métricas clave, actualizado en tiempo real sin sobrecargar la interfaz, utilizando colores para indicar severidad.\",\n    \"key_metrics\": [\"numero_de_alertas_activas\", \"severidad_promedio\", \"tasa_de_recuperacion\"],\n    \"implementation_note\": \"Consolidar los datos del snapshot en server/routers.ts para generar un reporte simple y exponerlo vía query tRPC, evitando complejas agregaciones.\",\n    \"files\": [\"client/src/pages/CeoDashboard.tsx\", \"server/routers.ts\"],\n    \"risk_level\": \"low\"\n  },\n  \"test_plan\": [\"Probar la mutación de umbral con Vitest para validar actualizaciones y logs\", \"Verificar filtros de historial con casos de datos variados\", \"Comprobar el reporte ejecutivo con mock de datos para asegurar métricas correctas\"],\n  \"top_risks\": [\"Posible error en la mutación que afecte el estado del bridge\", \"Filtros incorrectos que muestren datos obsoletos\", \"Sobrecarga UI si el reporte no se optimiza\"],\n  \"recommended_order\": [\"threshold_edit\", \"history_filters\", \"executive_report\"],\n  \"one_sentence_summary\": \"Propuesta de cambios mínimos y robustos para la consola CEO de CompliLink, enfocados en edición de umbral, filtros de historial y reporte ejecutivo para mejorar operatividad y auditabilidad.\"\n}",
+      "parsed": {
+        "model_view": "EnfoqueMinimoRobust",
+        "threshold_edit": {
+          "recommended_ux": "Agregar un input numérico simple en la sección 'bridge' de CeoDashboard.tsx con un botón de guardar que confirme el cambio y muestre un toast de éxito o error.",
+          "backend_change": "Crear una nueva mutación tRPC en server/routers.ts para actualizar el umbral, utilizando el snapshot existente en server/bridgeSmokeMonitoring.ts para validar y guardar el nuevo valor.",
+          "auditability": "Registrar en un log simple (por ejemplo, en el backend) el usuario que realiza el cambio, el valor anterior y nuevo, junto con el timestamp para asegurar trazabilidad.",
+          "files": [
+            "server/routers.ts",
+            "client/src/pages/CeoDashboard.tsx"
+          ],
+          "risk_level": "low"
+        },
+        "history_filters": {
+          "recommended_ux": "Incorporar dropdowns intuitivos en ceoBridgeSmokeHistory.ts para seleccionar ventana temporal (ej. últimas 24h, 7 días) y severidad (ej. baja, media, alta), con un botón de aplicar filtro que actualice la vista dinámicamente.",
+          "filter_dimensions": [
+            "ventana_temporal",
+            "severidad"
+          ],
+          "implementation_note": "Extender el filtro actual en ceoBridgeSmokeHistory.ts para incluir parámetros de fecha y severidad, reutilizando la lógica existente de filtrado por estado.",
+          "files": [
+            "client/src/pages/ceoBridgeSmokeHistory.ts"
+          ],
+          "risk_level": "low"
+        },
+        "executive_report": {
+          "recommended_ux": "Mostrar un panel resumido en CeoDashboard.tsx con tarjetas de métricas clave, actualizado en tiempo real sin sobrecargar la interfaz, utilizando colores para indicar severidad.",
+          "key_metrics": [
+            "numero_de_alertas_activas",
+            "severidad_promedio",
+            "tasa_de_recuperacion"
+          ],
+          "implementation_note": "Consolidar los datos del snapshot en server/routers.ts para generar un reporte simple y exponerlo vía query tRPC, evitando complejas agregaciones.",
+          "files": [
+            "client/src/pages/CeoDashboard.tsx",
+            "server/routers.ts"
+          ],
+          "risk_level": "low"
+        },
+        "test_plan": [
+          "Probar la mutación de umbral con Vitest para validar actualizaciones y logs",
+          "Verificar filtros de historial con casos de datos variados",
+          "Comprobar el reporte ejecutivo con mock de datos para asegurar métricas correctas"
+        ],
+        "top_risks": [
+          "Posible error en la mutación que afecte el estado del bridge",
+          "Filtros incorrectos que muestren datos obsoletos",
+          "Sobrecarga UI si el reporte no se optimiza"
+        ],
+        "recommended_order": [
+          "threshold_edit",
+          "history_filters",
+          "executive_report"
+        ],
+        "one_sentence_summary": "Propuesta de cambios mínimos y robustos para la consola CEO de CompliLink, enfocados en edición de umbral, filtros de historial y reporte ejecutivo para mejorar operatividad y auditabilidad."
+      },
+      "status_code": 200
+    }
+  ],
+  "summary": {
+    "successful_providers": [
+      "openai",
+      "gemini",
+      "xai"
+    ],
+    "models_used": {
+      "openai": "gpt-4.1-mini",
+      "gemini": "gemini-2.5-flash",
+      "xai": "grok-3-mini"
+    },
+    "consensus": {
+      "recommended_order": [
+        "A. Edición del umbral desde la UI CEO con trazabilidad operativa (establece control básico y auditabilidad).",
+        "Agregar UI para edición de umbral en consola CEO.",
+        "B. Filtros por ventana temporal y severidad en el historial del bridge (mejora la exploración de datos existentes).",
+        "C. Reporte ejecutivo único consolidando alertas operativas del bridge (proporciona visión de alto nivel basada en datos ya disponibles).",
+        "Desarrollar reporte ejecutivo consolidado.",
+        "Extender backend y UI para filtros en historial."
+      ],
+      "common_files": [
+        "server/routers.ts",
+        "client/src/pages/CeoDashboard.tsx",
+        "server/bridgeSmokeMonitoring.ts",
+        "client/src/pages/ceoBridgeSmokeHistory.ts",
+        "client/src/utils/trpc.ts",
+        "client/src/components/CeoBridgeExecutiveReport.tsx",
+        "client/src/components/CeoBridgeHistoryFilters.tsx",
+        "client/src/components/CeoBridgeThresholdEditModal.tsx",
+        "server/auditLog.ts (nuevo módulo o extensión)",
+        "server/utils/auditLog.ts"
+      ],
+      "common_test_themes": [
+        "**Edición de Umbral:** Pruebas unitarias para la mutación tRPC (validación de entrada, persistencia). Pruebas E2E para el flujo completo (UI, guardado, actualización, log de auditoría).",
+        "**Filtros de Historial:** Pruebas unitarias para la lógica de filtrado en backend (ventanas temporales, severidades, combinaciones). Pruebas E2E para verificar la aplicación correcta de filtros en la UI.",
+        "**General:** Pruebas de integración para los endpoints tRPC. Pruebas de componentes UI (ej. Storybook para nuevos componentes).",
+        "**Reporte Ejecutivo:** Pruebas unitarias para la lógica de agregación de métricas (casos límite, datos vacíos, datos mixtos). Pruebas E2E para asegurar que las métricas reflejan con precisión los datos históricos subyacentes.",
+        "Comprobar el reporte ejecutivo con mock de datos para asegurar métricas correctas",
+        "Probar la mutación de umbral con Vitest para validar actualizaciones y logs",
+        "Test UI para filtros en historial y correcta actualización de tabla.",
+        "Test UI para renderizado correcto del reporte ejecutivo con datos consolidados."
+      ],
+      "shared_direction": [
+        "Proponer mejoras simples y auditables para edición de umbral, filtros avanzados en historial y reporte ejecutivo consolidado en consola CEO, con bajo riesgo y máxima claridad operativa.",
+        "Implementar control de umbral con trazabilidad, filtros avanzados en el historial y un reporte ejecutivo consolidado para la consola CEO, priorizando simplicidad y robustez.",
+        "Propuesta de cambios mínimos y robustos para la consola CEO de CompliLink, enfocados en edición de umbral, filtros de historial y reporte ejecutivo para mejorar operatividad y auditabilidad."
+      ]
+    }
+  },
+  "generated_at": "2026-04-12T07:26:14Z",
+  "duration_seconds": 51.33
+}
