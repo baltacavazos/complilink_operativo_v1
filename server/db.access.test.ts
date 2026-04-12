@@ -137,4 +137,71 @@ describe("db access guards", () => {
     await expect(assertCaseAccess(7, "tenant-a", "CASE-003")).resolves.toEqual(explicitCaseGrant);
     expect(state.selectCalls).toBe(2);
   });
+
+  it("fetches a visible document directly without loading the full case document list", async () => {
+    const tenantWideMembership = {
+      id: 20,
+      userId: 7,
+      tenantId: "tenant-a",
+      role: "manager",
+      accessScope: "tenant",
+      status: "active",
+    };
+    const visibleDocument = {
+      documentId: "DOC-001",
+      tenantId: "tenant-a",
+      caseId: "CASE-004",
+      visibility: "private",
+      originalName: "prueba.pdf",
+      storageKey: "tenant-a/docs/prueba.pdf",
+    };
+
+    state.selectResults = [[tenantWideMembership], [], [visibleDocument]];
+
+    const { getVisibleDocumentForUser } = await import("./db");
+
+    await expect(
+      getVisibleDocumentForUser({
+        userId: 7,
+        tenantId: "tenant-a",
+        caseId: "CASE-004",
+        documentId: "DOC-001",
+      }),
+    ).resolves.toEqual(visibleDocument);
+    expect(state.selectCalls).toBe(3);
+  });
+
+  it("keeps denying a document when the direct filtered lookup returns no accessible row", async () => {
+    const tenantWideMembership = {
+      id: 21,
+      userId: 7,
+      tenantId: "tenant-a",
+      role: "reviewer",
+      accessScope: "tenant",
+      status: "active",
+    };
+    const explicitCaseGrant = {
+      id: 22,
+      userId: 7,
+      tenantId: "tenant-a",
+      caseId: "CASE-005",
+      accessLevel: "viewer",
+      accessScope: "case",
+      status: "active",
+    };
+
+    state.selectResults = [[tenantWideMembership], [explicitCaseGrant], []];
+
+    const { getVisibleDocumentForUser } = await import("./db");
+
+    await expect(
+      getVisibleDocumentForUser({
+        userId: 7,
+        tenantId: "tenant-a",
+        caseId: "CASE-005",
+        documentId: "DOC-404",
+      }),
+    ).rejects.toThrow("Document not accessible");
+    expect(state.selectCalls).toBe(3);
+  });
 });

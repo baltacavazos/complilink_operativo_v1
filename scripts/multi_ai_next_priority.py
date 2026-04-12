@@ -10,23 +10,24 @@ SYSTEM_PROMPT = """Eres un arquitecto principal de confiabilidad para una plataf
 USER_PROMPT = """Contexto resumido del proyecto AuditaPatron / CompliLink:
 - Ya se endureció el worker del CEO Bridge para degradar de forma segura cuando faltan tablas de agenda en arranque.
 - Ya se restauró la credencial de Dropbox y la validación del secreto volvió a pasar.
+- Ya se consolidó el acceso tenant-caso para reducir consultas redundantes sin cambiar la semántica de permisos.
 - El objetivo ahora es elegir el siguiente bloque mínimo de robustez que más valor aporte bajo carga realista, sin abrir frentes grandes.
 
 Candidatos concretos:
-1) assertCaseAccess y rutas relacionadas tenant-caso en server/db.ts.
-   Evidencia: getAccessibleCaseIds, assertCaseAccess, getCaseDetailForUser, listVisibleDocuments y listAuditTrail dependen de validaciones de acceso repetidas. Las pruebas server/db.access.test.ts muestran múltiples consultas para resolver acceso por tenant y por caso.
-2) Descarga y visibilidad documental.
-   Evidencia: listVisibleDocuments y getVisibleDocumentForUser dependen de assertCaseAccess y luego aplican filtros por visibilidad; la descarga usa storageGet en routers.ts.
-3) Deduplicación/transientes de carga documental en routers.ts.
-   Evidencia: ya existe deduplicación temporal para uploadDocument, analyzeDocumentDraft, confirmDocumentDraft y confirmDocumentDraftCompleted.
-4) Exportes CEO.
-   Evidencia: existe snapshot stale guard y auditoría; ya están más protegidos que otros flujos.
+1) Descarga y visibilidad documental.
+   Evidencia: listVisibleDocuments y getVisibleDocumentForUser dependen de assertCaseAccess, filtros de visibilidad y acceso por caso; cualquier descarga usa storageGet desde routers.ts.
+2) Exportes CEO y generación de archivos.
+   Evidencia: tienen stale guard y auditoría, pero siguen siendo flujos costosos por volumen y pueden requerir límites o trazabilidad adicional por solicitud.
+3) Listados documentales de alto volumen.
+   Evidencia: después del endurecimiento de acceso, queda margen para recortar sobrelectura o afinación de queries en listados ligados a caso/tenant.
+4) Carga documental transiente.
+   Evidencia: ya existe deduplicación temporal y guardrails de concurrencia en los endpoints principales, por lo que parece menos urgente.
 
 Tu tarea:
 - Prioriza estos candidatos para el SIGUIENTE cambio mínimo.
-- Favorece el cambio que reduzca consultas repetidas, mejore robustez bajo concurrencia/carga realista y tenga radio de impacto controlado.
+- Favorece el cambio que mejore robustez bajo concurrencia/carga realista, mantenga radio de impacto controlado y sea fácil de cubrir con pruebas.
 - Evita proponer migraciones amplias, refactors grandes o nuevas integraciones.
-- Si recomiendas assertCaseAccess/acceso tenant-caso, concreta un cambio mínimo plausible, por ejemplo consolidación de consultas o memoización local por request, pero elige solo una línea principal.
+- Si recomiendas descargas/exportes, concreta una línea mínima plausible, por ejemplo validación centralizada, límites defensivos, short-circuit temprano o trazabilidad por solicitud, pero elige solo una línea principal.
 """
 
 
@@ -69,7 +70,6 @@ def call_gemini() -> Any:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return {"provider": "gemini", "error": "GEMINI_API_KEY missing"}
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     payload = {
         "generationConfig": {
             "temperature": 0.2,
@@ -82,11 +82,18 @@ def call_gemini() -> Any:
             }
         ],
     }
-    response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=90)
-    response.raise_for_status()
-    data = response.json()
-    content = data["candidates"][0]["content"]["parts"][0]["text"]
-    return {"provider": "gemini", "result": _extract_json(content)}
+    last_error = None
+    for model in ("gemini-2.5-flash", "gemini-2.0-flash"):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        try:
+            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=90)
+            response.raise_for_status()
+            data = response.json()
+            content = data["candidates"][0]["content"]["parts"][0]["text"]
+            return {"provider": "gemini", "model": model, "result": _extract_json(content)}
+        except Exception as exc:
+            last_error = exc
+    raise last_error if last_error else RuntimeError("gemini call failed")
 
 
 def call_grok() -> Any:

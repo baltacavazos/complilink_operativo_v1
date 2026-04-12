@@ -675,6 +675,10 @@ function hasWriteCapability(membership: { accessLevel?: string | null; role?: st
   );
 }
 
+function hasElevatedDocumentReadCapability(membership: { accessLevel?: string | null; role?: string | null }) {
+  return hasWriteCapability(membership);
+}
+
 function hasAdminCapability(membership: { role?: string | null }) {
   return membership.role === "tenant_admin" || membership.role === "manager";
 }
@@ -1991,9 +1995,7 @@ export async function listVisibleDocuments(params: { userId: number; tenantId: s
     .where(and(eq(caseDocuments.tenantId, params.tenantId), eq(caseDocuments.caseId, params.caseId)))
     .orderBy(desc(caseDocuments.createdAt));
 
-  const hasElevatedAccess =
-    ("accessLevel" in membership && (membership.accessLevel === "owner" || membership.accessLevel === "editor")) ||
-    ("role" in membership && (membership.role === "tenant_admin" || membership.role === "manager"));
+  const hasElevatedAccess = hasElevatedDocumentReadCapability(membership);
 
   const visibleDocuments = hasElevatedAccess
     ? docs
@@ -2016,13 +2018,37 @@ export async function getVisibleDocumentForUser(params: {
   caseId: string;
   documentId: string;
 }) {
-  const visibleDocuments = await listVisibleDocuments({
-    userId: params.userId,
-    tenantId: params.tenantId,
-    caseId: params.caseId,
-  });
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
 
-  const document = visibleDocuments.find((item) => item.documentId === params.documentId);
+  const membership = await assertCaseAccess(params.userId, params.tenantId, params.caseId);
+
+  const documents = hasElevatedDocumentReadCapability(membership)
+    ? await db
+        .select()
+        .from(caseDocuments)
+        .where(
+          and(
+            eq(caseDocuments.tenantId, params.tenantId),
+            eq(caseDocuments.caseId, params.caseId),
+            eq(caseDocuments.documentId, params.documentId),
+          ),
+        )
+        .limit(1)
+    : await db
+        .select()
+        .from(caseDocuments)
+        .where(
+          and(
+            eq(caseDocuments.tenantId, params.tenantId),
+            eq(caseDocuments.caseId, params.caseId),
+            eq(caseDocuments.documentId, params.documentId),
+            or(eq(caseDocuments.visibility, "case_team"), eq(caseDocuments.visibility, "restricted")),
+          ),
+        )
+        .limit(1);
+  const document = documents[0];
+
   if (!document) {
     throw new Error("Document not accessible");
   }

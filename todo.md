@@ -876,3 +876,7 @@
 - [x] Auditar el siguiente cuello de botella mínimo en acceso tenant-caso, documentos o exportaciones para elegir el endurecimiento más rentable.
 - [x] Implementar el siguiente ajuste mínimo de robustez sin abrir frentes adicionales.
 - [x] Ampliar pruebas focalizadas del nuevo bloque y validar estado operativo.
+- [x] Contrastar con Grok, ChatGPT y Gemini el siguiente endurecimiento mínimo en descargas y exportaciones.
+- [x] Auditar el flujo actual de descargas y exportaciones para elegir el ajuste mínimo más rentable y de menor riesgo.
+- [x] Implementar el siguiente endurecimiento mínimo sobre descargas y exportaciones con control tenant-caso y trazabilidad.
+- [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque.

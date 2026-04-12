@@ -1,0 +1,120 @@
+[
+  {
+    "provider": "openai",
+    "result": {
+      "recommended_target": "Listados documentales de alto volumen",
+      "priority_rank": [
+        {
+          "target": "Listados documentales de alto volumen",
+          "score": 9,
+          "why": "Mejora directa en eficiencia bajo carga realista, reduce sobrelectura y afinación de queries sin cambiar semántica ni abrir frentes grandes."
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 7,
+          "why": "Es crítico para seguridad y acceso, pero cambios pueden impactar múltiples flujos y requieren más pruebas integrales."
+        },
+        {
+          "target": "Exportes CEO y generación de archivos",
+          "score": 6,
+          "why": "Aunque costosos, ya tienen guardrails; añadir límites o trazabilidad es útil pero puede ser más complejo y con mayor impacto."
+        },
+        {
+          "target": "Carga documental transiente",
+          "score": 4,
+          "why": "Ya cuenta con deduplicación y guardrails, menor urgencia y menor impacto incremental."
+        }
+      ],
+      "minimum_change": "Afinar queries en listados documentales ligados a caso/tenant para reducir sobrelectura y mejorar eficiencia bajo carga, sin cambiar semántica ni permisos.",
+      "tests_to_add": [
+        "Pruebas de carga simulando concurrencia alta en listados documentales",
+        "Pruebas de integridad y consistencia de datos tras optimización de queries",
+        "Pruebas de regresión para asegurar que no se pierde visibilidad ni acceso"
+      ],
+      "risks": [
+        "Posible impacto en rendimiento si la afinación no es correcta",
+        "Riesgo bajo de afectar permisos o visibilidad si no se prueba adecuadamente"
+      ],
+      "confidence": "high"
+    }
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "result": {
+      "recommended_target": "Exportes CEO y generación de archivos",
+      "priority_rank": [
+        {
+          "target": "Exportes CEO y generación de archivos",
+          "score": 95,
+          "why": "Estos flujos son intrínsecamente costosos por volumen y pueden impactar la estabilidad de la plataforma bajo carga realista. La implementación de límites defensivos es un cambio mínimo con alto retorno en robustez y control de recursos."
+        },
+        {
+          "target": "Listados documentales de alto volumen",
+          "score": 85,
+          "why": "Después del endurecimiento de acceso, la optimización de queries en listados de alto volumen puede reducir la sobrecarga de base de datos y mejorar la latencia general, pero es un esfuerzo de afinación más que de prevención de fallos catastróficos bajo carga."
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 75,
+          "why": "Aunque críticas, las dependencias de acceso ya fueron abordadas. La optimización de filtros de visibilidad o el `storageGet` son importantes pero de menor impacto inmediato en la robustez bajo carga extrema que los exportes masivos."
+        },
+        {
+          "target": "Carga documental transiente",
+          "score": 50,
+          "why": "Ya cuenta con guardrails de concurrencia y deduplicación, lo que lo hace menos urgente en este momento en comparación con los otros candidatos."
+        }
+      ],
+      "minimum_change": "Implementar límites defensivos de concurrencia y/o volumen por solicitud en los endpoints de exporte CEO para prevenir la saturación de recursos y garantizar una degradación controlada.",
+      "tests_to_add": [
+        "Pruebas de carga que validen el comportamiento de los endpoints de exporte al alcanzar los límites definidos, asegurando que la plataforma se mantenga estable.",
+        "Pruebas de integración que confirmen que los límites se aplican correctamente y que la respuesta de error (ej. 429 Too Many Requests) es la esperada.",
+        "Monitoreo de métricas de uso, latencia y errores para los endpoints de exporte, incluyendo el número de solicitudes rechazadas por límite."
+      ],
+      "risks": [
+        "Posible impacto en la experiencia de usuario si los límites son demasiado restrictivos sin una comunicación clara o mecanismos de reintento.",
+        "Complejidad en la definición de límites óptimos que equilibren la robustez del sistema con la funcionalidad requerida por los usuarios.",
+        "Necesidad de asegurar que los límites no introduzcan regresiones en flujos de exporte legítimos y de alto volumen que son críticos para la operación."
+      ],
+      "confidence": "high"
+    }
+  },
+  {
+    "provider": "grok",
+    "result": {
+      "recommended_target": "Exportes CEO y generación de archivos",
+      "priority_rank": [
+        {
+          "target": "Exportes CEO y generación de archivos",
+          "score": 9,
+          "why": "Flujos costosos por volumen bajo carga realista; añadir límites mejora robustez sin impacto amplio"
+        },
+        {
+          "target": "Listados documentales de alto volumen",
+          "score": 8,
+          "why": "Margen para afinación de queries en listados de alto volumen, mejorando eficiencia bajo concurrencia"
+        },
+        {
+          "target": "Descarga y visibilidad documental",
+          "score": 7,
+          "why": "Depende de accesos existentes; posible short-circuit, pero menos crítico que exportes voluminosos"
+        },
+        {
+          "target": "Carga documental transiente",
+          "score": 5,
+          "why": "Ya tiene deduplicación y guardrails, por lo que es menos urgente para robustez inmediata"
+        }
+      ],
+      "minimum_change": "Implementar límites defensivos por solicitud en la generación de exportes CEO, como un umbral máximo de registros procesados antes de degradar graciosamente.",
+      "tests_to_add": [
+        "Prueba unitaria para validar el límite de volumen en generación de exportes bajo simulación de alta carga",
+        "Prueba de integración para verificar degradación graciosa sin pérdida de datos en escenarios de exceder umbral"
+      ],
+      "risks": [
+        "Posible interrupción temporal para usuarios con exportes extremadamente grandes si el límite es alcanzado",
+        "Riesgo mínimo de regresión en flujos existentes si se implementa con short-circuit temprano"
+      ],
+      "confidence": "high"
+    }
+  }
+]
