@@ -70,6 +70,20 @@ function buildReturnPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function buildIncomingUploadPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    event: "document.uploaded",
+    documentId: "DOC-UP-001",
+    sourceUserId: "USER-UP-001",
+    docType: "recibo_nomina",
+    fileUrl: "https://example.com/document.pdf",
+    sha256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    mimeType: "application/pdf",
+    uploadedAt: "2026-04-11T18:20:00.000Z",
+    ...overrides,
+  };
+}
+
 describe("auditaPatronReturnWebhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -103,6 +117,90 @@ describe("auditaPatronReturnWebhook", () => {
           }),
       ),
     );
+  });
+
+  it("expone el endpoint público de health del bridge", async () => {
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/health`;
+
+    const response = await fetch(url);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "ok",
+      bridge: "auditapatron",
+      webhookPath: "/api/auditapatron/webhook",
+      responseContract: "auditapatron.bridge.ack.v1",
+    });
+  });
+
+  it("acepta el webhook público firmado de document.uploaded sin tocar la base de datos interna", async () => {
+    const payload = buildIncomingUploadPayload();
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(202);
+    await expect(response.json()).resolves.toMatchObject({
+      verified: true,
+      received: true,
+      event: "document.uploaded",
+      documentId: "DOC-UP-001",
+      sourceUserId: "USER-UP-001",
+      responseContract: "auditapatron.bridge.ack.v1",
+      processingStatus: "accepted",
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+  });
+
+  it("rechaza el webhook público si faltan campos contractuales aunque la firma sea válida", async () => {
+    const payload = buildIncomingUploadPayload({
+      fileUrl: undefined,
+    });
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      verified: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "missing_field",
+          field: "fileUrl",
+        },
+      ],
+    });
   });
 
   it("procesa solo una vez un mismo webhook autenticado por token cuando llega duplicado", async () => {

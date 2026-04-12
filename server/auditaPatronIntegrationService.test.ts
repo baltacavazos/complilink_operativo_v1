@@ -2,7 +2,6 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  buildAuditaPatronBodySignature,
   buildAuditaPatronEnginePayload,
   buildAuditaPatronEngineSignature,
   sendDocumentToAuditaPatronEngine,
@@ -137,14 +136,11 @@ describe("auditaPatronIntegrationService", () => {
     const body = '{"ok":true}';
 
     const timestampedSignature = buildAuditaPatronEngineSignature(timestamp, body, "super-secret-key-123456");
-    const bodySignature = buildAuditaPatronBodySignature(body, "super-secret-key-123456");
 
     expect(timestampedSignature).toMatch(/^[a-f0-9]{64}$/);
-    expect(bodySignature).toMatch(/^[a-f0-9]{64}$/);
     expect(timestampedSignature).toBe(
       buildAuditaPatronEngineSignature(timestamp, body, "super-secret-key-123456"),
     );
-    expect(bodySignature).toBe(buildAuditaPatronBodySignature(body, "super-secret-key-123456"));
     expect(timestampedSignature).not.toBe(
       buildAuditaPatronEngineSignature("1712397901", body, "super-secret-key-123456"),
     );
@@ -235,11 +231,15 @@ describe("auditaPatronIntegrationService", () => {
 
     const [received, result] = await Promise.all([receivedPromise, resultPromise]);
 
-    expect(received.authorization).toBe("Bearer secret-for-engine-123456");
-    expect(received.token).toBe("secret-for-engine-123456");
+    expect(received.authorization).toBeUndefined();
+    expect(received.token).toBeUndefined();
     expect(received.timestamp).toBeTruthy();
     expect(received.signature).toBe(
-      `hmac-sha256:${buildAuditaPatronBodySignature(received.body, "secret-for-engine-123456")}`,
+      buildAuditaPatronEngineSignature(
+        String(received.timestamp),
+        received.body,
+        "secret-for-engine-123456",
+      ),
     );
     expect(result.status).toBe("sent");
     expect(result.httpStatus).toBe(202);

@@ -1,76 +1,46 @@
-# Brief de contraste multi-IA: panel operativo de eventos y errores del bridge
+# Diagnóstico actual del bridge AuditaPatrón ↔ CompliLink
 
-## Objetivo
-Diseñar el siguiente bloque post-V1 de **CompliLink Operativo**: un **panel operativo de eventos y errores del bridge AuditaPatron/CompliLink** para uso interno del rol CEO/admin, reutilizando al máximo la infraestructura ya existente y evitando introducir complejidad innecesaria.
+## Contexto operativo
+Necesito cerrar la conexión real del bridge en el proyecto `/home/ubuntu/complilink_operativo_v1`.
+El objetivo es que CompliLink reciba correctamente el envío saliente desde el lado AuditaPatrón/bridge y que el proyecto quede listo para una prueba real o smoke test con evidencia.
 
-## Contexto ya implementado
-El proyecto ya cuenta con estos cimientos:
+## Hallazgos verificados en el código y entorno
+1. El entorno actual sí tiene configurado `AUDITAPATRON_ENGINE_WEBHOOK_URL=https://complilink.mx/api/auditapatron/webhook`.
+2. El secreto `AUDITAPATRON_ENGINE_HMAC_SECRET` existe en runtime y tiene longitud 64.
+3. El servicio `server/auditaPatronIntegrationService.ts` actualmente envía `POST` con estos headers:
+   - `Authorization: Bearer <secret>`
+   - `x-auditapatron-token: <secret>`
+   - `x-auditapatron-signature: hmac-sha256:<firma>`
+   - `X-AuditaPatron-Timestamp: <unix seconds>`
+4. En esa implementación, la firma efectiva del request saliente se calcula sobre `body` únicamente (`buildAuditaPatronBodySignature`) y no sobre `timestamp.body`.
+5. El historial/documentación interna del proyecto afirma que el contrato final confirmado requería firma **HMAC-SHA256 sobre `timestamp.body`** y headers `X-AuditaPatron-Timestamp` + `X-AuditaPatron-Signature`.
+6. Al buscar en el código, NO encontré implementación real de `GET /api/auditapatron/health` ni de `POST /api/auditapatron/webhook`; solo aparecen en tests o documentos auxiliares.
+7. Un intento de `curl` contra `https://complilink.mx/api/auditapatron/health` devolvió error TLS/handshake desde el sandbox, así que no tengo confirmación externa del endpoint productivo.
 
-1. **Bridge saliente con observabilidad mínima** en `server/auditaPatronIntegrationService.ts`.
-   - Cada dispatch genera un `observabilityEnvelope` con datos como `dispatchId`, `targetHost`, `targetPath`, `outcomeCategory`, `httpStatusCode`, `retryScheduled`, `retryDelayMs`, `remoteSmokeEnabled`.
-   - Las pruebas validan estos metadatos en `server/auditaPatronIntegrationService.test.ts`.
+## Necesidad de decisión
+Quiero una recomendación de mínima intervención y máxima robustez para dejar esto realmente conectado del lado CompliLink en este proyecto.
 
-2. **Webhook entrante del bridge** en `server/auditaPatronReturnWebhook.ts`.
-   - Verifica HMAC.
-   - Rechaza `missing_fields`, `unknown_event`, `document_not_found`.
-   - Persiste resultados relevantes con `upsertCanonicalContract`, `addCaseEvent`, `addOperationalAlert` y `createAuditLog`.
-   - Los eventos de retorno terminan auditados con acciones tipo `complilink.return_webhook.<event>`.
-
-3. **Dashboard CEO con monitoreo auditado** ya existente.
-   - El frontend ya usa `client/src/pages/ceoDashboardMonitoring.ts` para resumen, filtros, alertas y drill-down de bitácora auditada.
-   - El router ya expone `dashboard.ceoSnapshot` y `audit.list`.
-   - Ya existe monitoreo CompliLink a nivel expediente mediante `buildCompliLinkMonitoring(...)` en `server/routers.ts`, basado en eventos de dispatch y retorno.
-
-4. **Guardrails recientes ya cerrados**.
-   - Hardening de perímetro CEO.
-   - Autenticación unificada endurecida.
-   - Guardrails explícitos para smoke tests remotos.
-
-## Restricciones
-- No romper Manus OAuth ni el flujo actual del dashboard CEO.
-- No introducir infraestructura nueva pesada si el valor puede lograrse con datos ya persistidos.
-- Priorizar una solución **operable y trazable** en V1.1, no un observability platform completa.
-- Mantener compatibilidad con el estilo del proyecto: router tRPC + dashboard CEO + pruebas Vitest.
-- El panel debe ser **solo lectura operativa**; no debe disparar acciones sensibles desde UI en esta fase.
-
-## Preguntas a responder
-1. ¿Cuál es el **alcance mínimo útil** del panel operativo del bridge para esta siguiente iteración?
-2. ¿Conviene:
-   - extender la bitácora auditada existente del CEO,
-   - crear una sección específica dentro del dashboard CEO,
-   - o introducir un dataset/resumen derivado nuevo en `dashboard.ceoSnapshot`?
-3. ¿Qué **eventos, estados y errores** deben aparecer sí o sí para que soporte interno pueda detectar:
-   - dispatches exitosos,
-   - envíos esperando retorno,
-   - timeouts / atención,
-   - retornos correctos,
-   - rechazos o errores de validación del webhook,
-   - advertencias/guardrails devueltos por CompliLink?
-4. ¿Qué **KPIs operativos** mínimos conviene mostrar? Ejemplos: total dispatches, waiting, attention, success, return events con warnings, errores de firma o payload inválido, etc.
-5. ¿Qué **modelo de datos derivado** recomiendan para no duplicar de más lo ya persistido?
-6. ¿Qué cobertura de pruebas mínimas recomiendan para esta fase?
-
-## Lo que necesito de cada modelo
-Responde en JSON válido con este esquema conceptual:
-
-```json
+## Responde SOLO con JSON válido usando exactamente esta forma
 {
-  "recommended_scope": ["..."],
-  "ui_recommendation": {
-    "placement": "...",
-    "why": "..."
+  "diagnosis": {
+    "primary_blocker": "string",
+    "secondary_blockers": ["string"],
+    "confidence": "high|medium|low"
   },
-  "must_have_operational_states": ["..."],
-  "must_have_kpis": ["..."],
-  "data_strategy": {
-    "approach": "...",
-    "why": "..."
+  "recommended_fix_order": ["string"],
+  "contract_decision": {
+    "signature_input_should_be": "string",
+    "required_headers": ["string"],
+    "should_keep_bearer_or_token_headers": true,
+    "why": "string"
   },
-  "test_recommendations": ["..."],
-  "risks": ["..."],
-  "implementation_order": ["..."]
+  "implementation_scope": {
+    "need_public_health_endpoint": true,
+    "need_public_webhook_endpoint": true,
+    "need_db_or_migration_change": true,
+    "need_test_updates": true,
+    "need_runtime_secret_change": true
+  },
+  "smoke_test_plan": ["string"],
+  "final_recommendation": "string"
 }
-```
-
-## Criterio de decisión esperado
-Busco una recomendación pragmática para implementar **ya** el panel post-V1, con el menor cambio posible y la mayor utilidad operativa inmediata.

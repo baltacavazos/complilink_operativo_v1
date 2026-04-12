@@ -24,6 +24,53 @@ type RawBodyRequest = Request & {
   rawBody?: string;
 };
 
+type AuditaPatronUploadWebhookPayload = {
+  event?: string;
+  eventName?: string;
+  documentId?: string;
+  sourceDocumentId?: string;
+  sourceUserId?: string | number;
+  userId?: string | number;
+  docType?: string;
+  category?: string;
+  fileUrl?: string;
+  mimeType?: string;
+  uploadedAt?: string;
+  sha256?: string;
+  operationalContext?: Record<string, unknown> | null;
+};
+
+function toNonEmptyString(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function toStringFromUnknown(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return toNonEmptyString(value);
+}
+
+function toRecord(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function normalizeIncomingUploadPayload(payload: AuditaPatronUploadWebhookPayload) {
+  const operationalContext = toRecord(payload.operationalContext);
+
+  return {
+    event: toNonEmptyString(payload.event) ?? toNonEmptyString(payload.eventName),
+    documentId: toNonEmptyString(payload.documentId) ?? toNonEmptyString(payload.sourceDocumentId),
+    sourceUserId: toStringFromUnknown(payload.sourceUserId) ?? toStringFromUnknown(payload.userId),
+    docType: toNonEmptyString(payload.docType) ?? toNonEmptyString(payload.category),
+    fileUrl: toNonEmptyString(payload.fileUrl),
+    mimeType: toNonEmptyString(payload.mimeType),
+    uploadedAt: toNonEmptyString(payload.uploadedAt),
+    sha256: toNonEmptyString(payload.sha256) ?? toNonEmptyString(operationalContext?.sha256),
+  };
+}
+
 function clampConfidence(value: number | undefined, fallback: number) {
   if (!Number.isFinite(value)) return fallback;
   return Math.max(0, Math.min(100, Math.round(value ?? fallback)));
@@ -229,6 +276,84 @@ function buildEventDescriptor(payload: CompliLinkReturnEnvelope) {
     title: "Reintento solicitado por CompliLink",
     description: "CompliLink MX solicitó reenviar o reprocesar el documento asociado al expediente.",
   };
+}
+
+function handleAuditaPatronHealth(_req: Request, res: Response) {
+  res.status(200).json({
+    status: "ok",
+    bridge: "auditapatron",
+    webhookPath: "/api/auditapatron/webhook",
+    responseContract: RESPONSE_CONTRACT,
+  });
+}
+
+async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Response) {
+  try {
+    const rawBody = req.rawBody ?? JSON.stringify(req.body ?? {});
+    const verification = verifySignedWebhook({
+      signatureHeader: req.header("X-AuditaPatron-Signature"),
+      timestampHeader: req.header("X-AuditaPatron-Timestamp"),
+      payloadBody: rawBody,
+      hmacSecret: ENV.auditapatronEngineHmacSecret,
+    });
+
+    if (!verification.ok) {
+      res.status(403).json({
+        verified: false,
+        issues: buildWebhookIssues(
+          "authentication_failed",
+          verification.reason ?? "Invalid bridge signature.",
+        ),
+        responseContract: RESPONSE_CONTRACT,
+      });
+      return;
+    }
+
+    const payload = (req.body ?? {}) as AuditaPatronUploadWebhookPayload;
+    const normalized = normalizeIncomingUploadPayload(payload);
+    const issues = [
+      ...(!normalized.event ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
+      ...(!normalized.documentId ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId") : []),
+      ...(!normalized.sourceUserId ? buildWebhookIssues("missing_field", "The sourceUserId field is required.", "sourceUserId") : []),
+      ...(!normalized.docType ? buildWebhookIssues("missing_field", "The docType field is required.", "docType") : []),
+      ...(!normalized.fileUrl ? buildWebhookIssues("missing_field", "The fileUrl field is required.", "fileUrl") : []),
+      ...(!normalized.sha256 ? buildWebhookIssues("missing_field", "The sha256 field is required.", "sha256") : []),
+      ...(!normalized.mimeType ? buildWebhookIssues("missing_field", "The mimeType field is required.", "mimeType") : []),
+      ...(!normalized.uploadedAt ? buildWebhookIssues("missing_field", "The uploadedAt field is required.", "uploadedAt") : []),
+    ];
+
+    if (normalized.event && normalized.event !== "document.uploaded") {
+      issues.push(...buildWebhookIssues("unknown_event", `Unsupported event '${normalized.event}'.`, "event"));
+    }
+
+    if (issues.length > 0) {
+      res.status(400).json({
+        verified: false,
+        issues,
+        responseContract: RESPONSE_CONTRACT,
+      });
+      return;
+    }
+
+    const receivedAt = new Date().toISOString();
+    res.status(202).json({
+      verified: true,
+      received: true,
+      event: normalized.event,
+      documentId: normalized.documentId,
+      sourceUserId: normalized.sourceUserId,
+      receivedAt,
+      responseContract: RESPONSE_CONTRACT,
+      processingStatus: "accepted",
+    });
+  } catch (error) {
+    console.error("[AuditaPatron Intake Webhook]", error);
+    res.status(500).json({
+      verified: false,
+      issues: buildWebhookIssues("internal_error", "An unexpected error occurred while validating the bridge event."),
+      responseContract: RESPONSE_CONTRACT,
+    });
+  }
 }
 
 async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response) {
@@ -462,5 +587,7 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
 }
 
 export function registerCompliLinkReturnWebhook(app: Express) {
+  app.get("/api/auditapatron/health", handleAuditaPatronHealth);
+  app.post("/api/auditapatron/webhook", handleAuditaPatronIncomingWebhook);
   app.post("/api/auditapatron/complilink-webhook", handleCompliLinkReturnWebhook);
 }

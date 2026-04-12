@@ -515,16 +515,14 @@ export async function sendDocumentToAuditaPatronEngine(
   for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
     attempts += 1;
     finalTimestamp = buildUnixTimestamp();
-    const signature = buildAuditaPatronBodySignature(body, config.hmacSecret);
+    const signature = buildAuditaPatronEngineSignature(finalTimestamp, body, config.hmacSecret);
 
     try {
       const response = await fetch(config.webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${config.hmacSecret}`,
-          "x-auditapatron-token": config.hmacSecret,
-          "x-auditapatron-signature": `hmac-sha256:${signature}`,
+          "X-AuditaPatron-Signature": signature,
           "X-AuditaPatron-Timestamp": finalTimestamp,
         },
         body,

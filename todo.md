@@ -1,5 +1,7 @@
 # Project TODO
 
+- [x] Ejecutar la conexión real del bridge AuditaPatrón ↔ CompliLink con migración pendiente, configuración validada y prueba smoke end-to-end.
+
 - [x] Generar un PDF final con el mensaje de retorno para el otro chat y dejarlo listo para enviar.
 
 - [x] Revisar el PDF de retorno para el chat de Auditapatrón y validar si el mensaje está listo para enviarse o requiere ajustes.
@@ -799,3 +801,8 @@
 - [x] Revisar y extender la persistencia del bridge para conservar los campos contractuales mínimos nuevos que exija la alineación.
 - [x] Ampliar las pruebas del bridge con casos de éxito, error contractual, firma/autenticación y duplicados según el PDF final.
 - [x] Generar un PDF con el mensaje exacto, checklist técnico y pasos de validación que deben enviarse al otro chat de Auditapatrón para concluir la conexión del bridge con CompliLink.
+- [x] Indicar al usuario la ubicación exacta del PDF del mensaje para el otro chat y entregarle el archivo directamente.
+- [x] Intentar activar y validar la conexión real del bridge AuditaPatrón → CompliLink, incluyendo verificación de configuración, prueba técnica posible y confirmación del estado operativo extremo a extremo.
+- [x] Corregir la firma saliente del bridge AuditaPatrón para usar HMAC sobre `timestamp.body` y limpiar headers no contractuales.
+- [x] Implementar o exponer los endpoints públicos `GET /api/auditapatron/health` y `POST /api/auditapatron/webhook` en CompliLink.
+- [x] Actualizar pruebas del bridge y ejecutar validación técnica con smoke test documentado.
