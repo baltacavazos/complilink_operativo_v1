@@ -1960,6 +1960,8 @@ export const appRouter = router({
           user: ctx.user,
           tenantId: input.tenantId,
         });
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
 
         const entityId = `${input.format}:${input.section}:${input.snapshotGeneratedAt ?? Date.now()}`;
 
@@ -1978,6 +1980,12 @@ export const appRouter = router({
             snapshotGeneratedAt: input.snapshotGeneratedAt ?? null,
             appliedFilters: input.appliedFilters,
             visibleCount: input.visibleCount,
+            outcome: "success",
+            delivery: "browser_download",
+            exportScope: input.tenantId ? "tenant" : "global",
+            clientIp,
+            userAgent,
+            generatedAt: new Date().toISOString(),
           },
         });
 
@@ -2004,13 +2012,15 @@ export const appRouter = router({
             .max(2),
         }),
       )
-      .mutation(async ({ ctx, input }) => {
+       .mutation(async ({ ctx, input }) => {
         assertCeoSnapshotFresh(input.snapshotGeneratedAt);
 
         const auditTenantId = await resolveCeoAuditTenantId({
           user: ctx.user,
           tenantId: input.tenantId,
         });
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
 
         const snapshotLabel = new Date(input.snapshotGeneratedAt).toLocaleString("es-MX", {
           dateStyle: "medium",
@@ -2056,7 +2066,12 @@ export const appRouter = router({
             visibleCount: input.visibleCount,
             recipientCount: input.recipients.length,
             recipients: input.recipients,
-            attachments: input.attachments.map((attachment) => attachment.filename),
+            attachmentCount: input.attachments.length,
+            outcome: "success",
+            exportScope: input.tenantId ? "tenant" : "global",
+            clientIp,
+            userAgent,
+            generatedAt: new Date().toISOString(),
           },
         });
 
@@ -4088,12 +4103,43 @@ export const appRouter = router({
         }),
       )
       .query(async ({ ctx, input }) => {
-        const document = await getVisibleDocumentForUser({
-          userId: ctx.user.id,
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          documentId: input.documentId,
-        });
+        const clientIp = getClientIp(ctx.req);
+        const userAgent = getUserAgent(ctx.req);
+
+        let document;
+        try {
+          document = await getVisibleDocumentForUser({
+            userId: ctx.user.id,
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            documentId: input.documentId,
+          });
+        } catch (error) {
+          try {
+            await createAuditLog({
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              traceId: buildTraceId(input.tenantId, input.caseId, `DOCUMENT-ACCESS-DENIED-${input.documentId}`),
+              documentId: input.documentId,
+              actorUserId: ctx.user.id,
+              entityType: "document",
+              entityId: input.documentId,
+              action: "document.access_denied",
+              afterState: {
+                requestedDocumentId: input.documentId,
+                outcome: "denied",
+                clientIp,
+                userAgent,
+                deniedAt: new Date().toISOString(),
+                reason: error instanceof Error ? error.message : "Document access denied",
+              },
+            });
+          } catch {
+            // No-op: la descarga original no debe mutar su comportamiento si falla la bitácora adicional.
+          }
+
+          throw error;
+        }
 
         const download = await storageGet(document.storageKey);
 
@@ -4111,6 +4157,13 @@ export const appRouter = router({
             visibility: document.visibility,
             consent_status: document.consentStatus,
             storage_key: document.storageKey,
+            fileName: document.originalName,
+            mimeType: document.mimeType,
+            integrityStatus: document.integrityStatus,
+            outcome: "success",
+            delivery: "signed_url",
+            clientIp,
+            userAgent,
             access_granted_at: new Date().toISOString(),
           },
         });

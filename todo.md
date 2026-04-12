@@ -880,3 +880,4 @@
 - [x] Auditar el flujo actual de descargas y exportaciones para elegir el ajuste mínimo más rentable y de menor riesgo.
 - [x] Implementar el siguiente endurecimiento mínimo sobre descargas y exportaciones con control tenant-caso y trazabilidad.
 - [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque.
+- [x] Trazabilidad mínima de descargas y exportaciones con auditoría por tenant/caso/usuario/documento y pruebas focalizadas

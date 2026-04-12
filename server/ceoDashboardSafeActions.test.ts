@@ -42,7 +42,13 @@ const dbMocks = vi.hoisted(() => ({
   withDatabaseLock: vi.fn(),
 }));
 
+const storageMocks = vi.hoisted(() => ({
+  storageGet: vi.fn(),
+  storagePut: vi.fn(),
+}));
+
 vi.mock("./db", () => dbMocks);
+vi.mock("./storage", () => storageMocks);
 
 import * as db from "./db";
 import { appRouter } from "./routers";
@@ -188,6 +194,14 @@ describe("Dashboard CEO safe actions", () => {
     vi.mocked(db.getCaseDetailForUser).mockResolvedValue({} as never);
     vi.mocked(db.getDashboardForUser).mockResolvedValue({ totals: {}, byStatus: [] } as never);
     vi.mocked(db.getVisibleDocumentForUser).mockResolvedValue(null as never);
+    vi.mocked(storageMocks.storageGet).mockResolvedValue({
+      key: "docs/DOC-001.pdf",
+      url: "https://storage.example.test/docs/DOC-001.pdf",
+    });
+    vi.mocked(storageMocks.storagePut).mockResolvedValue({
+      key: "exports/report.csv",
+      url: "https://storage.example.test/exports/report.csv",
+    });
     vi.mocked(db.grantCaseAccess).mockResolvedValue(undefined);
     vi.mocked(db.findAuditLogEntry).mockResolvedValue(null);
     vi.mocked(db.listCanonicalContractsByType).mockResolvedValue([]);
@@ -495,6 +509,37 @@ describe("Dashboard CEO safe actions", () => {
     );
   });
 
+  it("agrega trazabilidad operativa al export ejecutivo con ip y user-agent", async () => {
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "203.0.113.25, 10.0.0.1",
+      "user-agent": "Vitest CEO Export",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.dashboard.ceoRecordExportAudit({
+      tenantId: "balt-1",
+      section: "documentos",
+      format: "pdf",
+      snapshotGeneratedAt: TEST_SNAPSHOT_GENERATED_AT,
+      appliedFilters: ["Tenant: Balt Demo", "Sólo listos"],
+      visibleCount: 2,
+    });
+
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "dashboard.ceo.export_generated",
+        afterState: expect.objectContaining({
+          outcome: "success",
+          delivery: "browser_download",
+          exportScope: "tenant",
+          clientIp: "203.0.113.25",
+          userAgent: "Vitest CEO Export",
+        }),
+      }),
+    );
+  });
+
   it("bloquea la reactivación de un acceso revocado desde la consola CEO", async () => {
     vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue({
       ...buildSnapshot(),
@@ -640,6 +685,89 @@ describe("Dashboard CEO safe actions", () => {
       }),
     );
     expect(result).toEqual({ ok: true });
+  });
+
+  it("registra una descarga documental exitosa con metadatos operativos mínimos", async () => {
+    vi.mocked(db.getVisibleDocumentForUser).mockResolvedValue({
+      documentId: "DOC-001",
+      originalName: "contrato-individual.pdf",
+      mimeType: "application/pdf",
+      visibility: "restricted",
+      consentStatus: "granted",
+      integrityStatus: "verified",
+      sha256: "abc123",
+      traceId: "trace.balt-1.CASE-BALT-1-DEMO001.DOC-001",
+      storageKey: "docs/DOC-001.pdf",
+    } as never);
+
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "198.51.100.18",
+      "user-agent": "Vitest Documents",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.documents.access({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      documentId: "DOC-001",
+    });
+
+    expect(storageMocks.storageGet).toHaveBeenCalledWith("docs/DOC-001.pdf");
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "document.access",
+        documentId: "DOC-001",
+        afterState: expect.objectContaining({
+          outcome: "success",
+          delivery: "signed_url",
+          clientIp: "198.51.100.18",
+          userAgent: "Vitest Documents",
+          fileName: "contrato-individual.pdf",
+          mimeType: "application/pdf",
+        }),
+      }),
+    );
+    expect(result).toMatchObject({
+      documentId: "DOC-001",
+      downloadUrl: "https://storage.example.test/docs/DOC-001.pdf",
+    });
+  });
+
+  it("registra intentos denegados de descarga documental sin romper la respuesta actual", async () => {
+    vi.mocked(db.getVisibleDocumentForUser).mockRejectedValue(new Error("Document not accessible"));
+    vi.mocked(db.buildTraceId).mockReturnValue("trace.balt-1.CASE-BALT-1-DEMO001.DOC-404.denied");
+
+    const ctx = createProtectedContext();
+    ctx.req.headers = {
+      "x-forwarded-for": "198.51.100.77",
+      "user-agent": "Vitest Denied Document",
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.documents.access({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        documentId: "DOC-404",
+      }),
+    ).rejects.toThrow(/Document not accessible/i);
+
+    expect(storageMocks.storageGet).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "document.access_denied",
+        documentId: "DOC-404",
+        traceId: "trace.balt-1.CASE-BALT-1-DEMO001.DOC-404.denied",
+        afterState: expect.objectContaining({
+          outcome: "denied",
+          requestedDocumentId: "DOC-404",
+          clientIp: "198.51.100.77",
+          userAgent: "Vitest Denied Document",
+          reason: "Document not accessible",
+        }),
+      }),
+    );
   });
 
   it("bloquea estas mutaciones para usuarios sin rol admin", async () => {
