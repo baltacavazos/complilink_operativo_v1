@@ -10,7 +10,10 @@ async function loginAsOwner(page: import("@playwright/test").Page) {
 
   test.skip(!e2eToken, "JWT_SECRET no está disponible para bootstrap de sesión E2E.");
 
-  const response = await page.request.post(E2E_LOGIN_PATH, {
+  await page.goto("/");
+  const loginUrl = new URL(E2E_LOGIN_PATH, page.url()).toString();
+
+  const response = await page.request.post(loginUrl, {
     headers: {
       "x-complilink-e2e-token": e2eToken ?? "",
     },
@@ -146,5 +149,37 @@ test.describe("Exportes CEO", () => {
     expect(csvFile.suggestedFilename).toMatch(/^ceo-resumen-\d{8}-\d{4}\.csv$/);
     await expect(page.getByText(/no quedó registrada/i)).toBeVisible();
     expect(consoleWarnings.some((entry) => entry.includes("No se pudo registrar la auditoría del export ejecutivo"))).toBeTruthy();
+  });
+
+  test("refresca el panel bridge smoke y mantiene visibles la alerta operativa y el umbral configurable", async ({ page }) => {
+    await loginAsOwner(page);
+
+    let bridgeSmokeAttempts = 0;
+    page.on("request", (request) => {
+      if (request.url().includes("dashboard.ceoBridgeSmokeStatus")) {
+        bridgeSmokeAttempts += 1;
+      }
+    });
+
+    await page.goto("/ceo/bridge");
+    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByTestId("bridge-smoke-alert-summary")).toBeVisible();
+    await expect(page.getByTestId("bridge-smoke-alert-badge")).toBeVisible();
+    await expect(page.getByTestId("bridge-smoke-threshold-badge")).toContainText(/umbral/i);
+    await expect(page.getByTestId("bridge-smoke-threshold-pill")).toContainText(/umbral operativo smoke/i);
+    await expect(page.getByTestId("bridge-smoke-trend-state")).toBeVisible();
+
+    const refreshResponse = page.waitForResponse(
+      (response) => response.url().includes("dashboard.ceoBridgeSmokeStatus") && response.ok(),
+    );
+    await page.getByRole("button", { name: /^Actualizar$/i }).click();
+    await refreshResponse;
+
+    await expect(page.getByTestId("bridge-smoke-alert-summary")).toBeVisible();
+    await expect(page.getByTestId("bridge-smoke-alert-badge")).toBeVisible();
+    await expect(page.getByTestId("bridge-smoke-threshold-badge")).toContainText(/umbral/i);
+    await expect(page.getByTestId("bridge-smoke-threshold-pill")).toContainText(/umbral operativo smoke/i);
+    await expect(page.getByTestId("bridge-smoke-trend-state")).toBeVisible();
+    expect(bridgeSmokeAttempts).toBeGreaterThanOrEqual(2);
   });
 });

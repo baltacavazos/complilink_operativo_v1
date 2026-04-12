@@ -1,5 +1,7 @@
 export type BridgeSmokeHistoryStatus = "passed" | "failed" | "error";
 export type BridgeSmokeHistoryFilter = "all" | BridgeSmokeHistoryStatus;
+export type BridgeSmokeAlertSeverity = "neutral" | "warning" | "critical" | "success";
+export type BridgeSmokeAlertVisualState = "stable" | "watch" | "active_alert" | "recovered";
 
 export type BridgeSmokeHistoryEntry = {
   testedAt: string | null;
@@ -77,4 +79,53 @@ export function getBridgeSmokeHistoryContext(entry: BridgeSmokeHistoryEntry) {
   }
 
   return `Health ${entry.healthStatus ?? "—"} · Webhook ${entry.webhookStatus ?? "—"}`;
+}
+
+export function getBridgeSmokeAlertSeverityTone(severity: BridgeSmokeAlertSeverity) {
+  switch (severity) {
+    case "critical":
+      return {
+        badge: "border-rose-200 bg-rose-50 text-rose-700",
+        card: "border-rose-200 bg-rose-50/80 text-rose-950",
+      };
+    case "warning":
+      return {
+        badge: "border-amber-200 bg-amber-50 text-amber-700",
+        card: "border-amber-200 bg-amber-50/80 text-amber-950",
+      };
+    case "success":
+      return {
+        badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+        card: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
+      };
+    default:
+      return {
+        badge: "border-slate-200 bg-slate-50 text-slate-700",
+        card: "border-slate-200 bg-slate-50/80 text-slate-950",
+      };
+  }
+}
+
+export function getBridgeSmokeAlertVisualStateLabel(state: BridgeSmokeAlertVisualState) {
+  switch (state) {
+    case "active_alert":
+      return "Alerta activa";
+    case "watch":
+      return "En observación";
+    case "recovered":
+      return "Recuperado";
+    default:
+      return "Estable";
+  }
+}
+
+export function getBridgeSmokeAlertTimestampLabel(input: {
+  activatedAt?: string | null;
+  recoveredAt?: string | null;
+  testedAt?: string | null;
+}) {
+  if (input.recoveredAt) return `Recuperado ${input.recoveredAt}`;
+  if (input.activatedAt) return `Alerta desde ${input.activatedAt}`;
+  if (input.testedAt) return `Observado ${input.testedAt}`;
+  return "Sin marca temporal";
 }

@@ -18,6 +18,9 @@ import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import {
   buildBridgeSmokeHistorySummary,
   filterBridgeSmokeHistory,
+  getBridgeSmokeAlertSeverityTone,
+  getBridgeSmokeAlertTimestampLabel,
+  getBridgeSmokeAlertVisualStateLabel,
   getBridgeSmokeHistoryContext,
   getBridgeSmokeHistoryFilterLabel,
   getBridgeSmokeHistoryStatusLabel,
@@ -500,9 +503,23 @@ export default function CeoDashboard() {
     [auditTrail, snapshotData?.recentAlerts, snapshotData?.recentDocuments, snapshotData?.tenantHealth],
   );
   const bridgeSmokeStatus = bridgeSmokeStatusQuery.data ?? null;
+  const bridgeSmokeAlerting = bridgeSmokeStatus?.alerting ?? null;
   const bridgeSmokeHistory = bridgeSmokeStatus?.history ?? [];
   const bridgeSmokeHistorySummary = useMemo(() => buildBridgeSmokeHistorySummary(bridgeSmokeHistory), [bridgeSmokeHistory]);
   const bridgeSmokeTrend = useMemo(() => bridgeSmokeHistory.slice(0, 10), [bridgeSmokeHistory]);
+  const bridgeSmokeAlertTone = useMemo(
+    () => getBridgeSmokeAlertSeverityTone(bridgeSmokeAlerting?.severity ?? "neutral"),
+    [bridgeSmokeAlerting?.severity],
+  );
+  const bridgeSmokeAlertTimestamp = useMemo(
+    () =>
+      getBridgeSmokeAlertTimestampLabel({
+        activatedAt: bridgeSmokeAlerting?.activatedAt ? formatDateTime(bridgeSmokeAlerting.activatedAt) : null,
+        recoveredAt: bridgeSmokeAlerting?.recoveredAt ? formatDateTime(bridgeSmokeAlerting.recoveredAt) : null,
+        testedAt: bridgeSmokeStatus?.testedAt ? formatDateTime(bridgeSmokeStatus.testedAt) : null,
+      }),
+    [bridgeSmokeAlerting?.activatedAt, bridgeSmokeAlerting?.recoveredAt, bridgeSmokeStatus?.testedAt],
+  );
   const filteredBridgeSmokeHistory = useMemo(
     () => filterBridgeSmokeHistory(bridgeSmokeHistory, bridgeSmokeHistoryFilter).slice(0, 8),
     [bridgeSmokeHistory, bridgeSmokeHistoryFilter],
@@ -2153,12 +2170,44 @@ export default function CeoDashboard() {
                       <p>
                         {bridgeSmokeStatus?.availability === "ready"
                           ? bridgeSmokeStatus.contractCheck.passed
-                            ? "El último contrato de smoke confirma ack 200/202 y firma verificada del webhook." 
-                            : "El smoke persistido no pasó la validación contractual completa; conviene revisar el carril antes de operar." 
+                            ? "El último contrato de smoke confirma ack 200/202 y firma verificada del webhook."
+                            : "El smoke persistido no pasó la validación contractual completa; conviene revisar el carril antes de operar."
                           : bridgeSmokeStatus?.availability === "error"
-                            ? "Se detectó un problema al leer el último resultado persistido del smoke test." 
+                            ? "Se detectó un problema al leer el último resultado persistido del smoke test."
                             : "Aún no existe un resultado persistido del smoke test para el carril bridge."}
                       </p>
+                    </div>
+                    <div
+                      data-testid="bridge-smoke-alert-summary"
+                      className={`mt-4 rounded-[1.2rem] border px-4 py-3 ${bridgeSmokeAlertTone.card}`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          data-testid="bridge-smoke-alert-badge"
+                          className={`rounded-full border ${bridgeSmokeAlertTone.badge}`}
+                        >
+                          {bridgeSmokeAlerting?.statusLabel ?? "Sin alertas activas"}
+                        </Badge>
+                        <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">
+                          {getBridgeSmokeAlertVisualStateLabel(bridgeSmokeAlerting?.visualState ?? "stable")}
+                        </Badge>
+                        <Badge
+                          data-testid="bridge-smoke-threshold-badge"
+                          className="rounded-full border border-white/80 bg-white/90 text-slate-700"
+                        >
+                          Umbral {formatNumber(bridgeSmokeAlerting?.threshold ?? 0)}
+                        </Badge>
+                        <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">
+                          Racha {formatNumber(bridgeSmokeAlerting?.lastObservedConsecutiveFailures ?? 0)}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 flex items-start gap-3">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold">{bridgeSmokeAlerting?.detail ?? "El bridge se mantiene estable dentro del umbral operativo configurado."}</p>
+                          <p className="text-xs opacity-80">{bridgeSmokeAlertTimestamp}</p>
+                        </div>
+                      </div>
                     </div>
                   </article>
                 </div>
@@ -2167,6 +2216,7 @@ export default function CeoDashboard() {
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con retorno visible: {formatNumber(bridgeOverview.summary.withReturn)}</span>
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Con warnings: {formatNumber(bridgeOverview.summary.withWarnings)}</span>
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Retry programado: {formatNumber(bridgeOverview.summary.retryScheduled)}</span>
+                  <span data-testid="bridge-smoke-threshold-pill" className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">Umbral operativo smoke: {formatNumber(bridgeSmokeAlerting?.threshold ?? 0)}</span>
                 </div>
               </section>
 
@@ -2256,6 +2306,11 @@ export default function CeoDashboard() {
                   </div>
                   <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Últimas 10 corridas</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                      <span className="rounded-full border border-white bg-white px-3 py-1.5">Estado operativo: {bridgeSmokeAlerting?.statusLabel ?? "Sin alertas activas"}</span>
+                      <span className="rounded-full border border-white bg-white px-3 py-1.5">Umbral: {formatNumber(bridgeSmokeAlerting?.threshold ?? 0)}</span>
+                      <span className="rounded-full border border-white bg-white px-3 py-1.5">Racha actual: {formatNumber(bridgeSmokeAlerting?.lastObservedConsecutiveFailures ?? 0)}</span>
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {bridgeSmokeTrend.length > 0 ? (
                         bridgeSmokeTrend.map((entry) => (
@@ -2274,12 +2329,17 @@ export default function CeoDashboard() {
                     </div>
                   </div>
                   <div className="mt-4 space-y-3 text-sm text-slate-600">
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Estado más reciente</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                        {bridgeSmokeHistorySummary.latestStatus ? getBridgeSmokeHistoryStatusLabel(bridgeSmokeHistorySummary.latestStatus) : "Sin historial"}
-                      </p>
-                      <p className="mt-2">Útil para confirmar si el carril cayó por error técnico o por incumplimiento contractual del ack.</p>
+                    <div
+                      data-testid="bridge-smoke-trend-state"
+                      className={`rounded-[1.4rem] border p-4 ${bridgeSmokeAlertTone.card}`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={`rounded-full border ${bridgeSmokeAlertTone.badge}`}>{bridgeSmokeAlerting?.statusLabel ?? "Sin alertas activas"}</Badge>
+                        <Badge className="rounded-full border border-white/80 bg-white/90 text-slate-700">{getBridgeSmokeAlertVisualStateLabel(bridgeSmokeAlerting?.visualState ?? "stable")}</Badge>
+                      </div>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight">{bridgeSmokeHistorySummary.latestStatus ? getBridgeSmokeHistoryStatusLabel(bridgeSmokeHistorySummary.latestStatus) : "Sin historial"}</p>
+                      <p className="mt-2">{bridgeSmokeAlerting?.detail ?? "Útil para confirmar si el carril cayó por error técnico o por incumplimiento contractual del ack."}</p>
+                      <p className="mt-2 text-xs opacity-80">{bridgeSmokeAlertTimestamp}</p>
                     </div>
                     <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Errores técnicos</p>

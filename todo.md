@@ -811,6 +811,12 @@
 - [x] Pruebas E2E ampliadas del bridge: cubrir flujo completo, firma inválida, errores y duplicados/idempotencia.
 - [x] Siguiente bloque bridge: añadir historial operativo con tendencias recientes y filtros básicos dentro de la consola CEO.
 - [x] Siguiente bloque bridge: disparar alertas al propietario cuando el smoke test falle de forma consecutiva según umbral operativo.
-- [ ] Siguiente bloque bridge: ampliar cobertura de navegador del panel CEO para validar render y refresco del estado operativo del bridge.
+- [x] Siguiente bloque bridge: ampliar cobertura de navegador del panel CEO para validar render y refresco del estado operativo del bridge.
 - [x] Añadir historial operativo del bridge en la consola CEO con tendencias recientes y filtros básicos del smoke test
 - [x] Implementar alertas al propietario cuando el smoke test del bridge acumule fallos consecutivos según umbral operativo y evitar avisos duplicados.
+- [x] Ampliar la cobertura de navegador del panel CEO para validar render, severidad visual y refresco del estado operativo del bridge.
+- [x] Mostrar en la consola CEO el estado de alerta activa o recuperación del bridge con severidad visual y contexto temporal.
+- [x] Añadir configuración operativa del umbral de fallos consecutivos del smoke test mediante ajuste interno o variable controlada.
+- [x] Añadir cobertura de navegador del panel CEO bridge para validar render y refresco del estado del smoke test.
+- [x] Mostrar en la consola CEO el estado de alerta activa o recovery del bridge con severidad visual y umbrales visibles en la tendencia reciente.
+- [x] Exponer el umbral operativo de fallos consecutivos del smoke test bridge como configuración controlada sin hardcode en código.

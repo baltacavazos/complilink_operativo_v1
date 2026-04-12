@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildBridgeSmokeHistorySummary,
   filterBridgeSmokeHistory,
+  getBridgeSmokeAlertSeverityTone,
+  getBridgeSmokeAlertTimestampLabel,
+  getBridgeSmokeAlertVisualStateLabel,
   getBridgeSmokeHistoryContext,
   getBridgeSmokeHistoryFilterLabel,
   getBridgeSmokeHistoryStatusLabel,
@@ -57,5 +60,35 @@ describe("ceoBridgeSmokeHistory", () => {
     expect(getBridgeSmokeHistoryStatusLabel("passed")).toBe("Conforme");
     expect(getBridgeSmokeHistoryStatusTone("failed")).toContain("amber");
     expect(getBridgeSmokeHistoryContext(entries[2])).toBe("fetch failed");
+  });
+
+  it("devuelve tonos y etiquetas consistentes para el estado operativo del bridge", () => {
+    expect(getBridgeSmokeAlertSeverityTone("critical")).toEqual({
+      badge: expect.stringContaining("rose"),
+      card: expect.stringContaining("rose"),
+    });
+    expect(getBridgeSmokeAlertSeverityTone("success")).toEqual({
+      badge: expect.stringContaining("emerald"),
+      card: expect.stringContaining("emerald"),
+    });
+    expect(getBridgeSmokeAlertVisualStateLabel("active_alert")).toBe("Alerta activa");
+    expect(getBridgeSmokeAlertVisualStateLabel("recovered")).toBe("Recuperado");
+  });
+
+  it("prioriza recovery, luego activación y por último observación al construir la marca temporal", () => {
+    expect(
+      getBridgeSmokeAlertTimestampLabel({
+        recoveredAt: "12 abr 2026, 10:00",
+        activatedAt: "12 abr 2026, 08:00",
+        testedAt: "12 abr 2026, 09:30",
+      }),
+    ).toBe("Recuperado 12 abr 2026, 10:00");
+    expect(
+      getBridgeSmokeAlertTimestampLabel({
+        activatedAt: "12 abr 2026, 08:00",
+        testedAt: "12 abr 2026, 09:30",
+      }),
+    ).toBe("Alerta desde 12 abr 2026, 08:00");
+    expect(getBridgeSmokeAlertTimestampLabel({ testedAt: "12 abr 2026, 09:30" })).toBe("Observado 12 abr 2026, 09:30");
   });
 });
