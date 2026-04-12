@@ -1,0 +1,73 @@
+{
+  "openai": {
+    "recommended_approach": "Implementar reglas simples basadas en umbrales cuantitativos para detectar patrones anómalos en eventos auditados, integrando la lógica justo después del registro en audit_logs para minimizar impacto y evitar duplicados mediante agregación temporal y filtrado por IP y usuario.",
+    "thresholds": [
+      "Más de 10 descargas/exportes por usuario en 10 minutos",
+      "Accesos desde más de 3 IPs diferentes por usuario en 30 minutos",
+      "Más de 5 eventos document.access_denied por usuario en 15 minutos"
+    ],
+    "where_to_hook": [
+      "Después de la inserción en audit_logs para eventos dashboard.ceo.export_generated, dashboard.ceo.export_emailed, document.access y document.access_denied"
+    ],
+    "risk_notes": [
+      "Umbrales bajos pueden generar falsos positivos, ajustar según comportamiento real",
+      "Evitar alertas repetidas para el mismo usuario/IP en ventanas cortas para reducir ruido",
+      "Monitorear la tasa de alertas para ajustar umbrales y evitar saturación"
+    ],
+    "tests": [
+      "Simular múltiples descargas desde un mismo usuario y verificar que se genera alerta al superar umbral",
+      "Simular accesos desde múltiples IPs y comprobar detección",
+      "Simular múltiples access_denied y validar generación de alerta",
+      "Verificar que alertas no se duplican si se repiten eventos en ventana temporal"
+    ]
+  },
+  "gemini": {
+    "recommended_approach": "Implementar detección ligera de anomalías en tiempo real post-creación de audit_logs, utilizando la infraestructura existente de operational_alerts y notifyOwner. La lógica debe ser síncrona y muy optimizada para evitar latencia.",
+    "thresholds": [
+      "Descargas/Exportes masivos: >5 acciones 'dashboard.ceo.export_generated' o 'dashboard.ceo.export_emailed' por el mismo usuario en un período de 5 minutos.",
+      "Múltiples IPs: >1 IP distinta para el mismo usuario en acciones 'dashboard.ceo.export_generated', 'document.access' o 'document.access_denied' en un período de 10 minutos.",
+      "Múltiples accesos denegados: >5 acciones 'document.access_denied' por el mismo usuario o IP en un período de 5 minutos."
+    ],
+    "where_to_hook": [
+      "Dentro del servicio que crea el 'audit_log', justo después de la persistencia exitosa del log. Se invocaría una función dedicada de 'AnomalyDetector' que consultaría los logs recientes para el usuario/IP.",
+      "Alternativamente, un 'middleware' tRPC específico para las acciones críticas (export_generated, document.access, etc.) que, tras la ejecución exitosa y el log, dispare la verificación de anomalías."
+    ],
+    "risk_notes": [
+      "Los umbrales iniciales pueden generar falsos positivos; se requerirá un ajuste fino iterativo.",
+      "El alcance de la detección es básico y no cubrirá ataques sofisticados o patrones complejos.",
+      "La consulta de logs recientes para la detección debe ser extremadamente eficiente para evitar impacto en la latencia de la API.",
+      "Dependencia de la integridad y disponibilidad de los 'audit_logs' para el análisis en tiempo real."
+    ],
+    "tests": [
+      "Unitarios para cada función de detección de umbral (ej. 'checkMassiveDownloads(logs)', 'checkMultipleIPs(logs)').",
+      "Integración: Simular una secuencia de eventos que dispare una alerta (ej. 6 descargas en 3 minutos) y verificar la creación de 'operational_alert' con categoría 'access_risk' y la llamada a 'notifyOwner'.",
+      "Pruebas de borde: Verificar que los eventos justo por debajo del umbral no disparen alertas y los eventos en el umbral sí lo hagan.",
+      "Pruebas de regresión para asegurar que los cambios en los umbrales o la lógica no rompan la detección existente."
+    ]
+  },
+  "grok": {
+    "recommended_approach": "Implementar detección de anomalías en tiempo real post-auditoría, calculando métricas simples (conteos en ventanas deslizantes de 1h/24h) usando queries Drizzle en la tabla audit_logs. Generar alertas en operational_alerts solo si se superan umbrales, y notificar via notifyOwner. Usar un job asíncrono para evitar bloquear requests principales.",
+    "thresholds": [
+      "Descargas masivas: >10 export_generated o document.access exitosos en 1 hora por usuario.",
+      "Múltiples IPs: >3 IPs únicos en access o export en 24 horas por usuario.",
+      "Fallos frecuentes: >5 access_denied en 1 hora por usuario o IP."
+    ],
+    "where_to_hook": [
+      "Post-procedure en tRPC resolvers para dashboard.ceo.export_generated, dashboard.ceo.export_emailed, document.access y document.access_denied, después de insertar en audit_logs.",
+      "En un middleware tRPC global para capturar context.userId y trigger job de chequeo asíncrono si la acción es auditable.",
+      "En el job asíncrono: query a audit_logs con filtros por userId, timestamp y action_type."
+    ],
+    "risk_notes": [
+      "Posible overhead en queries Drizzle si audit_logs crece mucho; mitigar con índices en userId, timestamp y action_type.",
+      "Falsos positivos en umbrales bajos durante picos legítimos (e.g., reportes batch); monitorear y ajustar post-deploy.",
+      "Asegurar atomicidad: usar transacciones para insert audit_logs + chequeo para evitar race conditions en conteos.",
+      "No impacta migraciones existentes, pero probar queries en staging para performance."
+    ],
+    "tests": [
+      "Unit test: función de chequeo umbrales con mocks de audit_logs, verificar alertas generadas para >10 descargas en 1h.",
+      "Integration test: simular secuencia de tRPC calls (5 access_denied + 3 IPs), assert operational_alerts insert y notifyOwner called.",
+      "E2E test: flujo de usuario con anomalía (e.g., 15 exports en 30min), verificar alerta en DB sin bloquear response.",
+      "Performance test: insertar 1000 audit_logs y query umbrales, assert <500ms."
+    ]
+  }
+}

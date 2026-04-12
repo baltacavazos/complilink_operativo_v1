@@ -886,3 +886,9 @@
 - [x] Auditar la superficie actual de bitácora para elegir el punto mínimo de integración
 - [x] Implementar la vista filtrable de auditoría con filtros operativos y bajo riesgo
 - [x] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque
+- [ ] Alertas automáticas ante patrones anómalos de descarga
+- [ ] Contrastar con Grok, ChatGPT y Gemini el diseño mínimo y de bajo riesgo para alertas de descargas anómalas
+- [ ] Auditar la bitácora y la infraestructura actual de notificación para elegir el punto mínimo de integración
+- [ ] Implementar alertas automáticas consolidadas y no intrusivas para descargas anómalas
+- [ ] Ampliar pruebas focalizadas y validar el estado operativo del nuevo bloque de alertas
+- [x] Implementar detección mínima de anomalías para descargas documentales y exportaciones CEO reutilizando audit_logs, operational_alerts y notifyOwner

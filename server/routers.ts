@@ -56,6 +56,7 @@ import {
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
+import { notifyOwner } from "./_core/notification";
 import {
   AuthFlowError,
   clearEmailChallengeCookie,
@@ -309,6 +310,203 @@ function getClientIp(req: { headers: Record<string, unknown>; ip?: string | null
 
 function getUserAgent(req: { headers: Record<string, unknown> }) {
   return getHeaderValue(req.headers["user-agent"] as string | string[] | undefined);
+}
+
+function getActorDisplayLabel(user: { id: number; name?: string | null; email?: string | null }) {
+  return user.name?.trim() || user.email?.trim() || `Usuario ${user.id}`;
+}
+
+type AuditTrailEntry = Awaited<ReturnType<typeof listAuditTrail>>[number];
+
+type AccessRiskSignal = {
+  kind: "repeated_denied" | "multi_ip" | "burst_access";
+  severity: "critical" | "warning";
+  title: string;
+  description: string;
+};
+
+const ACCESS_RISK_BURST_ACTIONS = new Set([
+  "dashboard.ceo.export_generated",
+  "dashboard.ceo.export_emailed",
+  "document.access",
+]);
+const ACCESS_RISK_RELEVANT_ACTIONS = new Set([...Array.from(ACCESS_RISK_BURST_ACTIONS), "document.access_denied"]);
+const ACCESS_RISK_BURST_WINDOW_MS = 10 * 60 * 1000;
+const ACCESS_RISK_MULTI_IP_WINDOW_MS = 30 * 60 * 1000;
+const ACCESS_RISK_DENIED_WINDOW_MS = 10 * 60 * 1000;
+const ACCESS_RISK_BURST_THRESHOLD = 6;
+const ACCESS_RISK_MULTI_IP_THRESHOLD = 3;
+const ACCESS_RISK_DENIED_THRESHOLD = 5;
+
+function parseAuditAfterState(row: AuditTrailEntry) {
+  if (!row.afterState) return null;
+
+  try {
+    const parsed = JSON.parse(row.afterState) as Record<string, unknown>;
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function readTimestampMs(value: unknown) {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
+}
+
+function isWithinWindow(value: unknown, windowMs: number, referenceMs: number) {
+  const timestampMs = readTimestampMs(value);
+  if (timestampMs === null) return false;
+  return referenceMs - timestampMs <= windowMs;
+}
+
+function readAuditClientIp(row: AuditTrailEntry) {
+  const afterState = parseAuditAfterState(row);
+  const clientIp = afterState?.clientIp;
+  return typeof clientIp === "string" && clientIp.trim().length > 0 ? clientIp.trim() : null;
+}
+
+function detectAccessRiskSignal(params: {
+  history: AuditTrailEntry[];
+  sourceAction: string;
+  actorLabel: string;
+  clientIp: string | null;
+  referenceMs: number;
+}) {
+  const relevantHistory = params.history.filter((entry) => ACCESS_RISK_RELEVANT_ACTIONS.has(entry.action));
+
+  const deniedCount = relevantHistory.filter(
+    (entry) => entry.action === "document.access_denied" && isWithinWindow(entry.createdAt, ACCESS_RISK_DENIED_WINDOW_MS, params.referenceMs),
+  ).length;
+  if (params.sourceAction === "document.access_denied" && deniedCount === ACCESS_RISK_DENIED_THRESHOLD) {
+    return {
+      kind: "repeated_denied" as const,
+      severity: "critical" as const,
+      title: "Accesos documentales denegados repetidos",
+      description: `${params.actorLabel} acumuló ${deniedCount} eventos document.access_denied en 10 minutos.`,
+    } satisfies AccessRiskSignal;
+  }
+
+  const recentRelevant = relevantHistory.filter((entry) => isWithinWindow(entry.createdAt, ACCESS_RISK_MULTI_IP_WINDOW_MS, params.referenceMs));
+  const distinctIps = Array.from(new Set(recentRelevant.map((entry) => readAuditClientIp(entry)).filter((value): value is string => Boolean(value))));
+  if (params.clientIp && distinctIps.length === ACCESS_RISK_MULTI_IP_THRESHOLD) {
+    return {
+      kind: "multi_ip" as const,
+      severity: "critical" as const,
+      title: "Acceso sensible desde múltiples IPs",
+      description: `${params.actorLabel} alcanzó ${distinctIps.length} IPs distintas en 30 minutos entre descargas, exportaciones o intentos de acceso.`,
+    } satisfies AccessRiskSignal;
+  }
+
+  const burstCount = relevantHistory.filter(
+    (entry) => ACCESS_RISK_BURST_ACTIONS.has(entry.action) && isWithinWindow(entry.createdAt, ACCESS_RISK_BURST_WINDOW_MS, params.referenceMs),
+  ).length;
+  if (ACCESS_RISK_BURST_ACTIONS.has(params.sourceAction) && burstCount === ACCESS_RISK_BURST_THRESHOLD) {
+    return {
+      kind: "burst_access" as const,
+      severity: "warning" as const,
+      title: "Volumen inusual de descargas o exportaciones",
+      description: `${params.actorLabel} acumuló ${burstCount} descargas o exportaciones en 10 minutos.`,
+    } satisfies AccessRiskSignal;
+  }
+
+  return null;
+}
+
+async function maybeCreateAccessRiskAlert(params: {
+  tenantId: string;
+  caseId?: string | null;
+  actorUserId: number;
+  actorLabel: string;
+  sourceAction: string;
+  clientIp: string | null;
+  userAgent: string | null;
+  referenceTimeMs?: number;
+}) {
+  try {
+    const referenceMs = params.referenceTimeMs ?? Date.now();
+    const history = await listAuditTrail({
+      userId: params.actorUserId,
+      tenantId: params.tenantId,
+      caseId: params.caseId ?? undefined,
+      actorUserId: params.actorUserId,
+      limit: 80,
+    });
+    const signal = detectAccessRiskSignal({
+      history,
+      sourceAction: params.sourceAction,
+      actorLabel: params.actorLabel,
+      clientIp: params.clientIp,
+      referenceMs,
+    });
+
+    if (!signal) return;
+
+    const raisedAt = new Date(referenceMs);
+    const traceId = buildTraceId(params.tenantId, params.caseId ?? undefined, `ACCESS-RISK-${signal.kind}-${referenceMs}`);
+
+    await addOperationalAlert({
+      tenantId: params.tenantId,
+      caseId: params.caseId ?? null,
+      traceId,
+      category: "access_risk",
+      severity: signal.severity,
+      title: signal.title,
+      description: signal.description,
+      status: "open",
+      raisedAt,
+    });
+
+    let ownerNotified = false;
+    try {
+      ownerNotified = await notifyOwner({
+        title: `Riesgo de acceso detectado · ${signal.title}`,
+        content: [
+          signal.description,
+          `Actor: ${params.actorLabel}`,
+          `Acción origen: ${params.sourceAction}`,
+          `Tenant: ${params.tenantId}`,
+          params.caseId ? `Caso: ${params.caseId}` : null,
+          params.clientIp ? `IP: ${params.clientIp}` : null,
+          params.userAgent ? `User-Agent: ${params.userAgent}` : null,
+          `Detectado en: ${raisedAt.toISOString()}`,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      });
+    } catch (error) {
+      console.warn("[AccessRisk] notifyOwner failed", error);
+    }
+
+    await createAuditLog({
+      tenantId: params.tenantId,
+      caseId: params.caseId ?? null,
+      traceId,
+      actorUserId: params.actorUserId,
+      entityType: "system",
+      entityId: `access-risk:${signal.kind}:${params.actorUserId}:${referenceMs}`,
+      action: "access.anomaly_detected",
+      afterState: {
+        kind: signal.kind,
+        severity: signal.severity,
+        title: signal.title,
+        description: signal.description,
+        sourceAction: params.sourceAction,
+        actorLabel: params.actorLabel,
+        clientIp: params.clientIp,
+        userAgent: params.userAgent,
+        ownerNotified,
+        detectedAt: raisedAt.toISOString(),
+      },
+    });
+  } catch (error) {
+    console.warn("[AccessRisk] anomaly detection skipped", error);
+  }
 }
 
 const auditarRateWindowByKey = new Map<string, number[]>();
@@ -1962,7 +2160,8 @@ export const appRouter = router({
         });
         const clientIp = getClientIp(ctx.req);
         const userAgent = getUserAgent(ctx.req);
-
+        const actorLabel = getActorDisplayLabel(ctx.user);
+        const generatedAt = new Date().toISOString();
         const entityId = `${input.format}:${input.section}:${input.snapshotGeneratedAt ?? Date.now()}`;
 
         await createAuditLog({
@@ -1985,32 +2184,44 @@ export const appRouter = router({
             exportScope: input.tenantId ? "tenant" : "global",
             clientIp,
             userAgent,
-            generatedAt: new Date().toISOString(),
+            generatedAt,
           },
+        });
+
+        await maybeCreateAccessRiskAlert({
+          tenantId: auditTenantId,
+          caseId: null,
+          actorUserId: ctx.user.id,
+          actorLabel,
+          sourceAction: "dashboard.ceo.export_generated",
+          clientIp,
+          userAgent,
         });
 
         return { ok: true };
       }),
-    ceoEmailBridgeExport: adminProcedure.input(
-      z.object({
-        tenantId: z.string().min(3).optional(),
-        snapshotGeneratedAt: z.string().datetime(),
-        appliedFilters: z.array(z.string().min(1).max(160)).max(12),
-        visibleCount: z.number().int().min(0).max(50000),
-        recipients: z.array(z.string().email()).min(1).max(5),
-        message: z.string().trim().max(1000).optional(),
-        attachments: z
-          .array(
-            z.object({
-              filename: z.string().trim().min(1).max(255),
-              content: z.string().min(10),
-              contentType: z.string().trim().min(3).max(128),
-            }),
-          )
-          .min(1)
-          .max(2),
-      }),
-    ).mutation(async ({ ctx, input }) => {
+    ceoEmailBridgeExport: adminProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3).optional(),
+          snapshotGeneratedAt: z.string().datetime(),
+          appliedFilters: z.array(z.string().min(1).max(160)).max(12),
+          visibleCount: z.number().int().min(0).max(50000),
+          recipients: z.array(z.string().email()).min(1).max(5),
+          message: z.string().trim().max(1000).optional(),
+          attachments: z
+            .array(
+              z.object({
+                filename: z.string().trim().min(1).max(255),
+                content: z.string().min(10),
+                contentType: z.string().trim().min(3).max(128),
+              }),
+            )
+            .min(1)
+            .max(2),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
         assertCeoSnapshotFresh(input.snapshotGeneratedAt);
 
         const auditTenantId = await resolveCeoAuditTenantId({
@@ -2019,11 +2230,12 @@ export const appRouter = router({
         });
         const clientIp = getClientIp(ctx.req);
         const userAgent = getUserAgent(ctx.req);
+        const actorLabel = getActorDisplayLabel(ctx.user);
+        const generatedAt = new Date().toISOString();
 
         const snapshotDate = new Date(input.snapshotGeneratedAt);
         const snapshotLabel = Number.isNaN(snapshotDate.getTime()) ? input.snapshotGeneratedAt : snapshotDate.toISOString();
         const filtersLabel = input.appliedFilters.length > 0 ? input.appliedFilters.join(" | ") : "Sin filtros activos";
-        const actorLabel = ctx.user.name?.trim() || ctx.user.email?.trim() || "Equipo CEO";
         const messageBlock = input.message ? `<p><strong>Mensaje:</strong> ${input.message}</p>` : "";
         const htmlBody = [
           '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">',
@@ -2080,8 +2292,18 @@ export const appRouter = router({
             exportScope: input.tenantId ? "tenant" : "global",
             clientIp,
             userAgent,
-            generatedAt: new Date().toISOString(),
+            generatedAt,
           },
+        });
+
+        await maybeCreateAccessRiskAlert({
+          tenantId: auditTenantId,
+          caseId: null,
+          actorUserId: ctx.user.id,
+          actorLabel,
+          sourceAction: "dashboard.ceo.export_emailed",
+          clientIp,
+          userAgent,
         });
 
         return { ok: true };
@@ -4125,6 +4347,9 @@ export const appRouter = router({
           });
         } catch (error) {
           try {
+            const actorLabel = getActorDisplayLabel(ctx.user);
+            const deniedAt = new Date().toISOString();
+
             await createAuditLog({
               tenantId: input.tenantId,
               caseId: input.caseId,
@@ -4139,9 +4364,19 @@ export const appRouter = router({
                 outcome: "denied",
                 clientIp,
                 userAgent,
-                deniedAt: new Date().toISOString(),
+                deniedAt,
                 reason: error instanceof Error ? error.message : "Document access denied",
               },
+            });
+
+            await maybeCreateAccessRiskAlert({
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              actorUserId: ctx.user.id,
+              actorLabel,
+              sourceAction: "document.access_denied",
+              clientIp,
+              userAgent,
             });
           } catch {
             // No-op: la descarga original no debe mutar su comportamiento si falla la bitácora adicional.
@@ -4151,6 +4386,8 @@ export const appRouter = router({
         }
 
         const download = await storageGet(document.storageKey);
+        const actorLabel = getActorDisplayLabel(ctx.user);
+        const accessGrantedAt = new Date().toISOString();
 
         await createAuditLog({
           tenantId: input.tenantId,
@@ -4173,8 +4410,18 @@ export const appRouter = router({
             delivery: "signed_url",
             clientIp,
             userAgent,
-            access_granted_at: new Date().toISOString(),
+            access_granted_at: accessGrantedAt,
           },
+        });
+
+        await maybeCreateAccessRiskAlert({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          actorUserId: ctx.user.id,
+          actorLabel,
+          sourceAction: "document.access",
+          clientIp,
+          userAgent,
         });
 
         return {
