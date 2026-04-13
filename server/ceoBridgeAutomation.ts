@@ -18,6 +18,7 @@ import {
 
 const CRON_PARTS = 6;
 const BRIDGE_SCHEDULER_INTERVAL_MS = 60_000;
+const BRIDGE_INFRASTRUCTURE_RETRY_DELAY_MS = 15 * 60_000;
 const CRON_RANGES: Array<[number, number]> = [
   [0, 59],
   [0, 59],
@@ -31,6 +32,7 @@ let schedulerStarted = false;
 let schedulerTimer: NodeJS.Timeout | null = null;
 let scheduleRunInFlight = false;
 let bridgeScheduleInfrastructureWarningEmitted = false;
+let bridgeScheduleInfrastructureRetryAfter = 0;
 
 function collectBridgeInfrastructureErrorFragments(error: unknown, visited = new Set<object>()): string[] {
   if (typeof error === "string") return [error];
@@ -68,6 +70,7 @@ export function isMissingCeoBridgeScheduleInfrastructureError(error: unknown) {
 }
 
 function warnMissingBridgeScheduleInfrastructure(error: unknown) {
+  bridgeScheduleInfrastructureRetryAfter = Date.now() + BRIDGE_INFRASTRUCTURE_RETRY_DELAY_MS;
   if (bridgeScheduleInfrastructureWarningEmitted) return;
   bridgeScheduleInfrastructureWarningEmitted = true;
   const fragments = collectBridgeInfrastructureErrorFragments(error);
@@ -78,8 +81,13 @@ function warnMissingBridgeScheduleInfrastructure(error: unknown) {
   );
 }
 
+function shouldSkipBridgeScheduleScan(now = Date.now()) {
+  return bridgeScheduleInfrastructureRetryAfter > now;
+}
+
 function clearBridgeScheduleInfrastructureWarning() {
   bridgeScheduleInfrastructureWarningEmitted = false;
+  bridgeScheduleInfrastructureRetryAfter = 0;
 }
 
 function sanitizeCronExpression(value: string) {
@@ -432,7 +440,7 @@ async function runSingleCeoBridgeSchedule(job: {
 }
 
 export async function processDueCeoBridgeSchedules() {
-  if (scheduleRunInFlight) return;
+  if (scheduleRunInFlight || shouldSkipBridgeScheduleScan()) return;
   scheduleRunInFlight = true;
 
   try {
@@ -495,4 +503,10 @@ export function stopCeoBridgeScheduleWorker() {
     schedulerTimer = null;
   }
   schedulerStarted = false;
+}
+
+export function resetCeoBridgeScheduleWorkerStateForTests() {
+  stopCeoBridgeScheduleWorker();
+  scheduleRunInFlight = false;
+  clearBridgeScheduleInfrastructureWarning();
 }

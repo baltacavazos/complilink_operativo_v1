@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach } from "vitest";
 
 const {
   listDueCeoBridgeSchedulesMock,
@@ -43,6 +44,7 @@ vi.mock("../client/src/pages/ceoDashboardExports", () => ({
 import {
   isMissingCeoBridgeScheduleInfrastructureError,
   processDueCeoBridgeSchedules,
+  resetCeoBridgeScheduleWorkerStateForTests,
 } from "./ceoBridgeAutomation";
 
 function buildMissingBridgeTableError() {
@@ -55,7 +57,15 @@ function buildMissingBridgeTableError() {
 
 describe("ceoBridgeAutomation resilience", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-13T12:00:00Z"));
     vi.clearAllMocks();
+    resetCeoBridgeScheduleWorkerStateForTests();
+  });
+
+  afterEach(() => {
+    resetCeoBridgeScheduleWorkerStateForTests();
+    vi.useRealTimers();
   });
 
   it("detecta errores de infraestructura faltante del bridge incluso si vienen anidados en cause", () => {
@@ -79,6 +89,24 @@ describe("ceoBridgeAutomation resilience", () => {
     expect(recordCeoBridgeScheduleRunMock).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(String(warnSpy.mock.calls[0]?.[0] ?? "")).toContain("Infraestructura faltante");
+  });
+
+  it("pone en pausa temporal el escaneo tras detectar infraestructura faltante para evitar ruido repetitivo", async () => {
+    listDueCeoBridgeSchedulesMock.mockRejectedValueOnce(buildMissingBridgeTableError());
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    await expect(processDueCeoBridgeSchedules()).resolves.toBeUndefined();
+    await expect(processDueCeoBridgeSchedules()).resolves.toBeUndefined();
+
+    expect(listDueCeoBridgeSchedulesMock).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(15 * 60_000 + 1);
+    listDueCeoBridgeSchedulesMock.mockResolvedValueOnce([]);
+
+    await expect(processDueCeoBridgeSchedules()).resolves.toBeUndefined();
+
+    expect(listDueCeoBridgeSchedulesMock).toHaveBeenCalledTimes(2);
   });
 
   it("repropaga errores no relacionados para no ocultar fallos genuinos del worker", async () => {

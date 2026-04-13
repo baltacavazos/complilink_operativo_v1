@@ -690,6 +690,8 @@ export default function CeoDashboard() {
     hasSnapshotError: Boolean(snapshotError),
   });
   const currentSectionExportGuardReason = exportGuardReason;
+  const filterSelectClassName = "h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400";
+  const diagnosticPillClassName = "rounded-full border border-current/15 bg-white/70 px-3 py-1";
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
@@ -2050,7 +2052,7 @@ export default function CeoDashboard() {
                 <select
                   value={filters.tenantId}
                   onChange={(event) => setFilters((previous) => ({ ...previous, tenantId: event.target.value }))}
-                  className="h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400"
+                  className={filterSelectClassName}
                 >
                   <option value="all">Todos los tenants</option>
                   {tenantOptions.map((option) => (
@@ -2066,7 +2068,7 @@ export default function CeoDashboard() {
                 <select
                   value={filters.severity}
                   onChange={(event) => setFilters((previous) => ({ ...previous, severity: event.target.value }))}
-                  className="h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400"
+                  className={filterSelectClassName}
                 >
                   <option value="all">Todas las severidades</option>
                   {severityOptions.map((option) => (
@@ -2082,7 +2084,7 @@ export default function CeoDashboard() {
                 <select
                   value={filters.dateWindowDays}
                   onChange={(event) => setFilters((previous) => ({ ...previous, dateWindowDays: event.target.value }))}
-                  className="h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400"
+                  className={filterSelectClassName}
                 >
                   <option value="all">Todo el histórico visible</option>
                   {DATE_WINDOW_OPTIONS.map((option) => (
@@ -2101,7 +2103,7 @@ export default function CeoDashboard() {
                   <select
                     value={filters.caseId}
                     onChange={(event) => setFilters((previous) => ({ ...previous, caseId: event.target.value }))}
-                    className="h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400"
+                    className={filterSelectClassName}
                   >
                     <option value="all">Todos los casos</option>
                     {caseOptions.map((option) => (
@@ -2117,7 +2119,7 @@ export default function CeoDashboard() {
                   <select
                     value={filters.userId}
                     onChange={(event) => setFilters((previous) => ({ ...previous, userId: event.target.value }))}
-                    className="h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400"
+                    className={filterSelectClassName}
                   >
                     <option value="all">Todos los usuarios</option>
                     {userOptions.map((option) => (
@@ -2298,12 +2300,12 @@ export default function CeoDashboard() {
               </Button>
             </div>
             <div data-testid="ceo-guardrail-diagnostics" className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium">
-              <span className="rounded-full border border-current/15 bg-white/70 px-3 py-1">Estado: {executiveGuardrailReasonLabel}</span>
-              <span data-testid="ceo-retry-visible-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
+              <span className={diagnosticPillClassName}>Estado: {executiveGuardrailReasonLabel}</span>
+              <span data-testid="ceo-retry-visible-pill" className={diagnosticPillClassName}>
                 Fricción visible: {formatNumber(bridgeOverview.summary.retryScheduled)} reintentos · {formatNumber(bridgeOverview.summary.pending)} pendientes
               </span>
               {legalGateContextSummary ? (
-                <span data-testid="ceo-context-summary-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
+                <span data-testid="ceo-context-summary-pill" className={diagnosticPillClassName}>
                   Contexto activo: {legalGateContextSummary}
                 </span>
               ) : null}

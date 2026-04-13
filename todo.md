@@ -969,3 +969,4 @@
 - [x] Aplicar una ronda de simplificación obligatoria en la Consola CEO y en V1 para reducir ruido visual, densidad y carga cognitiva sin agregar funciones nuevas
 - [x] Revisar cada refuerzo reciente de V1 y conservar solo lo que aporte claridad operativa o robustez real
 - [x] Robustecer únicamente flujos críticos existentes de V1 antes de cualquier nueva propuesta, evitando expansiones funcionales y complejidad acumulada
+- [x] Ejecutar la siguiente ronda de V1 sólo sobre arreglos, simplificación y robustez de la Consola CEO y superficies relacionadas, sin agregar features extra
