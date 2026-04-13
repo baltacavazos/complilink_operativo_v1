@@ -29,6 +29,11 @@ export type AuditMonitoringSummary = {
   previewToConfirmRate: number | null;
   confirmToUploadRate: number | null;
   averagePreviewToConfirmationSeconds: number | null;
+  legalGateAcceptances: number;
+  legalGateLockConflicts: number;
+  cameraPreviewToConfirmRate: number | null;
+  filePreviewToConfirmRate: number | null;
+  dominantCaptureMode: "camera" | "file" | "balanced" | "none";
 };
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
@@ -158,18 +163,34 @@ function getPreviewToConfirmationSeconds(item: AuditFeedItem) {
   return Math.max(0, Math.round((confirmedAt - previewCreatedAt) / 1000));
 }
 
+function getDominantCaptureMode(cameraCount: number, fileCount: number): "camera" | "file" | "balanced" | "none" {
+  if (cameraCount === 0 && fileCount === 0) return "none";
+  if (cameraCount === fileCount) return "balanced";
+  return cameraCount > fileCount ? "camera" : "file";
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
   const documentUploadEvents = items.filter((item) => item.action === "document.upload");
+  const legalGateAcceptances = items.filter((item) => item.action === "consent.legal_package_accept").length;
+  const legalGateLockConflicts = items.filter((item) => item.action === "consent.legal_package_lock_conflict").length;
 
   let cameraCaptureSelections = 0;
   let fileCaptureSelections = 0;
+  let cameraPreviewConfirmedEvents = 0;
+  let filePreviewConfirmedEvents = 0;
 
   for (const item of previewAnalyzedEvents) {
     const captureMode = getCaptureModeFromItem(item);
     if (captureMode === "camera") cameraCaptureSelections += 1;
     if (captureMode === "file") fileCaptureSelections += 1;
+  }
+
+  for (const item of previewConfirmedEvents) {
+    const captureMode = getCaptureModeFromItem(item);
+    if (captureMode === "camera") cameraPreviewConfirmedEvents += 1;
+    if (captureMode === "file") filePreviewConfirmedEvents += 1;
   }
 
   const previewToConfirmationSamples = previewConfirmedEvents
@@ -196,6 +217,11 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     previewToConfirmRate: getPercentage(previewConfirmedEvents.length, previewAnalyzedEvents.length),
     confirmToUploadRate: getPercentage(documentUploadEvents.length, previewConfirmedEvents.length),
     averagePreviewToConfirmationSeconds,
+    legalGateAcceptances,
+    legalGateLockConflicts,
+    cameraPreviewToConfirmRate: getPercentage(cameraPreviewConfirmedEvents, cameraCaptureSelections),
+    filePreviewToConfirmRate: getPercentage(filePreviewConfirmedEvents, fileCaptureSelections),
+    dominantCaptureMode: getDominantCaptureMode(cameraCaptureSelections, fileCaptureSelections),
   };
 }
 

@@ -39,6 +39,21 @@ export function trackFunnelStep(step: string, payload?: AnalyticsPayload) {
   });
 }
 
+export function trackLegalGateEvent(
+  event:
+    | "consent_toggled"
+    | "validation_blocked"
+    | "accepted"
+    | "lock_conflict"
+    | "retry_available",
+  payload?: AnalyticsPayload,
+) {
+  trackEvent("audipatron_legal_gate", {
+    event,
+    ...payload,
+  });
+}
+
 export function trackCeoConsoleViewed(section: string, payload?: AnalyticsPayload) {
   trackEvent("audipatron_ceo_console_viewed", {
     section,

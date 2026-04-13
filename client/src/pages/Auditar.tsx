@@ -3,7 +3,7 @@ import { getLoginUrl } from "@/const";
 import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
-import { trackFunnelStep } from "@/lib/analytics";
+import { trackFunnelStep, trackLegalGateEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -2828,6 +2828,13 @@ export default function Auditar() {
     }
 
     if (!legalGateChecked) {
+      trackLegalGateEvent("validation_blocked", {
+        tenantId: caseDetailInput.tenantId,
+        caseId: caseDetailInput.caseId,
+        reason: "checkbox_required",
+        hasSelectedFile: Boolean(selectedFile),
+        hasPendingDraft: Boolean(pendingDraft),
+      });
       setLegalGateError(
         buildLegalGateErrorState(
           "Confirma la casilla para registrar tu aceptación y continuar con el expediente.",
@@ -2863,6 +2870,13 @@ export default function Auditar() {
         ...caseDetailInput,
         accepted: true,
       });
+      trackLegalGateEvent("accepted", {
+        tenantId: caseDetailInput.tenantId,
+        caseId: caseDetailInput.caseId,
+        acceptedDocumentsCount: acceptedLegalDocumentsCount + legalPendingDocuments.length,
+        retryCount: nextRetryCount,
+        source: pendingDraft ? "draft_confirmation" : selectedFile ? "draft_analysis" : "gate_only",
+      });
       trackFunnelStep("legal_package_accepted", {
         tenantId: caseDetailInput.tenantId,
         caseId: caseDetailInput.caseId,
@@ -2885,6 +2899,14 @@ export default function Auditar() {
       const resolvedError = resolveLegalGateError(error, nextRetryCount);
 
       if (resolvedError.type === "concurrency") {
+        trackLegalGateEvent("lock_conflict", {
+          tenantId: caseDetailInput.tenantId,
+          caseId: caseDetailInput.caseId,
+          retryCount: nextRetryCount,
+          retryAfterSeconds: resolvedError.retryAfterSeconds,
+          waitTimeMs: resolvedError.retryAfterSeconds * 1000,
+          source: pendingDraft ? "draft_confirmation" : selectedFile ? "draft_analysis" : "gate_only",
+        });
         trackFunnelStep("legal_package_lock_conflict", {
           tenantId: caseDetailInput.tenantId,
           caseId: caseDetailInput.caseId,
@@ -5038,8 +5060,16 @@ export default function Auditar() {
                           type="checkbox"
                           checked={legalGateChecked}
                           onChange={(event) => {
-                            setLegalGateChecked(event.target.checked);
-                            if (event.target.checked) {
+                            const checked = event.target.checked;
+                            setLegalGateChecked(checked);
+                            trackLegalGateEvent("consent_toggled", {
+                              tenantId: selectedTenantId,
+                              caseId: selectedCaseId,
+                              checked,
+                              location: "review_card",
+                              hasPendingDraft: Boolean(pendingDraft),
+                            });
+                            if (checked) {
                               setLegalGateError(null);
                             }
                           }}
@@ -5176,8 +5206,16 @@ export default function Auditar() {
                       type="checkbox"
                       checked={legalGateChecked}
                       onChange={(event) => {
-                        setLegalGateChecked(event.target.checked);
-                        if (event.target.checked) {
+                        const checked = event.target.checked;
+                        setLegalGateChecked(checked);
+                        trackLegalGateEvent("consent_toggled", {
+                          tenantId: selectedTenantId,
+                          caseId: selectedCaseId,
+                          checked,
+                          location: "inline_consent",
+                          hasPendingDraft: Boolean(pendingDraft),
+                        });
+                        if (checked) {
                           setLegalGateError(null);
                         }
                       }}
@@ -6554,8 +6592,16 @@ export default function Auditar() {
                   type="checkbox"
                   checked={legalGateChecked}
                   onChange={(event) => {
-                    setLegalGateChecked(event.target.checked);
-                    if (event.target.checked) {
+                    const checked = event.target.checked;
+                    setLegalGateChecked(checked);
+                    trackLegalGateEvent("consent_toggled", {
+                      tenantId: selectedTenantId,
+                      caseId: selectedCaseId,
+                      checked,
+                      location: "mobile_sticky_bar",
+                      hasPendingDraft: Boolean(pendingDraft),
+                    });
+                    if (checked) {
                       setLegalGateError(null);
                     }
                   }}

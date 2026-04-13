@@ -2488,13 +2488,20 @@ export default function CeoDashboard() {
                             </p>
                           </div>
                         </div>
-                        <p className="mt-3 text-sm text-cyan-900/80">
-                          {auditSummary.averagePreviewToConfirmationSeconds === null
-                            ? "Aún no hay confirmaciones suficientes para estimar el tiempo entre preview y confirmación."
-                            : auditSummary.averagePreviewToConfirmationSeconds < 60
-                              ? `Promedio visible: ${formatNumber(auditSummary.averagePreviewToConfirmationSeconds)} s entre preview y confirmación.`
-                              : `Promedio visible: ${(auditSummary.averagePreviewToConfirmationSeconds / 60).toFixed(1)} min entre preview y confirmación.`}
-                        </p>
+                        <div className="mt-3 space-y-2 text-sm text-cyan-900/80">
+                          <p>
+                            {auditSummary.averagePreviewToConfirmationSeconds === null
+                              ? "Aún no hay confirmaciones suficientes para estimar el tiempo entre preview y confirmación."
+                              : auditSummary.averagePreviewToConfirmationSeconds < 60
+                                ? `Promedio visible: ${formatNumber(auditSummary.averagePreviewToConfirmationSeconds)} s entre preview y confirmación.`
+                                : `Promedio visible: ${(auditSummary.averagePreviewToConfirmationSeconds / 60).toFixed(1)} min entre preview y confirmación.`}
+                          </p>
+                          <p>
+                            {auditSummary.legalGateLockConflicts === 0
+                              ? `Gate legal visible: ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones sin conflictos recientes.`
+                              : `Gate legal visible: ${formatNumber(auditSummary.legalGateLockConflicts)} conflictos para ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones; conviene revisar espera o concurrencia antes de atribuir la caída al documento.`}
+                          </p>
+                        </div>
                       </div>
                       <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm">
                         <div className="flex items-center justify-between gap-3">
@@ -2508,21 +2515,31 @@ export default function CeoDashboard() {
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cámara</p>
                             <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.cameraCaptureSelections)}</p>
                             <p className="mt-1 text-xs leading-5 text-slate-500">Capturas donde el preview llegó desde cámara.</p>
+                            <p className="mt-2 text-[11px] leading-5 text-emerald-800/80">
+                              {auditSummary.cameraPreviewToConfirmRate === null
+                                ? "Sin base suficiente para medir confirmación desde cámara."
+                                : `${formatNumber(auditSummary.cameraPreviewToConfirmRate)}% confirma tras preview desde cámara.`}
+                            </p>
                           </div>
                           <div className="rounded-2xl bg-white/90 p-3">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Archivo</p>
                             <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.fileCaptureSelections)}</p>
                             <p className="mt-1 text-xs leading-5 text-slate-500">Selecciones donde el preview llegó desde archivo.</p>
+                            <p className="mt-2 text-[11px] leading-5 text-emerald-800/80">
+                              {auditSummary.filePreviewToConfirmRate === null
+                                ? "Sin base suficiente para medir confirmación desde archivo."
+                                : `${formatNumber(auditSummary.filePreviewToConfirmRate)}% confirma tras preview desde archivo.`}
+                            </p>
                           </div>
                         </div>
                         <p className="mt-3 text-sm text-emerald-900/80">
                           {auditSummary.cameraCaptureSelections + auditSummary.fileCaptureSelections === 0
                             ? "Todavía no hay previews visibles con captureMode suficiente para leer preferencia de entrada."
-                            : auditSummary.cameraCaptureSelections === auditSummary.fileCaptureSelections
-                              ? "La preferencia visible está equilibrada entre Cámara y Archivo."
-                              : auditSummary.cameraCaptureSelections > auditSummary.fileCaptureSelections
-                                ? "Predomina Cámara en la entrada visible del flujo móvil; conviene vigilar nitidez y autoencuadre."
-                                : "Predomina Archivo en la entrada visible; conviene vigilar tiempos de selección y tamaño de archivo."}
+                            : auditSummary.dominantCaptureMode === "balanced"
+                              ? "La entrada visible está equilibrada entre Cámara y Archivo; conviene priorizar el modo con menor tasa de confirmación cuando aparezca una brecha clara."
+                              : auditSummary.dominantCaptureMode === "camera"
+                                ? "Predomina Cámara en la entrada visible; compare su tasa de confirmación con Archivo para decidir si el siguiente ajuste debe ir a autoencuadre o a selección de archivos."
+                                : "Predomina Archivo en la entrada visible; compare su tasa de confirmación con Cámara para decidir si el siguiente ajuste debe ir a selector, peso de archivo o experiencia de captura."}
                         </p>
                       </div>
                       <div className="rounded-2xl bg-white p-4 shadow-sm">

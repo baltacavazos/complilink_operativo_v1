@@ -46,21 +46,23 @@ describe("ceoDashboardMonitoring", () => {
         action: "document.preview_confirmed",
         entityType: "document",
         caseId: "case-001",
-        afterState: { previewCreatedAt: "2026-04-10T11:59:10.000Z" },
+        afterState: { previewCreatedAt: "2026-04-10T11:59:10.000Z", captureMode: "camera" },
         createdAt: "2026-04-10T12:00:00.000Z",
       }),
       buildAuditItem({ id: 3, action: "document.upload", entityType: "document", caseId: "case-001" }),
       buildAuditItem({ id: 4, action: "access.membership_updated", entityType: "access", caseId: "case-002" }),
       buildAuditItem({ id: 5, action: "policy.create", entityType: "policy", caseId: null }),
+      buildAuditItem({ id: 6, action: "consent.legal_package_accept", entityType: "consent", caseId: "case-001" }),
+      buildAuditItem({ id: 7, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-003" }),
     ];
 
     expect(buildAuditMonitoringSummary(items)).toEqual({
-      totalEvents: 5,
+      totalEvents: 7,
       guardrailRejections: 0,
       documentEvents: 3,
       accessEvents: 1,
       policyEvents: 1,
-      distinctCases: 2,
+      distinctCases: 3,
       previewAnalyzedEvents: 1,
       previewConfirmedEvents: 1,
       documentUploadEvents: 1,
@@ -69,6 +71,11 @@ describe("ceoDashboardMonitoring", () => {
       previewToConfirmRate: 100,
       confirmToUploadRate: 100,
       averagePreviewToConfirmationSeconds: 50,
+      legalGateAcceptances: 1,
+      legalGateLockConflicts: 1,
+      cameraPreviewToConfirmRate: 100,
+      filePreviewToConfirmRate: null,
+      dominantCaptureMode: "camera",
     });
   });
 

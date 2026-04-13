@@ -4455,6 +4455,43 @@ export const appRouter = router({
                 waitTimeMs: error.waitTimeMs,
               })}`,
             );
+
+            try {
+              const detail = await getCaseDetailForUser({
+                userId: ctx.user.id,
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+              });
+
+              await createAuditLog({
+                tenantId: input.tenantId,
+                caseId: input.caseId,
+                traceId: detail.case.traceId,
+                actorUserId: ctx.user.id,
+                entityType: "consent",
+                entityId: `${input.caseId}:legal_package:${LEGAL_ACCEPTANCE_VERSION}`,
+                action: "consent.legal_package_lock_conflict",
+                afterState: {
+                  acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
+                  legalVersion: LEGAL_VERSION,
+                  lockKey: error.lockKey,
+                  timeoutSeconds: error.timeoutSeconds,
+                  waitTimeMs: error.waitTimeMs,
+                  source: "auditar_gate_v2",
+                },
+              });
+            } catch (auditError) {
+              console.warn(
+                `[LegalAcceptance] ${JSON.stringify({
+                  event: "accept_legal_package_lock_conflict_audit_failed",
+                  tenantId: input.tenantId,
+                  caseId: input.caseId,
+                  userId: ctx.user.id,
+                  reason: auditError instanceof Error ? auditError.message : "unknown_error",
+                })}`,
+              );
+            }
+
             throw new TRPCError({
               code: "CONFLICT",
               message: "Otro proceso está registrando esta aceptación. Espera unos segundos y vuelve a intentarlo.",

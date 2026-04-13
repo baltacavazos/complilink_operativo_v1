@@ -1845,7 +1845,15 @@ describe("appRouter case workflows", () => {
     expect(db.addConsentRecord).not.toHaveBeenCalled();
     expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
     expect(db.addCaseEvent).not.toHaveBeenCalled();
-    expect(db.createAuditLog).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "consent.legal_package_lock_conflict",
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        entityType: "consent",
+      }),
+    );
   });
 
   it("supports a controlled retry after lock contention and persists the legal package only once", async () => {
@@ -1893,7 +1901,25 @@ describe("appRouter case workflows", () => {
     expect(db.addConsentRecord).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
     expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(LEGAL_CONSENT_TYPES.length);
     expect(db.addCaseEvent).toHaveBeenCalledTimes(1);
-    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenCalledTimes(2);
+    expect(db.createAuditLog).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        action: "consent.legal_package_lock_conflict",
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        entityType: "consent",
+      }),
+    );
+    expect(db.createAuditLog).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        action: "consent.legal_package_accept",
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        entityType: "consent",
+      }),
+    );
   });
 
   it("keeps the retry path idempotent once the legal package was already completed by another process", async () => {
@@ -1982,7 +2008,15 @@ describe("appRouter case workflows", () => {
     expect(db.addConsentRecord).not.toHaveBeenCalled();
     expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
     expect(db.addCaseEvent).not.toHaveBeenCalled();
-    expect(db.createAuditLog).not.toHaveBeenCalled();
+    expect(db.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "consent.legal_package_lock_conflict",
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        entityType: "consent",
+      }),
+    );
   });
 
   it("creates document policies and exposes filtered audit entries", async () => {

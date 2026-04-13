@@ -937,3 +937,10 @@
 - [x] Afinar en /auditar el anuncio accesible del stepper para que su lectura sea más natural y contextual en lector de pantalla
 - [x] Probar y pulir el bloque principal de upload de /auditar en pantallas móviles pequeñas sin perder claridad ni confianza
 - [x] Instrumentar o consolidar medición operativa para saber si la micro-ronda mejora confirmación y guardado en móvil
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor secuencia y el mínimo cambio útil para telemetría de locks y esperas en `/auditar`, cobertura E2E del consentimiento integrado y lectura ejecutiva de conversión móvil en la Consola CEO
+- [ ] Añadir telemetría específica para fallos de lock y tiempos de espera en `/auditar`
+- [ ] Cubrir con pruebas E2E el envío completo del consentimiento legal integrado en `/auditar`
+- [x] Volver más accionable en la Consola CEO la lectura de conversión móvil usando la instrumentación disponible y la nueva telemetría
+- [x] Añadir telemetría mínima en `/auditar` para conflictos de lock, tiempos de espera y consentimiento embebido sin reescribir la infraestructura analítica.
+- [x] Extender la cobertura E2E del gate legal para validar el consentimiento integrado real en `/auditar` reutilizando el login de propietario y los helpers existentes.
+- [x] Volver más accionable la lectura de conversión móvil en la Consola CEO con señales por modo de captura y conflictos del gate legal.

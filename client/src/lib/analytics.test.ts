@@ -8,6 +8,7 @@ import {
   trackCeoViewModeToggled,
   trackEvent,
   trackFunnelStep,
+  trackLegalGateEvent,
 } from "./analytics";
 
 type TestWindow = Window & {
@@ -48,6 +49,11 @@ describe("analytics helpers", () => {
       caseId: "case_123",
       accepted: false,
     });
+    trackLegalGateEvent("lock_conflict", {
+      caseId: "case_123",
+      waitTimeMs: 4200,
+      retryAfterSeconds: 4,
+    });
 
     expect(track).toHaveBeenNthCalledWith(1, "custom_event", {
       source: "home",
@@ -56,6 +62,12 @@ describe("analytics helpers", () => {
       step: "legal_gate_viewed",
       caseId: "case_123",
       accepted: false,
+    });
+    expect(track).toHaveBeenNthCalledWith(3, "audipatron_legal_gate", {
+      event: "lock_conflict",
+      caseId: "case_123",
+      waitTimeMs: 4200,
+      retryAfterSeconds: 4,
     });
   });
 
