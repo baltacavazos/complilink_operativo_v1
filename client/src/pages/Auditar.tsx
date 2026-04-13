@@ -3574,7 +3574,7 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                <div className="grid gap-3">
+                <div className="hidden gap-3 sm:grid">
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
                     <p className="text-sm font-semibold text-slate-950">Qué pasa con tu archivo</p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -3591,7 +3591,7 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente laboral</p>
@@ -3895,6 +3895,48 @@ export default function Auditar() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="sm:hidden rounded-[1.45rem] border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Resumen antes de subir</p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Tu expediente va en {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}. El siguiente paso útil aparece justo debajo para que no pierdas el hilo.
+                  </p>
+                </div>
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+                  {dossierStatus.completed}/{dossierStatus.total}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Cruce IMSS e Infonavit</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{socialSecuritySummary}</p>
+                </div>
+
+                {effectiveRecommendedTarget ? (
+                  <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">Documento sugerido</p>
+                    <p className="mt-2 text-sm font-semibold text-slate-950">{effectiveRecommendedTarget.label}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      Preparamos el cargador para retomar exactamente esta recomendación cuando quieras subirla.
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-3 h-10 w-full rounded-full border-sky-200 bg-white text-sky-900 hover:bg-sky-100"
+                      onClick={() => focusRecommendedUpload(effectiveRecommendedTarget.type)}
+                    >
+                      Preparar esta sugerencia
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
 

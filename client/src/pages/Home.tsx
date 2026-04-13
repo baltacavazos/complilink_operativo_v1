@@ -1949,6 +1949,115 @@ function PrivacySection() {
   );
 }
 
+function MobilePriorityPathSection() {
+  const [selectedMobilePriorityPath, setSelectedMobilePriorityPath] = useState<string | undefined>("como-funciona");
+  const mobilePriorityPathItems = [
+    {
+      id: "como-funciona",
+      eyebrow: "Qué pasa cuando empiezas",
+      title: "Sube un documento y entiende el proceso sin enredos",
+      description:
+        "La experiencia móvil ahora prioriza una sola idea: empezar rápido, recibir una lectura útil y saber qué hacer después sin perderte entre bloques secundarios.",
+      bullets: [
+        "AuditaPatron recibe tu archivo y te devuelve lo importante primero.",
+        "El siguiente documento útil aparece con lenguaje simple.",
+        "La guía completa sigue disponible cuando quieras profundizar.",
+      ],
+      secondaryLabel: "Abrir guía rápida",
+      secondaryHref: "#preguntas",
+    },
+    {
+      id: "expediente",
+      eyebrow: "Qué gana tu expediente",
+      title: "Cada documento suma contexto y respaldo real",
+      description:
+        "En móvil resumimos el valor del expediente para que no compita con tu decisión principal. Primero entiendes el beneficio; después, si quieres, exploras el detalle completo en una pantalla más amplia.",
+      bullets: [
+        "Tus recibos, CFDI y soportes dejan de quedar sueltos.",
+        "La comparación entre piezas gana claridad con cada archivo.",
+        "El expediente conserva trazabilidad y acceso cuando lo necesites.",
+      ],
+      secondaryLabel: "Ver preguntas frecuentes",
+      secondaryHref: "#preguntas",
+    },
+    {
+      id: "privacidad",
+      eyebrow: "Privacidad visible",
+      title: "Tus documentos se resguardan para darte claridad y calma",
+      description:
+        "La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma más progresiva para no saturarte antes de iniciar tu revisión.",
+      bullets: [
+        "Puedes volver a tu expediente cuando lo necesites.",
+        "Las explicaciones priorizan tranquilidad y control.",
+        "Tus derechos y documentos legales siguen accesibles desde la navegación principal.",
+      ],
+      secondaryLabel: "Leer preguntas frecuentes",
+      secondaryHref: "#preguntas",
+    },
+  ] as const;
+
+  return (
+    <section className="bg-[#f2f7f6] py-10 sm:hidden">
+      <div className="container">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.3)]">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-700">Ruta móvil priorizada</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+              Primero decides si quieres empezar; lo demás aparece sólo cuando te sirve.
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Compactamos la experiencia móvil para que el recorrido principal sea más claro: entender, confiar y comenzar tu revisión sin desplazarte por demasiados bloques informativos seguidos.
+            </p>
+          </div>
+
+          <Accordion
+            type="single"
+            collapsible
+            value={selectedMobilePriorityPath}
+            onValueChange={setSelectedMobilePriorityPath}
+            className="mt-5 space-y-3"
+          >
+            {mobilePriorityPathItems.map((item) => (
+              <AccordionItem
+                key={item.id}
+                value={item.id}
+                id={item.id}
+                className="overflow-hidden rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4"
+              >
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
+                  <div className="pr-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{item.eyebrow}</p>
+                    <p className="mt-2 text-base font-semibold text-slate-950">{item.title}</p>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <p className="text-sm leading-7 text-slate-600">{item.description}</p>
+                  <div className="mt-4 space-y-2">
+                    {item.bullets.map((bullet) => (
+                      <div key={bullet} className="flex gap-3 rounded-[1.1rem] bg-white p-3 text-sm leading-6 text-slate-700">
+                        <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                        <span>{bullet}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex flex-col gap-3">
+                    <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={() => goToAuditFlow({ source: `home_mobile_priority_${item.id}` })}>
+                      {PRIMARY_CTA_LABEL}
+                    </Button>
+                    <a href={item.secondaryHref} className="text-sm font-semibold text-teal-800 underline underline-offset-4">
+                      {item.secondaryLabel}
+                    </a>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FAQSection() {
   const [selectedFaq, setSelectedFaq] = useState<string | undefined>("para-mi");
   const activeRecommendation = prediagnosticRecommendations[selectedFaq ?? "para-mi"] ?? prediagnosticRecommendations["para-mi"];
@@ -2125,12 +2234,15 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
-      <SectionDivider />
-      <HowItWorksSection />
-      <SectionDivider />
-      <DossierSection />
-      <SectionDivider />
-      <PrivacySection />
+      <MobilePriorityPathSection />
+      <div className="hidden sm:block">
+        <SectionDivider />
+        <HowItWorksSection />
+        <SectionDivider />
+        <DossierSection />
+        <SectionDivider />
+        <PrivacySection />
+      </div>
       <SectionDivider />
       <FAQSection />
       <SectionDivider />

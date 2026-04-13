@@ -53,6 +53,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('bg-[#dbeeee]');
     expect(source).toContain('bg-[#eef6f5]');
     expect(source).toContain('bg-[#eaf5f3]');
+    expect(source).toContain("function MobilePriorityPathSection");
+    expect(source).toContain("Ruta móvil priorizada");
+    expect(source).toContain("Primero decides si quieres empezar; lo demás aparece sólo cuando te sirve.");
+    expect(source).toContain('className="hidden sm:block"');
+    expect(source).toContain('id="como-funciona"');
+    expect(source).toContain('id="expediente"');
+    expect(source).toContain('id="privacidad"');
   });
 
   it("oculta referencias visibles al motor interno en Auditar y usa una variante cálida", () => {
@@ -67,6 +74,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Lectura visible");
     expect(source).toContain("tu asistente laboral");
     expect(source).toContain("expediente laboral");
+    expect(source).toContain("Resumen antes de subir");
+    expect(source).toContain("Preparar esta sugerencia");
+    expect(source).toContain('className="hidden gap-3 sm:grid"');
+    expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
   });
 
   it("mantiene lenguaje cálido y comprensible en el panel conversacional", () => {
