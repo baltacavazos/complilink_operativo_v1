@@ -43,7 +43,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Ver cómo se ve mi reporte");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Empieza con el documento correcto");
-    expect(source).toContain("Sube tu documento y AuditaPatron lo analiza, lo resguarda y lo integra a tu expediente para darte contexto útil de inmediato.");
+    expect(source).toContain("Sube tu documento, AuditaPatron lo integra a tu expediente y te devuelve contexto útil desde el inicio.");
     expect(source).toContain("Quiero entender rápido si esto me sirve");
     expect(source).toContain("Auditoría inicial en segundos");
     expect(source).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");

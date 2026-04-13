@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-04-13T20:33:38.271Z",
+  "round": 9,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUIG73myxV2l4dQRHltCoiOt7e1z1",
+        "object": "chat.completion",
+        "created": 1776112399,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el texto del resumen principal en Home para que la acción principal (botón de subir documento) sea más visible sin scroll adicional.\",\"why\":\"El resumen actual es extenso y obliga a hacer scroll, lo que diluye la acción principal. Reducir texto mejora la claridad, hace la acción más dominante y reduce scroll sin cambiar arquitectura ni añadir pasos.\",\"exact_target\":\"Resumen introductorio y texto alrededor del botón principal de subida de documento en Home.\",\"risk\":\"low\",\"copy_suggestion\":\"\\\"Sube tu documento y AuditaPatron lo analiza para darte contexto útil al instante.\\\"\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1318,
+          "completion_tokens": 132,
+          "total_tokens": 1450,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_bfc02a4ee2"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Reducir el texto del resumen principal en Home para que la acción principal (botón de subir documento) sea más visible sin scroll adicional.",
+        "why": "El resumen actual es extenso y obliga a hacer scroll, lo que diluye la acción principal. Reducir texto mejora la claridad, hace la acción más dominante y reduce scroll sin cambiar arquitectura ni añadir pasos.",
+        "exact_target": "Resumen introductorio y texto alrededor del botón principal de subida de documento en Home.",
+        "risk": "low",
+        "copy_suggestion": "\"Sube tu documento y AuditaPatron lo analiza para darte contexto útil al instante.\""
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "28580828-cc0f-9cf0-baa6-ec438f8a33b9",
+        "object": "chat.completion",
+        "created": 1776112403,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Shorten tour step descriptions and bullets to reduce vertical scroll on mobile while maintaining clarity.\",\"why\":\"Home screen has detailed tourSteps with long descriptions and bullets that increase scroll depth on mobile; trimming them prioritizes key info, makes main action (start upload) more dominant by reducing content below fold, enhances trust with concise, confident language without adding UI elements.\",\"exact_target\":\"tourSteps array: shorten 'description' and 'bullets' fields in each step object.\",\"risk\":\"low\",\"copy_suggestion\":\"For 'sube' step: description: 'Sube tu documento para que AuditaPatron lo analice y lo integre a tu expediente.' bullets: ['Empieza desde tu celular.', 'Procesamos sin pasos extras.', 'Cada archivo suma contexto.']\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1458,
+          "completion_tokens": 169,
+          "total_tokens": 2255,
+          "prompt_tokens_details": {
+            "text_tokens": 1458,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 148
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 628,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 6679000
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Shorten tour step descriptions and bullets to reduce vertical scroll on mobile while maintaining clarity.",
+        "why": "Home screen has detailed tourSteps with long descriptions and bullets that increase scroll depth on mobile; trimming them prioritizes key info, makes main action (start upload) more dominant by reducing content below fold, enhances trust with concise, confident language without adding UI elements.",
+        "exact_target": "tourSteps array: shorten 'description' and 'bullets' fields in each step object.",
+        "risk": "low",
+        "copy_suggestion": "For 'sube' step: description: 'Sube tu documento para que AuditaPatron lo analice y lo integre a tu expediente.' bullets: ['Empieza desde tu celular.', 'Procesamos sin pasos extras.', 'Cada archivo suma contexto.']"
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Hacer el Call To Action (CTA) principal en la pantalla de inicio más dominante y explícito para iniciar la auditoría/subida de documentos, reduciendo la necesidad de scroll para encontrar la acción clave.\",\"why\":\"La acción principal del usuario, según los 'tourSteps', es 'Sube tu documento'. Un CTA más prominente y claro en la parte superior de la Home mejora significativamente la usabilidad móvil, reduce el scroll innecesario y guía al usuario directamente a la funcionalidad central, aumentando la conversión y la confianza.\",\"exact_target\":\"El botón o enlace principal en la sección superior de la pantalla de inicio que inicia el flujo de auditoría/subida de documentos.\",\"risk\":\"low\",\"copy_suggestion\":\"Audita tu documento\"}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1352,
+          "candidatesTokenCount": 171,
+          "totalTokenCount": 2964,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 1352
+            }
+          ],
+          "thoughtsTokenCount": 1441
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "GFPdaa_qNvGs1MkPheqT2A0"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Hacer el Call To Action (CTA) principal en la pantalla de inicio más dominante y explícito para iniciar la auditoría/subida de documentos, reduciendo la necesidad de scroll para encontrar la acción clave.",
+        "why": "La acción principal del usuario, según los 'tourSteps', es 'Sube tu documento'. Un CTA más prominente y claro en la parte superior de la Home mejora significativamente la usabilidad móvil, reduce el scroll innecesario y guía al usuario directamente a la funcionalidad central, aumentando la conversión y la confianza.",
+        "exact_target": "El botón o enlace principal en la sección superior de la pantalla de inicio que inicia el flujo de auditoría/subida de documentos.",
+        "risk": "low",
+        "copy_suggestion": "Audita tu documento"
+      }
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Reducir el texto del resumen principal en Home para que la acción principal (botón de subir documento) sea más visible sin scroll adicional.",
+    "agreement_count": 1,
+    "recommended_exact_target": "Resumen introductorio y texto alrededor del botón principal de subida de documento en Home.",
+    "recommended_copy_suggestion": "\"Sube tu documento y AuditaPatron lo analiza para darte contexto útil al instante.\""
+  }
+}

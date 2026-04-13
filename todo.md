@@ -1005,3 +1005,7 @@
 - [x] Ronda 8: ejecutar consenso comparado con ChatGPT, Grok y Gemini sobre el checkpoint ac639b1d para detectar el siguiente microajuste no fundamental
 - [x] Ronda 8: elegir entre Home, /auditar, /acceso y Consola CEO el ajuste de mayor impacto y menor riesgo sin alterar la arquitectura actual
 - [x] Ronda 8: implementar, validar con Vitest y TypeScript, y guardar checkpoint estable antes de seguir a la siguiente ronda
+- [ ] Regla operativa: continuar las rondas sin cierres intermedios al usuario salvo bloqueo real o llegada a un techo claro de mejoras no fundamentales
+- [x] Ronda 9: ejecutar consenso comparado con ChatGPT, Grok y Gemini sobre el checkpoint b974de59 para detectar el siguiente microajuste no fundamental
+- [x] Ronda 9: elegir entre Home, /auditar, /acceso y Consola CEO el ajuste de mayor impacto y menor riesgo sin alterar arquitectura ni flujo principal
+- [x] Ronda 9: implementar, validar con Vitest y TypeScript, guardar checkpoint estable y enlazar de inmediato con la siguiente ronda
