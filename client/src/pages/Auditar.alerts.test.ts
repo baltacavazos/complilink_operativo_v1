@@ -15,6 +15,7 @@ import {
   getUploadCompactGuardrails,
   getUploadHelpDisclosureSummary,
   getUploadHelpMobileHint,
+  getAuditarViewportSegment,
   getUploadStepAnnouncement,
   getUploadStepAriaLabel,
   sanitizePersistedAuditarViewState,
@@ -278,9 +279,28 @@ describe("getUploadHelpMobileHint", () => {
 
 describe("getUploadStepAnnouncement", () => {
   it("genera un anuncio corto y claro para lectores de pantalla cuando cambia la etapa", () => {
-    expect(getUploadStepAnnouncement("Etapa 2 de 4 · Analizando documento")).toBe(
-      "Progreso actual: Etapa 2 de 4 · Analizando documento.",
+    expect(
+      getUploadStepAnnouncement(
+        "Etapa 2 de 4 · Analizando documento",
+        "Estamos leyendo tu archivo y preparando el borrador",
+      ),
+    ).toBe(
+      "Progreso actual: Etapa 2 de 4 · Analizando documento. Estamos leyendo tu archivo y preparando el borrador.",
     );
+  });
+
+  it("mantiene el formato breve original cuando no recibe contexto adicional", () => {
+    expect(getUploadStepAnnouncement("Etapa 3 de 4 · Listo para revisar")).toBe(
+      "Progreso actual: Etapa 3 de 4 · Listo para revisar.",
+    );
+  });
+});
+
+describe("getAuditarViewportSegment", () => {
+  it("segmenta el viewport entre móvil, tablet y escritorio para los eventos del funnel", () => {
+    expect(getAuditarViewportSegment(390)).toBe("mobile");
+    expect(getAuditarViewportSegment(768)).toBe("tablet");
+    expect(getAuditarViewportSegment(1280)).toBe("desktop");
   });
 });
 

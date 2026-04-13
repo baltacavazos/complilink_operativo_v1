@@ -933,3 +933,7 @@
 - [x] Añadir una ayuda persistente más visible en móvil dentro del bloque de upload de /auditar
 - [x] Anunciar de forma accesible para lector de pantalla cada cambio de etapa del stepper en /auditar
 - [x] Refinar la pista móvil de ayuda en /auditar para hacer más explícita su interactividad sin aumentar densidad visual
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor secuencia de ejecución para la nueva ronda de /auditar centrada en accesibilidad del stepper, pantallas móviles pequeñas y medición del impacto
+- [x] Afinar en /auditar el anuncio accesible del stepper para que su lectura sea más natural y contextual en lector de pantalla
+- [x] Probar y pulir el bloque principal de upload de /auditar en pantallas móviles pequeñas sin perder claridad ni confianza
+- [x] Instrumentar o consolidar medición operativa para saber si la micro-ronda mejora confirmación y guardado en móvil

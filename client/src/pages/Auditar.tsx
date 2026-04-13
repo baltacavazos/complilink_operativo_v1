@@ -118,8 +118,26 @@ export function getUploadHelpMobileHint() {
   return UPLOAD_HELP_MOBILE_HINT;
 }
 
-export function getUploadStepAnnouncement(stageLabel: string) {
+export function getUploadStepAnnouncement(stageLabel: string, contextTitle?: string) {
+  const normalizedContextTitle = typeof contextTitle === "string" ? contextTitle.trim() : "";
+
+  if (normalizedContextTitle.length > 0) {
+    return `Progreso actual: ${stageLabel}. ${normalizedContextTitle}.`;
+  }
+
   return `Progreso actual: ${stageLabel}.`;
+}
+
+export function getAuditarViewportSegment(width: number) {
+  if (width < 640) {
+    return "mobile";
+  }
+
+  if (width < 1024) {
+    return "tablet";
+  }
+
+  return "desktop";
 }
 
 export function getUploadStepAriaLabel(params: {
@@ -3343,6 +3361,7 @@ export default function Auditar() {
         caseId: selectedCaseId,
         documentType: result.classification.documentType,
         captureMode: selectedCaptureMode ?? preferredCaptureMode ?? null,
+        viewportSegment,
         selectionToDraftSeconds,
       });
       setLastUpload(null);
@@ -3385,6 +3404,8 @@ export default function Auditar() {
     analyzeDraftMutation.isPending,
   ]);
 
+  const viewportSegment = getAuditarViewportSegment(window.innerWidth);
+
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
       setSubmitError("Primero analiza un documento para revisarlo antes de guardarlo.");
@@ -3422,6 +3443,7 @@ export default function Auditar() {
         documentType: result.classification.documentType,
         captureMode: pendingDraft.previewAsset.captureMode,
         hadManualOverrides: manualOverridePayload.length > 0,
+        viewportSegment,
         selectionToConfirmedSeconds,
       });
       trackFunnelStep("document_uploaded", {
@@ -3431,6 +3453,7 @@ export default function Auditar() {
         captureMode: pendingDraft.previewAsset.captureMode,
         sourceChannel: "manual",
         hadManualOverrides: manualOverridePayload.length > 0,
+        viewportSegment,
         selectionToConfirmedSeconds,
       });
       documentSelectionStartedAtRef.current = null;
@@ -4604,12 +4627,12 @@ export default function Auditar() {
                     className={`mt-4 rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
                     <p className="sr-only" aria-live="polite" aria-atomic="true">
-                      {getUploadStepAnnouncement(uploadProgressState.stageLabel)}
+                      {getUploadStepAnnouncement(uploadProgressState.stageLabel, uploadProgressState.title)}
                     </p>
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">{uploadProgressState.eyebrow}</p>
-                        <p className="mt-2 font-semibold">{uploadProgressState.title}</p>
+                        <p className="mt-2 break-words font-semibold">{uploadProgressState.title}</p>
                       </div>
                       <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 transition-colors duration-300">
                         {uploadProgressState.progress}%
@@ -4646,7 +4669,7 @@ export default function Auditar() {
                       <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
                     </div>
                     <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{uploadProgressState.stageLabel}</p>
-                    <p className="mt-2 text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
+                    <p className="mt-2 break-words text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
                     {selectedFileValidationMessage ? (
