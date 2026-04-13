@@ -421,6 +421,31 @@ type UploadInsight = {
   nextSuggestion: string;
 };
 
+type HeliosResultFindingView = {
+  label: string;
+  value: string;
+  source?: "confirmed" | "estimated" | "derived";
+  tone?: "neutral" | "support" | "attention";
+};
+
+type HeliosResultCardView = {
+  headline?: string | null;
+  lead?: string | null;
+  keyFindings?: HeliosResultFindingView[];
+  nextStepLabel?: string | null;
+  nextStepSummary?: string | null;
+  dossierUpdateLabel?: string | null;
+  dossierUpdateSummary?: string | null;
+  assistantIntro?: string | null;
+  suggestedQuestions?: string[];
+};
+
+type HeliosLegalHighlightsView = {
+  primaryConclusion?: string | null;
+  primaryConcern?: string | null;
+  nextActionLabel?: string | null;
+};
+
 type HeliosOpinionView = {
   summary?: string | null;
   legalOpinion?: string | null;
@@ -433,6 +458,8 @@ type HeliosOpinionView = {
   disclaimer?: string | null;
   mode?: string | null;
   status?: string | null;
+  resultCard?: HeliosResultCardView | null;
+  legalHighlights?: HeliosLegalHighlightsView | null;
 };
 
 type ComparisonDocument = {
@@ -2379,6 +2406,10 @@ export default function Auditar() {
     documentsWithOpinion: heliosDocumentsCount,
   });
   const heliosCopilotIntro = useMemo(() => {
+    if (visibleHeliosOpinion?.resultCard?.assistantIntro?.trim()) {
+      return warmVisibleNamingCopy(visibleHeliosOpinion.resultCard.assistantIntro) ?? visibleHeliosOpinion.resultCard.assistantIntro;
+    }
+
     if (visibleHeliosOpinion?.summary?.trim()) {
       return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende en tu expediente laboral, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
     }
@@ -2388,22 +2419,30 @@ export default function Auditar() {
     }
 
     return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu expediente laboral. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
-  }, [heliosDocumentsCount, visibleHeliosOpinion?.summary]);
+  }, [heliosDocumentsCount, visibleHeliosOpinion?.resultCard?.assistantIntro, visibleHeliosOpinion?.summary]);
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
+    const cardPrompts = visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
     const localPrompts = [
       "¿Qué riesgo principal ves en mi expediente?",
-      visibleHeliosOpinion?.recommendedNextStep
+      visibleHeliosOpinion?.resultCard?.nextStepSummary || visibleHeliosOpinion?.recommendedNextStep
         ? "Explícame el siguiente paso sugerido con palabras simples."
         : "¿Qué paso me conviene seguir ahora?",
-      visibleHeliosOpinion?.uncertainties?.length
+      visibleHeliosOpinion?.legalHighlights?.primaryConcern || visibleHeliosOpinion?.uncertainties?.length
         ? "¿Qué puntos todavía faltan confirmar?"
         : "¿Qué documento me conviene subir después?",
       "Resúmeme mi situación actual en pocas palabras.",
     ].filter((item): item is string => Boolean(item));
 
-    return Array.from(new Set([...serverPrompts, ...localPrompts])).slice(0, 4);
-  }, [heliosCopilotMutation.data?.suggestedPrompts, visibleHeliosOpinion?.recommendedNextStep, visibleHeliosOpinion?.uncertainties]);
+    return Array.from(new Set([...serverPrompts, ...cardPrompts, ...localPrompts])).slice(0, 4);
+  }, [
+    heliosCopilotMutation.data?.suggestedPrompts,
+    visibleHeliosOpinion?.legalHighlights?.primaryConcern,
+    visibleHeliosOpinion?.recommendedNextStep,
+    visibleHeliosOpinion?.resultCard?.nextStepSummary,
+    visibleHeliosOpinion?.resultCard?.suggestedQuestions,
+    visibleHeliosOpinion?.uncertainties,
+  ]);
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
     () => [{ role: "assistant", content: heliosCopilotIntro }, ...heliosCopilotMessages],
     [heliosCopilotIntro, heliosCopilotMessages],
@@ -5386,12 +5425,14 @@ export default function Auditar() {
                   {lastHeliosOpinion ? (
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
-                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Lectura preliminar del expediente</p>
-                            <h3 className="mt-2 text-xl font-semibold text-slate-950">Este documento ya quedó integrado a tu expediente con una primera lectura útil</h3>
-
+                        <div className="max-w-3xl">
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Resultado de tu documento</p>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                            {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.headline) ?? "Ya revisamos tu documento y hay una primera lectura útil"}
+                          </h3>
                           <p className="mt-3 text-sm leading-7 text-slate-700">
-                            {warmVisibleNamingCopy(lastHeliosOpinion.summary) ?? "Ya se generó una lectura preliminar útil para seguir armando tu expediente."}
+                            {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.lead ?? lastHeliosOpinion.summary) ??
+                              "Ya hay una primera lectura clara para que entiendas qué aporta este documento a tu expediente laboral."}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -5405,49 +5446,124 @@ export default function Auditar() {
                         </div>
                       </div>
 
-                      {lastHeliosOpinion.legalOpinion ? (
-                        <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                          {warmVisibleNamingCopy(lastHeliosOpinion.legalOpinion)}
-                        </div>
-                      ) : null}
+                      <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr,0.95fr]">
+                        <div className="space-y-4">
+                          <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+                            <p className="text-sm font-semibold text-slate-950">Lo más importante que encontramos</p>
+                            {lastHeliosOpinion.resultCard?.keyFindings?.length ? (
+                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                {lastHeliosOpinion.resultCard.keyFindings.map((item, index) => (
+                                  <div
+                                    key={`${item.label}-${item.value}-${index}`}
+                                    className={`rounded-[0.95rem] border p-3 ${
+                                      item.tone === "attention"
+                                        ? "border-amber-200 bg-amber-50"
+                                        : item.tone === "support"
+                                          ? "border-emerald-200 bg-emerald-50"
+                                          : "border-slate-200 bg-white"
+                                    }`}
+                                  >
+                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
+                                    <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{warmVisibleNamingCopy(item.value) ?? item.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="mt-3 text-sm leading-7 text-slate-700">
+                                {warmVisibleNamingCopy(lastHeliosOpinion.summary) ?? "Este documento ya aporta una primera lectura útil a tu expediente."}
+                              </p>
+                            )}
+                          </div>
 
-                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                        <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
-                          <p className="font-semibold text-teal-950">Qué conviene hacer después</p>
-                          <p className="mt-2 text-sm leading-7 text-teal-900">
-                            {warmVisibleNamingCopy(lastHeliosOpinion.recommendedNextStep) ?? "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
-                          </p>
-                          {lastHeliosOpinion.recommendedActions?.length ? (
-                            <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
-                              {lastHeliosOpinion.recommendedActions.map((item) => (
-                                <p key={item}>• {warmVisibleNamingCopy(item)}</p>
-                              ))}
+                          <div className="grid gap-4 lg:grid-cols-2">
+                            <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
+                              <p className="text-sm font-semibold text-teal-950">
+                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.nextStepLabel) ?? "Siguiente paso sugerido"}
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-teal-900">
+                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.nextStepSummary ?? lastHeliosOpinion.recommendedNextStep) ??
+                                  "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
+                              </p>
+                            </div>
+
+                            <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4">
+                              <p className="text-sm font-semibold text-emerald-950">
+                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.dossierUpdateLabel) ?? "Tu expediente ya se actualizó"}
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-emerald-900">
+                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.dossierUpdateSummary) ??
+                                  "Este documento ya quedó guardado dentro de tu expediente laboral para futuras comparaciones y respuestas."}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                            <p className="text-sm font-semibold text-amber-950">Qué sigue siendo preliminar</p>
+                            {lastHeliosOpinion.uncertainties?.length ? (
+                              <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
+                                {lastHeliosOpinion.uncertainties.map((item) => (
+                                  <p key={item}>• {warmVisibleNamingCopy(item)}</p>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="mt-2 text-sm leading-7 text-amber-900">
+                                Esta lectura todavía conviene contrastarla con más hechos y documentos antes de cerrar conclusiones.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="rounded-[1rem] border border-sky-100 bg-sky-50 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-sky-950">Asistente laboral contextual</p>
+                                <p className="mt-2 text-sm leading-7 text-sky-900">
+                                  {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.assistantIntro) ??
+                                    "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué falta confirmar o ayudarte a elegir el siguiente archivo más útil."}
+                                </p>
+                              </div>
+                              <Sparkles className="mt-1 h-5 w-5 shrink-0 text-sky-700" strokeWidth={1.8} />
+                            </div>
+
+                            {(lastHeliosOpinion.resultCard?.suggestedQuestions?.length || heliosCopilotSuggestedPrompts.length) ? (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {(lastHeliosOpinion.resultCard?.suggestedQuestions ?? heliosCopilotSuggestedPrompts).slice(0, 3).map((item) => (
+                                  <span
+                                    key={item}
+                                    className="rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-medium text-sky-900"
+                                  >
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            <Button
+                              type="button"
+                              className="mt-4 w-full justify-between rounded-full bg-sky-900 text-white hover:bg-sky-800"
+                              onClick={() => setHeliosCopilotOpen(true)}
+                            >
+                              Abrir asistente laboral
+                              <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
+                            </Button>
+                          </div>
+
+                          {lastHeliosOpinion.legalOpinion ? (
+                            <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                              <p className="text-sm font-semibold text-slate-950">Lectura ampliada</p>
+                              <p className="mt-2">{warmVisibleNamingCopy(lastHeliosOpinion.legalOpinion)}</p>
                             </div>
                           ) : null}
                         </div>
-
-                        <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
-                          <p className="font-semibold text-amber-950">Qué sigue siendo preliminar</p>
-                          {lastHeliosOpinion.uncertainties?.length ? (
-                            <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
-                              {lastHeliosOpinion.uncertainties.map((item) => (
-                                <p key={item}>• {warmVisibleNamingCopy(item)}</p>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="mt-2 text-sm leading-7 text-amber-900">
-                              Esta lectura todavía conviene contrastarla con más hechos y documentos antes de cerrar conclusiones.
-                            </p>
-                          )}
-                          <p className="mt-3 text-xs font-medium uppercase tracking-[0.12em] text-amber-800">
-                            Generado: {formatDate(lastHeliosOpinion.generatedAt)}
-                          </p>
-                        </div>
                       </div>
 
-                      {lastHeliosOpinion.disclaimer ? (
-                        <p className="mt-4 text-xs leading-6 text-slate-500">{lastHeliosOpinion.disclaimer}</p>
-                      ) : null}
+                      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                        <span>Generado: {formatDate(lastHeliosOpinion.generatedAt)}</span>
+                        {lastHeliosOpinion.disclaimer ? (
+                          <span className="max-w-3xl leading-6">{lastHeliosOpinion.disclaimer}</span>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
 

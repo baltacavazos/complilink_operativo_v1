@@ -1050,3 +1050,23 @@
 - [x] Ronda amplia: contrastar con OpenAI, Grok y Gemini la siguiente tanda priorizada de mejoras en /acceso, /auditar y Consola CEO
 - [x] Ronda amplia: aplicar una tanda encadenada de micro-optimizaciones UI/UX de bajo riesgo en los bloques móviles y de primer scroll más sensibles
 - [x] Ronda amplia: actualizar pruebas UX, validar con Vitest y TypeScript, revisar estado operativo y consolidar checkpoint si el lote queda estable
+- [ ] Revisar el flujo de resultado tras subir un recibo de nómina porque el valor percibido es bajo, el contenido es confuso y los siguientes pasos no quedan claros
+- [ ] Contrastar con OpenAI, Grok y Gemini una nueva estructura de resultado que explique qué recibió el usuario, qué hallazgo importa y qué debe hacer después
+- [ ] Implementar, probar y validar una mejora del resultado de análisis para que el beneficio del documento subido sea evidente y accionable
+- [ ] Rediseñar el resultado inmediato tras subir un documento para que explique en lenguaje simple qué recibió el usuario, qué hallazgos relevantes se deducen y por qué aporta valor
+- [ ] Reducir el flujo post-subida a la menor cantidad posible de pasos, scroll y clics, priorizando móvil y comprensión para personas no expertas
+- [ ] Generar y presentar automáticamente el expediente del usuario con todos sus documentos dentro de una UI limpia, simple e intuitiva
+- [ ] Integrar a Helios junto al resultado como asistente laboral contextual para preguntas sobre los documentos ya subidos
+- [ ] Contrastar con OpenAI, Grok y Gemini la nueva experiencia completa de resultado, expediente y asistente antes de implementarla
+- [ ] Implementar, probar y validar el nuevo flujo integral con Vitest, TypeScript y revisión operativa antes del siguiente checkpoint
+- [ ] Reforzar como regla de producto que el asistente laboral visible esté alimentado centralmente por Helios y por el conocimiento jurídico que concentra, no como un chat genérico separado
+- [ ] Garantizar como requisito crítico que el asistente legal no sea un chat genérico y que toda respuesta visible al usuario provenga del procesamiento y criterio de Helios como cerebro único del sistema
+- [ ] Alinear el flujo de subida, análisis, expediente y preguntas para que los documentos se procesen en Helios y desde ahí se generen los resultados, hallazgos y respuestas del asistente
+- [ ] Consolidar definitivamente la arquitectura donde AuditaPatron funcione como frontend y Helios como motor central único de procesamiento, almacenamiento, interpretación y respuesta sobre todos los documentos del usuario
+- [ ] Alinear el flujo para que cada documento subido desde AuditaPatron se envíe a Helios, quede integrado al expediente y alimente tanto el resultado inmediato como el asistente legal contextual
+- [x] Rediseñar el resultado principal de /auditar para mostrar de inmediato qué encontró Helios, hallazgos clave y un siguiente paso único en lenguaje simple.
+- [x] Centralizar el resultado visible del documento en contratos de Helios para que AuditaPatron solo renderice la salida del cerebro central.
+- [x] Actualizar el expediente automáticamente al confirmar un documento y reflejar esa continuidad en una UI más clara y compacta.
+- [x] Integrar el asistente laboral contextual de Helios junto al resultado del análisis en /auditar.
+- [x] Simplificar la jerarquía visual del flujo posterior a la carga para reducir scroll, clics y confusión para usuarios no expertos.
+- [x] Ajustar y ampliar pruebas de /auditar para validar el nuevo flujo documental con TypeScript y Vitest en verde.

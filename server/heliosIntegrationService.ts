@@ -18,6 +18,31 @@ export type HeliosLegalFoundation = {
   relevance: string;
 };
 
+export type HeliosResultFinding = {
+  label: string;
+  value: string;
+  source: "confirmed" | "estimated" | "derived";
+  tone: "neutral" | "support" | "attention";
+};
+
+export type HeliosResultCard = {
+  headline: string;
+  lead: string;
+  keyFindings: HeliosResultFinding[];
+  nextStepLabel: string;
+  nextStepSummary: string;
+  dossierUpdateLabel: string;
+  dossierUpdateSummary: string;
+  assistantIntro: string;
+  suggestedQuestions: string[];
+};
+
+export type HeliosLegalHighlights = {
+  primaryConclusion: string;
+  primaryConcern: string | null;
+  nextActionLabel: string;
+};
+
 export type HeliosOpinion = {
   documentId: string;
   caseId: string;
@@ -34,6 +59,8 @@ export type HeliosOpinion = {
   confidenceScore: number;
   disclaimer: string;
   generatedAt: string;
+  resultCard: HeliosResultCard;
+  legalHighlights: HeliosLegalHighlights;
   rawPayload: Record<string, unknown>;
 };
 
@@ -80,12 +107,67 @@ function getString(record: Record<string, unknown> | undefined, key: string) {
   return text.length > 0 ? text : undefined;
 }
 
+function getConfirmed(params: BuildHeliosOpinionParams, key: string) {
+  return getString(params.preliminaryAnalysis?.confirmedData, key);
+}
+
+function getEstimated(params: BuildHeliosOpinionParams, key: string) {
+  return getString(params.preliminaryAnalysis?.estimatedData, key);
+}
+
+function getBestVisibleValue(params: BuildHeliosOpinionParams, key: string) {
+  return getConfirmed(params, key) || getEstimated(params, key);
+}
+
+function lowercaseFirst(text: string) {
+  return text.length ? `${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
+}
+
+function joinVisibleLabels(values: string[]) {
+  if (values.length === 0) return "";
+  if (values.length === 1) return values[0];
+  if (values.length === 2) return `${values[0]} y ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")} y ${values[values.length - 1]}`;
+}
+
+function getDocumentTypeLabel(documentType: string) {
+  switch (documentType) {
+    case "payroll_receipt":
+      return "recibo de nómina";
+    case "cfdi":
+      return "CFDI laboral";
+    case "contract":
+      return "contrato laboral";
+    case "imss":
+      return "soporte de IMSS";
+    case "evidence":
+      return "evidencia laboral";
+    default:
+      return "documento laboral";
+  }
+}
+
+function getPrimaryFocus(documentType: string) {
+  switch (documentType) {
+    case "payroll_receipt":
+      return "pagos, descuentos y periodo";
+    case "cfdi":
+      return "lo timbrado, los montos y el periodo";
+    case "contract":
+      return "lo pactado, el puesto y las condiciones iniciales";
+    case "imss":
+      return "fechas, salario registrado y continuidad laboral";
+    case "evidence":
+      return "hechos, fechas y contexto del caso";
+    default:
+      return "los datos más útiles del documento";
+  }
+}
+
 function getRiskLevel(params: BuildHeliosOpinionParams): HeliosRiskLevel {
   const guardrails = asTextList(params.preliminaryAnalysis?.guardrails);
-  const confirmed = params.preliminaryAnalysis?.confirmedData ?? {};
-  const estimated = params.preliminaryAnalysis?.estimatedData ?? {};
-  const employerRfc = getString(estimated, "employerRfc") || getString(confirmed, "employerRfc");
-  const effectiveDate = getString(estimated, "apparentEffectiveDate") || getString(confirmed, "apparentEffectiveDate");
+  const employerRfc = getBestVisibleValue(params, "employerRfc");
+  const effectiveDate = getBestVisibleValue(params, "apparentEffectiveDate");
 
   if (guardrails.length >= 2) return "high";
   if (params.documentType === "contract") return effectiveDate ? "medium" : "high";
@@ -134,30 +216,46 @@ function getRecommendedActions(documentType: string) {
 function getRecommendedNextStep(documentType: string) {
   switch (documentType) {
     case "contract":
-      return "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias jurídicas relevantes.";
+      return "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias relevantes.";
     case "payroll_receipt":
-      return "Cruzar este recibo con CFDI y contrato para identificar pagos, deducciones o prestaciones inconsistentes.";
+      return "Si puedes, sube el CFDI o el contrato del mismo periodo para comprobar si pagos, deducciones y prestaciones coinciden entre sí.";
     case "cfdi":
       return "Contrastar lo fiscalmente timbrado con nómina, depósitos y condiciones pactadas en el contrato.";
     case "imss":
       return "Vincular este soporte con tu cronología laboral y con recibos o contrato para validar seguridad social y salario registrado.";
     default:
-      return "Aportar un documento complementario del mismo periodo para fortalecer la lectura jurídica del expediente.";
+      return "Aportar un documento complementario del mismo periodo para fortalecer la lectura del expediente.";
   }
 }
 
-function getSummary(params: BuildHeliosOpinionParams, riskLevel: HeliosRiskLevel) {
-  const confirmed = params.preliminaryAnalysis?.confirmedData ?? {};
-  const estimated = params.preliminaryAnalysis?.estimatedData ?? {};
-  const workerName = getString(confirmed, "workerName") || getString(estimated, "workerName");
-  const employerName = getString(confirmed, "employerName") || getString(estimated, "employerName");
-  const apparentAmount = getString(estimated, "apparentAmount") || getString(confirmed, "apparentAmount");
+function getSummary(params: BuildHeliosOpinionParams) {
+  const workerName = getBestVisibleValue(params, "workerName");
+  const employerName = getBestVisibleValue(params, "employerName");
+  const apparentAmount = getBestVisibleValue(params, "apparentAmount");
 
   const subject = workerName ? `para ${workerName}` : "para este expediente";
   const counterpart = employerName ? ` frente a ${employerName}` : "";
-  const amountFragment = apparentAmount ? ` También aparece un monto visible (${apparentAmount}) que conviene contrastar con otros soportes.` : "";
+  const amountFragment = apparentAmount
+    ? ` También aparece un monto visible (${apparentAmount}) que conviene contrastar con otros soportes.`
+    : "";
 
-  return `Helios generó una lectura preliminar ${subject}${counterpart} con riesgo ${riskLevel}.${amountFragment}`.trim();
+  if (params.documentType === "payroll_receipt") {
+    return `Ya hay una primera lectura útil ${subject}${counterpart} para revisar pagos, deducciones y señales del recibo.${amountFragment}`.trim();
+  }
+
+  if (params.documentType === "contract") {
+    return `Ya hay una primera lectura útil ${subject}${counterpart} para comparar lo pactado en el contrato con lo que realmente ocurrió.${amountFragment}`.trim();
+  }
+
+  if (params.documentType === "cfdi") {
+    return `Ya hay una primera lectura útil ${subject}${counterpart} para revisar montos, periodo y lo que quedó timbrado.${amountFragment}`.trim();
+  }
+
+  if (params.documentType === "imss") {
+    return `Ya hay una primera lectura útil ${subject}${counterpart} para revisar fechas, salario registrado y continuidad laboral.${amountFragment}`.trim();
+  }
+
+  return `Ya hay una primera lectura útil ${subject}${counterpart} con los datos más visibles del documento.${amountFragment}`.trim();
 }
 
 function getLegalOpinion(params: BuildHeliosOpinionParams, riskLevel: HeliosRiskLevel) {
@@ -178,15 +276,15 @@ function getLegalOpinion(params: BuildHeliosOpinionParams, riskLevel: HeliosRisk
 
   switch (params.documentType) {
     case "contract":
-      return `La lectura asistida sugiere usar este contrato como base de comparación jurídica para validar salario, jornada, prestaciones y condiciones iniciales. Por ahora la exposición aparente es de nivel ${normalizedRisk}, porque el valor principal del documento está en contrastarlo con lo efectivamente ocurrido.${guardrailsFragment}`;
+      return `La lectura asistida sugiere usar este contrato como base de comparación para validar salario, jornada, prestaciones y condiciones iniciales. Por ahora la exposición aparente es de nivel ${normalizedRisk}, porque el valor principal del documento está en contrastarlo con lo efectivamente ocurrido.${guardrailsFragment}`;
     case "payroll_receipt":
-      return `La lectura asistida sugiere que este recibo puede servir para revisar consistencia entre percepciones, deducciones y pagos reales. El nivel de riesgo aparente es ${normalizedRisk} y conviene contrastarlo con CFDI y contrato antes de extraer una conclusión más firme.${guardrailsFragment}`;
+      return `La lectura asistida ya te devuelve una base inicial para revisar si percepciones, deducciones y pagos del recibo se entienden con claridad. Antes de cerrar una conclusión más firme, conviene contrastarlo con CFDI y contrato; por ahora la exposición aparente se ubica en nivel ${normalizedRisk}.${guardrailsFragment}`;
     case "cfdi":
-      return `La lectura asistida sugiere que este CFDI puede ayudar a detectar diferencias entre lo timbrado fiscalmente y lo realmente pagado o trabajado. El nivel de riesgo aparente es ${normalizedRisk} y gana valor jurídico cuando se cruza con nómina, contrato o evidencia adicional.${guardrailsFragment}`;
+      return `La lectura asistida sugiere que este CFDI puede ayudar a detectar diferencias entre lo timbrado fiscalmente y lo realmente pagado o trabajado. El nivel de riesgo aparente es ${normalizedRisk} y gana valor cuando se cruza con nómina, contrato o evidencia adicional.${guardrailsFragment}`;
     case "imss":
       return `La lectura asistida sugiere que este soporte puede ser útil para verificar alta, baja, salario base o continuidad de la relación laboral. El nivel de riesgo aparente es ${normalizedRisk} y conviene conectarlo con la cronología documental del expediente.${guardrailsFragment}`;
     default:
-      return `La lectura asistida sugiere que este documento aporta contexto útil al expediente, pero todavía requiere contraste con más hechos y soportes para consolidar una opinión jurídica preliminar. El nivel de riesgo aparente es ${normalizedRisk}.${guardrailsFragment}`;
+      return `La lectura asistida sugiere que este documento aporta contexto útil al expediente, pero todavía requiere contraste con más hechos y soportes para consolidar una opinión preliminar. El nivel de riesgo aparente es ${normalizedRisk}.${guardrailsFragment}`;
   }
 }
 
@@ -230,13 +328,11 @@ function getLegalFoundations(documentType: string): HeliosLegalFoundation[] {
 }
 
 function getKeyFactsUsed(params: BuildHeliosOpinionParams) {
-  const confirmed = params.preliminaryAnalysis?.confirmedData ?? {};
-  const estimated = params.preliminaryAnalysis?.estimatedData ?? {};
   const entries = [
-    getString(confirmed, "workerName") || getString(estimated, "workerName"),
-    getString(confirmed, "employerName") || getString(estimated, "employerName"),
-    getString(estimated, "period") || getString(confirmed, "period"),
-    getString(estimated, "apparentAmount") || getString(confirmed, "apparentAmount"),
+    getBestVisibleValue(params, "workerName"),
+    getBestVisibleValue(params, "employerName"),
+    getBestVisibleValue(params, "period"),
+    getBestVisibleValue(params, "apparentAmount"),
     params.documentName || undefined,
   ].filter((value): value is string => Boolean(value && value.trim()));
 
@@ -244,21 +340,18 @@ function getKeyFactsUsed(params: BuildHeliosOpinionParams) {
     return entries.map((entry) => entry.trim());
   }
 
-  return [
-    `Documento clasificado como ${params.documentType}`,
-    `Expediente ${params.caseId}`,
-  ];
+  return [`Documento clasificado como ${params.documentType}`, `Expediente ${params.caseId}`];
 }
 
 function getUncertainties(params: BuildHeliosOpinionParams) {
   const guardrails = asTextList(params.preliminaryAnalysis?.guardrails);
   const uncertainties = [...guardrails];
 
-  if (!getString(params.preliminaryAnalysis?.confirmedData, "workerName")) {
+  if (!getConfirmed(params, "workerName")) {
     uncertainties.push("Todavía conviene confirmar con más documentos la identidad o rol laboral visible.");
   }
 
-  if (!getString(params.preliminaryAnalysis?.estimatedData, "period")) {
+  if (!getBestVisibleValue(params, "period")) {
     uncertainties.push("Hace falta reforzar el periodo exacto o la cronología del documento.");
   }
 
@@ -271,9 +364,195 @@ function getUncertainties(params: BuildHeliosOpinionParams) {
 
 function getConfidenceScore(params: BuildHeliosOpinionParams, riskLevel: HeliosRiskLevel) {
   const guardrails = asTextList(params.preliminaryAnalysis?.guardrails);
-  const base = params.documentType === "contract" ? 76 : params.documentType === "payroll_receipt" || params.documentType === "cfdi" ? 74 : 70;
+  const base =
+    params.documentType === "contract"
+      ? 76
+      : params.documentType === "payroll_receipt" || params.documentType === "cfdi"
+        ? 74
+        : 70;
   const penalty = guardrails.length * 6 + (riskLevel === "high" ? 4 : riskLevel === "critical" ? 8 : 0);
   return Math.max(52, Math.min(92, base - penalty));
+}
+
+function pushFinding(
+  findings: HeliosResultFinding[],
+  label: string,
+  value: string | undefined,
+  source: "confirmed" | "estimated" | "derived",
+  tone: "neutral" | "support" | "attention" = "neutral",
+) {
+  if (!value) return;
+  if (findings.some((item) => item.label === label && item.value === value)) return;
+  findings.push({ label, value, source, tone });
+}
+
+function getKeyFindings(params: BuildHeliosOpinionParams) {
+  const findings: HeliosResultFinding[] = [];
+  const workerNameConfirmed = getConfirmed(params, "workerName");
+  const workerNameEstimated = getEstimated(params, "workerName");
+  const employerNameConfirmed = getConfirmed(params, "employerName");
+  const employerNameEstimated = getEstimated(params, "employerName");
+  const periodConfirmed = getConfirmed(params, "period");
+  const periodEstimated = getEstimated(params, "period");
+  const amountConfirmed = getConfirmed(params, "apparentAmount");
+  const amountEstimated = getEstimated(params, "apparentAmount");
+  const jobTitleConfirmed = getConfirmed(params, "jobTitle");
+  const jobTitleEstimated = getEstimated(params, "jobTitle");
+  const employerRfcConfirmed = getConfirmed(params, "employerRfc");
+  const employerRfcEstimated = getEstimated(params, "employerRfc");
+  const effectiveDateConfirmed = getConfirmed(params, "apparentEffectiveDate");
+  const effectiveDateEstimated = getEstimated(params, "apparentEffectiveDate");
+  const guardrails = asTextList(params.preliminaryAnalysis?.guardrails);
+
+  pushFinding(findings, "Documento detectado", getDocumentTypeLabel(params.documentType), "derived", "support");
+  pushFinding(findings, "Nombre visible", workerNameConfirmed, "confirmed");
+  pushFinding(findings, "Nombre visible", workerNameEstimated, "estimated");
+  pushFinding(findings, "Empresa visible", employerNameConfirmed, "confirmed");
+  pushFinding(findings, "Empresa visible", employerNameEstimated, "estimated");
+  pushFinding(findings, "Periodo visible", periodConfirmed, "confirmed");
+  pushFinding(findings, "Periodo visible", periodEstimated, "estimated");
+
+  if (params.documentType === "payroll_receipt" || params.documentType === "cfdi") {
+    pushFinding(findings, "Monto visible", amountConfirmed, "confirmed", "support");
+    pushFinding(findings, "Monto visible", amountEstimated, "estimated", "support");
+  }
+
+  if (params.documentType === "contract") {
+    pushFinding(findings, "Puesto visible", jobTitleConfirmed, "confirmed");
+    pushFinding(findings, "Puesto visible", jobTitleEstimated, "estimated");
+    pushFinding(findings, "Fecha visible", effectiveDateConfirmed, "confirmed");
+    pushFinding(findings, "Fecha visible", effectiveDateEstimated, "estimated");
+  }
+
+  if (params.documentType === "imss") {
+    pushFinding(findings, "RFC visible", employerRfcConfirmed, "confirmed");
+    pushFinding(findings, "RFC visible", employerRfcEstimated, "estimated");
+    pushFinding(findings, "Fecha visible", effectiveDateConfirmed, "confirmed");
+    pushFinding(findings, "Fecha visible", effectiveDateEstimated, "estimated");
+  }
+
+  if (guardrails[0]) {
+    pushFinding(findings, "Ojo", guardrails[0], "derived", "attention");
+  }
+
+  if (findings.length < 3) {
+    pushFinding(
+      findings,
+      "Para qué sirve",
+      `Este ${getDocumentTypeLabel(params.documentType)} ayuda a revisar ${lowercaseFirst(getPrimaryFocus(params.documentType))}.`,
+      "derived",
+      "support",
+    );
+  }
+
+  return findings.slice(0, 4);
+}
+
+function getHeadline(params: BuildHeliosOpinionParams) {
+  switch (params.documentType) {
+    case "payroll_receipt":
+      return "Ya revisamos tu recibo y hay una primera lectura útil";
+    case "contract":
+      return "Ya revisamos tu contrato y hay una primera lectura útil";
+    case "cfdi":
+      return "Ya revisamos tu CFDI y hay una primera lectura útil";
+    case "imss":
+      return "Ya revisamos tu soporte de IMSS y hay una primera lectura útil";
+    default:
+      return "Ya revisamos tu documento y hay una primera lectura útil";
+  }
+}
+
+function getLead(params: BuildHeliosOpinionParams, findings: HeliosResultFinding[]) {
+  const visibleLabels = findings
+    .filter((item) => item.label !== "Documento detectado" && item.label !== "Ojo" && item.label !== "Para qué sirve")
+    .slice(0, 3)
+    .map((item) => item.label.toLowerCase());
+
+  const evidenceFragment = visibleLabels.length
+    ? `Por ahora ya se alcanzan a ver ${joinVisibleLabels(visibleLabels)}.`
+    : `Por ahora ya se alcanzan a ver señales útiles sobre ${lowercaseFirst(getPrimaryFocus(params.documentType))}.`;
+
+  return `${evidenceFragment} Esta lectura todavía es preliminar, pero ya te deja ver qué significa este archivo para tu caso.`;
+}
+
+function getNextStepLabel(documentType: string) {
+  switch (documentType) {
+    case "contract":
+    case "imss":
+      return "Lo que más te conviene hacer ahora";
+    default:
+      return "Siguiente paso sugerido";
+  }
+}
+
+function getDossierUpdateSummary(params: BuildHeliosOpinionParams) {
+  const label = getDocumentTypeLabel(params.documentType);
+  return `Tu ${label} ya quedó ordenado dentro de tu expediente y servirá para futuras comparaciones, respuestas y seguimientos.`;
+}
+
+function getSuggestedQuestions(params: BuildHeliosOpinionParams) {
+  switch (params.documentType) {
+    case "payroll_receipt":
+      return [
+        "Explícame este recibo con palabras simples.",
+        "¿Qué no cuadra o qué conviene revisar aquí?",
+        "¿Qué documento me conviene subir después?",
+      ];
+    case "contract":
+      return [
+        "Explícame qué dice este contrato en palabras simples.",
+        "¿Qué parte de este contrato conviene comparar con mi realidad?",
+        "¿Qué documento me conviene subir después?",
+      ];
+    case "cfdi":
+      return [
+        "Explícame este CFDI con palabras simples.",
+        "¿Qué podría no coincidir con mis pagos reales?",
+        "¿Qué documento me conviene subir después?",
+      ];
+    case "imss":
+      return [
+        "Explícame este soporte de IMSS con palabras simples.",
+        "¿Qué fecha o dato conviene confirmar?",
+        "¿Qué documento me conviene subir después?",
+      ];
+    default:
+      return [
+        "Explícame este documento con palabras simples.",
+        "¿Qué hallazgo es el más importante aquí?",
+        "¿Qué documento me conviene subir después?",
+      ];
+  }
+}
+
+function buildResultCard(params: BuildHeliosOpinionParams, uncertainties: string[]): HeliosResultCard {
+  const keyFindings = getKeyFindings(params);
+  const nextStepSummary = getRecommendedNextStep(params.documentType);
+  const firstUncertainty = uncertainties[0];
+
+  return {
+    headline: getHeadline(params),
+    lead: getLead(params, keyFindings),
+    keyFindings,
+    nextStepLabel: getNextStepLabel(params.documentType),
+    nextStepSummary: firstUncertainty
+      ? `${nextStepSummary} Hoy conviene poner atención especial en esto: ${firstUncertainty}`
+      : nextStepSummary,
+    dossierUpdateLabel: "Tu expediente ya se actualizó",
+    dossierUpdateSummary: getDossierUpdateSummary(params),
+    assistantIntro:
+      "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué falta confirmar o ayudarte a elegir el siguiente archivo más útil.",
+    suggestedQuestions: getSuggestedQuestions(params),
+  };
+}
+
+function buildLegalHighlights(summary: string, uncertainties: string[], recommendedNextStep: string): HeliosLegalHighlights {
+  return {
+    primaryConclusion: summary,
+    primaryConcern: uncertainties[0] ?? null,
+    nextActionLabel: recommendedNextStep,
+  };
 }
 
 export function getHeliosIntegrationMode(): HeliosIntegrationMode {
@@ -284,23 +563,30 @@ export function buildHeliosOpinion(params: BuildHeliosOpinionParams): HeliosOpin
   const riskLevel = getRiskLevel(params);
   const confidenceScore = getConfidenceScore(params, riskLevel);
   const generatedAt = new Date().toISOString();
+  const summary = getSummary(params);
+  const legalOpinion = getLegalOpinion(params, riskLevel);
+  const recommendedNextStep = getRecommendedNextStep(params.documentType);
+  const recommendedActions = getRecommendedActions(params.documentType);
+  const uncertainties = getUncertainties(params);
 
   return {
     documentId: params.documentId,
     caseId: params.caseId,
     status: "completed",
     mode: getHeliosIntegrationMode(),
-    summary: getSummary(params, riskLevel),
-    legalOpinion: getLegalOpinion(params, riskLevel),
+    summary,
+    legalOpinion,
     riskLevel,
-    recommendedNextStep: getRecommendedNextStep(params.documentType),
-    recommendedActions: getRecommendedActions(params.documentType),
+    recommendedNextStep,
+    recommendedActions,
     legalFoundations: getLegalFoundations(params.documentType),
     keyFactsUsed: getKeyFactsUsed(params),
-    uncertainties: getUncertainties(params),
+    uncertainties,
     confidenceScore,
     disclaimer: DEFAULT_DISCLAIMER,
     generatedAt,
+    resultCard: buildResultCard(params, uncertainties),
+    legalHighlights: buildLegalHighlights(summary, uncertainties, recommendedNextStep),
     rawPayload: {
       tenantId: params.tenantId,
       caseId: params.caseId,
