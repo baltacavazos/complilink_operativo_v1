@@ -1,0 +1,37 @@
+Como auditor senior de producto, UX/UI, conversión, confianza y resiliencia de flujo, mi análisis se centra en la optimización precisa para alcanzar el 9/10+ sin rediseño.
+
+### 1. Diagnóstico central
+La experiencia actual de AuditaPatron, aunque sólida, padece de un "vacío de feedback" crítico entre la acción de subir un documento y la confirmación o error. Esta opacidad genera ansiedad, reduce la percepción de control y erosiona la confianza en la robustez del sistema, impidiendo el salto cualitativo hacia una calificación superior.
+
+### 2. Intervenciones prioritarias
+
+| Prioridad | Cambio recomendado                                                                                                                                                                                                                                                                                               | Por qué impacta                                                                                                                                                                                                                                                                                                                                           | Costo estimado |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------- |
+| Alta      | Implementar estados de progreso intermedios, visualmente discretos (ej. barra delgada, spinner contextual) con microcopy dinámico y claro, para validación, subida y procesamiento inicial.                                                                                                                | Transforma un "limbo" de espera en un proceso transparente, reduciendo la incertidumbre y la ansiedad. Aumenta drásticamente la percepción de control y robustez, al mostrar que el sistema está trabajando activamente y comunicando cada fase. Es el pilar para construir confianza en un momento crítico.                                     | Medio          |
+| Alta      | Introducir validaciones preventivas a nivel de interfaz de usuario (antes de la subida real) para tipo y tamaño de archivo, con feedback inmediato y accionable.                                                                                                                                           | Evita frustraciones al usuario por errores de subida que podrían haberse anticipado. Ahorra tiempo, tanto al usuario como al sistema. Refuerza la sensación de un sistema inteligente y proactivo, mejorando la confianza al prevenir problemas en lugar de solo reaccionar a ellos.                                                         | Bajo           |
+| Media     | Añadir microcopy de control y confianza junto al bloque de subida.                                                                                                                                                                                                                                         | Sirve como un ancla psicológica, asegurando al usuario sobre la seguridad, privacidad y el control de sus datos. Complementa las mejoras funcionales, solidificando la percepción de un servicio confiable y transparente sin agregar complejidad visual.                                                                                     | Bajo           |
+
+### 3. Estado de progreso ideal
+El feedback de progreso debe ser visualmente sutil (una barra de progreso horizontal que aparece y desaparece contextualmente bajo el botón de subida, o un spinner pequeño junto al nombre del archivo) y acompañado de un microcopy conciso y dinámico. Por ejemplo:
+*   **Mientras se carga:** "Subiendo [NombreArchivo]... (X% completado)"
+*   **Mientras se valida el archivo:** "Validando formato y seguridad de [NombreArchivo]..."
+*   **Mientras se procesa inicialmente:** "Procesando [NombreArchivo] para tu auditoría..."
+Esto mantiene al usuario informado sobre la fase exacta en la que se encuentra su documento, validando su acción y mitigando la ansiedad por la espera.
+
+### 4. Validación preventiva ideal
+
+| Validación                | Momento                                  | Microcopy recomendado (Español Mexicano)                                                                    | Riesgo que evita                                                                                                                                  |
+| :------------------------ | :--------------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Tipo de archivo no válido** | Inmediatamente después de seleccionar el archivo. | "¡Atención! Solo aceptamos PDF, JPG o PNG. Tu archivo no es compatible."                                    | Intentos fallidos de subida, uso de formatos no soportados, espera innecesaria y frustración.                                                     |
+| **Tamaño de archivo excedido** | Inmediatamente después de seleccionar el archivo. | "El archivo es demasiado grande (máximo 10MB). Por favor, comprímelo o elige uno más pequeño."              | Subidas fallidas por exceder límites, consumo de ancho de banda y recursos del servidor/usuario, lentitud del proceso.                           |
+| **Archivo no seleccionado** | Al intentar hacer clic en "Subir" sin haber seleccionado un archivo. | "Primero, selecciona un documento para subir."                                                               | Clicks en vano, confusión sobre la funcionalidad del botón, interacción rota y sensación de un sistema que no responde.                           |
+
+### 5. Copy de control y confianza
+
+1.  "**Tu información está protegida.** Solo la usamos para tu auditoría laboral."
+2.  "**Subida segura y privada.** Recibirás tu confirmación en segundos."
+3.  "**Mantén el control.** Aquí verás el estado de tu documento en tiempo real."
+4.  "**Claridad en cada paso.** Te avisaremos si algo no está en orden."
+
+### 6. Única recomendación final
+La micro-ronda más rentable y de mayor impacto es la implementación de un **sistema de estados de progreso intermedios, explícitos y visualmente sutiles, complementado con las validaciones preventivas de tipo y tamaño de archivo**. Esta combinación aborda directamente la opacidad actual del proceso de subida, transformando un "agujero negro" en un flujo transparente y controlado. La sinergia entre saber *qué* está pasando (progreso) y *evitar problemas antes de que sucedan* (validación preventiva) generará la mayor elevación en la percepción de robustez, control y confianza, sin requerir un rediseño, empujando la experiencia de 8.9 a 9/10+.

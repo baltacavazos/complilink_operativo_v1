@@ -10,9 +10,12 @@ import {
   buildHeliosPriorityAlerts,
   buildInlineLegalConsentState,
   buildReanalyzeDraftActionState,
+  buildUploadProgressState,
+  formatVisibleFileSize,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
   shouldAutoAnalyzeSelectedFile,
+  validateDocumentUploadFile,
 } from "./Auditar";
 
 describe("buildHeliosPriorityAlerts", () => {
@@ -194,6 +197,70 @@ describe("sanitizePersistedHeliosCopilotMessages", () => {
   it("devuelve arreglo vacío cuando la persistencia no tiene el formato esperado", () => {
     expect(sanitizePersistedHeliosCopilotMessages({ invalid: true })).toEqual([]);
     expect(sanitizePersistedHeliosCopilotMessages(null)).toEqual([]);
+  });
+});
+
+describe("formatVisibleFileSize", () => {
+  it("muestra archivos pequeños en KB y archivos grandes en MB con un decimal", () => {
+    expect(formatVisibleFileSize(860)).toBe("1 KB");
+    expect(formatVisibleFileSize(2.4 * 1024 * 1024)).toBe("2.4 MB");
+  });
+});
+
+describe("validateDocumentUploadFile", () => {
+  it("acepta PDFs e imágenes dentro del límite preventivo", () => {
+    const pdf = new File(["hola"], "contrato.pdf", { type: "application/pdf" });
+    expect(validateDocumentUploadFile(pdf)).toBeNull();
+  });
+
+  it("rechaza formatos no compatibles y archivos que exceden 15 MB", () => {
+    const unsupported = new File(["hola"], "contrato.exe", { type: "application/octet-stream" });
+    expect(validateDocumentUploadFile(unsupported)).toContain("no es compatible");
+
+    const largePdf = new File([new Uint8Array(16 * 1024 * 1024)], "pesado.pdf", { type: "application/pdf" });
+    expect(validateDocumentUploadFile(largePdf)).toContain("supera el límite preventivo de 15 MB");
+  });
+});
+
+describe("buildUploadProgressState", () => {
+  it("prioriza el guardado final sobre otros estados y comunica control al usuario", () => {
+    expect(
+      buildUploadProgressState({
+        selectedFile: new File(["hola"], "recibo.pdf", { type: "application/pdf" }),
+        pendingDraft: true,
+        isAnalyzingDraft: true,
+        isConfirmingDraft: true,
+      }),
+    ).toMatchObject({
+      eyebrow: "Guardado en curso",
+      progress: 92,
+    });
+  });
+
+  it("muestra el estado preventivo inicial y el salto a archivo listo cuando ya existe una selección válida", () => {
+    expect(
+      buildUploadProgressState({
+        selectedFile: null,
+        pendingDraft: false,
+        isAnalyzingDraft: false,
+        isConfirmingDraft: false,
+      }),
+    ).toMatchObject({
+      eyebrow: "Control del documento",
+      progress: 12,
+    });
+
+    expect(
+      buildUploadProgressState({
+        selectedFile: new File(["hola"], "evidencia.jpg", { type: "image/jpeg" }),
+        pendingDraft: false,
+        isAnalyzingDraft: false,
+        isConfirmingDraft: false,
+      }),
+    ).toMatchObject({
+      eyebrow: "Archivo listo",
+      progress: 38,
+    });
   });
 });
 

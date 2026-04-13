@@ -915,3 +915,8 @@
 - [x] Pulir copy residual en /home, /ceo y /auditar para reducir redundancia y microdecisiones
 - [x] Consultar a ChatGPT, Grok y Gemini sobre esta nueva ronda focalizada antes de implementar cambios
 - [x] Validar la nueva ronda con pruebas, revisión operativa y reauditoría multi-modelo antes del próximo checkpoint
+- [x] Reforzar los estados intermedios de carga y procesamiento en /auditar con feedback de progreso más explícito
+- [x] Añadir validación preventiva de tipo y tamaño de archivo antes de iniciar la subida en /auditar
+- [x] Integrar un microcopy de control y confianza justo encima o dentro del bloque principal de upload
+- [x] Consultar a ChatGPT, Grok y Gemini sobre la micro-ronda de progreso y control antes de implementar cambios
+- [x] Validar la micro-ronda con pruebas, revisión operativa y reauditoría multi-modelo antes del próximo checkpoint

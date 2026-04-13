@@ -69,6 +69,102 @@ const INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {
   lastEvent: "idle",
   lastUpdatedAt: null,
 };
+const MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 15 * 1024 * 1024;
+const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"] as const;
+
+export function formatVisibleFileSize(bytes: number) {
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+export function validateDocumentUploadFile(file: File | null) {
+  if (!file) {
+    return null;
+  }
+
+  const lowerName = file.name.toLowerCase();
+  const isSupportedByMime =
+    file.type.startsWith("image/") ||
+    file.type === "application/pdf" ||
+    file.type === "text/xml" ||
+    file.type === "application/xml";
+  const isSupportedByExtension = SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS.some((extension) => lowerName.endsWith(extension));
+
+  if (!isSupportedByMime && !isSupportedByExtension) {
+    return "Este archivo no es compatible todavía. Sube PDF, XML o una imagen clara del documento para continuar.";
+  }
+
+  if (file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES) {
+    return `El archivo pesa ${formatVisibleFileSize(file.size)} y supera el límite preventivo de 15 MB. Comprime la imagen o exporta el PDF en tamaño más ligero antes de subirlo.`;
+  }
+
+  return null;
+}
+
+export function buildUploadProgressState(params: {
+  selectedFile: File | null;
+  pendingDraft: boolean;
+  isAnalyzingDraft: boolean;
+  isConfirmingDraft: boolean;
+}) {
+  const { selectedFile, pendingDraft, isAnalyzingDraft, isConfirmingDraft } = params;
+
+  if (isConfirmingDraft) {
+    return {
+      eyebrow: "Guardado en curso",
+      title: "Estamos integrando tu documento al expediente",
+      description: "No necesitas repetir la carga. En cuanto termine, verás el resultado y el siguiente paso sugerido.",
+      progress: 92,
+      toneClasses: "border-teal-200 bg-teal-50 text-teal-950",
+      barClasses: "bg-teal-600",
+    };
+  }
+
+  if (pendingDraft) {
+    return {
+      eyebrow: "Vista previa lista",
+      title: "Tu documento ya quedó listo para revisión",
+      description: "Todavía no se guarda en el expediente: primero revisas lo leído y después confirmas si quieres integrarlo.",
+      progress: 100,
+      toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
+      barClasses: "bg-sky-600",
+    };
+  }
+
+  if (isAnalyzingDraft) {
+    return {
+      eyebrow: "Análisis en curso",
+      title: "Estamos leyendo tu archivo y preparando el borrador",
+      description: "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que mantengas el control.",
+      progress: 72,
+      toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
+      barClasses: "bg-amber-500",
+    };
+  }
+
+  if (selectedFile) {
+    return {
+      eyebrow: "Archivo listo",
+      title: "Documento preparado para borrador automático",
+      description: "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.",
+      progress: 38,
+      toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
+      barClasses: "bg-emerald-500",
+    };
+  }
+
+  return {
+    eyebrow: "Control del documento",
+    title: "Elige un PDF, XML o una imagen clara para empezar",
+    description: "Primero preparas el borrador, luego revisas la lectura y sólo al final decides si quieres guardar el documento en tu expediente.",
+    progress: 12,
+    toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
+    barClasses: "bg-slate-400",
+  };
+}
 
 function buildLegalGateErrorState(
   message: string,
@@ -2386,6 +2482,17 @@ export default function Auditar() {
     [preferredCaptureMode, selectedFile, selectedRecommendedTargetType],
   );
   const isProcessingDocument = analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
+  const selectedFileValidationMessage = useMemo(() => validateDocumentUploadFile(selectedFile), [selectedFile]);
+  const uploadProgressState = useMemo(
+    () =>
+      buildUploadProgressState({
+        selectedFile,
+        pendingDraft: Boolean(pendingDraft),
+        isAnalyzingDraft: analyzeDraftMutation.isPending,
+        isConfirmingDraft: confirmDraftMutation.isPending,
+      }),
+    [analyzeDraftMutation.isPending, confirmDraftMutation.isPending, pendingDraft, selectedFile],
+  );
   const previewInsight = pendingDraft ? getUploadInsight(pendingDraft.classification.documentType) : null;
   const previewReadiness = getDocumentReadiness(pendingDraft?.classification?.classificationConfidence);
   const previewConfirmedEntries = useMemo(
@@ -2933,6 +3040,20 @@ export default function Auditar() {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
+    const validationMessage = validateDocumentUploadFile(file);
+
+    if (validationMessage) {
+      documentSelectionStartedAtRef.current = null;
+      setSelectedFile(null);
+      setAutoAnalyzeRequested(false);
+      setPendingDraft(null);
+      setLastUpload(null);
+      setSubmitError(validationMessage);
+      setPickerKey((value) => value + 1);
+      setUploadSourceOpen(false);
+      return;
+    }
+
     setSelectedFile(file);
     setAutoAnalyzeRequested(Boolean(file));
     setPendingDraft(null);
@@ -4229,7 +4350,19 @@ export default function Auditar() {
                 />
 
                 <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
-                  <div className="space-y-2 sm:hidden">
+                  <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                    <p className="font-semibold text-slate-950">Tú controlas lo que pasa con este archivo</p>
+                    <p className="mt-1">
+                      Elegirlo sólo prepara el borrador. Antes de guardar, revisas la lectura y confirmas si realmente quieres integrarlo al expediente.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">PDF, XML o imagen</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Hasta 15 MB</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Sin guardado automático</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-2 sm:hidden">
                     <Button
                       variant="outline"
                       className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
@@ -4320,6 +4453,30 @@ export default function Auditar() {
                       Elegir archivo
                     </Button>
                   </div>
+
+                  <div className={`mt-4 rounded-[1.1rem] border p-4 ${uploadProgressState.toneClasses}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">{uploadProgressState.eyebrow}</p>
+                        <p className="mt-2 font-semibold">{uploadProgressState.title}</p>
+                      </div>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {uploadProgressState.progress}%
+                      </span>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/70">
+                      <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
+                    </div>
+                    <p className="mt-3 text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
+                    <p className="mt-2 text-xs leading-5 opacity-80">
+                      {selectedFile
+                        ? `Archivo actual: ${selectedFile.name} · ${formatVisibleFileSize(selectedFile.size)}`
+                        : "Consejo preventivo: procura que el archivo esté completo, legible y sin sombras antes de subirlo."}
+                    </p>
+                    {selectedFileValidationMessage ? (
+                      <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
+                    ) : null}
+                  </div>
                 </div>
 
                 {pendingDraft ? (
@@ -4332,13 +4489,17 @@ export default function Auditar() {
                   </div>
                 ) : selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
-                    <p className="font-semibold">Documento recibido para borrador automático</p>
-                    <p className="mt-1">{selectedFile.name} · {(selectedFile.size / 1024).toFixed(1)} KB</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold">Documento recibido para borrador automático</p>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">Listo para análisis</span>
+                    </div>
+                    <p className="mt-1">{selectedFile.name} · {formatVisibleFileSize(selectedFile.size)}</p>
                     <p className="mt-2 leading-6">La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.</p>
+                    <p className="mt-2 text-xs leading-5 text-emerald-900/80">Elegir el archivo no lo guarda todavía en el expediente: primero verás el borrador y después decidirás si confirmas.</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre, el borrador automático y el siguiente paso recomendado antes de guardarlo definitivamente.
+                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre, el avance del análisis, el borrador automático y el siguiente paso recomendado antes de guardarlo definitivamente.
                   </div>
                 )}
               </div>
