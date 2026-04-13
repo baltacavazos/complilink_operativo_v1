@@ -1951,11 +1951,11 @@ export default function CeoDashboard() {
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
-                  <h2 className="mt-3 text-3xl font-semibold tracking-tight xl:text-[2.55rem]">
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
                     Lo crítico primero para decidir rápido.
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
-                    Revisa alertas, accesos, documentos y salud operativa desde una sola vista para priorizar y actuar sin perder contexto.
+                    Revisa alertas, accesos y salud operativa desde una sola vista para priorizar acciones rápidas.
                   </p>
                 </div>
 

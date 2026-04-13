@@ -43,7 +43,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Ver cómo se ve mi reporte");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Empieza con el documento correcto");
-    expect(source).toContain("Sube tu documento, AuditaPatron lo integra a tu expediente y te devuelve contexto útil desde el inicio.");
+    expect(source).toContain("Sube tu documento ahora.");
+    expect(source).toContain("Sube desde tu celular y recibe claridad útil desde el inicio.");
+    expect(source).toContain("Hallazgos claros prioritarios.");
+    expect(source).toContain("Breves y urgentes primero.");
+    expect(source).toContain("Fortalece expediente con contexto.");
+    expect(source).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
+    expect(source).toContain("Más contexto con cada archivo.");
+    expect(source).toContain("Privacidad y control visibles.");
     expect(source).toContain("Quiero entender rápido si esto me sirve");
     expect(source).toContain("Auditoría inicial en segundos");
     expect(source).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
@@ -56,7 +63,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('bg-[#eaf5f3]');
     expect(source).toContain("function MobilePriorityPathSection");
     expect(source).toContain("Ruta móvil priorizada");
-    expect(source).toContain("Primero decides si quieres empezar; lo demás aparece sólo cuando te sirve.");
+    expect(source).toContain("Primero decides si quieres empezar; lo demás aparece cuando te sirve.");
     expect(source).toContain('className="hidden sm:block"');
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('id="expediente"');
@@ -82,9 +89,27 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
     expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`');
     expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
+    expect(source).toContain('Documento sugerido preparado');
+    expect(source).toContain('Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.');
   });
 
-  it("mantiene lenguaje cálido y comprensible en el panel conversacional", () => {
+  it("refuerza la ruta principal en acceso sin competir visualmente con alternativas", () => {
+    const source = readPage("Access");
+
+    expect(source).toContain("Ruta recomendada");
+    expect(source).toContain("Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.");
+    expect(source).toContain('className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"');
+    expect(source).not.toContain("<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>");
+  });
+
+  it("compacta el primer bloque operativo de la consola CEO para lectura móvil más rápida", () => {
+    const source = readPage("CeoDashboard");
+
+    expect(source).toContain('text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]');
+    expect(source).toContain("Revisa alertas, accesos y salud operativa desde una sola vista para priorizar acciones rápidas.");
+  });
+
+  it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {
     const source = readComponent("components/HeliosCopilotSheet.tsx");
 
     expect(source).toContain("Tu asistente laboral");

@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/CeoDashboard.tsx",
+  "startLine": 1948,
+  "endLine": 1976,
+  "focus": "Afinar el primer bloque operativo de la Consola CEO para lectura más rápida en móvil sin agregar funciones nuevas",
+  "snippet": "        <div className=\"space-y-6\">\n          <section className=\"rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(15,118,110,0.92))] p-6 text-white shadow-[0_34px_90px_-42px_rgba(15,23,42,0.56)] xl:p-7\">\n            <div className=\"grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start\">\n              <div className=\"space-y-4\">\n                <div>\n                  <p className=\"text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85\">Consola ejecutiva</p>\n                  <h2 className=\"mt-3 text-3xl font-semibold tracking-tight xl:text-[2.55rem]\">\n                    Lo crítico primero para decidir rápido.\n                  </h2>\n                  <p className=\"mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]\">\n                    Revisa alertas, accesos, documentos y salud operativa desde una sola vista para priorizar y actuar sin perder contexto.\n                  </p>\n                </div>\n\n                <div className=\"grid gap-3 md:grid-cols-3\">\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Supervisa</p>\n                    <p className=\"mt-2 text-sm leading-6 text-slate-100/85\">\n                      Mantén arriba el panorama general y abajo lo filtrado para investigar sin desorden.\n                    </p>\n                  </article>\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Decide</p>\n                    <p className=\"mt-2 text-sm leading-6 text-slate-100/85\">\n                      Las acciones seguras quedan visibles para resolver alertas, accesos y casos con menos fricción.\n                    </p>\n                  </article>\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Exporta</p>",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "Consola CEO primer bloque",
+        "top_issue": "El bloque inicial tiene buena estructura pero la jerarquía visual y el espaciado pueden mejorarse para lectura rápida en móvil, especialmente en textos y separación de secciones.",
+        "suggestions": [
+          {
+            "title": "Reducir el tracking de los títulos en mayúsculas",
+            "change": "Disminuir tracking-[0.22em] y tracking-[0.18em] a tracking-[0.1em] o tracking-[0.12em] en los textos en mayúsculas para mejorar legibilidad en móvil.",
+            "reason": "El tracking muy amplio dificulta la lectura rápida en pantallas pequeñas y puede generar fatiga visual.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Aumentar el margen inferior del subtítulo h2",
+            "change": "Incrementar mt-3 a mt-4 o mt-5 en el h2 para separar mejor el título del párrafo siguiente en móvil.",
+            "reason": "Mejora la separación visual y ayuda a que el usuario distinga rápidamente bloques de información sin saturación.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reducir el gap entre los artículos en la grilla",
+            "change": "Cambiar gap-3 a gap-2 en la grilla md:grid-cols-3 para compactar ligeramente los artículos y evitar scroll horizontal o sensación de fragmentación en móvil.",
+            "reason": "Optimiza el uso del espacio en pantallas pequeñas sin perder claridad ni legibilidad.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Reducir el tracking de los textos en mayúsculas para mejorar la legibilidad inmediata en móvil."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "ConsolaCEOInicial",
+        "top_issue": "Jerarquía visual y copy no optimizados para móvil, lo que ralentiza la lectura inicial al requerir más scroll y texto denso.",
+        "suggestions": [
+          {
+            "title": "Ajustar tamaño de fuente del título",
+            "change": "Cambiar 'text-3xl' a 'text-2xl md:text-3xl' para reducir en móviles.",
+            "reason": "Mejora la legibilidad en pantallas pequeñas al hacer el título más compacto sin afectar el diseño general.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Acortar el párrafo descriptivo",
+            "change": "Reducir el texto a: 'Revisa alertas, accesos y salud operativa en una vista unificada para priorizar acciones rápidas.'",
+            "reason": "Facilita una lectura más rápida y clara en móvil, manteniendo el enfoque en lo esencial sin alterar el contenido.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reducir espaciado en el grid de artículos",
+            "change": "Cambiar 'gap-5' a 'gap-4 md:gap-5' en el grid principal.",
+            "reason": "Disminuye el espacio vertical en móviles para una navegación más fluida y menos scroll, mejorando la jerarquía visual.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Acortar el párrafo descriptivo para lograr una claridad inmediata y reducir el tiempo de lectura en dispositivos móviles."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

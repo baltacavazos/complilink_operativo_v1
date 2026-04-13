@@ -4,6 +4,8 @@ vi.mock("@/components/HeliosCopilotSheet", () => ({
   HeliosCopilotSheet: () => null,
 }));
 
+import { readFileSync } from "node:fs";
+
 import {
   buildAuditarTimelineEntryState,
   buildDossierTypeProgress,
@@ -23,6 +25,20 @@ import {
   shouldAutoAnalyzeSelectedFile,
   validateDocumentUploadFile,
 } from "./Auditar";
+
+const auditarSource = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
+
+describe("compact mobile upload entry", () => {
+  it("mantiene dominante la acción principal de subida en el primer flujo móvil", () => {
+    expect(auditarSource).toContain("shouldCompactMobileUploadEntry");
+    expect(auditarSource).toContain(
+      '"bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"',
+    );
+    expect(auditarSource).toContain('"bg-slate-900 hover:bg-slate-950"');
+    expect(auditarSource).toContain('"Toma foto para empezar"');
+    expect(auditarSource).toContain('"Elige archivo para empezar"');
+  });
+});
 
 describe("buildHeliosPriorityAlerts", () => {
   it("prioriza una alerta de nueva claridad cuando el último documento mejora la lectura del expediente", () => {

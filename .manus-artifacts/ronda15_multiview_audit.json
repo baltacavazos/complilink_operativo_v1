@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-04-13T21:03:52.869Z",
+  "round": 15,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUIjOx7fe9nIncTlpawB3LfsYdcOu",
+        "object": "chat.completion",
+        "created": 1776114214,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el texto de los bullets en el tour inicial para que la acción principal 'Sube tu documento' sea más dominante y visible sin scroll adicional.\",\"why\":\"El tour en Home tiene bullets que ocupan espacio y generan scroll; simplificarlos mejora la claridad y reduce scroll, haciendo la acción principal más evidente y clara sin añadir elementos ni cambiar arquitectura.\",\"exact_target\":\"TourStep 'sube' bullets: cambiar ['Desde tu celular.', 'Sin pasos extra.'] por ['Desde tu celular']\",\"risk\":\"low\",\"copy_suggestion\":\"Desde tu celular\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1423,
+          "completion_tokens": 127,
+          "total_tokens": 1550,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_7a4c05a595"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Reducir el texto de los bullets en el tour inicial para que la acción principal 'Sube tu documento' sea más dominante y visible sin scroll adicional.",
+        "why": "El tour en Home tiene bullets que ocupan espacio y generan scroll; simplificarlos mejora la claridad y reduce scroll, haciendo la acción principal más evidente y clara sin añadir elementos ni cambiar arquitectura.",
+        "exact_target": "TourStep 'sube' bullets: cambiar ['Desde tu celular.', 'Sin pasos extra.'] por ['Desde tu celular']",
+        "risk": "low",
+        "copy_suggestion": "Desde tu celular"
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "a3a8da61-5b03-93fa-bff8-35bdc22ae05d",
+        "object": "chat.completion",
+        "created": 1776114218,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Shorten tour step descriptions and bullets to minimize vertical space while retaining key value props.\",\"why\":\"Reduces mobile scroll by ~20-30% in the tour section, making the main 'Sube tu documento' CTA more dominant sooner; clearer, concise language builds user confidence without adding UI elements.\",\"exact_target\":\"tourSteps array: trim 'description' and 'bullets' in each step (e.g., for 'sube': description to 'Sube tu documento desde tu celular. AuditaPatron lo integra a tu expediente y te da contexto útil de inmediato.'; bullets to single item 'Rápido y sin pasos extra.' Apply similarly to others).\",\"risk\":\"low\",\"copy_suggestion\":\"Sube: 'Sube tu documento desde tu celular. AuditaPatron lo integra y te da contexto útil de inmediato.' Bullets: ['Rápido y sin pasos extra.'] Revisamos: 'Hallazgos claros: confirmado vs. estimado para revisar pagos, condiciones e IMSS/Infonavit.' Bullets: ['Breves y prioritarios.'] Proteges: 'Tus docs se convierten en respaldo fuerte para tu expediente.' Bullets: ['Más contexto con cada upload.']\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1564,
+          "completion_tokens": 262,
+          "total_tokens": 2440,
+          "prompt_tokens_details": {
+            "text_tokens": 1564,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 148
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 614,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 7286000
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Shorten tour step descriptions and bullets to minimize vertical space while retaining key value props.",
+        "why": "Reduces mobile scroll by ~20-30% in the tour section, making the main 'Sube tu documento' CTA more dominant sooner; clearer, concise language builds user confidence without adding UI elements.",
+        "exact_target": "tourSteps array: trim 'description' and 'bullets' in each step (e.g., for 'sube': description to 'Sube tu documento desde tu celular. AuditaPatron lo integra a tu expediente y te da contexto útil de inmediato.'; bullets to single item 'Rápido y sin pasos extra.' Apply similarly to others).",
+        "risk": "low",
+        "copy_suggestion": "Sube: 'Sube tu documento desde tu celular. AuditaPatron lo integra y te da contexto útil de inmediato.' Bullets: ['Rápido y sin pasos extra.'] Revisamos: 'Hallazgos claros: confirmado vs. estimado para revisar pagos, condiciones e IMSS/Infonavit.' Bullets: ['Breves y prioritarios.'] Proteges: 'Tus docs se convierten en respaldo fuerte para tu expediente.' Bullets: ['Más contexto con cada upload.']"
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      },
+      "parsed": {}
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Reducir el texto de los bullets en el tour inicial para que la acción principal 'Sube tu documento' sea más dominante y visible sin scroll adicional.",
+    "agreement_count": 1,
+    "recommended_exact_target": "TourStep 'sube' bullets: cambiar ['Desde tu celular.', 'Sin pasos extra.'] por ['Desde tu celular']",
+    "recommended_copy_suggestion": "Desde tu celular"
+  }
+}

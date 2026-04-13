@@ -1,0 +1,93 @@
+{
+  "targetFile": "client/src/pages/Access.tsx",
+  "startLine": 206,
+  "endLine": 250,
+  "focus": "Reforzar la jerarquía visual del CTA principal en /acceso con el menor cambio posible y priorizando móvil",
+  "snippet": "          <section className=\"mx-auto w-full max-w-3xl space-y-5 xl:max-w-none\">\n            <div className=\"rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]\">\n              <div className=\"flex items-start justify-between gap-4\">\n                <div>\n                  <p className=\"text-sm font-semibold uppercase tracking-[0.2em] text-slate-500\">Ruta recomendada</p>\n                  <h2 className=\"mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950\">Entra y vuelve a tu ruta en el menor número de pasos</h2>\n                  <p className=\"mt-2 max-w-2xl text-sm leading-7 text-slate-600\">\n                    La vía principal va primero. Los respaldos quedan debajo solo por si los necesitas.\n                  </p>\n                </div>\n                <div className=\"rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600\">\n                  Ruta objetivo: {returnTo}\n                </div>\n              </div>\n\n              <div className=\"mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5\">\n                <p className=\"text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300\">Opción principal</p>\n                <h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>\n                <p className=\"mt-2 text-sm leading-6 text-slate-300\">\n                  Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.\n                </p>\n                <Button\n                  size=\"lg\"\n                  className=\"mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100\"\n                  onClick={() => {\n                    window.location.href = getManusLoginUrl(returnTo);\n                  }}\n                >\n                  Continuar con Manus\n                </Button>\n                <p className=\"mt-3 text-xs leading-5 text-slate-300\">Al terminar, te devolvemos automáticamente al punto exacto donde ibas.</p>\n              </div>\n\n              <div className=\"mt-4 grid gap-3 md:grid-cols-2\">\n                <div className=\"rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600\">\n                  <p className=\"font-semibold text-slate-900\">Alternativa: Google</p>\n                  <p className=\"mt-2\">Úsala solo si prefieres ese proveedor.</p>\n                  <Button\n                    size=\"lg\"\n                    variant=\"outline\"\n                    className=\"mt-3 h-11 w-full justify-center rounded-2xl border-slate-200 bg-white\"\n                    disabled={!googleEnabled || googleStatusQuery.isLoading}\n                    onClick={() => {\n                      window.location.href = getGoogleLoginUrl(returnTo);\n                    }}",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "Access CTA Principal",
+        "top_issue": "El botón principal 'Continuar con Manus' no destaca lo suficiente en móvil frente a otros elementos cercanos, lo que puede diluir la jerarquía visual del CTA principal.",
+        "suggestions": [
+          {
+            "title": "Incrementar el tamaño del botón principal en móvil",
+            "change": "Agregar clases responsivas para aumentar la altura y el tamaño de fuente del botón en pantallas pequeñas, por ejemplo, h-14 y text-base en móvil.",
+            "reason": "Un botón más grande en móvil mejora la visibilidad y la facilidad de interacción, reforzando su importancia como CTA principal.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reducir el texto explicativo debajo del botón o hacerlo menos prominente",
+            "change": "Cambiar la clase del párrafo que está debajo del botón para usar un color más tenue (por ejemplo, text-slate-400) y reducir el tamaño de fuente a text-xs o text-[10px].",
+            "reason": "Disminuir la prominencia del texto secundario evita que compita visualmente con el botón, ayudando a que el CTA principal sea el foco inmediato.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Aumentar el espacio vertical entre el título 'Opción principal' y el botón",
+            "change": "Incrementar el margen superior del botón (por ejemplo, mt-6 o mt-8 en lugar de mt-4) para separar visualmente el CTA del texto anterior.",
+            "reason": "Más espacio alrededor del botón ayuda a que se perciba como un elemento independiente y destacado, reforzando la jerarquía visual.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Incrementar el tamaño del botón principal en móvil para mejorar su visibilidad y jerarquía visual sin alterar la estructura general."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "Acceso",
+        "top_issue": "El CTA principal 'Continuar con Manus' no destaca lo suficiente en dispositivos móviles debido a la proximidad de texto y elementos circundantes, afectando la jerarquía visual y la claridad inmediata.",
+        "suggestions": [
+          {
+            "title": "Aumentar el tamaño del botón CTA",
+            "change": "Cambiar el className del botón a 'mt-4 h-14 w-full ...' para aumentar la altura a 14 (de 12) en mobile.",
+            "reason": "Un botón más grande mejora la visibilidad y el enfoque en pantallas pequeñas sin alterar el layout general, reforzando la jerarquía visual.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Añadir más espacio superior al CTA",
+            "change": "Modificar el contenedor del botón agregando 'mt-6' en lugar de 'mt-4' para aumentar el margen superior.",
+            "reason": "Esto crea un mayor aislamiento visual del texto previo, haciendo que el CTA se perciba como el elemento principal en mobile sin rediseñar la estructura.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reforzar el contraste del texto del botón",
+            "change": "Cambiar el className del botón a incluir 'font-bold text-lg' para bold y aumentar el tamaño de fuente ligeramente.",
+            "reason": "Mejora la legibilidad y el énfasis en el texto del CTA en mobile, priorizando la jerarquía sin introducir elementos nuevos.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Aumentar el tamaño del botón CTA a h-14 para maximizar su visibilidad en mobile con el menor cambio posible."
+      }
+    },
+    {
+      "provider": "gemini",
+      "output": {
+        "model_view": "Acceso Manus CTA",
+        "top_issue": "La jerarquía visual del CTA principal 'Continuar con Manus' se diluye por redundancia de copy y espaciado subóptimo, reduciendo su impacto inmediato.",
+        "suggestions": [
+          {
+            "title": "Aumentar el peso visual del texto del CTA",
+            "change": "Añadir la clase `font-bold` al `Button` principal 'Continuar con Manus'.\n\n**Antes:**\n`<Button size=\"lg\" className=\"mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100\" ...>`\n\n**Después:**\n`<Button size=\"lg\" className=\"mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100 font-bold\" ...>`",
+            "reason": "Incrementa la legibilidad y el impacto visual del texto de la acción principal, haciendo que el botón destaque más dentro de su contenedor oscuro y capte la atención del usuario de forma más efectiva en dispositivos móviles.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Eliminar título redundante sobre el CTA",
+            "change": "Eliminar el elemento `h3` con el texto 'Continúa con Manus' que precede al botón. Ajustar el `mt` del párrafo descriptivo subsiguiente.\n\n**Antes:**\n`<p className=\"text-[11px] ...\">Opción principal</p>`\n`<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>`\n`<p className=\"mt-2 text-sm ...\">Es la forma más corta de entrar...</p>`\n\n**Después:**\n`<p className=\"text-[11px] ...\">Opción principal</p>`\n`<p className=\"mt-3 text-sm ...\">Es la forma más corta de entrar...</p>`",
+            "reason": "Elimina la redundancia entre el título y el texto del botón, simplificando la jerarquía visual y haciendo que el botón sea el punto de acción principal inequívoco. El párrafo descriptivo se reajusta para mantener un espaciado adecuado.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Incrementar el espaciado superior del CTA",
+            "change": "Cambiar el `margin-top` del `Button` principal de `mt-4` a `mt-6`.\n\n**Antes:**\n`<Button size=\"lg\" className=\"mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100\" ...>`\n\n**Después:**\n`<Button size=\"lg\" className=\"mt-6 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100\" ...>`",
+            "reason": "Proporciona más espacio en blanco por encima del botón, dándole más 'aire' y haciéndolo destacar como un elemento de acción distinto y prioritario. Esto mejora la claridad visual y la facilidad de escaneo en pantallas pequeñas.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Eliminar el título redundante 'Continúa con Manus' (`h3`) que precede al botón. Esto simplifica drásticamente la jerarquía visual, haciendo que el botón sea el punto de acción principal sin competencia directa de texto."
+      }
+    }
+  ]
+}

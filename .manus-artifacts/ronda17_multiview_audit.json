@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-04-13T21:10:54.671Z",
+  "round": 17,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUIqL1p5d8l5JUjIuaTMDeAqg1mea",
+        "object": "chat.completion",
+        "created": 1776114645,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el scroll móvil haciendo el botón principal de acción (subir documento) más dominante y visible en la parte superior, con un texto claro y directo.\",\"why\":\"Actualmente el usuario debe hacer scroll para encontrar la acción principal de subir documento. Hacer este botón más prominente y visible sin añadir pasos ni cambiar arquitectura mejora la usabilidad, reduce esfuerzo y aumenta confianza al destacar la acción clave sin añadir chrome extra.\",\"exact_target\":\"Botón 'Sube tu documento' en Home, hacerlo más grande, con color destacado y texto claro tipo 'Sube tu documento para empezar' visible sin scroll.\",\"risk\":\"low\",\"copy_suggestion\":\"Sube tu documento para empezar\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1423,
+          "completion_tokens": 149,
+          "total_tokens": 1572,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_bfc02a4ee2"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Reducir el scroll móvil haciendo el botón principal de acción (subir documento) más dominante y visible en la parte superior, con un texto claro y directo.",
+        "why": "Actualmente el usuario debe hacer scroll para encontrar la acción principal de subir documento. Hacer este botón más prominente y visible sin añadir pasos ni cambiar arquitectura mejora la usabilidad, reduce esfuerzo y aumenta confianza al destacar la acción clave sin añadir chrome extra.",
+        "exact_target": "Botón 'Sube tu documento' en Home, hacerlo más grande, con color destacado y texto claro tipo 'Sube tu documento para empezar' visible sin scroll.",
+        "risk": "low",
+        "copy_suggestion": "Sube tu documento para empezar"
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "71eed17a-7d57-9bfd-b9fb-e3eb4ed641f1",
+        "object": "chat.completion",
+        "created": 1776114649,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Shorten tour step summaries to one concise phrase each, removing redundant words.\",\"why\":\"Reduces vertical scroll on mobile by ~20% in the tour section, prioritizes clarity in language, and builds user confidence with punchier, action-oriented copy without adding UI elements.\",\"exact_target\":\"tourSteps array: update 'summary' fields to be 5-7 words max, e.g., 'Sube archivo para iniciar' instead of 'Sube un archivo para empezar.'\",\"risk\":\"low\",\"copy_suggestion\":\"1. 'Sube archivo para iniciar.' 2. 'Hallazgos claros prioritarios.' 3. 'Fortalece expediente con contexto.'\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1566,
+          "completion_tokens": 149,
+          "total_tokens": 2329,
+          "prompt_tokens_details": {
+            "text_tokens": 1566,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 148
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 614,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 6725000
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Shorten tour step summaries to one concise phrase each, removing redundant words.",
+        "why": "Reduces vertical scroll on mobile by ~20% in the tour section, prioritizes clarity in language, and builds user confidence with punchier, action-oriented copy without adding UI elements.",
+        "exact_target": "tourSteps array: update 'summary' fields to be 5-7 words max, e.g., 'Sube archivo para iniciar' instead of 'Sube un archivo para empezar.'",
+        "risk": "low",
+        "copy_suggestion": "1. 'Sube archivo para iniciar.' 2. 'Hallazgos claros prioritarios.' 3. 'Fortalece expediente con contexto.'"
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      },
+      "parsed": {}
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Reducir el scroll móvil haciendo el botón principal de acción (subir documento) más dominante y visible en la parte superior, con un texto claro y directo.",
+    "agreement_count": 1,
+    "recommended_exact_target": "Botón 'Sube tu documento' en Home, hacerlo más grande, con color destacado y texto claro tipo 'Sube tu documento para empezar' visible sin scroll.",
+    "recommended_copy_suggestion": "Sube tu documento para empezar"
+  }
+}

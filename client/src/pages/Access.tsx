@@ -220,20 +220,19 @@ export default function Access() {
 
               <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Opción principal</p>
-                <h3 className="mt-2 text-lg font-semibold">Continúa con Manus</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-300">
+                <p className="mt-3 text-sm leading-6 text-slate-300">
                   Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.
                 </p>
                 <Button
                   size="lg"
-                  className="mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
+                  className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
                   onClick={() => {
                     window.location.href = getManusLoginUrl(returnTo);
                   }}
                 >
                   Continuar con Manus
                 </Button>
-                <p className="mt-3 text-xs leading-5 text-slate-300">Al terminar, te devolvemos automáticamente al punto exacto donde ibas.</p>
+                <p className="mt-3 text-[11px] leading-5 text-slate-400">Al terminar, te devolvemos automáticamente al punto exacto donde ibas.</p>
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">

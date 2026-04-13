@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/Auditar.tsx",
+  "startLine": 4387,
+  "endLine": 4405,
+  "focus": "Convertir la recomendación del siguiente documento en una acción más directa dentro de /auditar con el menor cambio posible",
+  "snippet": "                {selectedRecommendedTargetType && effectiveRecommendedTarget ? (\n\n                  <div className=\"mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4 text-sm leading-6 text-sky-950\">\n                    <div className=\"flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between\">\n                      <div>\n                        <p className=\"font-semibold\">Documento sugerido preparado</p>\n                        <p className=\"mt-1\">\n                          Ahora mismo estamos enfocando {effectiveRecommendedTarget.label.toLowerCase()} para que retomes exactamente esa recomendación al subir tu archivo.\n                        </p>\n                      </div>\n                      <button\n                        type=\"button\"\n                        className=\"text-sm font-semibold text-sky-800 underline-offset-4 hover:underline\"\n                        onClick={() => setSelectedRecommendedTargetType(null)}\n                      >\n                        Quitar enfoque\n                      </button>\n                    </div>\n                  </div>",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "Auditar - Recomendación enfocada",
+        "top_issue": "El mensaje es informativo pero poco directo para impulsar la acción inmediata del usuario en /auditar.",
+        "suggestions": [
+          {
+            "title": "Simplificar el copy para acción directa",
+            "change": "Modificar el texto a: 'Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.'",
+            "reason": "Un copy más directo y breve mejora la claridad y urgencia sin agregar elementos nuevos.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Resaltar el botón 'Quitar enfoque' con mayor contraste",
+            "change": "Agregar clase 'underline' permanente y cambiar color a 'text-sky-900' para mejor visibilidad en móvil.",
+            "reason": "Mejora la jerarquía visual y accesibilidad del botón sin alterar su función ni diseño general.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reducir padding vertical para optimizar espacio en móvil",
+            "change": "Cambiar padding vertical de 'p-4' a 'py-3 px-4' en el contenedor principal.",
+            "reason": "Ajusta el layout para que el mensaje ocupe menos espacio vertical, mejorando la experiencia en pantallas pequeñas.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Simplificar el copy para que el mensaje sea más directo y llame a la acción inmediata: 'Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.'"
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "AuditarFocus",
+        "top_issue": "Texto explicativo verboso que reduce la claridad inmediata en dispositivos móviles.",
+        "suggestions": [
+          {
+            "title": "Simplificar el texto",
+            "change": "Cambiar el párrafo a: 'Estamos enfocando {effectiveRecommendedTarget.label.toLowerCase()} para que subas tu archivo directamente relacionado.'",
+            "reason": "Reduce la longitud del texto para una lectura más rápida y directa en mobile, manteniendo el enfoque en la acción.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Ajustar la posición del botón",
+            "change": "Mover el botón al final de la primera línea o como un elemento inline al lado del título.",
+            "reason": "Mejora la accesibilidad y flujo visual en pantallas pequeñas, facilitando la interacción sin alterar el layout principal.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Mejorar la jerarquía visual",
+            "change": "Añadir negrita a palabras clave en el párrafo, como 'enfocando' y 'subir'.",
+            "reason": "Aumenta la claridad inmediata al resaltar elementos clave, priorizando la legibilidad en mobile sin cambios mayores.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Simplificar el texto para hacer la recomendación más directa y legible en un solo cambio."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

@@ -21,6 +21,15 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Sube tu documento y AuditaPatron lo recibe");
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
+    expect(homeSource).toContain("Sube tu documento ahora.");
+    expect(homeSource).toContain("Sube desde tu celular y recibe claridad útil desde el inicio.");
+    expect(homeSource).toContain('bullets: ["Desde tu celular"]');
+    expect(homeSource).toContain("Hallazgos claros prioritarios.");
+    expect(homeSource).toContain("Breves y urgentes primero.");
+    expect(homeSource).toContain("Fortalece expediente con contexto.");
+    expect(homeSource).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
+    expect(homeSource).toContain("Más contexto con cada archivo.");
+    expect(homeSource).toContain("Privacidad y control visibles.");
     expect(homeSource).toContain("Empieza con el documento correcto");
     expect(homeSource).toContain("Primer documento sugerido");
     expect(homeSource).toContain("Continúa con tu primera auditoría");

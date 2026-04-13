@@ -75,40 +75,28 @@ const tourSteps: TourStep[] = [
   {
     id: "sube",
     title: "Sube tu documento y AuditaPatron lo recibe",
-    summary: "Empieza con un archivo.",
+    summary: "Sube tu documento ahora.",
     description:
-      "Sube tu documento, AuditaPatron lo integra a tu expediente y te devuelve contexto útil desde el inicio.",
-    bullets: [
-      "Desde tu celular.",
-      "Sin pasos técnicos extra.",
-      "Cada archivo suma contexto.",
-    ],
+      "Sube desde tu celular y recibe claridad útil desde el inicio.",
+    bullets: ["Desde tu celular"],
     icon: Upload,
   },
   {
     id: "revisamos",
     title: "AuditaPatron te devuelve hallazgos claros",
-    summary: "Lo importante aparece primero y sin palabras difíciles.",
+    summary: "Hallazgos claros prioritarios.",
     description:
-      "AuditaPatron separa lo confirmado de lo estimado para que entiendas mejor tu situación y revises con más claridad pagos, condiciones y señales sobre IMSS e Infonavit.",
-    bullets: [
-      "Mensajes breves y fáciles de leer.",
-      "Lo urgente se ve rápido.",
-      "Te orienta sin sonar absoluto.",
-    ],
+      "Recibe hallazgos prioritarios: confirmado vs. estimado para pagos, condiciones e IMSS e Infonavit.",
+    bullets: ["Breves y urgentes primero."],
     icon: FileSearch,
   },
   {
     id: "proteges",
     title: "Tu expediente se fortalece con AuditaPatron",
-    summary: "Tus documentos no se quedan sueltos: se convierten en respaldo.",
+    summary: "Fortalece expediente con contexto.",
     description:
-      "Con más documentos útiles, tu expediente gana contexto para ordenar, comparar y devolverte resultados cada vez más útiles sin perder trazabilidad.",
-    bullets: [
-      "Más contexto para entender cambios.",
-      "Mejor organización de evidencia.",
-      "Privacidad, resguardo y control de tus archivos.",
-    ],
+      "Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.",
+    bullets: ["Más contexto con cada archivo.", "Privacidad y control visibles."],
     icon: ShieldCheck,
   },
 ];
@@ -2008,10 +1996,10 @@ function MobilePriorityPathSection() {
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-700">Ruta móvil priorizada</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
-              Primero decides si quieres empezar; lo demás aparece sólo cuando te sirve.
+              Primero decides si quieres empezar; lo demás aparece cuando te sirve.
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Compactamos la experiencia móvil para que el recorrido principal sea más claro: entender, confiar y comenzar tu revisión sin desplazarte por demasiados bloques informativos seguidos.
+              En móvil priorizamos entender, confiar y comenzar sin recorrer tantos bloques seguidos.
             </p>
           </div>
 

@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-04-13T21:07:51.657Z",
+  "round": 16,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUInLll8Y8anJvS4Fz5PU5KWNURtE",
+        "object": "chat.completion",
+        "created": 1776114459,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Convertir el botón principal de 'Sube tu documento' en un botón fijo y visible en pantalla sin necesidad de scroll.\",\"why\":\"Actualmente, el usuario debe hacer scroll para encontrar la acción principal de subir documento. Hacer el botón fijo y siempre visible reduce scroll, aumenta la prominencia de la acción principal y genera confianza al facilitar el acceso inmediato sin añadir elementos nuevos ni cambiar arquitectura.\",\"exact_target\":\"Botón 'Sube tu documento' en Home, visible siempre en pantalla móvil como botón fijo en la parte inferior.\",\"risk\":\"low\",\"copy_suggestion\":\"Mantener texto claro y directo: 'Sube tu documento para empezar'\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1419,
+          "completion_tokens": 142,
+          "total_tokens": 1561,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_7a4c05a595"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Convertir el botón principal de 'Sube tu documento' en un botón fijo y visible en pantalla sin necesidad de scroll.",
+        "why": "Actualmente, el usuario debe hacer scroll para encontrar la acción principal de subir documento. Hacer el botón fijo y siempre visible reduce scroll, aumenta la prominencia de la acción principal y genera confianza al facilitar el acceso inmediato sin añadir elementos nuevos ni cambiar arquitectura.",
+        "exact_target": "Botón 'Sube tu documento' en Home, visible siempre en pantalla móvil como botón fijo en la parte inferior.",
+        "risk": "low",
+        "copy_suggestion": "Mantener texto claro y directo: 'Sube tu documento para empezar'"
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "34f31b53-5840-9250-980d-f6659b993f91",
+        "object": "chat.completion",
+        "created": 1776114463,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":85,\"change_summary\":\"Shorten tour step descriptions and bullets to reduce vertical space while maintaining clarity.\",\"why\":\"Prioritizes less mobile scroll by trimming verbose text without losing key info; uses clearer, more direct language to build confidence; keeps main 'Sube tu documento' action prominent without adding UI elements.\",\"exact_target\":\"tourSteps array: description and bullets in each step object.\",\"risk\":\"low\",\"copy_suggestion\":\"For 'sube' step: description='Sube tu documento desde el celular para obtener contexto inmediato.' bullets=['Directo desde móvil']. For 'revisamos': description='Recibe hallazgos prioritarios: confirmado vs. estimado para pagos, IMSS e Infonavit.' bullets=['Breves y urgentes primero']. For 'proteges': description='Convierte documentos en expediente con contexto para ordenar y comparar resultados.' bullets=['Mejor trazabilidad'].\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1560,
+          "completion_tokens": 191,
+          "total_tokens": 2431,
+          "prompt_tokens_details": {
+            "text_tokens": 1560,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 148
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 680,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 7253000
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 85,
+        "change_summary": "Shorten tour step descriptions and bullets to reduce vertical space while maintaining clarity.",
+        "why": "Prioritizes less mobile scroll by trimming verbose text without losing key info; uses clearer, more direct language to build confidence; keeps main 'Sube tu documento' action prominent without adding UI elements.",
+        "exact_target": "tourSteps array: description and bullets in each step object.",
+        "risk": "low",
+        "copy_suggestion": "For 'sube' step: description='Sube tu documento desde el celular para obtener contexto inmediato.' bullets=['Directo desde móvil']. For 'revisamos': description='Recibe hallazgos prioritarios: confirmado vs. estimado para pagos, IMSS e Infonavit.' bullets=['Breves y urgentes primero']. For 'proteges': description='Convierte documentos en expediente con contexto para ordenar y comparar resultados.' bullets=['Mejor trazabilidad']."
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      },
+      "parsed": {}
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Convertir el botón principal de 'Sube tu documento' en un botón fijo y visible en pantalla sin necesidad de scroll.",
+    "agreement_count": 1,
+    "recommended_exact_target": "Botón 'Sube tu documento' en Home, visible siempre en pantalla móvil como botón fijo en la parte inferior.",
+    "recommended_copy_suggestion": "Mantener texto claro y directo: 'Sube tu documento para empezar'"
+  }
+}

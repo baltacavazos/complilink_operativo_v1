@@ -4386,12 +4386,12 @@ export default function Auditar() {
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
 
-                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
+                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-semibold">Documento sugerido preparado</p>
                         <p className="mt-1">
-                          Ahora mismo estamos enfocando {effectiveRecommendedTarget.label.toLowerCase()} para que retomes exactamente esa recomendación al subir tu archivo.
+                          Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.
                         </p>
                       </div>
                       <button
@@ -4519,8 +4519,11 @@ export default function Auditar() {
 
                   <div className="mt-4 space-y-2 sm:hidden">
                     <Button
-                      variant="outline"
-                      className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                      className={`h-12 w-full rounded-2xl text-white transition-all duration-200 ${
+                        shouldCompactMobileUploadEntry
+                          ? "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"
+                          : "bg-slate-900 hover:bg-slate-950"
+                      }`}
                       onClick={openPreferredPicker}
                     >
                       {selectedFile

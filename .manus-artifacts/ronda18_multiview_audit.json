@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-04-13T21:12:55.662Z",
+  "round": 18,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUIsGCPPVSkBOmct47bwvHWiuU1fD",
+        "object": "chat.completion",
+        "created": 1776114764,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el scroll móvil al convertir el acordeón de 'tourSteps' en un resumen expandido por defecto para mostrar los puntos clave sin necesidad de abrir cada sección.\",\"why\":\"El acordeón actual requiere que el usuario haga scroll y abra cada sección para entender el valor, lo que genera fricción y más scroll. Mostrar un resumen expandido con bullets claros mejora la claridad del lenguaje, reduce scroll y hace la acción principal (subir documento) más dominante al liberar espacio visual.\",\"exact_target\":\"En la Home, modificar el componente Accordion para que el primer item (o todos) estén expandidos por defecto mostrando bullets y resumen, evitando que el usuario tenga que abrir manualmente cada sección para entender el valor.\",\"risk\":\"low\",\"copy_suggestion\":\"Mantener el texto actual pero mostrar bullets y resumen visibles sin interacción para facilitar comprensión inmediata y confianza.\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1425,
+          "completion_tokens": 186,
+          "total_tokens": 1611,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_7a4c05a595"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Reducir el scroll móvil al convertir el acordeón de 'tourSteps' en un resumen expandido por defecto para mostrar los puntos clave sin necesidad de abrir cada sección.",
+        "why": "El acordeón actual requiere que el usuario haga scroll y abra cada sección para entender el valor, lo que genera fricción y más scroll. Mostrar un resumen expandido con bullets claros mejora la claridad del lenguaje, reduce scroll y hace la acción principal (subir documento) más dominante al liberar espacio visual.",
+        "exact_target": "En la Home, modificar el componente Accordion para que el primer item (o todos) estén expandidos por defecto mostrando bullets y resumen, evitando que el usuario tenga que abrir manualmente cada sección para entender el valor.",
+        "risk": "low",
+        "copy_suggestion": "Mantener el texto actual pero mostrar bullets y resumen visibles sin interacción para facilitar comprensión inmediata y confianza."
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "3a63a8cc-325a-94b5-8951-39f831201e83",
+        "object": "chat.completion",
+        "created": 1776114768,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Simplify the language in the first tour step summary and description for clarity and confidence.\",\"why\":\"The current wording is slightly verbose and indirect ('Sube archivo para iniciar.' and longer description), which can dilute the main action's dominance on mobile. Simplifying builds more user confidence by being direct and action-oriented, reducing perceived complexity without adding elements or steps, aligning with priorities for clearer language and dominant main action.\",\"exact_target\":\"tourSteps[0].summary and tourSteps[0].description in Home component\",\"risk\":\"low\",\"copy_suggestion\":\"summary: 'Sube tu documento ahora.'; description: 'Sube directamente desde tu celular y recibe insights claros al instante.'\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1567,
+          "completion_tokens": 149,
+          "total_tokens": 2451,
+          "prompt_tokens_details": {
+            "text_tokens": 1567,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 717
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 735,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 6478500
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Simplify the language in the first tour step summary and description for clarity and confidence.",
+        "why": "The current wording is slightly verbose and indirect ('Sube archivo para iniciar.' and longer description), which can dilute the main action's dominance on mobile. Simplifying builds more user confidence by being direct and action-oriented, reducing perceived complexity without adding elements or steps, aligning with priorities for clearer language and dominant main action.",
+        "exact_target": "tourSteps[0].summary and tourSteps[0].description in Home component",
+        "risk": "low",
+        "copy_suggestion": "summary: 'Sube tu documento ahora.'; description: 'Sube directamente desde tu celular y recibe insights claros al instante.'"
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      },
+      "parsed": {}
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Reducir el scroll móvil al convertir el acordeón de 'tourSteps' en un resumen expandido por defecto para mostrar los puntos clave sin necesidad de abrir cada sección.",
+    "agreement_count": 1,
+    "recommended_exact_target": "En la Home, modificar el componente Accordion para que el primer item (o todos) estén expandidos por defecto mostrando bullets y resumen, evitando que el usuario tenga que abrir manualmente cada sección para entender el valor.",
+    "recommended_copy_suggestion": "Mantener el texto actual pero mostrar bullets y resumen visibles sin interacción para facilitar comprensión inmediata y confianza."
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-13T20:41:55.920Z",
+  "generated_at": "2026-04-13T20:58:49.332Z",
   "round": 9,
   "snapshot_count": 2,
   "results": [
@@ -7,16 +7,16 @@
       "model": "chatgpt",
       "available": true,
       "raw": {
-        "id": "chatcmpl-DUIO8CUYZ3J7enRv7O1m6SebxDUB3",
+        "id": "chatcmpl-DUIeIwIbEKRnXsTcl2jVrePbICyj8",
         "object": "chat.completion",
-        "created": 1776112896,
+        "created": 1776113898,
         "model": "gpt-4.1-mini-2025-04-14",
         "choices": [
           {
             "index": 0,
             "message": {
               "role": "assistant",
-              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el texto del botón principal para hacerlo más claro y dominante, por ejemplo cambiar 'Comienza a auditar' a 'Auditar ahora'.\",\"why\":\"Un texto de botón más claro y directo mejora la acción principal, la hace más visible y reduce la carga cognitiva sin añadir elementos ni pasos. Esto aumenta la probabilidad de que el usuario actúe rápido y reduce scroll al evitar textos largos.\",\"exact_target\":\"Botón principal de llamada a la acción en la Home, visible en móvil, actualmente con texto largo o poco claro.\",\"risk\":\"low\",\"copy_suggestion\":\"Cambiar el texto del botón principal a 'Auditar ahora' para mayor claridad y dominio visual.\"}",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el texto del botón principal en Home para hacerlo más claro y dominante, por ejemplo cambiar 'Comenzar auditoría' a 'Auditar ahora'.\",\"why\":\"Un botón con texto más claro y directo mejora la acción principal, la hace más visible y reduce la carga cognitiva sin añadir elementos ni pasos. Esto ayuda a que el usuario identifique rápidamente la acción clave y la realice con menos scroll y distracciones.\",\"exact_target\":\"Botón principal de llamada a la acción en la pantalla Home, actualmente con texto más largo o menos directo.\",\"risk\":\"low\",\"copy_suggestion\":\"Cambiar texto del botón principal en Home a 'Auditar ahora' para mayor claridad y dominancia.\"}",
               "refusal": null,
               "annotations": []
             },
@@ -25,9 +25,9 @@
           }
         ],
         "usage": {
-          "prompt_tokens": 1323,
-          "completion_tokens": 151,
-          "total_tokens": 1474,
+          "prompt_tokens": 1332,
+          "completion_tokens": 155,
+          "total_tokens": 1487,
           "prompt_tokens_details": {
             "cached_tokens": 0,
             "audio_tokens": 0
@@ -40,64 +40,64 @@
           }
         },
         "service_tier": "default",
-        "system_fingerprint": "fp_7a4c05a595"
+        "system_fingerprint": "fp_6b9eec770d"
       },
       "parsed": {
         "winner_surface": "Home",
         "score": 8,
-        "change_summary": "Reducir el texto del botón principal para hacerlo más claro y dominante, por ejemplo cambiar 'Comienza a auditar' a 'Auditar ahora'.",
-        "why": "Un texto de botón más claro y directo mejora la acción principal, la hace más visible y reduce la carga cognitiva sin añadir elementos ni pasos. Esto aumenta la probabilidad de que el usuario actúe rápido y reduce scroll al evitar textos largos.",
-        "exact_target": "Botón principal de llamada a la acción en la Home, visible en móvil, actualmente con texto largo o poco claro.",
+        "change_summary": "Reducir el texto del botón principal en Home para hacerlo más claro y dominante, por ejemplo cambiar 'Comenzar auditoría' a 'Auditar ahora'.",
+        "why": "Un botón con texto más claro y directo mejora la acción principal, la hace más visible y reduce la carga cognitiva sin añadir elementos ni pasos. Esto ayuda a que el usuario identifique rápidamente la acción clave y la realice con menos scroll y distracciones.",
+        "exact_target": "Botón principal de llamada a la acción en la pantalla Home, actualmente con texto más largo o menos directo.",
         "risk": "low",
-        "copy_suggestion": "Cambiar el texto del botón principal a 'Auditar ahora' para mayor claridad y dominio visual."
+        "copy_suggestion": "Cambiar texto del botón principal en Home a 'Auditar ahora' para mayor claridad y dominancia."
       }
     },
     {
       "model": "grok",
       "available": true,
       "raw": {
-        "id": "92bc6e1d-b534-9e43-8653-7059140540e9",
+        "id": "b0b75a4a-2ab9-9a30-8251-4016957e540a",
         "object": "chat.completion",
-        "created": 1776112901,
+        "created": 1776113903,
         "model": "grok-4-fast-reasoning",
         "choices": [
           {
             "index": 0,
             "message": {
               "role": "assistant",
-              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Aumentar el tamaño y contraste del botón principal de subida de documentos para hacerlo más dominante en móvil.\",\"why\":\"Reduce el scroll al hacer la acción principal más visible e inmediata en la parte superior de Home, priorizando engagement rápido sin alterar estructura; genera más confianza al resaltar simplicidad.\",\"exact_target\":\"Button component con icono Upload en la sección inicial de tourSteps.\",\"risk\":\"low\",\"copy_suggestion\":\"Sube tu documento ahora\"}",
+              "content": "{\"winner_surface\":\"Auditar\",\"score\":8,\"change_summary\":\"Hacer el botón de subida de documento más dominante visualmente ajustando su tamaño y posición en la parte superior de la pantalla.\",\"why\":\"En móvil, posicionar el botón de upload más arriba reduce el scroll necesario para acceder a la acción principal, aumentando la dominancia de la subida de documentos sin alterar flujos ni agregar elementos, alineado con prioridades de menos scroll y acción principal dominante.\",\"exact_target\":\"El botón principal de subida (con icono FileUp o Camera) en el componente de upload.\",\"risk\":\"low\",\"copy_suggestion\":\"Sube tu documento ahora\"}",
               "refusal": null
             },
             "finish_reason": "stop"
           }
         ],
         "usage": {
-          "prompt_tokens": 1462,
-          "completion_tokens": 103,
-          "total_tokens": 2332,
+          "prompt_tokens": 1471,
+          "completion_tokens": 130,
+          "total_tokens": 2087,
           "prompt_tokens_details": {
-            "text_tokens": 1462,
+            "text_tokens": 1471,
             "audio_tokens": 0,
             "image_tokens": 0,
-            "cached_tokens": 1461
+            "cached_tokens": 713
           },
           "completion_tokens_details": {
-            "reasoning_tokens": 767,
+            "reasoning_tokens": 486,
             "audio_tokens": 0,
             "accepted_prediction_tokens": 0,
             "rejected_prediction_tokens": 0
           },
           "num_sources_used": 0,
-          "cost_in_usd_ticks": 5082500
+          "cost_in_usd_ticks": 4952500
         },
         "system_fingerprint": "fp_e4f661d783"
       },
       "parsed": {
-        "winner_surface": "Home",
+        "winner_surface": "Auditar",
         "score": 8,
-        "change_summary": "Aumentar el tamaño y contraste del botón principal de subida de documentos para hacerlo más dominante en móvil.",
-        "why": "Reduce el scroll al hacer la acción principal más visible e inmediata en la parte superior de Home, priorizando engagement rápido sin alterar estructura; genera más confianza al resaltar simplicidad.",
-        "exact_target": "Button component con icono Upload en la sección inicial de tourSteps.",
+        "change_summary": "Hacer el botón de subida de documento más dominante visualmente ajustando su tamaño y posición en la parte superior de la pantalla.",
+        "why": "En móvil, posicionar el botón de upload más arriba reduce el scroll necesario para acceder a la acción principal, aumentando la dominancia de la subida de documentos sin alterar flujos ni agregar elementos, alineado con prioridades de menos scroll y acción principal dominante.",
+        "exact_target": "El botón principal de subida (con icono FileUp o Camera) en el componente de upload.",
         "risk": "low",
         "copy_suggestion": "Sube tu documento ahora"
       }
@@ -111,7 +111,7 @@
             "content": {
               "parts": [
                 {
-                  "text": "{\"winner_surface\":\"Auditar\",\"score\":9,\"change_summary\":\"Integrar los tipos de archivo y el límite de tamaño directamente en el componente de subida de documentos en la pantalla 'Auditar'.\",\"why\":\"Reduce la frustración del usuario al evitar subidas fallidas por formatos o tamaños incorrectos. Guía proactivamente al usuario, haciendo la acción principal más clara y dominante. Cumple con 'lenguaje más claro' y 'más confianza sin más chrome' al proporcionar información crucial sin añadir pasos o elementos de UI adicionales.\",\"exact_target\":\"El área o botón principal de subida de documentos en la pantalla 'Auditar'.\",\"risk\":\"low\",\"copy_suggestion\":\"Seleccionar archivo (PDF, XML, JPG, PNG, WEBP, HEIC, HEIF - hasta 15MB)\"}"
+                  "text": "{\"winner_surface\":\"Home\",\"score\":9,\"change_summary\":\"Añadir un botón de acción principal prominente y visible en la parte superior de la página de inicio para iniciar la subida de documentos.\",\"why\":\"La página de inicio actual describe el proceso de auditoría pero no ofrece una acción inmediata y dominante para que el usuario comience. Un botón claro y accesible reduce la fricción, disminuye el scroll necesario en móvil y hace que la acción principal (subir un documento para auditar) sea el foco central, aumentando la confianza y la conversión.\",\"exact_target\":\"La sección superior de la página de inicio, idealmente debajo del hero o cerca de la primera 'tour step' que menciona 'Sube tu documento'.\",\"risk\":\"low\",\"copy_suggestion\":\"Audita tu Documento Ahora\"}"
                 }
               ],
               "role": "model"
@@ -121,36 +121,36 @@
           }
         ],
         "usageMetadata": {
-          "promptTokenCount": 1354,
-          "candidatesTokenCount": 171,
-          "totalTokenCount": 3360,
+          "promptTokenCount": 1363,
+          "candidatesTokenCount": 169,
+          "totalTokenCount": 3245,
           "promptTokensDetails": [
             {
               "modality": "TEXT",
-              "tokenCount": 1354
+              "tokenCount": 1363
             }
           ],
-          "thoughtsTokenCount": 1835
+          "thoughtsTokenCount": 1713
         },
         "modelVersion": "gemini-2.5-flash",
-        "responseId": "CVXdadf8BK7YjMcPgKnCiAM"
+        "responseId": "9FjdabzFB-aGjrEPubjqiAE"
       },
       "parsed": {
-        "winner_surface": "Auditar",
+        "winner_surface": "Home",
         "score": 9,
-        "change_summary": "Integrar los tipos de archivo y el límite de tamaño directamente en el componente de subida de documentos en la pantalla 'Auditar'.",
-        "why": "Reduce la frustración del usuario al evitar subidas fallidas por formatos o tamaños incorrectos. Guía proactivamente al usuario, haciendo la acción principal más clara y dominante. Cumple con 'lenguaje más claro' y 'más confianza sin más chrome' al proporcionar información crucial sin añadir pasos o elementos de UI adicionales.",
-        "exact_target": "El área o botón principal de subida de documentos en la pantalla 'Auditar'.",
+        "change_summary": "Añadir un botón de acción principal prominente y visible en la parte superior de la página de inicio para iniciar la subida de documentos.",
+        "why": "La página de inicio actual describe el proceso de auditoría pero no ofrece una acción inmediata y dominante para que el usuario comience. Un botón claro y accesible reduce la fricción, disminuye el scroll necesario en móvil y hace que la acción principal (subir un documento para auditar) sea el foco central, aumentando la confianza y la conversión.",
+        "exact_target": "La sección superior de la página de inicio, idealmente debajo del hero o cerca de la primera 'tour step' que menciona 'Sube tu documento'.",
         "risk": "low",
-        "copy_suggestion": "Seleccionar archivo (PDF, XML, JPG, PNG, WEBP, HEIC, HEIF - hasta 15MB)"
+        "copy_suggestion": "Audita tu Documento Ahora"
       }
     }
   ],
   "consensus": {
     "winner_surface": "Home",
-    "change_summary": "Reducir el texto del botón principal para hacerlo más claro y dominante, por ejemplo cambiar 'Comienza a auditar' a 'Auditar ahora'.",
+    "change_summary": "Reducir el texto del botón principal en Home para hacerlo más claro y dominante, por ejemplo cambiar 'Comenzar auditoría' a 'Auditar ahora'.",
     "agreement_count": 1,
-    "recommended_exact_target": "Botón principal de llamada a la acción en la Home, visible en móvil, actualmente con texto largo o poco claro.",
-    "recommended_copy_suggestion": "Cambiar el texto del botón principal a 'Auditar ahora' para mayor claridad y dominio visual."
+    "recommended_exact_target": "Botón principal de llamada a la acción en la pantalla Home, actualmente con texto más largo o menos directo.",
+    "recommended_copy_suggestion": "Cambiar texto del botón principal en Home a 'Auditar ahora' para mayor claridad y dominancia."
   }
 }
