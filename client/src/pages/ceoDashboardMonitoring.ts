@@ -42,6 +42,14 @@ export type GuardrailReasonRankingItem = {
   suggestedAction: string;
 };
 
+export type GuardrailFollowUpSummary = {
+  totalCount: number;
+  pendingCount: number;
+  trackingCount: number;
+  resolvedCount: number;
+  openCount: number;
+};
+
 export type AuditMonitoringSummary = {
   totalEvents: number;
   guardrailRejections: number;
@@ -72,6 +80,9 @@ export type AuditMonitoringSummary = {
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
 export type AuditEventSeverity = "all" | "high" | "medium" | "normal";
+
+const AUDIT_EVENT_FAMILY_VALUES: AuditEventFamily[] = ["all", "guardrail", "document", "access", "policy", "alert", "case", "dashboard", "other"];
+const AUDIT_EVENT_SEVERITY_VALUES: AuditEventSeverity[] = ["all", "high", "medium", "normal"];
 
 export type AuditExecutiveAlert = {
   source: "guardrail" | "access_risk";
@@ -122,6 +133,14 @@ function normalizeActionFamily(action: string): Exclude<AuditEventFamily, "all">
   if (action.startsWith("case.")) return "case";
   if (action.startsWith("dashboard.")) return "dashboard";
   return "other";
+}
+
+export function parseAuditEventFamily(value: string | null | undefined): AuditEventFamily {
+  return AUDIT_EVENT_FAMILY_VALUES.includes(value as AuditEventFamily) ? (value as AuditEventFamily) : "all";
+}
+
+export function parseAuditEventSeverity(value: string | null | undefined): AuditEventSeverity {
+  return AUDIT_EVENT_SEVERITY_VALUES.includes(value as AuditEventSeverity) ? (value as AuditEventSeverity) : "all";
 }
 
 function parseAuditState(state: unknown): AuditStateRecord | null {
@@ -272,6 +291,48 @@ export function getGuardrailFollowUpMeta(status: GuardrailFollowUpStatus) {
   };
 }
 
+export function buildGuardrailFollowUpSummary(
+  reasons: string[],
+  followUpByReason: Record<string, GuardrailFollowUpStatus>,
+): GuardrailFollowUpSummary {
+  return reasons.reduce<GuardrailFollowUpSummary>(
+    (summary, reason) => {
+      const status = followUpByReason[reason] ?? "pending";
+      summary.totalCount += 1;
+
+      if (status === "resolved") {
+        summary.resolvedCount += 1;
+        return summary;
+      }
+
+      summary.openCount += 1;
+      if (status === "tracking") {
+        summary.trackingCount += 1;
+      } else {
+        summary.pendingCount += 1;
+      }
+
+      return summary;
+    },
+    {
+      totalCount: 0,
+      pendingCount: 0,
+      trackingCount: 0,
+      resolvedCount: 0,
+      openCount: 0,
+    },
+  );
+}
+
+export function hasConsecutiveLegalGateWorseningWeeks(points: LegalGateWeeklyTrendPoint[]) {
+  const comparablePoints = points.filter((point) => typeof point.deltaCount === "number");
+  if (comparablePoints.length < 2) return false;
+
+  const latestPoint = comparablePoints[comparablePoints.length - 1];
+  const previousPoint = comparablePoints[comparablePoints.length - 2];
+  return (latestPoint.deltaCount ?? 0) > 0 && (previousPoint.deltaCount ?? 0) > 0;
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
@@ -364,8 +425,10 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
   const legalGateWeeklyTrend = legalGateWeeklyTrendEntries.map(([weekStart, abandonmentCount], index) => {
     const previousAbandonmentCount = index > 0 ? legalGateWeeklyTrendEntries[index - 1]?.[1] ?? null : null;
     const deltaCount = previousAbandonmentCount === null ? null : abandonmentCount - previousAbandonmentCount;
-    const trendDirection =
-      previousAbandonmentCount === null ? "new" : deltaCount === 0 ? "flat" : deltaCount > 0 ? "up" : "down";
+    let trendDirection: LegalGateWeeklyTrendPoint["trendDirection"] = "new";
+    if (deltaCount !== null) {
+      trendDirection = deltaCount === 0 ? "flat" : deltaCount > 0 ? "up" : "down";
+    }
 
     return {
       weekStart,

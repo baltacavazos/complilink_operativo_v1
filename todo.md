@@ -959,3 +959,7 @@
 - [x] Reforzar la persistencia del contexto al aterrizar desde enlaces del drill-down legal, manteniendo tenant y caso filtrados
 - [x] Reforzar el ranking ejecutivo permitiendo seguimiento operativo de causas sugeridas sin perder simplicidad visual
 - [x] Reforzar la lectura semanal con comparación contra la semana previa para distinguir picos puntuales de deterioro sostenido
+- [ ] Reforzar el retorno desde vistas contextuales al resumen ejecutivo sin perder filtros activos
+- [x] Reforzar la trazabilidad del seguimiento operativo mostrando último estado visible por causa sin añadir backend nuevo
+- [x] Reforzar la comparación semanal destacando cambio neto y dirección de tendencia en la Consola CEO
+- [x] Contrastar la nueva ronda de refuerzo con ChatGPT, Grok y Gemini antes de escoger el siguiente ajuste mínimo

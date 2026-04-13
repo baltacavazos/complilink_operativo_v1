@@ -4,6 +4,7 @@ import {
   LEGAL_GATE_WEEKLY_ALERT_THRESHOLD,
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
+  buildGuardrailFollowUpSummary,
   filterAuditFeed,
   getAuditActionLabel,
   getAuditActionTone,
@@ -14,6 +15,9 @@ import {
   getGuardrailFollowUpMeta,
   getGuardrailSuggestedAction,
   getNextGuardrailFollowUpStatus,
+  hasConsecutiveLegalGateWorseningWeeks,
+  parseAuditEventFamily,
+  parseAuditEventSeverity,
   type AuditFeedItem,
   type GuardrailFollowUpStatus,
 } from "./ceoDashboardMonitoring";
@@ -201,6 +205,10 @@ describe("ceoDashboardMonitoring", () => {
     expect(getAuditEventSeverity(access)).toBe("medium");
     expect(getAuditEventFamily(document)).toBe("document");
     expect(getAuditEventSeverity(document)).toBe("normal");
+    expect(parseAuditEventFamily("access")).toBe("access");
+    expect(parseAuditEventFamily("desconocido")).toBe("all");
+    expect(parseAuditEventSeverity("medium")).toBe("medium");
+    expect(parseAuditEventSeverity("critica")).toBe("all");
   });
 
   it("filtra la bitácora por familia y severidad sin mezclar eventos ajenos", () => {
@@ -300,6 +308,66 @@ describe("ceoDashboardMonitoring", () => {
     ]);
   });
 
+  it("detecta cuando el gate legal empeora dos semanas consecutivas", () => {
+    expect(
+      hasConsecutiveLegalGateWorseningWeeks([
+        {
+          weekStart: "2026-03-30T00:00:00.000Z",
+          abandonmentCount: 1,
+          previousAbandonmentCount: null,
+          deltaCount: null,
+          trendDirection: "new",
+          isOutOfRange: false,
+        },
+        {
+          weekStart: "2026-04-06T00:00:00.000Z",
+          abandonmentCount: 2,
+          previousAbandonmentCount: 1,
+          deltaCount: 1,
+          trendDirection: "up",
+          isOutOfRange: true,
+        },
+        {
+          weekStart: "2026-04-13T00:00:00.000Z",
+          abandonmentCount: 4,
+          previousAbandonmentCount: 2,
+          deltaCount: 2,
+          trendDirection: "up",
+          isOutOfRange: true,
+        },
+      ]),
+    ).toBe(true);
+
+    expect(
+      hasConsecutiveLegalGateWorseningWeeks([
+        {
+          weekStart: "2026-03-30T00:00:00.000Z",
+          abandonmentCount: 1,
+          previousAbandonmentCount: null,
+          deltaCount: null,
+          trendDirection: "new",
+          isOutOfRange: false,
+        },
+        {
+          weekStart: "2026-04-06T00:00:00.000Z",
+          abandonmentCount: 2,
+          previousAbandonmentCount: 1,
+          deltaCount: 1,
+          trendDirection: "up",
+          isOutOfRange: true,
+        },
+        {
+          weekStart: "2026-04-13T00:00:00.000Z",
+          abandonmentCount: 2,
+          previousAbandonmentCount: 2,
+          deltaCount: 0,
+          trendDirection: "flat",
+          isOutOfRange: true,
+        },
+      ]),
+    ).toBe(false);
+  });
+
   it("mapea acciones sugeridas y permite ciclar el seguimiento operativo sin backend adicional", () => {
     expect(getGuardrailSuggestedAction("rate_limit_exceeded")).toBe(
       "Espaciar reintentos y revisar deduplicación o control de ráfagas antes de volver a auditar.",
@@ -327,6 +395,18 @@ describe("ceoDashboardMonitoring", () => {
       label: "Resuelta",
       badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-800",
       actionLabel: "Reabrir seguimiento",
+    });
+    expect(
+      buildGuardrailFollowUpSummary(["rate_limit_exceeded", "unsupported_format", "legal_consent"], {
+        rate_limit_exceeded: "resolved",
+        unsupported_format: "tracking",
+      }),
+    ).toEqual({
+      totalCount: 3,
+      pendingCount: 1,
+      trackingCount: 1,
+      resolvedCount: 1,
+      openCount: 2,
     });
   });
 

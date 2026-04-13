@@ -1,0 +1,96 @@
+{
+  "prompt": "Eres un revisor técnico senior de un proyecto web TypeScript ya funcional. Necesito una recomendación MINIMA y validada, sin over-engineering.\n\nContexto heredado:\n- Proyecto: AuditaPatron dentro de una app web Manus con servidor corriendo y TypeScript sin errores.\n- La Consola CEO ya tiene drill-down legal, tendencia semanal, ranking de causas de `guardrail_rejected`, acciones sugeridas por motivo y refuerzo de contexto persistente con comparación semanal vs semana previa.\n- El usuario pidió que la siguiente ronda se enfoque en REFORZAR, no en agregar por agregar.\n- Siguiente ronda candidata, siempre con cambio mínimo y utilitario:\n  1) reforzar el retorno desde vistas contextuales al resumen ejecutivo sin perder filtros activos;\n  2) reforzar la trazabilidad del seguimiento operativo mostrando el último estado visible por causa, sin backend nuevo;\n  3) reforzar la comparación semanal destacando cambio neto y dirección de tendencia en la Consola CEO.\n\nRestricciones:\n- Mantener el cambio mínimo posible.\n- No inventar infraestructura nueva si el estado local, la URL o la bitácora actual ya sirven.\n- El servidor debe seguir corriendo.\n- TypeScript debe permanecer sin errores.\n- La recomendación debe favorecer una implementación incremental con pruebas.\n- Preferir cambios pequeños de contrato y render antes que rediseños.\n\nResponde SOLO JSON válido con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del modelo\",\n  \"navigation_reinforcement\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"state_to_preserve\": [\"campo1\", \"campo2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"operational_traceability\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"visible_state\": [\"estado1\", \"estado2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"weekly_signal\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"derived_metrics\": [\"metrica1\", \"metrica2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"tests\": {\n    \"summary\": \"frase breve\",\n    \"priority_assertions\": [\"assert1\", \"assert2\", \"assert3\"]\n  },\n  \"risks\": [\"riesgo1\", \"riesgo2\"],\n  \"consensus_candidate\": \"propuesta integral en 2 o 3 frases\"\n}",
+  "results": {
+    "chatgpt": {
+      "model_view": "ConsolaCEO",
+      "navigation_reinforcement": {
+        "summary": "Mantener filtros activos al volver al resumen ejecutivo desde vistas contextuales",
+        "minimal_approach": "Propagar el estado de filtros activos mediante parámetros URL o contexto React/Redux al navegar de vuelta, reutilizando el estado local ya existente sin agregar almacenamiento adicional ni backend.",
+        "state_to_preserve": [
+          "filtrosActivos",
+          "fechaSemana",
+          "rankingSeleccionado"
+        ],
+        "why_minimal": "Aprovecha el estado local y URL para mantener filtros sin modificar contratos ni agregar infraestructura, solo pasando props o query params."
+      },
+      "operational_traceability": {
+        "summary": "Mostrar último estado visible por causa sin backend nuevo",
+        "minimal_approach": "Extraer el último estado conocido de la bitácora local o estado almacenado en frontend para cada causa y mostrarlo en la vista, sin solicitar datos nuevos ni modificar backend.",
+        "visible_state": [
+          "estadoUltimoVisible",
+          "timestampUltimoCambio"
+        ],
+        "why_minimal": "Usa datos ya presentes en frontend, evitando llamadas o cambios en backend, solo renderizando información ya disponible."
+      },
+      "weekly_signal": {
+        "summary": "Destacar cambio neto y dirección de tendencia en comparación semanal",
+        "minimal_approach": "Calcular en frontend la diferencia neta y dirección (positivo/negativo/estable) entre semana actual y previa usando datos ya cargados, y mostrar iconos o colores para reforzar visualmente la tendencia.",
+        "derived_metrics": [
+          "cambioNeto",
+          "direccionTendencia"
+        ],
+        "why_minimal": "No requiere backend ni nuevos datos, solo lógica de cálculo y render incremental en frontend."
+      },
+      "tests": {
+        "summary": "Validar preservación de filtros, trazabilidad y señal semanal",
+        "priority_assertions": [
+          "Al navegar de vista contextual a resumen ejecutivo, los filtros activos permanecen intactos",
+          "La vista muestra el último estado visible correcto para cada causa sin errores",
+          "La comparación semanal refleja correctamente el cambio neto y la dirección de tendencia"
+        ]
+      },
+      "risks": [
+        "Posible desincronización si el estado local no se propaga correctamente en navegación",
+        "Confusión visual si el último estado visible no está claramente identificado",
+        "Errores en cálculo de cambio neto si datos semanales no están completos o actualizados"
+      ],
+      "consensus_candidate": "Implementar paso y preservación de filtros vía URL o contexto para navegación, mostrar último estado visible desde estado frontend sin backend, y calcular en frontend el cambio neto y dirección semanal con indicadores visuales. Así se refuerzan funcionalidades clave con cambios mínimos y sin riesgos mayores."
+    },
+    "grok": {
+      "model_view": "AuditaPatronView",
+      "navigation_reinforcement": {
+        "summary": "Reforzar retorno a resumen sin perder filtros",
+        "minimal_approach": "Usar el estado actual de la URL o local storage para almacenar y restaurar filtros al navegar de vuelta, sin alterar el flujo principal.",
+        "state_to_preserve": [
+          "filtroActivo",
+          "parametrosBusqueda"
+        ],
+        "why_minimal": "Evita rediseños completos al reutilizar mecanismos existentes como URL query params, manteniendo el servidor estable y el código TypeScript sin cambios mayores."
+      },
+      "operational_traceability": {
+        "summary": "Mostrar último estado por causa sin backend nuevo",
+        "minimal_approach": "Acceder a la bitácora actual o estado local para renderizar el último estado visible en la vista existente, sin agregar nuevas consultas.",
+        "visible_state": [
+          "ultimoEstado",
+          "causaAsociada"
+        ],
+        "why_minimal": "Utiliza datos ya disponibles en el frontend para evitar sobrecarga, asegurando que el cambio sea incremental y no interrumpa el funcionamiento del servidor."
+      },
+      "weekly_signal": {
+        "summary": "Destacar cambio neto y dirección de tendencia",
+        "minimal_approach": "Calcular y agregar visualmente el cambio neto en la Consola CEO usando datos existentes, sin modificar estructuras de datos subyacentes.",
+        "derived_metrics": [
+          "cambioNeto",
+          "direccionTendencia"
+        ],
+        "why_minimal": "Extiende cálculos simples sobre datos semanales actuales, minimizando el impacto al no requerir nuevas infraestructuras y manteniendo el enfoque en refuerzo incremental."
+      },
+      "tests": {
+        "summary": "Pruebas incrementales para validación",
+        "priority_assertions": [
+          "preservacionFiltrosAlRetornar",
+          "muestraEstadoCorrectoPorCausa",
+          "calculoCambioNetoValido"
+        ]
+      },
+      "risks": [
+        "perdidaDeFiltrosEnNavegacion",
+        "erroresEnCalculoTendencia"
+      ],
+      "consensus_candidate": "Reforzar la navegación preservando filtros activos mediante URL o storage local para un retorno fluido; mejorar la trazabilidad operativa con datos existentes en la bitácora para mostrar estados recientes; y destacar comparaciones semanales con métricas derivadas en la Consola CEO, todo con cambios mínimos para mantener el proyecto estable y sin errores en TypeScript."
+    }
+  },
+  "failures": {
+    "gemini": "HTTPError: 403 Client Error: Forbidden for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyC503Q-dRi4H9bMSE99uYPX3sMu7PmdxUc"
+  }
+}

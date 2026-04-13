@@ -56,6 +56,10 @@ import {
   getAuditSeverityLabel,
   getGuardrailFollowUpMeta,
   getNextGuardrailFollowUpStatus,
+  buildGuardrailFollowUpSummary,
+  hasConsecutiveLegalGateWorseningWeeks,
+  parseAuditEventFamily,
+  parseAuditEventSeverity,
   type AuditEventFamily,
   type AuditEventSeverity,
   type AuditExecutiveAlert,
@@ -127,6 +131,8 @@ type LegalGateNavigationContext = {
   caseId: string | null;
   scopeId: string;
   target: "feed" | "documents";
+  family: AuditEventFamily;
+  severity: AuditEventSeverity;
 };
 
 function getCeoPathname(location: string) {
@@ -136,11 +142,14 @@ function getCeoPathname(location: string) {
 function buildLegalGateContextPath(
   targetPath: "/ceo" | "/ceo/documentos",
   item: { tenantId: string; caseId: string | null; scopeId: string },
+  filters?: { family: AuditEventFamily; severity: AuditEventSeverity },
 ) {
   const params = new URLSearchParams({
     legalTenantId: item.tenantId,
     legalScopeId: item.scopeId,
     legalTarget: targetPath === "/ceo" ? "feed" : "documents",
+    legalAuditFamily: filters?.family ?? "all",
+    legalAuditSeverity: filters?.severity ?? "all",
   });
 
   if (item.caseId) {
@@ -166,6 +175,8 @@ function parseLegalGateNavigationContext(location: string): LegalGateNavigationC
     caseId: params.get("legalCaseId"),
     scopeId,
     target,
+    family: parseAuditEventFamily(params.get("legalAuditFamily")),
+    severity: parseAuditEventSeverity(params.get("legalAuditSeverity")),
   };
 }
 
@@ -568,7 +579,7 @@ export default function CeoDashboard() {
     if (pathname.startsWith("/ceo/alertas")) return "alertas";
     if (pathname.startsWith("/ceo/accesos")) return "accesos";
     if (pathname.startsWith("/ceo/documentos")) return "documentos";
-    return "overview";
+    return "resumen";
   }, [location]);
 
   useEffect(() => {
@@ -593,8 +604,8 @@ export default function CeoDashboard() {
     });
 
     if (legalGateNavigationContext.target === "feed") {
-      setAuditFamilyFilter("all");
-      setAuditSeverityFilter("all");
+      setAuditFamilyFilter(legalGateNavigationContext.family);
+      setAuditSeverityFilter(legalGateNavigationContext.severity);
     }
   }, [legalGateNavigationContext]);
 
@@ -724,6 +735,14 @@ export default function CeoDashboard() {
   const auditTrail = auditTrailQuery.data ?? [];
   const auditSummary = useMemo(() => buildAuditMonitoringSummary(auditTrail), [auditTrail]);
   const latestLegalGateTrendPoint = auditSummary.legalGateWeeklyTrend[auditSummary.legalGateWeeklyTrend.length - 1] ?? null;
+  const hasConsecutiveLegalGateWorsening = useMemo(
+    () => hasConsecutiveLegalGateWorseningWeeks(auditSummary.legalGateWeeklyTrend),
+    [auditSummary.legalGateWeeklyTrend],
+  );
+  const guardrailFollowUpSummary = useMemo(
+    () => buildGuardrailFollowUpSummary(auditSummary.guardrailReasonRanking.map((entry) => entry.reason), guardrailFollowUpByReason),
+    [auditSummary.guardrailReasonRanking, guardrailFollowUpByReason],
+  );
   const filteredAuditTrail = useMemo(
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
@@ -968,12 +987,27 @@ export default function CeoDashboard() {
     ],
   );
 
+  const contextualOverviewPath = legalGateNavigationContext
+    ? buildLegalGateContextPath(
+        "/ceo",
+        legalGateNavigationContext,
+        { family: legalGateNavigationContext.family, severity: legalGateNavigationContext.severity },
+      )
+    : "/ceo";
+  const contextualDocumentsPath = legalGateNavigationContext
+    ? buildLegalGateContextPath(
+        "/ceo/documentos",
+        legalGateNavigationContext,
+        { family: legalGateNavigationContext.family, severity: legalGateNavigationContext.severity },
+      )
+    : "/ceo/documentos";
+
   const navigation = useMemo<DashboardNavigationItem[]>(
     () => [
       {
         icon: LayoutDashboard,
         label: "Resumen CEO",
-        path: "/ceo",
+        path: contextualOverviewPath,
         badge: globalSummary ? formatNumber(globalSummary.activeCases) : undefined,
       },
       {
@@ -1000,11 +1034,11 @@ export default function CeoDashboard() {
       {
         icon: Files,
         label: "Documentos",
-        path: "/ceo/documentos",
+        path: contextualDocumentsPath,
         badge: globalSummary ? formatNumber(globalSummary.pendingDocuments) : undefined,
       },
     ],
-    [bridgeOverview.summary.critical, bridgeOverview.summary.pending, bridgeOverview.summary.warning, globalSummary],
+    [bridgeOverview.summary.critical, bridgeOverview.summary.pending, bridgeOverview.summary.warning, contextualDocumentsPath, contextualOverviewPath, globalSummary],
   );
 
   const tenantOptions = useMemo(() => {
@@ -1245,11 +1279,12 @@ export default function CeoDashboard() {
       tenantId: item.tenantId,
       caseId: item.caseId ?? "all",
     }));
-    if (targetPath === "/ceo") {
-      setAuditFamilyFilter("all");
-      setAuditSeverityFilter("all");
-    }
-    void setLocation(buildLegalGateContextPath(targetPath, item));
+    void setLocation(
+      buildLegalGateContextPath(targetPath, item, {
+        family: auditFamilyFilter,
+        severity: auditSeverityFilter,
+      }),
+    );
   };
 
   const toggleGuardrailFollowUp = (reason: string) => {
@@ -2655,7 +2690,9 @@ export default function CeoDashboard() {
                                       stroke="var(--color-abandonmentCount)"
                                       strokeWidth={2.5}
                                       dot={({ cx, cy, payload }) => {
-                                        if (typeof cx !== "number" || typeof cy !== "number") return null;
+                                        if (typeof cx !== "number" || typeof cy !== "number") {
+                                          return <circle cx={0} cy={0} r={0} fill="transparent" stroke="none" />;
+                                        }
                                         return (
                                           <circle
                                             cx={cx}
@@ -2683,6 +2720,21 @@ export default function CeoDashboard() {
                                             ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} sube en ${formatNumber(latestLegalGateTrendPoint.deltaCount)} casos frente a la previa y conviene revisar si el deterioro es puntual o empieza a sostenerse.`
                                             : `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} baja en ${formatNumber(Math.abs(latestLegalGateTrendPoint.deltaCount ?? 0))} casos frente a la previa.`}
                                     </p>
+                                    {latestLegalGateTrendPoint.previousAbandonmentCount !== null ? (
+                                      <div className="mt-3 flex flex-wrap gap-2">
+                                        <Badge className={`rounded-full border ${latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0 ? "border-amber-200 bg-white text-amber-800" : latestLegalGateTrendPoint.deltaCount === 0 ? "border-slate-200 bg-white text-slate-700" : "border-emerald-200 bg-white text-emerald-800"}`}>
+                                          Balance neto {latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0 ? `+${formatNumber(latestLegalGateTrendPoint.deltaCount)}` : formatNumber(latestLegalGateTrendPoint.deltaCount ?? 0)} vs previa
+                                        </Badge>
+                                        {hasConsecutiveLegalGateWorsening ? (
+                                          <Badge className="rounded-full border border-amber-200 bg-white text-amber-800">2 semanas consecutivas al alza</Badge>
+                                        ) : null}
+                                      </div>
+                                    ) : null}
+                                    {hasConsecutiveLegalGateWorsening ? (
+                                      <p className="mt-3 text-xs leading-5 text-amber-900">
+                                        Alerta discreta: ya van dos semanas consecutivas empeorando el abandono visible del gate legal.
+                                      </p>
+                                    ) : null}
                                   </div>
                                 ) : null}
                                 <div className="mt-4 flex flex-wrap gap-2">
@@ -2900,6 +2952,20 @@ export default function CeoDashboard() {
                           </Badge>
                         </div>
                         {auditSummary.guardrailReasonRanking.length > 0 ? (
+                          <>
+                            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                              <Badge className="rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800">
+                                {formatNumber(guardrailFollowUpSummary.resolvedCount)} resueltas
+                              </Badge>
+                              <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">
+                                {formatNumber(guardrailFollowUpSummary.openCount)} pendientes
+                              </Badge>
+                              {guardrailFollowUpSummary.trackingCount > 0 ? (
+                                <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-800">
+                                  {formatNumber(guardrailFollowUpSummary.trackingCount)} en seguimiento
+                                </Badge>
+                              ) : null}
+                            </div>
                           <div className="mt-3 space-y-2">
                             {auditSummary.guardrailReasonRanking.map((entry, index) => {
                               const followUpStatus = guardrailFollowUpByReason[entry.reason] ?? "pending";
@@ -2928,6 +2994,7 @@ export default function CeoDashboard() {
                               );
                             })}
                           </div>
+                          </>
                         ) : (
                           <p className="mt-3 text-sm text-slate-500">Cuando un guardrail operativo bloquee una acción de Auditar, aquí aparecerán las causas más repetidas para priorizar la corrección.</p>
                         )}
