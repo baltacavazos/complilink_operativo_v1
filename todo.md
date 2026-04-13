@@ -963,3 +963,6 @@
 - [x] Reforzar la trazabilidad del seguimiento operativo mostrando último estado visible por causa sin añadir backend nuevo
 - [x] Reforzar la comparación semanal destacando cambio neto y dirección de tendencia en la Consola CEO
 - [x] Contrastar la nueva ronda de refuerzo con ChatGPT, Grok y Gemini antes de escoger el siguiente ajuste mínimo
+- [x] Cerrar el retorno desde vistas contextuales al resumen ejecutivo de la Consola CEO sin perder filtros activos
+- [x] Añadir una prueba E2E de la navegación contextual CEO y su retorno preservando contexto
+- [x] Registrar con mayor claridad los bloqueos de seguridad y reintentos del dashboard CEO para diagnóstico operativo

@@ -59,4 +59,30 @@ test.describe("Flujo crítico CEO ↔ vista usuario ↔ expediente", () => {
       )
       .toBe("native");
   });
+
+  test("permite volver al resumen contextual preservando filtros del gate legal", async ({ page }) => {
+    await loginAsOwner(page);
+
+    const contextualDocumentsUrl = "/ceo/documentos?legalTenantId=tenant-demo&legalScopeId=scope-7&legalCaseId=CASE-42&legalTarget=documents&legalAuditFamily=guardrail&legalAuditSeverity=high";
+
+    await page.goto(contextualDocumentsUrl, { waitUntil: "networkidle" });
+
+    await expect(page).toHaveURL(/\/ceo\/documentos\?legalTenantId=tenant-demo/);
+    await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Tenant tenant-demo");
+    await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Caso CASE-42");
+    await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Familia guardrail");
+    await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Severidad high");
+    await expect(page.getByTestId("ceo-retry-visible-pill")).toBeVisible();
+    await expect(page.getByTestId("ceo-pending-visible-pill")).toBeVisible();
+    await expect(page.getByTestId("ceo-contextual-return-button")).toBeVisible();
+
+    await page.getByTestId("ceo-contextual-return-button").click();
+
+    await expect(page).toHaveURL(/\/ceo\?legalTenantId=tenant-demo/);
+    await expect(page).toHaveURL(/legalCaseId=CASE-42/);
+    await expect(page).toHaveURL(/legalAuditFamily=guardrail/);
+    await expect(page).toHaveURL(/legalAuditSeverity=high/);
+    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Tenant tenant-demo");
+  });
 });

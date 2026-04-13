@@ -58,14 +58,18 @@ import {
   getNextGuardrailFollowUpStatus,
   buildGuardrailFollowUpSummary,
   hasConsecutiveLegalGateWorseningWeeks,
-  parseAuditEventFamily,
-  parseAuditEventSeverity,
   type AuditEventFamily,
   type AuditEventSeverity,
   type AuditExecutiveAlert,
   type AuditFeedItem,
   type GuardrailFollowUpStatus,
 } from "@/pages/ceoDashboardMonitoring";
+import {
+  buildLegalGateContextPath,
+  buildLegalGateContextSummary,
+  parseLegalGateNavigationContext,
+  type LegalGateNavigationContext,
+} from "@/pages/ceoDashboardContext";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -126,58 +130,8 @@ function formatDurationCompact(seconds: number | null | undefined) {
 
 const GUARDRAIL_FOLLOW_UP_STORAGE_KEY = "ceo.guardrailFollowUp.v1";
 
-type LegalGateNavigationContext = {
-  tenantId: string;
-  caseId: string | null;
-  scopeId: string;
-  target: "feed" | "documents";
-  family: AuditEventFamily;
-  severity: AuditEventSeverity;
-};
-
 function getCeoPathname(location: string) {
   return location.split("?")[0] ?? location;
-}
-
-function buildLegalGateContextPath(
-  targetPath: "/ceo" | "/ceo/documentos",
-  item: { tenantId: string; caseId: string | null; scopeId: string },
-  filters?: { family: AuditEventFamily; severity: AuditEventSeverity },
-) {
-  const params = new URLSearchParams({
-    legalTenantId: item.tenantId,
-    legalScopeId: item.scopeId,
-    legalTarget: targetPath === "/ceo" ? "feed" : "documents",
-    legalAuditFamily: filters?.family ?? "all",
-    legalAuditSeverity: filters?.severity ?? "all",
-  });
-
-  if (item.caseId) {
-    params.set("legalCaseId", item.caseId);
-  }
-
-  return `${targetPath}?${params.toString()}`;
-}
-
-function parseLegalGateNavigationContext(location: string): LegalGateNavigationContext | null {
-  const [, rawQuery = ""] = location.split("?");
-  const params = new URLSearchParams(rawQuery);
-  const tenantId = params.get("legalTenantId");
-  const scopeId = params.get("legalScopeId");
-  const target = params.get("legalTarget");
-
-  if (!tenantId || !scopeId || (target !== "feed" && target !== "documents")) {
-    return null;
-  }
-
-  return {
-    tenantId,
-    caseId: params.get("legalCaseId"),
-    scopeId,
-    target,
-    family: parseAuditEventFamily(params.get("legalAuditFamily")),
-    severity: parseAuditEventSeverity(params.get("legalAuditSeverity")),
-  };
 }
 
 function readStoredGuardrailFollowUp(): Record<string, GuardrailFollowUpStatus> {
@@ -571,7 +525,8 @@ export default function CeoDashboard() {
     };
   }, []);
 
-  const legalGateNavigationContext = useMemo(() => parseLegalGateNavigationContext(location), [location]);
+  const locationWithSearch = typeof window === "undefined" ? location : `${location}${window.location.search}`;
+  const legalGateNavigationContext = useMemo(() => parseLegalGateNavigationContext(locationWithSearch), [locationWithSearch]);
 
   const currentSection = useMemo<SectionKey>(() => {
     const pathname = getCeoPathname(location);
@@ -712,6 +667,15 @@ export default function CeoDashboard() {
     snapshotAgeMs === null ? "Frescura no disponible" : snapshotAgeMs < 60000 ? "Vista fresca" : `Actualizada hace ${Math.max(1, Math.round(snapshotAgeMs / 60000))} min`;
   const isSnapshotStale = snapshotAgeMs !== null && snapshotAgeMs > 2 * 60 * 1000;
   const executiveActionsBlocked = isRefreshing || isSnapshotStale || Boolean(snapshotError);
+  const executiveGuardrailReason = isRefreshing ? "snapshot_refreshing" : snapshotError ? "snapshot_error" : isSnapshotStale ? "snapshot_stale" : "guardrail_active";
+  const executiveGuardrailReasonLabel =
+    executiveGuardrailReason === "snapshot_refreshing"
+      ? "Refresco en curso"
+      : executiveGuardrailReason === "snapshot_error"
+        ? "Error de snapshot"
+        : executiveGuardrailReason === "snapshot_stale"
+          ? "Vista desactualizada"
+          : "Carril operativo habilitado";
   const executiveGuardrailDescription = isRefreshing
     ? "La consola está refrescando la vista ejecutiva. Espera a que termine antes de operar cambios sensibles."
     : snapshotError
@@ -1001,8 +965,12 @@ export default function CeoDashboard() {
         { family: legalGateNavigationContext.family, severity: legalGateNavigationContext.severity },
       )
     : "/ceo/documentos";
-
+  const legalGateContextSummary = useMemo(
+    () => (legalGateNavigationContext ? buildLegalGateContextSummary(legalGateNavigationContext) : null),
+    [legalGateNavigationContext],
+  );
   const navigation = useMemo<DashboardNavigationItem[]>(
+
     () => [
       {
         icon: LayoutDashboard,
@@ -1305,14 +1273,16 @@ export default function CeoDashboard() {
   const isConfirmingExecutiveAction = alertMutation.isPending || membershipMutation.isPending || caseMutation.isPending;
 
   function notifyExecutiveGuardrail(actionKind: "alert" | "membership" | "case" | "export" | "refresh" | "master_metrics") {
-    const reason = isRefreshing ? "snapshot_refreshing" : snapshotError ? "snapshot_error" : isSnapshotStale ? "snapshot_stale" : "guardrail_active";
-
     trackCeoGuardrail("blocked", {
       source: "ceo_dashboard",
       section: currentSection,
       actionKind,
-      reason,
+      reason: executiveGuardrailReason,
+      reasonLabel: executiveGuardrailReasonLabel,
       hasActiveFilters,
+      hasLegalGateContext: Boolean(legalGateNavigationContext),
+      retryScheduledVisible: bridgeOverview.summary.retryScheduled,
+      pendingReturnVisible: bridgeOverview.summary.pending,
       visibleCount: currentSectionCount,
     });
 
@@ -1321,7 +1291,7 @@ export default function CeoDashboard() {
         tenantId: filters.tenantId !== "all" ? filters.tenantId : undefined,
         section: currentSection,
         actionKind,
-        reason,
+        reason: executiveGuardrailReason,
         description: executiveGuardrailDescription,
         snapshotGeneratedAt: snapshotGeneratedAtIso ?? undefined,
         hasActiveFilters,
@@ -2340,6 +2310,35 @@ export default function CeoDashboard() {
                 Actualizar vista
               </Button>
             </div>
+            <div data-testid="ceo-guardrail-diagnostics" className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium">
+              <span className="rounded-full border border-current/15 bg-white/70 px-3 py-1">Estado: {executiveGuardrailReasonLabel}</span>
+              <span data-testid="ceo-retry-visible-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
+                Reintentos visibles: {formatNumber(bridgeOverview.summary.retryScheduled)}
+              </span>
+              <span data-testid="ceo-pending-visible-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
+                Retornos pendientes: {formatNumber(bridgeOverview.summary.pending)}
+              </span>
+              {legalGateContextSummary ? (
+                <span data-testid="ceo-context-summary-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
+                  Contexto activo: {legalGateContextSummary}
+                </span>
+              ) : null}
+              {legalGateNavigationContext && currentSection !== "resumen" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid="ceo-contextual-return-button"
+                  className="ml-auto rounded-full bg-white text-slate-700"
+                  onClick={() => {
+                    void setLocation(contextualOverviewPath);
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver al resumen contextual
+                </Button>
+              ) : null}
+            </div>
           </div>
 
           {currentSection === "resumen" ? (
@@ -2797,10 +2796,24 @@ export default function CeoDashboard() {
                                           {item.ageSeconds === null ? "La antigüedad visible no está disponible en este corte." : `Antigüedad visible: ${formatDurationCompact(item.ageSeconds)}.`}
                                         </p>
                                         <div className="mt-3 flex flex-wrap gap-2">
-                                          <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => focusLegalGateCase(item, "/ceo")}>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            data-testid="ceo-contextual-feed-button"
+                                            className="rounded-full bg-white text-slate-700"
+                                            onClick={() => focusLegalGateCase(item, "/ceo")}
+                                          >
                                             Abrir feed filtrado
                                           </Button>
-                                          <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => focusLegalGateCase(item, "/ceo/documentos")}>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            data-testid="ceo-contextual-documents-button"
+                                            className="rounded-full bg-white text-slate-700"
+                                            onClick={() => focusLegalGateCase(item, "/ceo/documentos")}
+                                          >
                                             Ver expediente documental
                                           </Button>
                                           <p className="text-xs leading-5 text-slate-500">Los enlaces conservan tenant y caso al aterrizar para evitar perder el contexto operativo.</p>
