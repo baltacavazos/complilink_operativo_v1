@@ -924,7 +924,7 @@ function HeroSection() {
           </p>
 
           <div
-            className="motion-enter-soft order-3 mt-5 w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-3.5 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:p-5"
+            className="motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-3.5 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
             style={{ ["--motion-delay" as string]: "250ms" }}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1026,7 +1026,7 @@ function HeroSection() {
             </Button>
             <Button
               variant="outline"
-              className="motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
+              className="hidden motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:inline-flex sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
               onClick={handleHeroSecondaryCta}
             >
               {activeHeroVariant.ctaSecondary}

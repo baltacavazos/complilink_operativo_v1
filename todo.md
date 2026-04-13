@@ -989,3 +989,10 @@
 - [x] Medir y afinar la CTA principal/secundaria de la home con foco en entrada real al flujo /auditar
 - [x] Añadir una expansión controlada de la bitácora de la Consola CEO para conservar lectura ejecutiva y permitir ver más eventos bajo demanda
 - [x] Compactar aún más el primer bloque mobile-first de /auditar para reducir fricción y microdecisiones en la primera carga
+- [x] Ejecutar una nueva ronda multi-modelo con ChatGPT, Grok y Gemini sobre el estado actual para seguir acercando AuditaPatron al 10/10
+- [x] Priorizar el siguiente ajuste de mayor impacto y menor riesgo entre home, /auditar y Consola CEO según el nuevo consenso
+- [x] Implementar y validar técnicamente la siguiente micro-ronda resultante antes de entregar un nuevo checkpoint
+- [x] Ronda 5: deliberar con ChatGPT, Grok y Gemini el estado posterior al checkpoint 30361eaa y sintetizar consenso de simplificación adicional
+- [x] Ronda 5: compactar /acceso para que la ruta principal domine más claramente en móvil sin añadir pasos ni opciones nuevas
+- [x] Ronda 5: compactar aún más el primer bloque de /auditar en móvil para que la subida del archivo sea la decisión dominante
+- [x] Ronda 5: validar TypeScript y Vitest tras la micro-ronda y dejar checkpoint estable con hallazgos comparados

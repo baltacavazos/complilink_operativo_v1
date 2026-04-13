@@ -1,0 +1,51 @@
+{
+  "chatgpt": {
+    "model_role": "auditor severo UX/UI mobile-first",
+    "scores": {
+      "home_single_cta": 9,
+      "ceo_critical_only": 7,
+      "auditar_ultra_compact_mobile": 8,
+      "access_primary_path": 8
+    },
+    "top_two": [
+      {
+        "key": "home_single_cta",
+        "why": "Reducir a una sola CTA en el hero móvil maximiza claridad y foco inmediato sin agregar complejidad, alineándose con la mejora previa y reduciendo scroll innecesario.",
+        "change": "Eliminar CTAs secundarias en el hero móvil y dejar solo el botón principal con texto claro: “Comienza tu auditoría ahora”."
+      },
+      {
+        "key": "auditar_ultra_compact_mobile",
+        "why": "Acortar aún más el bloque superior en móvil para que la acción de subir archivo sea dominante mejora la conversión y reduce distracciones, manteniendo simplicidad y coherencia con ajustes previos.",
+        "change": "Reducir texto introductorio a una sola línea y colocar el botón “Subir archivo ahora” justo debajo, sin elementos visuales adicionales."
+      }
+    ],
+    "do_not_touch_yet": "No modificar la Consola CEO para mostrar solo alertas críticas ni reducir texto en /acceso, ya que podrían afectar la percepción de control y confianza, aumentando complejidad cognitiva.",
+    "confidence": "high"
+  },
+  "grok": {
+    "model_role": "UX/UI Expert Client Auditor",
+    "scores": {
+      "home_single_cta": 9,
+      "ceo_critical_only": 8,
+      "auditar_ultra_compact_mobile": 9,
+      "access_primary_path": 7
+    },
+    "top_two": [
+      {
+        "key": "home_single_cta",
+        "why": "Maximiza claridad en el hero al eliminar distracciones, reduciendo scroll y enfocando en conversión inmediata sin complejidad añadida.",
+        "change": "En el hero de Home móvil, elimina cualquier CTA secundaria y centra una sola botón grande con copy 'Empieza tu auditoría ahora' que lleve directamente a /auditar."
+      },
+      {
+        "key": "auditar_ultra_compact_mobile",
+        "why": "Refuerza la dominancia de la subida de archivo al acortar aún más el bloque superior, minimizando scroll y complejidad cognitiva en una página clave.",
+        "change": "Reduce el hero en /auditar móvil a solo el título 'Sube tu documento' seguido inmediatamente del input de archivo, eliminando cualquier párrafo explicativo adicional."
+      }
+    ],
+    "do_not_touch_yet": "No tocar la Consola CEO más allá de alertas críticas ni agregar interacciones en /acceso, para evitar sobreoptimizar y mantener la simplicidad actual.",
+    "confidence": "high"
+  },
+  "gemini": {
+    "error": "Gemini 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"
+  }
+}

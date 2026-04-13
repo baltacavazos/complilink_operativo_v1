@@ -64,7 +64,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
     expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
     expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura útil al momento.");
-    expect(auditFlowSource).toContain("Lo eliges y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.");
+    expect(auditFlowSource).toContain("Sube el archivo. Te diremos qué entendimos y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");
@@ -72,7 +72,8 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("keeps the first homepage block more mobile-efficient and surfaces the primary CTA earlier", () => {
-    expect(homeSource).toContain("order-3 mt-5 w-full max-w-xl");
+    expect(homeSource).toContain("order-3 mt-5 hidden w-full max-w-xl");
+    expect(homeSource).toContain("hidden motion-hover-lift h-10 border-transparent bg-transparent");
     expect(homeSource).toContain("order-2 mt-4 flex w-full max-w-sm");
     expect(homeSource).toContain("pb-7 pt-5");
   });

@@ -173,7 +173,7 @@ export default function Access() {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
-          <section className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white/95 shadow-[0_24px_80px_-42px_rgba(15,23,42,0.28)]">
+          <section className="hidden overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white/95 shadow-[0_24px_80px_-42px_rgba(15,23,42,0.28)] xl:block">
             <div className="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,118,110,0.9))] px-6 py-6 text-white sm:px-7">
               <div className="flex items-start gap-4">
                 <AuditaPatronLogoIcon imageClassName="h-12 w-12 rounded-2xl border border-white/20 bg-white object-contain p-1.5 shadow-[0_20px_50px_-28px_rgba(2,6,23,0.6)]" />
@@ -203,14 +203,14 @@ export default function Access() {
             </div>
           </section>
 
-          <section className="space-y-5">
+          <section className="mx-auto w-full max-w-3xl space-y-5 xl:max-w-none">
             <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Ruta recomendada</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Empieza con Manus si solo quieres entrar rápido</h2>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Entra y vuelve a tu ruta en el menor número de pasos</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    Dejamos una vía principal arriba y los respaldos abajo para que la decisión sea inequívoca. Lo más común es autenticarte una vez y volver de inmediato a tu trabajo.
+                    La vía principal va primero. Los respaldos quedan debajo solo por si los necesitas.
                   </p>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -220,9 +220,9 @@ export default function Access() {
 
               <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Opción principal</p>
-                <h3 className="mt-2 text-lg font-semibold">Continúa con Manus y regresa a tu ruta</h3>
+                <h3 className="mt-2 text-lg font-semibold">Continúa con Manus</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Recomendado cuando ya vienes con sesión institucional o quieres resolver el acceso en el menor número de pasos.
+                  Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.
                 </p>
                 <Button
                   size="lg"
@@ -233,13 +233,13 @@ export default function Access() {
                 >
                   Continuar con Manus
                 </Button>
-                <p className="mt-3 text-xs leading-5 text-slate-300">Al terminar, vuelves automáticamente a <strong>{returnTo}</strong>.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-300">Al terminar, te devolvemos automáticamente al punto exacto donde ibas.</p>
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
                   <p className="font-semibold text-slate-900">Alternativa: Google</p>
-                  <p className="mt-2">Úsala si prefieres ese proveedor o si ya vienes autenticado ahí.</p>
+                  <p className="mt-2">Úsala solo si prefieres ese proveedor.</p>
                   <Button
                     size="lg"
                     variant="outline"
@@ -255,8 +255,8 @@ export default function Access() {
                 </div>
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
                   <p className="font-semibold text-slate-900">Alternativa: código por correo</p>
-                  <p className="mt-2">Déjalo como respaldo cuando no quieras depender de otro proveedor o necesites continuidad inmediata.</p>
-                  <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Disponible justo debajo</p>
+                  <p className="mt-2">Déjalo como respaldo cuando no puedas usar la vía principal.</p>
+                  <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Disponible debajo</p>
                 </div>
               </div>
             </div>
@@ -273,12 +273,8 @@ export default function Access() {
               </div>
 
               <p className="mt-4 text-sm leading-7 text-slate-600">
-                Usa este flujo solo si no pudiste entrar con Manus o Google. Recibes un código temporal, validas el acceso y regresas a tu ruta protegida sin crear una contraseña nueva.
+                Usa este flujo solo como respaldo. Recibes un código temporal, validas el acceso y vuelves a tu ruta sin crear contraseña.
               </p>
-
-              <div className="mt-4 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
-                El reenvío del código muestra un temporizador visible y limita solicitudes repetidas dentro de la misma ventana para proteger el acceso.
-              </div>
 
               {statusMessage ? (
                 <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">

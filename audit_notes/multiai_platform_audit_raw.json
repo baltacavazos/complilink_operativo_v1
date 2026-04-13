@@ -1,21 +1,21 @@
 {
   "openai": {
-    "model_name": "AuditorSeniorV1-UXLegalPlatform",
+    "model_name": "AuditorSeniorProductoUX_V1",
     "overall_score": 7.2,
-    "global_summary": "La plataforma presenta una base sólida con claridad en la propuesta de valor y un enfoque prudente en privacidad y control documental. Sin embargo, la experiencia V1 sufre de exceso de contenido secuencial, textos densos y múltiples CTAs simultáneos que diluyen el foco en la acción principal. La longitud excesiva y la repetición de mensajes clave generan carga cognitiva y dificultan la comprensión inmediata, especialmente en la home pública y la ruta /auditar. La Consola CEO es la vista mejor contenida, aunque aún puede compactarse. La ruta /acceso no ofrece diferenciación clara respecto a la home, generando confusión de entrada. Se recomienda una micro-ronda estricta de simplificación que reduzca scroll, elimine repeticiones y mejore jerarquía visual sin agregar complejidad ni nuevas funcionalidades.",
+    "global_summary": "La plataforma presenta una base sólida con claridad en el valor central y enfoque prudente en privacidad y control documental. Sin embargo, todas las vistas clave comparten un patrón transversal de exceso de contenido secuencial, textos densos y múltiples CTAs simultáneos que diluyen la acción principal y aumentan la carga cognitiva. La longitud excesiva y la repetición de mensajes generan fricción y dificultan la comprensión inmediata, especialmente en la home pública y la ruta /auditar. La Consola CEO es la más contenida, pero aún puede compactarse para mejorar foco y jerarquía visual. La ruta /acceso no ofrece una experiencia diferenciada, lo que puede confundir al usuario. Se recomienda una micro-ronda estricta de simplificación y compactación para mejorar la experiencia sin agregar complejidad ni nuevas funcionalidades.",
     "critical_findings": [
-      "Home pública y /auditar presentan scroll excesivo con múltiples bloques repetitivos que diluyen el foco en la acción principal.",
-      "Multiplicidad de CTAs y ayudas simultáneas en home y /auditar generan ambigüedad y dispersión de atención.",
-      "Copy redundante sobre privacidad, control y guía rápida en varias secciones que podría compactarse para mejorar comprensión inmediata.",
-      "Ruta /acceso no diferenciada de la home pública, causando confusión en la expectativa del usuario.",
-      "En /auditar, la acción principal (subir archivo) queda relegada por bloques informativos y mensajes repetidos en la parte superior."
+      "Exceso de longitud y scroll en home pública y /auditar, con múltiples bloques repetitivos y copy denso que dificultan la comprensión inmediata.",
+      "Múltiples CTAs y ayudas simultáneas en la primera pantalla que compiten por atención y diluyen el foco en la acción principal (subir documento o empezar auditoría).",
+      "Repetición constante de conceptos clave (privacidad, control, guía rápida) en varias secciones que podrían fusionarse o compactarse.",
+      "Ruta /acceso no diferenciada de la home pública, generando ambigüedad y posible confusión en la expectativa del usuario.",
+      "Jerarquía visual insuficiente para priorizar la acción principal y reducir la carga cognitiva en todas las vistas evaluadas."
     ],
     "important_findings": [
-      "Hero de la home tiene párrafo explicativo demasiado largo antes de la primera acción.",
-      "En Consola CEO, aunque la vista es más contenida, los filtros y secciones secundarias compiten visualmente con lo crítico.",
-      "La bitácora y detalles en Consola CEO podrían compactarse para evitar scroll largo.",
-      "En /auditar, la confirmación legal aparece solo al final, lo que puede generar incertidumbre durante el flujo.",
-      "La home tiene varias secciones de mini diagnóstico y prueba social que podrían fusionarse para reducir longitud."
+      "Hero de la home con párrafo inferior demasiado largo que exige lectura antes de actuar.",
+      "Bloques informativos en /auditar (privacidad, cobertura legal, estado de resguardo) ocupan espacio valioso above the fold y compiten con la acción principal.",
+      "Consola CEO aún muestra controles visibles simultáneos que pueden compactarse para mejorar foco y reducir ruido visual.",
+      "Bitácora y detalles en Consola CEO podrían compactarse para evitar scroll largo y dispersión de atención.",
+      "Sugerencias de documentos para subir en /auditar están bien orientadas pero podrían mostrarse con menos copy para agilizar la decisión."
     ],
     "page_reviews": [
       {
@@ -23,59 +23,60 @@
         "score": 6.5,
         "strengths": [
           "Propuesta de valor clara y lenguaje prudente que genera confianza.",
-          "Guías y señales de confianza bien integradas.",
-          "Beneficio central se entiende con facilidad."
+          "Guía inicial y mini diagnóstico ayudan a orientar al usuario.",
+          "Señales de confianza y privacidad visibles que reducen fricción."
         ],
         "frictions": [
           "Demasiados bloques consecutivos con copy denso y repetitivo.",
-          "Múltiples CTAs y ayudas simultáneas que dispersan la atención.",
-          "Scroll excesivo que puede abrumar a usuarios primerizos.",
-          "Repetición de conceptos clave (privacidad, guía, claridad) en varias secciones."
+          "Varias CTAs y ayudas simultáneas que compiten por atención.",
+          "Longitud excesiva que obliga a scroll largo para comprender beneficio.",
+          "Repetición de conceptos clave en múltiples secciones."
         ],
         "minimal_changes": [
-          "Reducir párrafo explicativo del hero para facilitar acción inmediata.",
-          "Fusionar secciones repetitivas de prueba social y mini diagnóstico en un solo bloque compacto.",
-          "Limitar CTAs visibles simultáneamente a uno o dos con jerarquía clara.",
-          "Eliminar textos redundantes sobre privacidad y guía rápida en secciones posteriores."
+          "Reducir texto del párrafo inferior del hero para facilitar acción rápida.",
+          "Fusionar o eliminar secciones repetitivas de explicación y prueba social.",
+          "Consolidar CTAs en un único llamado a la acción principal visible above the fold.",
+          "Compactar guía inicial para reducir scroll y carga cognitiva."
         ]
       },
       {
         "page": "auditar",
         "score": 6.0,
         "strengths": [
-          "Transmite sensación de control y seguridad.",
+          "Transmite control y seguridad en la auditoría documental.",
           "Jerarquía mejorada respecto a versiones previas.",
-          "Acción principal (subir archivo) está presente."
+          "Sugerencias claras de documentos para fortalecer expediente."
         ],
         "frictions": [
           "Página muy larga con scroll excesivo.",
-          "Bloques informativos y mensajes repetidos compiten con la acción principal.",
-          "Demasiados mensajes simultáneos en la parte superior (privacidad, cobertura legal, estado de resguardo).",
-          "Acción principal queda relegada visualmente.",
-          "Copy redundante sobre privacidad y control en varias tarjetas."
+          "Bloques informativos (privacidad, cobertura legal, estado resguardo) ocupan espacio valioso above the fold.",
+          "Múltiples mensajes simultáneos que diluyen foco en subir documento.",
+          "Repetición de conceptos clave en distintas tarjetas.",
+          "Experiencia no inmediata para usuarios que quieren actuar rápido."
         ],
         "minimal_changes": [
-          "Colapsar o fusionar bloques informativos superiores para dejar foco en subir archivo.",
-          "Reducir repeticiones de mensajes sobre privacidad y control.",
-          "Priorizar visualmente la acción principal con un solo CTA destacado.",
-          "Compactar scroll eliminando secciones explicativas redundantes."
+          "Colapsar o fusionar bloques informativos superiores para liberar espacio.",
+          "Priorizar la acción de subir archivo en la primera pantalla sin distracciones.",
+          "Reducir copy redundante sobre privacidad y control.",
+          "Compactar sugerencias de documentos para agilizar decisión."
         ]
       },
       {
         "page": "acceso",
         "score": 5.5,
         "strengths": [
-          "Acceso rápido a la plataforma desde URL dedicada."
+          "Redirección funcional hacia home pública mantiene coherencia.",
+          "Lenguaje y estructura consistentes con la plataforma."
         ],
         "frictions": [
-          "Experiencia no diferenciada de la home pública, generando confusión.",
-          "Carga narrativa y scroll igual de extensos que la home.",
-          "No se cumple expectativa del usuario que busca acceso o expediente específico."
+          "No ofrece experiencia diferenciada respecto a home, generando ambigüedad.",
+          "Carga narrativa y scroll igual de extensos que home, sin foco claro.",
+          "Posible confusión en expectativa del usuario que busca acceso o expediente."
         ],
         "minimal_changes": [
-          "Clarificar o diferenciar la experiencia de /acceso para que no se perciba como duplicado de home.",
-          "Reducir contenido y scroll replicado de la home en esta ruta.",
-          "Eliminar o fusionar bloques repetidos para evitar ambigüedad."
+          "Clarificar o diferenciar la experiencia de /acceso para evitar confusión.",
+          "Reducir contenido y scroll replicado de home si no se requiere.",
+          "Considerar redirección explícita o mensaje claro sobre propósito de /acceso."
         ]
       },
       {
@@ -84,231 +85,240 @@
         "strengths": [
           "Vista más contenida y entendible que versiones previas.",
           "Hero ejecutivo con promesa clara y foco en lo crítico.",
-          "Filtros razonablemente compactos.",
-          "Tablero destaca alertas y salud operativa con jerarquía visual adecuada."
+          "Filtros compactos y jerarquía visual adecuada para alertas y salud operativa.",
+          "Acciones seguras visibles y trazabilidad clara."
         ],
         "frictions": [
-          "Filtros y controles visibles simultáneamente pueden saturar visualmente.",
-          "Longitud total de página aún considerable.",
-          "Sección de bitácora y detalles operativos extensa, generando scroll largo.",
-          "Algunas capas secundarias compiten visualmente con lo crítico."
+          "Controles visibles simultáneos que pueden compactarse.",
+          "Longitud total aún considerable, con cola larga en bitácora y detalles.",
+          "Algunas capas secundarias compiten con lo crítico visualmente."
         ],
         "minimal_changes": [
-          "Compactar barra de filtros para reducir controles visibles simultáneos.",
-          "Fusionar o colapsar secciones secundarias para acortar scroll.",
-          "Priorizar visualmente alertas y métricas críticas sobre detalles menos urgentes.",
-          "Reducir texto explicativo redundante en bitácora."
+          "Compactar barra de filtros para reducir ruido visual.",
+          "Reducir longitud de bitácora y detalles operativos para evitar scroll largo.",
+          "Priorizar visualmente alertas y métricas críticas sobre capas secundarias."
         ]
       }
     ],
     "consensus_micro_round": [
-      "Reducir scroll y eliminar bloques repetitivos en home y /auditar para mejorar foco en acción principal.",
-      "Compactar textos del hero y eliminar copy redundante sobre privacidad y guía rápida.",
-      "Limitar CTAs visibles simultáneamente a máximo dos con jerarquía clara.",
-      "Diferenciar /acceso para evitar confusión replicando home.",
-      "En Consola CEO, compactar filtros y secciones secundarias para mejorar jerarquía visual sin perder información crítica."
+      "Reducir longitud y scroll en home y /auditar eliminando o fusionando secciones repetitivas y copy redundante.",
+      "Consolidar CTAs para priorizar una única acción principal visible above the fold en cada vista.",
+      "Compactar bloques informativos y guías para reducir carga cognitiva y facilitar comprensión inmediata.",
+      "Diferenciar claramente la ruta /acceso o simplificar su contenido para evitar confusión.",
+      "Mejorar jerarquía visual en Consola CEO compactando filtros y detalles secundarios sin perder funcionalidad."
     ],
     "do_not_build": [
       "No agregar nuevas funcionalidades o features que aumenten complejidad.",
-      "No incorporar múltiples CTAs o ayudas simultáneas que compitan por atención.",
-      "No extender la longitud de páginas ni añadir bloques explicativos adicionales.",
-      "No replicar contenido idéntico en rutas diferentes sin diferenciación clara."
+      "No introducir múltiples CTAs o ayudas simultáneas que compitan por atención.",
+      "No mantener bloques largos o repetitivos que diluyan foco en la acción principal.",
+      "No replicar contenido idéntico en rutas distintas sin diferenciación clara."
     ]
   },
   "grok": {
-    "model_name": "GrokAuditorV1",
+    "model_name": "Grok",
     "overall_score": 6,
-    "global_summary": "La plataforma V1 tiene una base sólida en su propuesta principal, pero sufre de exceso de scroll, repetición de contenido y múltiples CTAs que diluyen el foco en acciones clave, aumentando la carga cognitiva y reduciendo la comprensión inmediata en páginas como home y /auditar. Simplificaciones menores podrían mejorar la jerarquía visual y el flujo sin agregar complejidad.",
+    "global_summary": "La plataforma V1 tiene una base sólida en transmitir valor central, pero sufre de exceso de scroll, repetición de copy y múltiples CTAs que aumentan la carga cognitiva, diluyendo el enfoque en acciones principales. Priorizar simplificaciones como compactación de secciones y reducción de texto redundante mejoraría la comprensión inmediata sin agregar complejidad.",
     "critical_findings": [
-      "Exceso de scroll en home y /auditar que oculta la acción principal (subir documento), obligando a usuarios a navegar demasiado para llegar a CTAs clave.",
-      "Ambigüedad en /acceso, que replica la home sin diferenciación, confundiendo a usuarios que esperan acceso directo a su expediente."
+      "Exceso de scroll en home y /auditar que obliga a una lectura extensa antes de llegar a la acción principal, aumentando el riesgo de abandono.",
+      "Repetición de conceptos como privacidad y siguientes pasos en múltiples secciones de home y /auditar, lo que genera ambigüedad y fatiga cognitiva.",
+      "Falta de diferenciación en /acceso, que replica la home y podría confundir a usuarios esperando un flujo específico de acceso."
     ],
     "important_findings": [
-      "Repetición de conceptos como privacidad y siguientes pasos en múltiples secciones de home y /auditar, creando redundancia innecesaria.",
-      "Demasiados bloques y CTAs simultáneos en home y /auditar que compiten por atención, diluyendo el foco en la acción principal.",
-      "Secciones en Consola CEO que podrían fusionarse para reducir longitud, aunque no es crítico."
+      "Múltiples CTAs y bloques de ayuda simultáneos en home y /auditar que compiten por atención y reducen el foco en la acción principal.",
+      "Jerarquía visual débil en Consola CEO, con controles y secciones secundarias que podrían fusionarse para una vista más digerible.",
+      "Copy denso y redundante en todas las páginas que aumenta la carga cognitiva sin aportar valor inmediato."
     ],
     "page_reviews": [
       {
         "page": "home",
         "score": 5,
         "strengths": [
-          "Titular principal claro que transmite el valor central de auditoría documental."
+          "Titular principal claro que transmite el valor central de auditoría documental.",
+          "Secciones de señales de confianza que refuerzan la credibilidad sin agregar complejidad."
         ],
         "frictions": [
-          "Longitud excesiva con bloques repetitivos de copy denso y múltiples CTAs, aumentando la carga cognitiva.",
-          "Repetición de ideas como privacidad y guía rápida en varias secciones."
+          "Demasiados bloques consecutivos con copy repetitivo sobre privacidad y documentos, extendiendo el scroll innecesariamente.",
+          "Varias CTAs activas que diluyen el enfoque en la acción principal de subir un archivo."
         ],
         "minimal_changes": [
-          "Fusionar secciones de 'SEÑALES DE CONFIANZA' y 'CASO ANÓNIMO' en un bloque compacto para reducir scroll.",
-          "Reducir texto en el hero section eliminando párrafos redundantes para priorizar la CTA principal."
+          "Fusionar secciones repetitivas de 'cómo funciona' y 'siguiente paso' en un solo bloque compacto para reducir scroll.",
+          "Eliminar copy redundante en bloques de señales verificadas, conservando solo el más impactante para bajar carga cognitiva."
         ]
       },
       {
         "page": "auditar",
-        "score": 4,
+        "score": 6,
         "strengths": [
-          "Acción principal de subir documento es evidente una vez alcanzada."
+          "Acción principal de subir documento es evidente y prioriza control y privacidad.",
+          "Indicadores de estado que ayudan a guiar el flujo sin interrupciones mayores."
         ],
         "frictions": [
-          "Página muy larga con bloques informativos superpuestos que diluyen el foco en la subida de archivos.",
-          "Repetición de conceptos como privacidad y siguientes pasos en tarjetas y secciones."
+          "Bloques informativos superiores como cobertura legal y estado de resguardo compiten con la acción principal, extendiendo el scroll.",
+          "Repetición de conceptos como privacidad en varias tarjetas, creando ambigüedad en el flujo."
         ],
         "minimal_changes": [
-          "Compactar el área 'above the fold' fusionando bloques de cobertura legal y estado de resguardo en una sola sección breve.",
-          "Eliminar repeticiones en 'SIGUIENTE PASO RECOMENDADO' agrupando sugerencias en una lista minimalista."
+          "Colapsar bloques de estado y recomendaciones en una sola sección plegable para enfocar la primera pantalla en la subida de archivo.",
+          "Reducir copy en secciones de 'siguiente paso' eliminando redundancias para una jerarquía visual más clara."
         ]
       },
       {
         "page": "acceso",
-        "score": 6,
+        "score": 4,
         "strengths": [
-          "Mantiene la consistencia con la home, lo que facilita la navegación para usuarios familiarizados."
+          "Mantener consistencia con la home, lo que podría facilitar la navegación para usuarios familiarizados."
         ],
         "frictions": [
-          "Falta de diferenciación clara respecto a la home, creando ambigüedad para usuarios que buscan acceso directo.",
-          "Mantiene el mismo volumen de scroll y contenido explicativo, lo que no reduce la carga cognitiva."
+          "Redirección o replicación de la home genera ambigüedad, ya que no ofrece una experiencia diferenciada para acceso específico.",
+          "Mismo volumen de scroll y copy que la home, aumentando la carga cognitiva sin propósito claro."
         ],
         "minimal_changes": [
-          "Redirigir directamente a home o agregar un mensaje breve al inicio para aclarar que es una entrada similar, eliminando cualquier copy redundante."
+          "Redirigir directamente a la home o una sección clave si es redundante, eliminando cualquier copy duplicado para reducir fricción.",
+          "Fusionar con la home si no añade valor, asegurando que el flujo principal sea inmediato sin secciones adicionales."
         ]
       },
       {
         "page": "ceo",
         "score": 7,
         "strengths": [
-          "Hero enfocado en 'Lo crítico primero', con buena priorización de alertas y métricas.",
-          "Longitud más contenida comparada con otras páginas, facilitando la comprensión inmediata."
+          "Enfoque en lo crítico primero, con un hero claro y filtros compactos para decisiones rápidas.",
+          "Bitácora operativa que proporciona trazabilidad sin exceso de complejidad."
         ],
         "frictions": [
-          "Algunos controles y secciones secundarias compiten con lo crítico, aunque no es abrumador.",
-          "Bitácora operativa con eventos repetitivos que podrían compactarse."
+          "Varios controles y secciones secundarias que compiten visualmente, extendiendo la longitud moderada.",
+          "Listados y eventos que podrían fusionarse para evitar scroll innecesario en la vista ejecutiva."
         ],
         "minimal_changes": [
-          "Fusionar filtros rápidos y búsqueda en un solo bloque para reducir espacio vertical.",
-          "Eliminar repeticiones en la bitácora, como entradas similares, agrupándolas en un resumen conciso."
+          "Compactar filtros y listados en un acordeón para reducir scroll y priorizar el resumen ejecutivo.",
+          "Eliminar repeticiones en bitácora, como eventos similares, para una jerarquía visual más enfocada."
         ]
       }
     ],
     "consensus_micro_round": [
-      "Priorizar la compactación de scroll en home y /auditar fusionando secciones repetitivas para enfocar en CTAs principales.",
-      "Reducir copy redundante en todas las páginas eliminando repeticiones de privacidad y siguientes pasos.",
-      "Mejorar jerarquía visual en /acceso aclarando su relación con home sin agregar elementos nuevos.",
-      "Aplicar cambios mínimos en Consola CEO para reforzar el foco en alertas, manteniendo su contención actual."
+      "Compactar scroll en home y /auditar fusionando secciones repetitivas para un enfoque inmediato en la acción principal.",
+      "Reducir copy redundante en todas las páginas, eliminando repeticiones de privacidad y siguientes pasos para bajar carga cognitiva.",
+      "Asegurar jerarquía visual clara en Consola CEO y /acceso mediante la eliminación de CTAs y bloques competidores, maximizando impacto con cambios mínimos."
     ],
     "do_not_build": [
-      "No agregar nuevas secciones o CTAs adicionales en home o /auditar.",
-      "Evitar cualquier expansión de funcionalidades como nuevos módulos de ayuda o análisis avanzados."
+      "Cualquier nueva feature que incremente complejidad, como secciones adicionales de ayuda o CTAs extra.",
+      "Expansiones en /acceso que diferencien innecesariamente de la home, ya que prioriza simplificación."
     ]
   },
   "gemini": {
-    "model_name": "AuditorSeniorUX_V1",
+    "model_name": "AuditorSeniorUX",
     "overall_score": 6.5,
-    "global_summary": "La propuesta de valor central de la plataforma es clara, pero la ejecución actual presenta una carga cognitiva excesiva debido a la densidad de información, la repetición de contenido y la dilución de las acciones principales. Las páginas son excesivamente largas, lo que genera fricción y dificulta la comprensión inmediata, especialmente en las rutas críticas de onboarding y auditoría. La inconsistencia en la ruta /acceso es un punto crítico de ambigüedad.",
+    "global_summary": "La plataforma V1 demuestra una base funcional y una propuesta de valor clara, pero sufre de una sobrecarga de información y una jerarquía visual inconsistente en las rutas de entrada y acción principal. El patrón recurrente es la longitud excesiva de las páginas y la repetición de explicaciones, lo que diluye el foco y aumenta la carga cognitiva. La oportunidad principal radica en la simplificación radical del contenido, la compactación de bloques y la elevación de las acciones clave para una comprensión y ejecución inmediata.",
     "critical_findings": [
-      "Carga cognitiva excesiva y dilución de la acción principal: Las páginas /home y /auditar presentan demasiados bloques de información y CTAs simultáneos, forzando al usuario a leer extensivamente antes de actuar.",
-      "Inconsistencia y ambigüedad en la ruta /acceso: La replicación de la homepage pública en /acceso genera confusión y no cumple con la expectativa de un punto de entrada o login diferenciado.",
-      "Longitud excesiva de scroll en rutas clave: Las páginas /home y /auditar son notablemente largas, lo que impacta negativamente la retención y la finalización de tareas."
+      "La ruta /acceso replica la homepage pública, generando ambigüedad, confusión para el usuario y una experiencia inconsistente con la expectativa de 'acceso'.",
+      "Las páginas 'home' y '/auditar' presentan una longitud excesiva y una densidad de información que diluye el foco en la acción principal (subir documento) y exige una lectura prolongada.",
+      "La acción principal de subir un documento en la ruta '/auditar' está enterrada debajo de múltiples bloques informativos y legales, lo que genera fricción y retrasa la interacción clave.",
+      "Existe una repetición significativa de bloques de contenido (ej. sugerencias de documentos, explicaciones de privacidad, CTAs) dentro de la misma página y entre la home y /auditar, aumentando la carga cognitiva y el scroll innecesario."
     ],
     "important_findings": [
-      "Repetición de copy y conceptos: Ideas como privacidad, control, pasos siguientes y beneficios se reiteran en múltiples secciones de una misma página y entre páginas, aumentando la fricción de lectura.",
-      "Jerarquía visual subóptima: Aunque mejorada, la disposición de elementos en /home y /auditar aún permite que bloques secundarios compitan por atención con la acción principal en el viewport inicial.",
-      "Múltiples mecanismos de ayuda simultáneos: La coexistencia de mini-diagnósticos, guías rápidas y explicaciones detalladas en la misma pantalla puede abrumar en lugar de asistir."
+      "La jerarquía visual en la 'home' y '/auditar' no siempre prioriza la acción principal, presentando múltiples CTAs y ayudas simultáneas que compiten por la atención del usuario.",
+      "La Consola CEO, aunque mejorada, aún contiene bloques de métricas operativas muy detalladas que podrían compactarse o agruparse para mantener el foco en 'lo crítico primero' sin perder la capacidad de profundizar.",
+      "El copy en varias secciones es denso y extenso, requiriendo más tiempo de lectura del necesario para una decisión o acción inicial."
     ],
     "page_reviews": [
       {
         "page": "home",
-        "score": 6.0,
+        "score": 6,
         "strengths": [
-          "El titular principal y la propuesta de valor central son claros y directos.",
-          "La sección 'Señales de confianza' ofrece prueba social efectiva y casos de uso concretos.",
-          "La 'VISTA PREVIA DEL REPORTE QUE RECIBES' comunica eficazmente el resultado esperado del producto."
+          "El titular principal del hero es claro y comunica el valor central de la plataforma.",
+          "La sección de 'Señales de Confianza' aporta prueba social y casos de uso relevantes.",
+          "La sección 'Cómo funciona en 3 pasos' ofrece una visión general estructurada del proceso.",
+          "La propuesta de valor de privacidad es explícita y se comunica en varias secciones."
         ],
         "frictions": [
-          "Demasiados bloques consecutivos con copy denso que exigen lectura prolongada.",
-          "Repetición de conceptos (privacidad, control, guía inicial) en múltiples secciones de la página.",
-          "Coexistencia de varias CTAs y bloques de ayuda ('MINI DIAGNÓSTICO INICIAL', 'GUÍA RÁPIDA PARA EMPEZAR') que compiten por la atención.",
-          "Longitud de scroll considerable que diluye el foco en la acción principal."
+          "La página es excesivamente larga, con un scroll considerable que dificulta la comprensión inmediata del valor completo.",
+          "El hero contiene un párrafo explicativo demasiado extenso que retrasa la acción principal.",
+          "Hay múltiples bloques que repiten la idea de 'qué documento subir primero' ('Empieza con el documento correcto', 'Mini diagnóstico inicial', 'Guía rápida para empezar').",
+          "La sección 'Centro de Privacidad' es demasiado detallada para una homepage pública, aumentando la densidad de texto.",
+          "Coexisten varias llamadas a la acción (CTAs) que compiten por la atención del usuario en la misma experiencia inicial."
         ],
         "minimal_changes": [
-          "Compactar el párrafo explicativo del Hero a 1-2 frases concisas, enfocando en el beneficio inmediato.",
-          "Fusionar 'GUÍA RÁPIDA PARA EMPEZAR' y 'MINI DIAGNÓSTICO INICIAL' en una única sección más compacta o colapsable.",
-          "Consolidar los mensajes de privacidad y confianza en un solo bloque prominente o un enlace claro, eliminando repeticiones.",
-          "Reducir el número de CTAs principales visibles 'above the fold', priorizando la acción de 'Subir un documento' o 'Empezar auditoría'."
+          "Compactar el párrafo explicativo del hero a una frase concisa y elevar el CTA principal.",
+          "Fusionar y simplificar las secciones de 'Empieza con el documento correcto', 'Mini diagnóstico inicial' y 'Guía rápida para empezar' en un único módulo interactivo y conciso.",
+          "Reducir la densidad de texto en 'Señales de Confianza' y 'Vista previa del reporte' para una lectura más ágil.",
+          "Mover el detalle del 'Centro de Privacidad' a una página dedicada, dejando solo un resumen conciso y un enlace en la home.",
+          "Consolidar las llamadas a la acción redundantes, priorizando una única acción principal visible en la parte superior."
         ]
       },
       {
         "page": "auditar",
-        "score": 5.5,
+        "score": 5,
         "strengths": [
-          "La intención de la página ('Sube tu documento y entiende rápido') es clara.",
-          "La sección 'DOCUMENTOS QUE MÁS ENRIQUECEN TU EXPEDIENTE LABORAL' es útil para guiar al usuario.",
-          "El énfasis en la protección y privacidad de los documentos es visible."
+          "El hero 'Sube tu documento y entiende rápido...' es directo y enfocado en la acción.",
+          "La sección 'Así va tu expediente laboral' ofrece un buen resumen del progreso del usuario.",
+          "La información sobre el 'Ciclo de valor visible' explica bien el proceso de fortalecimiento del expediente.",
+          "La sección 'Control del documento' detalla los pasos de forma clara y genera confianza."
         ],
         "frictions": [
-          "Página excesivamente larga con múltiples bloques informativos que compiten por atención antes de la acción principal de subir un archivo.",
-          "La acción de subir documento está diluida por ayudas, módulos informativos y explicaciones redundantes.",
-          "Repetición de conceptos de privacidad, control y siguientes pasos en distintas tarjetas y secciones.",
-          "Demasiados indicadores de estado y progreso ('ASÍ VA TU EXPEDIENTE LABORAL', 'Claridad actual', 'EMBUDO OPERATIVO MÍNIMO') que pueden abrumar."
+          "La página es extremadamente larga, con un scroll que supera incluso a la homepage, generando una alta carga cognitiva.",
+          "La acción principal de subir un archivo está precedida por numerosos bloques informativos (resguardo, legal, estado) que diluyen el foco y ocupan espacio 'above the fold'.",
+          "Hay una repetición excesiva de sugerencias de documentos ('Siguiente paso recomendado', 'Documentos que más enriquecen', 'Siguiente documento que más puede ayudarte', 'Siguiente documento recomendado').",
+          "La información legal y de privacidad se repite en varios bloques, ocupando espacio y distrayendo de la tarea principal.",
+          "Existen múltiples secciones de carga de documentos o llamadas a la acción para subir, lo que es redundante y confuso."
         ],
         "minimal_changes": [
-          "Priorizar el bloque 'Sube un archivo' para que domine el área 'above the fold', minimizando el texto explicativo circundante.",
-          "Colapsar o mover información secundaria (ej. 'AUTORIZACIÓN LEGAL PENDIENTE', 'Cobertura legal', 'Estado del resguardo') a secciones menos prominentes o colapsables.",
-          "Consolidar los mensajes de privacidad y control en una declaración concisa cerca del área de carga.",
-          "Simplificar los indicadores de progreso, eligiendo uno principal y eliminando los redundantes.",
-          "Mover secciones como 'COMPARACIÓN GUIADA' y 'ALERTAS PRIORIZADAS' a una vista posterior a la carga o a un expediente dedicado."
+          "Elevar el bloque 'EMPIEZA AQUÍ Sube un archivo...' para que sea la primera interacción visible 'above the fold', minimizando otros bloques.",
+          "Colapsar o usar un acordeón para la información legal ('Autorización legal pendiente', 'Cobertura legal') y de 'Estado del resguardo', dejando solo un resumen y un enlace a detalles.",
+          "Consolidar todas las sugerencias de documentos en un único módulo interactivo y dinámico, eliminando las repeticiones.",
+          "Eliminar las secciones redundantes de carga de documentos, manteniendo una única y clara interfaz de subida.",
+          "Simplificar las explicaciones del 'Ciclo de valor visible' y 'Qué está pasando ahora', quizás usando tooltips o un enlace a una guía rápida."
         ]
       },
       {
         "page": "acceso",
-        "score": 3.0,
+        "score": 2,
         "strengths": [
-          "Ninguna, ya que replica la homepage pública."
+          "La URL es intuitiva para un usuario que busca iniciar sesión o acceder a su cuenta."
         ],
         "frictions": [
-          "La experiencia no se distingue de la homepage pública, generando ambigüedad y frustración para el usuario que busca un punto de acceso.",
-          "Hereda el volumen de scroll y contenido explicativo de la homepage, lo cual es inapropiado para una página de acceso.",
-          "No cumple con la expectativa del usuario de encontrar un login, un dashboard o un punto de entrada específico a su información."
+          "La página /acceso es una réplica exacta de la homepage pública, lo que genera una gran ambigüedad y frustración para el usuario que espera una experiencia de login o dashboard.",
+          "No cumple con la expectativa de un usuario que busca 'acceder' a su información o expediente, sino que lo redirige a una página de marketing.",
+          "Mantiene la misma longitud y densidad de contenido de la home, lo cual es inapropiado para una ruta de acceso."
         ],
         "minimal_changes": [
-          "Redirigir la ruta /acceso a una página de login/registro dedicada o, si el usuario está autenticado, a su dashboard principal.",
-          "En caso de no tener una página de login/registro dedicada, redirigir a la homepage con un botón de 'Iniciar Sesión' o 'Acceder a mi expediente' claramente destacado y funcional."
+          "Redirigir la ruta /acceso a una página de inicio de sesión (login) si el usuario no está autenticado.",
+          "Si el usuario ya está autenticado, redirigir /acceso directamente a su Consola de Usuario o Dashboard principal.",
+          "Eliminar cualquier contenido de marketing o explicativo de la página /acceso, enfocándola exclusivamente en la autenticación o el acceso directo."
         ]
       },
       {
         "page": "ceo",
         "score": 7.5,
         "strengths": [
-          "El hero ejecutivo ('Lo crítico primero para decidir rápido') está bien enfocado y transmite valor.",
-          "Los 'Filtros rápidos' son compactos y funcionales, permitiendo una exploración eficiente.",
-          "El 'RESUMEN EJECUTIVO' proporciona una visión general concisa y útil.",
-          "El 'BLOQUE SEGURO' define claramente las acciones administrativas acotadas."
+          "El hero 'Lo crítico primero para decidir rápido' es un excelente enfoque para un dashboard ejecutivo.",
+          "El 'Resumen CEO' y 'Panel Maestro' ofrecen métricas clave de alto nivel de forma concisa.",
+          "Los filtros rápidos son funcionales y permiten segmentar la información sin perder el panorama general.",
+          "El bloque 'Pendientes del CEO' resume las prioridades de acción de forma efectiva.",
+          "La sección 'Expedientes Recientes' es útil para un seguimiento rápido de casos activos."
         ],
         "frictions": [
-          "La página sigue siendo considerablemente larga, especialmente con la 'BITÁCORA OPERATIVA' y secciones de 'LECTURA RÁPIDA'.",
-          "Existe redundancia en indicadores de frescura y estado de la información ('LECTURA ACTUAL', 'ESTADO DE DECISIÓN', 'FRESURA OPERATIVA').",
-          "El 'PANEL MAESTRO' podría ser más compacto visualmente.",
-          "La sección 'LECTURA RÁPIDA' al final de la página duplica información ya presentada y añade scroll innecesario."
+          "La página sigue siendo considerablemente larga, con muchos bloques de métricas operativas detalladas que pueden abrumar la vista inicial del CEO.",
+          "La sección 'Bitácora Operativa' puede generar un scroll muy extenso debido a la cantidad de eventos listados, dificultando la revisión rápida.",
+          "Los bloques de 'Gate Legal Visible', 'Embudo Preview', 'Selector Cámara/Archivo', etc., aunque útiles, añaden mucha granularidad a la vista principal que podría ser secundaria para un CEO.",
+          "La barra de filtros rápidos, aunque funcional, presenta muchos controles visibles simultáneamente, lo que podría simplificarse visualmente."
         ],
         "minimal_changes": [
-          "Consolidar los indicadores de frescura y estado de la información en un único componente visualmente prominente.",
-          "Compactar el 'PANEL MAESTRO' reduciendo espaciado o utilizando una presentación más visual para las métricas.",
-          "Implementar un estado colapsado por defecto para los detalles de la 'BITÁCORA OPERATIVA', permitiendo expansión bajo demanda.",
-          "Eliminar la sección 'LECTURA RÁPIDA' al final de la página, ya que su contenido es redundante con el resumen ejecutivo y otros paneles.",
-          "Elevar la sección 'PENDIENTES DEL CEO' a una posición más prominente, quizás como una tarjeta dentro del 'RESUMEN EJECUTIVO'."
+          "Compactar la barra de 'Filtros rápidos' con una opción de 'Más filtros' para reducir la complejidad visual inicial.",
+          "Agrupar o colapsar los bloques de métricas operativas muy detalladas (ej. 'Gate Legal Visible', 'Embudo Preview', 'Selector Cámara/Archivo') en una sección secundaria como 'Detalle Operativo' o 'Métricas Avanzadas', accesible bajo demanda.",
+          "Implementar paginación o un botón 'Cargar más' en la 'Bitácora Operativa' para reducir el scroll inicial y mejorar la digestibilidad.",
+          "Asegurar que la jerarquía visual destaque claramente las alertas y métricas de alto nivel sobre los detalles operativos."
         ]
       }
     ],
     "consensus_micro_round": [
-      "Priorizar la corrección de la ruta /acceso para que sea un punto de entrada funcional (login/dashboard) y no una réplica de la homepage.",
-      "Reducir drásticamente la longitud de las páginas /home y /auditar, eliminando secciones redundantes y compactando el copy.",
-      "Reenfocar la jerarquía visual en /home y /auditar para que la acción principal (subir documento) domine el 'above the fold', minimizando distracciones.",
-      "Consolidar mensajes de privacidad, confianza y ayuda en bloques únicos y concisos, evitando la repetición transversal."
+      "Priorizar la eliminación de la ruta /acceso como duplicado, redirigiéndola a una experiencia de login/dashboard.",
+      "Reducir drásticamente la longitud de la homepage pública, compactando el hero, fusionando bloques de guía de documentos y moviendo detalles de privacidad a una página dedicada.",
+      "Reestructurar la página /auditar para que la acción de subir documento sea el elemento principal y más visible 'above the fold', colapsando o simplificando los bloques informativos y legales que la preceden.",
+      "Consolidar todas las sugerencias de documentos en un único módulo interactivo en la página /auditar, eliminando repeticiones.",
+      "En la Consola CEO, agrupar las métricas operativas de detalle en secciones colapsables o con pestañas para mantener el foco en el resumen ejecutivo y paginar la bitácora operativa."
     ],
     "do_not_build": [
-      "Nuevas funcionalidades o módulos que aumenten la complejidad de la plataforma.",
-      "Animaciones o elementos visuales que no contribuyan directamente a la claridad o la acción principal.",
-      "Contenido explicativo adicional que no resuelva una fricción crítica ya identificada."
+      "Cualquier nueva funcionalidad o característica que no esté directamente relacionada con la simplificación o mejora de la UX existente.",
+      "Nuevos bloques de contenido o explicaciones que aumenten el scroll o la carga cognitiva en las páginas actuales.",
+      "Variantes adicionales de CTAs o ayudas que compitan con las acciones principales."
     ]
   }
 }

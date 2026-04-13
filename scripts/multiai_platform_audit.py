@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any
 
 import requests
+from google import genai
 
 BASE_DIR = Path("/home/ubuntu/complilink_operativo_v1")
 OUTPUT_DIR = BASE_DIR / "audit_notes"
@@ -96,86 +98,88 @@ def call_openai(user_prompt: str) -> dict[str, Any]:
 
 def call_grok(user_prompt: str) -> dict[str, Any]:
     api_key = os.environ["XAI_API_KEY"]
-    response = requests.post(
-        "https://api.x.ai/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": "grok-3-mini",
-            "temperature": 0.2,
-            "response_format": {"type": "json_object"},
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-        },
-        timeout=120,
-    )
-    response.raise_for_status()
-    content = response.json()["choices"][0]["message"]["content"]
-    return json.loads(content)
+    candidate_models = ["grok-3-mini", "grok-4-fast-reasoning", "grok-4"]
+    last_error: Exception | None = None
+    for model_name in candidate_models:
+        for attempt in range(1, 4):
+            try:
+                response = requests.post(
+                    "https://api.x.ai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model_name,
+                        "temperature": 0.2,
+                        "response_format": {"type": "json_object"},
+                        "messages": [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                    },
+                    timeout=120,
+                )
+                response.raise_for_status()
+                content = response.json()["choices"][0]["message"]["content"]
+                parsed = json.loads(content)
+                parsed.setdefault("model_name", model_name)
+                return parsed
+            except Exception as exc:
+                last_error = exc
+                if attempt < 3:
+                    time.sleep(attempt * 2)
+                continue
+    if last_error is None:
+        raise RuntimeError("Grok no devolvió respuesta y no se capturó error")
+    raise last_error
 
 
 def call_gemini(user_prompt: str) -> dict[str, Any]:
     api_key = os.environ["GEMINI_API_KEY"]
-    schema = {
-        "type": "OBJECT",
-        "properties": {
-            "model_name": {"type": "STRING"},
-            "overall_score": {"type": "NUMBER"},
-            "global_summary": {"type": "STRING"},
-            "critical_findings": {"type": "ARRAY", "items": {"type": "STRING"}},
-            "important_findings": {"type": "ARRAY", "items": {"type": "STRING"}},
-            "page_reviews": {
-                "type": "ARRAY",
-                "items": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "page": {"type": "STRING"},
-                        "score": {"type": "NUMBER"},
-                        "strengths": {"type": "ARRAY", "items": {"type": "STRING"}},
-                        "frictions": {"type": "ARRAY", "items": {"type": "STRING"}},
-                        "minimal_changes": {"type": "ARRAY", "items": {"type": "STRING"}},
-                    },
-                    "required": ["page", "score", "strengths", "frictions", "minimal_changes"],
-                },
-            },
-            "consensus_micro_round": {"type": "ARRAY", "items": {"type": "STRING"}},
-            "do_not_build": {"type": "ARRAY", "items": {"type": "STRING"}},
-        },
-        "required": [
-            "model_name",
-            "overall_score",
-            "global_summary",
-            "critical_findings",
-            "important_findings",
-            "page_reviews",
-            "consensus_micro_round",
-            "do_not_build",
-        ],
-    }
-    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    client = genai.Client(api_key=api_key)
+    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite"]
     last_error: Exception | None = None
+    schema = {
+        "type": "object",
+        "properties": {
+            "model_name": {"type": "string"},
+            "overall_score": {"type": "number"},
+            "global_summary": {"type": "string"},
+            "critical_findings": {"type": "array", "items": {"type": "string"}},
+            "important_findings": {"type": "array", "items": {"type": "string"}},
+            "page_reviews": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "page": {"type": "string"},
+                        "score": {"type": "number"},
+                        "strengths": {"type": "array", "items": {"type": "string"}},
+                        "frictions": {"type": "array", "items": {"type": "string"}},
+                        "minimal_changes": {"type": "array", "items": {"type": "string"}}
+                    },
+                    "required": ["page", "score", "strengths", "frictions", "minimal_changes"]
+                }
+            },
+            "consensus_micro_round": {"type": "array", "items": {"type": "string"}},
+            "do_not_build": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["model_name", "overall_score", "global_summary", "critical_findings", "important_findings", "page_reviews", "consensus_micro_round", "do_not_build"]
+    }
     for model_name in candidate_models:
         try:
-            response = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-                    "contents": [{"parts": [{"text": user_prompt}]}],
-                    "generationConfig": {
-                        "temperature": 0.2,
-                        "responseMimeType": "application/json",
-                        "responseSchema": schema,
-                    },
+            response = client.models.generate_content(
+                model=model_name,
+                contents=user_prompt,
+                config={
+                    "system_instruction": SYSTEM_PROMPT,
+                    "temperature": 0.2,
+                    "response_mime_type": "application/json",
+                    "response_schema": schema,
                 },
-                timeout=120,
             )
-            response.raise_for_status()
-            content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            content = response.text
             parsed = json.loads(content)
             parsed.setdefault("model_name", model_name)
             return parsed

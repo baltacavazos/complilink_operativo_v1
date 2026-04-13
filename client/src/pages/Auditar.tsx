@@ -3637,24 +3637,15 @@ export default function Auditar() {
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">Tu revisión</p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-              Sube tu documento y entiende rápido qué pasa con tu expediente.
+              Sube tu documento y recibe una lectura útil en minutos.
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-              Sube primero el archivo. Enseguida te devolvemos qué entendimos, qué hallazgo pesa más y cuál es el siguiente soporte que más te conviene revisar.
+              <span className="sm:hidden">Sube el archivo. Te diremos qué entendimos y qué conviene revisar después.</span>
+              <span className="hidden sm:inline">Empieza por el archivo. Enseguida te mostramos qué entendimos, qué pesa más y cuál sería el siguiente soporte útil.</span>
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
               <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
-              Resguardo y lectura preliminar en el mismo flujo
-            </div>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-left sm:justify-start">
-              <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1.5 text-[11px] font-medium text-teal-100">
-                <Lock className="h-3.5 w-3.5" strokeWidth={1.8} />
-                Tus documentos viajan protegidos
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
-                <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
-                Solo se usan para tu auditoría
-              </span>
+              Archivo protegido y usado solo para tu auditoría
             </div>
 
           </div>
@@ -3673,15 +3664,15 @@ export default function Auditar() {
             </Button>
             <Button
               variant="ghost"
-              className="rounded-full border border-white/10 bg-white/5 px-3 text-slate-100 hover:bg-white/10 hover:text-white"
+              className="rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white"
               onClick={() => {
                 setMobileOnboardingIndex(0);
                 uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
-              Ir directo a subir archivo
+              Subir archivo ahora
             </Button>
-            <span className="text-[11px] font-medium text-slate-300">
+            <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
               {remoteViewStateSyncLabel}
             </span>
           </div>
