@@ -924,3 +924,8 @@
 - [x] Añadir progreso por etapas o tiempo estimado en el flujo de carga y análisis de /auditar
 - [x] Refinar las transiciones visuales entre estados del upload para que el cambio de fase sea más claro
 - [x] Hacer persistentes junto al cargador los límites de tipo/tamaño y el mensaje de seguridad y privacidad
+
+- [x] Reforzar la accesibilidad del stepper y de los mensajes de estado del flujo de upload en /auditar
+- [x] Compactar el copy persistente del bloque de upload para móvil sin perder claridad ni confianza
+- [x] Evaluar e implementar una ayuda colapsable si mejora densidad visual sin reducir comprensión
+- [x] Hacer más evidente en /auditar que la ayuda colapsable despliega detalle adicional de seguridad y carga

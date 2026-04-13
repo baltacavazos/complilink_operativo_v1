@@ -98,6 +98,32 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   privacyRules: "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
 };
 
+const COMPACT_UPLOAD_GUARDRAILS = {
+  fileRules: "PDF, XML o imagen clara · máximo 15 MB.",
+  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
+};
+
+const UPLOAD_HELP_DISCLOSURE_SUMMARY = "Abrir ayuda rápida: seguridad, límites y momento de guardado";
+
+export function getUploadCompactGuardrails() {
+  return COMPACT_UPLOAD_GUARDRAILS;
+}
+
+export function getUploadHelpDisclosureSummary() {
+  return UPLOAD_HELP_DISCLOSURE_SUMMARY;
+}
+
+export function getUploadStepAriaLabel(params: {
+  index: number;
+  total: number;
+  label: string;
+  isActive: boolean;
+  isComplete: boolean;
+}) {
+  const statusLabel = params.isActive ? "actual" : params.isComplete ? "completada" : "pendiente";
+  return `Etapa ${params.index} de ${params.total}: ${params.label}, ${statusLabel}.`;
+}
+
 function getUploadProgressStepState(stepKey: UploadProgressStepKey) {
   const activeIndex = UPLOAD_PROGRESS_STEPS.findIndex((step) => step.key === stepKey);
 
@@ -4565,6 +4591,8 @@ export default function Auditar() {
                   </div>
 
                   <div
+                    aria-atomic="true"
+                    aria-describedby="upload-guardrails-summary"
                     aria-live="polite"
                     className={`mt-4 rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
@@ -4577,10 +4605,19 @@ export default function Auditar() {
                         {uploadProgressState.progress}%
                       </span>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" role="list" aria-label="Progreso de la carga y análisis del documento">
                       {uploadProgressSteps.map((step, index) => (
                         <div
                           key={step.key}
+                          role="listitem"
+                          aria-current={step.isActive ? "step" : undefined}
+                          aria-label={getUploadStepAriaLabel({
+                            index: index + 1,
+                            total: uploadProgressSteps.length,
+                            label: step.label,
+                            isActive: step.isActive,
+                            isComplete: step.isComplete,
+                          })}
                           className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition-all duration-300 ${
                             step.isActive
                               ? "border-white/80 bg-white text-slate-900 shadow-sm"
@@ -4591,32 +4628,47 @@ export default function Auditar() {
                         >
                           <span className="block text-[11px] uppercase tracking-[0.16em] opacity-70">Etapa {index + 1}</span>
                           <span className="mt-1 block">{step.label}</span>
+                          <span className="sr-only">{step.isActive ? "Etapa actual" : step.isComplete ? "Etapa completada" : "Etapa pendiente"}</span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/70">
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/70" aria-hidden="true">
                       <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
                     </div>
                     <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{uploadProgressState.stageLabel}</p>
                     <p className="mt-2 text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
-                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadTransitionCopy(uploadProgressState.stepKey)}</p>
-                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadPersistentSupportCopy(selectedFile)}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
                     {selectedFileValidationMessage ? (
                       <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
                     ) : null}
+                    <details className="mt-3 rounded-2xl border border-white/60 bg-white/55 px-3 py-2 text-xs text-slate-700">
+                      <summary className="cursor-pointer list-none font-semibold text-slate-800">
+                        Ver más contexto de esta etapa
+                      </summary>
+                      <div className="mt-2 space-y-2 leading-5">
+                        <p>{getUploadTransitionCopy(uploadProgressState.stepKey)}</p>
+                        <p>{getUploadPersistentSupportCopy(selectedFile)}</p>
+                      </div>
+                    </details>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Límites visibles</p>
-                      <p className="mt-2 leading-6">{PERSISTENT_UPLOAD_GUARDRAILS.fileRules}</p>
+                  <div id="upload-guardrails-summary" className="mt-4 rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Límites y privacidad visibles</p>
+                    <div className="mt-3 space-y-2">
+                      <p className="leading-6"><span className="font-semibold text-slate-900">Límites:</span> {getUploadCompactGuardrails().fileRules}</p>
+                      <p className="leading-6"><span className="font-semibold text-slate-900">Control:</span> {getUploadCompactGuardrails().privacyRules}</p>
                     </div>
-                    <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Privacidad y control</p>
-                      <p className="mt-2 leading-6">{PERSISTENT_UPLOAD_GUARDRAILS.privacyRules}</p>
-                    </div>
+                      <details className="mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
+                      <summary className="cursor-pointer list-none font-semibold text-slate-900">
+                        {getUploadHelpDisclosureSummary()}
+                      </summary>
+
+                      <div className="mt-2 space-y-2 leading-5">
+                        <p>{PERSISTENT_UPLOAD_GUARDRAILS.fileRules}</p>
+                        <p>{PERSISTENT_UPLOAD_GUARDRAILS.privacyRules}</p>
+                      </div>
+                    </details>
                   </div>
                 </div>
 

@@ -12,6 +12,9 @@ import {
   buildReanalyzeDraftActionState,
   buildUploadProgressState,
   formatVisibleFileSize,
+  getUploadCompactGuardrails,
+  getUploadHelpDisclosureSummary,
+  getUploadStepAriaLabel,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
   shouldAutoAnalyzeSelectedFile,
@@ -219,6 +222,47 @@ describe("validateDocumentUploadFile", () => {
 
     const largePdf = new File([new Uint8Array(16 * 1024 * 1024)], "pesado.pdf", { type: "application/pdf" });
     expect(validateDocumentUploadFile(largePdf)).toContain("supera el límite preventivo de 15 MB");
+  });
+});
+
+describe("getUploadStepAriaLabel", () => {
+  it("explica para lectores de pantalla la posición y estado actual de cada etapa", () => {
+    expect(
+      getUploadStepAriaLabel({
+        index: 2,
+        total: 4,
+        label: "Analizar",
+        isActive: true,
+        isComplete: false,
+      }),
+    ).toBe("Etapa 2 de 4: Analizar, actual.");
+
+    expect(
+      getUploadStepAriaLabel({
+        index: 1,
+        total: 4,
+        label: "Preparar",
+        isActive: false,
+        isComplete: true,
+      }),
+    ).toBe("Etapa 1 de 4: Preparar, completada.");
+  });
+});
+
+describe("getUploadCompactGuardrails", () => {
+  it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
+    expect(getUploadCompactGuardrails()).toEqual({
+      fileRules: "PDF, XML o imagen clara · máximo 15 MB.",
+      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
+    });
+  });
+});
+
+describe("getUploadHelpDisclosureSummary", () => {
+  it("hace evidente que la ayuda colapsable muestra seguridad, límites y momento de guardado", () => {
+    expect(getUploadHelpDisclosureSummary()).toBe(
+      "Abrir ayuda rápida: seguridad, límites y momento de guardado",
+    );
   });
 });
 

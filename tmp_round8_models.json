@@ -1,0 +1,21 @@
+{
+  "openai": {
+    "prioridad_1": "Agregar roles ARIA específicos al stepper (role='list' para el contenedor y role='listitem' para cada paso) y asegurar que el aria-current='step' esté presente en la etapa activa para mejorar la navegación por lectores de pantalla.",
+    "decision_colapsable": "hacer_colapsable",
+    "recomendacion_accesibilidad": "Implementar roles ARIA adecuados en el stepper, usar aria-current='step' para la etapa activa, y mantener aria-live='polite' en la tarjeta de progreso para comunicar cambios sin interrupciones.",
+    "recomendacion_copy_movil": "Reducir el copy persistente combinando textos similares en frases más concisas, eliminar redundancias y usar iconografía o etiquetas breves para mantener claridad y confianza en espacio limitado.",
+    "riesgo": "bajo",
+    "plan_minimo": "Actualizar el stepper con roles ARIA y aria-current, compactar el copy persistente en móvil mediante revisión textual, y convertir el bloque inferior de privacidad/control en un panel colapsable con indicador claro para no saturar la pantalla."
+  },
+  "xai": {
+    "prioridad_1": "Agregar role ARIA adecuado al stepper para mejorar accesibilidad y compactar el copy persistente en un acordeón en móvil.",
+    "decision_colapsable": "hacer_colapsable",
+    "recomendacion_accesibilidad": "Añadir role='progressbar' o role='tablist' al stepper, asegurar navegación por teclado con tabindex y actualizar aria-live para mensajes de estado con aria-atomic='true' para mayor claridad.",
+    "recomendacion_copy_movil": "Reducir el copy persistente a iconos y texto conciso (ej. de 2 tarjetas a 1 con encabezados colapsables), manteniendo frases clave para confianza sin exceder 50-70 caracteres por sección.",
+    "riesgo": "bajo",
+    "plan_minimo": "Modificar el stepper con roles ARIA y convertir el bloque persistente inferior en un componente colapsable usando un acordeón simple, probando en dispositivos móviles para validar."
+  },
+  "gemini": {
+    "error": "HTTPError: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNXAtknbuWBc2kuXj1Q78U7a46k37LlaA"
+  }
+}
