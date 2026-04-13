@@ -854,3 +854,5 @@
 - [x] Resolver los errores operativos reales que aún impiden considerar la V1 como cerrada y robusta
 - [x] Cerrar con pruebas y validación técnica los flujos internos críticos de V1 que sigan con huecos no visibles
 - [x] Seguir cerrando robustez V1 sin detener el trabajo por `DROPBOX_API_KEY` expirado; tratar Dropbox como bloqueo externo no crítico mientras se priorizan CEO Bridge, `/auditar` y pruebas internas.
+- [x] Preparar un prompt maestro para que Grok, Gemini y ChatGPT actúen como clientes potenciales, prueben la app y entreguen feedback exhaustivo para hacerla más intuitiva.
+- [x] Ajustar el prompt maestro de evaluación multi-IA para que quede enfocado exclusivamente en AuditaPatron, eliminando referencias a CompliLink.
