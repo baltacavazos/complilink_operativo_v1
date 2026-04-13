@@ -950,3 +950,6 @@
 - [x] Cerrar el hueco residual de la métrica guardrail_rejected en la Consola CEO
 - [x] Añadir un test E2E específico para rechazo por guardrails en /auditar
 - [x] Priorizar una tarjeta ejecutiva en la Consola CEO con abandono del gate legal y tiempo medio de resolución
+- [x] Añadir drill-down desde la tarjeta ejecutiva de la Consola CEO hacia los casos afectados
+- [x] Mostrar tendencia semanal del abandono legal en la Consola CEO
+- [x] Convertir los motivos de guardrail_rejected en un ranking accionable por causa

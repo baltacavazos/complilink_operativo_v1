@@ -77,6 +77,25 @@ describe("ceoDashboardMonitoring", () => {
       legalGateAbandonments: 1,
       legalGateAbandonmentRate: 50,
       averageLegalGateResolutionSeconds: null,
+      legalGateAffectedCases: [
+        {
+          tenantId: "tenant-demo",
+          caseId: "case-003",
+          scopeId: "case-003",
+          conflictStartedAt: "2026-04-10T12:00:00.000Z",
+          ageSeconds: 0,
+        },
+      ],
+      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1 }],
+      guardrailReasonRanking: [
+        {
+          reason: "sin_detalle",
+          count: 1,
+          latestAt: "2026-04-10T12:00:00.000Z",
+          caseId: null,
+          tenantId: "tenant-demo",
+        },
+      ],
       cameraPreviewToConfirmRate: 100,
       filePreviewToConfirmRate: null,
       dominantCaptureMode: "camera",
@@ -114,6 +133,16 @@ describe("ceoDashboardMonitoring", () => {
       legalGateAbandonments: 1,
       legalGateAbandonmentRate: 50,
       averageLegalGateResolutionSeconds: 120,
+      legalGateAffectedCases: [
+        {
+          tenantId: "tenant-demo",
+          caseId: "case-202",
+          scopeId: "case-202",
+          conflictStartedAt: "2026-04-10T12:03:00.000Z",
+          ageSeconds: 0,
+        },
+      ],
+      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1 }],
     });
   });
 
@@ -161,6 +190,60 @@ describe("ceoDashboardMonitoring", () => {
     expect(filterAuditFeed(items, { family: "guardrail", severity: "all" }).map((item) => item.id)).toEqual([1]);
     expect(filterAuditFeed(items, { family: "all", severity: "medium" }).map((item) => item.id)).toEqual([3, 4]);
     expect(filterAuditFeed(items, { family: "document", severity: "normal" }).map((item) => item.id)).toEqual([2]);
+  });
+
+  it("agrupa las causas de guardrail y ordena el ranking por volumen y recencia", () => {
+    const items = [
+      buildAuditItem({
+        id: 31,
+        tenantId: "tenant-a",
+        caseId: "case-401",
+        action: "document.guardrail_rejected",
+        afterState: { reason: "rate_limit_exceeded" },
+        createdAt: "2026-04-01T10:00:00.000Z",
+      }),
+      buildAuditItem({
+        id: 32,
+        tenantId: "tenant-a",
+        caseId: "case-402",
+        action: "document.guardrail_rejected",
+        afterState: { reason: "unsupported_format" },
+        createdAt: "2026-04-08T10:00:00.000Z",
+      }),
+      buildAuditItem({
+        id: 33,
+        tenantId: "tenant-b",
+        caseId: "case-403",
+        action: "document.guardrail_rejected",
+        afterState: { reason: "rate_limit_exceeded" },
+        createdAt: "2026-04-09T10:00:00.000Z",
+      }),
+      buildAuditItem({
+        id: 34,
+        tenantId: "tenant-c",
+        caseId: "case-404",
+        action: "document.guardrail_rejected",
+        afterState: { reason: "rate_limit_exceeded" },
+        createdAt: "2026-04-10T10:00:00.000Z",
+      }),
+    ];
+
+    expect(buildAuditMonitoringSummary(items).guardrailReasonRanking).toEqual([
+      {
+        reason: "rate_limit_exceeded",
+        count: 3,
+        latestAt: "2026-04-10T10:00:00.000Z",
+        caseId: "case-404",
+        tenantId: "tenant-c",
+      },
+      {
+        reason: "unsupported_format",
+        count: 1,
+        latestAt: "2026-04-08T10:00:00.000Z",
+        caseId: "case-402",
+        tenantId: "tenant-a",
+      },
+    ]);
   });
 
   it("genera alertas ejecutivas cuando se acumulan rechazos por tenant o por caso", () => {

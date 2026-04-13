@@ -97,6 +97,25 @@ function formatDateTime(value: Date | string | null | undefined) {
   }).format(date);
 }
 
+function formatWeekLabel(value: string | null | undefined) {
+  if (!value) return "Sin semana";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sin semana";
+
+  return new Intl.DateTimeFormat("es-MX", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatDurationCompact(seconds: number | null | undefined) {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return "Sin muestra";
+  if (seconds < 60) return `${formatNumber(seconds)} s`;
+  if (seconds < 3600) return `${(seconds / 60).toFixed(1)} min`;
+  return `${(seconds / 3600).toFixed(1)} h`;
+}
+
 type BridgePresetFiltersDraft = {
   tenantId?: string;
   severity?: string;
@@ -427,6 +446,7 @@ export default function CeoDashboard() {
   const [bridgeSmokeHistoryFilter, setBridgeSmokeHistoryFilter] = useState<BridgeSmokeHistoryFilter>("all");
   const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
   const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
+  const [isLegalGateDrilldownOpen, setIsLegalGateDrilldownOpen] = useState(false);
   const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -608,6 +628,15 @@ export default function CeoDashboard() {
     [auditTrail],
   );
   const auditExecutiveAlerts = useMemo(() => buildAuditExecutiveAlerts(auditTrail).slice(0, 4), [auditTrail]);
+  const legalGateTrendChartConfig = useMemo<ChartConfig>(
+    () => ({
+      abandonmentCount: {
+        label: "Abandonos visibles",
+        color: "oklch(0.61 0.19 20)",
+      },
+    }),
+    [],
+  );
   const bridgeOverview = useMemo(
     () =>
       buildBridgeMonitoringPanel({
@@ -2450,13 +2479,7 @@ export default function CeoDashboard() {
                           </div>
                           <div className="rounded-2xl bg-white/90 p-3">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tiempo medio de resolución</p>
-                            <p className="mt-2 text-xl font-semibold text-slate-950">
-                              {auditSummary.averageLegalGateResolutionSeconds === null
-                                ? "Sin muestra"
-                                : auditSummary.averageLegalGateResolutionSeconds < 60
-                                  ? `${formatNumber(auditSummary.averageLegalGateResolutionSeconds)} s`
-                                  : `${(auditSummary.averageLegalGateResolutionSeconds / 60).toFixed(1)} min`}
-                            </p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatDurationCompact(auditSummary.averageLegalGateResolutionSeconds)}</p>
                             <p className="mt-1 text-xs leading-5 text-slate-500">Promedio entre conflicto visible y aceptación posterior del mismo caso.</p>
                           </div>
                         </div>
@@ -2465,6 +2488,102 @@ export default function CeoDashboard() {
                             ? "No se observan casos atorados en el gate legal dentro de la vista actual."
                             : `Se observan ${formatNumber(auditSummary.legalGateAbandonments)} casos con fricción legal aún abierta; conviene revisar copy, espera y reintentos antes de atribuir la caída al documento.`}
                         </p>
+                        <div className="mt-4 grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
+                          <div className="rounded-2xl border border-white/80 bg-white/90 p-3 shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tendencia semanal</p>
+                                <p className="mt-1 text-sm text-slate-600">Abandono legal aún abierto agrupado por semana de origen.</p>
+                              </div>
+                              <Badge className="rounded-full border border-rose-200 bg-rose-50 text-rose-800">
+                                {formatNumber(auditSummary.legalGateWeeklyTrend.length)} semanas
+                              </Badge>
+                            </div>
+                            {auditSummary.legalGateWeeklyTrend.length > 0 ? (
+                              <ChartContainer config={legalGateTrendChartConfig} className="mt-4 h-36 w-full">
+                                <LineChart accessibilityLayer data={auditSummary.legalGateWeeklyTrend} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+                                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                  <XAxis
+                                    dataKey="weekStart"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    minTickGap={24}
+                                    tickFormatter={(value) => formatWeekLabel(typeof value === "string" ? value : String(value))}
+                                  />
+                                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+                                  <ChartTooltip
+                                    content={
+                                      <ChartTooltipContent
+                                        formatter={(value) => [`${formatNumber(Number(value ?? 0))} casos`, "Abandonos visibles"]}
+                                        labelFormatter={(value) => `Semana de ${formatWeekLabel(typeof value === "string" ? value : String(value))}`}
+                                      />
+                                    }
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="abandonmentCount"
+                                    stroke="var(--color-abandonmentCount)"
+                                    strokeWidth={2.5}
+                                    dot={{ r: 3 }}
+                                    activeDot={{ r: 5 }}
+                                  />
+                                </LineChart>
+                              </ChartContainer>
+                            ) : (
+                              <p className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                                Todavía no hay casos abiertos suficientes para dibujar una tendencia semanal del gate legal.
+                              </p>
+                            )}
+                          </div>
+                          <div className="rounded-2xl border border-white/80 bg-white/90 p-3 shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Casos afectados</p>
+                                <p className="mt-1 text-sm text-slate-600">Drill-down mínimo con los casos que siguen sin cierre visible.</p>
+                              </div>
+                              <Badge className="rounded-full border border-rose-200 bg-rose-50 text-rose-800">
+                                {formatNumber(auditSummary.legalGateAffectedCases.length)}
+                              </Badge>
+                            </div>
+                            {auditSummary.legalGateAffectedCases.length === 0 ? (
+                              <p className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                                No hay casos abiertos para profundizar en esta vista.
+                              </p>
+                            ) : (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="mt-4 rounded-full bg-white text-slate-700"
+                                  onClick={() => setIsLegalGateDrilldownOpen((current) => !current)}
+                                >
+                                  {isLegalGateDrilldownOpen ? "Ocultar casos afectados" : "Ver casos afectados"}
+                                </Button>
+                                {isLegalGateDrilldownOpen ? (
+                                  <div className="mt-3 space-y-2">
+                                    {auditSummary.legalGateAffectedCases.slice(0, 5).map((item) => (
+                                      <article key={`${item.scopeId}-${item.conflictStartedAt}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3 text-sm text-slate-700">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Tenant {item.tenantId}</Badge>
+                                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{item.caseId ? `Caso ${item.caseId}` : `Scope ${item.scopeId}`}</Badge>
+                                        </div>
+                                        <p className="mt-2 font-semibold text-slate-950">Fricción abierta desde {formatDateTime(item.conflictStartedAt)}</p>
+                                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                                          {item.ageSeconds === null ? "La antigüedad visible no está disponible en este corte." : `Antigüedad visible: ${formatDurationCompact(item.ageSeconds)}.`}
+                                        </p>
+                                      </article>
+                                    ))}
+                                    {auditSummary.legalGateAffectedCases.length > 5 ? (
+                                      <p className="rounded-2xl bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">
+                                        Se muestran 5 casos; aún quedan {formatNumber(auditSummary.legalGateAffectedCases.length - 5)} casos abiertos en esta vista.
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                ) : null}
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm">
                         <div className="flex items-center justify-between gap-3">
@@ -2589,15 +2708,32 @@ export default function CeoDashboard() {
                         <p className="mt-2 text-sm text-slate-500">Cambios de consentimiento o visibilidad ya persistidos.</p>
                       </div>
                       <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último guardrail</p>
-                        <p className="mt-2 text-sm font-semibold text-slate-950">
-                          {latestGuardrailEvent ? formatDateTime(latestGuardrailEvent.createdAt) : "Sin eventos de rechazo recientes"}
-                        </p>
-                        <p className="mt-2 text-sm text-slate-500">
-                          {latestGuardrailEvent
-                            ? getAuditRejectionReason(latestGuardrailEvent) || "El rechazo quedó registrado con traza mínima en auditoría."
-                            : "Cuando un guardrail operativo bloquee una acción de Auditar, aparecerá aquí con su razón resumida."}
-                        </p>
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Causas frecuentes de guardrail</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-950">{auditSummary.guardrailReasonRanking.length > 0 ? "Ranking accionable" : "Sin eventos de rechazo recientes"}</p>
+                          </div>
+                          <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+                            {formatNumber(auditSummary.guardrailReasonRanking.length)} causas
+                          </Badge>
+                        </div>
+                        {auditSummary.guardrailReasonRanking.length > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            {auditSummary.guardrailReasonRanking.map((entry, index) => (
+                              <article key={`${entry.reason}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3 text-sm text-slate-700">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="font-semibold text-slate-950">{index + 1}. {entry.reason}</p>
+                                  <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-800">{formatNumber(entry.count)} rechazos</Badge>
+                                </div>
+                                <p className="mt-2 text-xs leading-5 text-slate-500">
+                                  {entry.latestAt ? `Último visible: ${formatDateTime(entry.latestAt)}.` : "Sin timestamp visible."} {entry.caseId ? `Caso más reciente: ${entry.caseId}.` : `Tenant: ${entry.tenantId}.`}
+                                </p>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm text-slate-500">Cuando un guardrail operativo bloquee una acción de Auditar, aquí aparecerán las causas más repetidas para priorizar la corrección.</p>
+                        )}
                       </div>
                     </div>
                   </div>

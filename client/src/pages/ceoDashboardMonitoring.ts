@@ -14,6 +14,27 @@ export type AuditFeedItem = {
   createdAt: Date | string;
 };
 
+export type LegalGateDrilldownItem = {
+  tenantId: string;
+  caseId: string | null;
+  scopeId: string;
+  conflictStartedAt: string;
+  ageSeconds: number | null;
+};
+
+export type LegalGateWeeklyTrendPoint = {
+  weekStart: string;
+  abandonmentCount: number;
+};
+
+export type GuardrailReasonRankingItem = {
+  reason: string;
+  count: number;
+  latestAt: string | null;
+  caseId: string | null;
+  tenantId: string;
+};
+
 export type AuditMonitoringSummary = {
   totalEvents: number;
   guardrailRejections: number;
@@ -34,6 +55,9 @@ export type AuditMonitoringSummary = {
   legalGateAbandonments: number;
   legalGateAbandonmentRate: number | null;
   averageLegalGateResolutionSeconds: number | null;
+  legalGateAffectedCases: LegalGateDrilldownItem[];
+  legalGateWeeklyTrend: LegalGateWeeklyTrendPoint[];
+  guardrailReasonRanking: GuardrailReasonRankingItem[];
   cameraPreviewToConfirmRate: number | null;
   filePreviewToConfirmRate: number | null;
   dominantCaptureMode: "camera" | "file" | "balanced" | "none";
@@ -179,17 +203,26 @@ function getLegalGateScopeId(item: AuditFeedItem) {
   return item.entityId;
 }
 
+function getWeekStartIso(timestampMs: number) {
+  const weekStart = new Date(timestampMs);
+  weekStart.setUTCHours(0, 0, 0, 0);
+  const dayOffset = (weekStart.getUTCDay() + 6) % 7;
+  weekStart.setUTCDate(weekStart.getUTCDate() - dayOffset);
+  return weekStart.toISOString();
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
   const documentUploadEvents = items.filter((item) => item.action === "document.upload");
-  const guardrailRejections = items.filter((item) => item.action === "document.guardrail_rejected").length;
+  const guardrailEvents = items.filter((item) => item.action === "document.guardrail_rejected");
+  const guardrailRejections = guardrailEvents.length;
   const legalGateAcceptances = items.filter((item) => item.action === "consent.legal_package_accept").length;
   const legalGateLockConflicts = items.filter((item) => item.action === "consent.legal_package_lock_conflict").length;
   const legalGateEvents = items
     .filter((item) => item.action === "consent.legal_package_accept" || item.action === "consent.legal_package_lock_conflict")
     .slice()
-    .sort((left, right) => toTimestampMs(left.createdAt) - toTimestampMs(right.createdAt));
+    .sort((left, right) => (toTimestampMs(left.createdAt) ?? 0) - (toTimestampMs(right.createdAt) ?? 0));
 
   let cameraCaptureSelections = 0;
   let fileCaptureSelections = 0;
@@ -212,7 +245,13 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     .map((item) => getPreviewToConfirmationSeconds(item))
     .filter((value): value is number => value !== null);
 
-  const legalGateOpenConflicts = new Map<string, number>();
+  const latestVisibleTimestamp = items.reduce<number | null>((latest, item) => {
+    const timestamp = toTimestampMs(item.createdAt);
+    if (timestamp === null) return latest;
+    return latest === null || timestamp > latest ? timestamp : latest;
+  }, null);
+
+  const legalGateOpenConflicts = new Map<string, { tenantId: string; caseId: string | null; scopeId: string; conflictStartedAt: number }>();
   const legalGateResolutionSamples: number[] = [];
 
   for (const event of legalGateEvents) {
@@ -224,17 +263,79 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
 
     if (event.action === "consent.legal_package_lock_conflict") {
       if (!legalGateOpenConflicts.has(scopeId)) {
-        legalGateOpenConflicts.set(scopeId, eventTimestamp);
+        legalGateOpenConflicts.set(scopeId, {
+          tenantId: event.tenantId,
+          caseId: event.caseId,
+          scopeId,
+          conflictStartedAt: eventTimestamp,
+        });
       }
       continue;
     }
 
-    const conflictStartedAt = legalGateOpenConflicts.get(scopeId);
-    if (typeof conflictStartedAt === "number" && eventTimestamp >= conflictStartedAt) {
-      legalGateResolutionSamples.push(Math.round((eventTimestamp - conflictStartedAt) / 1000));
+    const conflict = legalGateOpenConflicts.get(scopeId);
+    if (conflict && eventTimestamp >= conflict.conflictStartedAt) {
+      legalGateResolutionSamples.push(Math.round((eventTimestamp - conflict.conflictStartedAt) / 1000));
       legalGateOpenConflicts.delete(scopeId);
     }
   }
+
+  const legalGateAffectedCases = Array.from(legalGateOpenConflicts.values())
+    .sort((left, right) => right.conflictStartedAt - left.conflictStartedAt)
+    .map((entry) => ({
+      tenantId: entry.tenantId,
+      caseId: entry.caseId,
+      scopeId: entry.scopeId,
+      conflictStartedAt: new Date(entry.conflictStartedAt).toISOString(),
+      ageSeconds: latestVisibleTimestamp === null ? null : Math.max(0, Math.round((latestVisibleTimestamp - entry.conflictStartedAt) / 1000)),
+    }));
+
+  const legalGateWeeklyTrend = Array.from(
+    legalGateAffectedCases.reduce((buckets, entry) => {
+      const conflictTimestamp = toTimestampMs(entry.conflictStartedAt);
+      if (conflictTimestamp === null) return buckets;
+      const bucketKey = getWeekStartIso(conflictTimestamp);
+      buckets.set(bucketKey, (buckets.get(bucketKey) ?? 0) + 1);
+      return buckets;
+    }, new Map<string, number>()).entries(),
+  )
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([weekStart, abandonmentCount]) => ({ weekStart, abandonmentCount }));
+
+  const guardrailReasonRanking = Array.from(
+    guardrailEvents.reduce((buckets, item) => {
+      const state = parseAuditState(item.afterState);
+      const reason = readString(state?.reason) ?? "sin_detalle";
+      const eventTimestamp = toTimestampMs(item.createdAt);
+      const current =
+        buckets.get(reason) ??
+        ({
+          reason,
+          count: 0,
+          latestAt: null,
+          latestAtMs: null,
+          caseId: item.caseId,
+          tenantId: item.tenantId,
+        } satisfies GuardrailReasonRankingItem & { latestAtMs: number | null });
+
+      current.count += 1;
+      if (eventTimestamp !== null && (current.latestAtMs === null || eventTimestamp >= current.latestAtMs)) {
+        current.latestAtMs = eventTimestamp;
+        current.latestAt = new Date(eventTimestamp).toISOString();
+        current.caseId = item.caseId;
+        current.tenantId = item.tenantId;
+      }
+
+      buckets.set(reason, current);
+      return buckets;
+    }, new Map<string, GuardrailReasonRankingItem & { latestAtMs: number | null }>()).values(),
+  )
+    .sort((left, right) => {
+      if (right.count !== left.count) return right.count - left.count;
+      return (right.latestAtMs ?? 0) - (left.latestAtMs ?? 0);
+    })
+    .slice(0, 5)
+    .map(({ latestAtMs: _latestAtMs, ...entry }) => entry);
 
   const averagePreviewToConfirmationSeconds =
     previewToConfirmationSamples.length > 0
@@ -266,6 +367,9 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     legalGateAbandonments,
     legalGateAbandonmentRate: getPercentage(legalGateAbandonments, legalGateAcceptances + legalGateAbandonments),
     averageLegalGateResolutionSeconds,
+    legalGateAffectedCases,
+    legalGateWeeklyTrend,
+    guardrailReasonRanking,
     cameraPreviewToConfirmRate: getPercentage(cameraPreviewConfirmedEvents, cameraCaptureSelections),
     filePreviewToConfirmRate: getPercentage(filePreviewConfirmedEvents, fileCaptureSelections),
     dominantCaptureMode: getDominantCaptureMode(cameraCaptureSelections, fileCaptureSelections),

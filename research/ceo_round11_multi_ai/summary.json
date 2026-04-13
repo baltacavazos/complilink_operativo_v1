@@ -1,0 +1,104 @@
+{
+  "prompt": "Eres un revisor técnico senior de un proyecto web TypeScript ya funcional. Necesito una recomendación MINIMA, incremental y sin over-engineering.\n\nContexto heredado:\n- Proyecto: AuditaPatron dentro de una app web Manus con servidor corriendo y TypeScript sin errores.\n- La ronda anterior ya corrigió la consolidación de `guardrail_rejected` en la Consola CEO, añadió una tarjeta ejecutiva con abandono del gate legal y tiempo medio de resolución, y cubrió `/auditar` con una prueba específica de rechazo por guardrails.\n- Nueva ronda aprobada por el usuario, en este orden:\n  1) añadir drill-down desde esa tarjeta ejecutiva hacia los casos afectados;\n  2) mostrar tendencia semanal del abandono legal en la Consola CEO;\n  3) convertir los motivos de `guardrail_rejected` en un ranking accionable por causa.\n\nRestricciones:\n- Mantener el cambio mínimo posible.\n- Reutilizar la telemetría, audit trail y contratos de monitoreo existentes.\n- No introducir infraestructura nueva si los eventos actuales bastan.\n- Priorizar cambios pequeños en helpers, queries derivadas y render de UI.\n- Favorecer aserciones deterministas y pruebas pequeñas.\n- Evitar dashboards recargados: la Consola CEO debe seguir siendo escaneable de un vistazo.\n\nResponde SOLO JSON válido con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del modelo\",\n  \"drilldown\": {\n    \"summary\": \"frase breve\",\n    \"recommended_scope\": \"texto\",\n    \"ui_shape\": \"texto\",\n    \"minimal_data_needed\": [\"campo1\", \"campo2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"weekly_trend\": {\n    \"summary\": \"frase breve\",\n    \"recommended_bucket\": \"texto\",\n    \"recommended_visual\": \"texto\",\n    \"minimal_data_needed\": [\"campo1\", \"campo2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"guardrail_ranking\": {\n    \"summary\": \"frase breve\",\n    \"grouping_key\": \"texto\",\n    \"recommended_limit\": \"texto\",\n    \"minimal_data_needed\": [\"campo1\", \"campo2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"test_strategy\": {\n    \"summary\": \"frase breve\",\n    \"priority_tests\": [\"test1\", \"test2\", \"test3\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"risks\": [\"riesgo1\", \"riesgo2\"],\n  \"consensus_candidate\": \"propuesta integral en 2 o 3 frases\"\n}",
+  "results": {
+    "chatgpt": {
+      "model_view": "AuditaPatronSummary",
+      "drilldown": {
+        "summary": "Añadir enlace desde tarjeta ejecutiva a lista filtrada de casos afectados por abandono legal",
+        "recommended_scope": "Extender el componente de la tarjeta ejecutiva para que al hacer clic muestre un modal o vista secundaria con casos filtrados por abandono legal en el gate",
+        "ui_shape": "Lista simple con columnas clave (ID caso, fecha, motivo abandono), paginada y ordenada por fecha descendente",
+        "minimal_data_needed": [
+          "case_id",
+          "abandonment_reason",
+          "timestamp"
+        ],
+        "why_minimal": "Se reutilizan los datos ya auditados y almacenados sin añadir nuevos eventos ni modificar contratos, solo filtrando y mostrando detalles existentes"
+      },
+      "weekly_trend": {
+        "summary": "Mostrar tendencia semanal del abandono legal en la Consola CEO",
+        "recommended_bucket": "Agrupación por semana calendario (ISO week) usando timestamp de abandono",
+        "recommended_visual": "Gráfico de líneas simple con puntos por semana y valor numérico o porcentaje de abandono",
+        "minimal_data_needed": [
+          "timestamp",
+          "abandonment_flag"
+        ],
+        "why_minimal": "Se usa solo el evento de abandono ya registrado, agregando una query derivada para sumar por semana, sin alterar telemetría ni contratos"
+      },
+      "guardrail_ranking": {
+        "summary": "Ranking de motivos de rechazo por guardrail ordenado por frecuencia para acción priorizada",
+        "grouping_key": "motivo_guardrail_rejected",
+        "recommended_limit": "Top 5 motivos más frecuentes",
+        "minimal_data_needed": [
+          "motivo_guardrail_rejected",
+          "event_id"
+        ],
+        "why_minimal": "Se aprovechan los motivos ya capturados en eventos existentes, agregando solo una consulta de conteo y ordenamiento sin cambios en la estructura de datos"
+      },
+      "test_strategy": {
+        "summary": "Pruebas pequeñas y deterministas para cada nueva funcionalidad incremental",
+        "priority_tests": [
+          "test_drilldown_muestra_casos_filtrados_correctamente",
+          "test_tendencia_semanal_agrega_y_muestra_datos_correctamente",
+          "test_ranking_guardrail_orden_y_limite"
+        ],
+        "why_minimal": "Cada prueba cubre solo la lógica incremental añadida, usando datos mock simples y aserciones claras sin necesidad de mocks complejos o integración profunda"
+      },
+      "risks": [
+        "Posible sobrecarga visual si el drilldown muestra demasiados casos sin paginación",
+        "Errores en agrupación semanal si el timezone no se maneja consistentemente",
+        "Ranking puede no reflejar causas emergentes si se limita demasiado el top 5"
+      ],
+      "consensus_candidate": "Implementar un drilldown sencillo desde la tarjeta ejecutiva que muestre casos filtrados, añadir una query semanal para tendencia de abandono legal con gráfico de líneas y crear un ranking top 5 de motivos de guardrail rechazados. Mantener pruebas unitarias pequeñas y usar solo datos ya auditados para minimizar impacto y preservar la claridad de la Consola CEO."
+    },
+    "grok": {
+      "model_view": "AuditaPatron",
+      "drilldown": {
+        "summary": "Drill-down a casos rechazados desde la tarjeta ejecutiva",
+        "recommended_scope": "Reutilizar el audit trail existente para filtrar y mostrar solo los casos afectados por guardrails, sin alterar el flujo principal",
+        "ui_shape": "Un enlace en la tarjeta que abre un modal con una lista simple de casos, incluyendo IDs y razones",
+        "minimal_data_needed": [
+          "caseId",
+          "rejectionReason"
+        ],
+        "why_minimal": "Usa datos ya disponibles en el audit trail para evitar consultas nuevas y mantener el cambio confinado a la UI y helpers existentes"
+      },
+      "weekly_trend": {
+        "summary": "Tendencia semanal de abandonos legales",
+        "recommended_bucket": "Agrupar por semana basada en timestamps existentes",
+        "recommended_visual": "Gráfico de línea básico en la Consola CEO",
+        "minimal_data_needed": [
+          "timestamp",
+          "rejectionType"
+        ],
+        "why_minimal": "Reutiliza telemetría actual para calcular tendencias sin agregar procesamiento, manteniendo el enfoque en datos existentes para evitar sobrecarga"
+      },
+      "guardrail_ranking": {
+        "summary": "Ranking de motivos de rechazo por causa",
+        "grouping_key": "rejectionReason",
+        "recommended_limit": "Top 5 motivos más comunes",
+        "minimal_data_needed": [
+          "rejectionReason",
+          "count"
+        ],
+        "why_minimal": "Agrupa y cuenta motivos desde el audit trail existente, limitando a un ranking simple para no introducir lógica compleja ni nueva infraestructura"
+      },
+      "test_strategy": {
+        "summary": "Pruebas minimales para características incrementales",
+        "priority_tests": [
+          "DrilldownLinkTest",
+          "WeeklyTrendAggregationTest",
+          "RankingSortTest"
+        ],
+        "why_minimal": "Prioriza tests unitarios en cambios específicos para asegurar determinismo y cubrir solo lo esencial, reutilizando el framework de pruebas existente"
+      },
+      "risks": [
+        "Posible sobrecarga UI si drill-down no es opcional",
+        "Inconsistencias en tendencias semanales por variaciones en timestamps"
+      ],
+      "consensus_candidate": "Implementa el drill-down como un enlace mínimo en la tarjeta ejecutiva usando datos existentes; agrega la tendencia semanal como un gráfico simple derivado de timestamps; convierte motivos en un ranking top 5 para acción rápida, manteniendo la Consola CEO escaneable y sin over-engineering."
+    }
+  },
+  "failures": {
+    "gemini": "HTTPError: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyC503Q-dRi4H9bMSE99uYPX3sMu7PmdxUc"
+  }
+}
