@@ -1070,3 +1070,7 @@
 - [x] Integrar el asistente laboral contextual de Helios junto al resultado del análisis en /auditar.
 - [x] Simplificar la jerarquía visual del flujo posterior a la carga para reducir scroll, clics y confusión para usuarios no expertos.
 - [x] Ajustar y ampliar pruebas de /auditar para validar el nuevo flujo documental con TypeScript y Vitest en verde.
+- [x] Hacer que el asistente laboral contextual se abra con preguntas sugeridas precargadas desde el resultado del análisis en /auditar.
+- [x] Convertir los hallazgos clave en tarjetas comparables entre documentos del mismo expediente dentro de /auditar.
+- [x] Cerrar la integración para que cada documento confirmado se despache y consulte siempre contra Helios remoto en lugar de depender del modo mock.
+- [x] Consultar con ChatGPT, Grok y Gemini la mejor UX y jerarquía para la apertura contextual del asistente y la comparativa entre documentos antes de implementar.

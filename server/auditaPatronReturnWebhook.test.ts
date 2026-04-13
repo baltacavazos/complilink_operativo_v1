@@ -300,7 +300,7 @@ describe("auditaPatronReturnWebhook", () => {
 
     expect(dbMocks.registerCompliLinkWebhookEvent).toHaveBeenCalledTimes(2);
     expect(dbMocks.updateDocumentPostProcessing).toHaveBeenCalledTimes(1);
-    expect(dbMocks.upsertCanonicalContract).toHaveBeenCalledTimes(1);
+    expect(dbMocks.upsertCanonicalContract).toHaveBeenCalledTimes(2);
     expect(dbMocks.addCaseEvent).toHaveBeenCalledTimes(1);
     expect(dbMocks.createAuditLog).toHaveBeenCalledTimes(1);
     expect(dbMocks.updateCompliLinkWebhookEvent).toHaveBeenCalledTimes(1);
@@ -308,6 +308,25 @@ describe("auditaPatronReturnWebhook", () => {
 
     const firstInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[0]?.[0];
     const secondInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[1]?.[0];
+    const genericAuditContract = dbMocks.upsertCanonicalContract.mock.calls[0]?.[0];
+    const heliosAuditContract = dbMocks.upsertCanonicalContract.mock.calls[1]?.[0];
+
+    expect(genericAuditContract).toMatchObject({
+      contractType: "audit",
+      schemaVersion: "v1",
+      status: "ready",
+    });
+    expect(heliosAuditContract).toMatchObject({
+      contractType: "audit",
+      schemaVersion: "helios_v1",
+      status: "ready",
+    });
+    const parsedHeliosContract = JSON.parse(String(heliosAuditContract?.payload ?? "{}"));
+    expect(parsedHeliosContract).toMatchObject({
+      engine: "helios",
+      mode: "remote",
+      status: "completed",
+    });
 
     expect(firstInsert?.eventKey).toBe("event:evt-bridge-001");
     expect(firstInsert?.eventKey).toBe(secondInsert?.eventKey);

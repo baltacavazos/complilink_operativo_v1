@@ -1,3 +1,5 @@
+import { ENV } from "./_core/env";
+
 export type HeliosOpinionStatus =
   | "pending_dispatch"
   | "sent"
@@ -555,8 +557,82 @@ function buildLegalHighlights(summary: string, uncertainties: string[], recommen
   };
 }
 
+function toOptionalText(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function toOptionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function toOptionalRecord(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  return value as Record<string, unknown>;
+}
+
+function clampConfidenceScore(value: unknown, fallback = 78) {
+  const normalized = toOptionalNumber(value);
+  if (typeof normalized !== "number") return fallback;
+  return Math.max(0, Math.min(100, Math.round(normalized)));
+}
+
+function getPendingRemoteSummary(documentType: string) {
+  switch (documentType) {
+    case "contract":
+      return "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.";
+    case "payroll_receipt":
+      return "Helios ya recibió tu recibo de nómina y está contrastando pagos, deducciones y periodo con el resto del expediente.";
+    case "cfdi":
+      return "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.";
+    case "imss":
+      return "Helios ya recibió tu soporte de IMSS y está validando continuidad, salario registrado y señales de seguridad social.";
+    default:
+      return "Helios ya recibió tu documento y está preparando una respuesta jurídica más útil para este expediente.";
+  }
+}
+
+function buildPendingRemoteResultCard(params: BuildHeliosOpinionParams): HeliosResultCard {
+  const suggestedQuestions = getSuggestedQuestions(params);
+  return {
+    headline: "Tu documento ya está en revisión avanzada",
+    lead: getPendingRemoteSummary(params.documentType),
+    keyFindings: [
+      {
+        label: "Estado del motor",
+        value: "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+        source: "derived",
+        tone: "support",
+      },
+      {
+        label: "Qué sigue",
+        value: "En cuanto el motor termine, esta vista se actualizará con hallazgos concretos, contexto del expediente y preguntas sugeridas.",
+        source: "derived",
+        tone: "neutral",
+      },
+    ],
+    nextStepLabel: "Siguiente paso sugerido",
+    nextStepSummary: "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+    dossierUpdateLabel: "Tu expediente ya se actualizó",
+    dossierUpdateSummary: getDossierUpdateSummary(params),
+    assistantIntro: "Puedo ayudarte a entender qué está revisando Helios y qué documento conviene subir después mientras llega la respuesta final.",
+    suggestedQuestions,
+  };
+}
+
+export function hasRemoteHeliosBridgeConfigured() {
+  return ENV.auditapatronEngineWebhookUrl.trim().length > 0;
+}
+
 export function getHeliosIntegrationMode(): HeliosIntegrationMode {
-  return "mock";
+  return hasRemoteHeliosBridgeConfigured() ? "remote" : "mock";
 }
 
 export function buildHeliosOpinion(params: BuildHeliosOpinionParams): HeliosOpinion {
@@ -573,7 +649,7 @@ export function buildHeliosOpinion(params: BuildHeliosOpinionParams): HeliosOpin
     documentId: params.documentId,
     caseId: params.caseId,
     status: "completed",
-    mode: getHeliosIntegrationMode(),
+    mode: "mock",
     summary,
     legalOpinion,
     riskLevel,
@@ -600,7 +676,64 @@ export function buildHeliosOpinion(params: BuildHeliosOpinionParams): HeliosOpin
   };
 }
 
+export function buildRemotePendingHeliosOpinionContract(params: BuildHeliosOpinionParams): HeliosOpinionContract {
+  const generatedAt = new Date().toISOString();
+  const mode = getHeliosIntegrationMode();
+  const summary = getPendingRemoteSummary(params.documentType);
+  const recommendedNextStep = getRecommendedNextStep(params.documentType);
+  const uncertainties = ["La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo."];
+  const opinion: HeliosOpinion = {
+    documentId: params.documentId,
+    caseId: params.caseId,
+    status: hasRemoteHeliosBridgeConfigured() ? "processing" : "not_configured",
+    mode,
+    summary,
+    legalOpinion:
+      mode === "remote"
+        ? "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente."
+        : "Helios remoto todavía no está configurado. Este expediente necesita la conexión del motor para devolver una opinión final.",
+    riskLevel: "low",
+    recommendedNextStep,
+    recommendedActions: getRecommendedActions(params.documentType),
+    legalFoundations: getLegalFoundations(params.documentType),
+    keyFactsUsed: getKeyFactsUsed(params),
+    uncertainties,
+    confidenceScore: 78,
+    disclaimer: DEFAULT_DISCLAIMER,
+    generatedAt,
+    resultCard: buildPendingRemoteResultCard(params),
+    legalHighlights: buildLegalHighlights(summary, uncertainties, recommendedNextStep),
+    rawPayload: {
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      traceId: params.traceId,
+      documentId: params.documentId,
+      documentType: params.documentType,
+      jurisdiction: params.jurisdiction ?? "México",
+      caseTitle: params.caseTitle ?? null,
+      preliminaryAnalysis: params.preliminaryAnalysis ?? null,
+      bridgeConfigured: hasRemoteHeliosBridgeConfigured(),
+    },
+  };
+
+  return {
+    engine: "helios",
+    mode,
+    traceId: params.traceId,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    documentId: params.documentId,
+    requestedOpinionType: "labor_preliminary_opinion",
+    status: opinion.status,
+    opinion,
+  };
+}
+
 export function buildHeliosOpinionContract(params: BuildHeliosOpinionParams): HeliosOpinionContract {
+  if (hasRemoteHeliosBridgeConfigured()) {
+    return buildRemotePendingHeliosOpinionContract(params);
+  }
+
   const opinion = buildHeliosOpinion(params);
 
   return {
@@ -614,4 +747,154 @@ export function buildHeliosOpinionContract(params: BuildHeliosOpinionParams): He
     status: opinion.status,
     opinion,
   };
+}
+
+export function buildRemoteHeliosOpinionContract(params: {
+  tenantId: string;
+  caseId: string;
+  traceId: string;
+  documentId: string;
+  documentType: string;
+  documentName?: string | null;
+  remotePayload: Record<string, unknown>;
+}) {
+  const payload = params.remotePayload;
+  const contractSummary = toOptionalText(payload.contractSummary);
+  const extractedFields = toOptionalRecord(payload.extractedFields);
+  const analysisResults = toOptionalRecord(payload.analysisResults);
+  const estimatedBenefits = toOptionalRecord(payload.estimatedBenefits);
+  const metadata = toOptionalRecord(payload.metadata);
+  const guardrails = [
+    ...asTextList(payload.guardrailWarnings),
+    ...asTextList(payload.guardrailsFlags),
+  ].slice(0, 3);
+  const summary =
+    contractSummary ??
+    toOptionalText(analysisResults?.summary) ??
+    toOptionalText(metadata?.summary) ??
+    getPendingRemoteSummary(params.documentType);
+  const recommendedNextStep =
+    toOptionalText(analysisResults?.nextStep) ??
+    toOptionalText(metadata?.nextStep) ??
+    getRecommendedNextStep(params.documentType);
+  const legalOpinion =
+    toOptionalText(analysisResults?.legalOpinion) ??
+    toOptionalText(metadata?.legalOpinion) ??
+    "Helios terminó de procesar este documento y ya devolvió una lectura consolidada basada en el expediente y en el contenido recibido.";
+  const recommendedActions = [
+    ...asTextList(analysisResults?.recommendedActions),
+    ...asTextList(metadata?.recommendedActions),
+    ...getRecommendedActions(params.documentType),
+  ].slice(0, 3);
+  const confidenceScore = clampConfidenceScore(payload.confidenceScore, 84);
+  const riskLevel: HeliosRiskLevel =
+    guardrails.length >= 2
+      ? "high"
+      : guardrails.length === 1
+        ? "medium"
+        : confidenceScore >= 88
+          ? "low"
+          : "medium";
+  const keyFindings: HeliosResultFinding[] = [];
+
+  const topFieldEntries = Object.entries(extractedFields ?? {}).filter(([, value]) => toOptionalText(value)).slice(0, 2);
+  topFieldEntries.forEach(([label, value]) => {
+    keyFindings.push({
+      label: label.replace(/[_-]+/g, " "),
+      value: String(value),
+      source: "confirmed",
+      tone: "support",
+    });
+  });
+
+  const benefitEntries = Object.entries(estimatedBenefits ?? {}).filter(([, value]) => toOptionalText(value)).slice(0, 1);
+  benefitEntries.forEach(([label, value]) => {
+    keyFindings.push({
+      label: label.replace(/[_-]+/g, " "),
+      value: String(value),
+      source: "derived",
+      tone: "support",
+    });
+  });
+
+  if (guardrails[0]) {
+    keyFindings.push({
+      label: "Atención prioritaria",
+      value: guardrails[0],
+      source: "derived",
+      tone: "attention",
+    });
+  }
+
+  if (keyFindings.length === 0) {
+    keyFindings.push({
+      label: "Resultado remoto",
+      value: summary,
+      source: "derived",
+      tone: "support",
+    });
+  }
+
+  const suggestedQuestions = [
+    ...asTextList(metadata?.suggestedQuestions),
+    ...asTextList(analysisResults?.suggestedQuestions),
+    ...getSuggestedQuestions({
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      traceId: params.traceId,
+      documentId: params.documentId,
+      documentType: params.documentType,
+      documentName: params.documentName,
+    }),
+  ].slice(0, 3);
+
+  const opinion: HeliosOpinion = {
+    documentId: params.documentId,
+    caseId: params.caseId,
+    status: "completed",
+    mode: "remote",
+    summary,
+    legalOpinion,
+    riskLevel,
+    recommendedNextStep,
+    recommendedActions,
+    legalFoundations: getLegalFoundations(params.documentType),
+    keyFactsUsed: [
+      ...topFieldEntries.map(([label, value]) => `${label}: ${String(value)}`),
+      ...(params.documentName ? [params.documentName] : []),
+      `Expediente ${params.caseId}`,
+    ].slice(0, 5),
+    uncertainties:
+      guardrails.length > 0
+        ? guardrails
+        : ["La lectura final debe contrastarse con el resto del expediente para construir una estrategia laboral completa."],
+    confidenceScore,
+    disclaimer: DEFAULT_DISCLAIMER,
+    generatedAt: toOptionalText(payload.timestamp) ?? new Date().toISOString(),
+    resultCard: {
+      headline: "Helios ya terminó esta lectura",
+      lead: summary,
+      keyFindings: keyFindings.slice(0, 3),
+      nextStepLabel: "Siguiente paso sugerido",
+      nextStepSummary: recommendedNextStep,
+      dossierUpdateLabel: "Tu expediente quedó enriquecido",
+      dossierUpdateSummary: "La respuesta remota ya quedó ligada a este documento para futuras comparaciones dentro del expediente.",
+      assistantIntro: "Ahora puedo explicarte esta lectura remota en palabras simples y compararla con otros documentos de tu expediente.",
+      suggestedQuestions,
+    },
+    legalHighlights: buildLegalHighlights(summary, guardrails, recommendedNextStep),
+    rawPayload: payload,
+  };
+
+  return {
+    engine: "helios",
+    mode: "remote",
+    traceId: params.traceId,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    documentId: params.documentId,
+    requestedOpinionType: "labor_preliminary_opinion",
+    status: opinion.status,
+    opinion,
+  } satisfies HeliosOpinionContract;
 }

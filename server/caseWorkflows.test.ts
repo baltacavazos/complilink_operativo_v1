@@ -847,13 +847,13 @@ describe("appRouter case workflows", () => {
       status: "ready",
     });
     expect(result.heliosOpinion).toMatchObject({
-      mode: "mock",
-      status: "completed",
+      mode: "remote",
+      status: "processing",
     });
     expect(result.heliosOpinionContract).toMatchObject({
       engine: "helios",
-      mode: "mock",
-      status: "completed",
+      mode: "remote",
+      status: "processing",
     });
 
     expect(db.createAuditLogs).toHaveBeenCalledTimes(1);
@@ -1437,8 +1437,8 @@ describe("appRouter case workflows", () => {
     expect(result.document.originalName).toBe("constancia_imss.pdf");
     expect(result.document.sha256).toHaveLength(64);
     expect(result.heliosOpinion).toMatchObject({
-      status: "completed",
-      mode: "mock",
+      status: "processing",
+      mode: "remote",
     });
   });
 

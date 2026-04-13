@@ -17,6 +17,7 @@ import {
   isSupportedCompliLinkReturnEvent,
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
+import { buildRemoteHeliosOpinionContract } from "./heliosIntegrationService";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
 
@@ -503,6 +504,28 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
         payload: JSON.stringify(canonicalReturnPayload),
         status: "ready",
       });
+
+      if (payload.event === "document.processed.v1") {
+        const remoteHeliosOpinionContract = buildRemoteHeliosOpinionContract({
+          tenantId: document.tenantId,
+          caseId: document.caseId,
+          traceId: document.traceId,
+          documentId: document.documentId,
+          documentType: normalizedDocumentType,
+          documentName: document.originalName,
+          remotePayload: canonicalReturnPayload,
+        });
+
+        await upsertCanonicalContract({
+          tenantId: document.tenantId,
+          caseId: document.caseId,
+          traceId: document.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_v1",
+          payload: JSON.stringify(remoteHeliosOpinionContract),
+          status: "ready",
+        });
+      }
 
       const descriptor = buildEventDescriptor(payload as CompliLinkReturnEnvelope);
 

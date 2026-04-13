@@ -3052,6 +3052,14 @@ export default function Auditar() {
     );
   };
 
+  const openHeliosCopilot = (prompt?: string | null) => {
+    setHeliosCopilotOpen(true);
+
+    if (typeof prompt === "string" && prompt.trim().length > 0) {
+      handleHeliosCopilotSend(prompt.trim());
+    }
+  };
+
   const previewStructuredConfirmedFields = useMemo(
     () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
     [displayPreviewStructuredExtraction],
@@ -3172,6 +3180,30 @@ export default function Auditar() {
   });
   const comparisonLeftDocument = activeComparisonPair?.[0] ?? null;
   const comparisonRightDocument = activeComparisonPair?.[1] ?? null;
+  const comparisonHighlightCards = useMemo(() => {
+    if (!comparisonLeftDocument || !comparisonRightDocument) {
+      return [] as Array<{
+        id: string;
+        title: string;
+        subtitle: string;
+        summary: string;
+        findings: HeliosResultFindingView[];
+      }>;
+    }
+
+    return [comparisonLeftDocument, comparisonRightDocument].map((document) => {
+      const opinion = asHeliosOpinion(document.heliosOpinion);
+      return {
+        id: document.documentId,
+        title: document.originalName,
+        subtitle: `${getSimpleDocumentTypeLabel(document.documentType)} · ${formatDate(document.createdAt)}`,
+        summary:
+          warmVisibleNamingCopy(opinion?.summary ?? null) ??
+          "Este documento ya forma parte del expediente y sirve como referencia para comparar lo más relevante.",
+        findings: opinion?.resultCard?.keyFindings?.slice(0, 2) ?? [],
+      };
+    });
+  }, [comparisonLeftDocument, comparisonRightDocument]);
 
   useEffect(() => {
     const fallbackLeft = automaticComparisonPair?.[0]?.documentId ?? comparisonDocuments[0]?.documentId ?? "";
@@ -5475,6 +5507,44 @@ export default function Auditar() {
                             )}
                           </div>
 
+                          {comparisonHighlightCards.length === 2 ? (
+                            <div className="rounded-[1rem] border border-violet-100 bg-violet-50 p-4">
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-semibold text-violet-950">Compara hallazgos entre documentos</p>
+                                  <p className="mt-1 text-sm leading-7 text-violet-900">
+                                    Así se ve lo más importante del documento actual frente a otro archivo del mismo expediente, sin salir de esta vista.
+                                  </p>
+                                </div>
+                                {comparisonSuggestedLabel ? (
+                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800">{comparisonSuggestedLabel}</span>
+                                ) : null}
+                              </div>
+
+                              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                                {comparisonHighlightCards.map((card) => (
+                                  <article key={card.id} className="rounded-[1rem] border border-white/80 bg-white p-4 shadow-sm">
+                                    <p className="text-sm font-semibold text-slate-950">{card.title}</p>
+                                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">{card.subtitle}</p>
+                                    <p className="mt-3 text-sm leading-6 text-slate-700">{card.summary}</p>
+                                    {card.findings.length ? (
+                                      <div className="mt-3 space-y-2">
+                                        {card.findings.map((item, index) => (
+                                          <div key={`${card.id}-${item.label}-${index}`} className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
+                                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
+                                            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">{warmVisibleNamingCopy(item.value) ?? item.value}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="mt-3 text-sm leading-6 text-slate-600">Todavía no hay hallazgos comparables visibles para este documento.</p>
+                                    )}
+                                  </article>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+
                           <div className="grid gap-4 lg:grid-cols-2">
                             <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
                               <p className="text-sm font-semibold text-teal-950">
@@ -5529,12 +5599,15 @@ export default function Auditar() {
                             {(lastHeliosOpinion.resultCard?.suggestedQuestions?.length || heliosCopilotSuggestedPrompts.length) ? (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {(lastHeliosOpinion.resultCard?.suggestedQuestions ?? heliosCopilotSuggestedPrompts).slice(0, 3).map((item) => (
-                                  <span
+                                  <Button
                                     key={item}
-                                    className="rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-medium text-sky-900"
+                                    type="button"
+                                    variant="outline"
+                                    className="h-auto rounded-full border-sky-200 bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-sky-900 hover:bg-sky-100"
+                                    onClick={() => openHeliosCopilot(item)}
                                   >
                                     {item}
-                                  </span>
+                                  </Button>
                                 ))}
                               </div>
                             ) : null}
@@ -5542,7 +5615,7 @@ export default function Auditar() {
                             <Button
                               type="button"
                               className="mt-4 w-full justify-between rounded-full bg-sky-900 text-white hover:bg-sky-800"
-                              onClick={() => setHeliosCopilotOpen(true)}
+                              onClick={() => openHeliosCopilot()}
                             >
                               Abrir asistente laboral
                               <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
@@ -5996,7 +6069,7 @@ export default function Auditar() {
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                       <Button
                         className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                        onClick={() => setHeliosCopilotOpen(true)}
+                        onClick={() => openHeliosCopilot()}
                         disabled={!selectedCaseId || legalGateRequired}
                       >
                         Abrir tu asistente laboral
