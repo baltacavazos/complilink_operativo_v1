@@ -1948,12 +1948,10 @@ export default function CeoDashboard() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight xl:text-[2.55rem]">
-                    Visibilidad integral para operar con criterio ejecutivo y flujo de escritorio.
+                    Lo crítico primero para decidir rápido.
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
-                    Esta consola concentra salud operativa, alertas, accesos por caso y trazabilidad documental en una
-                    sola superficie. La jerarquía está pensada para trabajo continuo en computadora: escanear, priorizar,
-                    exportar y decidir sin cambiar de contexto.
+                    Revisa alertas, accesos, documentos y salud operativa desde una sola vista para priorizar y actuar sin perder contexto.
                   </p>
                 </div>
 
@@ -1961,19 +1959,19 @@ export default function CeoDashboard() {
                   <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Supervisa</p>
                     <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      Mantén arriba la foto global y abajo los listados que sí responden a filtros para investigar sin perder contexto.
+                      Mantén arriba el panorama general y abajo lo filtrado para investigar sin desorden.
                     </p>
                   </article>
                   <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Decide</p>
                     <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      El tablero prioriza lectura horizontal y acciones seguras para revisar accesos, alertas y estado operativo sin fricción innecesaria.
+                      Las acciones seguras quedan visibles para resolver alertas, accesos y casos con menos fricción.
                     </p>
                   </article>
                   <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Exporta</p>
                     <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      CSV, PDF y correo quedan en la misma cabecera para cerrar ciclos ejecutivos sin abandonar la consola.
+                      Los exportes siguen en cabecera para cerrar la revisión sin salir de la consola.
                     </p>
                   </article>
                 </div>
@@ -1990,7 +1988,7 @@ export default function CeoDashboard() {
                   {hasActiveFilters ? ` · ${formatNumber(currentSectionCount)} coincidencias visibles` : " · sin filtros activos"}
                 </p>
                 <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-slate-950/20 px-4 py-3 text-sm leading-6 text-slate-100/85">
-                  Diseñado para operarlo principalmente desde escritorio. En móvil sigue siendo consultable, pero la experiencia prioriza amplitud visual, comparación y control lateral.
+                  Diseñada para escritorio; en móvil se mantiene como consulta rápida.
                 </div>
               </div>
             </div>
@@ -2000,10 +1998,9 @@ export default function CeoDashboard() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-3xl space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Exploración ejecutiva</p>
-                <h3 className="text-xl font-semibold tracking-tight text-slate-950">Filtros y búsqueda rápida transversal</h3>
+                <h3 className="text-xl font-semibold tracking-tight text-slate-950">Filtros rápidos</h3>
                 <p className="text-sm leading-6 text-slate-600">
-                  Busca tenants, casos, alertas, accesos y documentos desde una sola superficie. Los KPIs superiores se
-                  mantienen globales para conservar contexto; los listados y paneles inferiores sí reaccionan a los filtros.
+                  Busca tenant, caso, alerta, acceso o documento. Los listados responden a tus filtros sin mover el panorama general.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -2300,13 +2297,13 @@ export default function CeoDashboard() {
               </Button>
             </div>
             <div data-testid="ceo-guardrail-diagnostics" className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium">
-              <span className={diagnosticPillClassName}>Estado: {executiveGuardrailReasonLabel}</span>
+              <span className={diagnosticPillClassName}>Estado ejecutivo: {executiveGuardrailReasonLabel}</span>
               <span data-testid="ceo-retry-visible-pill" className={diagnosticPillClassName}>
-                Fricción visible: {formatNumber(bridgeOverview.summary.retryScheduled)} reintentos · {formatNumber(bridgeOverview.summary.pending)} pendientes
+                Fricción: {formatNumber(bridgeOverview.summary.retryScheduled)} reintentos · {formatNumber(bridgeOverview.summary.pending)} pendientes
               </span>
               {legalGateContextSummary ? (
                 <span data-testid="ceo-context-summary-pill" className={diagnosticPillClassName}>
-                  Contexto activo: {legalGateContextSummary}
+                  Contexto: {legalGateContextSummary}
                 </span>
               ) : null}
               {legalGateNavigationContext && currentSection !== "resumen" ? (
@@ -2321,7 +2318,7 @@ export default function CeoDashboard() {
                   }}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Volver al resumen contextual
+                  Volver al resumen
                 </Button>
               ) : null}
             </div>
@@ -2465,14 +2462,14 @@ export default function CeoDashboard() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Bitácora operativa</p>
-                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Trazabilidad reciente para diagnóstico ejecutivo</h3>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Bitácora reciente para decidir</h3>
                   </div>
                   <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
                     {auditTrailQuery.isFetching ? "Actualizando eventos" : `${formatNumber(auditSummary.totalEvents)} eventos recientes`}
                   </Badge>
                 </div>
                 <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-                  Esta superficie reutiliza la bitácora de auditoría existente para mostrar actividad reciente, rechazos operativos de guardrails y cobertura de casos visibles sin abrir un frente nuevo de infraestructura.
+                  Usa la bitácora existente para ver actividad reciente, rechazos de guardrail y cobertura visible sin abrir más complejidad.
                 </p>
                 <div className="mt-5 grid gap-4 lg:grid-cols-4">
                   <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
