@@ -1,0 +1,52 @@
+{
+  "snippet_preview": "  ArrowLeft,\n  ArrowRight,\n  Camera,\n  CheckCircle2,\n  FileSearch,\n  FileUp,\n  FolderOpen,\n  Lock,\n  RefreshCw,\n  ShieldCheck,\n  Sparkles,\n} from \"lucide-react\";\nimport { ChangeEvent, useEffect, useMemo, useRef, useState } from \"react\";\nimport { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_GATE_COPY, LEGAL_VERSION, PRIVACY_CENTER_COPY } from \"@shared/legal\";\n\ntype LegalGateErrorType = \"validation\" | \"concurrency\" | \"transient\" | \"fatal\";\n\ntype LegalGateErrorState = {\n  message: string;\n  type: LegalGateErrorType;\n  retryCount: number;\n  retryAfterSeconds: number;\n  retryAvailableAt: number | null;\n};\n\ntype LegalGateMetricEvent = \"idle\" | \"attempt\" | \"retry\" | \"conflict\" | \"accepted\" | \"transient\" | \"fatal\";\n\ntype LegalGateMetricsState = {\n  attempts: number;\n  retries: number;\n  conflicts: number;\n  lastEvent: LegalGateMetricEvent;\n  lastUpdatedAt: number | null;\n};\n\nconst MAX_LEGAL_GATE_RETRIES = 3;\nconst LEGAL_GATE_CONCURRENCY_RETRY_SECONDS = 4;\nconst LEGAL_GATE_TRANSIENT_RETRY_SECONDS = 6;\nconst INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {\n  attempts: 0,\n  retries: 0,\n  conflicts: 0,\n  lastEvent: \"idle\",\n  lastUpdatedAt: null,\n};\nconst MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 15 * 1024 * 1024;\nconst SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [\".pdf\", \".xml\", \".jpg\", \".jpeg\", \".png\", \".webp\", \".heic\", \".heif\"] as const;\n\ntype UploadProgressStepKey = \"prepare\" | \"analyze\" | \"save\" | \"review\";\n\ntype UploadProgressState = {\n  eyebrow: string;\n  title: string;\n  description: string;\n  progress: number;\n  toneClasses: string;\n  barClasses: string;\n  stageLabel: string;\n  etaLabel: string;\n  stepKey: UploadProgressStepKey;\n};\n\nconst UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }> = [\n  { key: \"prepare\", label: \"Preparar\" },\n  { key: \"analyze\", label: \"Analizar\" },\n  { key: \"save\", label: \"Guardar\" },\n  { key: \"review\", label: \"Revisar\" },\n];\n\nconst PERSISTENT_UPLOAD_GUARDRAILS = {\n  fileRules: \"Formatos permitidos: PDF, XML o imagen clara. Límite preventivo: 15 MB por archivo.\",\n  privacyRules: \"Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.\",\n};\n\nconst COMPACT_UPLOAD_GUARDRAILS = {\n  fileRules: \"PDF, XML o imagen clara · máximo 15 MB.\",\n  privacyRules: \"Nada se integra al expediente hasta que revisas y confirmas.\",\n};\n\nconst UPLOAD_HELP_DISCLOSURE_SUMMARY = \"Abrir ayuda rápida: seguridad, límites y momento de guardado\";\nconst UPLOAD_HELP_MOBILE_HINT = \"Ayuda rápida: toca para ver seguridad, límites y guardado.\";\n\nexport function getUploadCompactGuardrails() {\n  return COMPACT_UPLOAD_GUARDRAILS;\n}\n\nexport function getUploadHelpDisclosureSummary() {\n  return UPLOAD_HELP_DISCLOSURE_SUMMARY;\n}\n\nexport function getUploadHelpMobileHint() {\n  return UPLOAD_HELP_MOBILE_HINT;\n}\n\nexport function getUploadStepAnnouncement(stageLabel: string) {\n  return `Progreso actual: ${stageLabel}.`;\n}\n\nexport function getUploadStepAriaLabel(params: {\n  index: number;\n  total: number;\n  label: string;\n  isActive: boolean;\n  isComplete: boolean;\n}) {\n  const statusLabel = params.isActive ? \"actual\" : params.isComplete ? \"completada\" : \"pendiente\";\n  return `Etapa ${params.index} de ${params.total}: ${params.label}, ${statusLabel}.`;\n}\n\nfunction getUploadProgressStepState(stepKey: UploadProgressStepKey) {\n  const activeIndex = UPLOAD_PROGRESS_STEPS.findIndex((step) => step.key === stepKey);\n\n  return UPLOAD_PROGRESS_STEPS.map((step, index) => ({\n    ...step,\n    isActive: index === activeIndex,\n    isComplete: index < activeIndex || (stepKey === \"review\" && index === activeIndex),\n  }));\n}\n\nfunction getUploadTransitionCopy(stepKey: UploadProgressStepKey) {\n  switch (stepKey) {\n    case \"analyze\":\n      return \"Transición visible: del archivo listo al análisis guiado.\";\n    case \"save\":\n      return \"Transición visible: del borrador revisado al guardado protegido.\";\n    case \"review\":\n      return \"Transición visible: del procesamiento a la revisión final con control tuyo.\";\n    default:\n      return \"Transición visible: de la preparación segura al análisis automático.\";\n  }\n}\n\nfunction getUploadPersistentSupportCopy(file: File | null) {\n  if (file) {\n    return `Archivo actual: ${file.name} · ${formatVisibleFileSize(file.size)}.`;\n  }\n\n  return \"Consejo preventivo: procura que el archivo esté completo, legible y sin sombras antes de subirlo.\";\n}\n\nfunction getUploadSecuritySummary(stepKey: UploadProgressStepKey) {\n  switch (stepKey) {\n    case \"save\":\n      return \"Seguimos protegiendo el documento mientras se integra al expediente.\";\n    case \"review\":\n      return \"Ya puedes revisar con calma antes de confirmar cualquier guardado.\";\n    default:\n      return \"Los límites, la privacidad y tu control siguen visibles durante todo el flujo.\";\n  }\n}\n\nfunction getUploadEtaLabel(stepKey: UploadProgressStepKey) {\n  switch (stepKey) {\n    case \"analyze\":\n      return \"Tiempo estimado: entre 10 y 20 segundos para preparar el borrador.\";\n    case \"save\":\n      return \"Tiempo estimado: menos de 10 segundos para integrar y cerrar esta etapa.\";\n    case \"review\":\n      return \"Siguiente acción: revisar y confirmar solo si quieres guardarlo.\";\n    default:\n      return \"Tiempo estimado al iniciar: normalmente menos de 1 minuto hasta la vista previa.\";\n  }\n}\n\nfunction getUploadStageLabel(stepKey: UploadProgressStepKey) {\n  switch (stepKey) {\n    case \"analyze\":\n      return \"Etapa 2 de 4 · Analizando contenido\";\n    case \"save\":\n      return \"Etapa 3 de 4 · Guardando con control\";",
+  "results": {
+    "chatgpt": {
+      "model_verdict": "approve_with_small_tweaks",
+      "score_clarity": 8,
+      "score_accessibility": 9,
+      "score_trust": 8,
+      "main_strength": "La ayuda persistente en móvil es clara y siempre visible, y el anuncio accesible para el cambio de etapa del stepper está bien implementado, mejorando la experiencia para usuarios con lectores de pantalla.",
+      "main_risk": "El copy de la ayuda móvil es breve pero podría no ser suficientemente explícito para todos los usuarios; además, la transición del stepper podría beneficiarse de un anuncio más contextual para evitar confusión en usuarios con discapacidad visual.",
+      "small_tweak": "Incrementar ligeramente la descripción en la pista móvil para incluir un llamado a la acción claro y asegurar que el anuncio del cambio de etapa incluya el número y nombre de la etapa para mayor claridad.",
+      "consensus_ready": true
+    },
+    "grok": {
+      "model_verdict": "approve_with_small_tweaks",
+      "score_clarity": 9,
+      "score_accessibility": 9,
+      "score_trust": 8,
+      "main_strength": "Efectiva implementación de pistas persistentes y anuncios accesibles que mejoran la visibilidad y notificación de etapas.",
+      "main_risk": "Posible inconsistencia en la visibilidad de la ayuda persistente en pantallas móviles más pequeñas, si no se prueba en todos los dispositivos.",
+      "small_tweak": "Añadir un breve delay o confirmación en el anuncio de etapa para asegurar que se lee completamente por lectores de pantalla.",
+      "consensus_ready": false
+    },
+    "gemini": {
+      "model_verdict": "approve_with_small_tweaks",
+      "score_clarity": 9,
+      "score_accessibility": 9,
+      "score_trust": 8,
+      "main_strength": "La implementación aborda directamente los objetivos, mejorando la visibilidad de la ayuda en móvil y la accesibilidad de los cambios de etapa del stepper con anuncios claros para lectores de pantalla.",
+      "main_risk": "Aunque la pista móvil es 'siempre visible', su efectividad dependerá de su contraste y ubicación final en la interfaz para evitar que se fusione con otros elementos.",
+      "small_tweak": "Considerar una ligera variación en el texto de la pista móvil para mayor claridad: 'Ayuda rápida: toca para ver seguridad, límites y cuándo se guarda.' (cambiando 'momento de guardado' por 'cuándo se guarda').",
+      "consensus_ready": true
+    }
+  },
+  "consensus": {
+    "status": "consensus",
+    "verdicts": [
+      "approve_with_small_tweaks",
+      "approve_with_small_tweaks",
+      "approve_with_small_tweaks"
+    ],
+    "ready_votes": 2,
+    "average_clarity": 8.67,
+    "average_accessibility": 9.0,
+    "average_trust": 8.0,
+    "shared_small_tweaks": [
+      "Incrementar ligeramente la descripción en la pista móvil para incluir un llamado a la acción claro y asegurar que el anuncio del cambio de etapa incluya el número y nombre de la etapa para mayor claridad.",
+      "Añadir un breve delay o confirmación en el anuncio de etapa para asegurar que se lee completamente por lectores de pantalla.",
+      "Considerar una ligera variación en el texto de la pista móvil para mayor claridad: 'Ayuda rápida: toca para ver seguridad, límites y cuándo se guarda.' (cambiando 'momento de guardado' por 'cuándo se guarda')."
+    ]
+  }
+}

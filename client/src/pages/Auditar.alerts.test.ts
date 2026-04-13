@@ -14,6 +14,8 @@ import {
   formatVisibleFileSize,
   getUploadCompactGuardrails,
   getUploadHelpDisclosureSummary,
+  getUploadHelpMobileHint,
+  getUploadStepAnnouncement,
   getUploadStepAriaLabel,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
@@ -262,6 +264,22 @@ describe("getUploadHelpDisclosureSummary", () => {
   it("hace evidente que la ayuda colapsable muestra seguridad, límites y momento de guardado", () => {
     expect(getUploadHelpDisclosureSummary()).toBe(
       "Abrir ayuda rápida: seguridad, límites y momento de guardado",
+    );
+  });
+});
+
+describe("getUploadHelpMobileHint", () => {
+  it("mantiene una pista breve y visible para móvil dentro de la ayuda colapsable", () => {
+    expect(getUploadHelpMobileHint()).toBe(
+      "Ayuda rápida: toca para ver seguridad, límites y guardado.",
+    );
+  });
+});
+
+describe("getUploadStepAnnouncement", () => {
+  it("genera un anuncio corto y claro para lectores de pantalla cuando cambia la etapa", () => {
+    expect(getUploadStepAnnouncement("Etapa 2 de 4 · Analizando documento")).toBe(
+      "Progreso actual: Etapa 2 de 4 · Analizando documento.",
     );
   });
 });

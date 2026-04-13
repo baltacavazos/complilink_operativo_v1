@@ -104,6 +104,7 @@ const COMPACT_UPLOAD_GUARDRAILS = {
 };
 
 const UPLOAD_HELP_DISCLOSURE_SUMMARY = "Abrir ayuda rápida: seguridad, límites y momento de guardado";
+const UPLOAD_HELP_MOBILE_HINT = "Ayuda rápida: toca para ver seguridad, límites y guardado.";
 
 export function getUploadCompactGuardrails() {
   return COMPACT_UPLOAD_GUARDRAILS;
@@ -111,6 +112,14 @@ export function getUploadCompactGuardrails() {
 
 export function getUploadHelpDisclosureSummary() {
   return UPLOAD_HELP_DISCLOSURE_SUMMARY;
+}
+
+export function getUploadHelpMobileHint() {
+  return UPLOAD_HELP_MOBILE_HINT;
+}
+
+export function getUploadStepAnnouncement(stageLabel: string) {
+  return `Progreso actual: ${stageLabel}.`;
 }
 
 export function getUploadStepAriaLabel(params: {
@@ -4591,11 +4600,12 @@ export default function Auditar() {
                   </div>
 
                   <div
-                    aria-atomic="true"
                     aria-describedby="upload-guardrails-summary"
-                    aria-live="polite"
                     className={`mt-4 rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
+                    <p className="sr-only" aria-live="polite" aria-atomic="true">
+                      {getUploadStepAnnouncement(uploadProgressState.stageLabel)}
+                    </p>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">{uploadProgressState.eyebrow}</p>
@@ -4661,7 +4671,13 @@ export default function Auditar() {
                     </div>
                       <details className="mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
                       <summary className="cursor-pointer list-none font-semibold text-slate-900">
-                        {getUploadHelpDisclosureSummary()}
+                        <span className="inline-flex items-center gap-2">
+                          <AlertCircle className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
+                          <span>{getUploadHelpDisclosureSummary()}</span>
+                        </span>
+                        <span className="mt-1 block text-[11px] font-normal leading-4 text-slate-600 sm:hidden">
+                          {getUploadHelpMobileHint()}
+                        </span>
                       </summary>
 
                       <div className="mt-2 space-y-2 leading-5">

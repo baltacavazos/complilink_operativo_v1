@@ -929,3 +929,7 @@
 - [x] Compactar el copy persistente del bloque de upload para móvil sin perder claridad ni confianza
 - [x] Evaluar e implementar una ayuda colapsable si mejora densidad visual sin reducir comprensión
 - [x] Hacer más evidente en /auditar que la ayuda colapsable despliega detalle adicional de seguridad y carga
+
+- [x] Añadir una ayuda persistente más visible en móvil dentro del bloque de upload de /auditar
+- [x] Anunciar de forma accesible para lector de pantalla cada cambio de etapa del stepper en /auditar
+- [x] Refinar la pista móvil de ayuda en /auditar para hacer más explícita su interactividad sin aumentar densidad visual
