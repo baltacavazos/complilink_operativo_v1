@@ -74,8 +74,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Lectura visible");
     expect(source).toContain("tu asistente laboral");
     expect(source).toContain("expediente laboral");
-    expect(source).toContain("Resumen antes de subir");
-    expect(source).toContain("Preparar esta sugerencia");
+    expect(source).toContain("Expediente en {heliosExpediente?.stageLabel ?? dossierStatus.label}");
+    expect(source).toContain("Siguiente útil: ${effectiveRecommendedTarget.label}. Lo puedes subir justo debajo.");
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');

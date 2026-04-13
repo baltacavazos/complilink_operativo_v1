@@ -64,7 +64,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
     expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
     expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura útil al momento.");
-    expect(auditFlowSource).toContain("Sube el archivo. Te diremos qué entendimos y qué conviene revisar después.");
+    expect(auditFlowSource).toContain("Sube el archivo y te devolvemos qué entendimos, qué hallazgo pesa más y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");

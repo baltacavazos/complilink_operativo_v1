@@ -999,3 +999,6 @@
 - [x] Ronda 6: ejecutar nueva auditoría comparada con ChatGPT, Grok y Gemini sobre el checkpoint 59bb0c0f y sintetizar el próximo consenso mínimo
 - [x] Ronda 6: decidir si el siguiente ajuste de mayor impacto está en Home, /acceso, /auditar o Consola CEO sin aumentar complejidad
 - [x] Ronda 6: implementar la micro-ronda resultante, validar TypeScript y Vitest y guardar checkpoint estable
+- [x] Ronda 7: ejecutar consenso comparado con ChatGPT, Grok y Gemini sobre el checkpoint e85a5f63 para detectar el siguiente microajuste no fundamental
+- [x] Ronda 7: elegir entre Home, /auditar, /acceso y Consola CEO el ajuste de mayor impacto y menor riesgo sin alterar la arquitectura actual
+- [x] Ronda 7: implementar, validar con Vitest y TypeScript, y guardar checkpoint estable antes de seguir a la siguiente ronda

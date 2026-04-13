@@ -1,0 +1,67 @@
+{
+  "chatgpt": {
+    "model_role": "auditor severo UX/UI mobile-first",
+    "impact_scores": {
+      "auditar_less_initial_chrome": 8,
+      "acceso_more_primary": 6,
+      "ceo_critical_first": 5,
+      "home_trust_tighter": 7
+    },
+    "safety_scores": {
+      "auditar_less_initial_chrome": 9,
+      "acceso_more_primary": 7,
+      "ceo_critical_first": 6,
+      "home_trust_tighter": 8
+    },
+    "winner": {
+      "key": "auditar_less_initial_chrome",
+      "why": "Reducir el chrome inicial en móvil en /auditar mejora la claridad y foco inmediato en la acción principal (subir archivo) con mínimo riesgo y sin alterar arquitectura ni pasos, maximizando impacto y facilidad móvil.",
+      "change": "Recortar el espacio y elementos del chrome inicial en móvil para que la zona de subida de archivo ocupe la mayor parte de la primera pantalla visible, sin eliminar contexto esencial."
+    },
+    "do_not_touch_yet": "No modificar aún la jerarquía visual en /acceso ni la estructura de la Consola CEO para evitar confusión; tampoco compactar más el bloque de confianza en Home para no sacrificar percepción de credibilidad.",
+    "confidence": "high"
+  },
+  "grok": {
+    "model_role": "Auditor experto de UX/UI mobile-first",
+    "impact_scores": {
+      "auditar_less_initial_chrome": 9,
+      "acceso_more_primary": 7,
+      "ceo_critical_first": 6,
+      "home_trust_tighter": 8
+    },
+    "safety_scores": {
+      "auditar_less_initial_chrome": 9,
+      "acceso_more_primary": 8,
+      "ceo_critical_first": 7,
+      "home_trust_tighter": 9
+    },
+    "winner": {
+      "key": "auditar_less_initial_chrome",
+      "why": "Este cambio maximiza el impacto en claridad y reducción de scroll en la página clave /auditar, alineándose con prioridades previas y enfocándose en la acción principal de subida de archivo sin riesgos significativos.",
+      "change": "Recorta ligeramente el chrome inicial en la vista móvil de /auditar eliminando cualquier elemento no esencial por encima del área de subida de archivo, asegurando que el componente de upload ocupe al menos el 60% de la pantalla inicial visible. Mantén todos los elementos de confianza visibles pero minimizados para no agregar complejidad."
+    },
+    "do_not_touch_yet": "No tocar la Consola CEO ni rutas secundarias como /acceso para evitar dispersar el enfoque y risking overoptimization en áreas menos críticas antes de perfeccionar Home y /auditar.",
+    "confidence": "high"
+  },
+  "gemini": {
+    "model_role": "Auditor severo de UX/UI",
+    "impact_scores": {
+      "auditar_less_initial_chrome": 9,
+      "acceso_more_primary": 7,
+      "ceo_critical_first": 8,
+      "home_trust_tighter": 8
+    },
+    "safety_scores": {
+      "auditar_less_initial_chrome": 9,
+      "acceso_more_primary": 7,
+      "ceo_critical_first": 7,
+      "home_trust_tighter": 9
+    },
+    "winner": {
+      "key": "auditar_less_initial_chrome",
+      "why": "Este microajuste tiene el mayor impacto directo en la conversión principal al reducir la fricción en el paso más crítico del flujo de usuario, el de subir el archivo. Su riesgo es mínimo al tratarse de ajustes visuales de espaciado.",
+      "change": "Recortar el espacio vertical de elementos no esenciales (como el encabezado o texto secundario) por encima del componente de subida de archivo en /auditar, para que el área de carga domine la vista inicial en móvil."
+    },
+    "do_not_touch_yet": "No se debe tocar el contenido ni el orden del bloque de confianza en Home, ni ocultar contexto esencial o añadir clics en la Consola CEO, para evitar sobreoptimización o introducir riesgos innecesarios en áreas ya optimizadas o sensibles."
+  }
+}
