@@ -30,7 +30,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
-    expect(homeSource).toContain("Ver ejemplo del reporte");
+    expect(homeSource).toContain("Ver cómo se ve mi reporte");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Vista previa del reporte que recibes");
     expect(homeSource).toContain("Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.");
@@ -63,8 +63,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
     expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
-    expect(auditFlowSource).toContain("Sube un archivo y recibe una lectura útil sin pasos extra.");
-    expect(auditFlowSource).toContain("Después de subirlo, AuditaPatron lo analizará para mostrarte qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.");
+    expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura útil al momento.");
+    expect(auditFlowSource).toContain("Lo eliges y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");

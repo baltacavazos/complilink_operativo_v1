@@ -3845,12 +3845,12 @@ export default function Auditar() {
                     Empieza aquí
                   </div>
                   <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
-                    Sube un archivo y recibe una lectura útil sin pasos extra.
+                    Sube tu primer archivo y recibe una lectura útil al momento.
                   </h2>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
-                    Apenas eliges el documento, inicia la revisión preliminar y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.
+                    Lo eliges y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.
                   </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-3">
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">Privacidad activa</p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">Tus datos se usan solo dentro de esta auditoría.</p>
@@ -3865,7 +3865,7 @@ export default function Auditar() {
                     </article>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="mt-4 hidden gap-3 sm:grid sm:grid-cols-3">
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Recibes</p>
                       <p className="mt-2 text-sm font-semibold text-slate-950">Lectura inicial clara</p>

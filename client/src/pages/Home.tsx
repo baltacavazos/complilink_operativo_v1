@@ -256,8 +256,8 @@ const heroCopyVariants = {
     supportLine: "Revísalo hoy y toma control de tu historial laboral.",
     body:
       "Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.",
-    ctaPrimary: "Auditar mi situación ahora",
-    ctaSecondary: "Ver ejemplo del reporte",
+    ctaPrimary: "Subir mi primer documento",
+    ctaSecondary: "Ver cómo se ve mi reporte",
   },
   control: {
     tabLabel: "Control inmediato",
@@ -268,8 +268,8 @@ const heroCopyVariants = {
     supportLine: "Empieza con el documento que ya tienes a la mano.",
     body:
       "Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.",
-    ctaPrimary: "Empezar mi revisión",
-    ctaSecondary: "Ver ejemplo del reporte",
+    ctaPrimary: "Ir a mi primera auditoría",
+    ctaSecondary: "Ver cómo se ve mi reporte",
   },
 } as const;
 
@@ -828,12 +828,16 @@ function HeroSection() {
   }
 
   function handleHeroSecondaryCta() {
-    trackEvent("audipatron_home_secondary_cta_clicked", {
+    const payload = {
       source: "hero",
       hero_variant: selectedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       cta_label: activeHeroVariant.ctaSecondary,
-    });
+      destination_section: "ejemplo-reporte",
+    };
+
+    trackEvent("audipatron_home_secondary_cta_clicked", payload);
+    trackFunnelStep("home_secondary_cta_clicked", payload);
 
     scrollToId("ejemplo-reporte");
   }
@@ -2175,7 +2179,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                   onClick={() => scrollToId("ejemplo-reporte")}
                 >
-                  Ver ejemplo del reporte primero
+                  Ver cómo se ve el reporte
               </Button>
             </div>
           </div>

@@ -985,3 +985,7 @@
 - [x] Optimizar la CTA principal y secundaria de la home para reducir fricción y mejorar claridad de entrada
 - [x] Compactar aún más la Consola CEO con lectura ejecutiva resumida y menos ruido visible por defecto
 - [x] Mejorar los estados vacíos de /auditar para orientar el primer upload con menos ambigüedad
+- [x] Reauditar Home, /auditar y Consola CEO con ChatGPT, Grok y Gemini para consensuar la siguiente ronda hacia 10/10
+- [x] Medir y afinar la CTA principal/secundaria de la home con foco en entrada real al flujo /auditar
+- [x] Añadir una expansión controlada de la bitácora de la Consola CEO para conservar lectura ejecutiva y permitir ver más eventos bajo demanda
+- [x] Compactar aún más el primer bloque mobile-first de /auditar para reducir fricción y microdecisiones en la primera carga

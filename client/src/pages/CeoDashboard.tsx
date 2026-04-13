@@ -88,6 +88,8 @@ import {
   Siren,
   UsersRound,
   X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast as sonnerToast } from "sonner";
@@ -504,6 +506,7 @@ export default function CeoDashboard() {
   const [bridgeScheduleCronDraft, setBridgeScheduleCronDraft] = useState("0 0 8 * * 1");
   const [bridgeScheduleTimezoneDraft, setBridgeScheduleTimezoneDraft] = useState("America/Mexico_City");
   const [bridgeScheduleActiveDraft, setBridgeScheduleActiveDraft] = useState(true);
+  const [showExpandedAuditFeed, setShowExpandedAuditFeed] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -713,7 +716,8 @@ export default function CeoDashboard() {
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
   );
-  const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 4), [filteredAuditTrail]);
+  const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, showExpandedAuditFeed ? 12 : 4), [filteredAuditTrail, showExpandedAuditFeed]);
+  const hiddenOperationalEventsCount = Math.max(filteredAuditTrail.length - recentOperationalEvents.length, 0);
   const latestGuardrailEvent = useMemo(
     () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
     [auditTrail],
@@ -2506,16 +2510,33 @@ export default function CeoDashboard() {
                         <h4 className="text-base font-semibold text-slate-950">Eventos recientes</h4>
                         <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail y segmentables sin salir del tablero.</p>
                       </div>
-                      <Badge className="rounded-full border border-white bg-white text-slate-700">
-                        {recentOperationalEvents.length > 4
-                          ? `4 de ${formatNumber(auditTrail.length)} visibles`
-                          : `${formatNumber(recentOperationalEvents.length)} de ${formatNumber(auditTrail.length)} visibles`}
-                      </Badge>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="rounded-full border border-white bg-white text-slate-700">
+                          {`${formatNumber(recentOperationalEvents.length)} de ${formatNumber(filteredAuditTrail.length)} visibles`}
+                        </Badge>
+                        {filteredAuditTrail.length > 4 ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full bg-white text-slate-700"
+                            onClick={() => setShowExpandedAuditFeed((current) => !current)}
+                          >
+                            {showExpandedAuditFeed ? (
+                              <ChevronUp className="mr-2 h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="mr-2 h-4 w-4" />
+                            )}
+                            {showExpandedAuditFeed ? "Volver a 4" : `Ver 12 eventos`}
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
                     <div className="mt-4 space-y-4">
-                      {recentOperationalEvents.length > 4 ? (
+                      {filteredAuditTrail.length > 4 ? (
                         <p className="text-xs leading-5 text-slate-500">
-                          Mostramos primero los 4 eventos que más cambian una decisión. Si necesitas más contexto, usa los filtros rápidos o navega al bloque correspondiente.
+                          {showExpandedAuditFeed
+                            ? `Vista ampliada activa. Estás viendo 12 eventos priorizados y todavía quedan ${formatNumber(hiddenOperationalEventsCount)} fuera para conservar velocidad de lectura.`
+                            : `Mostramos primero 4 eventos que más cambian una decisión. Si necesitas más contexto, expande la bitácora o usa los filtros rápidos.`}
                         </p>
                       ) : null}
                       <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white/80 p-4">
@@ -2568,7 +2589,7 @@ export default function CeoDashboard() {
                       </div>
                       <div className="space-y-3">
                         {recentOperationalEvents.length > 0 ? (
-                          recentOperationalEvents.slice(0, 4).map((item) => {
+                          recentOperationalEvents.map((item) => {
                             const tone = getAuditActionTone(item.action);
                             const rejectionReason = getAuditRejectionReason(item);
                             const severity = getAuditEventSeverity(item);

@@ -40,7 +40,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Señal verificada en pruebas de comprensión");
     expect(source).toContain("Señales de confianza");
     expect(source).toContain("Privacidad visible, lenguaje simple y siguientes pasos concretos.");
-    expect(source).toContain("Ver ejemplo del reporte");
+    expect(source).toContain("Ver cómo se ve mi reporte");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Empieza con el documento correcto");
     expect(source).toContain("Quiero entender rápido si esto me sirve");
@@ -76,8 +76,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("expediente laboral");
     expect(source).toContain("Resumen antes de subir");
     expect(source).toContain("Preparar esta sugerencia");
-    expect(source).toContain('className="hidden gap-3 sm:grid"');
+    expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
+    expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
   });
 
   it("mantiene lenguaje cálido y comprensible en el panel conversacional", () => {

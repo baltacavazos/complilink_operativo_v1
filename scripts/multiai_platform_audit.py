@@ -156,23 +156,35 @@ def call_gemini(user_prompt: str) -> dict[str, Any]:
             "do_not_build",
         ],
     }
-    response = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-        headers={"Content-Type": "application/json"},
-        json={
-            "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-            "contents": [{"parts": [{"text": user_prompt}]}],
-            "generationConfig": {
-                "temperature": 0.2,
-                "responseMimeType": "application/json",
-                "responseSchema": schema,
-            },
-        },
-        timeout=120,
-    )
-    response.raise_for_status()
-    content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-    return json.loads(content)
+    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    last_error: Exception | None = None
+    for model_name in candidate_models:
+        try:
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                    "contents": [{"parts": [{"text": user_prompt}]}],
+                    "generationConfig": {
+                        "temperature": 0.2,
+                        "responseMimeType": "application/json",
+                        "responseSchema": schema,
+                    },
+                },
+                timeout=120,
+            )
+            response.raise_for_status()
+            content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            parsed = json.loads(content)
+            parsed.setdefault("model_name", model_name)
+            return parsed
+        except Exception as exc:
+            last_error = exc
+            continue
+    if last_error is None:
+        raise RuntimeError("Gemini no devolvió respuesta y no se capturó error")
+    raise last_error
 
 
 def main() -> None:
