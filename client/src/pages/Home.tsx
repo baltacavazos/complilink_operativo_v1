@@ -920,7 +920,7 @@ function HeroSection() {
             className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            La auditoría documental es el centro de la experiencia: subes un recibo, contrato o CFDI y recibes hallazgos, evidencias y siguientes pasos. Después, si quieres, tu asistente laboral te ayuda a interpretar el expediente sin quitarle protagonismo al análisis principal.
+            Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido. Después, si quieres, tu asistente laboral te ayuda a entender mejor tu expediente.
           </p>
 
           <div

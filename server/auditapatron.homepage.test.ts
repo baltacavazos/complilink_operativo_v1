@@ -11,7 +11,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Sube un documento laboral");
     expect(homeSource).toContain("y recibe una auditoría clara.");
     expect(homeSource).toContain("Empieza con lo que ya tienes a la mano y convierte ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.");
-    expect(homeSource).toContain("La auditoría documental es el centro de la experiencia");
+    expect(homeSource).toContain("Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido.");
     expect(homeSource).toContain("Empieza con el documento correcto");
     expect(homeSource).toContain("Sin reunir todo de una vez");
     expect(homeSource).not.toContain("CompliLink Operativo");

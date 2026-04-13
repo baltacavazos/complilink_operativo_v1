@@ -24,7 +24,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('tabLabel: "Control inmediato"');
     expect(source).toContain("Sube un documento laboral");
     expect(source).toContain("y recibe una auditoría clara.");
-    expect(source).toContain("La auditoría documental es el centro de la experiencia");
+    expect(source).toContain("Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido.");
     expect(source).toContain("Alerta laboral temprana");
     expect(source).toContain('label: "Asistente"');
     expect(source).not.toContain("Comenzar mi revisión");

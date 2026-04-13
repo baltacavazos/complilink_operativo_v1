@@ -996,3 +996,6 @@
 - [x] Ronda 5: compactar /acceso para que la ruta principal domine más claramente en móvil sin añadir pasos ni opciones nuevas
 - [x] Ronda 5: compactar aún más el primer bloque de /auditar en móvil para que la subida del archivo sea la decisión dominante
 - [x] Ronda 5: validar TypeScript y Vitest tras la micro-ronda y dejar checkpoint estable con hallazgos comparados
+- [x] Ronda 6: ejecutar nueva auditoría comparada con ChatGPT, Grok y Gemini sobre el checkpoint 59bb0c0f y sintetizar el próximo consenso mínimo
+- [x] Ronda 6: decidir si el siguiente ajuste de mayor impacto está en Home, /acceso, /auditar o Consola CEO sin aumentar complejidad
+- [x] Ronda 6: implementar la micro-ronda resultante, validar TypeScript y Vitest y guardar checkpoint estable

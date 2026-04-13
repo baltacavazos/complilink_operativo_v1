@@ -1,0 +1,51 @@
+{
+  "chatgpt": {
+    "model_role": "auditor severo UX/UI mobile-first",
+    "scores": {
+      "home_shorter_body": 8,
+      "access_more_dominant_primary": 7,
+      "ceo_critical_first": 6,
+      "auditar_less_initial_chrome": 7
+    },
+    "top_two": [
+      {
+        "key": "home_shorter_body",
+        "why": "Reducir líneas en el párrafo principal bajo el hero mejora la claridad y reduce scroll inmediato sin alterar la estructura ni añadir complejidad.",
+        "change": "Acortar el párrafo principal a una frase más directa y contundente que resuma la promesa central, eliminando detalles secundarios."
+      },
+      {
+        "key": "auditar_less_initial_chrome",
+        "why": "Recortar elementos no esenciales en el chrome inicial libera espacio visual y reduce distracciones, mejorando foco y claridad sin perder seguridad.",
+        "change": "Eliminar iconos o textos decorativos no críticos en el header móvil de /auditar, manteniendo solo elementos funcionales clave."
+      }
+    ],
+    "do_not_touch_yet": "No modificar aún la Consola CEO para evitar perder contexto operativo ni compactar más el bloque secundario en /acceso que podría afectar la confianza.",
+    "confidence": "high"
+  },
+  "grok": {
+    "model_role": "Cliente Experto en UX/UI Mobile-First",
+    "scores": {
+      "home_shorter_body": 9,
+      "access_more_dominant_primary": 7,
+      "ceo_critical_first": 5,
+      "auditar_less_initial_chrome": 8
+    },
+    "top_two": [
+      {
+        "key": "home_shorter_body",
+        "why": "Builds directly on previous simplifications, reducing scroll and enhancing immediate clarity of the core promise without any added complexity.",
+        "change": "Reduce the main paragraph under the hero to 2-3 concise sentences focusing solely on the key benefit of effortless auditing; ensure it fits within the initial viewport on mobile."
+      },
+      {
+        "key": "auditar_less_initial_chrome",
+        "why": "Minimizes visual noise on a key action page, prioritizing the primary auditing flow while preserving essential security elements for trust.",
+        "change": "Remove or collapse one non-critical UI element like secondary tooltips in the initial mobile view; reposition the main CTA to occupy more central space without altering functionality."
+      }
+    ],
+    "do_not_touch_yet": "The Consola CEO, as tightening alerts further risks obscuring necessary operational context and could introduce unintended complexity.",
+    "confidence": "high"
+  },
+  "gemini": {
+    "error": "Gemini 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"
+  }
+}
