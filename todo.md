@@ -909,3 +909,9 @@
 - [x] Reforzar la jerarquía del CTA principal y el feedback de acción en /auditar donde todavía compita con módulos secundarios
 - [x] Validar con pruebas y revisión operativa la tercera ronda UX/UI antes de reauditar de nuevo
 - [x] Ejecutar nueva reauditoría multi-modelo tras la tercera ronda y medir si la nota ya alcanza 9/10
+- [x] Optimizar /auditar en móvil para que la siguiente acción sea inequívoca y los módulos secundarios no compitan con la carga principal
+- [x] Reforzar señales de privacidad, seguridad y confianza alrededor del cargador documental y estados clave del flujo
+- [x] Mejorar manejo de error y recuperación en /auditar con mensajes más útiles y accionables
+- [x] Pulir copy residual en /home, /ceo y /auditar para reducir redundancia y microdecisiones
+- [x] Consultar a ChatGPT, Grok y Gemini sobre esta nueva ronda focalizada antes de implementar cambios
+- [x] Validar la nueva ronda con pruebas, revisión operativa y reauditoría multi-modelo antes del próximo checkpoint

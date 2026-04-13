@@ -3329,19 +3329,29 @@ export default function Auditar() {
               Sube tu documento y entiende rápido qué pasa con tu expediente.
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-              Primero subes el archivo. Después te devolvemos una lectura útil, el hallazgo que más pesa y el siguiente soporte que conviene revisar.
+              Sube primero el archivo. Enseguida te devolvemos qué entendimos, qué hallazgo pesa más y cuál es el siguiente soporte que más te conviene revisar.
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
               <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
               Resguardo y lectura preliminar en el mismo flujo
             </div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-left sm:justify-start">
+              <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1.5 text-[11px] font-medium text-teal-100">
+                <Lock className="h-3.5 w-3.5" strokeWidth={1.8} />
+                Tus documentos viajan protegidos
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
+                <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
+                Solo se usan para tu auditoría
+              </span>
+            </div>
 
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+          <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
             <Button
               variant="outline"
-              className="rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25"
+              className="hidden rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25 sm:inline-flex"
               onClick={() => {
                 void handleRevalidateSocialSecurity();
               }}
@@ -3352,7 +3362,7 @@ export default function Auditar() {
             </Button>
             <Button
               variant="ghost"
-              className="rounded-full px-3 text-slate-200 hover:bg-white/8 hover:text-white"
+              className="rounded-full border border-white/10 bg-white/5 px-3 text-slate-100 hover:bg-white/10 hover:text-white"
               onClick={() => {
                 setMobileOnboardingIndex(0);
                 uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3529,6 +3539,20 @@ export default function Auditar() {
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
                     Apenas eliges el documento, inicia la revisión preliminar y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.
                   </p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                      <p className="font-semibold text-slate-950">Privacidad activa</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">Tus datos se usan solo dentro de esta auditoría.</p>
+                    </article>
+                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                      <p className="font-semibold text-slate-950">Control total</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">Primero ves el borrador y luego decides si lo guardas.</p>
+                    </article>
+                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                      <p className="font-semibold text-slate-950">Siguiente paso claro</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">Después de subirlo te diremos exactamente qué sigue.</p>
+                    </article>
+                  </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
@@ -3560,7 +3584,7 @@ export default function Auditar() {
                         ? "Cambiar documento"
                         : activeCaptureMode === "camera"
                           ? "Tomar foto y empezar"
-                          : uploadPrimaryActionLabel}
+                          : "Elegir documento y continuar"}
                     </Button>
                     <Button
                       variant="outline"
@@ -4059,17 +4083,33 @@ export default function Auditar() {
               </div>
 
               <div ref={uploadSectionRef} className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
-                    <FileUp className="h-5 w-5" strokeWidth={1.8} />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
+                      <FileUp className="h-5 w-5" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-950">Archivo principal</p>
+                      <p className="text-sm text-slate-600">Puede ser foto, PDF, XML u otro archivo laboral útil. Lo revisamos primero y tú decides si se guarda.</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-950">Archivo principal</p>
-                    <p className="text-sm text-slate-600">Puede ser foto, PDF, XML u otro archivo laboral útil.</p>
-                  </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+                    <p className="font-semibold">Confidencial</p>
+                    <p className="mt-1 text-xs leading-5 text-emerald-900">Tus documentos se usan solo para esta auditoría.</p>
+                  </article>
+                  <article className="rounded-[1rem] border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-950">
+                    <p className="font-semibold">Protegido</p>
+                    <p className="mt-1 text-xs leading-5 text-sky-900">La carga viaja protegida y queda resguardada en tu expediente.</p>
+                  </article>
+                  <article className="rounded-[1rem] border border-violet-100 bg-violet-50 px-3 py-2 text-sm text-violet-950">
+                    <p className="font-semibold">Bajo tu control</p>
+                    <p className="mt-1 text-xs leading-5 text-violet-900">Antes de guardarlo, te mostramos una vista previa para validar.</p>
+                  </article>
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
+
                   <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
@@ -4100,7 +4140,7 @@ export default function Auditar() {
                           {shouldCompactMobileUploadEntry ? "Sube tu primer documento" : "Escaneo asistido por IA"}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-700">
-                          {shouldCompactMobileUploadEntry ? "El análisis empieza solo en cuanto captures o elijas el documento." : selectedFilePreparationCopy}
+                          {shouldCompactMobileUploadEntry ? "El análisis empieza solo en cuanto captures o elijas el documento. Tus datos siguen protegidos durante todo el flujo." : selectedFilePreparationCopy}
                         </p>
                       </div>
                     </div>
@@ -4206,7 +4246,7 @@ export default function Auditar() {
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {shouldCompactMobileUploadEntry
-                          ? "Elige cómo subirlo. Después te mostraremos el siguiente documento sugerido."
+                          ? "Elige cómo subirlo. Después te mostraremos el borrador y el siguiente documento sugerido."
                           : preferredCaptureMode === "camera"
                             ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
                             : preferredCaptureMode === "file"
@@ -4298,7 +4338,7 @@ export default function Auditar() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre y el borrador automático antes de decidir si lo guardas definitivamente.
+                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre, el borrador automático y el siguiente paso recomendado antes de guardarlo definitivamente.
                   </div>
                 )}
               </div>
@@ -4317,9 +4357,19 @@ export default function Auditar() {
               <div className="mt-5 flex flex-col gap-3 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
                 <div className="flex items-start gap-3">
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                  <p>
-                    Tu documento queda protegido dentro del flujo de AuditaPatron. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
-                  </p>
+                  <div className="space-y-2">
+                    <p>
+                      Tu documento queda protegido dentro del flujo de AuditaPatron. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-2xl bg-white/80 px-3 py-2 text-xs leading-5 text-teal-950">
+                        <strong className="font-semibold">Privacidad activa:</strong> tus archivos se usan solo para esta auditoría.
+                      </div>
+                      <div className="rounded-2xl bg-white/80 px-3 py-2 text-xs leading-5 text-teal-950">
+                        <strong className="font-semibold">Recuperación clara:</strong> si algo falla, puedes reintentar sin perder el control del flujo.
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -4644,7 +4694,36 @@ export default function Auditar() {
                 <div className="mt-6 rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="mt-1 h-5 w-5 shrink-0" strokeWidth={1.8} />
-                    <p>{submitError}</p>
+                    <div className="space-y-2">
+                      <p className="font-semibold text-amber-950">Algo interrumpió la carga, pero tus datos siguen a salvo.</p>
+                      <p>{submitError}</p>
+                      <p className="text-xs leading-5 text-amber-900">Puedes reintentar ahora mismo o elegir otro archivo sin perder el control del flujo.</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+                      onClick={() => {
+                        setSubmitError(null);
+                        if (pendingDraft) {
+                          restartPreviewFlow();
+                          return;
+                        }
+                        openPreferredPicker();
+                      }}
+                    >
+                      Reintentar ahora
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-amber-950 hover:bg-amber-100"
+                      onClick={() => setSubmitError(null)}
+                    >
+                      Cerrar mensaje
+                    </Button>
                   </div>
                 </div>
               ) : null}

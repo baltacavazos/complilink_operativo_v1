@@ -83,7 +83,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Toma foto para empezar");
     expect(auditFlowSource).toContain("Elige archivo para empezar");
     expect(auditFlowSource).toContain("El análisis empieza solo en cuanto captures o elijas el documento.");
-    expect(auditFlowSource).toContain("Elige cómo subirlo. Después te mostraremos el siguiente documento sugerido.");
+    expect(auditFlowSource).toContain("Elige cómo subirlo. Después te mostraremos el borrador y el siguiente documento sugerido.");
     expect(auditFlowSource).toContain("upload_mode_selected");
     expect(auditFlowSource).toContain("compact_mobile_toggle");
     expect(auditFlowSource).toContain("preference_panel");

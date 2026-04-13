@@ -1792,12 +1792,12 @@ export default function CeoDashboard() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight xl:text-[2.55rem]">
-                    Visibilidad integral para operar AuditaPatron con criterio ejecutivo y flujo de escritorio.
+                    Visibilidad integral para operar con criterio ejecutivo y flujo de escritorio.
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
                     Esta consola concentra salud operativa, alertas, accesos por caso y trazabilidad documental en una
                     sola superficie. La jerarquía está pensada para trabajo continuo en computadora: escanear, priorizar,
-                    exportar y decidir sin brincar entre pantallas.
+                    exportar y decidir sin cambiar de contexto.
                   </p>
                 </div>
 
@@ -1811,7 +1811,7 @@ export default function CeoDashboard() {
                   <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Decide</p>
                     <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      El tablero prioriza lectura horizontal y acciones seguras para revisar accesos, alertas y estado operativo con menor fricción.
+                      El tablero prioriza lectura horizontal y acciones seguras para revisar accesos, alertas y estado operativo sin fricción innecesaria.
                     </p>
                   </article>
                   <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">

@@ -77,7 +77,7 @@ const tourSteps: TourStep[] = [
     title: "Sube tu documento y AuditaPatron lo recibe",
     summary: "Empieza con el archivo que ya tienes a la mano.",
     description:
-      "No necesitas saber de leyes ni de nómina. Tú subes el documento y AuditaPatron lo analiza, lo resguarda y lo integra a AuditaPatron para empezar a devolverte contexto útil.",
+      "No necesitas saber de leyes ni de nómina. Tú subes el documento y la plataforma lo analiza, lo resguarda y lo integra a tu expediente para empezar a devolverte contexto útil.",
     bullets: [
       "Puedes empezar desde tu celular.",
       "AuditaPatron procesa el archivo sin pasos técnicos extra.",
@@ -103,7 +103,7 @@ const tourSteps: TourStep[] = [
     title: "Tu expediente se fortalece con AuditaPatron",
     summary: "Tus documentos no se quedan sueltos: se convierten en respaldo.",
     description:
-      "Con más documentos útiles, AuditaPatron gana contexto para ordenar, comparar, almacenar y devolverte resultados cada vez más útiles dentro de tu expediente.",
+      "Con más documentos útiles, tu expediente gana contexto para ordenar, comparar y devolverte resultados cada vez más útiles sin perder trazabilidad.",
     bullets: [
       "Más contexto para entender cambios.",
       "Mejor organización de evidencia.",
@@ -212,7 +212,7 @@ const faqs = [
     id: "privacidad",
     question: "¿Mi información está protegida?",
     answer:
-      "Sí. Tus archivos se resguardan dentro del flujo de AuditaPatron para mantenerlos ordenados, disponibles para ti y con control sobre tu expediente digital.",
+      "Sí. Tus archivos se resguardan dentro del flujo para mantenerlos ordenados, disponibles para ti y bajo tu control.",
   },
   {
     id: "sin-tecnicismos",
@@ -2158,7 +2158,7 @@ function FinalCtaSection() {
               Tu primer documento ya puede devolverte más claridad y tranquilidad.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Empieza con lo que ya tienes a la mano y deja que AuditaPatron convierta ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.
+              Empieza con lo que ya tienes a la mano y convierte ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -2195,7 +2195,7 @@ function SiteFooter() {
             subtitleClassName="text-[0.75rem] tracking-[0.14em]"
           />
           <p className="max-w-md text-sm leading-6 text-slate-500">
-            AuditaPatron te ayuda a recuperar claridad, orden y respaldo con un expediente digital simple, privado y útil para revisar tu situación laboral.
+            Recupera claridad, orden y respaldo con un expediente digital simple, privado y útil para revisar tu situación laboral.
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
