@@ -236,9 +236,9 @@ export default function Access() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
                   <p className="font-semibold text-slate-900">Alternativa: Google</p>
-                  <p className="mt-2">Úsala solo si prefieres ese proveedor.</p>
+                  <p className="mt-1.5">Solo si prefieres ese proveedor.</p>
                   <Button
                     size="lg"
                     variant="outline"
@@ -252,10 +252,10 @@ export default function Access() {
                     {googleLabel}
                   </Button>
                 </div>
-                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
                   <p className="font-semibold text-slate-900">Alternativa: código por correo</p>
-                  <p className="mt-2">Déjalo como respaldo cuando no puedas usar la vía principal.</p>
-                  <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Disponible debajo</p>
+                  <p className="mt-1.5">Déjalo como respaldo si no puedes usar la vía principal.</p>
+                  <p className="mt-2 text-[11px] font-medium text-slate-400">Disponible debajo</p>
                 </div>
               </div>
             </div>

@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/CeoDashboard.tsx",
+  "startLine": 1962,
+  "endLine": 1979,
+  "focus": "Reducir densidad visual de las tres tarjetas operativas iniciales de la Consola CEO en móvil sin cambiar funciones ni métricas",
+  "snippet": "                <div className=\"grid gap-3 md:grid-cols-3\">\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Supervisa</p>\n                    <p className=\"mt-2 text-sm leading-6 text-slate-100/85\">\n                      Mantén arriba el panorama general y abajo lo filtrado para investigar sin desorden.\n                    </p>\n                  </article>\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Decide</p>\n                    <p className=\"mt-2 text-sm leading-6 text-slate-100/85\">\n                      Las acciones seguras quedan visibles para resolver alertas, accesos y casos con menos fricción.\n                    </p>\n                  </article>\n                  <article className=\"rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur\">\n                    <p className=\"text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80\">Exporta</p>\n                    <p className=\"mt-2 text-sm leading-6 text-slate-100/85\">\n                      Los exportes siguen en cabecera para cerrar la revisión sin salir de la consola.\n                    </p>",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "CeoDashboard Cards",
+        "top_issue": "Las tres tarjetas operativas iniciales presentan alta densidad visual debido a padding amplio, texto con tracking elevado y uso de backdrop-blur, lo que reduce claridad y aumenta sensación de saturación en móvil.",
+        "suggestions": [
+          {
+            "title": "Reducir padding interno de las tarjetas",
+            "change": "Cambiar la clase p-4 a p-3 o p-2 en los artículos para disminuir espacio interno.",
+            "reason": "Menor padding reduce la densidad visual sin afectar contenido ni funcionalidad, mejorando legibilidad en pantallas pequeñas.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Disminuir tracking en títulos",
+            "change": "Modificar tracking-[0.18em] a tracking-[0.1em] o tracking-normal en los títulos para reducir espacio entre letras.",
+            "reason": "Menor tracking mejora la compacidad del texto y facilita lectura rápida sin perder estilo uppercase.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Eliminar backdrop-blur para mejorar contraste y claridad",
+            "change": "Quitar la clase backdrop-blur de los artículos para evitar efecto borroso que añade ruido visual.",
+            "reason": "Eliminar el desenfoque de fondo mejora nitidez y reduce sensación de saturación, facilitando enfoque en el contenido.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Reducir el padding interno de las tarjetas de p-4 a p-2 para disminuir densidad visual y mejorar claridad inmediata en móvil."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "Tarjetas CEO",
+        "top_issue": "Alta densidad visual en las tres tarjetas iniciales en vista móvil, lo que reduce la claridad inmediata.",
+        "suggestions": [
+          {
+            "title": "Acortar texto de párrafos",
+            "change": "Reducir el texto descriptivo en los párrafos a 1-2 líneas cortas, manteniendo el mensaje principal.",
+            "reason": "Menos texto reduce el espacio vertical en móvil, mejorando la legibilidad sin alterar el contenido funcional.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Reducir padding interno",
+            "change": "Cambiar el padding de p-4 a p-3 en las tarjetas para ahorrar espacio vertical.",
+            "reason": "Menos padding disminuye la altura total de cada tarjeta, reduciendo la densidad en pantallas pequeñas sin afectar la usabilidad.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Ajustar tamaño de fuente en encabezados",
+            "change": "Cambiar el tamaño de fuente del texto encabezado de text-xs a text-[0.75rem] para hacerlo más compacto.",
+            "reason": "Un encabezado menos prominente libera espacio visual y mantiene el enfoque en el contenido principal en móvil.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Acortar el texto de los párrafos para reducir inmediatamente la densidad visual en móvil."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

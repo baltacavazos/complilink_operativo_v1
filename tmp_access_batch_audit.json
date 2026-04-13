@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/Access.tsx",
+  "startLine": 238,
+  "endLine": 259,
+  "focus": "Reducir competencia visual debajo del CTA principal en /acceso y compactar los respaldos en móvil sin cambiar funciones",
+  "snippet": "              <div className=\"mt-4 grid gap-3 md:grid-cols-2\">\n                <div className=\"rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600\">\n                  <p className=\"font-semibold text-slate-900\">Alternativa: Google</p>\n                  <p className=\"mt-2\">Úsala solo si prefieres ese proveedor.</p>\n                  <Button\n                    size=\"lg\"\n                    variant=\"outline\"\n                    className=\"mt-3 h-11 w-full justify-center rounded-2xl border-slate-200 bg-white\"\n                    disabled={!googleEnabled || googleStatusQuery.isLoading}\n                    onClick={() => {\n                      window.location.href = getGoogleLoginUrl(returnTo);\n                    }}\n                  >\n                    {googleStatusQuery.isLoading ? <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" /> : null}\n                    {googleLabel}\n                  </Button>\n                </div>\n                <div className=\"rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600\">\n                  <p className=\"font-semibold text-slate-900\">Alternativa: código por correo</p>\n                  <p className=\"mt-2\">Déjalo como respaldo cuando no puedas usar la vía principal.</p>\n                  <p className=\"mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500\">Disponible debajo</p>\n                </div>",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "AccessAlternatives",
+        "top_issue": "El área debajo del CTA principal presenta competencia visual por textos y etiquetas que distraen, especialmente en móvil, y los respaldos ocupan espacio innecesario.",
+        "suggestions": [
+          {
+            "title": "Reducir el texto explicativo en el respaldo de código por correo",
+            "change": "Eliminar o acortar la frase 'Déjalo como respaldo cuando no puedas usar la vía principal.' para dejar solo el título y la etiqueta 'Disponible debajo'.",
+            "reason": "Disminuye la cantidad de texto y competencia visual, facilitando la lectura rápida y claridad en móvil.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Compactar el espaciado vertical entre elementos en móvil",
+            "change": "Reducir márgenes verticales (mt-2, mt-3) a valores menores en pantallas pequeñas para compactar el contenido sin afectar legibilidad.",
+            "reason": "Optimiza el uso del espacio en móvil, haciendo que los respaldos se vean más compactos y menos dispersos.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Disminuir el peso visual de la etiqueta 'Disponible debajo'",
+            "change": "Cambiar la clase text-slate-500 a un color más tenue o usar un tamaño de fuente aún menor para que compita menos con el CTA.",
+            "reason": "Reduce la competencia visual debajo del CTA principal, ayudando a que el usuario se enfoque en la acción principal.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Reducir o eliminar el texto explicativo en el respaldo de código por correo para minimizar competencia visual y mejorar claridad inmediata."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "Acceso",
+        "top_issue": "Visual competition from backup options distracts from the main CTA on mobile, making the layout feel cluttered.",
+        "suggestions": [
+          {
+            "title": "Reduce font size in backup div",
+            "change": "Change text-sm to text-xs for the backup div content.",
+            "reason": "Smaller text decreases emphasis on the backup option, reducing competition with the main CTA and improving mobile compactness.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Minimize padding in backup section",
+            "change": "Adjust p-4 to p-3 in the backup div for mobile views.",
+            "reason": "Reducing padding compacts the layout on mobile, making the page feel less crowded below the CTA without altering functionality.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Tone down secondary text styling",
+            "change": "Remove uppercase and tracking from the text-xs element in the backup div.",
+            "reason": "Normalizing the text reduces visual weight, minimizing competition and enhancing immediate clarity on mobile.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Reduce padding in the backup div to immediately compact the layout and lessen visual competition on mobile."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

@@ -4386,17 +4386,17 @@ export default function Auditar() {
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
 
-                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
+                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-2.5 text-sm leading-6 text-sky-950">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-semibold">Documento sugerido preparado</p>
                         <p className="mt-1">
-                          Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.
+                          Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="text-sm font-semibold text-sky-800 underline-offset-4 hover:underline"
+                        className="mt-1 text-sm font-semibold text-sky-700 underline-offset-4 hover:underline sm:mt-0"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque

@@ -1960,22 +1960,22 @@ export default function CeoDashboard() {
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Supervisa</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      Mantén arriba el panorama general y abajo lo filtrado para investigar sin desorden.
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Supervisa</p>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                      Panorama arriba y detalle filtrado abajo, sin desorden.
                     </p>
                   </article>
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Decide</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      Las acciones seguras quedan visibles para resolver alertas, accesos y casos con menos fricción.
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Decide</p>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                      Las acciones seguras siguen visibles para resolver rápido.
                     </p>
                   </article>
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Exporta</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
-                      Los exportes siguen en cabecera para cerrar la revisión sin salir de la consola.
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Exporta</p>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                      Cierra la revisión sin salir de la consola.
                     </p>
                   </article>
                 </div>

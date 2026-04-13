@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/Auditar.tsx",
+  "startLine": 4389,
+  "endLine": 4402,
+  "focus": "Reducir fricción y competencia visual del bloque de documento sugerido en /auditar sin agregar elementos nuevos",
+  "snippet": "                  <div className=\"mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950\">\n                    <div className=\"flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between\">\n                      <div>\n                        <p className=\"font-semibold\">Documento sugerido preparado</p>\n                        <p className=\"mt-1\">\n                          Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.\n                        </p>\n                      </div>\n                      <button\n                        type=\"button\"\n                        className=\"text-sm font-semibold text-sky-800 underline-offset-4 hover:underline\"\n                        onClick={() => setSelectedRecommendedTargetType(null)}\n                      >\n                        Quitar enfoque",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "Documento sugerido",
+        "top_issue": "El bloque tiene competencia visual innecesaria entre el texto y el botón, y el layout en móvil no prioriza claridad inmediata.",
+        "suggestions": [
+          {
+            "title": "Reducir padding vertical para compactar el bloque",
+            "change": "Disminuir py-3 a py-2 en el contenedor principal.",
+            "reason": "Reduce el espacio vacío excesivo, haciendo el bloque más compacto y menos dominante visualmente.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Separar visualmente el botón del texto en móvil",
+            "change": "Agregar mt-3 al botón para que en móvil tenga espacio superior y no compita horizontalmente con el texto.",
+            "reason": "En móvil, el botón queda debajo del texto con espacio suficiente, mejorando legibilidad y evitando competencia visual.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Ajustar color del texto del botón para menor competencia",
+            "change": "Cambiar text-sky-800 a text-sky-700 en el botón para reducir saturación y competencia con el texto principal.",
+            "reason": "Un color menos saturado en el botón reduce la competencia visual y mejora la jerarquía a favor del mensaje principal.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Agregar margen superior (mt-3) al botón para separar visualmente el botón del texto en móvil."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "AuditarBlock",
+        "top_issue": "Visual competition from button and dense text reduces mobile clarity in suggested document block.",
+        "suggestions": [
+          {
+            "title": "Enhance text hierarchy",
+            "change": "Increase font weight of the heading to bold and reduce line height slightly for better mobile stacking.",
+            "reason": "Improves visual focus on key information, reducing friction in reading order on small screens.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Simplify copy wording",
+            "change": "Shorten the paragraph to: 'Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.'",
+            "reason": "Reduces cognitive load and visual density, enhancing immediate clarity without altering functionality.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Tone down button style",
+            "change": "Remove the underline from the button and use a lighter text color, e.g., change to text-sky-600.",
+            "reason": "Minimizes visual competition with the main text, allowing users to focus on the message first on mobile.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Simplify the paragraph copy to make it shorter and more direct for immediate mobile readability."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

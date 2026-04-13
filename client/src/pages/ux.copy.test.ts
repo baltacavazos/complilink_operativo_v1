@@ -90,7 +90,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`');
     expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
     expect(source).toContain('Documento sugerido preparado');
-    expect(source).toContain('Estás enfocando {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar esta recomendación.');
+    expect(source).toContain('Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.');
   });
 
   it("refuerza la ruta principal en acceso sin competir visualmente con alternativas", () => {
@@ -100,7 +100,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Entra, recupera tu sesión y vuelve a <strong>{returnTo}</strong> sin pasos extra.");
     expect(source).toContain('className="mt-3 space-y-2"');
     expect(source).toContain('className="px-4 py-3 sm:px-7 sm:py-5"');
-    expect(source).toContain("Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.");
+    expect(source).toContain("Ruta corta: entras, confirmas y vuelves al punto exacto donde te quedaste.");
     expect(source).toContain('className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"');
     expect(source).not.toContain("<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>");
   });
@@ -110,6 +110,9 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain('text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]');
     expect(source).toContain("Revisa alertas, accesos y salud operativa desde una sola vista para priorizar acciones rápidas.");
+    expect(source).toContain("Panorama arriba y detalle filtrado abajo, sin desorden.");
+    expect(source).toContain("Las acciones seguras siguen visibles para resolver rápido.");
+    expect(source).toContain("Cierra la revisión sin salir de la consola.");
   });
 
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {

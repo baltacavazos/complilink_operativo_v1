@@ -1047,3 +1047,6 @@
 - [x] Ronda 20: ejecutar contraste comparado con OpenAI, Grok y Gemini sobre el siguiente microajuste de mayor impacto y menor riesgo
 - [x] Ronda 20: priorizar y aplicar una nueva micro-optimización UI/UX de bajo riesgo sin agregar funciones nuevas
 - [x] Ronda 20: validar con Vitest y TypeScript, revisar estado operativo y consolidar checkpoint si la ronda queda estable
+- [x] Ronda amplia: contrastar con OpenAI, Grok y Gemini la siguiente tanda priorizada de mejoras en /acceso, /auditar y Consola CEO
+- [x] Ronda amplia: aplicar una tanda encadenada de micro-optimizaciones UI/UX de bajo riesgo en los bloques móviles y de primer scroll más sensibles
+- [x] Ronda amplia: actualizar pruebas UX, validar con Vitest y TypeScript, revisar estado operativo y consolidar checkpoint si el lote queda estable
