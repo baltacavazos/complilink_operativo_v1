@@ -717,15 +717,6 @@ export default function CeoDashboard() {
     [auditTrail],
   );
   const auditExecutiveAlerts = useMemo(() => buildAuditExecutiveAlerts(auditTrail).slice(0, 4), [auditTrail]);
-  const legalGateTrendChartConfig = useMemo<ChartConfig>(
-    () => ({
-      abandonmentCount: {
-        label: "Abandonos visibles",
-        color: "oklch(0.61 0.19 20)",
-      },
-    }),
-    [],
-  );
   const bridgeOverview = useMemo(
     () =>
       buildBridgeMonitoringPanel({
@@ -2264,19 +2255,15 @@ export default function CeoDashboard() {
                     <KpiCard label="Exportes trazados" value={masterMetricsQuery.data?.summary.totalExports ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.exports ?? 0)}`} />
                     <KpiCard label="Actores únicos" value={masterMetricsQuery.data?.summary.uniqueActors ?? 0} helper="Usuarios administradores con interacción registrada" />
                   </div>
-                  <div className="mt-4 grid gap-4 md:grid-cols-3">
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Última vista CEO</p>
-                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.consoleViewedAt ?? null)}</p>
-                    </div>
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último bloqueo</p>
-                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.guardrailBlockedAt ?? null)}</p>
-                    </div>
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Último export</p>
-                      <p className="mt-2 text-base font-semibold text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.exportGeneratedAt ?? null)}</p>
-                    </div>
+                  <div className="mt-4 rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Última actividad maestra</p>
+                    <p className="mt-2 leading-6 text-slate-700">
+                      Vista CEO: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.consoleViewedAt ?? null)}</strong>
+                      <span className="mx-2 text-slate-300">•</span>
+                      Bloqueo: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.guardrailBlockedAt ?? null)}</strong>
+                      <span className="mx-2 text-slate-300">•</span>
+                      Export: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.exportGeneratedAt ?? null)}</strong>
+                    </p>
                   </div>
                 </>
               )}
@@ -2313,10 +2300,7 @@ export default function CeoDashboard() {
             <div data-testid="ceo-guardrail-diagnostics" className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium">
               <span className="rounded-full border border-current/15 bg-white/70 px-3 py-1">Estado: {executiveGuardrailReasonLabel}</span>
               <span data-testid="ceo-retry-visible-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
-                Reintentos visibles: {formatNumber(bridgeOverview.summary.retryScheduled)}
-              </span>
-              <span data-testid="ceo-pending-visible-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
-                Retornos pendientes: {formatNumber(bridgeOverview.summary.pending)}
+                Fricción visible: {formatNumber(bridgeOverview.summary.retryScheduled)} reintentos · {formatNumber(bridgeOverview.summary.pending)} pendientes
               </span>
               {legalGateContextSummary ? (
                 <span data-testid="ceo-context-summary-pill" className="rounded-full border border-current/15 bg-white/70 px-3 py-1">
@@ -2663,52 +2647,9 @@ export default function CeoDashboard() {
                               </Badge>
                             </div>
                             {auditSummary.legalGateWeeklyTrend.length > 0 ? (
-                              <>
-                                <ChartContainer config={legalGateTrendChartConfig} className="mt-4 h-36 w-full">
-                                  <LineChart accessibilityLayer data={auditSummary.legalGateWeeklyTrend} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
-                                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                                    <XAxis
-                                      dataKey="weekStart"
-                                      tickLine={false}
-                                      axisLine={false}
-                                      minTickGap={24}
-                                      tickFormatter={(value) => formatWeekLabel(typeof value === "string" ? value : String(value))}
-                                    />
-                                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
-                                    <ChartTooltip
-                                      content={
-                                        <ChartTooltipContent
-                                          formatter={(value) => [`${formatNumber(Number(value ?? 0))} casos`, "Abandonos visibles"]}
-                                          labelFormatter={(value) => `Semana de ${formatWeekLabel(typeof value === "string" ? value : String(value))}`}
-                                        />
-                                      }
-                                    />
-                                    <Line
-                                      type="monotone"
-                                      dataKey="abandonmentCount"
-                                      stroke="var(--color-abandonmentCount)"
-                                      strokeWidth={2.5}
-                                      dot={({ cx, cy, payload }) => {
-                                        if (typeof cx !== "number" || typeof cy !== "number") {
-                                          return <circle cx={0} cy={0} r={0} fill="transparent" stroke="none" />;
-                                        }
-                                        return (
-                                          <circle
-                                            cx={cx}
-                                            cy={cy}
-                                            r={payload?.isOutOfRange ? 5 : 3}
-                                            fill={payload?.isOutOfRange ? "#be123c" : "var(--color-abandonmentCount)"}
-                                            stroke="#fff"
-                                            strokeWidth={1.5}
-                                          />
-                                        );
-                                      }}
-                                      activeDot={{ r: 5 }}
-                                    />
-                                  </LineChart>
-                                </ChartContainer>
+                              <div className="mt-4 space-y-3">
                                 {latestLegalGateTrendPoint ? (
-                                  <div className={`mt-4 rounded-2xl border px-3 py-3 text-sm ${latestLegalGateTrendPoint.isOutOfRange ? "border-rose-200 bg-rose-50/80 text-rose-950" : latestLegalGateTrendPoint.trendDirection === "up" ? "border-amber-200 bg-amber-50/80 text-amber-950" : "border-emerald-200 bg-emerald-50/80 text-emerald-950"}`}>
+                                  <div className={`rounded-2xl border px-3 py-3 text-sm ${latestLegalGateTrendPoint.isOutOfRange ? "border-rose-200 bg-rose-50/80 text-rose-950" : latestLegalGateTrendPoint.trendDirection === "up" ? "border-amber-200 bg-amber-50/80 text-amber-950" : "border-emerald-200 bg-emerald-50/80 text-emerald-950"}`}>
                                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">Comparación semanal</p>
                                     <p className="mt-2 leading-6">
                                       {latestLegalGateTrendPoint.previousAbandonmentCount === null
@@ -2716,40 +2657,25 @@ export default function CeoDashboard() {
                                         : latestLegalGateTrendPoint.deltaCount === 0
                                           ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} se mantiene estable frente a la previa, con ${formatNumber(latestLegalGateTrendPoint.abandonmentCount)} casos abiertos visibles.`
                                           : latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0
-                                            ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} sube en ${formatNumber(latestLegalGateTrendPoint.deltaCount)} casos frente a la previa y conviene revisar si el deterioro es puntual o empieza a sostenerse.`
+                                            ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} sube en ${formatNumber(latestLegalGateTrendPoint.deltaCount)} casos frente a la previa.`
                                             : `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} baja en ${formatNumber(Math.abs(latestLegalGateTrendPoint.deltaCount ?? 0))} casos frente a la previa.`}
                                     </p>
                                     {latestLegalGateTrendPoint.previousAbandonmentCount !== null ? (
-                                      <div className="mt-3 flex flex-wrap gap-2">
-                                        <Badge className={`rounded-full border ${latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0 ? "border-amber-200 bg-white text-amber-800" : latestLegalGateTrendPoint.deltaCount === 0 ? "border-slate-200 bg-white text-slate-700" : "border-emerald-200 bg-white text-emerald-800"}`}>
-                                          Balance neto {latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0 ? `+${formatNumber(latestLegalGateTrendPoint.deltaCount)}` : formatNumber(latestLegalGateTrendPoint.deltaCount ?? 0)} vs previa
-                                        </Badge>
-                                        {hasConsecutiveLegalGateWorsening ? (
-                                          <Badge className="rounded-full border border-amber-200 bg-white text-amber-800">2 semanas consecutivas al alza</Badge>
-                                        ) : null}
-                                      </div>
+                                      <p className="mt-3 text-xs leading-5 text-slate-600">
+                                        Balance neto: {latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0 ? `+${formatNumber(latestLegalGateTrendPoint.deltaCount)}` : formatNumber(latestLegalGateTrendPoint.deltaCount ?? 0)} vs previa.
+                                      </p>
                                     ) : null}
                                     {hasConsecutiveLegalGateWorsening ? (
                                       <p className="mt-3 text-xs leading-5 text-amber-900">
-                                        Alerta discreta: ya van dos semanas consecutivas empeorando el abandono visible del gate legal.
+                                        Alerta discreta: ya van dos semanas consecutivas al alza en abandono visible.
                                       </p>
                                     ) : null}
                                   </div>
                                 ) : null}
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                  {auditSummary.legalGateWeeklyTrend.map((point) => (
-                                    <Badge
-                                      key={point.weekStart}
-                                      className={`rounded-full border ${point.isOutOfRange ? "border-rose-200 bg-rose-50 text-rose-800" : point.trendDirection === "up" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-slate-200 bg-white text-slate-600"}`}
-                                    >
-                                      {formatWeekLabel(point.weekStart)} · {formatNumber(point.abandonmentCount)} {point.isOutOfRange ? "fuera de rango" : point.trendDirection === "up" ? "subiendo" : point.trendDirection === "down" ? "bajando" : point.trendDirection === "new" ? "inicio" : "estable"}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <p className="mt-3 text-xs leading-5 text-slate-500">
-                                  El umbral visual mínimo marca como fuera de rango las semanas con {formatNumber(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD)} o más casos abiertos visibles; la comparación semanal ayuda a separar picos puntuales de deterioro sostenido.
+                                <p className="text-xs leading-5 text-slate-500">
+                                  Para V1 se deja una lectura compacta: evolución reciente, balance neto y alerta discreta cuando el deterioro deja de ser puntual.
                                 </p>
-                              </>
+                              </div>
                             ) : (
                               <p className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
                                 Todavía no hay casos abiertos suficientes para dibujar una tendencia semanal del gate legal.

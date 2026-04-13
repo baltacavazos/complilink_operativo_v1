@@ -966,3 +966,6 @@
 - [x] Cerrar el retorno desde vistas contextuales al resumen ejecutivo de la Consola CEO sin perder filtros activos
 - [x] Añadir una prueba E2E de la navegación contextual CEO y su retorno preservando contexto
 - [x] Registrar con mayor claridad los bloqueos de seguridad y reintentos del dashboard CEO para diagnóstico operativo
+- [x] Aplicar una ronda de simplificación obligatoria en la Consola CEO y en V1 para reducir ruido visual, densidad y carga cognitiva sin agregar funciones nuevas
+- [x] Revisar cada refuerzo reciente de V1 y conservar solo lo que aporte claridad operativa o robustez real
+- [x] Robustecer únicamente flujos críticos existentes de V1 antes de cualquier nueva propuesta, evitando expansiones funcionales y complejidad acumulada
