@@ -72,6 +72,100 @@ const INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {
 const MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 15 * 1024 * 1024;
 const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"] as const;
 
+type UploadProgressStepKey = "prepare" | "analyze" | "save" | "review";
+
+type UploadProgressState = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  progress: number;
+  toneClasses: string;
+  barClasses: string;
+  stageLabel: string;
+  etaLabel: string;
+  stepKey: UploadProgressStepKey;
+};
+
+const UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }> = [
+  { key: "prepare", label: "Preparar" },
+  { key: "analyze", label: "Analizar" },
+  { key: "save", label: "Guardar" },
+  { key: "review", label: "Revisar" },
+];
+
+const PERSISTENT_UPLOAD_GUARDRAILS = {
+  fileRules: "Formatos permitidos: PDF, XML o imagen clara. Límite preventivo: 15 MB por archivo.",
+  privacyRules: "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
+};
+
+function getUploadProgressStepState(stepKey: UploadProgressStepKey) {
+  const activeIndex = UPLOAD_PROGRESS_STEPS.findIndex((step) => step.key === stepKey);
+
+  return UPLOAD_PROGRESS_STEPS.map((step, index) => ({
+    ...step,
+    isActive: index === activeIndex,
+    isComplete: index < activeIndex || (stepKey === "review" && index === activeIndex),
+  }));
+}
+
+function getUploadTransitionCopy(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "analyze":
+      return "Transición visible: del archivo listo al análisis guiado.";
+    case "save":
+      return "Transición visible: del borrador revisado al guardado protegido.";
+    case "review":
+      return "Transición visible: del procesamiento a la revisión final con control tuyo.";
+    default:
+      return "Transición visible: de la preparación segura al análisis automático.";
+  }
+}
+
+function getUploadPersistentSupportCopy(file: File | null) {
+  if (file) {
+    return `Archivo actual: ${file.name} · ${formatVisibleFileSize(file.size)}.`;
+  }
+
+  return "Consejo preventivo: procura que el archivo esté completo, legible y sin sombras antes de subirlo.";
+}
+
+function getUploadSecuritySummary(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "save":
+      return "Seguimos protegiendo el documento mientras se integra al expediente.";
+    case "review":
+      return "Ya puedes revisar con calma antes de confirmar cualquier guardado.";
+    default:
+      return "Los límites, la privacidad y tu control siguen visibles durante todo el flujo.";
+  }
+}
+
+function getUploadEtaLabel(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "analyze":
+      return "Tiempo estimado: entre 10 y 20 segundos para preparar el borrador.";
+    case "save":
+      return "Tiempo estimado: menos de 10 segundos para integrar y cerrar esta etapa.";
+    case "review":
+      return "Siguiente acción: revisar y confirmar solo si quieres guardarlo.";
+    default:
+      return "Tiempo estimado al iniciar: normalmente menos de 1 minuto hasta la vista previa.";
+  }
+}
+
+function getUploadStageLabel(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "analyze":
+      return "Etapa 2 de 4 · Analizando contenido";
+    case "save":
+      return "Etapa 3 de 4 · Guardando con control";
+    case "review":
+      return "Etapa 4 de 4 · Vista previa lista";
+    default:
+      return "Etapa 1 de 4 · Preparación segura";
+  }
+}
+
 export function formatVisibleFileSize(bytes: number) {
   if (bytes >= 1024 * 1024) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -109,7 +203,7 @@ export function buildUploadProgressState(params: {
   pendingDraft: boolean;
   isAnalyzingDraft: boolean;
   isConfirmingDraft: boolean;
-}) {
+}): UploadProgressState {
   const { selectedFile, pendingDraft, isAnalyzingDraft, isConfirmingDraft } = params;
 
   if (isConfirmingDraft) {
@@ -120,6 +214,9 @@ export function buildUploadProgressState(params: {
       progress: 92,
       toneClasses: "border-teal-200 bg-teal-50 text-teal-950",
       barClasses: "bg-teal-600",
+      stageLabel: getUploadStageLabel("save"),
+      etaLabel: getUploadEtaLabel("save"),
+      stepKey: "save",
     };
   }
 
@@ -131,6 +228,9 @@ export function buildUploadProgressState(params: {
       progress: 100,
       toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
       barClasses: "bg-sky-600",
+      stageLabel: getUploadStageLabel("review"),
+      etaLabel: getUploadEtaLabel("review"),
+      stepKey: "review",
     };
   }
 
@@ -142,6 +242,9 @@ export function buildUploadProgressState(params: {
       progress: 72,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       barClasses: "bg-amber-500",
+      stageLabel: getUploadStageLabel("analyze"),
+      etaLabel: getUploadEtaLabel("analyze"),
+      stepKey: "analyze",
     };
   }
 
@@ -153,6 +256,9 @@ export function buildUploadProgressState(params: {
       progress: 38,
       toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
       barClasses: "bg-emerald-500",
+      stageLabel: getUploadStageLabel("prepare"),
+      etaLabel: getUploadEtaLabel("prepare"),
+      stepKey: "prepare",
     };
   }
 
@@ -163,6 +269,9 @@ export function buildUploadProgressState(params: {
     progress: 12,
     toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
     barClasses: "bg-slate-400",
+    stageLabel: getUploadStageLabel("prepare"),
+    etaLabel: getUploadEtaLabel("prepare"),
+    stepKey: "prepare",
   };
 }
 
@@ -2493,6 +2602,7 @@ export default function Auditar() {
       }),
     [analyzeDraftMutation.isPending, confirmDraftMutation.isPending, pendingDraft, selectedFile],
   );
+  const uploadProgressSteps = useMemo(() => getUploadProgressStepState(uploadProgressState.stepKey), [uploadProgressState.stepKey]);
   const previewInsight = pendingDraft ? getUploadInsight(pendingDraft.classification.documentType) : null;
   const previewReadiness = getDocumentReadiness(pendingDraft?.classification?.classificationConfidence);
   const previewConfirmedEntries = useMemo(
@@ -4454,28 +4564,59 @@ export default function Auditar() {
                     </Button>
                   </div>
 
-                  <div className={`mt-4 rounded-[1.1rem] border p-4 ${uploadProgressState.toneClasses}`}>
+                  <div
+                    aria-live="polite"
+                    className={`mt-4 rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">{uploadProgressState.eyebrow}</p>
                         <p className="mt-2 font-semibold">{uploadProgressState.title}</p>
                       </div>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700">
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 transition-colors duration-300">
                         {uploadProgressState.progress}%
                       </span>
                     </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/70">
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {uploadProgressSteps.map((step, index) => (
+                        <div
+                          key={step.key}
+                          className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition-all duration-300 ${
+                            step.isActive
+                              ? "border-white/80 bg-white text-slate-900 shadow-sm"
+                              : step.isComplete
+                                ? "border-white/70 bg-white/80 text-slate-700"
+                                : "border-white/40 bg-white/40 text-slate-600"
+                          }`}
+                        >
+                          <span className="block text-[11px] uppercase tracking-[0.16em] opacity-70">Etapa {index + 1}</span>
+                          <span className="mt-1 block">{step.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/70">
                       <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
                     </div>
-                    <p className="mt-3 text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
-                    <p className="mt-2 text-xs leading-5 opacity-80">
-                      {selectedFile
-                        ? `Archivo actual: ${selectedFile.name} · ${formatVisibleFileSize(selectedFile.size)}`
-                        : "Consejo preventivo: procura que el archivo esté completo, legible y sin sombras antes de subirlo."}
-                    </p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{uploadProgressState.stageLabel}</p>
+                    <p className="mt-2 text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
+                    <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
+                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadTransitionCopy(uploadProgressState.stepKey)}</p>
+                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadPersistentSupportCopy(selectedFile)}</p>
+                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
                     {selectedFileValidationMessage ? (
                       <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
                     ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Límites visibles</p>
+                      <p className="mt-2 leading-6">{PERSISTENT_UPLOAD_GUARDRAILS.fileRules}</p>
+                    </div>
+                    <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Privacidad y control</p>
+                      <p className="mt-2 leading-6">{PERSISTENT_UPLOAD_GUARDRAILS.privacyRules}</p>
+                    </div>
                   </div>
                 </div>
 

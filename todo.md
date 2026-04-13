@@ -920,3 +920,7 @@
 - [x] Integrar un microcopy de control y confianza justo encima o dentro del bloque principal de upload
 - [x] Consultar a ChatGPT, Grok y Gemini sobre la micro-ronda de progreso y control antes de implementar cambios
 - [x] Validar la micro-ronda con pruebas, revisión operativa y reauditoría multi-modelo antes del próximo checkpoint
+
+- [x] Añadir progreso por etapas o tiempo estimado en el flujo de carga y análisis de /auditar
+- [x] Refinar las transiciones visuales entre estados del upload para que el cambio de fase sea más claro
+- [x] Hacer persistentes junto al cargador los límites de tipo/tamaño y el mensaje de seguridad y privacidad

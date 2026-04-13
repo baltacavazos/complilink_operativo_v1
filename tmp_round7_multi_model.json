@@ -1,0 +1,83 @@
+{
+  "openai": {
+    "score_actual": 9.0,
+    "veredicto": "El flujo de carga está muy pulido, pero se puede mejorar la claridad y confianza del usuario con pequeños ajustes en la comunicación y visualización del progreso.",
+    "top_3_cambios": [
+      {
+        "titulo": "Incluir barra de progreso segmentada con tiempo estimado",
+        "impacto": "alto",
+        "esfuerzo": "medio",
+        "detalle": "Modificar la tarjeta de progreso para que muestre segmentos visuales diferenciados para carga, análisis y guardado, junto con un tiempo estimado restante para cada etapa, basado en datos históricos o promedio."
+      },
+      {
+        "titulo": "Mejorar transiciones visuales entre estados",
+        "impacto": "alto",
+        "esfuerzo": "bajo",
+        "detalle": "Agregar animaciones sutiles y cambios de color o iconografía para que el usuario perciba claramente el cambio de estado (por ejemplo, animar el paso de 38% a 72% con un efecto de transición suave y cambio de icono)."
+      },
+      {
+        "titulo": "Fijar límites y mensajes de privacidad junto al cargador",
+        "impacto": "medio",
+        "esfuerzo": "bajo",
+        "detalle": "Mantener visibles de forma persistente, junto al área de carga, los mensajes sobre tipos y tamaños permitidos y el aviso de privacidad/seguridad, para que el usuario los tenga siempre presentes sin necesidad de buscar."
+      }
+    ],
+    "cambio_minimo_recomendado": "Agregar una barra de progreso segmentada con tiempo estimado para cada etapa, usando animaciones suaves para las transiciones entre estados.",
+    "riesgo_si_se_sobrediseña": "Sobrecargar la interfaz con demasiada información o animaciones puede distraer o confundir al usuario, aumentando la percepción de complejidad y ralentizando el flujo.",
+    "score_estimado_post": 9.2
+  },
+  "xai": {
+    "score_actual": 9.0,
+    "veredicto": "Flujo de upload sólido con oportunidades para refinar progresión y visibilidad de información clave.",
+    "top_3_cambios": [
+      {
+        "titulo": "Añadir tiempo estimado en progreso",
+        "impacto": "alto",
+        "esfuerzo": "bajo",
+        "detalle": "Agregar un texto dinámico debajo de la barra de progreso que muestre 'Estimado: 10-15 segundos' durante etapas de análisis y guardado, basado en datos promedio de cargas previas, sin alterar la estructura existente."
+      },
+      {
+        "titulo": "Clarificar transiciones visuales",
+        "impacto": "alto",
+        "esfuerzo": "bajo",
+        "detalle": "Implementar animaciones simples (e.g., fade-in de 0.3 segundos) al cambiar entre estados del upload, como de 'Archivo seleccionado' a 'Análisis en curso', usando CSS transitions para mayor fluidez sin rediseñar componentes."
+      },
+      {
+        "titulo": "Persistir mensajes de límites y seguridad",
+        "impacto": "medio",
+        "esfuerzo": "bajo",
+        "detalle": "Fijar los mensajes de límites de tipo/tamaño y seguridad en un banner estático junto al cargador durante todo el flujo, asegurando que permanezcan visibles sin necesidad de scroll, mediante un ajuste de posicionamiento CSS."
+      }
+    ],
+    "cambio_minimo_recomendado": "Priorizar el añadido de tiempo estimado en la barra de progreso, ya que mejora la percepción de control con un cambio rápido y de alto impacto.",
+    "riesgo_si_se_sobrediseña": "Podría sobrecargar la interfaz con elementos innecesarios, aumentando el tiempo de carga o confundiendo a los usuarios, lo que revertiría el score actual.",
+    "score_estimado_post": 9.1
+  },
+  "gemini": {
+    "score_actual": 9.0,
+    "veredicto": "El flujo de carga es sólido. Los ajustes propuestos refinarán la percepción de control y transparencia, mejorando la experiencia del usuario de forma incremental.",
+    "top_3_cambios": [
+      {
+        "titulo": "Indicador de Etapa y Tiempo Estimado en Tarjeta de Progreso",
+        "impacto": "alto",
+        "esfuerzo": "bajo",
+        "detalle": "Integrar en la tarjeta de progreso actual un texto que indique la etapa ('Cargando archivo', 'Analizando contenido', 'Guardando borrador') y, si es viable, un tiempo estimado restante o un indicador de 'casi listo' para las etapas de análisis y guardado. Por ejemplo: 'Analizando contenido (aprox. 15s restantes)' o 'Guardando borrador (casi listo)'."
+      },
+      {
+        "titulo": "Micro-animaciones y Feedback Visual en Transiciones de Estado",
+        "impacto": "alto",
+        "esfuerzo": "bajo",
+        "detalle": "Implementar micro-animaciones sutiles (ej. fade-in/fade-out, ligero escalado) al cambiar entre los estados de la tarjeta de progreso (Idle -> Seleccionado -> Análisis -> Guardado -> Vista Previa). Asegurar que el porcentaje y el texto de estado cambien con una transición suave y que el icono de estado (si existe) se actualice de forma distintiva."
+      },
+      {
+        "titulo": "Visibilidad Constante de Requisitos y Mensajes Clave",
+        "impacto": "medio",
+        "esfuerzo": "bajo",
+        "detalle": "Mantener visibles de forma persistente, justo debajo o al lado del área de carga de archivos, los límites de tipo (PDF, XML, imágenes) y tamaño (15 MB), así como un resumen conciso del mensaje de seguridad y privacidad. Estos elementos deben ser estáticos y no desaparecer durante el proceso de carga."
+      }
+    ],
+    "cambio_minimo_recomendado": "Añadir el indicador de etapa y tiempo estimado en la tarjeta de progreso. Es el que mayor impacto tiene en la percepción del usuario sobre el control y la espera, con un esfuerzo mínimo.",
+    "riesgo_si_se_sobrediseña": "Introducir elementos visuales o textuales redundantes, animaciones excesivas que distraigan o ralenticen, o complejizar la interfaz con información que ya está implícita o que no es crítica en cada momento. El objetivo es pulir, no añadir ruido.",
+    "score_estimado_post": 9.2
+  }
+}

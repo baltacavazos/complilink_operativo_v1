@@ -234,6 +234,9 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Guardado en curso",
       progress: 92,
+      stageLabel: "Etapa 3 de 4 · Guardando con control",
+      etaLabel: "Tiempo estimado: menos de 10 segundos para integrar y cerrar esta etapa.",
+      stepKey: "save",
     });
   });
 
@@ -248,6 +251,8 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Control del documento",
       progress: 12,
+      stageLabel: "Etapa 1 de 4 · Preparación segura",
+      stepKey: "prepare",
     });
 
     expect(
@@ -260,6 +265,39 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Archivo listo",
       progress: 38,
+      etaLabel: "Tiempo estimado al iniciar: normalmente menos de 1 minuto hasta la vista previa.",
+      stepKey: "prepare",
+    });
+  });
+
+  it("comunica la etapa de análisis y el paso final de revisión cuando el borrador ya está listo", () => {
+    expect(
+      buildUploadProgressState({
+        selectedFile: new File(["hola"], "evidencia.jpg", { type: "image/jpeg" }),
+        pendingDraft: false,
+        isAnalyzingDraft: true,
+        isConfirmingDraft: false,
+      }),
+    ).toMatchObject({
+      eyebrow: "Análisis en curso",
+      progress: 72,
+      stageLabel: "Etapa 2 de 4 · Analizando contenido",
+      stepKey: "analyze",
+    });
+
+    expect(
+      buildUploadProgressState({
+        selectedFile: new File(["hola"], "evidencia.jpg", { type: "image/jpeg" }),
+        pendingDraft: true,
+        isAnalyzingDraft: false,
+        isConfirmingDraft: false,
+      }),
+    ).toMatchObject({
+      eyebrow: "Vista previa lista",
+      progress: 100,
+      stageLabel: "Etapa 4 de 4 · Vista previa lista",
+      etaLabel: "Siguiente acción: revisar y confirmar solo si quieres guardarlo.",
+      stepKey: "review",
     });
   });
 });

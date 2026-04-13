@@ -1,0 +1,26 @@
+{
+  "openai": {
+    "score_post": 8.7,
+    "veredicto": "Mejora clara y bien balanceada",
+    "mejora_percibida": "La incorporación del stepper visible y etiquetas contextuales en la tarjeta de progreso aporta claridad y orientación al usuario, facilitando la comprensión del flujo sin generar confusión. Los bloques persistentes junto al cargador refuerzan la transparencia y confianza, mientras que los textos de transición mejoran la comunicación del estado. Las transiciones suaves mantienen la experiencia fluida. En conjunto, estos cambios enriquecen la experiencia sin sobrecargarla.",
+    "riesgo_de_sobrecarga": "bajo",
+    "ajuste_minimo_opcional": "Considerar simplificar ligeramente los textos de transición para usuarios menos experimentados, evitando posibles distracciones.",
+    "consenso_recomendado": "cerrar_ronda"
+  },
+  "xai": {
+    "score_post": 95,
+    "veredicto": "Flujo mejorado y claro",
+    "mejora_percibida": "Añade guía visual y transparencia sin alterar el flujo principal, aumentando la confianza del usuario",
+    "riesgo_de_sobrecarga": "bajo",
+    "ajuste_minimo_opcional": "Considerar agregar accesibilidad para lectores de pantalla en los textos de transición",
+    "consenso_recomendado": "cerrar_ronda"
+  },
+  "gemini": {
+    "score_post": 9.0,
+    "veredicto": "Mejora sustancial en transparencia y confianza.",
+    "mejora_percibida": "La micro-ronda ha transformado un flujo funcional en una experiencia altamente transparente y tranquilizadora. La adición del stepper, las etiquetas contextuales, el tiempo estimado y los bloques de información persistente reducen la ansiedad del usuario, gestionan expectativas y construyen confianza. La coherencia en las transiciones y la robustez de las pruebas consolidan una mejora significativa en UX/UI, especialmente para un contexto móvil-first donde la claridad es primordial.",
+    "riesgo_de_sobrecarga": "bajo",
+    "ajuste_minimo_opcional": "Asegurar que los bloques persistentes de 'Límites' y 'Privacidad' sean extremadamente concisos y se adapten perfectamente a pantallas móviles sin desplazar contenido crítico o generar scroll innecesario. Podrían ser tooltips o información colapsable si el espacio es muy limitado, aunque la visibilidad directa es preferible si es posible.",
+    "consenso_recomendado": "cerrar_ronda"
+  }
+}
