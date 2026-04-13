@@ -1,0 +1,83 @@
+{
+  "prompt": "Eres un revisor técnico senior de un proyecto web TypeScript ya funcional. Necesito una recomendación MINIMA enfocada en reforzar una Consola CEO ya existente, no en agregar funciones nuevas por agregar.\n\nContexto heredado:\n- Proyecto: AuditaPatron dentro de una app web Manus con servidor corriendo y TypeScript sin errores.\n- La ronda previa ya permitió: abrir casos del drill-down legal hacia feed filtrado o expediente documental, resaltar semanas fuera de rango en abandono legal y mostrar acciones sugeridas por motivo de guardrail.\n- El usuario pidió que la siguiente ronda se enfoque explícitamente en reforzar lo ya construido.\n\nCandidatos de refuerzo ya aprobados para evaluar:\n1) reforzar la persistencia del contexto al aterrizar desde enlaces del drill-down legal, manteniendo tenant y caso filtrados;\n2) reforzar el ranking ejecutivo permitiendo seguimiento operativo de causas sugeridas sin perder simplicidad visual;\n3) reforzar la lectura semanal con comparación contra la semana previa para distinguir picos puntuales de deterioro sostenido.\n\nRestricciones:\n- Mantener el cambio mínimo posible.\n- Reutilizar rutas, filtros, helpers y telemetría existentes.\n- No crear infraestructura nueva si se puede resolver en frontend o con contratos ya existentes.\n- El servidor debe seguir corriendo.\n- TypeScript debe permanecer sin errores.\n- La recomendación debe favorecer implementación incremental con pruebas.\n- Preferir pequeños refuerzos de comportamiento, estado y lectura antes que rediseños.\n\nResponde SOLO JSON válido con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del modelo\",\n  \"context_persistence\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"state_to_preserve\": [\"campo1\", \"campo2\"],\n    \"why_reinforcement\": \"texto\"\n  },\n  \"operational_followup\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"ui_shape\": \"texto\",\n    \"why_reinforcement\": \"texto\"\n  },\n  \"weekly_comparison\": {\n    \"summary\": \"frase breve\",\n    \"minimal_approach\": \"texto\",\n    \"key_signals\": [\"senal1\", \"senal2\"],\n    \"why_reinforcement\": \"texto\"\n  },\n  \"recommended_test_focus\": [\"test1\", \"test2\", \"test3\"],\n  \"risks\": [\"riesgo1\", \"riesgo2\"],\n  \"consensus_candidate\": \"propuesta integral en 2 o 3 frases\"\n}",
+  "results": {
+    "chatgpt": {
+      "model_view": "ConsolaCEO",
+      "context_persistence": {
+        "summary": "Mantener contexto tenant y caso al navegar desde drill-down legal",
+        "minimal_approach": "Extender el manejo de parámetros URL para capturar y reaplicar tenant y caso filtrados usando helpers existentes, almacenando temporalmente en estado local o contexto React sin modificar rutas ni backend.",
+        "state_to_preserve": [
+          "tenantId",
+          "caseId"
+        ],
+        "why_reinforcement": "Evita pérdida de contexto crítico para el usuario, asegurando continuidad y precisión en la visualización sin agregar complejidad ni infraestructura nueva."
+      },
+      "operational_followup": {
+        "summary": "Incorporar seguimiento visual simple para causas sugeridas en ranking ejecutivo",
+        "minimal_approach": "Agregar un indicador visual discreto (ej. un badge o icono pequeño) junto a causas sugeridas usando componentes y estilos ya existentes, sin alterar la estructura ni agregar filtros nuevos.",
+        "ui_shape": "Pequeños badges o iconos junto a cada causa en la lista de ranking, manteniendo la simplicidad y legibilidad actual.",
+        "why_reinforcement": "Permite al CEO identificar rápidamente causas en seguimiento operativo sin saturar la interfaz ni cambiar flujos ya validados."
+      },
+      "weekly_comparison": {
+        "summary": "Comparar lectura semanal con semana previa para detectar picos y tendencias",
+        "minimal_approach": "Reutilizar datos ya cargados para calcular diferencias simples entre semanas y mostrar un pequeño indicador (flecha o color) que distinga picos puntuales de deterioro sostenido en la vista semanal.",
+        "key_signals": [
+          "diferencia_abandono_legal",
+          "variacion_acciones_guardrail"
+        ],
+        "why_reinforcement": "Mejora la interpretación rápida de la evolución semanal sin modificar datos ni agregar nuevas consultas, facilitando decisiones informadas."
+      },
+      "recommended_test_focus": [
+        "persistencia de parámetros tenant y caso al navegar desde enlaces drill-down",
+        "renderizado correcto de indicadores visuales en ranking ejecutivo",
+        "cálculo y visualización de diferencias semanales sin errores"
+      ],
+      "risks": [
+        "posible inconsistencia temporal si el estado local no se sincroniza correctamente con URL",
+        "sobrecarga visual si indicadores no se mantienen discretos",
+        "errores en cálculo de diferencias si datos semanales no están completos"
+      ],
+      "consensus_candidate": "Implementar persistencia ligera del contexto tenant y caso vía URL y estado local, añadir indicadores visuales mínimos para seguimiento operativo en ranking ejecutivo, y mostrar diferencias semanales con indicadores simples; todo reutilizando infraestructura y componentes existentes para asegurar estabilidad y facilitar pruebas incrementales."
+    },
+    "grok": {
+      "model_view": "AuditaPatron",
+      "context_persistence": {
+        "summary": "Mantener tenant y caso filtrados al navegar desde drill-down",
+        "minimal_approach": "Reutilizar rutas y filtros existentes para almacenar temporalmente el estado en el frontend, pasando parámetros vía query strings sin alterar el backend.",
+        "state_to_preserve": [
+          "tenant",
+          "caso"
+        ],
+        "why_reinforcement": "Para asegurar consistencia en el flujo de trabajo y evitar pérdidas de contexto que podrían confundir al usuario durante transiciones, manteniendo el mínimo cambio posible."
+      },
+      "operational_followup": {
+        "summary": "Seguimiento de causas sugeridas en ranking ejecutivo",
+        "minimal_approach": "Añadir un enlace o indicador simple en el ranking existente para permitir clics que muestren detalles operativos, reutilizando helpers de telemetría sin alterar la estructura visual principal.",
+        "ui_shape": "Un ícono o botón discreto junto a cada causa, manteniendo el layout actual para preservar simplicidad.",
+        "why_reinforcement": "Para mejorar el seguimiento sin sobrecargar la interfaz, permitiendo acciones operativas directas que potencien el uso diario sin introducir complejidad innecesaria."
+      },
+      "weekly_comparison": {
+        "summary": "Comparar lecturas semanales para detectar patrones",
+        "minimal_approach": "Usar datos existentes en el frontend para calcular diferencias simples entre semanas, mostrando resultados en una tabla o gráfico reutilizando componentes actuales sin nuevas consultas al servidor.",
+        "key_signals": [
+          "picos_puntuales",
+          "deterioro_sostenido"
+        ],
+        "why_reinforcement": "Para ayudar a distinguir entre fluctuaciones temporales y problemas persistentes, mejorando la toma de decisiones con análisis mínimo que no altere el flujo principal."
+      },
+      "recommended_test_focus": [
+        "persistenciaContextoNavegacion",
+        "seguimientoCausasUI",
+        "comparacionSemanalDatos"
+      ],
+      "risks": [
+        "posible_perdida_estado_en_navegacion",
+        "aumento_leve_en_carga_frontend"
+      ],
+      "consensus_candidate": "Reforzar la persistencia de contexto para mantener filtros clave, mejorar el seguimiento operativo con elementos UI minimales y añadir comparaciones semanales para análisis rápido; esto asegura mejoras incrementales con bajo riesgo, reutilizando componentes existentes para mantener el proyecto estable y sin errores en TypeScript."
+    }
+  },
+  "failures": {
+    "gemini": "HTTPError: 403 Client Error: Forbidden for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyC503Q-dRi4H9bMSE99uYPX3sMu7PmdxUc"
+  }
+}

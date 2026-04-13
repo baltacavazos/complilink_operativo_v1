@@ -956,3 +956,6 @@
 - [x] Enlazar cada caso del drill-down legal de la Consola CEO a una vista filtrada o contextual del expediente/feed
 - [x] Añadir umbrales visuales para semanas con abandono legal fuera de rango en la Consola CEO
 - [x] Convertir el ranking de causas de guardrail_rejected en acciones sugeridas por motivo
+- [x] Reforzar la persistencia del contexto al aterrizar desde enlaces del drill-down legal, manteniendo tenant y caso filtrados
+- [x] Reforzar el ranking ejecutivo permitiendo seguimiento operativo de causas sugeridas sin perder simplicidad visual
+- [x] Reforzar la lectura semanal con comparación contra la semana previa para distinguir picos puntuales de deterioro sostenido

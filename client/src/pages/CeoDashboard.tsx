@@ -54,10 +54,13 @@ import {
   getAuditFamilyLabel,
   getAuditRejectionReason,
   getAuditSeverityLabel,
+  getGuardrailFollowUpMeta,
+  getNextGuardrailFollowUpStatus,
   type AuditEventFamily,
   type AuditEventSeverity,
   type AuditExecutiveAlert,
   type AuditFeedItem,
+  type GuardrailFollowUpStatus,
 } from "@/pages/ceoDashboardMonitoring";
 import {
   AlertTriangle,
@@ -115,6 +118,76 @@ function formatDurationCompact(seconds: number | null | undefined) {
   if (seconds < 60) return `${formatNumber(seconds)} s`;
   if (seconds < 3600) return `${(seconds / 60).toFixed(1)} min`;
   return `${(seconds / 3600).toFixed(1)} h`;
+}
+
+const GUARDRAIL_FOLLOW_UP_STORAGE_KEY = "ceo.guardrailFollowUp.v1";
+
+type LegalGateNavigationContext = {
+  tenantId: string;
+  caseId: string | null;
+  scopeId: string;
+  target: "feed" | "documents";
+};
+
+function getCeoPathname(location: string) {
+  return location.split("?")[0] ?? location;
+}
+
+function buildLegalGateContextPath(
+  targetPath: "/ceo" | "/ceo/documentos",
+  item: { tenantId: string; caseId: string | null; scopeId: string },
+) {
+  const params = new URLSearchParams({
+    legalTenantId: item.tenantId,
+    legalScopeId: item.scopeId,
+    legalTarget: targetPath === "/ceo" ? "feed" : "documents",
+  });
+
+  if (item.caseId) {
+    params.set("legalCaseId", item.caseId);
+  }
+
+  return `${targetPath}?${params.toString()}`;
+}
+
+function parseLegalGateNavigationContext(location: string): LegalGateNavigationContext | null {
+  const [, rawQuery = ""] = location.split("?");
+  const params = new URLSearchParams(rawQuery);
+  const tenantId = params.get("legalTenantId");
+  const scopeId = params.get("legalScopeId");
+  const target = params.get("legalTarget");
+
+  if (!tenantId || !scopeId || (target !== "feed" && target !== "documents")) {
+    return null;
+  }
+
+  return {
+    tenantId,
+    caseId: params.get("legalCaseId"),
+    scopeId,
+    target,
+  };
+}
+
+function readStoredGuardrailFollowUp(): Record<string, GuardrailFollowUpStatus> {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const rawValue = window.localStorage.getItem(GUARDRAIL_FOLLOW_UP_STORAGE_KEY);
+    if (!rawValue) return {};
+    const parsed = JSON.parse(rawValue) as Record<string, unknown>;
+    const next: Record<string, GuardrailFollowUpStatus> = {};
+
+    for (const [key, value] of Object.entries(parsed ?? {})) {
+      if (value === "pending" || value === "tracking" || value === "resolved") {
+        next[key] = value;
+      }
+    }
+
+    return next;
+  } catch {
+    return {};
+  }
 }
 
 type BridgePresetFiltersDraft = {
@@ -448,6 +521,7 @@ export default function CeoDashboard() {
   const [bridgeSmokeTimeWindow, setBridgeSmokeTimeWindow] = useState<BridgeSmokeHistoryTimeWindow>("all");
   const [bridgeSmokeSeverityFilter, setBridgeSmokeSeverityFilter] = useState<BridgeSmokeHistorySeverityFilter>("all");
   const [isLegalGateDrilldownOpen, setIsLegalGateDrilldownOpen] = useState(false);
+  const [guardrailFollowUpByReason, setGuardrailFollowUpByReason] = useState<Record<string, GuardrailFollowUpStatus>>(() => readStoredGuardrailFollowUp());
   const [bridgeSmokeThresholdDraft, setBridgeSmokeThresholdDraft] = useState("3");
   const [queryDraft, setQueryDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -486,13 +560,43 @@ export default function CeoDashboard() {
     };
   }, []);
 
+  const legalGateNavigationContext = useMemo(() => parseLegalGateNavigationContext(location), [location]);
+
   const currentSection = useMemo<SectionKey>(() => {
-    if (location.startsWith("/ceo/bridge")) return "bridge";
-    if (location.startsWith("/ceo/alertas")) return "alertas";
-    if (location.startsWith("/ceo/accesos")) return "accesos";
-    if (location.startsWith("/ceo/documentos")) return "documentos";
-    return "resumen";
+    const pathname = getCeoPathname(location);
+    if (pathname.startsWith("/ceo/bridge")) return "bridge";
+    if (pathname.startsWith("/ceo/alertas")) return "alertas";
+    if (pathname.startsWith("/ceo/accesos")) return "accesos";
+    if (pathname.startsWith("/ceo/documentos")) return "documentos";
+    return "overview";
   }, [location]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(GUARDRAIL_FOLLOW_UP_STORAGE_KEY, JSON.stringify(guardrailFollowUpByReason));
+  }, [guardrailFollowUpByReason]);
+
+  useEffect(() => {
+    if (!legalGateNavigationContext) return;
+
+    setFilters((previous) => {
+      const nextTenantId = legalGateNavigationContext.tenantId;
+      const nextCaseId = legalGateNavigationContext.caseId ?? "all";
+      if (previous.tenantId === nextTenantId && previous.caseId === nextCaseId) {
+        return previous;
+      }
+      return {
+        ...previous,
+        tenantId: nextTenantId,
+        caseId: nextCaseId,
+      };
+    });
+
+    if (legalGateNavigationContext.target === "feed") {
+      setAuditFamilyFilter("all");
+      setAuditSeverityFilter("all");
+    }
+  }, [legalGateNavigationContext]);
 
   const snapshotFilters = useMemo(() => {
     const input: {
@@ -619,6 +723,7 @@ export default function CeoDashboard() {
   const globalSummary = baseSnapshotQuery.data?.summary;
   const auditTrail = auditTrailQuery.data ?? [];
   const auditSummary = useMemo(() => buildAuditMonitoringSummary(auditTrail), [auditTrail]);
+  const latestLegalGateTrendPoint = auditSummary.legalGateWeeklyTrend[auditSummary.legalGateWeeklyTrend.length - 1] ?? null;
   const filteredAuditTrail = useMemo(
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
@@ -1144,7 +1249,17 @@ export default function CeoDashboard() {
       setAuditFamilyFilter("all");
       setAuditSeverityFilter("all");
     }
-    void setLocation(targetPath);
+    void setLocation(buildLegalGateContextPath(targetPath, item));
+  };
+
+  const toggleGuardrailFollowUp = (reason: string) => {
+    setGuardrailFollowUpByReason((current) => {
+      const previousStatus = current[reason] ?? "pending";
+      return {
+        ...current,
+        [reason]: getNextGuardrailFollowUpStatus(previousStatus),
+      };
+    });
   };
 
   const isAlertBusy = (alertId: number) => alertMutation.isPending && alertMutation.variables?.alertId === alertId;
@@ -2507,7 +2622,7 @@ export default function CeoDashboard() {
                             <div className="flex items-center justify-between gap-3">
                               <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tendencia semanal</p>
-                                <p className="mt-1 text-sm text-slate-600">Abandono legal aún abierto agrupado por semana de origen.</p>
+                                <p className="mt-1 text-sm text-slate-600">Abandono legal aún abierto agrupado por semana de origen y comparado contra la semana previa.</p>
                               </div>
                               <Badge className="rounded-full border border-rose-200 bg-rose-50 text-rose-800">
                                 {formatNumber(auditSummary.legalGateWeeklyTrend.length)} semanas
@@ -2556,18 +2671,32 @@ export default function CeoDashboard() {
                                     />
                                   </LineChart>
                                 </ChartContainer>
+                                {latestLegalGateTrendPoint ? (
+                                  <div className={`mt-4 rounded-2xl border px-3 py-3 text-sm ${latestLegalGateTrendPoint.isOutOfRange ? "border-rose-200 bg-rose-50/80 text-rose-950" : latestLegalGateTrendPoint.trendDirection === "up" ? "border-amber-200 bg-amber-50/80 text-amber-950" : "border-emerald-200 bg-emerald-50/80 text-emerald-950"}`}>
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">Comparación semanal</p>
+                                    <p className="mt-2 leading-6">
+                                      {latestLegalGateTrendPoint.previousAbandonmentCount === null
+                                        ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} inaugura la serie con ${formatNumber(latestLegalGateTrendPoint.abandonmentCount)} casos abiertos visibles.`
+                                        : latestLegalGateTrendPoint.deltaCount === 0
+                                          ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} se mantiene estable frente a la previa, con ${formatNumber(latestLegalGateTrendPoint.abandonmentCount)} casos abiertos visibles.`
+                                          : latestLegalGateTrendPoint.deltaCount !== null && latestLegalGateTrendPoint.deltaCount > 0
+                                            ? `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} sube en ${formatNumber(latestLegalGateTrendPoint.deltaCount)} casos frente a la previa y conviene revisar si el deterioro es puntual o empieza a sostenerse.`
+                                            : `La semana de ${formatWeekLabel(latestLegalGateTrendPoint.weekStart)} baja en ${formatNumber(Math.abs(latestLegalGateTrendPoint.deltaCount ?? 0))} casos frente a la previa.`}
+                                    </p>
+                                  </div>
+                                ) : null}
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   {auditSummary.legalGateWeeklyTrend.map((point) => (
                                     <Badge
                                       key={point.weekStart}
-                                      className={`rounded-full border ${point.isOutOfRange ? "border-rose-200 bg-rose-50 text-rose-800" : "border-slate-200 bg-white text-slate-600"}`}
+                                      className={`rounded-full border ${point.isOutOfRange ? "border-rose-200 bg-rose-50 text-rose-800" : point.trendDirection === "up" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-slate-200 bg-white text-slate-600"}`}
                                     >
-                                      {formatWeekLabel(point.weekStart)} · {formatNumber(point.abandonmentCount)} {point.isOutOfRange ? "fuera de rango" : "estable"}
+                                      {formatWeekLabel(point.weekStart)} · {formatNumber(point.abandonmentCount)} {point.isOutOfRange ? "fuera de rango" : point.trendDirection === "up" ? "subiendo" : point.trendDirection === "down" ? "bajando" : point.trendDirection === "new" ? "inicio" : "estable"}
                                     </Badge>
                                   ))}
                                 </div>
                                 <p className="mt-3 text-xs leading-5 text-slate-500">
-                                  El umbral visual mínimo marca como fuera de rango las semanas con {formatNumber(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD)} o más casos abiertos visibles.
+                                  El umbral visual mínimo marca como fuera de rango las semanas con {formatNumber(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD)} o más casos abiertos visibles; la comparación semanal ayuda a separar picos puntuales de deterioro sostenido.
                                 </p>
                               </>
                             ) : (
@@ -2607,6 +2736,9 @@ export default function CeoDashboard() {
                                         <div className="flex flex-wrap items-center gap-2">
                                           <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">Tenant {item.tenantId}</Badge>
                                           <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{item.caseId ? `Caso ${item.caseId}` : `Scope ${item.scopeId}`}</Badge>
+                                          {legalGateNavigationContext && legalGateNavigationContext.scopeId === item.scopeId ? (
+                                            <Badge className="rounded-full border border-cyan-200 bg-cyan-50 text-cyan-800">Contexto activo</Badge>
+                                          ) : null}
                                         </div>
                                         <p className="mt-2 font-semibold text-slate-950">Fricción abierta desde {formatDateTime(item.conflictStartedAt)}</p>
                                         <p className="mt-1 text-xs leading-5 text-slate-500">
@@ -2619,6 +2751,7 @@ export default function CeoDashboard() {
                                           <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => focusLegalGateCase(item, "/ceo/documentos")}>
                                             Ver expediente documental
                                           </Button>
+                                          <p className="text-xs leading-5 text-slate-500">Los enlaces conservan tenant y caso al aterrizar para evitar perder el contexto operativo.</p>
                                         </div>
                                       </article>
                                     ))}
@@ -2768,21 +2901,32 @@ export default function CeoDashboard() {
                         </div>
                         {auditSummary.guardrailReasonRanking.length > 0 ? (
                           <div className="mt-3 space-y-2">
-                            {auditSummary.guardrailReasonRanking.map((entry, index) => (
-                              <article key={`${entry.reason}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3 text-sm text-slate-700">
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="font-semibold text-slate-950">{index + 1}. {entry.reason}</p>
-                                  <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-800">{formatNumber(entry.count)} rechazos</Badge>
-                                </div>
-                                <p className="mt-2 text-xs leading-5 text-slate-500">
-                                  {entry.latestAt ? `Último visible: ${formatDateTime(entry.latestAt)}.` : "Sin timestamp visible."} {entry.caseId ? `Caso más reciente: ${entry.caseId}.` : `Tenant: ${entry.tenantId}.`}
-                                </p>
-                                <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/80 px-3 py-3">
-                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Acción sugerida</p>
-                                  <p className="mt-2 text-sm leading-6 text-cyan-950">{entry.suggestedAction}</p>
-                                </div>
-                              </article>
-                            ))}
+                            {auditSummary.guardrailReasonRanking.map((entry, index) => {
+                              const followUpStatus = guardrailFollowUpByReason[entry.reason] ?? "pending";
+                              const followUpMeta = getGuardrailFollowUpMeta(followUpStatus);
+
+                              return (
+                                <article key={`${entry.reason}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3 text-sm text-slate-700">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <p className="font-semibold text-slate-950">{index + 1}. {entry.reason}</p>
+                                    <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-800">{formatNumber(entry.count)} rechazos</Badge>
+                                  </div>
+                                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                                    {entry.latestAt ? `Último visible: ${formatDateTime(entry.latestAt)}.` : "Sin timestamp visible."} {entry.caseId ? `Caso más reciente: ${entry.caseId}.` : `Tenant: ${entry.tenantId}.`}
+                                  </p>
+                                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                                    <Badge className={`rounded-full border ${followUpMeta.badgeClassName}`}>{followUpMeta.label}</Badge>
+                                    <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => toggleGuardrailFollowUp(entry.reason)}>
+                                      {followUpMeta.actionLabel}
+                                    </Button>
+                                  </div>
+                                  <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/80 px-3 py-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Acción sugerida</p>
+                                    <p className="mt-2 text-sm leading-6 text-cyan-950">{entry.suggestedAction}</p>
+                                  </div>
+                                </article>
+                              );
+                            })}
                           </div>
                         ) : (
                           <p className="mt-3 text-sm text-slate-500">Cuando un guardrail operativo bloquee una acción de Auditar, aquí aparecerán las causas más repetidas para priorizar la corrección.</p>

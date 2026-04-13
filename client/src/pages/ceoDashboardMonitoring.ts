@@ -25,8 +25,13 @@ export type LegalGateDrilldownItem = {
 export type LegalGateWeeklyTrendPoint = {
   weekStart: string;
   abandonmentCount: number;
+  previousAbandonmentCount: number | null;
+  deltaCount: number | null;
+  trendDirection: "up" | "down" | "flat" | "new";
   isOutOfRange: boolean;
 };
+
+export type GuardrailFollowUpStatus = "pending" | "tracking" | "resolved";
 
 export type GuardrailReasonRankingItem = {
   reason: string;
@@ -237,6 +242,36 @@ export function getGuardrailSuggestedAction(reason: string) {
   return "Revisar el detalle del rechazo en el feed filtrado y replicar el caso antes de ajustar reglas.";
 }
 
+export function getNextGuardrailFollowUpStatus(current: GuardrailFollowUpStatus): GuardrailFollowUpStatus {
+  if (current === "pending") return "tracking";
+  if (current === "tracking") return "resolved";
+  return "pending";
+}
+
+export function getGuardrailFollowUpMeta(status: GuardrailFollowUpStatus) {
+  if (status === "tracking") {
+    return {
+      label: "En seguimiento",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-800",
+      actionLabel: "Marcar resuelta",
+    };
+  }
+
+  if (status === "resolved") {
+    return {
+      label: "Resuelta",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-800",
+      actionLabel: "Reabrir seguimiento",
+    };
+  }
+
+  return {
+    label: "Pendiente",
+    badgeClassName: "border-slate-200 bg-slate-100 text-slate-700",
+    actionLabel: "Marcar seguimiento",
+  };
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
@@ -316,7 +351,7 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
       ageSeconds: latestVisibleTimestamp === null ? null : Math.max(0, Math.round((latestVisibleTimestamp - entry.conflictStartedAt) / 1000)),
     }));
 
-  const legalGateWeeklyTrend = Array.from(
+  const legalGateWeeklyTrendEntries = Array.from(
     legalGateAffectedCases.reduce((buckets, entry) => {
       const conflictTimestamp = toTimestampMs(entry.conflictStartedAt);
       if (conflictTimestamp === null) return buckets;
@@ -324,13 +359,23 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
       buckets.set(bucketKey, (buckets.get(bucketKey) ?? 0) + 1);
       return buckets;
     }, new Map<string, number>()).entries(),
-  )
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([weekStart, abandonmentCount]) => ({
+  ).sort(([left], [right]) => left.localeCompare(right));
+
+  const legalGateWeeklyTrend = legalGateWeeklyTrendEntries.map(([weekStart, abandonmentCount], index) => {
+    const previousAbandonmentCount = index > 0 ? legalGateWeeklyTrendEntries[index - 1]?.[1] ?? null : null;
+    const deltaCount = previousAbandonmentCount === null ? null : abandonmentCount - previousAbandonmentCount;
+    const trendDirection =
+      previousAbandonmentCount === null ? "new" : deltaCount === 0 ? "flat" : deltaCount > 0 ? "up" : "down";
+
+    return {
       weekStart,
       abandonmentCount,
+      previousAbandonmentCount,
+      deltaCount,
+      trendDirection,
       isOutOfRange: abandonmentCount >= LEGAL_GATE_WEEKLY_ALERT_THRESHOLD,
-    }));
+    } satisfies LegalGateWeeklyTrendPoint;
+  });
 
   const guardrailReasonRanking = Array.from(
     guardrailEvents.reduce((buckets, item) => {

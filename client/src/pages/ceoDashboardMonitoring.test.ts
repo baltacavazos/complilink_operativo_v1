@@ -11,8 +11,11 @@ import {
   getAuditEventFamily,
   getAuditEventSeverity,
   getAuditRejectionReason,
+  getGuardrailFollowUpMeta,
   getGuardrailSuggestedAction,
+  getNextGuardrailFollowUpStatus,
   type AuditFeedItem,
+  type GuardrailFollowUpStatus,
 } from "./ceoDashboardMonitoring";
 
 function buildAuditItem(overrides: Partial<AuditFeedItem> = {}): AuditFeedItem {
@@ -88,7 +91,16 @@ describe("ceoDashboardMonitoring", () => {
           ageSeconds: 0,
         },
       ],
-      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1, isOutOfRange: false }],
+      legalGateWeeklyTrend: [
+        {
+          weekStart: "2026-04-06T00:00:00.000Z",
+          abandonmentCount: 1,
+          previousAbandonmentCount: null,
+          deltaCount: null,
+          trendDirection: "new",
+          isOutOfRange: false,
+        },
+      ],
       guardrailReasonRanking: [
         {
           reason: "sin_detalle",
@@ -145,7 +157,16 @@ describe("ceoDashboardMonitoring", () => {
           ageSeconds: 0,
         },
       ],
-      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1, isOutOfRange: false }],
+      legalGateWeeklyTrend: [
+        {
+          weekStart: "2026-04-06T00:00:00.000Z",
+          abandonmentCount: 1,
+          previousAbandonmentCount: null,
+          deltaCount: null,
+          trendDirection: "new",
+          isOutOfRange: false,
+        },
+      ],
     });
   });
 
@@ -251,19 +272,35 @@ describe("ceoDashboardMonitoring", () => {
     ]);
   });
 
-  it("marca semanas fuera de rango cuando superan el umbral visible de abandono legal", () => {
+  it("marca semanas fuera de rango y calcula comparación contra la semana previa", () => {
     const items = [
-      buildAuditItem({ id: 41, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-501", createdAt: "2026-04-07T10:00:00.000Z" }),
-      buildAuditItem({ id: 42, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-502", createdAt: "2026-04-08T10:00:00.000Z" }),
+      buildAuditItem({ id: 41, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-501", createdAt: "2026-03-31T10:00:00.000Z" }),
+      buildAuditItem({ id: 42, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-502", createdAt: "2026-04-07T10:00:00.000Z" }),
+      buildAuditItem({ id: 43, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-503", createdAt: "2026-04-08T10:00:00.000Z" }),
     ];
 
     expect(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD).toBe(2);
     expect(buildAuditMonitoringSummary(items).legalGateWeeklyTrend).toEqual([
-      { weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 2, isOutOfRange: true },
+      {
+        weekStart: "2026-03-30T00:00:00.000Z",
+        abandonmentCount: 1,
+        previousAbandonmentCount: null,
+        deltaCount: null,
+        trendDirection: "new",
+        isOutOfRange: false,
+      },
+      {
+        weekStart: "2026-04-06T00:00:00.000Z",
+        abandonmentCount: 2,
+        previousAbandonmentCount: 1,
+        deltaCount: 1,
+        trendDirection: "up",
+        isOutOfRange: true,
+      },
     ]);
   });
 
-  it("mapea acciones sugeridas de guardrail sin necesitar backend adicional", () => {
+  it("mapea acciones sugeridas y permite ciclar el seguimiento operativo sin backend adicional", () => {
     expect(getGuardrailSuggestedAction("rate_limit_exceeded")).toBe(
       "Espaciar reintentos y revisar deduplicación o control de ráfagas antes de volver a auditar.",
     );
@@ -273,6 +310,24 @@ describe("ceoDashboardMonitoring", () => {
     expect(getGuardrailSuggestedAction("custom_reason")).toBe(
       "Revisar el detalle del rechazo en el feed filtrado y replicar el caso antes de ajustar reglas.",
     );
+
+    const cycle: GuardrailFollowUpStatus[] = ["pending", "tracking", "resolved"];
+    expect(cycle.map((status) => getNextGuardrailFollowUpStatus(status))).toEqual(["tracking", "resolved", "pending"]);
+    expect(getGuardrailFollowUpMeta("pending")).toEqual({
+      label: "Pendiente",
+      badgeClassName: "border-slate-200 bg-slate-100 text-slate-700",
+      actionLabel: "Marcar seguimiento",
+    });
+    expect(getGuardrailFollowUpMeta("tracking")).toEqual({
+      label: "En seguimiento",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-800",
+      actionLabel: "Marcar resuelta",
+    });
+    expect(getGuardrailFollowUpMeta("resolved")).toEqual({
+      label: "Resuelta",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-800",
+      actionLabel: "Reabrir seguimiento",
+    });
   });
 
   it("genera alertas ejecutivas cuando se acumulan rechazos por tenant o por caso", () => {
