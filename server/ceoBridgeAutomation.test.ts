@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeNextBridgeScheduleRunAt,
+  isMissingCeoBridgeScheduleInfrastructureError,
   validateBridgeScheduleCronExpression,
   validateBridgeScheduleTimezone,
 } from "./ceoBridgeAutomation";
@@ -34,5 +35,30 @@ describe("ceoBridgeAutomation", () => {
     const nextRun = computeNextBridgeScheduleRunAt("0 30 8 * * *", "UTC", new Date("2026-04-12T09:05:00.000Z"));
 
     expect(nextRun.toISOString()).toBe("2026-04-13T08:30:00.000Z");
+  });
+
+  it("detecta el error de infraestructura cuando falta ceo_bridge_schedules en el stack de error", () => {
+    const error = {
+      name: "DrizzleQueryError",
+      message: "Failed query: select * from ceo_bridge_schedules",
+      cause: {
+        message: "Table 'tenant.ceo_bridge_schedules' doesn't exist",
+        sql: "select * from ceo_bridge_schedules where isActive = 1",
+      },
+    };
+
+    expect(isMissingCeoBridgeScheduleInfrastructureError(error)).toBe(true);
+  });
+
+  it("evita falsos positivos cuando el fallo no corresponde a tablas del bridge", () => {
+    const error = {
+      name: "DrizzleQueryError",
+      message: "Failed query: select * from users",
+      cause: {
+        message: "Table 'tenant.users' doesn't exist",
+      },
+    };
+
+    expect(isMissingCeoBridgeScheduleInfrastructureError(error)).toBe(false);
   });
 });

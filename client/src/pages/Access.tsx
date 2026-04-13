@@ -156,79 +156,84 @@ export default function Access() {
       : "Google disponible en cuanto se complete la configuración";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,103,177,0.12),_transparent_34%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_48%,#f8fafc_100%)] text-foreground">
-      <div className="container py-10 lg:py-16">
-        <div className="mb-8 flex items-center justify-between gap-4">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.1),_transparent_28%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+      <div className="container py-6 lg:py-10">
+        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <a
             href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/90 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al inicio
           </a>
-          <div className="rounded-full border border-border/70 bg-background/90 px-4 py-2 text-sm text-muted-foreground shadow-sm">
-            Retorno protegido: <strong className="text-foreground">{returnTo}</strong>
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm">
+            <ShieldCheck className="h-4 w-4" />
+            Regresarás a <strong>{returnTo}</strong>
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
-          <section className="overflow-hidden rounded-[2rem] border border-border/70 bg-card/95 shadow-[0_30px_100px_-40px_rgba(15,23,42,0.35)] backdrop-blur">
-            <div className="border-b border-border/70 px-8 py-8">
+        <div className="grid gap-5 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
+          <section className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white/95 shadow-[0_24px_80px_-42px_rgba(15,23,42,0.28)]">
+            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,118,110,0.9))] px-6 py-6 text-white sm:px-7">
               <div className="flex items-start gap-4">
-                <AuditaPatronLogoIcon imageClassName="h-16 w-16 rounded-2xl border border-border/70 bg-background object-contain p-1.5 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.45)]" />
-                <div className="space-y-3">
-                  <AuditaPatronLogoWordmark imageClassName="max-w-[230px]" subtitleClassName="text-xs uppercase tracking-[0.16em]" />
-                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    Acceso multi-identidad para operación y auditoría
+                <AuditaPatronLogoIcon imageClassName="h-12 w-12 rounded-2xl border border-white/20 bg-white object-contain p-1.5 shadow-[0_20px_50px_-28px_rgba(2,6,23,0.6)]" />
+                <div className="space-y-2">
+                  <AuditaPatronLogoWordmark imageClassName="max-w-[210px]" subtitleClassName="text-xs uppercase tracking-[0.16em] text-white/70" />
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
+                    Acceso operativo
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-8 px-8 py-8">
-              <div className="space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary/80">Inicio de sesión unificado</p>
-                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance text-foreground">
-                  Elige el método de acceso que mejor encaje con tu operación sin romper la sesión corporativa existente.
+              <div className="mt-5 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar y continuar</p>
+                <h1 className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
+                  Esta pantalla solo existe para entrar rápido y volver a trabajar.
                 </h1>
-                <p className="max-w-2xl text-base leading-8 text-muted-foreground">
-                  La consola conserva el acceso corporativo actual y añade un canal passwordless por correo para contingencia, adopción gradual y continuidad operativa. Google queda preparado para activarse tan pronto se complete la configuración segura del proveedor.
+                <p className="max-w-xl text-sm leading-7 text-slate-200">
+                  Aquí no repetimos la explicación del producto. Tu objetivo es autenticarte, recuperar la sesión y regresar a la ruta protegida sin rodeos.
                 </p>
               </div>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-3xl border border-border/70 bg-background/80 p-5 shadow-sm">
-                  <p className="text-sm font-semibold text-foreground">Métodos habilitados</p>
-                  <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-                    <li><strong className="text-foreground">Manus OAuth</strong> mantiene el acceso institucional ya desplegado.</li>
-                    <li><strong className="text-foreground">Correo passwordless</strong> envía un código temporal sin requerir contraseña persistente.</li>
-                    <li><strong className="text-foreground">Google OAuth</strong> queda listo para activación controlada cuando se carguen las credenciales.</li>
-                  </ul>
-                </div>
-                <div className="rounded-3xl border border-border/70 bg-slate-950 p-5 text-slate-100 shadow-sm">
-                  <p className="text-sm font-semibold">Controles operativos</p>
-                  <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
-                    <li>Trazabilidad por sesión protegida y retorno seguro a la ruta solicitada.</li>
-                    <li>Compatibilidad incremental con el flujo existente de expedientes.</li>
-                    <li>Canal alterno para soporte y continuidad en ventanas críticas.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-dashed border-border/80 bg-muted/40 p-5 text-sm leading-7 text-muted-foreground">
-                Si vienes desde una ruta protegida, al autenticarte volverás automáticamente a <strong className="text-foreground">{returnTo}</strong>.
+            <div className="space-y-4 px-6 py-5 sm:px-7">
+              <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50/85 p-4">
+                <p className="text-sm font-semibold text-slate-950">Qué hace esta pantalla</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Elegir tu método de acceso, validar la sesión y devolverte automáticamente a <strong>{returnTo}</strong>.
+                </p>
+              </article>
+              <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50/85 p-4">
+                <p className="text-sm font-semibold text-slate-950">Qué no hace</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  No sustituye la home ni vuelve a presentar la propuesta de valor. La experiencia aquí es deliberadamente corta, directa y operativa.
+                </p>
+              </article>
+              <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 p-4 text-sm leading-6 text-teal-950">
+                Cuando completes el acceso, el sistema te devolverá al punto exacto donde querías continuar.
               </div>
             </div>
           </section>
 
-          <section className="space-y-6">
-            <div className="rounded-[2rem] border border-border/70 bg-card/95 p-6 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.32)]">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Acceso con proveedores</p>
+          <section className="space-y-5">
+            <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso principal</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Entra y vuelve a tu ruta</h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    Si quieres resolverlo con el menor número de pasos, Manus suele ser la vía más directa. Google y el código por correo quedan como alternativas operativas.
+                  </p>
+                </div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                  Ruta objetivo: {returnTo}
+                </div>
+              </div>
+
               <div className="mt-5 grid gap-3">
                 <Button
                   size="lg"
-                  className="h-12 justify-center rounded-2xl shadow-lg shadow-primary/10"
+                  className="h-12 justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/10 hover:bg-slate-900"
                   onClick={() => {
                     window.location.href = getManusLoginUrl(returnTo);
                   }}
@@ -238,7 +243,7 @@ export default function Access() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 justify-center rounded-2xl border-border/80 bg-background/70"
+                  className="h-12 justify-center rounded-2xl border-slate-200 bg-white"
                   disabled={!googleEnabled || googleStatusQuery.isLoading}
                   onClick={() => {
                     window.location.href = getGoogleLoginUrl(returnTo);
@@ -248,27 +253,41 @@ export default function Access() {
                   {googleLabel}
                 </Button>
               </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-3">
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  <p className="font-semibold text-slate-900">Manus</p>
+                  <p className="mt-2">La opción más directa cuando ya vienes con sesión institucional activa.</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  <p className="font-semibold text-slate-900">Google</p>
+                  <p className="mt-2">Queda listo como alternativa segura en cuanto termine la configuración del proveedor.</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  <p className="font-semibold text-slate-900">Código por correo</p>
+                  <p className="mt-2">Sirve como respaldo temporal sin introducir contraseñas persistentes.</p>
+                </div>
+              </div>
             </div>
 
-            <div className="rounded-[2rem] border border-border/70 bg-card/95 p-6 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.32)]">
+            <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700">
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Acceso por correo</p>
-                  <h2 className="text-xl font-semibold tracking-tight text-foreground">Código temporal sin contraseña</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Respaldo operativo</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">Entrar con código por correo</h2>
                 </div>
               </div>
 
-                  <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                    Usa tu correo de trabajo para recibir un código de verificación. Si es tu primer acceso por este canal, el sistema reconciliará tu identidad con la cuenta existente cuando encuentre el mismo email.
-                  </p>
+              <p className="mt-4 text-sm leading-7 text-slate-600">
+                Si hoy prefieres no depender de otro proveedor, usa tu correo de trabajo para recibir un código temporal. Este flujo está pensado para continuidad operativa y adopción gradual.
+              </p>
 
-                  <div className="mt-4 rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-                    Por seguridad, el reenvío del código tiene un breve enfriamiento visible y el sistema limita la cantidad de solicitudes repetidas por correo durante la misma ventana operativa.
-                  </div>
-
+              <div className="mt-4 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
+                El reenvío del código muestra un temporizador visible y limita solicitudes repetidas dentro de la misma ventana para proteger el acceso.
+              </div>
 
               {statusMessage ? (
                 <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
@@ -277,7 +296,7 @@ export default function Access() {
               ) : null}
 
               {errorMessage ? (
-                <div className="mt-5 flex items-start gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                <div className="mt-5 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
@@ -286,7 +305,7 @@ export default function Access() {
               {emailStep === "request" ? (
                 <form className="mt-6 space-y-4" onSubmit={handleRequestCode}>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="access-email">
+                    <label className="text-sm font-medium text-slate-900" htmlFor="access-email">
                       Correo corporativo
                     </label>
                     <input
@@ -297,12 +316,12 @@ export default function Access() {
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       placeholder="nombre@empresa.com"
-                      className="h-12 w-full rounded-2xl border border-input bg-background px-4 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="access-name">
+                    <label className="text-sm font-medium text-slate-900" htmlFor="access-name">
                       Nombre visible (opcional)
                     </label>
                     <input
@@ -312,14 +331,14 @@ export default function Access() {
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       placeholder="Cómo quieres aparecer en la consola"
-                      className="h-12 w-full rounded-2xl border border-input bg-background px-4 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
 
                   <Button
                     type="submit"
                     size="lg"
-                    className="h-12 w-full rounded-2xl"
+                    className="h-12 w-full rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
                     disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                   >
                     {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -329,7 +348,7 @@ export default function Access() {
               ) : (
                 <form className="mt-6 space-y-4" onSubmit={handleVerifyCode}>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="verify-email">
+                    <label className="text-sm font-medium text-slate-900" htmlFor="verify-email">
                       Correo verificado
                     </label>
                     <input
@@ -337,12 +356,12 @@ export default function Access() {
                       type="email"
                       value={submittedEmail || email}
                       readOnly
-                      className="h-12 w-full rounded-2xl border border-input bg-muted/60 px-4 text-base text-foreground outline-none"
+                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base text-slate-950 outline-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="verify-code">
+                    <label className="text-sm font-medium text-slate-900" htmlFor="verify-code">
                       Código de seis dígitos
                     </label>
                     <input
@@ -355,7 +374,7 @@ export default function Access() {
                       value={code}
                       onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="000000"
-                      className="h-12 w-full rounded-2xl border border-input bg-background px-4 text-base tracking-[0.4em] text-foreground outline-none transition-colors placeholder:tracking-normal placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base tracking-[0.4em] text-slate-950 outline-none transition-colors placeholder:tracking-normal placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
 
@@ -363,7 +382,7 @@ export default function Access() {
                     <Button
                       type="submit"
                       size="lg"
-                      className="h-12 rounded-2xl"
+                      className="h-12 rounded-2xl bg-slate-950 text-white hover:bg-slate-900"
                       disabled={verifyEmailCode.isPending || loading}
                     >
                       {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -373,7 +392,7 @@ export default function Access() {
                       type="button"
                       size="lg"
                       variant="outline"
-                      className="h-12 rounded-2xl border-border/80 bg-background/70"
+                      className="h-12 rounded-2xl border-slate-200 bg-white"
                       disabled={requestEmailCode.isPending || emailCooldownActive}
                       onClick={async () => {
                         setErrorMessage(null);
@@ -390,14 +409,14 @@ export default function Access() {
                   </div>
 
                   {emailCooldownActive ? (
-                    <p className="text-sm text-muted-foreground">
-                      Puedes pedir un nuevo código en <strong className="text-foreground">{emailCooldownSecondsRemaining}s</strong>.
+                    <p className="text-sm text-slate-500">
+                      Puedes pedir un nuevo código en <strong className="text-slate-900">{emailCooldownSecondsRemaining}s</strong>.
                     </p>
                   ) : null}
 
                   <button
                     type="button"
-                    className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    className="text-sm font-medium text-teal-700 transition-colors hover:text-teal-800"
                     onClick={() => {
                       setEmailStep("request");
                       setCode("");
@@ -413,6 +432,6 @@ export default function Access() {
           </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

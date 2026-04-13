@@ -1786,26 +1786,56 @@ export default function CeoDashboard() {
         </section>
       ) : (
         <div className="space-y-6">
-          <section className="rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(15,118,110,0.9))] p-6 text-white shadow-[0_34px_90px_-42px_rgba(15,23,42,0.56)]">
-            <div className="flex flex-wrap items-start justify-between gap-5">
-              <div className="max-w-3xl space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
-                <h2 className="text-3xl font-semibold tracking-tight">Visibilidad integral para operar AuditaPatron sin fricción.</h2>
-                <p className="max-w-2xl text-sm leading-7 text-slate-100/90">
-                  Este tablero concentra salud operativa, alertas, accesos por caso y trazabilidad documental en una sola
-                  superficie para tomar decisiones rápidas con contexto y control.
-                </p>
+          <section className="rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(15,118,110,0.92))] p-6 text-white shadow-[0_34px_90px_-42px_rgba(15,23,42,0.56)] xl:p-7">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
+                  <h2 className="mt-3 text-3xl font-semibold tracking-tight xl:text-[2.55rem]">
+                    Visibilidad integral para operar AuditaPatron con criterio ejecutivo y flujo de escritorio.
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
+                    Esta consola concentra salud operativa, alertas, accesos por caso y trazabilidad documental en una
+                    sola superficie. La jerarquía está pensada para trabajo continuo en computadora: escanear, priorizar,
+                    exportar y decidir sin brincar entre pantallas.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Supervisa</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
+                      Mantén arriba la foto global y abajo los listados que sí responden a filtros para investigar sin perder contexto.
+                    </p>
+                  </article>
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Decide</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
+                      El tablero prioriza lectura horizontal y acciones seguras para revisar accesos, alertas y estado operativo con menor fricción.
+                    </p>
+                  </article>
+                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Exporta</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-100/85">
+                      CSV, PDF y correo quedan en la misma cabecera para cerrar ciclos ejecutivos sin abandonar la consola.
+                    </p>
+                  </article>
+                </div>
               </div>
-              <div className="min-w-[240px] rounded-[1.5rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Última actualización</p>
+
+              <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Lectura actual</p>
                 <p className="mt-2 text-lg font-semibold">{formatDateTime(snapshotData.generatedAt)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100/80">
                   Usuario actual: <strong>{user?.name || user?.email || "Administrador"}</strong>
                 </p>
-                <p className="mt-2 text-xs leading-5 text-slate-200/80">
-                  Vista actual: <strong>{getSectionLabel(currentSection)}</strong>
+                <p className="mt-2 text-sm leading-6 text-slate-100/80">
+                  Vista activa: <strong>{getSectionLabel(currentSection)}</strong>
                   {hasActiveFilters ? ` · ${formatNumber(currentSectionCount)} coincidencias visibles` : " · sin filtros activos"}
                 </p>
+                <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-slate-950/20 px-4 py-3 text-sm leading-6 text-slate-100/85">
+                  Diseñado para operarlo principalmente desde escritorio. En móvil sigue siendo consultable, pero la experiencia prioriza amplitud visual, comparación y control lateral.
+                </div>
               </div>
             </div>
           </section>

@@ -62,7 +62,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("AuditaPatron concentra la información que subes, analiza cada documento, lo resguarda en tu expediente digital y te devuelve resultados útiles para entender mejor tu situación laboral, incluyendo señales sobre IMSS e Infonavit");
+    expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
+    expect(auditFlowSource).toContain("Sube un archivo y recibe una lectura útil sin pasos extra.");
+    expect(auditFlowSource).toContain("Después de subirlo, AuditaPatron lo analizará para mostrarte qué ya se entendió, qué conviene revisar y cómo ese archivo queda ordenado dentro de tu expediente digital para tenerlo siempre a la mano.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");

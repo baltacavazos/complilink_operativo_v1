@@ -2126,15 +2126,9 @@ export default function Home() {
       <HeroSection />
       <QuickTrustSection />
       <SectionDivider />
-      <ConfidenceMagicSection />
-      <SectionDivider />
       <HowItWorksSection />
       <SectionDivider />
       <DossierSection />
-      <SectionDivider />
-      <PriorityDocumentsSection />
-      <SectionDivider />
-      <CopilotPreviewSection />
       <SectionDivider />
       <PrivacySection />
       <SectionDivider />

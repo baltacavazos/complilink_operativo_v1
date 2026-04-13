@@ -873,3 +873,28 @@
 - [x] Reforzar señales de confianza con prueba social o evidencia verificable sin depender de marcas externas
 - [x] Optimizar el primer bloque móvil para reducir altura y hacer más visible la CTA principal
 - [x] Actualizar o ampliar pruebas para cubrir la nueva demo interactiva y los ajustes de la homepage
+- [ ] Reejecutar una auditoría integral de toda la app con Grok, Gemini y ChatGPT como revisores independientes
+- [ ] Moderar una deliberación cruzada entre Grok, Gemini y ChatGPT hasta consolidar un consenso cercano a 10/10
+- [ ] Traducir el consenso multi-IA en prioridades concretas de UX, producto, copy, arquitectura visible y robustez operativa
+- [ ] Reejecutar una auditoría integral de toda la app con Grok, Gemini y ChatGPT como revisores independientes, priorizando uso real desde celular
+- [ ] Moderar una deliberación cruzada entre Grok, Gemini y ChatGPT hasta consolidar un consenso cercano a 10/10 con criterio mobile-first
+- [ ] Traducir el consenso multi-IA en prioridades concretas de UX móvil, copy, arquitectura visible y robustez operativa de toda la app
+- [ ] Traducir la auditoría de consenso en un plan de implementación por rondas para elevar la calificación global de AuditaPatron
+- [ ] Ejecutar una primera ronda de mejoras de alto impacto en la home con criterio mobile-first para reducir densidad, acelerar comprensión y reforzar la CTA principal
+- [ ] Ejecutar una primera ronda de mejoras de alto impacto en /auditar con criterio mobile-first para subir más rápido el documento y reducir fricción operativa
+- [ ] Redefinir /acceso para que funcione como una superficie de entrada clara, directa y distinta de la home
+- [ ] Mejorar el dashboard CEO con prioridad de escritorio, privilegiando claridad ejecutiva, densidad útil y escaneo rápido desde computadora
+- [ ] Revalidar cada ronda con pruebas, revisión técnica y nueva auditoría multi-IA para medir si la calificación sube
+- [ ] Repetir rondas sucesivas de refinamiento hasta acercar la experiencia al máximo razonable de calificación
+
+- [x] Rehacer la jerarquía mobile-first de /auditar para que la subida y el resultado esperado vivan en el primer bloque visible
+- [x] Compactar la home de AuditaPatron para reducir altura inicial, competencia visual y fricción de scroll en móvil
+- [x] Diferenciar /acceso como pantalla pura de iniciar sesión y continuidad operativa, evitando duplicación con la home
+- [x] Rediseñar la consola /ceo con prioridad desktop y degradación clara cuando falten tablas del bridge
+- [x] Corregir el bloqueo técnico asociado a tablas faltantes de ceo_bridge_schedules y cubrirlo con pruebas
+- [x] Reauditar la experiencia post-ronda con Grok, Gemini y ChatGPT para comparar la mejora de la calificación
+- [x] Corregir la ruta /acceso para que ya no replique la home y funcione como pantalla operativa de iniciar sesión
+- [x] Reducir densidad de controles secundarios en la cabecera de /auditar tras la validación viva
+- [x] Hacer que /acceso sea inequívocamente una pantalla compacta de login y continuidad, sin señales visuales de landing
+- [x] Compactar todavía más el primer viewport de /auditar para reducir densidad, microdecisiones y bloques secundarios
+- [x] Consolidar la reauditoría post-ronda comparando ChatGPT, Grok y Gemini tras el reintento resumido

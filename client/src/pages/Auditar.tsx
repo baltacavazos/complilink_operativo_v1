@@ -3323,21 +3323,22 @@ export default function Auditar() {
                 subtitleClassName="text-[0.82rem] tracking-[0.15em] sm:text-[0.92rem]"
               />
             </div>
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.24em] text-teal-300">Tu revisión</p>
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">Tu revisión</p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-              Tus derechos laborales, claros y protegidos
+              Sube tu documento y entiende rápido qué pasa con tu expediente.
             </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                AuditaPatron concentra la información que subes, analiza cada documento, lo resguarda en tu expediente digital y te devuelve resultados útiles para entender mejor tu situación laboral, incluyendo señales sobre IMSS e Infonavit, sin tecnicismos ni pasos confusos.
-              </p>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
+              Primero subes el archivo. Después te devolvemos una lectura útil, el hallazgo que más pesa y el siguiente soporte que conviene revisar.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
+              <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
+              Resguardo y lectura preliminar en el mismo flujo
+            </div>
 
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-            <span className="rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-white">
-              Vista clara
-            </span>
             <Button
               variant="outline"
               className="rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25"
@@ -3347,31 +3348,19 @@ export default function Auditar() {
               disabled={!caseDetailInput || revalidateSocialSecurityMutation.isPending}
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`} strokeWidth={1.8} />
-              {revalidateSocialSecurityMutation.isPending ? "Revalidando IMSS e Infonavit..." : "Revalidar IMSS e Infonavit"}
+              {revalidateSocialSecurityMutation.isPending ? "Revalidando cruce..." : "Revalidar IMSS e Infonavit"}
             </Button>
             <Button
-              variant="outline"
-              className="rounded-full border-white/12 bg-white/8 text-white hover:bg-white/12"
-              onClick={() => {
-                setSubmitError(null);
-                setLastUpload(null);
-                void Promise.all([tenantsQuery.refetch(), casesQuery.refetch(), caseDetailQuery.refetch()]);
-              }}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" strokeWidth={1.8} />
-              Actualizar vista
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-full border-white/12 bg-white/8 text-white hover:bg-white/12"
+              variant="ghost"
+              className="rounded-full px-3 text-slate-200 hover:bg-white/8 hover:text-white"
               onClick={() => {
                 setMobileOnboardingIndex(0);
                 uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
-              Ver guía otra vez
+              Ir directo a la guía
             </Button>
-            <span className="rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-slate-200">
+            <span className="text-[11px] font-medium text-slate-300">
               {remoteViewStateSyncLabel}
             </span>
           </div>
@@ -3427,13 +3416,13 @@ export default function Auditar() {
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-900">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
-                  Actualización legal pendiente
+                  Autorización legal pendiente
                 </div>
-                <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-slate-950">Confirma tu autorización cuando subas o guardes tu documento</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-700">
-                  Ya no te detenemos con un paso aparte. Cuando estés listo para analizar o guardar tu archivo, verás una confirmación breve en ese mismo punto para proteger tu expediente y dejar trazabilidad versionada.
+                <h2 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">La confirmación aparece justo cuando envías o guardas tu archivo.</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  No interrumpe tu flujo antes de tiempo. Solo protege el expediente y deja registro versionado en la acción principal.
                 </p>
-                <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                   <button
                     type="button"
                     className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-700"
@@ -3445,7 +3434,7 @@ export default function Auditar() {
                   <span className="text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</span>
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[24rem]">
+              <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[21rem]">
                 <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700">
                   <p className="font-semibold text-slate-950">Cobertura legal</p>
                   <p className="mt-2">{acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.</p>
@@ -3528,6 +3517,80 @@ export default function Auditar() {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
+            <div className="rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6">
+              <div className="grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
+                    Empieza aquí
+                  </div>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
+                    Sube un archivo y recibe una lectura útil sin pasos extra.
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
+                    Apenas eliges el documento, inicia la revisión preliminar y te devolvemos tres cosas: qué entendimos, qué hallazgo pesa más y qué archivo conviene después.
+                  </p>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Recibes</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">Lectura inicial clara</p>
+                    </article>
+                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Se guarda</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">Dentro de tu expediente</p>
+                    </article>
+                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Siguiente paso</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">Documento recomendado</p>
+                    </article>
+                  </div>
+
+                  {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
+                    <div className="mt-4 rounded-[1.15rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
+                      Hoy conviene empezar por <strong>{effectiveRecommendedTarget.label.toLowerCase()}</strong> para fortalecer más rápido la siguiente lectura.
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <Button
+                      className="h-12 rounded-2xl bg-slate-950 text-white hover:bg-slate-900"
+                      onClick={openPreferredPicker}
+                    >
+                      {selectedFile
+                        ? "Cambiar documento"
+                        : activeCaptureMode === "camera"
+                          ? "Tomar foto y empezar"
+                          : uploadPrimaryActionLabel}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-2xl border-teal-200 bg-white text-teal-900 hover:bg-teal-50"
+                      onClick={() => {
+                        handleCaptureModeSelection(activeCaptureMode === "camera" ? "file" : "camera", "compact_mobile_toggle");
+                      }}
+                    >
+                      {activeCaptureMode === "camera" ? "Prefiero elegir archivo" : "Prefiero usar la cámara"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                    <p className="text-sm font-semibold text-slate-950">Qué pasa con tu archivo</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Se resguarda dentro del expediente y alimenta la comparación progresiva con el resto de tus piezas.
+                    </p>
+                  </article>
+                  <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                    <p className="text-sm font-semibold text-slate-950">Cómo seguir después</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Si ya lo tienes listo, súbelo ahora. Si dudas, la sugerencia activa te marca el siguiente documento útil.
+                    </p>
+                  </article>
+                </div>
+              </div>
+            </div>
+
             <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>

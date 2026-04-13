@@ -1,0 +1,13 @@
+{
+  "models_run": [
+    "chatgpt",
+    "grok",
+    "gemini"
+  ],
+  "success": {
+    "chatgpt": true,
+    "grok": true,
+    "gemini": false
+  },
+  "output_dir": "/home/ubuntu/complilink_operativo_v1/audit/outputs"
+}

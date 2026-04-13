@@ -1,0 +1,56 @@
+{
+  "status_code": 200,
+  "parsed": {
+    "score_target_after_round1": "De 8.5 a 9.2/10",
+    "auditar": {
+      "must_do": [
+        "Colocar el botón de subida de documento en el primer bloque visible con una explicación breve del proceso",
+        "Incluir un resumen claro de los resultados esperados justo debajo del botón para guiar al usuario"
+      ],
+      "should_collapse_or_defer": [
+        "Colapsar el historial de auditorías en un acordeón o drawer para que no compita con la acción principal",
+        "Diferir sugerencias y módulos secundarios a una pestaña o sección accesible después de la subida inicial"
+      ],
+      "mobile_top_fold": [
+        "Mostrar solo el botón de subida, un texto corto sobre el beneficio y una CTA directa en la parte superior de la pantalla",
+        "Asegurar que todo el flujo principal quepa en menos de un scroll completo para una interacción rápida"
+      ]
+    },
+    "home": {
+      "must_do": [
+        "Reforzar la CTA principal en el hero section para que sea el elemento más prominente y directo",
+        "Comprimir el contenido inicial manteniendo los elementos de confianza como el copy profesional y la vista previa del reporte"
+      ],
+      "compress_or_move": [
+        "Mover explicaciones detalladas a secciones expandibles o tooltips para reducir la altura del top fold",
+        "Reducir elementos secundarios como bloques de texto extra a un mínimo, priorizando la acción sobre la narración"
+      ]
+    },
+    "access": {
+      "must_do": [
+        "Diseñar la pantalla como un formulario dedicado para iniciar sesión y validar identidad, con un título claro como 'Iniciar sesión'",
+        "Incluir solo campos esenciales como email y contraseña, seguido de un botón de continuación directo"
+      ],
+      "remove_or_reduce": [
+        "Eliminar cualquier elemento narrativo o explicativo que duplique el contenido de la home, como descripciones extensas",
+        "Reducir texto redundante para que la pantalla sea minimalista y enfocada únicamente en el acceso"
+      ]
+    },
+    "ceo": {
+      "desktop_priority": [
+        "Optimizar la consola con tablas y densidad horizontal para un uso eficiente en pantallas grandes, manteniendo la funcionalidad analítica",
+        "Enfocarse en mejorar la interactividad para escritorio, como filtros avanzados y visualizaciones detalladas"
+      ],
+      "mobile_degradation": [
+        "Aceptar una versión simplificada en móvil con menos elementos, como convertir tablas en listas básicas para evitar complejidad",
+        "Reducir interacciones en móvil a lo esencial, priorizando alertas críticas sobre datos detallados para no sobrecargar la pantalla"
+      ]
+    },
+    "technical_blocker": {
+      "issue": "Falta de responsive design completo en rutas como /ceo y /auditar, lo que causa exceso de scroll y elementos no adaptables en móvil",
+      "recommendation": "Implementar media queries y componentes modulares en el frontend para que las pantallas se ajusten dinámicamente sin alterar el núcleo funcional"
+    },
+    "single_sentence_strategy": "Simplificar la jerarquía de rutas clave como /auditar para priorizar acciones inmediatas en móvil, manteniendo el tono profesional y la robustez general del producto en una iteración única."
+  },
+  "raw": "{\n  \"score_target_after_round1\": \"De 8.5 a 9.2/10\",\n  \"auditar\": {\n    \"must_do\": [\n      \"Colocar el botón de subida de documento en el primer bloque visible con una explicación breve del proceso\",\n      \"Incluir un resumen claro de los resultados esperados justo debajo del botón para guiar al usuario\"\n    ],\n    \"should_collapse_or_defer\": [\n      \"Colapsar el historial de auditorías en un acordeón o drawer para que no compita con la acción principal\",\n      \"Diferir sugerencias y módulos secundarios a una pestaña o sección accesible después de la subida inicial\"\n    ],\n    \"mobile_top_fold\": [\n      \"Mostrar solo el botón de subida, un texto corto sobre el beneficio y una CTA directa en la parte superior de la pantalla\",\n      \"Asegurar que todo el flujo principal quepa en menos de un scroll completo para una interacción rápida\"\n    ]\n  },\n  \"home\": {\n    \"must_do\": [\n      \"Reforzar la CTA principal en el hero section para que sea el elemento más prominente y directo\",\n      \"Comprimir el contenido inicial manteniendo los elementos de confianza como el copy profesional y la vista previa del reporte\"\n    ],\n    \"compress_or_move\": [\n      \"Mover explicaciones detalladas a secciones expandibles o tooltips para reducir la altura del top fold\",\n      \"Reducir elementos secundarios como bloques de texto extra a un mínimo, priorizando la acción sobre la narración\"\n    ]\n  },\n  \"access\": {\n    \"must_do\": [\n      \"Diseñar la pantalla como un formulario dedicado para iniciar sesión y validar identidad, con un título claro como 'Iniciar sesión'\",\n      \"Incluir solo campos esenciales como email y contraseña, seguido de un botón de continuación directo\"\n    ],\n    \"remove_or_reduce\": [\n      \"Eliminar cualquier elemento narrativo o explicativo que duplique el contenido de la home, como descripciones extensas\",\n      \"Reducir texto redundante para que la pantalla sea minimalista y enfocada únicamente en el acceso\"\n    ]\n  },\n  \"ceo\": {\n    \"desktop_priority\": [\n      \"Optimizar la consola con tablas y densidad horizontal para un uso eficiente en pantallas grandes, manteniendo la funcionalidad analítica\",\n      \"Enfocarse en mejorar la interactividad para escritorio, como filtros avanzados y visualizaciones detalladas\"\n    ],\n    \"mobile_degradation\": [\n      \"Aceptar una versión simplificada en móvil con menos elementos, como convertir tablas en listas básicas para evitar complejidad\",\n      \"Reducir interacciones en móvil a lo esencial, priorizando alertas críticas sobre datos detallados para no sobrecargar la pantalla\"\n    ]\n  },\n  \"technical_blocker\": {\n    \"issue\": \"Falta de responsive design completo en rutas como /ceo y /auditar, lo que causa exceso de scroll y elementos no adaptables en móvil\",\n    \"recommendation\": \"Implementar media queries y componentes modulares en el frontend para que las pantallas se ajusten dinámicamente sin alterar el núcleo funcional\"\n  },\n  \"single_sentence_strategy\": \"Simplificar la jerarquía de rutas clave como /auditar para priorizar acciones inmediatas en móvil, manteniendo el tono profesional y la robustez general del producto en una iteración única.\"\n}"
+}

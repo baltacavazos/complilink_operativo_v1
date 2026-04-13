@@ -64,7 +64,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("function warmVisibleNamingCopy");
     expect(source).toContain("Tu revisión");
     expect(source).toContain("Tus derechos laborales, claros y protegidos");
-    expect(source).toContain("Vista clara");
+    expect(source).toContain("Lectura visible");
     expect(source).toContain("tu asistente laboral");
     expect(source).toContain("expediente laboral");
   });

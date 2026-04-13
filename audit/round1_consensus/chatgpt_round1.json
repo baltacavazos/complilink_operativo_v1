@@ -1,0 +1,64 @@
+{
+  "status_code": 200,
+  "parsed": {
+    "score_target_after_round1": "8.5 a 9.2/10",
+    "auditar": {
+      "must_do": [
+        "Reubicar el bloque de subida de documento en el primer viewport visible sin scroll.",
+        "Incluir una explicación breve y clara justo debajo del botón de subida que resuma qué sucede tras subir el documento y qué resultado esperar.",
+        "Eliminar o colapsar inmediatamente módulos secundarios como historial, sugerencias y bitácora en acordeones o tabs cerrados por defecto.",
+        "Optimizar estados vacíos para que muestren un CTA directo y guía accionable, no solo mensajes informativos."
+      ],
+      "should_collapse_or_defer": [
+        "Módulos de contexto o explicaciones extensas que no sean imprescindibles para la acción primaria.",
+        "Historial y bitácora que pueden mostrarse tras completar la subida o en pantallas posteriores.",
+        "Sugerencias o tips que no sean críticos para la primera interacción."
+      ],
+      "mobile_top_fold": [
+        "Botón grande, claro y táctil para subir documento.",
+        "Texto explicativo muy conciso (1-2 líneas) que responda: qué hace la app y qué gana el usuario.",
+        "Indicador visual de confianza (ej. ícono de privacidad o sello) en pequeño para reforzar seriedad sin saturar.",
+        "Eliminar cualquier otro elemento que compita por atención en el primer scroll."
+      ]
+    },
+    "home": {
+      "must_do": [
+        "Reducir la altura del hero para que el CTA principal quede visible sin scroll en móvil.",
+        "Mantener copy prudente y profesional, pero sintetizarlo para que sea más escaneable.",
+        "Reforzar el botón CTA principal con contraste y tamaño adecuado para toque fácil."
+      ],
+      "compress_or_move": [
+        "Posponer explicaciones largas o testimonios a secciones inferiores o pantallas secundarias.",
+        "Reducir imágenes o gráficos que no aporten valor inmediato en móvil.",
+        "Mover elementos de confianza o evidencia a posiciones menos competitivas visualmente."
+      ]
+    },
+    "access": {
+      "must_do": [
+        "Transformar la pantalla en un formulario claro y directo de inicio de sesión o registro.",
+        "Eliminar cualquier contenido narrativo o explicativo que duplique la home.",
+        "Incluir mensajes claros de validación y pasos siguientes tras el login."
+      ],
+      "remove_or_reduce": [
+        "Bloques de contenido que expliquen la propuesta de valor o beneficios, ya presentes en home.",
+        "Elementos visuales o textos que generen confusión sobre la función real de esta ruta."
+      ]
+    },
+    "ceo": {
+      "desktop_priority": [
+        "Mantener la consola con tablas y filtros complejos para usuarios desktop.",
+        "Priorizar la visualización de KPIs, alertas y datos en formatos amplios y detallados."
+      ],
+      "mobile_degradation": [
+        "Mostrar un mensaje o pantalla simplificada que invite a usar desktop para análisis detallado.",
+        "Evitar intentar replicar la consola completa en móvil para no generar fatiga o confusión."
+      ]
+    },
+    "technical_blocker": {
+      "issue": "La actual arquitectura de componentes y estilos no permite reorganizar fácilmente el orden de bloques para priorizar la acción primaria en móvil sin afectar desktop.",
+      "recommendation": "Implementar un sistema de renderizado condicional o layout adaptativo que permita reordenar bloques y colapsar módulos secundarios exclusivamente en móvil, manteniendo la estructura desktop intacta."
+    },
+    "single_sentence_strategy": "Priorizar en móvil la acción de subir documento con explicación clara y mínima distracción, colapsando todo lo secundario para que el usuario actúe rápido y con confianza."
+  },
+  "raw": "{\n  \"score_target_after_round1\": \"8.5 a 9.2/10\",\n  \"auditar\": {\n    \"must_do\": [\n      \"Reubicar el bloque de subida de documento en el primer viewport visible sin scroll.\",\n      \"Incluir una explicación breve y clara justo debajo del botón de subida que resuma qué sucede tras subir el documento y qué resultado esperar.\",\n      \"Eliminar o colapsar inmediatamente módulos secundarios como historial, sugerencias y bitácora en acordeones o tabs cerrados por defecto.\",\n      \"Optimizar estados vacíos para que muestren un CTA directo y guía accionable, no solo mensajes informativos.\"\n    ],\n    \"should_collapse_or_defer\": [\n      \"Módulos de contexto o explicaciones extensas que no sean imprescindibles para la acción primaria.\",\n      \"Historial y bitácora que pueden mostrarse tras completar la subida o en pantallas posteriores.\",\n      \"Sugerencias o tips que no sean críticos para la primera interacción.\"\n    ],\n    \"mobile_top_fold\": [\n      \"Botón grande, claro y táctil para subir documento.\",\n      \"Texto explicativo muy conciso (1-2 líneas) que responda: qué hace la app y qué gana el usuario.\",\n      \"Indicador visual de confianza (ej. ícono de privacidad o sello) en pequeño para reforzar seriedad sin saturar.\",\n      \"Eliminar cualquier otro elemento que compita por atención en el primer scroll.\"\n    ]\n  },\n  \"home\": {\n    \"must_do\": [\n      \"Reducir la altura del hero para que el CTA principal quede visible sin scroll en móvil.\",\n      \"Mantener copy prudente y profesional, pero sintetizarlo para que sea más escaneable.\",\n      \"Reforzar el botón CTA principal con contraste y tamaño adecuado para toque fácil.\"\n    ],\n    \"compress_or_move\": [\n      \"Posponer explicaciones largas o testimonios a secciones inferiores o pantallas secundarias.\",\n      \"Reducir imágenes o gráficos que no aporten valor inmediato en móvil.\",\n      \"Mover elementos de confianza o evidencia a posiciones menos competitivas visualmente.\"\n    ]\n  },\n  \"access\": {\n    \"must_do\": [\n      \"Transformar la pantalla en un formulario claro y directo de inicio de sesión o registro.\",\n      \"Eliminar cualquier contenido narrativo o explicativo que duplique la home.\",\n      \"Incluir mensajes claros de validación y pasos siguientes tras el login.\"\n    ],\n    \"remove_or_reduce\": [\n      \"Bloques de contenido que expliquen la propuesta de valor o beneficios, ya presentes en home.\",\n      \"Elementos visuales o textos que generen confusión sobre la función real de esta ruta.\"\n    ]\n  },\n  \"ceo\": {\n    \"desktop_priority\": [\n      \"Mantener la consola con tablas y filtros complejos para usuarios desktop.\",\n      \"Priorizar la visualización de KPIs, alertas y datos en formatos amplios y detallados.\"\n    ],\n    \"mobile_degradation\": [\n      \"Mostrar un mensaje o pantalla simplificada que invite a usar desktop para análisis detallado.\",\n      \"Evitar intentar replicar la consola completa en móvil para no generar fatiga o confusión.\"\n    ]\n  },\n  \"technical_blocker\": {\n    \"issue\": \"La actual arquitectura de componentes y estilos no permite reorganizar fácilmente el orden de bloques para priorizar la acción primaria en móvil sin afectar desktop.\",\n    \"recommendation\": \"Implementar un sistema de renderizado condicional o layout adaptativo que permita reordenar bloques y colapsar módulos secundarios exclusivamente en móvil, manteniendo la estructura desktop intacta.\"\n  },\n  \"single_sentence_strategy\": \"Priorizar en móvil la acción de subir documento con explicación clara y mínima distracción, colapsando todo lo secundario para que el usuario actúe rápido y con confianza.\"\n}"
+}

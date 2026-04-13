@@ -1,0 +1,46 @@
+### 1. Consenso principal
+Las tres auditorías coinciden en que AuditaPatron ofrece una propuesta de valor clara y un copy confiable que genera robustez percibida, pero falla gravemente en su enfoque mobile-first, con superficies densas, scrolls excesivos y jerarquías visuales deficientes que abruman al usuario en pantallas pequeñas, diluyendo la acción primaria y la velocidad operativa. La consola CEO y rutas como /auditar son las más criticadas por su inadaptación a móvil, mientras que fortalezas como las señales de confianza y guías contextuales se mantienen sólidas, pero requieren una reestructuración agresiva para priorizar acciones rápidas y reducir esfuerzo cognitivo.
+
+### 2. Coincidencias de alto consenso
+1. **Propuesta de valor clara y copy confiable:** Todas destacan el mensaje central directo ("sube un documento y recibe auditoría") y un lenguaje preciso, profesional y sin tecnicismos innecesarios, que genera confianza inmediata.
+2. **Señales de confianza bien integradas:** Coinciden en que elementos como casos anónimos, vistas previas de reportes y mecanismos de privacidad refuerzan la credibilidad sin sobrecargar.
+3. **Densidad excesiva y scrolls largos en mobile:** Las tres critican la sobrecarga informativa en homepage y /auditar, que obliga a scrolls extensos antes de la acción primaria, fatigando al usuario móvil.
+4. **Jerarquía visual insuficiente para acciones clave:** Hay acuerdo en que CTAs principales (como subir documento) se diluyen entre módulos secundarios, especialmente en /auditar, reduciendo la velocidad de acción en pantallas pequeñas.
+5. **Consola CEO no adaptada a mobile:** Todas señalan su densidad, filtros y tablas como inutilizables en móvil, requiriendo rediseño para vistas resumidas y colapsables.
+6. **Duplicación en /acceso:** Coinciden en que replica la homepage sin propósito claro, generando confusión arquitectónica y desperdicio en navegación móvil.
+7. **Estados vacíos poco accionables:** Las auditorías acuerdan que mensajes genéricos en /auditar ocupan espacio valioso sin guiar agresivamente a la acción, añadiendo fricción en mobile.
+8. **Necesidad de compresión de copy y módulos:** Hay consenso en sintetizar textos redundantes y relegar elementos secundarios a colapsables o tabs para liberar espacio en scrolls iniciales.
+
+### 3. Diferencias relevantes
+
+| Tema | ChatGPT | Grok | Gemini | Resolución del consenso |
+|------|---------|------|--------|--------------------------|
+| Calificación global | 7.2/10, enfatizando avances en claridad pero vicios de escritorio. | 6.5/10, destacando fallos en jerarquía y densidad que reducen robustez. | 6/10, criticando miopía mobile-first y sobrecarga cognitiva extrema. | Consenso en 6.8/10: se promedia la severidad, reconociendo fortalezas en confianza pero priorizando la crítica compartida a la inadaptación móvil como barrera principal. |
+| Enfoque en demo interactiva | Menciona guía contextual como fortaleza, sin énfasis específico en demo. | Resalta demo en homepage como acelerador de comprensión y confianza. | Enfatiza "Vista previa del reporte" como excelente demostración de valor. | Alta coincidencia en su valor; se conserva como activo clave para transmitir valor rápido en mobile, sin necesidad de cambios inmediatos. |
+| Crítica a copy | Ve copy como preciso pero con redundancias que requieren síntesis. | Considera copy simple y prudente, pero sobreexplicado en homepage. | Alaba copy como profesional, pero critica dependencia en bloques densos para confianza. | Consenso en mantener tono y calidad, pero priorizar compresión para reducir scrolls en mobile; no es una debilidad crítica si se jerarquiza mejor. |
+| Prioridad en estados vacíos | Los ve como poco jerarquizados y ocupando espacio, recomendando compresión. | Critica como genéricos y sin guía agresiva, sugiriendo placeholders interactivos. | Señala como ruido visual prominente que genera ansiedad en inicios. | Acuerdo en mejorar con CTAs directos y minimización; se resuelve como P1, ya que impacta robustez percibida en mobile pero no bloquea flujos. |
+| Adaptación de tablas en /ceo | Critica falta de adaptación, forzando zoom o scroll horizontal. | Enfatiza colapso de atención y necesidad de cards verticales. | Describe como inutilizable, proponiendo resúmenes simples y menús hamburguesa. | Consenso en rediseño mobile-first con componentes touch-friendly; se prioriza como P0 por su impacto en consultas rápidas ejecutivas. |
+
+### 4. Calificación global de consenso
+**6.8 / 10**  
+Esta nota promedia las calificaciones individuales (7.2, 6.5 y 6), reconociendo el consenso en fortalezas como claridad de valor y copy confiable, pero penalizando fuertemente las debilidades compartidas en densidad mobile, jerarquía visual y inadaptación de rutas clave como /auditar y /ceo. La app transmite robustez, pero su enfoque no mobile-first genera fricción excesiva en pantallas pequeñas, alejándola de una experiencia fluida y accionable; un 10/10 requeriría priorizar simplicidad y velocidad sobre exhaustividad.
+
+### 5. Prioridades finales
+
+| Prioridad | Ruta | Qué cambiar | Por qué importa más en móvil | Complejidad estimada |
+|-----------|------|-------------|------------------------------|----------------------|
+| P0 | /auditar | Reestructurar para elevar CTA de subida al top-fold, colapsando módulos secundarios (progreso, historial, sugerencias) en tabs o acordeones. | Scrolls largos abruman pantallas pequeñas, diluyendo acción primaria y aumentando abandono; mobile prioriza velocidad sobre exploración. | Media |
+| P0 | /ceo | Rediseñar como vista vertical con KPIs resumidos, menús hamburguesa y cards en lugar de tablas, enfocando alertas críticas. | Densidad colapsa atención en consultas rápidas; mobile exige escaneo en <2 scrolls para decisiones urgentes sin zoom. | Alta |
+| P1 | / (Homepage) | Simplificar hero con copy conciso, CTA singular prominente y mover secciones explicativas a modales o segundo scroll. | Densidad inicial fatiga usuario móvil, reduciendo comprensión rápida y conversión antes de interactuar. | Baja |
+| P1 | /acceso | Diferenciar o eliminar duplicación, enfocando en login/onboarding exclusivo con CTA rápido. | Redundancia confunde navegación touch, erosionando confianza en arquitectura y aumentando rebote en mobile. | Media |
+| P1 | /auditar | Mejorar estados vacíos con CTAs directos, placeholders interactivos y minimización de ruido visual. | Limbo perceptivo deja usuario sin guía, reduciendo robustez y continuidad en flujos touch breves. | Baja |
+| P2 | General | Comprimir copy redundante y relegar módulos secundarios (e.g., privacidad) a drawers o iconos accesibles. | Reduce esfuerzo de lectura y scroll en pantallas pequeñas, priorizando acción sobre información densa. | Baja |
+
+### 6. Qué conservar
+- **Copy central y tono profesional:** Claro, confiable y libre de tecnicismos, genera confianza sin necesidad de cambios en esencia.
+- **Señales de confianza y vista previa de reporte:** Bien integradas, transmiten valor y credibilidad de forma efectiva en mobile.
+- **Guía contextual y sugerencias de documentos:** Aportan utilidad real sin fricción, fortaleciendo el flujo operativo.
+- **Robustez operativa subyacente:** La trazabilidad y profundidad de datos son diferenciadores; solo requieren mejor presentación mobile.
+
+### 7. Veredicto final hacia 10/10
+AuditaPatron está a una distancia moderada de un 10/10 mobile-first, con una base sólida en confianza y claridad que la posiciona en 6.8, pero lastrada por densidad excesiva y jerarquías deficientes que fatigan al usuario en scrolls eternos y superficies no adaptadas, especialmente en /auditar y /ceo. Para acercarse, debe implementar una reingeniería agresiva priorizando acciones primarias en top-fold, colapsando secundarios y optimizando para touch, lo que podría elevarla a 9+ al reducir esfuerzo cognitivo y potenciar velocidad en pantallas pequeñas; sin estos fixes, seguirá percibiéndose como un producto de escritorio forzado en mobile.

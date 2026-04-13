@@ -1,0 +1,60 @@
+{
+  "status_code": 200,
+  "parsed": {
+    "score_target_after_round1": "8.5 a 9.2/10 en UX mobile-first percibida",
+    "auditar": {
+      "must_do": [
+        "Mover el componente de subida de documento al primer bloque visible, ocupando la mayor parte del espacio superior.",
+        "Integrar una explicación concisa del proceso y el resultado esperado (ej. 'Sube tu documento y recibe una auditoría operativa en minutos') justo debajo del área de subida.",
+        "Rediseñar los estados vacíos para incluir un CTA directo a 'Subir Documento', con ejemplos claros de formatos aceptados y un micro-copy que guíe al usuario."
+      ],
+      "should_collapse_or_defer": [
+        "Módulos secundarios como historial de auditorías, sugerencias o bitácora de actividad.",
+        "Explicaciones detalladas o contenido contextual que no sea esencial para la acción inmediata de subir un documento."
+      ],
+      "mobile_top_fold": [
+        "Título claro de la acción principal ('Auditar Documento').",
+        "Componente de subida de documento (drag & drop o botón de selección de archivo).",
+        "Breve frase de valor o instrucción que anticipe el resultado."
+      ]
+    },
+    "home": {
+      "must_do": [
+        "Reducir la altura del hero section para que el CTA principal sea visible sin scroll en la mayoría de los dispositivos móviles.",
+        "Reforzar visualmente el CTA primario ('Auditar Ahora' o 'Subir Documento') para que sea el elemento más prominente y accionable."
+      ],
+      "compress_or_move": [
+        "Explicaciones largas o bloques de texto secundarios a secciones posteriores de la página o a patrones de revelación progresiva (acordeones, tabs).",
+        "Elementos visuales que compitan con el CTA principal en el top fold, buscando una composición más limpia."
+      ]
+    },
+    "access": {
+      "must_do": [
+        "Diseñar la pantalla como un formulario de inicio de sesión/registro claro y conciso, con campos para email/usuario y contraseña.",
+        "Incluir opciones estándar como 'Olvidé mi contraseña' y 'Crear cuenta' de forma prominente."
+      ],
+      "remove_or_reduce": [
+        "Cualquier elemento narrativo o de marketing que duplique el contenido de la homepage.",
+        "Módulos o bloques que no contribuyan directamente al proceso de autenticación o onboarding, manteniendo un enfoque puramente funcional."
+      ]
+    },
+    "ceo": {
+      "desktop_priority": [
+        "Mantener la densidad de información con tablas detalladas, gráficos complejos y múltiples filtros simultáneos para un análisis profundo.",
+        "Permitir la visualización de datos analíticos horizontales y comparativas extensas, optimizadas para pantallas grandes.",
+        "Priorizar la funcionalidad de exportación y manipulación de datos para usuarios de escritorio que requieren control granular."
+      ],
+      "mobile_degradation": [
+        "La experiencia móvil de '/ceo' se considerará una vista secundaria, posiblemente requiriendo scroll horizontal para tablas o mostrando solo resúmenes de alto nivel.",
+        "No se invertirá en un rediseño mobile-first para esta ruta en esta ronda, asumiendo que el uso ejecutivo principal será desde desktop.",
+        "Se aceptará una experiencia menos optimizada en móvil, enfocada en la funcionalidad básica de consulta y no en la interacción profunda."
+      ]
+    },
+    "technical_blocker": {
+      "issue": "La arquitectura actual de componentes de UI/UX en rutas críticas como '/auditar' y '/home' parece estar fuertemente acoplada a una lógica de presentación de escritorio, dificultando la refactorización rápida para un enfoque mobile-first sin una reestructuración significativa de los layouts y la jerarquía visual.",
+      "recommendation": "Adoptar un enfoque de diseño atómico o basado en componentes, utilizando CSS Grid/Flexbox para layouts responsivos desde el inicio. Priorizar la creación de componentes reutilizables y desacoplados que puedan adaptarse fácilmente a diferentes viewports, comenzando por los elementos críticos de '/auditar'."
+    },
+    "single_sentence_strategy": "Transformar AuditaPatron de una herramienta seria a una experiencia móvil instantánea y evidente, priorizando la acción principal y la claridad en cada interacción."
+  },
+  "raw": "{\n  \"score_target_after_round1\": \"8.5 a 9.2/10 en UX mobile-first percibida\",\n  \"auditar\": {\n    \"must_do\": [\n      \"Mover el componente de subida de documento al primer bloque visible, ocupando la mayor parte del espacio superior.\",\n      \"Integrar una explicación concisa del proceso y el resultado esperado (ej. 'Sube tu documento y recibe una auditoría operativa en minutos') justo debajo del área de subida.\",\n      \"Rediseñar los estados vacíos para incluir un CTA directo a 'Subir Documento', con ejemplos claros de formatos aceptados y un micro-copy que guíe al usuario.\"\n    ],\n    \"should_collapse_or_defer\": [\n      \"Módulos secundarios como historial de auditorías, sugerencias o bitácora de actividad.\",\n      \"Explicaciones detalladas o contenido contextual que no sea esencial para la acción inmediata de subir un documento.\"\n    ],\n    \"mobile_top_fold\": [\n      \"Título claro de la acción principal ('Auditar Documento').\",\n      \"Componente de subida de documento (drag & drop o botón de selección de archivo).\",\n      \"Breve frase de valor o instrucción que anticipe el resultado.\"\n    ]\n  },\n  \"home\": {\n    \"must_do\": [\n      \"Reducir la altura del hero section para que el CTA principal sea visible sin scroll en la mayoría de los dispositivos móviles.\",\n      \"Reforzar visualmente el CTA primario ('Auditar Ahora' o 'Subir Documento') para que sea el elemento más prominente y accionable.\"\n    ],\n    \"compress_or_move\": [\n      \"Explicaciones largas o bloques de texto secundarios a secciones posteriores de la página o a patrones de revelación progresiva (acordeones, tabs).\",\n      \"Elementos visuales que compitan con el CTA principal en el top fold, buscando una composición más limpia.\"\n    ]\n  },\n  \"access\": {\n    \"must_do\": [\n      \"Diseñar la pantalla como un formulario de inicio de sesión/registro claro y conciso, con campos para email/usuario y contraseña.\",\n      \"Incluir opciones estándar como 'Olvidé mi contraseña' y 'Crear cuenta' de forma prominente.\"\n    ],\n    \"remove_or_reduce\": [\n      \"Cualquier elemento narrativo o de marketing que duplique el contenido de la homepage.\",\n      \"Módulos o bloques que no contribuyan directamente al proceso de autenticación o onboarding, manteniendo un enfoque puramente funcional.\"\n    ]\n  },\n  \"ceo\": {\n    \"desktop_priority\": [\n      \"Mantener la densidad de información con tablas detalladas, gráficos complejos y múltiples filtros simultáneos para un análisis profundo.\",\n      \"Permitir la visualización de datos analíticos horizontales y comparativas extensas, optimizadas para pantallas grandes.\",\n      \"Priorizar la funcionalidad de exportación y manipulación de datos para usuarios de escritorio que requieren control granular.\"\n    ],\n    \"mobile_degradation\": [\n      \"La experiencia móvil de '/ceo' se considerará una vista secundaria, posiblemente requiriendo scroll horizontal para tablas o mostrando solo resúmenes de alto nivel.\",\n      \"No se invertirá en un rediseño mobile-first para esta ruta en esta ronda, asumiendo que el uso ejecutivo principal será desde desktop.\",\n      \"Se aceptará una experiencia menos optimizada en móvil, enfocada en la funcionalidad básica de consulta y no en la interacción profunda.\"\n    ]\n  },\n  \"technical_blocker\": {\n    \"issue\": \"La arquitectura actual de componentes de UI/UX en rutas críticas como '/auditar' y '/home' parece estar fuertemente acoplada a una lógica de presentación de escritorio, dificultando la refactorización rápida para un enfoque mobile-first sin una reestructuración significativa de los layouts y la jerarquía visual.\",\n    \"recommendation\": \"Adoptar un enfoque de diseño atómico o basado en componentes, utilizando CSS Grid/Flexbox para layouts responsivos desde el inicio. Priorizar la creación de componentes reutilizables y desacoplados que puedan adaptarse fácilmente a diferentes viewports, comenzando por los elementos críticos de '/auditar'.\"\n  },\n  \"single_sentence_strategy\": \"Transformar AuditaPatron de una herramienta seria a una experiencia móvil instantánea y evidente, priorizando la acción principal y la claridad en cada interacción.\"\n}"
+}
