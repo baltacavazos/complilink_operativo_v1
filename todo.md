@@ -856,3 +856,4 @@
 - [x] Seguir cerrando robustez V1 sin detener el trabajo por `DROPBOX_API_KEY` expirado; tratar Dropbox como bloqueo externo no crítico mientras se priorizan CEO Bridge, `/auditar` y pruebas internas.
 - [x] Preparar un prompt maestro para que Grok, Gemini y ChatGPT actúen como clientes potenciales, prueben la app y entreguen feedback exhaustivo para hacerla más intuitiva.
 - [x] Ajustar el prompt maestro de evaluación multi-IA para que quede enfocado exclusivamente en AuditaPatron, eliminando referencias a CompliLink.
+- [x] Incluir explícitamente la URL pública `https://auditapatron.com` dentro del prompt maestro de evaluación multi-IA para AuditaPatron.

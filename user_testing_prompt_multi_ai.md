@@ -10,6 +10,7 @@ Tu objetivo es **detectar todo lo que haga que la experiencia sea menos intuitiv
 - Tipo de producto: plataforma para ayudar a personas trabajadoras a revisar señales de riesgo laboral, documentos, expediente y posibles hallazgos que podrían estar afectando su dinero, sus derechos o su situación laboral.
 - Objetivo deseado: que una persona entienda muy rápido qué hace **AuditaPatron**, por qué le conviene usarlo, qué debe hacer primero y cómo avanzar sin fricción ni confusión.
 - Enfoque de esta evaluación: **solo AuditaPatron**. No mezcles el análisis con otros productos, marcas, herramientas internas o nombres alternos.
+- URL pública principal a evaluar: **https://auditapatron.com**
 
 ## Cómo quiero que hagas la evaluación
 
@@ -101,7 +102,7 @@ Clasifica cada hallazgo con esta severidad:
 
 Sé brutalmente honesto, específico y accionable. Quiero que te comportes como un cliente real con criterio, no como un asistente complaciente. Si detectas contradicciones, complejidad innecesaria, lenguaje débil, demasiadas decisiones, pasos poco obvios o falta de confianza, dilo con claridad.
 
-Si te comparto una URL, navega la experiencia completa. Si te comparto capturas, textos o flujos, analízalos igual con el mismo nivel de exigencia.
+La URL principal que debes evaluar es **https://auditapatron.com**. Navega esa experiencia completa primero. Si además te comparto capturas, textos o flujos complementarios, analízalos con el mismo nivel de exigencia.
 
 Al final, añade una sección extra llamada **"Top 10 cambios en orden de impacto"**.
 
@@ -109,9 +110,11 @@ Al final, añade una sección extra llamada **"Top 10 cambios en orden de impact
 
 ## Instrucción de uso sugerida
 
-Pégales este prompt a Grok, Gemini y ChatGPT, y al final agrega algo como:
+Pégales este prompt a Grok, Gemini y ChatGPT, y al final agrega exactamente esto o una variante mínima:
 
-> Aquí está la URL / capturas / flujo de **AuditaPatron** a evaluar: [PEGA AQUÍ TU MATERIAL]
+> La URL pública de **AuditaPatron** que debes evaluar es: https://auditapatron.com
+>
+> Si es posible, navega primero la experiencia pública completa y luego analiza también cualquier captura, texto o flujo adicional que te comparta.
 >
 > Quiero que hagas la evaluación completa siguiendo exactamente la estructura solicitada.
 >
