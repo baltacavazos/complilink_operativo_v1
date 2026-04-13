@@ -1,5 +1,10 @@
 # Project TODO
 
+- [x] Cerrar la auditoría integral multi-modelo de home, /auditar, /acceso y Consola CEO con ChatGPT, Grok y Gemini
+- [x] Sintetizar consenso de simplificación V1 sin agregar funciones nuevas
+- [x] Implementar una micro-ronda de reducción de scroll y compactación de copy sólo en los puntos consensuados
+- [x] Validar la nueva clave de Gemini con Vitest y revalidar TypeScript/Vitest tras la micro-ronda
+
 - [x] Reescribir el hero de AuditaPatron con propuesta de valor más clara y una CTA primaria única
 - [x] Añadir un bloque visual de confianza y privacidad visible desde el primer scroll
 - [x] Mostrar un ejemplo visual del resultado de la auditoría o reporte recibido por el usuario
@@ -973,3 +978,6 @@
 - [x] Simplificar la Consola CEO para que su lectura sea inmediata, reduciendo densidad y priorizando solo lo crítico sin agregar funciones nuevas
 - [x] Reordenar y depurar la jerarquía visual del dashboard CEO para que la acción principal y el estado principal se entiendan en segundos
 - [x] Robustecer solo la claridad y consistencia de los bloques existentes de la Consola CEO antes de cualquier otra intervención
+- [ ] Ejecutar una auditoría integral de toda la plataforma con ChatGPT, Grok y Gemini actuando como clientes para detectar fricción, confusión y exceso de scroll
+- [ ] Realizar rondas de debate multi-IA hasta lograr consenso sobre las correcciones de mayor impacto en claridad, intuición y jerarquía visual
+- [ ] Aplicar únicamente simplificaciones y robustecimientos de V1 derivados de la auditoría integral, sin agregar funciones nuevas ni aumentar complejidad

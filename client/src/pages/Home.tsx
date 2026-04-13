@@ -255,9 +255,9 @@ const heroCopyVariants = {
     titleAccent: "y ni siquiera lo sabes.",
     supportLine: "Revísalo hoy y toma control de tu historial laboral.",
     body:
-      "AuditaPatron te ayuda a detectar señales de riesgo en nómina, CFDI y documentos clave para que entiendas qué revisar primero y actúes con más claridad.",
+      "Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.",
     ctaPrimary: "Auditar mi situación ahora",
-    ctaSecondary: "Ver qué documento subir primero",
+    ctaSecondary: "Ver guía rápida",
   },
   control: {
     tabLabel: "Control inmediato",
@@ -267,9 +267,9 @@ const heroCopyVariants = {
     titleAccent: "y actúa con más control.",
     supportLine: "Empieza con el documento que ya tienes a la mano.",
     body:
-      "AuditaPatron ordena tus archivos, detecta señales importantes y te orienta sobre qué revisar primero para que avances con claridad desde el primer paso.",
+      "Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.",
     ctaPrimary: "Empezar mi revisión",
-    ctaSecondary: "Quiero una guía rápida",
+    ctaSecondary: "Ver guía rápida",
   },
 } as const;
 
@@ -909,7 +909,7 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-            Empieza con un solo archivo. AuditaPatron lo ordena, detecta señales relevantes y te devuelve qué entendió, qué falta y qué conviene revisar después.
+            Empieza con un solo archivo. AuditaPatron lo ordena y te devuelve qué entendió y qué conviene revisar después.
           </p>
 
           <p
@@ -2240,8 +2240,6 @@ export default function Home() {
         <HowItWorksSection />
         <SectionDivider />
         <DossierSection />
-        <SectionDivider />
-        <PrivacySection />
       </div>
       <SectionDivider />
       <FAQSection />

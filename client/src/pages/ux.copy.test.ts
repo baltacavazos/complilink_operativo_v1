@@ -40,7 +40,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Señal verificada en pruebas de comprensión");
     expect(source).toContain("Señales de confianza");
     expect(source).toContain("Privacidad visible, lenguaje simple y siguientes pasos concretos.");
-    expect(source).toContain("Ver qué documento subir primero");
+    expect(source).toContain("Ver guía rápida");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Empieza con el documento correcto");
     expect(source).toContain("Quiero entender rápido si esto me sirve");

@@ -191,31 +191,14 @@ export default function Access() {
                   Accede, recupera tu sesión y vuelve a trabajar sin rodeos.
                 </h1>
                 <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  Aquí sólo resolvemos una cosa: autenticarte y devolverte a <strong>{returnTo}</strong>. La ruta principal va primero; las demás quedan como respaldo.
+                  Aquí solo entras, recuperas tu sesión y vuelves a <strong>{returnTo}</strong> sin pasos extra.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4 px-6 py-5 sm:px-7">
-              <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50/85 p-4">
-                <p className="text-sm font-semibold text-slate-950">Flujo rápido</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">1</p>
-                    <p className="mt-1 font-semibold text-slate-950">Elige Manus</p>
-                  </div>
-                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">2</p>
-                    <p className="mt-1 font-semibold text-slate-950">Confirma tu sesión</p>
-                  </div>
-                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">3</p>
-                    <p className="mt-1 font-semibold text-slate-950">Vuelve a tu ruta</p>
-                  </div>
-                </div>
-              </article>
+            <div className="px-6 py-5 sm:px-7">
               <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 p-4 text-sm leading-6 text-teal-950">
-                Cuando completes el acceso, el sistema te devolverá al punto exacto donde querías continuar, sin volver a empezar el flujo.
+                Ruta corta: entras, confirmas y vuelves al punto exacto donde te quedaste.
               </div>
             </div>
           </section>

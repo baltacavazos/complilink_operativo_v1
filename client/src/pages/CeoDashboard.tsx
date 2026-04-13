@@ -713,7 +713,7 @@ export default function CeoDashboard() {
     () => filterAuditFeed(auditTrail, { family: auditFamilyFilter, severity: auditSeverityFilter }),
     [auditFamilyFilter, auditSeverityFilter, auditTrail],
   );
-  const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 6), [filteredAuditTrail]);
+  const recentOperationalEvents = useMemo(() => filteredAuditTrail.slice(0, 4), [filteredAuditTrail]);
   const latestGuardrailEvent = useMemo(
     () => auditTrail.find((item) => item.action === "document.guardrail_rejected") ?? null,
     [auditTrail],
@@ -2465,11 +2465,11 @@ export default function CeoDashboard() {
                     <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Bitácora reciente para decidir</h3>
                   </div>
                   <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
-                    {auditTrailQuery.isFetching ? "Actualizando eventos" : `${formatNumber(auditSummary.totalEvents)} eventos recientes`}
+                    {auditTrailQuery.isFetching ? "Actualizando eventos" : `${formatNumber(recentOperationalEvents.length)} visibles ahora`}
                   </Badge>
                 </div>
                 <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-                  Usa la bitácora existente para ver actividad reciente, rechazos de guardrail y cobertura visible sin abrir más complejidad.
+                  Quédate solo con la actividad más reciente y los rechazos que sí cambian una decisión ejecutiva.
                 </p>
                 <div className="mt-5 grid gap-4 lg:grid-cols-4">
                   <article className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
@@ -2573,9 +2573,10 @@ export default function CeoDashboard() {
                                   ) : null}
                                 </div>
                                 <p className="mt-3 text-sm font-semibold text-slate-950">{item.tenantId}</p>
-                                <p className="mt-1 text-sm text-slate-600">Traza {item.traceId}</p>
-                                {item.documentId ? <p className="mt-1 text-sm text-slate-600">Documento {item.documentId}</p> : null}
-                                <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
+                                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                                  {item.documentId ? <span>Documento {item.documentId}</span> : null}
+                                  <span>{formatDateTime(item.createdAt)}</span>
+                                </div>
                                 {rejectionReason ? (
                                   <p className="mt-2 text-sm text-amber-950">
                                     <strong>Motivo:</strong> {rejectionReason}

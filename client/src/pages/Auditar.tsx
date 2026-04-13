@@ -3679,7 +3679,7 @@ export default function Auditar() {
                 uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
-              Ir directo a la guía
+              Ir directo a subir archivo
             </Button>
             <span className="text-[11px] font-medium text-slate-300">
               {remoteViewStateSyncLabel}
@@ -5591,10 +5591,11 @@ export default function Auditar() {
               )}
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Línea de tiempo del expediente</p>
+            {timelineEntries.length > 0 ? (
+              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Línea de tiempo del expediente</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                     Cómo se fue fortaleciendo tu expediente
                   </h2>
@@ -5687,7 +5688,8 @@ export default function Auditar() {
                   ) : null}
                 </div>
               )}
-            </div>
+              </div>
+            ) : null}
 
             <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
@@ -5721,10 +5723,11 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tus documentos</p>
+            {documents.length > 0 ? (
+              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tus documentos</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                     Documentos ya incorporados al expediente
                   </h2>
@@ -5852,7 +5855,8 @@ export default function Auditar() {
                   })
                 )}
               </div>
-            </div>
+              </div>
+            ) : null}
           </section>
 
           <aside className="space-y-6">
