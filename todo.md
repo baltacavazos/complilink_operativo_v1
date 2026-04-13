@@ -1044,3 +1044,6 @@
 - [x] Micro-ronda continua: reforzar la jerarquía visual del CTA principal en /acceso con menor competencia visual y mejor presencia táctil en móvil
 - [x] Micro-ronda continua: compactar el primer bloque operativo de la Consola CEO para lectura más rápida en móvil
 - [x] Micro-ronda continua: convertir la recomendación de siguiente documento en /auditar en un mensaje más directo y accionable
+- [x] Ronda 20: ejecutar contraste comparado con OpenAI, Grok y Gemini sobre el siguiente microajuste de mayor impacto y menor riesgo
+- [x] Ronda 20: priorizar y aplicar una nueva micro-optimización UI/UX de bajo riesgo sin agregar funciones nuevas
+- [x] Ronda 20: validar con Vitest y TypeScript, revisar estado operativo y consolidar checkpoint si la ronda queda estable

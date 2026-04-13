@@ -1,0 +1,69 @@
+{
+  "targetFile": "client/src/pages/Access.tsx",
+  "startLine": 188,
+  "endLine": 214,
+  "focus": "Reducir fricción y altura visible del primer scroll de /acceso en móvil sin agregar funciones nuevas ni alterar la ruta principal",
+  "snippet": "              <div className=\"mt-5 space-y-3\">\n                <p className=\"text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90\">Entrar y continuar</p>\n                <h1 className=\"text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]\">\n                  Accede, recupera tu sesión y vuelve a trabajar sin rodeos.\n                </h1>\n                <p className=\"max-w-xl text-sm leading-7 text-slate-200\">\n                  Aquí solo entras, recuperas tu sesión y vuelves a <strong>{returnTo}</strong> sin pasos extra.\n                </p>\n              </div>\n            </div>\n\n            <div className=\"px-6 py-5 sm:px-7\">\n              <div className=\"rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 p-4 text-sm leading-6 text-teal-950\">\n                Ruta corta: entras, confirmas y vuelves al punto exacto donde te quedaste.\n              </div>\n            </div>\n          </section>\n\n          <section className=\"mx-auto w-full max-w-3xl space-y-5 xl:max-w-none\">\n            <div className=\"rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]\">\n              <div className=\"flex items-start justify-between gap-4\">\n                <div>\n                  <p className=\"text-sm font-semibold uppercase tracking-[0.2em] text-slate-500\">Ruta recomendada</p>\n                  <h2 className=\"mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950\">Entra y vuelve a tu ruta en el menor número de pasos</h2>\n                  <p className=\"mt-2 max-w-2xl text-sm leading-7 text-slate-600\">\n                    La vía principal va primero. Los respaldos quedan debajo solo por si los necesitas.\n                  </p>",
+  "results": [
+    {
+      "provider": "openai",
+      "output": {
+        "model_view": "AccessHeaderSection",
+        "top_issue": "El bloque introductorio ocupa mucha altura y espacio visual en móvil, lo que puede generar scroll innecesario antes de llegar al formulario principal.",
+        "suggestions": [
+          {
+            "title": "Reducir márgenes verticales entre textos",
+            "change": "Disminuir 'mt-5' a 'mt-3' y 'space-y-3' a 'space-y-2' en el contenedor principal para compactar el espacio vertical.",
+            "reason": "Reduce la altura total del bloque sin afectar la legibilidad, permitiendo que más contenido relevante sea visible en el primer scroll.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Simplificar el texto explicativo",
+            "change": "Acortar el párrafo que inicia con 'Aquí solo entras...' eliminando palabras redundantes para hacerlo más directo y breve.",
+            "reason": "Un copy más conciso mejora la claridad inmediata y reduce la altura del texto, facilitando la comprensión rápida en móvil.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Eliminar padding horizontal extra en el aviso de 'Ruta corta'",
+            "change": "Reducir 'px-6' a 'px-4' y 'py-5' a 'py-3' en el contenedor que envuelve el mensaje de ruta corta para compactar el bloque.",
+            "reason": "Menos padding horizontal y vertical disminuye la altura visible del bloque sin afectar la legibilidad ni la jerarquía visual.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Reducir márgenes verticales entre textos para compactar el bloque introductorio y mostrar más contenido relevante en el primer scroll móvil."
+      }
+    },
+    {
+      "provider": "grok",
+      "output": {
+        "model_view": "AccessView",
+        "top_issue": "El contenido inicial ocupa demasiado espacio vertical en móvil, aumentando la fricción al requerir un scroll inmediato para ver opciones clave.",
+        "suggestions": [
+          {
+            "title": "Reducir tamaño de fuente en encabezados",
+            "change": "Cambiar el h1 de 'text-2xl' a 'text-xl' en vistas móviles.",
+            "reason": "Disminuye la altura ocupada por el título principal, permitiendo que más contenido quepa en la pantalla inicial sin afectar la legibilidad.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Acortar texto descriptivo",
+            "change": "Recortar el párrafo a: 'Entra, recupera tu sesión y regresa a tu trabajo sin extras.'",
+            "reason": "Reduce la longitud del texto para minimizar la altura de scroll inicial, manteniendo la claridad esencial y mejorando la experiencia móvil.",
+            "risk": "bajo"
+          },
+          {
+            "title": "Optimizar márgenes en contenedores",
+            "change": "Cambiar 'mt-5' a 'mt-3' en el div principal.",
+            "reason": "Elimina espacio vertical innecesario, haciendo que el contenido se sienta más compacto y accesible en la primera vista de móvil.",
+            "risk": "bajo"
+          }
+        ],
+        "best_single_move": "Acortar el texto descriptivo para reducir inmediatamente la altura de scroll y mejorar la claridad en la vista inicial."
+      }
+    },
+    {
+      "provider": "gemini",
+      "error": "{\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}"
+    }
+  ]
+}

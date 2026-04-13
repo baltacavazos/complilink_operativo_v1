@@ -185,19 +185,19 @@ export default function Access() {
                 </div>
               </div>
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-3 space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar y continuar</p>
                 <h1 className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
                   Accede, recupera tu sesión y vuelve a trabajar sin rodeos.
                 </h1>
                 <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  Aquí solo entras, recuperas tu sesión y vuelves a <strong>{returnTo}</strong> sin pasos extra.
+                  Entra, recupera tu sesión y vuelve a <strong>{returnTo}</strong> sin pasos extra.
                 </p>
               </div>
             </div>
 
-            <div className="px-6 py-5 sm:px-7">
-              <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 p-4 text-sm leading-6 text-teal-950">
+            <div className="px-4 py-3 sm:px-7 sm:py-5">
+              <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 px-4 py-3 text-sm leading-6 text-teal-950">
                 Ruta corta: entras, confirmas y vuelves al punto exacto donde te quedaste.
               </div>
             </div>

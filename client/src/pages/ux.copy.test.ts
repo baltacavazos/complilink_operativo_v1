@@ -97,6 +97,9 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Ruta recomendada");
+    expect(source).toContain("Entra, recupera tu sesión y vuelve a <strong>{returnTo}</strong> sin pasos extra.");
+    expect(source).toContain('className="mt-3 space-y-2"');
+    expect(source).toContain('className="px-4 py-3 sm:px-7 sm:py-5"');
     expect(source).toContain("Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.");
     expect(source).toContain('className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"');
     expect(source).not.toContain("<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>");
