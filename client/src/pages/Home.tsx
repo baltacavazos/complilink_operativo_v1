@@ -781,12 +781,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              {activeHeroVariant.titleLead}
-              <span className="mt-1 block text-amber-700">{activeHeroVariant.titleAccent}</span>
+              Sube un documento laboral
+              <span className="mt-1 block text-amber-700">y recibe una auditoría clara.</span>
             </span>
             <span className="hidden sm:block">
-              {activeHeroVariant.titleLead}
-              <span className="block text-amber-700">{activeHeroVariant.titleAccent}</span>
+              Sube un documento laboral
+              <span className="block text-amber-700">y recibe una auditoría clara.</span>
             </span>
           </h1>
 
@@ -794,14 +794,14 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-            {activeHeroVariant.supportLine}
+            Empieza con un solo archivo. AuditaPatron lo ordena, detecta señales relevantes y te devuelve qué entendió, qué falta y qué conviene revisar después.
           </p>
 
           <p
             className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            {activeHeroVariant.body}
+            La auditoría documental es el centro de la experiencia: subes un recibo, contrato o CFDI y recibes hallazgos, evidencias y siguientes pasos. Después, si quieres, tu asistente laboral te ayuda a interpretar el expediente sin quitarle protagonismo al análisis principal.
           </p>
 
           <div
@@ -811,14 +811,14 @@ function HeroSection() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Mini prediagnóstico guiado
+                  Empieza con el documento correcto
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-700">
-                  Elige lo que más se parece a tu duda y te digo con qué documento conviene empezar para ganar claridad sin fricción.
+                  Elige la situación que más se parece a tu caso y te sugerimos qué archivo conviene subir primero para obtener una auditoría útil sin reunir todo de una vez.
                 </p>
               </div>
               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                Empiezas con control
+                Sin reunir todo de una vez
               </span>
             </div>
 
@@ -851,7 +851,7 @@ function HeroSection() {
                   {activePrediagnostic.badge}
                 </span>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Documento exacto sugerido
+                  Primer documento sugerido
                 </span>
               </div>
               <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.resultTitle}</p>
@@ -866,7 +866,7 @@ function HeroSection() {
                     Variante activa: {activeHeroVariant.tabLabel}
                   </span>
                   <span className="rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
-                    Resultado listo en segundos
+                    Auditoría inicial en segundos
                   </span>
                 </div>
                 <Button
@@ -937,7 +937,7 @@ function HeroSection() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales de confianza</p>
                   <p className="mt-1 text-sm font-medium leading-6 text-slate-700">
-                    Referencias redactadas desde patrones reales de dudas y necesidades frecuentes, con tono sobrio y sin promesas infladas.
+                    Lenguaje claro, rutas guiadas y un enfoque prudente: primero ves la auditoría del documento, luego decides si quieres profundizar con tu expediente y tu asistente laboral.
                   </p>
                 </div>
               </div>
@@ -966,10 +966,10 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Carrusel de hallazgos laborales resumidos
+                    Vista previa del reporte que recibes
                   </p>
                   <p className="mt-2 max-w-[15ch] text-[2.05rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-                    Tres señales que suelen aparecer cuando empiezas a revisar tus documentos.
+                    Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
@@ -977,7 +977,7 @@ function HeroSection() {
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                Recorre ejemplos breves para aterrizar qué tipo de hallazgo podría aparecer primero y con qué evidencia conviene abrir el expediente.
+                Esta vista resume lo que importa primero: la señal detectada, el documento que la respalda y el siguiente paso sugerido para seguir construyendo tu expediente.
               </p>
 
               <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
@@ -987,20 +987,20 @@ function HeroSection() {
 
                 <div className="mt-4 rounded-[1.1rem] border border-slate-200 bg-slate-50/90 px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Documento que suele revelar esta señal
+                    Evidencia documental sugerida
                   </p>
                   <p className="mt-1 text-sm font-semibold leading-6 text-slate-900">{activeFinding.suggestedDocument}</p>
                 </div>
 
                 <div className="mt-4 rounded-[1.1rem] border border-teal-100 bg-teal-50/70 px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
-                    Qué ganas al verlo
+                    Qué te ayuda a decidir
                   </p>
                   <p className="mt-1 text-sm leading-6 text-teal-900">{activeFinding.impact}</p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-teal-800">Ruta de claridad sugerida hoy</p>
+                  <p className="text-sm font-semibold text-teal-800">Nivel de claridad inicial del expediente</p>
                   <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
                 </div>
                 <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner">
@@ -1054,9 +1054,9 @@ function HeroSection() {
 
             <div className="mt-5 space-y-3">
               {[
-                "Subes tu recibo, contrato o soporte clave en minutos.",
-                "Recibes explicaciones claras, sin vueltas ni lenguaje complicado.",
-                "Tu expediente se ordena y queda listo para cuando necesites volver a él.",
+                "Empiezas con un solo archivo, desde celular o computadora.",
+                "Recibes una auditoría clara con hallazgos, evidencia y siguiente paso.",
+                "Tus documentos quedan resguardados en un expediente disponible para ti 24/7.",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -1084,10 +1084,10 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                    Siguiente paso sugerido
+                    Continúa con tu primera auditoría
                   </p>
                   <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Empieza con {activePrediagnostic.document.toLowerCase()} y convierte tu primera duda en un hallazgo visible sin tener que reunir todo de una vez.
+                    Empieza con {activePrediagnostic.document.toLowerCase()} y convierte tu primera duda en un resultado visible, con explicación y evidencia desde el primer intento.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1107,7 +1107,7 @@ function HeroSection() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Toca aquí para seguir con el archivo que te da más contexto hoy y deja que AuditaPatron ordene el resto paso a paso.
+                Entra aquí para subir ese archivo y recibir tu primera lectura útil antes de pasar a comparaciones o preguntas más avanzadas.
               </p>
             </button>
           </div>
@@ -1122,9 +1122,9 @@ function QuickTrustSection() {
     <section className="border-y border-teal-100/80 bg-[#dbeeee] py-3.5 sm:bg-[#e6f2f1]">
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
-              "Empieza con el documento que ya tienes más a la mano.",
-              "AuditaPatron lo ordena y te devuelve claridad útil sin rodeos.",
-              "Tu expediente queda disponible para ti 24/7.",
+              "Auditoría documental clara desde el primer archivo.",
+              "Tu información se resguarda y permanece disponible para ti 24/7.",
+              "Privacidad visible, lenguaje simple y siguientes pasos concretos.",
 
         ].map((item) => (
           <div
@@ -1310,13 +1310,13 @@ function HowItWorksSection() {
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Así de fácil
+            Cómo funciona en 3 pasos
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Entiende tu situación sin complicarte.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            En pocos pasos puedes subir tu documento, dejar que AuditaPatron lo analice y empiece a construir un expediente digital ordenado que siga contigo cuando lo necesites.
+            Empiezas con un documento, recibes una auditoría útil y fortaleces tu expediente paso a paso, sin lenguaje complicado ni fricción innecesaria.
           </p>
         </div>
 
@@ -1970,6 +1970,8 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <QuickTrustSection />
+      <SectionDivider />
+      <ConfidenceMagicSection />
       <SectionDivider />
       <HowItWorksSection />
       <SectionDivider />

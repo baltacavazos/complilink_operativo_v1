@@ -1,5 +1,13 @@
 # Project TODO
 
+- [x] Reescribir el hero de AuditaPatron con propuesta de valor más clara y una CTA primaria única
+- [x] Añadir un bloque visual de confianza y privacidad visible desde el primer scroll
+- [x] Mostrar un ejemplo visual del resultado de la auditoría o reporte recibido por el usuario
+- [x] Crear una sección clara de 'Cómo funciona' en 3 pasos
+- [x] Simplificar el copy de la homepage y reducir repetición y jerga técnica
+- [x] Reordenar la narrativa del producto para que la auditoría documental sea el valor principal y el asistente quede como capa secundaria
+- [x] Añadir o actualizar pruebas para validar los cambios clave de la homepage
+
 - [x] Exportación ejecutiva del reporte del bridge en CSV y PDF desde la Consola CEO
 - [x] Notificaciones proactivas del bridge ante transición a alerta crítica y a recovery
 - [x] Comparativo histórico del bridge por día y semana en la Consola CEO

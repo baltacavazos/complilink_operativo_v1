@@ -7,22 +7,23 @@ describe("Auditapatron homepage and audit flow content", () => {
   const auditFlowSource = readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8");
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
 
-  it("shows an urgent worker-centered value proposition that also reinforces immediate control", () => {
-    expect(homeSource).toContain("Podrías estar perdiendo dinero o derechos");
-    expect(homeSource).toContain("y ni siquiera lo sabes.");
-    expect(homeSource).toContain("Revísalo hoy y toma control de tu historial laboral.");
-    expect(homeSource).toContain("detectar señales de riesgo en nómina, CFDI y documentos clave");
-    expect(homeSource).toContain("El documento que ya tengas más a la mano siempre puede servir.");
-    expect(homeSource).toContain("Control y claridad desde tu primer archivo");
+  it("shows a clearer worker-centered value proposition focused on document auditing", () => {
+    expect(homeSource).toContain("Sube un documento laboral");
+    expect(homeSource).toContain("y recibe una auditoría clara.");
+    expect(homeSource).toContain("Empieza con un solo archivo. AuditaPatron lo ordena, detecta señales relevantes y te devuelve qué entendió, qué falta y qué conviene revisar después.");
+    expect(homeSource).toContain("La auditoría documental es el centro de la experiencia");
+    expect(homeSource).toContain("Empieza con el documento correcto");
+    expect(homeSource).toContain("Sin reunir todo de una vez");
     expect(homeSource).not.toContain("CompliLink Operativo");
   });
 
-  it("keeps the educational journey and routes the main CTA to the audit workspace", () => {
+  it("keeps the educational journey in 3 steps and routes the main CTA to the audit workspace", () => {
     expect(homeSource).toContain("Sube tu documento y AuditaPatron lo recibe");
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
-    expect(homeSource).toContain("AuditaPatron lo analiza y lo guarda en tu expediente");
-    expect(homeSource).toContain("Ves qué se entendió, qué conviene revisar y mantienes tus documentos y resultados disponibles 24/7");
+    expect(homeSource).toContain("Empieza con el documento correcto");
+    expect(homeSource).toContain("Primer documento sugerido");
+    expect(homeSource).toContain("Continúa con tu primera auditoría");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
   });
@@ -31,9 +32,10 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
     expect(homeSource).toContain("Ver qué documento subir primero");
     expect(homeSource).toContain("Guía rápida para empezar");
-    expect(homeSource).toContain("Mini prediagnóstico guiado");
-    expect(homeSource).toContain("Resultado instantáneo");
-    expect(homeSource).toContain("Carrusel de hallazgos laborales resumidos");
+    expect(homeSource).toContain("Vista previa del reporte que recibes");
+    expect(homeSource).toContain("Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.");
+    expect(homeSource).toContain("Tu privacidad es parte del producto");
+    expect(homeSource).toContain("Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.");
     expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
