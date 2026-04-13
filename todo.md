@@ -865,3 +865,11 @@
 - [x] Preparar un prompt maestro para que Grok, Gemini y ChatGPT actúen como clientes potenciales, prueben la app y entreguen feedback exhaustivo para hacerla más intuitiva.
 - [x] Ajustar el prompt maestro de evaluación multi-IA para que quede enfocado exclusivamente en AuditaPatron, eliminando referencias a CompliLink.
 - [x] Incluir explícitamente la URL pública `https://auditapatron.com` dentro del prompt maestro de evaluación multi-IA para AuditaPatron.
+- [ ] Analizar el PDF de contexto estratégico e histórico del proyecto para extraer narrativa, posicionamiento y activos de credibilidad
+- [ ] Consultar a Grok, Gemini y ChatGPT con instrucción de investigación independiente y deliberación estratégica
+- [ ] Sintetizar una estrategia de marca implícita sin mencionar explícitamente nombres ni marcas
+- [ ] Traducir el contexto histórico en recomendaciones aplicables a producto, copy, presentaciones y narrativa comercial
+- [x] Convertir la vista previa del reporte en una demo más interactiva dentro de la homepage
+- [x] Reforzar señales de confianza con prueba social o evidencia verificable sin depender de marcas externas
+- [x] Optimizar el primer bloque móvil para reducir altura y hacer más visible la CTA principal
+- [x] Actualizar o ampliar pruebas para cubrir la nueva demo interactiva y los ajustes de la homepage

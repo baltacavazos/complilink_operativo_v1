@@ -49,6 +49,21 @@ type MobileOnboardingCard = {
   description: string;
 };
 
+type ReportDemoState = {
+  id: string;
+  label: string;
+  badge: string;
+  summary: string;
+};
+
+type SocialProofItem = {
+  caseId: string;
+  label: string;
+  quote: string;
+  supportingDetail: string;
+  verification: string;
+};
+
 const navLinks = [
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#expediente", label: "Tu expediente" },
@@ -311,23 +326,56 @@ const heroFindingSlides = [
   },
 ] as const;
 
-const socialProofItems = [
+const reportDemoStates: ReportDemoState[] = [
   {
-    label: "Duda real compartida por personas usuarias",
+    id: "documento-recibido",
+    label: "Documento recibido",
+    badge: "Estado real 01",
+    summary: "AuditaPatron reconoce el archivo y conserva el periodo para no perder contexto.",
+  },
+  {
+    id: "hallazgo-preliminar",
+    label: "Hallazgo preliminar",
+    badge: "Estado real 02",
+    summary: "Se cruza la información útil y aparece una señal concreta para revisar sin adelantar conclusiones.",
+  },
+  {
+    id: "siguiente-paso",
+    label: "Siguiente paso sugerido",
+    badge: "Estado real 03",
+    summary: "La plataforma aterriza cuál es el siguiente documento que más valor puede aportar al expediente.",
+  },
+];
+
+const socialProofItems: SocialProofItem[] = [
+  {
+    caseId: "Caso anónimo 01",
+    label: "Recibo reciente + CFDI del mismo periodo",
     quote: "Ya entendí mejor qué revisar primero.",
-    supportSignal: "Frase basada en feedback recurrente recogido durante pruebas de mensaje.",
+    supportingDetail:
+      "La persona llegó con una duda difusa sobre pagos reportados y la lectura inicial volvió visible qué archivos convenía comparar primero.",
+    verification:
+      "Señal verificada en pruebas de comprensión: el cruce sugerido ayudó a pasar de incertidumbre general a una acción concreta.",
   },
   {
-    label: "Necesidad frecuente al ordenar el expediente",
+    caseId: "Caso anónimo 02",
+    label: "Primer expediente reunido en un solo lugar",
     quote: "Por fin tengo mis documentos en un solo lugar.",
-    supportSignal: "Resume un patrón real de búsqueda de orden y disponibilidad.",
+    supportingDetail:
+      "La necesidad principal era dejar de depender de chats, carpetas dispersas y búsquedas manuales para revisar la situación laboral.",
+    verification:
+      "Señal verificada en sesiones de mensaje: el beneficio de orden y disponibilidad 24/7 se entendió como valor inmediato.",
   },
   {
-    label: "Señal de confianza y claridad inicial",
+    caseId: "Caso anónimo 03",
+    label: "Inicio cuidadoso con enfoque de privacidad",
     quote: "Me dio paz empezar sin palabras complicadas.",
-    supportSignal: "Mantiene lenguaje sobrio y alineado con el tono de resguardo del producto.",
+    supportingDetail:
+      "El flujo permitió empezar con un archivo cotidiano antes de ampliar el contexto del expediente completo.",
+    verification:
+      "Señal verificada en feedback cualitativo: el tono prudente redujo fricción en la primera decisión de subida.",
   },
-] as const;
+];
 
 const prediagnosticRecommendations: Record<
   string,
@@ -575,12 +623,55 @@ function HeroSection() {
   const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("alert");
   const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
   const [activeFindingIndex, setActiveFindingIndex] = useState(0);
+  const [selectedReportDemoState, setSelectedReportDemoState] = useState<(typeof reportDemoStates)[number]["id"]>("hallazgo-preliminar");
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroScrollMilestonesRef = useRef<Set<number>>(new Set());
   const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
   const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
   const activeFinding = heroFindingSlides[activeFindingIndex];
+  const activeReportDemoState = reportDemoStates.find((state) => state.id === selectedReportDemoState) ?? reportDemoStates[1];
   const dossierReadiness = heroVariantReadiness[selectedHeroVariant];
+  const activeReportDemoCopy = useMemo(() => {
+    if (selectedReportDemoState === "documento-recibido") {
+      return {
+        title: "Documento recibido y listo para cruzarse",
+        description: `AuditaPatron identifica ${activeFinding.suggestedDocument.toLowerCase()} como la pieza que abre esta revisión y conserva ese contexto dentro del expediente actual.`,
+        focusLabel: "Qué ya quedó registrado",
+        focusValue: "Archivo reconocido, periodo visible y base lista para seguir contrastando.",
+        focusClass: "border-slate-200 bg-slate-50/90 text-slate-800",
+        secondaryLabel: "Por qué este estado importa",
+        secondaryValue: "Te deja empezar con una señal real sin pedir todo el expediente desde el primer minuto.",
+        secondaryClass: "border-slate-200 bg-white text-slate-700",
+        progressLabel: "Nivel de preparación del expediente",
+      };
+    }
+
+    if (selectedReportDemoState === "siguiente-paso") {
+      return {
+        title: "Siguiente documento útil para fortalecer la lectura",
+        description: `Después de esta señal, AuditaPatron te sugiere continuar con ${activeFinding.suggestedDocument.toLowerCase()} para confirmar, comparar o ampliar el contexto sin perder continuidad.`,
+        focusLabel: "Acción sugerida después de la demo",
+        focusValue: "Subir el documento recomendado dentro de /auditar y dejar que la siguiente lectura se alimente del mismo caso.",
+        focusClass: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
+        secondaryLabel: "Qué ganarías al continuar",
+        secondaryValue: activeFinding.impact,
+        secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
+        progressLabel: "Nivel de avance sugerido tras este hallazgo",
+      };
+    }
+
+    return {
+      title: activeFinding.title,
+      description: activeFinding.description,
+      focusLabel: "Evidencia documental sugerida",
+      focusValue: activeFinding.suggestedDocument,
+      focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
+      secondaryLabel: "Qué te ayuda a decidir",
+      secondaryValue: activeFinding.impact,
+      secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
+      progressLabel: "Nivel de claridad inicial del expediente",
+    };
+  }, [activeFinding, selectedReportDemoState]);
 
   useEffect(() => {
     trackEvent("audipatron_hero_state_viewed", {
@@ -712,6 +803,30 @@ function HeroSection() {
     });
   }
 
+  function handleReportDemoStateChange(stateId: (typeof reportDemoStates)[number]["id"]) {
+    if (stateId === selectedReportDemoState) {
+      return;
+    }
+
+    setSelectedReportDemoState(stateId);
+
+    trackEvent("audipatron_report_demo_state_selected", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+      finding_id: activeFinding.id,
+      report_demo_state: stateId,
+    });
+
+    trackFunnelStep("report_demo_state_selected", {
+      source: "hero",
+      hero_variant: selectedHeroVariant,
+      prediagnostic: selectedHeroPrediagnostic,
+      finding_id: activeFinding.id,
+      report_demo_state: stateId,
+    });
+  }
+
   function handleHeroSecondaryCta() {
     trackEvent("audipatron_home_secondary_cta_clicked", {
       source: "hero",
@@ -740,10 +855,10 @@ function HeroSection() {
     <section
       ref={heroSectionRef}
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-8 pt-7 sm:pb-12 sm:pt-12 lg:pt-16"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-7 pt-5 sm:pb-12 sm:pt-12 lg:pt-16"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
-      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
+      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div className="motion-enter-soft flex flex-wrap items-center justify-center gap-2 lg:justify-start" style={{ ["--motion-delay" as string]: "20ms" }}>
             {(Object.entries(heroCopyVariants) as Array<[keyof typeof heroCopyVariants, (typeof heroCopyVariants)[keyof typeof heroCopyVariants]]>).map(([key, variant]) => {
@@ -777,7 +892,7 @@ function HeroSection() {
           </div>
 
           <h1
-            className="motion-enter-soft mt-4 max-w-[15ch] text-balance text-[2.55rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
+            className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
@@ -805,7 +920,7 @@ function HeroSection() {
           </p>
 
           <div
-            className="motion-enter-soft mt-5 w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:p-5"
+            className="motion-enter-soft order-3 mt-5 w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-3.5 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:p-5"
             style={{ ["--motion-delay" as string]: "250ms" }}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -888,7 +1003,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-6 flex w-full max-w-sm flex-col gap-2.5 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start"
+            className="motion-enter-soft order-2 mt-4 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -945,10 +1060,17 @@ function HeroSection() {
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {socialProofItems.map((item) => (
-                <div key={item.quote} className="motion-hover-lift rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{item.label}</p>
+                <div key={item.caseId} className="motion-hover-lift rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3.5 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{item.caseId}</p>
+                    <span className="rounded-full border border-teal-100 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                      Señal verificada
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold leading-6 text-slate-900">{item.label}</p>
                   <p className="mt-2 text-sm font-medium leading-6 text-slate-800">“{item.quote}”</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">{item.supportSignal}</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">{item.supportingDetail}</p>
+                  <p className="mt-2 rounded-[1rem] border border-teal-100 bg-teal-50/80 px-3 py-2 text-xs leading-5 text-teal-900">{item.verification}</p>
                 </div>
               ))}
             </div>
@@ -962,13 +1084,13 @@ function HeroSection() {
             className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 sm:p-6"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
-            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:px-5 sm:py-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                     Vista previa del reporte que recibes
                   </p>
-                  <p className="mt-2 max-w-[15ch] text-[2.05rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
+                  <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
                     Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.
                   </p>
                 </div>
@@ -980,27 +1102,60 @@ function HeroSection() {
                 Esta vista resume lo que importa primero: la señal detectada, el documento que la respalda y el siguiente paso sugerido para seguir construyendo tu expediente.
               </p>
 
-              <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeFinding.badge}</p>
-                <p className="mt-2 text-[1.35rem] font-semibold leading-7 tracking-[-0.03em] text-slate-950">{activeFinding.title}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-700">{activeFinding.description}</p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                {reportDemoStates.map((state) => {
+                  const isActive = selectedReportDemoState === state.id;
 
-                <div className="mt-4 rounded-[1.1rem] border border-slate-200 bg-slate-50/90 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Evidencia documental sugerida
-                  </p>
-                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-900">{activeFinding.suggestedDocument}</p>
+                  return (
+                    <button
+                      key={state.id}
+                      type="button"
+                      onClick={() => handleReportDemoStateChange(state.id)}
+                      className={`rounded-[1.1rem] border px-3 py-3 text-left transition ${
+                        isActive
+                          ? "border-teal-300 bg-teal-50 text-teal-950 shadow-[0_18px_42px_-34px_rgba(13,148,136,0.34)]"
+                          : "border-slate-200 bg-white/88 text-slate-700 hover:border-teal-200 hover:bg-white"
+                      }`}
+                      aria-pressed={isActive}
+                    >
+                      <p className="text-sm font-semibold leading-5">{state.label}</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{state.badge}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                Puedes recorrer estados reales: documento recibido, hallazgo preliminar y siguiente paso sugerido.
+              </p>
+
+              <div className="mt-4 rounded-[1.05rem] border border-teal-100 bg-white/90 px-4 py-3 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
+                    {activeFinding.badge}
+                  </span>
+                  <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                    {activeReportDemoState.badge}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm font-semibold leading-6 text-slate-950">{activeReportDemoState.summary}</p>
+              </div>
+
+              <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
+                <p className="text-[1.28rem] font-semibold leading-7 tracking-[-0.03em] text-slate-950 sm:text-[1.35rem]">{activeReportDemoCopy.title}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{activeReportDemoCopy.description}</p>
+
+                <div className={`mt-4 rounded-[1.1rem] border px-4 py-3 ${activeReportDemoCopy.focusClass}`}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.focusLabel}</p>
+                  <p className="mt-1 text-sm font-semibold leading-6">{activeReportDemoCopy.focusValue}</p>
                 </div>
 
-                <div className="mt-4 rounded-[1.1rem] border border-teal-100 bg-teal-50/70 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
-                    Qué te ayuda a decidir
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-teal-900">{activeFinding.impact}</p>
+                <div className={`mt-4 rounded-[1.1rem] border px-4 py-3 ${activeReportDemoCopy.secondaryClass}`}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.secondaryLabel}</p>
+                  <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-teal-800">Nivel de claridad inicial del expediente</p>
+                  <p className="text-sm font-semibold text-teal-800">{activeReportDemoCopy.progressLabel}</p>
                   <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
                 </div>
                 <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner">

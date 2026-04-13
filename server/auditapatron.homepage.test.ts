@@ -34,6 +34,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Vista previa del reporte que recibes");
     expect(homeSource).toContain("Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.");
+    expect(homeSource).toContain("Puedes recorrer estados reales: documento recibido, hallazgo preliminar y siguiente paso sugerido.");
+    expect(homeSource).toContain("Caso anónimo 01");
+    expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
     expect(homeSource).toContain("Tu privacidad es parte del producto");
     expect(homeSource).toContain("Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.");
     expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
@@ -42,11 +45,12 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
   });
 
-  it("includes the new hero instrumentation for variant changes, scroll depth and finding navigation", () => {
+  it("includes the new hero instrumentation for variant changes, scroll depth, report states and finding navigation", () => {
     expect(homeSource).toContain("audipatron_hero_variant_changed");
     expect(homeSource).toContain("audipatron_hero_scroll_depth_reached");
     expect(homeSource).toContain("audipatron_hero_finding_changed");
     expect(homeSource).toContain("audipatron_hero_finding_viewed");
+    expect(homeSource).toContain("audipatron_report_demo_state_selected");
   });
 
   it("ships an audit workspace with dynamic expediente clarity and revalidation for IMSS and Infonavit", () => {
@@ -63,6 +67,12 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");
     expect(auditFlowSource).not.toContain("CompliLink Operativo");
+  });
+
+  it("keeps the first homepage block more mobile-efficient and surfaces the primary CTA earlier", () => {
+    expect(homeSource).toContain("order-3 mt-5 w-full max-w-xl");
+    expect(homeSource).toContain("order-2 mt-4 flex w-full max-w-sm");
+    expect(homeSource).toContain("pb-7 pt-5");
   });
 
   it("simplifies the first mobile upload touchpoint with a visible mode toggle, autofocus and selector analytics", () => {

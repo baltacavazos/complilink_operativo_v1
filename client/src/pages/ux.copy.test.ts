@@ -36,6 +36,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Empieza ahora y protege tu futuro");
     expect(source).toContain("Ya entendí mejor qué revisar primero.");
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
+    expect(source).toContain("Caso anónimo 01");
+    expect(source).toContain("Señal verificada en pruebas de comprensión");
     expect(source).toContain("Señales de confianza");
     expect(source).toContain("Privacidad visible, lenguaje simple y siguientes pasos concretos.");
     expect(source).toContain("Ver qué documento subir primero");
@@ -45,6 +47,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Auditoría inicial en segundos");
     expect(source).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(source).toContain("Vista previa del reporte que recibes");
+    expect(source).toContain("Puedes recorrer estados reales: documento recibido, hallazgo preliminar y siguiente paso sugerido.");
+    expect(source).toContain("Estado real 02");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#dbeeee]');
     expect(source).toContain('bg-[#eef6f5]');
