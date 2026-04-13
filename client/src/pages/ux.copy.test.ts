@@ -80,6 +80,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
+    expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`');
+    expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
   });
 
   it("mantiene lenguaje cálido y comprensible en el panel conversacional", () => {

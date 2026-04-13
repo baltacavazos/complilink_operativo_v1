@@ -4534,7 +4534,7 @@ export default function Auditar() {
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {shouldCompactMobileUploadEntry
-                          ? "Elige cómo subirlo. Después te mostraremos el borrador y el siguiente documento sugerido."
+                          ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`
                           : preferredCaptureMode === "camera"
                             ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
                             : preferredCaptureMode === "file"
