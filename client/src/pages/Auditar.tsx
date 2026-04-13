@@ -4753,7 +4753,7 @@ export default function Auditar() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Todavía no elegiste archivo. Cuando lo hagas, aquí verás el nombre, el avance del análisis, el borrador automático y el siguiente paso recomendado antes de guardarlo definitivamente.
+                    Aún no eliges archivo. Empieza con una foto, PDF o XML del documento que tengas más a la mano; apenas lo selecciones, aquí verás el avance y el siguiente paso sugerido antes de guardarlo.
                   </div>
                 )}
               </div>
@@ -5303,8 +5303,7 @@ export default function Auditar() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      Sube un documento para ver qué aportó y cuál es el siguiente paso.
-
+                    Empieza con el documento más reciente que ya tengas contigo. Aquí verás qué aportó, qué falta por confirmar y cuál es el siguiente paso útil.
                   </div>
                 )
               ) : (
@@ -5622,8 +5621,7 @@ export default function Auditar() {
 
               {timelineEntries.length === 0 ? (
                 <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                    Tu línea de tiempo está esperando. Sube tu primer documento para ver cómo empieza a construirse tu expediente digital paso a paso y cómo todo queda disponible para ti 24/7.
-
+                  Tu línea de tiempo empieza con el primer archivo guardado. Cuando confirmes uno, aquí verás el orden del expediente y qué cambió con cada documento.
                 </div>
               ) : (
                 <div className="mt-6 space-y-4">
@@ -5992,8 +5990,8 @@ export default function Auditar() {
                 {filteredDossierHistoryEntries.length === 0 ? (
                   <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600">
                     {historyFilter === "all"
-                      ? "En cuanto subas tu primer documento, aquí verás un historial simple con lo más reciente de tu expediente."
-                      : "Todavía no hay movimientos de este tipo. Cambia el filtro o sigue fortaleciendo tu expediente para ver más actividad aquí."}
+                      ? "Tu historial aparecerá en cuanto guardes el primer documento. Aquí verás lo más reciente sin salir del expediente."
+                      : "Todavía no hay movimientos con este filtro. Cámbialo o sube otro documento para seguir construyendo el historial."}
                   </div>
                 ) : (
                   filteredDossierHistoryEntries.map((entry) => (

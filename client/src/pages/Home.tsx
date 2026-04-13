@@ -257,7 +257,7 @@ const heroCopyVariants = {
     body:
       "Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.",
     ctaPrimary: "Auditar mi situación ahora",
-    ctaSecondary: "Ver guía rápida",
+    ctaSecondary: "Ver ejemplo del reporte",
   },
   control: {
     tabLabel: "Control inmediato",
@@ -269,7 +269,7 @@ const heroCopyVariants = {
     body:
       "Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.",
     ctaPrimary: "Empezar mi revisión",
-    ctaSecondary: "Ver guía rápida",
+    ctaSecondary: "Ver ejemplo del reporte",
   },
 } as const;
 
@@ -439,7 +439,7 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-const PRIMARY_CTA_LABEL = "Empieza ahora y protege tu futuro";
+const PRIMARY_CTA_LABEL = "Sube tu primer documento";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -835,7 +835,7 @@ function HeroSection() {
       cta_label: activeHeroVariant.ctaSecondary,
     });
 
-    scrollToId("preguntas");
+    scrollToId("ejemplo-reporte");
   }
 
   function handleHeroFindingChange(nextIndex: number, interaction: "previous" | "next" | "direct") {
@@ -1081,6 +1081,7 @@ function HeroSection() {
           <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-teal-200/50 blur-3xl" />
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
+            id="ejemplo-reporte"
             className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 sm:p-6"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
@@ -2172,9 +2173,9 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
-                onClick={() => scrollToId("preguntas")}
-              >
-                Quiero una guía rápida antes de subir
+                  onClick={() => scrollToId("ejemplo-reporte")}
+                >
+                  Ver ejemplo del reporte primero
               </Button>
             </div>
           </div>

@@ -2465,7 +2465,11 @@ export default function CeoDashboard() {
                     <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Bitácora reciente para decidir</h3>
                   </div>
                   <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
-                    {auditTrailQuery.isFetching ? "Actualizando eventos" : `${formatNumber(recentOperationalEvents.length)} visibles ahora`}
+                    {auditTrailQuery.isFetching
+                      ? "Actualizando eventos"
+                      : recentOperationalEvents.length > 4
+                        ? "4 prioritarios visibles"
+                        : `${formatNumber(recentOperationalEvents.length)} visibles ahora`}
                   </Badge>
                 </div>
                 <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
@@ -2503,10 +2507,17 @@ export default function CeoDashboard() {
                         <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail y segmentables sin salir del tablero.</p>
                       </div>
                       <Badge className="rounded-full border border-white bg-white text-slate-700">
-                        {`${formatNumber(recentOperationalEvents.length)} de ${formatNumber(auditTrail.length)} visibles`}
+                        {recentOperationalEvents.length > 4
+                          ? `4 de ${formatNumber(auditTrail.length)} visibles`
+                          : `${formatNumber(recentOperationalEvents.length)} de ${formatNumber(auditTrail.length)} visibles`}
                       </Badge>
                     </div>
                     <div className="mt-4 space-y-4">
+                      {recentOperationalEvents.length > 4 ? (
+                        <p className="text-xs leading-5 text-slate-500">
+                          Mostramos primero los 4 eventos que más cambian una decisión. Si necesitas más contexto, usa los filtros rápidos o navega al bloque correspondiente.
+                        </p>
+                      ) : null}
                       <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white/80 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
@@ -2557,7 +2568,7 @@ export default function CeoDashboard() {
                       </div>
                       <div className="space-y-3">
                         {recentOperationalEvents.length > 0 ? (
-                          recentOperationalEvents.map((item) => {
+                          recentOperationalEvents.slice(0, 4).map((item) => {
                             const tone = getAuditActionTone(item.action);
                             const rejectionReason = getAuditRejectionReason(item);
                             const severity = getAuditEventSeverity(item);

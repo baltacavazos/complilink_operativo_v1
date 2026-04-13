@@ -981,3 +981,7 @@
 - [ ] Ejecutar una auditoría integral de toda la plataforma con ChatGPT, Grok y Gemini actuando como clientes para detectar fricción, confusión y exceso de scroll
 - [ ] Realizar rondas de debate multi-IA hasta lograr consenso sobre las correcciones de mayor impacto en claridad, intuición y jerarquía visual
 - [ ] Aplicar únicamente simplificaciones y robustecimientos de V1 derivados de la auditoría integral, sin agregar funciones nuevas ni aumentar complejidad
+
+- [x] Optimizar la CTA principal y secundaria de la home para reducir fricción y mejorar claridad de entrada
+- [x] Compactar aún más la Consola CEO con lectura ejecutiva resumida y menos ruido visible por defecto
+- [x] Mejorar los estados vacíos de /auditar para orientar el primer upload con menos ambigüedad

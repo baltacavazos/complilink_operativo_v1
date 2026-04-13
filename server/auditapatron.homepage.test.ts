@@ -10,7 +10,7 @@ describe("Auditapatron homepage and audit flow content", () => {
   it("shows a clearer worker-centered value proposition focused on document auditing", () => {
     expect(homeSource).toContain("Sube un documento laboral");
     expect(homeSource).toContain("y recibe una auditoría clara.");
-    expect(homeSource).toContain("Empieza con un solo archivo. AuditaPatron lo ordena, detecta señales relevantes y te devuelve qué entendió, qué falta y qué conviene revisar después.");
+    expect(homeSource).toContain("Empieza con lo que ya tienes a la mano y convierte ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.");
     expect(homeSource).toContain("La auditoría documental es el centro de la experiencia");
     expect(homeSource).toContain("Empieza con el documento correcto");
     expect(homeSource).toContain("Sin reunir todo de una vez");
@@ -30,7 +30,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
-    expect(homeSource).toContain("Ver qué documento subir primero");
+    expect(homeSource).toContain("Ver ejemplo del reporte");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Vista previa del reporte que recibes");
     expect(homeSource).toContain("Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.");

@@ -32,15 +32,15 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Entrar con mi asistente");
     expect(source).not.toContain("Abrir mi expediente");
     expect(source).not.toContain("Tus derechos laborales,");
-    expect(source).toContain('const PRIMARY_CTA_LABEL = "Empieza ahora y protege tu futuro"');
-    expect(source).toContain("Empieza ahora y protege tu futuro");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Sube tu primer documento"');
+    expect(source).toContain("Sube tu primer documento");
     expect(source).toContain("Ya entendí mejor qué revisar primero.");
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Caso anónimo 01");
     expect(source).toContain("Señal verificada en pruebas de comprensión");
     expect(source).toContain("Señales de confianza");
     expect(source).toContain("Privacidad visible, lenguaje simple y siguientes pasos concretos.");
-    expect(source).toContain("Ver guía rápida");
+    expect(source).toContain("Ver ejemplo del reporte");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Empieza con el documento correcto");
     expect(source).toContain("Quiero entender rápido si esto me sirve");
