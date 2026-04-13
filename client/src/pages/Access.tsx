@@ -188,29 +188,34 @@ export default function Access() {
               <div className="mt-5 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar y continuar</p>
                 <h1 className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
-                  Esta pantalla solo existe para entrar rápido y volver a trabajar.
+                  Accede, recupera tu sesión y vuelve a trabajar sin rodeos.
                 </h1>
                 <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  Aquí no repetimos la explicación del producto. Tu objetivo es autenticarte, recuperar la sesión y regresar a la ruta protegida sin rodeos.
+                  Aquí sólo resolvemos una cosa: autenticarte y devolverte a <strong>{returnTo}</strong>. La ruta principal va primero; las demás quedan como respaldo.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4 px-6 py-5 sm:px-7">
               <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50/85 p-4">
-                <p className="text-sm font-semibold text-slate-950">Qué hace esta pantalla</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Elegir tu método de acceso, validar la sesión y devolverte automáticamente a <strong>{returnTo}</strong>.
-                </p>
-              </article>
-              <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50/85 p-4">
-                <p className="text-sm font-semibold text-slate-950">Qué no hace</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  No sustituye la home ni vuelve a presentar la propuesta de valor. La experiencia aquí es deliberadamente corta, directa y operativa.
-                </p>
+                <p className="text-sm font-semibold text-slate-950">Flujo rápido</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">1</p>
+                    <p className="mt-1 font-semibold text-slate-950">Elige Manus</p>
+                  </div>
+                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">2</p>
+                    <p className="mt-1 font-semibold text-slate-950">Confirma tu sesión</p>
+                  </div>
+                  <div className="rounded-[1rem] border border-white bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">3</p>
+                    <p className="mt-1 font-semibold text-slate-950">Vuelve a tu ruta</p>
+                  </div>
+                </div>
               </article>
               <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 p-4 text-sm leading-6 text-teal-950">
-                Cuando completes el acceso, el sistema te devolverá al punto exacto donde querías continuar.
+                Cuando completes el acceso, el sistema te devolverá al punto exacto donde querías continuar, sin volver a empezar el flujo.
               </div>
             </div>
           </section>
@@ -219,10 +224,10 @@ export default function Access() {
             <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso principal</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Entra y vuelve a tu ruta</h2>
-                  <p className="mt-2 text-sm leading-7 text-slate-600">
-                    Si quieres resolverlo con el menor número de pasos, Manus suele ser la vía más directa. Google y el código por correo quedan como alternativas operativas.
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Ruta recomendada</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Empieza con Manus si solo quieres entrar rápido</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
+                    Dejamos una vía principal arriba y los respaldos abajo para que la decisión sea inequívoca. Lo más común es autenticarte una vez y volver de inmediato a tu trabajo.
                   </p>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -230,42 +235,45 @@ export default function Access() {
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3">
+              <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Opción principal</p>
+                <h3 className="mt-2 text-lg font-semibold">Continúa con Manus y regresa a tu ruta</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  Recomendado cuando ya vienes con sesión institucional o quieres resolver el acceso en el menor número de pasos.
+                </p>
                 <Button
                   size="lg"
-                  className="h-12 justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/10 hover:bg-slate-900"
+                  className="mt-4 h-12 w-full justify-center rounded-2xl bg-white text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
                   onClick={() => {
                     window.location.href = getManusLoginUrl(returnTo);
                   }}
                 >
                   Continuar con Manus
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 justify-center rounded-2xl border-slate-200 bg-white"
-                  disabled={!googleEnabled || googleStatusQuery.isLoading}
-                  onClick={() => {
-                    window.location.href = getGoogleLoginUrl(returnTo);
-                  }}
-                >
-                  {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {googleLabel}
-                </Button>
+                <p className="mt-3 text-xs leading-5 text-slate-300">Al terminar, vuelves automáticamente a <strong>{returnTo}</strong>.</p>
               </div>
 
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                  <p className="font-semibold text-slate-900">Manus</p>
-                  <p className="mt-2">La opción más directa cuando ya vienes con sesión institucional activa.</p>
+                  <p className="font-semibold text-slate-900">Alternativa: Google</p>
+                  <p className="mt-2">Úsala si prefieres ese proveedor o si ya vienes autenticado ahí.</p>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="mt-3 h-11 w-full justify-center rounded-2xl border-slate-200 bg-white"
+                    disabled={!googleEnabled || googleStatusQuery.isLoading}
+                    onClick={() => {
+                      window.location.href = getGoogleLoginUrl(returnTo);
+                    }}
+                  >
+                    {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {googleLabel}
+                  </Button>
                 </div>
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                  <p className="font-semibold text-slate-900">Google</p>
-                  <p className="mt-2">Queda listo como alternativa segura en cuanto termine la configuración del proveedor.</p>
-                </div>
-                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                  <p className="font-semibold text-slate-900">Código por correo</p>
-                  <p className="mt-2">Sirve como respaldo temporal sin introducir contraseñas persistentes.</p>
+                  <p className="font-semibold text-slate-900">Alternativa: código por correo</p>
+                  <p className="mt-2">Déjalo como respaldo cuando no quieras depender de otro proveedor o necesites continuidad inmediata.</p>
+                  <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Disponible justo debajo</p>
                 </div>
               </div>
             </div>
@@ -282,7 +290,7 @@ export default function Access() {
               </div>
 
               <p className="mt-4 text-sm leading-7 text-slate-600">
-                Si hoy prefieres no depender de otro proveedor, usa tu correo de trabajo para recibir un código temporal. Este flujo está pensado para continuidad operativa y adopción gradual.
+                Usa este flujo solo si no pudiste entrar con Manus o Google. Recibes un código temporal, validas el acceso y regresas a tu ruta protegida sin crear una contraseña nueva.
               </p>
 
               <div className="mt-4 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">

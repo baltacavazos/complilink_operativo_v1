@@ -2010,12 +2010,68 @@ export default function CeoDashboard() {
             ) : null}
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <KpiCard label="Tenants activos" value={globalSummary.totalTenants} helper="Organizaciones con operación visible" />
-            <KpiCard label="Casos activos" value={globalSummary.activeCases} helper="Expedientes en intake, análisis, conciliación o litigio" />
-            <KpiCard label="Alertas abiertas" value={globalSummary.openAlerts} helper={`${formatNumber(globalSummary.criticalAlerts)} críticas`} />
-            <KpiCard label="Accesos vigentes" value={globalSummary.activeMemberships} helper={`${formatNumber(globalSummary.caseScopedMemberships)} por caso`} />
-            <KpiCard label="Documentos pendientes" value={globalSummary.pendingDocuments} helper={`${formatNumber(globalSummary.supersededDocuments)} reemplazados`} />
+          <section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+            <article className="rounded-[1.85rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_32%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.18)] sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-3xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Resumen ejecutivo</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
+                    {formatNumber(globalSummary.openAlerts)} alertas abiertas y {formatNumber(globalSummary.activeCases)} casos activos bajo seguimiento.
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
+                    Empieza por el nivel de riesgo y la frescura del snapshot. Después baja a filtros y detalle sólo si necesitas aislar una organización, caso o actor concreto.
+                  </p>
+                </div>
+                <div className={`rounded-[1.2rem] border px-4 py-3 text-sm shadow-sm ${executiveActionsBlocked ? "border-amber-200 bg-amber-50 text-amber-950" : "border-emerald-200 bg-emerald-50 text-emerald-950"}`}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">Estado de decisión</p>
+                  <p className="mt-2 font-semibold">{executiveActionsBlocked ? "Revisión recomendada antes de actuar" : "Vista habilitada para decisiones de bajo riesgo"}</p>
+                  <p className="mt-1 leading-6">{snapshotFreshnessLabel}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tenants activos</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(globalSummary.totalTenants)}</p>
+                  <p className="mt-1 text-sm text-slate-600">Organizaciones con operación visible.</p>
+                </div>
+                <div className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Accesos vigentes</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(globalSummary.activeMemberships)}</p>
+                  <p className="mt-1 text-sm text-slate-600">{formatNumber(globalSummary.caseScopedMemberships)} por caso.</p>
+                </div>
+                <div className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Documentos pendientes</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(globalSummary.pendingDocuments)}</p>
+                  <p className="mt-1 text-sm text-slate-600">{formatNumber(globalSummary.supersededDocuments)} reemplazados.</p>
+                </div>
+              </div>
+            </article>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <article className="rounded-[1.55rem] border border-rose-100 bg-rose-50/80 p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Riesgo inmediato</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{formatNumber(globalSummary.criticalAlerts)}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">Alertas críticas dentro de las {formatNumber(globalSummary.openAlerts)} alertas abiertas del panorama global.</p>
+              </article>
+              <article className="rounded-[1.55rem] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Cobertura visible</p>
+                <dl className="mt-3 space-y-3 text-sm text-slate-600">
+                  <div className="flex items-center justify-between gap-3">
+                    <dt>Casos en el filtro actual</dt>
+                    <dd className="font-semibold text-slate-950">{formatNumber(filteredCounts.cases)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <dt>Alertas en el filtro actual</dt>
+                    <dd className="font-semibold text-slate-950">{formatNumber(filteredCounts.alerts)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <dt>Documentos visibles</dt>
+                    <dd className="font-semibold text-slate-950">{formatNumber(filteredCounts.documents)}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
           </section>
 
           {isMasterUser ? (

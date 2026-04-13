@@ -3599,7 +3599,7 @@ export default function Auditar() {
                     Hoy tu expediente laboral va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. {socialSecuritySummary} {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
+                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: {selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. {socialSecuritySummary} {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
                   </p>
                 </div>
 
@@ -3625,6 +3625,21 @@ export default function Auditar() {
               <div className="mt-2 flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Claridad actual del expediente</span>
                 <span>{socialSecurityCoveragePercent}%</span>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 rounded-[1.35rem] border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Siguiente paso recomendado</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">
+                    {selectedFile ? "Ya elegiste un archivo: sólo falta subirlo para reflejarlo en el expediente." : uploadPrimaryActionLabel}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Prioriza un documento con mayor contexto antes de revisar módulos secundarios. El expediente se vuelve más útil en cuanto entra la siguiente pieza clave.
+                  </p>
+                </div>
+                <div className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-900">
+                  Acción principal primero
+                </div>
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
