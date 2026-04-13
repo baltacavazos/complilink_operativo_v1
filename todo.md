@@ -944,3 +944,9 @@
 - [x] Añadir telemetría mínima en `/auditar` para conflictos de lock, tiempos de espera y consentimiento embebido sin reescribir la infraestructura analítica.
 - [x] Extender la cobertura E2E del gate legal para validar el consentimiento integrado real en `/auditar` reutilizando el login de propietario y los helpers existentes.
 - [x] Volver más accionable la lectura de conversión móvil en la Consola CEO con señales por modo de captura y conflictos del gate legal.
+- [x] Cerrar el hueco residual de métricas de `guardrail_rejected` en la Consola CEO usando señales reales y sin duplicar eventos.
+- [x] Añadir una prueba E2E específica para rechazo por guardrails en `/auditar`, reutilizando el harness y la autenticación existentes.
+- [x] Incorporar una tarjeta ejecutiva mínima en la Consola CEO con abandono del gate legal y tiempo medio de resolución.
+- [x] Cerrar el hueco residual de la métrica guardrail_rejected en la Consola CEO
+- [x] Añadir un test E2E específico para rechazo por guardrails en /auditar
+- [x] Priorizar una tarjeta ejecutiva en la Consola CEO con abandono del gate legal y tiempo medio de resolución

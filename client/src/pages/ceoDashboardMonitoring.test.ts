@@ -54,12 +54,13 @@ describe("ceoDashboardMonitoring", () => {
       buildAuditItem({ id: 5, action: "policy.create", entityType: "policy", caseId: null }),
       buildAuditItem({ id: 6, action: "consent.legal_package_accept", entityType: "consent", caseId: "case-001" }),
       buildAuditItem({ id: 7, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-003" }),
+      buildAuditItem({ id: 8, action: "document.guardrail_rejected", entityType: "system", caseId: null, entityId: "draft:guardrail" }),
     ];
 
     expect(buildAuditMonitoringSummary(items)).toEqual({
-      totalEvents: 7,
-      guardrailRejections: 0,
-      documentEvents: 3,
+      totalEvents: 8,
+      guardrailRejections: 1,
+      documentEvents: 4,
       accessEvents: 1,
       policyEvents: 1,
       distinctCases: 3,
@@ -73,9 +74,46 @@ describe("ceoDashboardMonitoring", () => {
       averagePreviewToConfirmationSeconds: 50,
       legalGateAcceptances: 1,
       legalGateLockConflicts: 1,
+      legalGateAbandonments: 1,
+      legalGateAbandonmentRate: 50,
+      averageLegalGateResolutionSeconds: null,
       cameraPreviewToConfirmRate: 100,
       filePreviewToConfirmRate: null,
       dominantCaptureMode: "camera",
+    });
+  });
+
+  it("deriva abandono y tiempo medio de resolución del gate legal reutilizando el audit trail existente", () => {
+    const items = [
+      buildAuditItem({
+        id: 11,
+        action: "consent.legal_package_lock_conflict",
+        entityType: "consent",
+        caseId: "case-201",
+        createdAt: "2026-04-10T12:00:00.000Z",
+      }),
+      buildAuditItem({
+        id: 12,
+        action: "consent.legal_package_accept",
+        entityType: "consent",
+        caseId: "case-201",
+        createdAt: "2026-04-10T12:02:00.000Z",
+      }),
+      buildAuditItem({
+        id: 13,
+        action: "consent.legal_package_lock_conflict",
+        entityType: "consent",
+        caseId: "case-202",
+        createdAt: "2026-04-10T12:03:00.000Z",
+      }),
+    ];
+
+    expect(buildAuditMonitoringSummary(items)).toMatchObject({
+      legalGateAcceptances: 1,
+      legalGateLockConflicts: 2,
+      legalGateAbandonments: 1,
+      legalGateAbandonmentRate: 50,
+      averageLegalGateResolutionSeconds: 120,
     });
   });
 

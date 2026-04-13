@@ -974,6 +974,19 @@ describe("appRouter case workflows", () => {
       }),
     ).rejects.toThrow(/demasiados intentos seguidos en Auditar/i);
 
+    expect(db.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        action: "document.guardrail_rejected",
+        entityType: "system",
+        entityId: "draft:CASE-BALT-1-DEMO001:preview_burst_blocked.pdf",
+        afterState: expect.objectContaining({
+          mutation: "analyzeDocumentDraft",
+          reason: "rate_limited",
+        }),
+      }),
+    );
     expect(storagePut).toHaveBeenCalledTimes(4);
     expect(db.upsertCanonicalContract).toHaveBeenCalledTimes(4);
   });

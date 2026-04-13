@@ -31,6 +31,9 @@ export type AuditMonitoringSummary = {
   averagePreviewToConfirmationSeconds: number | null;
   legalGateAcceptances: number;
   legalGateLockConflicts: number;
+  legalGateAbandonments: number;
+  legalGateAbandonmentRate: number | null;
+  averageLegalGateResolutionSeconds: number | null;
   cameraPreviewToConfirmRate: number | null;
   filePreviewToConfirmRate: number | null;
   dominantCaptureMode: "camera" | "file" | "balanced" | "none";
@@ -169,12 +172,24 @@ function getDominantCaptureMode(cameraCount: number, fileCount: number): "camera
   return cameraCount > fileCount ? "camera" : "file";
 }
 
+function getLegalGateScopeId(item: AuditFeedItem) {
+  if (typeof item.caseId === "string" && item.caseId.length > 0) {
+    return item.caseId;
+  }
+  return item.entityId;
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
   const documentUploadEvents = items.filter((item) => item.action === "document.upload");
+  const guardrailRejections = items.filter((item) => item.action === "document.guardrail_rejected").length;
   const legalGateAcceptances = items.filter((item) => item.action === "consent.legal_package_accept").length;
   const legalGateLockConflicts = items.filter((item) => item.action === "consent.legal_package_lock_conflict").length;
+  const legalGateEvents = items
+    .filter((item) => item.action === "consent.legal_package_accept" || item.action === "consent.legal_package_lock_conflict")
+    .slice()
+    .sort((left, right) => toTimestampMs(left.createdAt) - toTimestampMs(right.createdAt));
 
   let cameraCaptureSelections = 0;
   let fileCaptureSelections = 0;
@@ -197,15 +212,44 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     .map((item) => getPreviewToConfirmationSeconds(item))
     .filter((value): value is number => value !== null);
 
+  const legalGateOpenConflicts = new Map<string, number>();
+  const legalGateResolutionSamples: number[] = [];
+
+  for (const event of legalGateEvents) {
+    const scopeId = getLegalGateScopeId(event);
+    const eventTimestamp = toTimestampMs(event.createdAt);
+    if (!scopeId || eventTimestamp === null) {
+      continue;
+    }
+
+    if (event.action === "consent.legal_package_lock_conflict") {
+      if (!legalGateOpenConflicts.has(scopeId)) {
+        legalGateOpenConflicts.set(scopeId, eventTimestamp);
+      }
+      continue;
+    }
+
+    const conflictStartedAt = legalGateOpenConflicts.get(scopeId);
+    if (typeof conflictStartedAt === "number" && eventTimestamp >= conflictStartedAt) {
+      legalGateResolutionSamples.push(Math.round((eventTimestamp - conflictStartedAt) / 1000));
+      legalGateOpenConflicts.delete(scopeId);
+    }
+  }
+
   const averagePreviewToConfirmationSeconds =
     previewToConfirmationSamples.length > 0
       ? Math.round(previewToConfirmationSamples.reduce((total, value) => total + value, 0) / previewToConfirmationSamples.length)
       : null;
+  const legalGateAbandonments = legalGateOpenConflicts.size;
+  const averageLegalGateResolutionSeconds =
+    legalGateResolutionSamples.length > 0
+      ? Math.round(legalGateResolutionSamples.reduce((total, value) => total + value, 0) / legalGateResolutionSamples.length)
+      : null;
 
   return {
     totalEvents: items.length,
-    guardrailRejections: items.filter((item) => item.action === "document.guardrail_rejected").length,
-    documentEvents: items.filter((item) => item.entityType === "document").length,
+    guardrailRejections,
+    documentEvents: items.filter((item) => item.action.startsWith("document.") || item.entityType === "document").length,
     accessEvents: items.filter((item) => item.action.startsWith("access.") || item.entityType === "access").length,
     policyEvents: items.filter((item) => item.entityType === "policy").length,
     distinctCases: uniqueCount(items.map((item) => item.caseId)),
@@ -219,6 +263,9 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     averagePreviewToConfirmationSeconds,
     legalGateAcceptances,
     legalGateLockConflicts,
+    legalGateAbandonments,
+    legalGateAbandonmentRate: getPercentage(legalGateAbandonments, legalGateAcceptances + legalGateAbandonments),
+    averageLegalGateResolutionSeconds,
     cameraPreviewToConfirmRate: getPercentage(cameraPreviewConfirmedEvents, cameraCaptureSelections),
     filePreviewToConfirmRate: getPercentage(filePreviewConfirmedEvents, fileCaptureSelections),
     dominantCaptureMode: getDominantCaptureMode(cameraCaptureSelections, fileCaptureSelections),

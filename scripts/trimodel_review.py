@@ -116,7 +116,7 @@ def call_xai(context: str) -> dict[str, Any]:
 
 def call_gemini(context: str) -> dict[str, Any]:
     api_key = os.environ['GEMINI_API_KEY']
-    models = ['gemini-2.5-flash', 'gemini-2.0-flash']
+    models = ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-pro-latest']
     last_error = None
     prompt = USER_PROMPT_TEMPLATE.format(context=context)
 

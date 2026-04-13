@@ -1,129 +1,78 @@
 {
   "provider": "gemini",
-  "model": "gemini-2.5-flash",
+  "model": "gemini-flash-latest",
   "raw": {
-    "sdk_http_response": {
-      "headers": {
-        "x-gemini-service-tier": "standard",
-        "content-type": "application/json; charset=UTF-8",
-        "vary": "Origin, X-Origin, Referer",
-        "content-encoding": "gzip",
-        "date": "Mon, 13 Apr 2026 05:55:06 GMT",
-        "server": "scaffolding on HTTPServer2",
-        "x-xss-protection": "0",
-        "x-frame-options": "SAMEORIGIN",
-        "x-content-type-options": "nosniff",
-        "server-timing": "gfet4t7; dur=31552",
-        "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
-        "transfer-encoding": "chunked"
-      },
-      "body": null
-    },
     "candidates": [
       {
         "content": {
           "parts": [
             {
-              "media_resolution": null,
-              "code_execution_result": null,
-              "executable_code": null,
-              "file_data": null,
-              "function_call": null,
-              "function_response": null,
-              "inline_data": null,
-              "text": "{\n  \"implementation_priority\": [\n    \"Implementar telemetría faltante para eventos de rechazo por guardrails y refinar eventos de gate legal.\",\n    \"Desarrollar pruebas E2E para el flujo `/auditar` cubriendo el happy path, rechazo por guardrails y la interacción con el gate legal.\",\n    \"Integrar las nuevas métricas accionables (ej. tasas de rechazo) en la Consola CEO.\"\n  ],\n  \"minimal_changes\": {\n    \"telemetry\": [\n      \"Añadir evento `trackEvent('guardrail_rejected', { reason: '...' })` en `client/src/pages/Auditar.tsx` para capturar rechazos por guardrails.\",\n      \"Revisar y asegurar que los eventos de `legal gate waiting` y `legal gate accepted` se emiten explícitamente como eventos de funnel o trackEvent, no solo como estados internos, para una trazabilidad clara.\"\n    ],\n    \"testing\": [\n      \"Crear un test E2E para el flujo `/auditar` que cubra la confirmación exitosa y la interacción con el gate legal, validando la emisión de telemetría.\",\n      \"Crear un test E2E para el escenario de rechazo por `guardrail` en `/auditar`, validando la emisión del evento `guardrail_rejected`.\"\n    ],\n    \"ceo_console\": [\n      \"Añadir el cálculo de `guardrailRejectedEvents` en `client/src/pages/ceoDashboardMonitoring.ts`.\",\n      \"Mostrar una tarjeta o sección en `client/src/pages/CeoDashboard.tsx` para la 'Tasa de Rechazo por Guardrails' y 'Tasa de Abandono en Gate Legal'.\"\n    ]\n  },\n  \"critical_kpis\": [\n    \"Tasa de Rechazo por Guardrails (total y, si es posible, por tipo de guardrail).\",\n    \"Tasa de Abandono en Gate Legal (porcentaje de usuarios que inician el gate legal pero no lo completan).\",\n    \"Tiempo Promedio de Resolución del Gate Legal (para identificar fricción en este paso crítico).\",\n    \"Tasa de Conversión Móvil por Modo de Captura (para identificar diferencias de rendimiento entre cámara y archivo).\"\n  ],\n  \"avoid_overbuilding\": [\n    \"Rediseño completo de la interfaz de usuario de la Consola CEO; solo ajustes visuales mínimos para las nuevas métricas.\",\n    \"Reescritura de módulos de analytics o backend que ya tienen cobertura de pruebas unitarias y funcionan correctamente.\",\n    \"Implementación de pruebas E2E para flujos de baja prioridad o que no impactan directamente la conversión móvil.\",\n    \"Añadir métricas que no tengan una acción clara o que sean redundantes con las existentes, evitando vanity metrics.\"\n  ],\n  \"must_have_tests\": [\n    \"Pruebas E2E para el flujo `/auditar` que validen la confirmación exitosa, la interacción y aceptación del gate legal, y el rechazo por guardrails.\",\n    \"Pruebas de integración para la nueva telemetría de `guardrail_rejected` y su correcta propagación hasta el monitoreo CEO.\",\n    \"Actualización de pruebas unitarias existentes en `client/src/lib/analytics.test.ts` y `client/src/pages/ceoDashboardMonitoring.test.ts` para reflejar cualquier cambio en la lógica de telemetría o cálculo de KPIs.\"\n  ],\n  \"top_risks\": [\n    \"Introducción de regresiones en el flujo `/auditar` debido a la adición de nueva telemetría o cambios en la lógica del gate legal.\",\n    \"Datos de telemetría incompletos o incorrectos que lleven a decisiones ejecutivas erróneas en la Consola CEO.\",\n    \"Sobrecarga del equipo de desarrollo al intentar implementar una cobertura E2E demasiado ambiciosa o compleja en esta ronda.\",\n    \"Falta de claridad en la definición de 'accionable' para las nuevas métricas del CEO console, resultando en métricas de vanidad o poco útiles.\"\n  ],\n  \"recommended_sequence_rationale\": \"La secuencia recomendada prioriza la base de datos y la validación antes de la presentación ejecutiva. Primero, se debe asegurar la captura completa y precisa de la telemetría crítica, especialmente los eventos de rechazo por guardrails y el refinamiento de los eventos del gate legal, ya que estos son fundamentales para entender los puntos de fricción. Sin datos fiables, cualquier análisis posterior sería defectuoso. Segundo, la implementación de pruebas E2E específicas para el flujo `/auditar` y los escenarios de rechazo es crucial para validar que la telemetría se emite correctamente desde la perspectiva del usuario y que el flujo funciona como se espera, abordando el principal hueco de validación. Finalmente, con datos fiables y un flujo validado, se pueden integrar las métricas accionables resultantes en la Consola CEO, asegurando que la información presentada a la dirección es precisa y directamente utilizable para la toma de decisiones, sin caer en métricas de vanidad o datos erróneos.\"\n}",
-              "thought": null,
-              "thought_signature": null,
-              "video_metadata": null,
-              "tool_call": null,
-              "tool_response": null,
-              "part_metadata": null
+              "text": "{\n  \"implementation_priority\": [\n    \"Instrumentación de guardrail_rejected y abandono de gate legal\",\n    \"Prueba E2E de flujo de rechazo en /auditar\",\n    \"Actualización de tarjeta ejecutiva en Consola CEO\"\n  ],\n  \"minimal_changes\": {\n    \"telemetry\": [\n      \"Añadir helper guardrail_rejected en analytics.ts vinculando el motivo del bloqueo\",\n      \"Capturar evento de salida prematura (unload/back) en el gate legal como abandono\"\n    ],\n    \"testing\": [\n      \"Script Playwright/Cypress que fuerce un estado de guardrail y verifique el evento de rechazo\",\n      \"Validación de cálculo de tiempo medio de resolución en ceoDashboardMonitoring.test.ts\"\n    ],\n    \"ceo_console\": [\n      \"Insertar bloque 'Fricción Legal' en el resumen ejecutivo actual\",\n      \"Visualización de tasa de abandono vs. tasa de éxito en el gate legal\"\n    ]\n  },\n  \"critical_kpis\": [\n    \"Guardrail Rejection Rate\",\n    \"Legal Gate Abandonment Rate\",\n    \"Mean Time to Resolution (MTTR) en Gate Legal\"\n  ],\n  \"avoid_overbuilding\": [\n    \"No crear un nuevo microservicio de analíticas; usar el helper trackEvent existente\",\n    \"No rediseñar la UI de la consola; extender el componente de tarjetas actual\",\n    \"Evitar el seguimiento de movimientos de mouse; limitarse a eventos de estado y tiempo\"\n  ],\n  \"must_have_tests\": [\n    \"E2E: Flujo completo de rechazo por guardrail en /auditar\",\n    \"Unit: Lógica de agregación de tiempos de resolución en el backend/monitor\",\n    \"Integration: Persistencia de señales de conflicto legal en la base de datos\"\n  ],\n  \"top_risks\": [\n    \"Sesgo en métricas de abandono por cierres accidentales de pestaña\",\n    \"Impacto mínimo en performance móvil por listeners de telemetría adicionales\",\n    \"Duplicidad de eventos si no se maneja correctamente el estado de carga\"\n  ],\n  \"recommended_sequence_rationale\": \"Primero asegurar la captura de datos (telemetría) para tener base real, luego validar la integridad del flujo con E2E para evitar regresiones, y finalmente exponer la información en la Consola CEO para habilitar la toma de decisiones basada en fricción real.\"\n}",
+              "thoughtSignature": "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"
             }
           ],
           "role": "model"
         },
-        "citation_metadata": null,
-        "finish_message": null,
-        "token_count": null,
-        "finish_reason": "STOP",
-        "grounding_metadata": null,
-        "avg_logprobs": null,
-        "index": 0,
-        "logprobs_result": null,
-        "safety_ratings": null,
-        "url_context_metadata": null
+        "finishReason": "STOP",
+        "index": 0
       }
     ],
-    "create_time": null,
-    "model_version": "gemini-2.5-flash",
-    "prompt_feedback": null,
-    "response_id": "G4XcaeOZGYCmjMcP44zv4Ag",
-    "usage_metadata": {
-      "cache_tokens_details": null,
-      "cached_content_token_count": null,
-      "candidates_token_count": 1130,
-      "candidates_tokens_details": null,
-      "prompt_token_count": 1093,
-      "prompt_tokens_details": [
+    "usageMetadata": {
+      "promptTokenCount": 1304,
+      "candidatesTokenCount": 556,
+      "totalTokenCount": 2563,
+      "promptTokensDetails": [
         {
           "modality": "TEXT",
-          "token_count": 1093
+          "tokenCount": 1304
         }
       ],
-      "thoughts_token_count": 2968,
-      "tool_use_prompt_token_count": null,
-      "tool_use_prompt_tokens_details": null,
-      "total_token_count": 5191,
-      "traffic_type": null
+      "thoughtsTokenCount": 703
     },
-    "model_status": null,
-    "automatic_function_calling_history": [],
-    "parsed": null
+    "modelVersion": "gemini-3-flash-preview",
+    "responseId": "64bcaduuOZKv-8YP6cyh6Ag"
   },
   "parsed": {
     "implementation_priority": [
-      "Implementar telemetría faltante para eventos de rechazo por guardrails y refinar eventos de gate legal.",
-      "Desarrollar pruebas E2E para el flujo `/auditar` cubriendo el happy path, rechazo por guardrails y la interacción con el gate legal.",
-      "Integrar las nuevas métricas accionables (ej. tasas de rechazo) en la Consola CEO."
+      "Instrumentación de guardrail_rejected y abandono de gate legal",
+      "Prueba E2E de flujo de rechazo en /auditar",
+      "Actualización de tarjeta ejecutiva en Consola CEO"
     ],
     "minimal_changes": {
       "telemetry": [
-        "Añadir evento `trackEvent('guardrail_rejected', { reason: '...' })` en `client/src/pages/Auditar.tsx` para capturar rechazos por guardrails.",
-        "Revisar y asegurar que los eventos de `legal gate waiting` y `legal gate accepted` se emiten explícitamente como eventos de funnel o trackEvent, no solo como estados internos, para una trazabilidad clara."
+        "Añadir helper guardrail_rejected en analytics.ts vinculando el motivo del bloqueo",
+        "Capturar evento de salida prematura (unload/back) en el gate legal como abandono"
       ],
       "testing": [
-        "Crear un test E2E para el flujo `/auditar` que cubra la confirmación exitosa y la interacción con el gate legal, validando la emisión de telemetría.",
-        "Crear un test E2E para el escenario de rechazo por `guardrail` en `/auditar`, validando la emisión del evento `guardrail_rejected`."
+        "Script Playwright/Cypress que fuerce un estado de guardrail y verifique el evento de rechazo",
+        "Validación de cálculo de tiempo medio de resolución en ceoDashboardMonitoring.test.ts"
       ],
       "ceo_console": [
-        "Añadir el cálculo de `guardrailRejectedEvents` en `client/src/pages/ceoDashboardMonitoring.ts`.",
-        "Mostrar una tarjeta o sección en `client/src/pages/CeoDashboard.tsx` para la 'Tasa de Rechazo por Guardrails' y 'Tasa de Abandono en Gate Legal'."
+        "Insertar bloque 'Fricción Legal' en el resumen ejecutivo actual",
+        "Visualización de tasa de abandono vs. tasa de éxito en el gate legal"
       ]
     },
     "critical_kpis": [
-      "Tasa de Rechazo por Guardrails (total y, si es posible, por tipo de guardrail).",
-      "Tasa de Abandono en Gate Legal (porcentaje de usuarios que inician el gate legal pero no lo completan).",
-      "Tiempo Promedio de Resolución del Gate Legal (para identificar fricción en este paso crítico).",
-      "Tasa de Conversión Móvil por Modo de Captura (para identificar diferencias de rendimiento entre cámara y archivo)."
+      "Guardrail Rejection Rate",
+      "Legal Gate Abandonment Rate",
+      "Mean Time to Resolution (MTTR) en Gate Legal"
     ],
     "avoid_overbuilding": [
-      "Rediseño completo de la interfaz de usuario de la Consola CEO; solo ajustes visuales mínimos para las nuevas métricas.",
-      "Reescritura de módulos de analytics o backend que ya tienen cobertura de pruebas unitarias y funcionan correctamente.",
-      "Implementación de pruebas E2E para flujos de baja prioridad o que no impactan directamente la conversión móvil.",
-      "Añadir métricas que no tengan una acción clara o que sean redundantes con las existentes, evitando vanity metrics."
+      "No crear un nuevo microservicio de analíticas; usar el helper trackEvent existente",
+      "No rediseñar la UI de la consola; extender el componente de tarjetas actual",
+      "Evitar el seguimiento de movimientos de mouse; limitarse a eventos de estado y tiempo"
     ],
     "must_have_tests": [
-      "Pruebas E2E para el flujo `/auditar` que validen la confirmación exitosa, la interacción y aceptación del gate legal, y el rechazo por guardrails.",
-      "Pruebas de integración para la nueva telemetría de `guardrail_rejected` y su correcta propagación hasta el monitoreo CEO.",
-      "Actualización de pruebas unitarias existentes en `client/src/lib/analytics.test.ts` y `client/src/pages/ceoDashboardMonitoring.test.ts` para reflejar cualquier cambio en la lógica de telemetría o cálculo de KPIs."
+      "E2E: Flujo completo de rechazo por guardrail en /auditar",
+      "Unit: Lógica de agregación de tiempos de resolución en el backend/monitor",
+      "Integration: Persistencia de señales de conflicto legal en la base de datos"
     ],
     "top_risks": [
-      "Introducción de regresiones en el flujo `/auditar` debido a la adición de nueva telemetría o cambios en la lógica del gate legal.",
-      "Datos de telemetría incompletos o incorrectos que lleven a decisiones ejecutivas erróneas en la Consola CEO.",
-      "Sobrecarga del equipo de desarrollo al intentar implementar una cobertura E2E demasiado ambiciosa o compleja en esta ronda.",
-      "Falta de claridad en la definición de 'accionable' para las nuevas métricas del CEO console, resultando en métricas de vanidad o poco útiles."
+      "Sesgo en métricas de abandono por cierres accidentales de pestaña",
+      "Impacto mínimo en performance móvil por listeners de telemetría adicionales",
+      "Duplicidad de eventos si no se maneja correctamente el estado de carga"
     ],
-    "recommended_sequence_rationale": "La secuencia recomendada prioriza la base de datos y la validación antes de la presentación ejecutiva. Primero, se debe asegurar la captura completa y precisa de la telemetría crítica, especialmente los eventos de rechazo por guardrails y el refinamiento de los eventos del gate legal, ya que estos son fundamentales para entender los puntos de fricción. Sin datos fiables, cualquier análisis posterior sería defectuoso. Segundo, la implementación de pruebas E2E específicas para el flujo `/auditar` y los escenarios de rechazo es crucial para validar que la telemetría se emite correctamente desde la perspectiva del usuario y que el flujo funciona como se espera, abordando el principal hueco de validación. Finalmente, con datos fiables y un flujo validado, se pueden integrar las métricas accionables resultantes en la Consola CEO, asegurando que la información presentada a la dirección es precisa y directamente utilizable para la toma de decisiones, sin caer en métricas de vanidad o datos erróneos."
+    "recommended_sequence_rationale": "Primero asegurar la captura de datos (telemetría) para tener base real, luego validar la integridad del flujo con E2E para evitar regresiones, y finalmente exponer la información en la Consola CEO para habilitar la toma de decisiones basada en fricción real."
   },
-  "transport": "sdk"
+  "transport": "rest"
 }

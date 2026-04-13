@@ -2432,6 +2432,40 @@ export default function CeoDashboard() {
 
                     </div>
                     <div className="mt-4 space-y-3">
+                      <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-800">Gate legal visible</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-rose-950">{formatNumber(auditSummary.legalGateAbandonments)}</p>
+                          </div>
+                          <Badge className="rounded-full border border-rose-200 bg-white text-rose-800">
+                            {auditSummary.legalGateAbandonmentRate === null ? "Sin base" : `${formatNumber(auditSummary.legalGateAbandonmentRate)}% abandono`}
+                          </Badge>
+                        </div>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Casos sin cierre visible</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.legalGateAbandonments)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Conflictos del gate legal que aún no muestran una aceptación posterior.</p>
+                          </div>
+                          <div className="rounded-2xl bg-white/90 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tiempo medio de resolución</p>
+                            <p className="mt-2 text-xl font-semibold text-slate-950">
+                              {auditSummary.averageLegalGateResolutionSeconds === null
+                                ? "Sin muestra"
+                                : auditSummary.averageLegalGateResolutionSeconds < 60
+                                  ? `${formatNumber(auditSummary.averageLegalGateResolutionSeconds)} s`
+                                  : `${(auditSummary.averageLegalGateResolutionSeconds / 60).toFixed(1)} min`}
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-slate-500">Promedio entre conflicto visible y aceptación posterior del mismo caso.</p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-rose-950/80">
+                          {auditSummary.legalGateAbandonments === 0
+                            ? "No se observan casos atorados en el gate legal dentro de la vista actual."
+                            : `Se observan ${formatNumber(auditSummary.legalGateAbandonments)} casos con fricción legal aún abierta; conviene revisar copy, espera y reintentos antes de atribuir la caída al documento.`}
+                        </p>
+                      </div>
                       <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Alertas ejecutivas derivadas</p>
@@ -2499,7 +2533,9 @@ export default function CeoDashboard() {
                           <p>
                             {auditSummary.legalGateLockConflicts === 0
                               ? `Gate legal visible: ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones sin conflictos recientes.`
-                              : `Gate legal visible: ${formatNumber(auditSummary.legalGateLockConflicts)} conflictos para ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones; conviene revisar espera o concurrencia antes de atribuir la caída al documento.`}
+                              : auditSummary.legalGateAbandonments === 0
+                                ? `Gate legal visible: ${formatNumber(auditSummary.legalGateLockConflicts)} conflictos ya absorbidos por ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones posteriores.`
+                                : `Gate legal visible: ${formatNumber(auditSummary.legalGateAbandonments)} conflictos siguen abiertos sobre ${formatNumber(auditSummary.legalGateLockConflicts)} choques y ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones; conviene revisar espera o concurrencia antes de atribuir la caída al documento.`}
                           </p>
                         </div>
                       </div>

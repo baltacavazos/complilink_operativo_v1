@@ -2,16 +2,16 @@
   "provider": "openai",
   "model": "gpt-4.1-mini",
   "raw": {
-    "id": "chatcmpl-DU4XIeaNSt8jZm9dUznxiS3wVaEQ2",
+    "id": "chatcmpl-DU4eThDx6CTnDEt5nMyxJ04bl6qiw",
     "object": "chat.completion",
-    "created": 1776059648,
+    "created": 1776060093,
     "model": "gpt-4.1-mini-2025-04-14",
     "choices": [
       {
         "index": 0,
         "message": {
           "role": "assistant",
-          "content": "{\n  \"implementation_priority\": [\n    \"Cerrar telemetría faltante en /auditar para guardrails, lock, timeout y consentimiento integrado\",\n    \"Cubrir funnel móvil con pruebas E2E mínimas y reproducibles\",\n    \"Mejorar accionabilidad de la Consola CEO para conversión móvil sin inflar alcance\"\n  ],\n  \"minimal_changes\": {\n    \"telemetry\": [\n      \"Agregar eventos específicos faltantes: preview_analyzed, preview_confirmed, guardrail_rejected, legal gate waiting/accepted, document upload completed\",\n      \"Instrumentar telemetría para rechazo por guardrails, lock y timeout con payloads claros y consistentes\",\n      \"Mantener uso de helpers existentes y extender solo lo necesario para trazabilidad\"\n    ],\n    \"testing\": [\n      \"Implementar pruebas E2E focalizadas en el flujo /auditar que validen consentimiento integrado y manejo de guardrails\",\n      \"Actualizar pruebas unitarias para cubrir nuevos eventos y estados de telemetría\",\n      \"Garantizar reproducibilidad y honestidad en validación sin infraestructura E2E completa si no existe\"\n    ],\n    \"ceo_console\": [\n      \"Incluir KPIs accionables: tasa de conversión móvil segmentada por modo de captura (cámara/archivo)\",\n      \"Mostrar métricas de rechazo por guardrails y tiempos de espera en legal gate\",\n      \"Evitar métricas de vanidad, enfocarse en indicadores que guíen decisiones de optimización\"\n    ]\n  },\n  \"critical_kpis\": [\n    \"previewToConfirmRate segmentado por modo de captura móvil\",\n    \"confirmToUploadRate segmentado por modo de captura móvil\",\n    \"Tasa de rechazo por guardrails y lock en /auditar\",\n    \"Tiempo promedio de espera en legal gate (waiting y accepted)\"\n  ],\n  \"avoid_overbuilding\": [\n    \"No rediseñar completamente la UI de la Consola CEO, solo ajustes mínimos para visibilidad\",\n    \"No implementar infraestructura E2E completa si pruebas focalizadas son suficientes\",\n    \"No reescribir grandes módulos de telemetría, solo extender eventos faltantes\"\n  ],\n  \"must_have_tests\": [\n    \"Pruebas E2E que validen consentimiento integrado y manejo de guardrails en /auditar\",\n    \"Pruebas unitarias para nuevos eventos de telemetría y estados de flujo\",\n    \"Pruebas de integración para asegurar que la Consola CEO refleja correctamente KPIs clave\"\n  ],\n  \"top_risks\": [\n    \"Falta de cobertura E2E que permita detectar fallos en consentimiento integrado o guardrails\",\n    \"Incluir métricas no accionables que compliquen la toma de decisiones en la Consola CEO\",\n    \"Cambios excesivos que afecten la estabilidad del flujo /auditar o la experiencia móvil\"\n  ],\n  \"recommended_sequence_rationale\": \"Primero se debe cerrar la telemetría faltante para asegurar la observabilidad completa del flujo /auditar y sus rechazos, ya que sin datos precisos no se puede validar ni optimizar. Luego, se implementan pruebas E2E mínimas para validar el consentimiento integrado y guardrails, garantizando la calidad y reproducibilidad sin necesidad de infraestructura compleja. Finalmente, se ajusta la Consola CEO para mostrar KPIs accionables basados en la telemetría ya instrumentada, evitando rediseños o métricas de vanidad que no aporten valor. Esta secuencia minimiza riesgos, preserva estabilidad y maximiza retorno con cambios focalizados.\"\n}",
+          "content": "{\n  \"implementation_priority\": [\n    \"Cerrar métricas guardrail_rejected en Consola CEO con señales reales\",\n    \"Añadir prueba E2E específica para rechazo por guardrails en /auditar\",\n    \"Incorporar tarjeta ejecutiva mínima en Consola CEO con abandono gate legal y tiempo medio resolución\"\n  ],\n  \"minimal_changes\": {\n    \"telemetry\": [\n      \"Agregar evento guardrail_rejected basado en señales ya auditadas sin duplicar eventos\",\n      \"Incluir métricas de abandono del gate legal y tiempo medio de resolución usando datos existentes\"\n    ],\n    \"testing\": [\n      \"Implementar prueba E2E focalizada para rechazo por guardrails en /auditar reutilizando harness y autenticación actual\"\n    ],\n    \"ceo_console\": [\n      \"Añadir tarjeta ejecutiva mínima dentro del resumen ejecutivo actual para evitar rediseño completo\",\n      \"Mostrar KPIs: guardrail_rejected count, abandono gate legal count, tiempo medio de resolución\"\n    ]\n  },\n  \"critical_kpis\": [\n    \"guardrail_rejected count\",\n    \"abandono gate legal count\",\n    \"tiempo medio de resolución del gate legal\"\n  ],\n  \"avoid_overbuilding\": [\n    \"No crear nuevos eventos o métricas no auditadas\",\n    \"No rediseñar la UI completa de la Consola CEO, solo añadir bloque mínimo\",\n    \"No ampliar pruebas E2E más allá del rechazo guardrail específico\"\n  ],\n  \"must_have_tests\": [\n    \"Prueba E2E para rechazo guardrail en /auditar\",\n    \"Pruebas unitarias actualizadas para métricas guardrail_rejected y abandono gate legal\",\n    \"Validación de integración de datos en Consola CEO\"\n  ],\n  \"top_risks\": [\n    \"Duplicación o inconsistencia de eventos guardrail_rejected si no se usan señales auditadas\",\n    \"Falsos positivos o negativos en métricas de abandono si no se usan datos reales\",\n    \"Falta de cobertura E2E específica para rechazo guardrail puede dejar huecos críticos\"\n  ],\n  \"recommended_sequence_rationale\": \"Primero cerrar métricas guardrail_rejected garantiza datos confiables para la Consola CEO; luego añadir prueba E2E específica asegura validación reproducible del flujo crítico; finalmente, incorporar tarjeta ejecutiva mínima dentro del resumen actual maximiza valor sin rediseño ni sobrecarga, manteniendo estabilidad y foco en KPIs accionables.\"\n}",
           "refusal": null,
           "annotations": []
         },
@@ -20,9 +20,9 @@
       }
     ],
     "usage": {
-      "prompt_tokens": 1015,
-      "completion_tokens": 730,
-      "total_tokens": 1745,
+      "prompt_tokens": 1212,
+      "completion_tokens": 509,
+      "total_tokens": 1721,
       "prompt_tokens_details": {
         "cached_tokens": 0,
         "audio_tokens": 0
@@ -39,48 +39,43 @@
   },
   "parsed": {
     "implementation_priority": [
-      "Cerrar telemetría faltante en /auditar para guardrails, lock, timeout y consentimiento integrado",
-      "Cubrir funnel móvil con pruebas E2E mínimas y reproducibles",
-      "Mejorar accionabilidad de la Consola CEO para conversión móvil sin inflar alcance"
+      "Cerrar métricas guardrail_rejected en Consola CEO con señales reales",
+      "Añadir prueba E2E específica para rechazo por guardrails en /auditar",
+      "Incorporar tarjeta ejecutiva mínima en Consola CEO con abandono gate legal y tiempo medio resolución"
     ],
     "minimal_changes": {
       "telemetry": [
-        "Agregar eventos específicos faltantes: preview_analyzed, preview_confirmed, guardrail_rejected, legal gate waiting/accepted, document upload completed",
-        "Instrumentar telemetría para rechazo por guardrails, lock y timeout con payloads claros y consistentes",
-        "Mantener uso de helpers existentes y extender solo lo necesario para trazabilidad"
+        "Agregar evento guardrail_rejected basado en señales ya auditadas sin duplicar eventos",
+        "Incluir métricas de abandono del gate legal y tiempo medio de resolución usando datos existentes"
       ],
       "testing": [
-        "Implementar pruebas E2E focalizadas en el flujo /auditar que validen consentimiento integrado y manejo de guardrails",
-        "Actualizar pruebas unitarias para cubrir nuevos eventos y estados de telemetría",
-        "Garantizar reproducibilidad y honestidad en validación sin infraestructura E2E completa si no existe"
+        "Implementar prueba E2E focalizada para rechazo por guardrails en /auditar reutilizando harness y autenticación actual"
       ],
       "ceo_console": [
-        "Incluir KPIs accionables: tasa de conversión móvil segmentada por modo de captura (cámara/archivo)",
-        "Mostrar métricas de rechazo por guardrails y tiempos de espera en legal gate",
-        "Evitar métricas de vanidad, enfocarse en indicadores que guíen decisiones de optimización"
+        "Añadir tarjeta ejecutiva mínima dentro del resumen ejecutivo actual para evitar rediseño completo",
+        "Mostrar KPIs: guardrail_rejected count, abandono gate legal count, tiempo medio de resolución"
       ]
     },
     "critical_kpis": [
-      "previewToConfirmRate segmentado por modo de captura móvil",
-      "confirmToUploadRate segmentado por modo de captura móvil",
-      "Tasa de rechazo por guardrails y lock en /auditar",
-      "Tiempo promedio de espera en legal gate (waiting y accepted)"
+      "guardrail_rejected count",
+      "abandono gate legal count",
+      "tiempo medio de resolución del gate legal"
     ],
     "avoid_overbuilding": [
-      "No rediseñar completamente la UI de la Consola CEO, solo ajustes mínimos para visibilidad",
-      "No implementar infraestructura E2E completa si pruebas focalizadas son suficientes",
-      "No reescribir grandes módulos de telemetría, solo extender eventos faltantes"
+      "No crear nuevos eventos o métricas no auditadas",
+      "No rediseñar la UI completa de la Consola CEO, solo añadir bloque mínimo",
+      "No ampliar pruebas E2E más allá del rechazo guardrail específico"
     ],
     "must_have_tests": [
-      "Pruebas E2E que validen consentimiento integrado y manejo de guardrails en /auditar",
-      "Pruebas unitarias para nuevos eventos de telemetría y estados de flujo",
-      "Pruebas de integración para asegurar que la Consola CEO refleja correctamente KPIs clave"
+      "Prueba E2E para rechazo guardrail en /auditar",
+      "Pruebas unitarias actualizadas para métricas guardrail_rejected y abandono gate legal",
+      "Validación de integración de datos en Consola CEO"
     ],
     "top_risks": [
-      "Falta de cobertura E2E que permita detectar fallos en consentimiento integrado o guardrails",
-      "Incluir métricas no accionables que compliquen la toma de decisiones en la Consola CEO",
-      "Cambios excesivos que afecten la estabilidad del flujo /auditar o la experiencia móvil"
+      "Duplicación o inconsistencia de eventos guardrail_rejected si no se usan señales auditadas",
+      "Falsos positivos o negativos en métricas de abandono si no se usan datos reales",
+      "Falta de cobertura E2E específica para rechazo guardrail puede dejar huecos críticos"
     ],
-    "recommended_sequence_rationale": "Primero se debe cerrar la telemetría faltante para asegurar la observabilidad completa del flujo /auditar y sus rechazos, ya que sin datos precisos no se puede validar ni optimizar. Luego, se implementan pruebas E2E mínimas para validar el consentimiento integrado y guardrails, garantizando la calidad y reproducibilidad sin necesidad de infraestructura compleja. Finalmente, se ajusta la Consola CEO para mostrar KPIs accionables basados en la telemetría ya instrumentada, evitando rediseños o métricas de vanidad que no aporten valor. Esta secuencia minimiza riesgos, preserva estabilidad y maximiza retorno con cambios focalizados."
+    "recommended_sequence_rationale": "Primero cerrar métricas guardrail_rejected garantiza datos confiables para la Consola CEO; luego añadir prueba E2E específica asegura validación reproducible del flujo crítico; finalmente, incorporar tarjeta ejecutiva mínima dentro del resumen actual maximiza valor sin rediseño ni sobrecarga, manteniendo estabilidad y foco en KPIs accionables."
   }
 }
