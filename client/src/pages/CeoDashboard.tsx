@@ -43,6 +43,7 @@ import {
   type CeoCustomExportPayload,
 } from "@/pages/ceoDashboardExports";
 import {
+  LEGAL_GATE_WEEKLY_ALERT_THRESHOLD,
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
   filterAuditFeed,
@@ -1131,6 +1132,19 @@ export default function CeoDashboard() {
     setAuditFamilyFilter("guardrail");
     setAuditSeverityFilter(alert.severity === "normal" ? "all" : alert.severity);
     setLocation("/ceo");
+  };
+
+  const focusLegalGateCase = (item: (typeof auditSummary.legalGateAffectedCases)[number], targetPath: "/ceo" | "/ceo/documentos") => {
+    setFilters((previous) => ({
+      ...previous,
+      tenantId: item.tenantId,
+      caseId: item.caseId ?? "all",
+    }));
+    if (targetPath === "/ceo") {
+      setAuditFamilyFilter("all");
+      setAuditSeverityFilter("all");
+    }
+    void setLocation(targetPath);
   };
 
   const isAlertBusy = (alertId: number) => alertMutation.isPending && alertMutation.variables?.alertId === alertId;
@@ -2500,35 +2514,62 @@ export default function CeoDashboard() {
                               </Badge>
                             </div>
                             {auditSummary.legalGateWeeklyTrend.length > 0 ? (
-                              <ChartContainer config={legalGateTrendChartConfig} className="mt-4 h-36 w-full">
-                                <LineChart accessibilityLayer data={auditSummary.legalGateWeeklyTrend} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
-                                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                                  <XAxis
-                                    dataKey="weekStart"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    minTickGap={24}
-                                    tickFormatter={(value) => formatWeekLabel(typeof value === "string" ? value : String(value))}
-                                  />
-                                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
-                                  <ChartTooltip
-                                    content={
-                                      <ChartTooltipContent
-                                        formatter={(value) => [`${formatNumber(Number(value ?? 0))} casos`, "Abandonos visibles"]}
-                                        labelFormatter={(value) => `Semana de ${formatWeekLabel(typeof value === "string" ? value : String(value))}`}
-                                      />
-                                    }
-                                  />
-                                  <Line
-                                    type="monotone"
-                                    dataKey="abandonmentCount"
-                                    stroke="var(--color-abandonmentCount)"
-                                    strokeWidth={2.5}
-                                    dot={{ r: 3 }}
-                                    activeDot={{ r: 5 }}
-                                  />
-                                </LineChart>
-                              </ChartContainer>
+                              <>
+                                <ChartContainer config={legalGateTrendChartConfig} className="mt-4 h-36 w-full">
+                                  <LineChart accessibilityLayer data={auditSummary.legalGateWeeklyTrend} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                    <XAxis
+                                      dataKey="weekStart"
+                                      tickLine={false}
+                                      axisLine={false}
+                                      minTickGap={24}
+                                      tickFormatter={(value) => formatWeekLabel(typeof value === "string" ? value : String(value))}
+                                    />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+                                    <ChartTooltip
+                                      content={
+                                        <ChartTooltipContent
+                                          formatter={(value) => [`${formatNumber(Number(value ?? 0))} casos`, "Abandonos visibles"]}
+                                          labelFormatter={(value) => `Semana de ${formatWeekLabel(typeof value === "string" ? value : String(value))}`}
+                                        />
+                                      }
+                                    />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="abandonmentCount"
+                                      stroke="var(--color-abandonmentCount)"
+                                      strokeWidth={2.5}
+                                      dot={({ cx, cy, payload }) => {
+                                        if (typeof cx !== "number" || typeof cy !== "number") return null;
+                                        return (
+                                          <circle
+                                            cx={cx}
+                                            cy={cy}
+                                            r={payload?.isOutOfRange ? 5 : 3}
+                                            fill={payload?.isOutOfRange ? "#be123c" : "var(--color-abandonmentCount)"}
+                                            stroke="#fff"
+                                            strokeWidth={1.5}
+                                          />
+                                        );
+                                      }}
+                                      activeDot={{ r: 5 }}
+                                    />
+                                  </LineChart>
+                                </ChartContainer>
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  {auditSummary.legalGateWeeklyTrend.map((point) => (
+                                    <Badge
+                                      key={point.weekStart}
+                                      className={`rounded-full border ${point.isOutOfRange ? "border-rose-200 bg-rose-50 text-rose-800" : "border-slate-200 bg-white text-slate-600"}`}
+                                    >
+                                      {formatWeekLabel(point.weekStart)} · {formatNumber(point.abandonmentCount)} {point.isOutOfRange ? "fuera de rango" : "estable"}
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <p className="mt-3 text-xs leading-5 text-slate-500">
+                                  El umbral visual mínimo marca como fuera de rango las semanas con {formatNumber(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD)} o más casos abiertos visibles.
+                                </p>
+                              </>
                             ) : (
                               <p className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
                                 Todavía no hay casos abiertos suficientes para dibujar una tendencia semanal del gate legal.
@@ -2571,6 +2612,14 @@ export default function CeoDashboard() {
                                         <p className="mt-1 text-xs leading-5 text-slate-500">
                                           {item.ageSeconds === null ? "La antigüedad visible no está disponible en este corte." : `Antigüedad visible: ${formatDurationCompact(item.ageSeconds)}.`}
                                         </p>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                          <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => focusLegalGateCase(item, "/ceo")}>
+                                            Abrir feed filtrado
+                                          </Button>
+                                          <Button type="button" variant="outline" size="sm" className="rounded-full bg-white text-slate-700" onClick={() => focusLegalGateCase(item, "/ceo/documentos")}>
+                                            Ver expediente documental
+                                          </Button>
+                                        </div>
                                       </article>
                                     ))}
                                     {auditSummary.legalGateAffectedCases.length > 5 ? (
@@ -2728,6 +2777,10 @@ export default function CeoDashboard() {
                                 <p className="mt-2 text-xs leading-5 text-slate-500">
                                   {entry.latestAt ? `Último visible: ${formatDateTime(entry.latestAt)}.` : "Sin timestamp visible."} {entry.caseId ? `Caso más reciente: ${entry.caseId}.` : `Tenant: ${entry.tenantId}.`}
                                 </p>
+                                <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/80 px-3 py-3">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Acción sugerida</p>
+                                  <p className="mt-2 text-sm leading-6 text-cyan-950">{entry.suggestedAction}</p>
+                                </div>
                               </article>
                             ))}
                           </div>

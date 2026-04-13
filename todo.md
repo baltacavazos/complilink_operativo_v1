@@ -953,3 +953,6 @@
 - [x] Añadir drill-down desde la tarjeta ejecutiva de la Consola CEO hacia los casos afectados
 - [x] Mostrar tendencia semanal del abandono legal en la Consola CEO
 - [x] Convertir los motivos de guardrail_rejected en un ranking accionable por causa
+- [x] Enlazar cada caso del drill-down legal de la Consola CEO a una vista filtrada o contextual del expediente/feed
+- [x] Añadir umbrales visuales para semanas con abandono legal fuera de rango en la Consola CEO
+- [x] Convertir el ranking de causas de guardrail_rejected en acciones sugeridas por motivo

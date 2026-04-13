@@ -25,6 +25,7 @@ export type LegalGateDrilldownItem = {
 export type LegalGateWeeklyTrendPoint = {
   weekStart: string;
   abandonmentCount: number;
+  isOutOfRange: boolean;
 };
 
 export type GuardrailReasonRankingItem = {
@@ -33,6 +34,7 @@ export type GuardrailReasonRankingItem = {
   latestAt: string | null;
   caseId: string | null;
   tenantId: string;
+  suggestedAction: string;
 };
 
 export type AuditMonitoringSummary = {
@@ -87,6 +89,8 @@ export type AuditDrilldownDescriptor = {
 };
 
 type AuditStateRecord = Record<string, unknown>;
+
+export const LEGAL_GATE_WEEKLY_ALERT_THRESHOLD = 2;
 
 type AccessRiskBucket = {
   tenantId: string;
@@ -211,6 +215,28 @@ function getWeekStartIso(timestampMs: number) {
   return weekStart.toISOString();
 }
 
+export function getGuardrailSuggestedAction(reason: string) {
+  const normalizedReason = reason.trim().toLowerCase();
+
+  if (normalizedReason.includes("rate_limit") || normalizedReason.includes("too_many") || normalizedReason.includes("burst")) {
+    return "Espaciar reintentos y revisar deduplicación o control de ráfagas antes de volver a auditar.";
+  }
+
+  if (normalizedReason.includes("format") || normalizedReason.includes("mime") || normalizedReason.includes("extension")) {
+    return "Guiar al usuario a formatos permitidos y validar el archivo antes de enviarlo al análisis.";
+  }
+
+  if (normalizedReason.includes("size") || normalizedReason.includes("payload") || normalizedReason.includes("large")) {
+    return "Reducir peso o páginas del archivo y mostrar una recomendación de compresión antes del reintento.";
+  }
+
+  if (normalizedReason.includes("legal") || normalizedReason.includes("consent")) {
+    return "Revisar copy, espera y estado del gate legal antes de pedir un nuevo intento al usuario.";
+  }
+
+  return "Revisar el detalle del rechazo en el feed filtrado y replicar el caso antes de ajustar reglas.";
+}
+
 export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonitoringSummary {
   const previewAnalyzedEvents = items.filter((item) => item.action === "document.preview_analyzed");
   const previewConfirmedEvents = items.filter((item) => item.action === "document.preview_confirmed");
@@ -300,7 +326,11 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     }, new Map<string, number>()).entries(),
   )
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([weekStart, abandonmentCount]) => ({ weekStart, abandonmentCount }));
+    .map(([weekStart, abandonmentCount]) => ({
+      weekStart,
+      abandonmentCount,
+      isOutOfRange: abandonmentCount >= LEGAL_GATE_WEEKLY_ALERT_THRESHOLD,
+    }));
 
   const guardrailReasonRanking = Array.from(
     guardrailEvents.reduce((buckets, item) => {
@@ -316,6 +346,7 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
           latestAtMs: null,
           caseId: item.caseId,
           tenantId: item.tenantId,
+          suggestedAction: getGuardrailSuggestedAction(reason),
         } satisfies GuardrailReasonRankingItem & { latestAtMs: number | null });
 
       current.count += 1;

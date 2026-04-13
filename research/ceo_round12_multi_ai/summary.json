@@ -1,0 +1,89 @@
+{
+  "prompt": "Eres un revisor técnico senior de un proyecto web TypeScript ya funcional. Necesito una recomendación MINIMA, incremental y validada, sin over-engineering.\n\nContexto heredado:\n- Proyecto: AuditaPatron dentro de una app web Manus con servidor corriendo y TypeScript sin errores.\n- La ronda previa ya añadió en la Consola CEO: tarjeta ejecutiva con abandono del gate legal y tiempo medio de resolución, drill-down mínimo de casos afectados, tendencia semanal de abandono legal y ranking accionable de causas de `guardrail_rejected`.\n- Próxima ronda aprobada por el usuario, en este orden:\n  1) enlazar cada caso del drill-down legal a una vista filtrada o contextual del expediente/feed;\n  2) añadir umbrales visuales para semanas con abandono legal fuera de rango;\n  3) convertir el ranking de causas de `guardrail_rejected` en acciones sugeridas por motivo.\n\nRestricciones:\n- Mantener el cambio mínimo posible.\n- Reutilizar navegación, contratos y bitácora existentes.\n- No inventar backend nuevo si basta con estado/UI derivada.\n- El servidor debe seguir corriendo.\n- TypeScript debe permanecer sin errores.\n- La recomendación debe favorecer una implementación incremental con pruebas.\n- Preferir cambios de interacción y render pequeños antes que rediseños.\n\nResponde SOLO JSON válido con esta forma exacta:\n{\n  \"model_view\": \"nombre corto del modelo\",\n  \"drilldown_navigation\": {\n    \"summary\": \"frase breve\",\n    \"recommended_pattern\": \"texto\",\n    \"minimal_state_or_params\": [\"campo1\", \"campo2\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"weekly_thresholds\": {\n    \"summary\": \"frase breve\",\n    \"recommended_threshold_logic\": \"texto\",\n    \"visual_treatment\": \"texto\",\n    \"why_minimal\": \"texto\"\n  },\n  \"guardrail_actions\": {\n    \"summary\": \"frase breve\",\n    \"mapping_strategy\": \"texto\",\n    \"example_actions\": [\"accion1\", \"accion2\", \"accion3\"],\n    \"why_minimal\": \"texto\"\n  },\n  \"tests\": {\n    \"summary\": \"frase breve\",\n    \"priority_assertions\": [\"assert1\", \"assert2\", \"assert3\"]\n  },\n  \"risks\": [\"riesgo1\", \"riesgo2\"],\n  \"consensus_candidate\": \"propuesta integral en 2 o 3 frases\"\n}",
+  "results": {
+    "chatgpt": {
+      "model_view": "AuditaPatronDashboard",
+      "drilldown_navigation": {
+        "summary": "Enlazar casos del drill-down legal a vista filtrada del expediente/feed",
+        "recommended_pattern": "Usar la navegación existente pasando el ID del caso como parámetro para filtrar la vista del expediente/feed, reutilizando rutas y componentes ya implementados sin modificar backend.",
+        "minimal_state_or_params": [
+          "caseId"
+        ],
+        "why_minimal": "Solo se añade un parámetro de navegación para filtrar la vista, sin cambios en datos ni backend, aprovechando rutas y componentes existentes."
+      },
+      "weekly_thresholds": {
+        "summary": "Añadir umbrales visuales para semanas con abandono legal fuera de rango",
+        "recommended_threshold_logic": "Definir umbrales configurables en frontend (ej. porcentaje mínimo/máximo) y comparar semanalmente el abandono legal para aplicar estilos condicionales.",
+        "visual_treatment": "Resaltar semanas fuera de rango con color de fondo o icono discreto en la gráfica o tabla ya existente.",
+        "why_minimal": "Solo se añade lógica y estilos condicionales en frontend sin tocar datos ni backend, reutilizando componentes visuales actuales."
+      },
+      "guardrail_actions": {
+        "summary": "Convertir ranking de causas de guardrail_rejected en acciones sugeridas por motivo",
+        "mapping_strategy": "Mapear cada causa a una acción sugerida predefinida en frontend mediante un objeto estático, mostrando la acción junto al ranking sin modificar datos ni backend.",
+        "example_actions": [
+          "Revisar configuración del guardrail",
+          "Contactar equipo legal",
+          "Actualizar documentación del caso"
+        ],
+        "why_minimal": "Solo se añade una capa de presentación con mapeo estático en frontend, sin cambios en datos ni backend."
+      },
+      "tests": {
+        "summary": "Validar navegación, umbrales visuales y acciones sugeridas con pruebas unitarias y de integración",
+        "priority_assertions": [
+          "Al hacer click en un caso del drill-down, la vista se filtra correctamente por caseId",
+          "Semanas con abandono legal fuera de umbral se resaltan visualmente",
+          "Cada causa en el ranking muestra la acción sugerida correcta"
+        ]
+      },
+      "risks": [
+        "Posible confusión si el enlace de casos no filtra correctamente o no es claro para el usuario",
+        "Umbrales mal configurados pueden generar falsos positivos o negativos en la visualización"
+      ],
+      "consensus_candidate": "Implementar navegación por caseId en drill-down reutilizando rutas existentes, añadir umbrales visuales configurables en frontend para abandono legal y mapear causas de guardrail_rejected a acciones sugeridas estáticas en UI. Todo con pruebas que validen interacciones y visualizaciones, manteniendo backend y estado sin cambios."
+    },
+    "grok": {
+      "model_view": "AuditView",
+      "drilldown_navigation": {
+        "summary": "Enlace de casos a vistas existentes",
+        "recommended_pattern": "Reutilizar la navegación actual para pasar el caseId como parámetro a la vista filtrada del feed, sin crear nuevas rutas.",
+        "minimal_state_or_params": [
+          "caseId",
+          "filterType"
+        ],
+        "why_minimal": "Esto evita cambios en el backend y usa parámetros existentes para mantener la funcionalidad sin alterar la estructura general."
+      },
+      "weekly_thresholds": {
+        "summary": "Visuales para semanas con abandono fuera de rango",
+        "recommended_threshold_logic": "Comparar el valor de abandono legal semanal contra un umbral fijo (e.g., >10%) usando lógica condicional en el frontend.",
+        "visual_treatment": "Aplicar una clase CSS existente (e.g., 'alert-high') para resaltar la fila o barra en la consola CEO.",
+        "why_minimal": "Se basa en renderizado existente y evita cálculos complejos, permitiendo cambios solo en el componente de visualización."
+      },
+      "guardrail_actions": {
+        "summary": "Convertir ranking de causas en acciones sugeridas",
+        "mapping_strategy": "Usar un objeto estático en el frontend para mapear cada causa de guardrail_rejected a una acción sugerida, basada en el ranking actual.",
+        "example_actions": [
+          "Revisar datos para 'causa1'",
+          "Ajustar configuración para 'causa2'",
+          "Entrenar equipo para 'causa3'"
+        ],
+        "why_minimal": "Reutiliza datos del ranking sin necesidad de nuevo backend, limitando cambios a un mapeo simple en el código existente."
+      },
+      "tests": {
+        "summary": "Pruebas incrementales para cambios",
+        "priority_assertions": [
+          "Verificar que el enlace con caseId redirige correctamente",
+          "Confirmar que semanas fuera de umbral aplican la clase CSS",
+          "Asegurar que el mapeo de acciones muestra texto adecuado"
+        ]
+      },
+      "risks": [
+        "Posible fallo en navegación si caseId es inválido",
+        "Sobrecarga UI si umbrales afectan rendimiento en vistas grandes"
+      ],
+      "consensus_candidate": "Implementar enlaces de drill-down usando parámetros existentes para vistas filtradas, añadir lógica condicional para umbrales visuales en el frontend, y mapear acciones sugeridas al ranking; esto mantiene el proyecto minimal, reutiliza componentes, y asegura TypeScript sin errores con pruebas incrementales."
+    }
+  },
+  "failures": {
+    "gemini": "HTTPError: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyC503Q-dRi4H9bMSE99uYPX3sMu7PmdxUc"
+  }
+}

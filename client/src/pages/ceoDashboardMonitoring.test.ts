@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LEGAL_GATE_WEEKLY_ALERT_THRESHOLD,
   buildAuditExecutiveAlerts,
   buildAuditMonitoringSummary,
   filterAuditFeed,
@@ -10,6 +11,7 @@ import {
   getAuditEventFamily,
   getAuditEventSeverity,
   getAuditRejectionReason,
+  getGuardrailSuggestedAction,
   type AuditFeedItem,
 } from "./ceoDashboardMonitoring";
 
@@ -86,7 +88,7 @@ describe("ceoDashboardMonitoring", () => {
           ageSeconds: 0,
         },
       ],
-      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1 }],
+      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1, isOutOfRange: false }],
       guardrailReasonRanking: [
         {
           reason: "sin_detalle",
@@ -94,6 +96,7 @@ describe("ceoDashboardMonitoring", () => {
           latestAt: "2026-04-10T12:00:00.000Z",
           caseId: null,
           tenantId: "tenant-demo",
+          suggestedAction: "Revisar el detalle del rechazo en el feed filtrado y replicar el caso antes de ajustar reglas.",
         },
       ],
       cameraPreviewToConfirmRate: 100,
@@ -142,7 +145,7 @@ describe("ceoDashboardMonitoring", () => {
           ageSeconds: 0,
         },
       ],
-      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1 }],
+      legalGateWeeklyTrend: [{ weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 1, isOutOfRange: false }],
     });
   });
 
@@ -235,6 +238,7 @@ describe("ceoDashboardMonitoring", () => {
         latestAt: "2026-04-10T10:00:00.000Z",
         caseId: "case-404",
         tenantId: "tenant-c",
+        suggestedAction: "Espaciar reintentos y revisar deduplicación o control de ráfagas antes de volver a auditar.",
       },
       {
         reason: "unsupported_format",
@@ -242,8 +246,33 @@ describe("ceoDashboardMonitoring", () => {
         latestAt: "2026-04-08T10:00:00.000Z",
         caseId: "case-402",
         tenantId: "tenant-a",
+        suggestedAction: "Guiar al usuario a formatos permitidos y validar el archivo antes de enviarlo al análisis.",
       },
     ]);
+  });
+
+  it("marca semanas fuera de rango cuando superan el umbral visible de abandono legal", () => {
+    const items = [
+      buildAuditItem({ id: 41, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-501", createdAt: "2026-04-07T10:00:00.000Z" }),
+      buildAuditItem({ id: 42, action: "consent.legal_package_lock_conflict", entityType: "consent", caseId: "case-502", createdAt: "2026-04-08T10:00:00.000Z" }),
+    ];
+
+    expect(LEGAL_GATE_WEEKLY_ALERT_THRESHOLD).toBe(2);
+    expect(buildAuditMonitoringSummary(items).legalGateWeeklyTrend).toEqual([
+      { weekStart: "2026-04-06T00:00:00.000Z", abandonmentCount: 2, isOutOfRange: true },
+    ]);
+  });
+
+  it("mapea acciones sugeridas de guardrail sin necesitar backend adicional", () => {
+    expect(getGuardrailSuggestedAction("rate_limit_exceeded")).toBe(
+      "Espaciar reintentos y revisar deduplicación o control de ráfagas antes de volver a auditar.",
+    );
+    expect(getGuardrailSuggestedAction("unsupported_format")).toBe(
+      "Guiar al usuario a formatos permitidos y validar el archivo antes de enviarlo al análisis.",
+    );
+    expect(getGuardrailSuggestedAction("custom_reason")).toBe(
+      "Revisar el detalle del rechazo en el feed filtrado y replicar el caso antes de ajustar reglas.",
+    );
   });
 
   it("genera alertas ejecutivas cuando se acumulan rechazos por tenant o por caso", () => {
