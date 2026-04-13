@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-04-13T20:28:01.171Z",
+  "round": 8,
+  "snapshot_count": 2,
+  "results": [
+    {
+      "model": "chatgpt",
+      "available": true,
+      "raw": {
+        "id": "chatcmpl-DUIAhlhMmZ6zaEBxailAyPovcXp3y",
+        "object": "chat.completion",
+        "created": 1776112063,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":8,\"change_summary\":\"Reducir el texto introductorio en la sección principal para que la acción principal (botón de subir documento) sea más visible y dominante sin añadir pasos ni cambiar arquitectura.\",\"why\":\"El texto introductorio actual es extenso y obliga a mucho scroll en móvil, lo que diluye la acción principal. Acortar el texto mejora la claridad y reduce scroll, haciendo la acción principal más evidente y generando más confianza al enfocarse en lo esencial sin añadir elementos visuales extra.\",\"exact_target\":\"Texto introductorio en la sección principal de la Home, antes del botón de subir documento.\",\"risk\":\"low\",\"copy_suggestion\":\"\\\"Sube tu documento y AuditaPatron lo recibe. Empieza con el archivo que ya tienes a la mano.\\\"\"}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1317,
+          "completion_tokens": 163,
+          "total_tokens": 1480,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_fef13761cf"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 8,
+        "change_summary": "Reducir el texto introductorio en la sección principal para que la acción principal (botón de subir documento) sea más visible y dominante sin añadir pasos ni cambiar arquitectura.",
+        "why": "El texto introductorio actual es extenso y obliga a mucho scroll en móvil, lo que diluye la acción principal. Acortar el texto mejora la claridad y reduce scroll, haciendo la acción principal más evidente y generando más confianza al enfocarse en lo esencial sin añadir elementos visuales extra.",
+        "exact_target": "Texto introductorio en la sección principal de la Home, antes del botón de subir documento.",
+        "risk": "low",
+        "copy_suggestion": "\"Sube tu documento y AuditaPatron lo recibe. Empieza con el archivo que ya tienes a la mano.\""
+      }
+    },
+    {
+      "model": "grok",
+      "available": true,
+      "raw": {
+        "id": "2730439c-1eb3-9a1c-9e55-68c9a576cbf2",
+        "object": "chat.completion",
+        "created": 1776112064,
+        "model": "grok-4-fast-reasoning",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"winner_surface\":\"Home\",\"score\":9,\"change_summary\":\"Shorten the description text in the first tour step to reduce mobile scroll while maintaining key benefits.\",\"why\":\"The current description is wordy, contributing to unnecessary scroll on mobile; shortening it prioritizes the main action (uploading) by making the content more concise and scannable, enhancing clarity and user confidence without adding UI elements.\",\"exact_target\":\"tourSteps[0].description\",\"risk\":\"low\",\"copy_suggestion\":\"No necesitas expertos en leyes o nómina. Sube tu documento y AuditaPatron lo analiza, resguarda e integra a tu expediente para darte contexto útil de inmediato.\"}",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1456,
+          "completion_tokens": 135,
+          "total_tokens": 2287,
+          "prompt_tokens_details": {
+            "text_tokens": 1456,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 148
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 696,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 6845000
+        },
+        "system_fingerprint": "fp_e4f661d783"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 9,
+        "change_summary": "Shorten the description text in the first tour step to reduce mobile scroll while maintaining key benefits.",
+        "why": "The current description is wordy, contributing to unnecessary scroll on mobile; shortening it prioritizes the main action (uploading) by making the content more concise and scannable, enhancing clarity and user confidence without adding UI elements.",
+        "exact_target": "tourSteps[0].description",
+        "risk": "low",
+        "copy_suggestion": "No necesitas expertos en leyes o nómina. Sube tu documento y AuditaPatron lo analiza, resguarda e integra a tu expediente para darte contexto útil de inmediato."
+      }
+    },
+    {
+      "model": "gemini",
+      "available": true,
+      "raw": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\"winner_surface\":\"Home\",\"score\":0,\"change_summary\":\"Añadir un botón prominente de 'Subir Documento' en la sección superior de la página de inicio, enlazando directamente al flujo de carga de documentos.\",\"why\":\"Esta modificación hace que la acción principal (subir un documento) sea inmediatamente visible y accesible al aterrizar en la página de inicio, reduciendo la necesidad de scroll y la carga cognitiva. Cumple con la prioridad de hacer la 'acción principal más dominante' y ofrece un camino más claro y confiable para los nuevos usuarios sin añadir complejidad.\",\"exact_target\":\"Sección hero o inmediatamente debajo de la propuesta de valor principal en la página de inicio.\",\"risk\":\"low\",\"copy_suggestion\":\"Sube tu documento ahora\"}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1349,
+          "candidatesTokenCount": 160,
+          "totalTokenCount": 3579,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 1349
+            }
+          ],
+          "thoughtsTokenCount": 2070
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "xFHdaZf8GJfc_uMP6NW-0AU"
+      },
+      "parsed": {
+        "winner_surface": "Home",
+        "score": 0,
+        "change_summary": "Añadir un botón prominente de 'Subir Documento' en la sección superior de la página de inicio, enlazando directamente al flujo de carga de documentos.",
+        "why": "Esta modificación hace que la acción principal (subir un documento) sea inmediatamente visible y accesible al aterrizar en la página de inicio, reduciendo la necesidad de scroll y la carga cognitiva. Cumple con la prioridad de hacer la 'acción principal más dominante' y ofrece un camino más claro y confiable para los nuevos usuarios sin añadir complejidad.",
+        "exact_target": "Sección hero o inmediatamente debajo de la propuesta de valor principal en la página de inicio.",
+        "risk": "low",
+        "copy_suggestion": "Sube tu documento ahora"
+      }
+    }
+  ],
+  "consensus": {
+    "winner_surface": "Home",
+    "change_summary": "Reducir el texto introductorio en la sección principal para que la acción principal (botón de subir documento) sea más visible y dominante sin añadir pasos ni cambiar arquitectura.",
+    "agreement_count": 1,
+    "recommended_exact_target": "Texto introductorio en la sección principal de la Home, antes del botón de subir documento.",
+    "recommended_copy_suggestion": "\"Sube tu documento y AuditaPatron lo recibe. Empieza con el archivo que ya tienes a la mano.\""
+  }
+}

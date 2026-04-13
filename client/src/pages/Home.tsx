@@ -77,7 +77,7 @@ const tourSteps: TourStep[] = [
     title: "Sube tu documento y AuditaPatron lo recibe",
     summary: "Empieza con el archivo que ya tienes a la mano.",
     description:
-      "No necesitas saber de leyes ni de nómina. Tú subes el documento y la plataforma lo analiza, lo resguarda y lo integra a tu expediente para empezar a devolverte contexto útil.",
+      "Sube tu documento y AuditaPatron lo analiza, lo resguarda y lo integra a tu expediente para darte contexto útil de inmediato.",
     bullets: [
       "Puedes empezar desde tu celular.",
       "AuditaPatron procesa el archivo sin pasos técnicos extra.",
