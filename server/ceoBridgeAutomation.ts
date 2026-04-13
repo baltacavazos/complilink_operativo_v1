@@ -30,6 +30,57 @@ const CRON_RANGES: Array<[number, number]> = [
 let schedulerStarted = false;
 let schedulerTimer: NodeJS.Timeout | null = null;
 let scheduleRunInFlight = false;
+let bridgeScheduleInfrastructureWarningEmitted = false;
+
+function collectBridgeInfrastructureErrorFragments(error: unknown, visited = new Set<object>()): string[] {
+  if (typeof error === "string") return [error];
+  if (!error || typeof error !== "object") return [];
+  if (visited.has(error)) return [];
+  visited.add(error);
+
+  const errorRecord = error as Record<string, unknown>;
+  const fragments: string[] = [];
+  for (const key of ["name", "message", "query", "sql", "code", "stack"] as const) {
+    const value = errorRecord[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      fragments.push(value);
+    }
+  }
+
+  for (const key of ["cause", "originalError", "error"] as const) {
+    fragments.push(...collectBridgeInfrastructureErrorFragments(errorRecord[key], visited));
+  }
+
+  return fragments;
+}
+
+export function isMissingCeoBridgeScheduleInfrastructureError(error: unknown) {
+  const haystack = collectBridgeInfrastructureErrorFragments(error).join(" | ").toLowerCase();
+  const referencesBridgeInfrastructure =
+    haystack.includes("ceo_bridge_schedules") || haystack.includes("ceo_bridge_presets");
+  const missingTableSignals =
+    haystack.includes("doesn't exist") ||
+    haystack.includes("does not exist") ||
+    haystack.includes("unknown table") ||
+    haystack.includes("failed query");
+
+  return referencesBridgeInfrastructure && missingTableSignals;
+}
+
+function warnMissingBridgeScheduleInfrastructure(error: unknown) {
+  if (bridgeScheduleInfrastructureWarningEmitted) return;
+  bridgeScheduleInfrastructureWarningEmitted = true;
+  const fragments = collectBridgeInfrastructureErrorFragments(error);
+  const primaryDetail = fragments.find((fragment) => fragment.toLowerCase().includes("ceo_bridge_")) ?? fragments[0] ?? "unknown_error";
+  console.warn(
+    "[CEO Bridge Schedule] Infraestructura faltante; se omite el escaneo automático hasta que las migraciones del bridge estén presentes.",
+    primaryDetail,
+  );
+}
+
+function clearBridgeScheduleInfrastructureWarning() {
+  bridgeScheduleInfrastructureWarningEmitted = false;
+}
 
 function sanitizeCronExpression(value: string) {
   return value.trim().replace(/\s+/g, " ");
@@ -388,9 +439,10 @@ export async function processDueCeoBridgeSchedules() {
     let dueSchedules: Awaited<ReturnType<typeof listDueCeoBridgeSchedules>> = [];
     try {
       dueSchedules = await listDueCeoBridgeSchedules(new Date(), 5);
+      clearBridgeScheduleInfrastructureWarning();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "";
-      if (message.includes("doesn't exist") || message.includes("Failed query")) {
+      if (isMissingCeoBridgeScheduleInfrastructureError(error)) {
+        warnMissingBridgeScheduleInfrastructure(error);
         return;
       }
       throw error;
@@ -421,10 +473,18 @@ export function startCeoBridgeScheduleWorker() {
   schedulerStarted = true;
   schedulerTimer = setInterval(() => {
     processDueCeoBridgeSchedules().catch((error) => {
+      if (isMissingCeoBridgeScheduleInfrastructureError(error)) {
+        warnMissingBridgeScheduleInfrastructure(error);
+        return;
+      }
       console.error("[CEO Bridge Schedule] Worker error", error);
     });
   }, BRIDGE_SCHEDULER_INTERVAL_MS);
   processDueCeoBridgeSchedules().catch((error) => {
+    if (isMissingCeoBridgeScheduleInfrastructureError(error)) {
+      warnMissingBridgeScheduleInfrastructure(error);
+      return;
+    }
     console.error("[CEO Bridge Schedule] Initial scan error", error);
   });
 }

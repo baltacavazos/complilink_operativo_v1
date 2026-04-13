@@ -844,3 +844,13 @@
 - [x] Fortalecer la trazabilidad de anomalías en la Consola CEO con traceId visible, tiempo de detección y último movimiento
 - [x] Fortalecer el seguimiento operativo de anomalías reutilizando el flujo open → acknowledged → resolved con semántica visible de investigación
 - [x] Validar con Vitest el endurecimiento mínimo de monitoreo ejecutivo y acciones seguras de alertas sin ampliar alcance funcional
+- [x] Delimitar y cerrar los faltantes estrictamente necesarios para la versión 1 sin abrir features nuevas
+- [x] Robustecer V1 únicamente en lo no visible: corregir fallos operativos, validaciones y resiliencia interna sin agregar funcionalidades nuevas
+- [x] Triangular con Grok, ChatGPT y Gemini el bloque final de robustez V1 antes de corregirlo
+- [x] Resolver los errores operativos reales que aún impiden considerar la V1 como cerrada y robusta
+- [x] Cerrar con pruebas y validación técnica los flujos internos críticos de V1 que sigan con huecos no visibles
+- [x] Robustecer V1 únicamente en lo no visible: corregir fallos operativos, validaciones y resiliencia interna sin agregar funcionalidades nuevas
+- [x] Triangular con Grok, ChatGPT y Gemini el bloque final de robustez V1 antes de corregirlo
+- [x] Resolver los errores operativos reales que aún impiden considerar la V1 como cerrada y robusta
+- [x] Cerrar con pruebas y validación técnica los flujos internos críticos de V1 que sigan con huecos no visibles
+- [x] Seguir cerrando robustez V1 sin detener el trabajo por `DROPBOX_API_KEY` expirado; tratar Dropbox como bloqueo externo no crítico mientras se priorizan CEO Bridge, `/auditar` y pruebas internas.
