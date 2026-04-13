@@ -439,7 +439,7 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-const PRIMARY_CTA_LABEL = "Sube tu primer documento";
+const PRIMARY_CTA_LABEL = "Auditar ahora";
 
 function goToAuditFlow(
   payloadOrEvent?:

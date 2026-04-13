@@ -32,8 +32,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Entrar con mi asistente");
     expect(source).not.toContain("Abrir mi expediente");
     expect(source).not.toContain("Tus derechos laborales,");
-    expect(source).toContain('const PRIMARY_CTA_LABEL = "Sube tu primer documento"');
-    expect(source).toContain("Sube tu primer documento");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Auditar ahora"');
+    expect(source).toContain("Auditar ahora");
     expect(source).toContain("Ya entendí mejor qué revisar primero.");
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Caso anónimo 01");
