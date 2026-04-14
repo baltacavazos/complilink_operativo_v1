@@ -1101,3 +1101,10 @@
 - [x] Deliberar con múltiples IAs la mejor forma de implementar en el landing y la plataforma de Auditapatrón la estrategia de precios, enfatizando el valor gratuito y evitando que el usuario se sienta acosado para pagar, e integrar la recomendación al estudio de monetización.
 - [x] Deliberar con múltiples IAs la mejor implementación estética y de interfaz para la estrategia de precios de Auditapatrón, decidir si conviene mostrar precios en el landing, en la plataforma o en ambos, e implementar los cambios con énfasis en valor gratuito y monetización no invasiva.
 - [x] Ejecutar una nueva auditoría multi-IA de user experience para Auditapatrón, enfocada en volver la experiencia más mágica, automática, clara y fácil de usar, y después implementar las mejoras prioritarias validadas.
+- [ ] Añadir estados de progreso y carga más expresivos en Auditapatrón para que el análisis se sienta más vivo, claro y confiable.
+- [ ] Personalizar sugerencias y atajos según tipo de documento dentro del flujo de auditoría para reducir decisiones visibles y aumentar la sensación de automatización.
+- [ ] Instrumentar medición analítica de fricción en el primer expediente para detectar aperturas, abandonos y puntos de duda del usuario.
+
+- [x] Hacer más expresivos y tranquilizadores los estados de progreso y vacíos del flujo /auditar sin añadir ruido visual
+- [x] Personalizar sugerencias y atajos de /auditar según el tipo de documento detectado para acelerar el primer expediente
+- [x] Instrumentar analítica mínima de fricción del primer expediente en /auditar para medir inicio, dudas, abandono, uso de atajos y confirmación

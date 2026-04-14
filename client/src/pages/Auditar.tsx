@@ -3,7 +3,7 @@ import { getLoginUrl } from "@/const";
 import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
-import { trackFunnelStep, trackLegalGateEvent } from "@/lib/analytics";
+import { trackEvent, trackFunnelStep, trackLegalGateEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -85,6 +85,15 @@ type UploadProgressState = {
   stageLabel: string;
   etaLabel: string;
   stepKey: UploadProgressStepKey;
+};
+
+type ContextualShortcut = {
+  id: string;
+  label: string;
+  description: string;
+  action: "upload" | "assistant";
+  targetType?: DossierTarget["type"];
+  prompt?: string;
 };
 
 const UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }> = [
@@ -197,13 +206,39 @@ function getUploadSecuritySummary(stepKey: UploadProgressStepKey) {
 function getUploadEtaLabel(stepKey: UploadProgressStepKey) {
   switch (stepKey) {
     case "analyze":
-      return "Tiempo estimado: entre 10 y 20 segundos para preparar el borrador.";
+      return "Tiempo estimado: normalmente menos de 20 segundos para dejar lista la vista previa.";
     case "save":
-      return "Tiempo estimado: menos de 10 segundos para integrar y cerrar esta etapa.";
+      return "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.";
     case "review":
-      return "Siguiente acción: revisar y confirmar solo si quieres guardarlo.";
+      return "Siguiente acción: revisar lo importante y confirmar solo si quieres guardarlo.";
     default:
-      return "Tiempo estimado al iniciar: normalmente menos de 1 minuto hasta la vista previa.";
+      return "En cuanto eliges el archivo, el borrador suele quedar listo en menos de 1 minuto.";
+  }
+}
+
+function getUploadMomentumCopy(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "analyze":
+      return "Estamos ordenando primero lo más útil para que no tengas que interpretar todo desde cero.";
+    case "save":
+      return "Ya cerramos casi todo el proceso y mantenemos visible tu control hasta el final.";
+    case "review":
+      return "La parte pesada ya pasó: ahora puedes concentrarte solo en revisar y decidir.";
+    default:
+      return "En cuanto eliges el archivo, activamos la lectura preliminar sin pedirte un paso extra.";
+  }
+}
+
+function getUploadOutcomeCopy(stepKey: UploadProgressStepKey) {
+  switch (stepKey) {
+    case "analyze":
+      return "Siguiente señal visible: abriremos la vista previa apenas terminemos de leer el documento.";
+    case "save":
+      return "Siguiente señal visible: el documento aparecerá integrado y con el siguiente paso sugerido.";
+    case "review":
+      return "Siguiente señal visible: podrás confirmar o repetir la carga sin perder claridad del expediente.";
+    default:
+      return "Siguiente señal visible: aquí mismo verás el avance y la vista previa antes de guardar nada.";
   }
 }
 
@@ -1335,6 +1370,113 @@ function getUploadInsight(documentType: string): UploadInsight {
   }
 }
 
+function getDocumentContextualShortcuts(documentType: string): ContextualShortcut[] {
+  switch (documentType) {
+    case "payroll_receipt":
+      return [
+        {
+          id: "payroll-upload-cfdi",
+          label: "Subir CFDI del mismo periodo",
+          description: "Sirve para contrastar lo timbrado contra la nómina que acabas de revisar.",
+          action: "upload",
+          targetType: "cfdi",
+        },
+        {
+          id: "payroll-ask-deductions",
+          label: "Explicar deducciones clave",
+          description: "Helios te resume descuentos, pagos y señales llamativas en palabras simples.",
+          action: "assistant",
+          prompt: "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
+        },
+      ];
+    case "cfdi":
+      return [
+        {
+          id: "cfdi-upload-payroll",
+          label: "Subir recibo de nómina relacionado",
+          description: "Ayuda a comparar lo fiscal con lo que realmente te pagaron.",
+          action: "upload",
+          targetType: "payroll_receipt",
+        },
+        {
+          id: "cfdi-ask-compare",
+          label: "Pedir comparación rápida",
+          description: "Helios puede decirte qué revisar entre el CFDI y tu nómina.",
+          action: "assistant",
+          prompt: "Dime qué conviene comparar entre este CFDI y un recibo de nómina del mismo periodo.",
+        },
+      ];
+    case "contract":
+      return [
+        {
+          id: "contract-upload-annex",
+          label: "Subir anexo o condiciones relacionadas",
+          description: "Sirve para completar lo pactado al inicio o en cambios posteriores.",
+          action: "upload",
+          targetType: "contract",
+        },
+        {
+          id: "contract-ask-clauses",
+          label: "Resumir cláusulas importantes",
+          description: "Helios te señala lo que vale la pena contrastar después con nómina o CFDI.",
+          action: "assistant",
+          prompt: "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
+        },
+      ];
+    case "imss":
+      return [
+        {
+          id: "imss-upload-payroll",
+          label: "Comparar con recibos de nómina",
+          description: "Subir nóminas ayuda a conectar movimientos IMSS con pagos reales.",
+          action: "upload",
+          targetType: "payroll_receipt",
+        },
+        {
+          id: "imss-ask-gaps",
+          label: "Explicar movimientos relevantes",
+          description: "Helios puede traducir altas, bajas o huecos a lenguaje más claro.",
+          action: "assistant",
+          prompt: "Explícame qué movimientos o huecos relevantes ves en este soporte IMSS y cómo compararlos con mis nóminas.",
+        },
+      ];
+    case "evidence":
+      return [
+        {
+          id: "evidence-upload-contract",
+          label: "Subir contrato o nómina relacionada",
+          description: "La evidencia gana fuerza cuando queda ligada al documento base correcto.",
+          action: "upload",
+          targetType: "contract",
+        },
+        {
+          id: "evidence-ask-context",
+          label: "Pedir lectura contextual",
+          description: "Helios puede decirte cómo se conecta esta evidencia con el resto del expediente.",
+          action: "assistant",
+          prompt: "Explícame cómo se conecta esta evidencia con mi expediente y qué documento base conviene subir después.",
+        },
+      ];
+    default:
+      return [
+        {
+          id: "generic-upload-companion",
+          label: "Subir documento complementario",
+          description: "Agregar nómina, CFDI o contrato suele dar más contexto a la lectura inicial.",
+          action: "upload",
+          targetType: "payroll_receipt",
+        },
+        {
+          id: "generic-ask-next-step",
+          label: "Pedir siguiente paso claro",
+          description: "Helios puede orientar qué conviene revisar o subir a continuación.",
+          action: "assistant",
+          prompt: "Dime cuál sería el siguiente paso más útil para este documento y por qué.",
+        },
+      ];
+  }
+}
+
 function getHeliosTimelineRole(documentType: string, opinion?: HeliosOpinionView | null) {
   if (opinion?.summary) {
     return opinion.summary;
@@ -2091,6 +2233,8 @@ export default function Auditar() {
   const trackedExpedienteScopeRef = useRef("");
   const trackedLegalGateScopeRef = useRef("");
   const documentSelectionStartedAtRef = useRef<number | null>(null);
+  const previewReviewStartedAtRef = useRef<number | null>(null);
+  const firstDossierShortcutCountRef = useRef(0);
   const legalGateHarnessMode = useMemo(() => {
     if (typeof window === "undefined") {
       return false;
@@ -2426,6 +2570,11 @@ export default function Auditar() {
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
     const cardPrompts = visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
+    const contextualPrompts = getDocumentContextualShortcuts(
+      pendingDraft?.classification.documentType ?? lastUpload?.classification.documentType ?? "",
+    )
+      .map((item) => item.prompt)
+      .filter((item): item is string => Boolean(item));
     const localPrompts = [
       "¿Qué riesgo principal ves en mi expediente?",
       visibleHeliosOpinion?.resultCard?.nextStepSummary || visibleHeliosOpinion?.recommendedNextStep
@@ -2437,9 +2586,11 @@ export default function Auditar() {
       "Resúmeme mi situación actual en pocas palabras.",
     ].filter((item): item is string => Boolean(item));
 
-    return Array.from(new Set([...serverPrompts, ...cardPrompts, ...localPrompts])).slice(0, 4);
+    return Array.from(new Set([...serverPrompts, ...cardPrompts, ...contextualPrompts, ...localPrompts])).slice(0, 4);
   }, [
     heliosCopilotMutation.data?.suggestedPrompts,
+    lastUpload?.classification.documentType,
+    pendingDraft?.classification.documentType,
     visibleHeliosOpinion?.legalHighlights?.primaryConcern,
     visibleHeliosOpinion?.recommendedNextStep,
     visibleHeliosOpinion?.resultCard?.nextStepSummary,
@@ -2578,6 +2729,14 @@ export default function Auditar() {
     lastUpload?.engineDispatch?.reason ?? undefined,
   );
   const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
+  const pendingDraftShortcuts = useMemo(
+    () => (pendingDraft ? getDocumentContextualShortcuts(pendingDraft.classification.documentType) : []),
+    [pendingDraft],
+  );
+  const lastUploadShortcuts = useMemo(
+    () => (lastUpload ? getDocumentContextualShortcuts(lastUpload.classification.documentType) : []),
+    [lastUpload],
+  );
   const confirmedEntries = useMemo(
     () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined),
     [lastUpload],
@@ -3285,8 +3444,73 @@ export default function Auditar() {
     }
   }, [dossierTypeProgress, selectedRecommendedTargetType]);
 
+  const isFirstDossierJourney = documents.length === 0;
+
+  const trackFirstDossierReviewOutcome = (outcome: "confirmed" | "restarted" | "cleared") => {
+    if (!isFirstDossierJourney || !pendingDraft || previewReviewStartedAtRef.current === null) {
+      return;
+    }
+
+    const secondsInReview = Math.max(0, Math.round((Date.now() - previewReviewStartedAtRef.current) / 1000));
+    if (secondsInReview >= 12) {
+      trackEvent("auditar_first_dossier_review_hesitated", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType: pendingDraft.classification.documentType,
+        secondsInReview,
+        outcome,
+      });
+    }
+
+    previewReviewStartedAtRef.current = null;
+  };
+
+  const handleContextualShortcut = (shortcut: ContextualShortcut, documentType: string, surface: "draft" | "confirmed") => {
+    trackEvent("auditar_contextual_shortcut_used", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      documentType,
+      shortcutId: shortcut.id,
+      shortcutAction: shortcut.action,
+      surface,
+      firstDossier: isFirstDossierJourney,
+    });
+
+    if (isFirstDossierJourney) {
+      firstDossierShortcutCountRef.current += 1;
+      trackEvent("auditar_first_dossier_shortcut_used", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType,
+        shortcutId: shortcut.id,
+        shortcutAction: shortcut.action,
+        surface,
+      });
+    }
+
+    if (shortcut.action === "upload" && shortcut.targetType) {
+      focusRecommendedUpload(shortcut.targetType);
+      return;
+    }
+
+    if (shortcut.action === "assistant" && shortcut.prompt) {
+      openHeliosCopilot(shortcut.prompt);
+    }
+  };
+
   const clearSelectedFile = () => {
+    if (isFirstDossierJourney && (selectedFile || pendingDraft)) {
+      trackEvent("auditar_first_dossier_cleared", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        hadSelectedFile: Boolean(selectedFile),
+        hadDraft: Boolean(pendingDraft),
+      });
+    }
+
+    trackFirstDossierReviewOutcome("cleared");
     documentSelectionStartedAtRef.current = null;
+    previewReviewStartedAtRef.current = null;
     setSelectedFile(null);
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
@@ -3302,7 +3526,16 @@ export default function Auditar() {
     const validationMessage = validateDocumentUploadFile(file);
 
     if (validationMessage) {
+      if (isFirstDossierJourney && file) {
+        trackEvent("auditar_first_dossier_validation_blocked", {
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+          reason: file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES ? "file_too_large" : "unsupported_file",
+          fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
+        });
+      }
       documentSelectionStartedAtRef.current = null;
+      previewReviewStartedAtRef.current = null;
       setSelectedFile(null);
       setAutoAnalyzeRequested(false);
       setPendingDraft(null);
@@ -3319,14 +3552,25 @@ export default function Auditar() {
     setLastUpload(null);
     if (file) {
       documentSelectionStartedAtRef.current = Date.now();
+      previewReviewStartedAtRef.current = null;
       trackFunnelStep("document_selected_for_analysis", {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         captureMode: selectedCaptureMode ?? preferredCaptureMode ?? "file",
         fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
       });
+      if (isFirstDossierJourney) {
+        trackEvent("auditar_first_dossier_started", {
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+          captureMode: selectedCaptureMode ?? preferredCaptureMode ?? "file",
+          fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
+          viewportSegment,
+        });
+      }
     } else {
       documentSelectionStartedAtRef.current = null;
+      previewReviewStartedAtRef.current = null;
     }
     if (file && selectedRecommendedTargetType) {
       setTextHint((current) => current.trim() || getRecommendedDocumentHint(selectedRecommendedTargetType));
@@ -3396,7 +3640,9 @@ export default function Auditar() {
       documentType: pendingDraft?.classification.documentType,
       hadManualOverrides: manualOverridePayload.length > 0,
     });
+    trackFirstDossierReviewOutcome("restarted");
     documentSelectionStartedAtRef.current = null;
+    previewReviewStartedAtRef.current = null;
     setPendingDraft(null);
     setManualFieldValues({});
     setSelectedFile(null);
@@ -3448,6 +3694,9 @@ export default function Auditar() {
       });
 
       setPendingDraft(result as DraftPreviewResultView);
+      if (isFirstDossierJourney) {
+        previewReviewStartedAtRef.current = Date.now();
+      }
       const selectionToDraftSeconds =
         documentSelectionStartedAtRef.current === null
           ? undefined
@@ -3529,6 +3778,7 @@ export default function Auditar() {
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
+      trackFirstDossierReviewOutcome("confirmed");
       const selectionToConfirmedSeconds =
         documentSelectionStartedAtRef.current === null
           ? undefined
@@ -3552,7 +3802,19 @@ export default function Auditar() {
         viewportSegment,
         selectionToConfirmedSeconds,
       });
+      if (isFirstDossierJourney) {
+        trackEvent("auditar_first_dossier_confirmed", {
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+          documentType: result.classification.documentType,
+          selectionToConfirmedSeconds,
+          usedContextualShortcuts: firstDossierShortcutCountRef.current,
+          hadManualOverrides: manualOverridePayload.length > 0,
+        });
+      }
       documentSelectionStartedAtRef.current = null;
+      previewReviewStartedAtRef.current = null;
+      firstDossierShortcutCountRef.current = 0;
       setPendingDraft(null);
       setManualFieldValues({});
       setSelectedFile(null);
@@ -4774,6 +5036,14 @@ export default function Auditar() {
                     <p className="mt-2 break-words text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-white/60 bg-white/65 px-3 py-2 text-xs leading-5 text-slate-700">
+                        <span className="font-semibold text-slate-900">Qué está pasando ahora:</span> {getUploadMomentumCopy(uploadProgressState.stepKey)}
+                      </div>
+                      <div className="rounded-2xl border border-white/60 bg-white/65 px-3 py-2 text-xs leading-5 text-slate-700">
+                        <span className="font-semibold text-slate-900">Qué verás enseguida:</span> {getUploadOutcomeCopy(uploadProgressState.stepKey)}
+                      </div>
+                    </div>
                     {selectedFileValidationMessage ? (
                       <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
                     ) : null}
@@ -4908,6 +5178,33 @@ export default function Auditar() {
                       </div>
                     </div>
                   </div>
+
+                  {pendingDraftShortcuts.length ? (
+                    <div className="mt-4 rounded-[1.2rem] border border-indigo-100 bg-indigo-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="mt-1 h-5 w-5 shrink-0 text-indigo-700" strokeWidth={1.8} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-indigo-950">Atajos útiles para este documento</p>
+                          <p className="mt-1 text-sm leading-6 text-indigo-900">
+                            Según el tipo detectado, puedes avanzar más rápido con uno de estos pasos sin salirte del flujo.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {pendingDraftShortcuts.map((shortcut) => (
+                          <button
+                            key={shortcut.id}
+                            type="button"
+                            onClick={() => handleContextualShortcut(shortcut, pendingDraft.classification.documentType, "draft")}
+                            className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+                          >
+                            <span className="text-sm font-semibold text-slate-950">{shortcut.label}</span>
+                            <span className="mt-1 block text-xs leading-5 text-slate-600">{shortcut.description}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
@@ -5391,11 +5688,26 @@ export default function Auditar() {
                   <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
                     <div className="flex items-start gap-3">
                       <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
                         <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
                       </div>
                     </div>
+                    {lastUploadShortcuts.length ? (
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {lastUploadShortcuts.map((shortcut) => (
+                          <button
+                            key={shortcut.id}
+                            type="button"
+                            onClick={() => handleContextualShortcut(shortcut, lastUpload.classification.documentType, "confirmed")}
+                            className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-teal-200 hover:bg-teal-50"
+                          >
+                            <span className="text-sm font-semibold text-slate-950">{shortcut.label}</span>
+                            <span className="mt-1 block text-xs leading-5 text-slate-600">{shortcut.description}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
 
                   {lastUpload?.scanAssistance ? (

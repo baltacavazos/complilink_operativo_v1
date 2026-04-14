@@ -333,7 +333,7 @@ describe("buildUploadProgressState", () => {
       eyebrow: "Guardado en curso",
       progress: 92,
       stageLabel: "Etapa 3 de 4 · Guardando con control",
-      etaLabel: "Tiempo estimado: menos de 10 segundos para integrar y cerrar esta etapa.",
+      etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
     });
   });
@@ -363,7 +363,7 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Archivo listo",
       progress: 38,
-      etaLabel: "Tiempo estimado al iniciar: normalmente menos de 1 minuto hasta la vista previa.",
+      etaLabel: "En cuanto eliges el archivo, el borrador suele quedar listo en menos de 1 minuto.",
       stepKey: "prepare",
     });
   });
@@ -394,7 +394,7 @@ describe("buildUploadProgressState", () => {
       eyebrow: "Vista previa lista",
       progress: 100,
       stageLabel: "Etapa 4 de 4 · Vista previa lista",
-      etaLabel: "Siguiente acción: revisar y confirmar solo si quieres guardarlo.",
+      etaLabel: "Siguiente acción: revisar lo importante y confirmar solo si quieres guardarlo.",
       stepKey: "review",
     });
   });
