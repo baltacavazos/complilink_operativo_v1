@@ -39,7 +39,12 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
+    const normalizedState = state.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedState = normalizedState.padEnd(
+      normalizedState.length + ((4 - (normalizedState.length % 4)) % 4),
+      "="
+    );
+    const redirectUri = atob(paddedState);
     return redirectUri;
   }
 

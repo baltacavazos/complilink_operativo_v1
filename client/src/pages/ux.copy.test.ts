@@ -97,12 +97,12 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Acceso simple");
-    expect(source).toContain("Puedes entrar con Manus o crear tu cuenta con un código por correo, sin contraseña y sin perder tu ruta a <strong>{returnTo}</strong>.");
-    expect(source).toContain('className="mt-3 space-y-2"');
-    expect(source).toContain('className="px-4 py-3 sm:px-7 sm:py-5"');
+    expect(source).toContain("En este dominio dejamos activo el acceso por correo para que puedas entrar o crear tu cuenta sin contraseña y sin salirte del flujo.");
+    expect(source).toContain('className="flex flex-col gap-3 sm:gap-4"');
+    expect(source).toContain('className="w-full rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold text-slate-600 sm:max-w-[18rem] sm:self-end"');
     expect(source).toContain("Ruta corta: entras o creas tu cuenta, confirmas y vuelves al punto exacto donde te quedaste.");
     expect(source).toContain("También sirve para entrar o crear tu cuenta al instante, sin contraseña.");
-    expect(source).toContain('className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"');
+    expect(source).toContain("Continuar con código por correo");
     expect(source).not.toContain("<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>");
   });
 

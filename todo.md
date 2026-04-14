@@ -1121,3 +1121,7 @@
 - [x] Dejar configurado el rol CEO para el usuario propietario y el rol user para el resto de usuarios
 - [x] Contrastar con OpenAI, Grok y Gemini la mejor solución de acceso, registro y roles antes de implementarla
 - [x] Validar con pruebas técnicas y flujo real móvil el acceso, alta y roles antes del siguiente checkpoint
+- [x] Corregir el fallo de inicio de sesión en móvil por redirect URI no configurada o mal construida en el acceso con Manus
+- [x] Arreglar el descuadre visual y cualquier desborde lateral de la pantalla /acceso en móvil
+- [x] Contrastar con OpenAI, Grok y Gemini la corrección mínima y robusta para login móvil y layout de /acceso antes de implementar
+- [x] Validar con pruebas técnicas y revisión móvil real que el login y la maquetación de /acceso queden estables antes del siguiente checkpoint

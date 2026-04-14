@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import { Button } from "@/components/ui/button";
-import { getGoogleLoginUrl, getManusLoginUrl } from "@/const";
+import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { AlertCircle, ArrowLeft, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
@@ -25,11 +25,11 @@ function getAccessErrorFromSearch() {
   const error = new URLSearchParams(window.location.search).get("error");
   switch (error) {
     case "google_not_available":
-      return "Google no está disponible todavía en este entorno. Mientras termina la configuración, puedes entrar con Manus o con código por correo.";
+      return "Google no está disponible todavía en este entorno. Mientras termina la configuración, puedes iniciar sesión con Manus o con código por correo.";
     case "google_callback_failed":
-      return "No pudimos completar el acceso con Google. Intenta de nuevo o usa Manus o el código por correo para continuar.";
+      return "No pudimos completar el inicio de sesión con Google. Intenta de nuevo o usa Manus o el código por correo para continuar.";
     case "manus_callback_failed":
-      return "No pudimos completar el inicio de sesión con Manus. Intenta otra vez o usa el código por correo para entrar o crear tu cuenta desde aquí.";
+      return "No pudimos completar el inicio de sesión con Manus. Para no frenarte, usa el código por correo y entras o creas tu cuenta desde aquí.";
     default:
       return null;
   }
@@ -60,6 +60,8 @@ function parseStructuredAuthMessage(rawMessage: string) {
 
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
+  const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
+  const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
   const { loading, user } = useAuth();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -158,8 +160,8 @@ export default function Access() {
       : "Google disponible en cuanto se complete la configuración";
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.1),_transparent_28%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
-      <div className="container py-6 lg:py-10">
+    <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.1),_transparent_28%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+      <div className="container py-4 sm:py-6 lg:py-10">
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <a
             href="/"
@@ -168,9 +170,11 @@ export default function Access() {
             <ArrowLeft className="h-4 w-4" />
             Volver al inicio
           </a>
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm">
-            <ShieldCheck className="h-4 w-4" />
-            Regresarás a <strong>{returnTo}</strong>
+          <div className="inline-flex max-w-full items-start gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <span className="min-w-0 break-all">
+              Regresarás a <strong className="break-all">{returnTo}</strong>
+            </span>
           </div>
         </div>
 
@@ -193,7 +197,17 @@ export default function Access() {
                   Inicia sesión y vuelve a trabajar sin rodeos.
                 </h1>
                 <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  Puedes entrar con Manus o crear tu cuenta con un código por correo, sin contraseña y sin perder tu ruta a <strong>{returnTo}</strong>.
+                  {manusLoginAvailable
+                    ? (
+                      <>
+                        Puedes iniciar sesión con Manus o crear tu cuenta con un código por correo, sin contraseña y sin perder tu ruta a <strong>{returnTo}</strong>.
+                      </>
+                    )
+                    : (
+                      <>
+                        En este dominio activamos el acceso por correo como vía principal para que puedas entrar o crear tu cuenta sin rebotes y volver a <strong>{returnTo}</strong>.
+                      </>
+                    )}
                 </p>
               </div>
             </div>
@@ -206,35 +220,62 @@ export default function Access() {
           </section>
 
           <section className="mx-auto w-full max-w-3xl space-y-5 xl:max-w-none">
-            <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+            <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)] sm:p-6">
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="min-w-0">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso simple</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Inicia sesión o crea tu cuenta en el menor número de pasos</h2>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Inicia sesión o crea tu cuenta sin pasos de sobra</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    Manus sigue siendo la vía más corta. Si es tu primera vez o vienes desde el teléfono, debajo también puedes entrar o crear tu cuenta con código por correo.
+                    {manusLoginAvailable
+                      ? "Puedes usar Manus o, si prefieres una vía más directa desde el teléfono, entrar o crear tu cuenta con código por correo."
+                      : "En este dominio dejamos activo el acceso por correo para que puedas entrar o crear tu cuenta sin contraseña y sin salirte del flujo."}
                   </p>
                 </div>
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
-                  Ruta objetivo: {returnTo}
+                <div className="w-full rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold text-slate-600 sm:max-w-[18rem] sm:self-end">
+                  <span className="block text-[10px] uppercase tracking-[0.16em] text-slate-400">Ruta objetivo</span>
+                  <span className="mt-1 block break-all text-sm font-semibold text-slate-800">{returnTo}</span>
                 </div>
               </div>
 
               <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Opción principal</p>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>. Si esta opción falla en tu teléfono, usa el acceso por correo que crea tu cuenta al validar el código.
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  {manusLoginAvailable ? "Opción principal" : "Acceso activo"}
                 </p>
-                <Button
-                  size="lg"
-                  className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
-                  onClick={() => {
-                    window.location.href = getManusLoginUrl(returnTo);
-                  }}
-                >
-                  Continuar con Manus
-                </Button>
-                <p className="mt-3 text-[11px] leading-5 text-slate-400">Al terminar, te devolvemos automáticamente al punto exacto donde ibas.</p>
+                <p className="mt-3 text-sm leading-6 text-slate-300">
+                  {manusLoginAvailable
+                    ? (
+                      <>
+                        Es la forma más corta de entrar y volver enseguida a <strong className="break-all">{returnTo}</strong>. Si esta opción falla en tu teléfono, usa el acceso por correo que crea tu cuenta al validar el código.
+                      </>
+                    )
+                    : "Para evitar rebotes de autenticación en este dominio, aquí te dejamos la vía que sí funciona de forma estable: recibes un código, lo validas y entras al instante."}
+                </p>
+                {manusLoginUrl ? (
+                  <Button
+                    size="lg"
+                    className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
+                    onClick={() => {
+                      window.location.href = manusLoginUrl;
+                    }}
+                  >
+                    Continuar con Manus
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
+                    onClick={() => {
+                      document.getElementById("acceso-correo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  >
+                    Continuar con código por correo
+                  </Button>
+                )}
+                <p className="mt-3 text-[11px] leading-5 text-slate-400">
+                  {manusLoginAvailable
+                    ? "Al terminar, te devolvemos automáticamente al punto exacto donde ibas."
+                    : "Tu cuenta se crea automáticamente si todavía no existe y después vuelves a la misma ruta."}
+                </p>
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -257,12 +298,12 @@ export default function Access() {
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
                   <p className="font-semibold text-slate-900">Código por correo</p>
                   <p className="mt-1.5">También sirve para entrar o crear tu cuenta al instante, sin contraseña.</p>
-                  <p className="mt-2 text-[11px] font-medium text-slate-400">Disponible debajo</p>
+                  <p className="mt-2 text-[11px] font-medium text-slate-400">Disponible justo debajo</p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
+            <div id="acceso-correo" className="rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)] sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700">
                   <Mail className="h-5 w-5" />
@@ -333,7 +374,7 @@ export default function Access() {
                     disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                   >
                     {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Recibir código para entrar o crear cuenta"}
+                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Recibir código para iniciar sesión o crear cuenta"}
                   </Button>
                 </form>
               ) : (
