@@ -24,14 +24,14 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
   return {
     landing: {
       showPrice: false,
-      eyebrow: "Primero úsalo gratis",
-      title: "No necesitas pagar para entender si AuditaPatrón te puede ayudar.",
+      eyebrow: "Prueba gratis y con claridad desde el inicio",
+      title: "Sube tu documento laboral y recibe una auditoría clara y confiable.",
       description:
-        "El landing debe vender confianza y utilidad inmediata. Las opciones de pago aparecen después, dentro de tu expediente, solo cuando ya viste valor real y te sirven para avanzar con más respaldo.",
+        "Empieza con tu primer documento y entiende mejor tu situación laboral en minutos. Si más adelante necesitas más respaldo, las opciones adicionales aparecen dentro de tu expediente, cuando realmente te sirvan.",
       principles: [
         "Empieza gratis con tu primer documento.",
-        "Recibe claridad antes de tomar cualquier decisión de pago.",
-        "Las mejoras se presentan solo dentro de tu expediente y sin interrumpirte.",
+        "Recibe claridad antes de tomar cualquier decisión.",
+        "Avanza con más respaldo solo cuando lo necesites.",
       ],
     },
     platform: {

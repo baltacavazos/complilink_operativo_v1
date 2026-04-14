@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { getAuditapatronPricingExperience } from "./pricingExperience";
 
 describe("getAuditapatronPricingExperience", () => {
-  it("mantiene el landing sin precio visible y con narrativa gratuita dominante", () => {
+  it("mantiene el landing sin precio visible y evita copy interno visible al usuario final", () => {
     const experience = getAuditapatronPricingExperience(0);
 
     expect(experience.landing.showPrice).toBe(false);
     expect(experience.landing.eyebrow).toContain("gratis");
+    expect(experience.landing.title).toContain("auditoría clara y confiable");
+    expect(experience.landing.description).not.toContain("El landing debe");
+    expect(experience.landing.description).not.toContain("vender confianza");
     expect(experience.landing.principles).toContain("Empieza gratis con tu primer documento.");
   });
 

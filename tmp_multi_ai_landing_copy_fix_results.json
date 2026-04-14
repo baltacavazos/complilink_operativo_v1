@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-04-14T20:55:55.718Z",
+  "promptSummary": "Consenso multi-IA para corregir copy interno visible en el landing de AuditaPatron",
+  "openai": {
+    "diagnosis": [
+      "El texto actual expone lenguaje interno y racionales de producto que no son adecuados para un landing público.",
+      "El copy no está orientado a convencer ni generar confianza inmediata en el usuario final.",
+      "Se debe mantener la estructura y mensaje general, pero con un lenguaje más comercial, claro y cercano al usuario mexicano."
+    ],
+    "recommended_eyebrow": "Prueba gratis y sin compromiso",
+    "recommended_title": "Sube tu documento laboral y recibe una auditoría clara y confiable",
+    "recommended_description": "Empieza hoy mismo y conoce cómo AuditaPatrón puede ayudarte a entender tu situación laboral. Solo pagas cuando decidas avanzar con más respaldo.",
+    "recommended_principles": [
+      "Comienza gratis con tu primer documento",
+      "Obtén claridad antes de tomar cualquier decisión",
+      "Mejoras y opciones de pago disponibles cuando las necesites"
+    ],
+    "guardrails": [
+      "No usar lenguaje interno o instrucciones para el equipo",
+      "Mantener un tono comercial, confiable y simple",
+      "Evitar términos técnicos o meta que confundan al usuario final",
+      "Adaptar el lenguaje para que suene natural y cercano al público mexicano",
+      "No reestructurar la página, solo reemplazar el copy visible"
+    ],
+    "minimal_edit_strategy": [
+      "Reemplazar el eyebrow, title, description y principles con las versiones recomendadas",
+      "Mantener la estructura y formato original del archivo client/src/lib/pricingExperience.ts",
+      "Verificar que el nuevo copy se muestre correctamente en móvil y desktop sin afectar el diseño"
+    ]
+  },
+  "gemini": {
+    "diagnosis": [
+      "El copy actual en la descripción es texto interno de trabajo, no apto para el usuario final, y utiliza lenguaje meta ('El landing debe vender...').",
+      "El título actual es demasiado transaccional y se enfoca en la ausencia de pago, en lugar de comunicar el valor y la confianza del servicio de AuditaPatrón.",
+      "El lenguaje general no es suficientemente comercial, inspirador de confianza ni orientado a la conversión, lo que puede generar fricción o confusión en el usuario.",
+      "Los principios, aunque bien intencionados, pueden ser más concisos y orientados al beneficio directo del usuario, evitando formulaciones que suenen a reglas internas."
+    ],
+    "recommended_eyebrow": "Empieza gratis y obtén claridad.",
+    "recommended_title": "Descubre la verdad de tu documento laboral.",
+    "recommended_description": "Sube tu documento laboral y recibe una auditoría clara y confiable. Te brindamos la información que necesitas para entender tu situación y tomar decisiones con total respaldo. Las opciones de pago y servicios adicionales se presentan solo dentro de tu expediente, una vez que hayas comprobado nuestro valor y te sirvan para fortalecer tu caso.",
+    "recommended_principles": [
+      "Audita tu primer documento sin costo.",
+      "Obtén claridad total antes de cualquier decisión de pago.",
+      "Las opciones avanzadas se presentan solo dentro de tu expediente, sin interrupciones."
+    ],
+    "guardrails": [
+      "Evitar lenguaje interno, meta o instrucciones de producto en todo el copy público.",
+      "Priorizar el beneficio, la confianza y la utilidad inmediata para el usuario.",
+      "Mantener un tono comercial, simple, directo y empático.",
+      "Asegurar que el lenguaje sea natural y relevante para el usuario en México.",
+      "No introducir información sobre pagos hasta que el valor del servicio sea evidente y el usuario esté en su expediente."
+    ],
+    "minimal_edit_strategy": [
+      "Reemplazo directo del copy existente en 'eyebrow', 'title', 'description' y 'principles' con las recomendaciones propuestas.",
+      "No se realizarán cambios en la estructura de la página ni en la ubicación de los elementos.",
+      "El enfoque es mejorar la claridad, el tono y la orientación al usuario del texto actual, manteniendo la mínima intervención posible."
+    ]
+  },
+  "grok": {
+    "diagnosis": [
+      "El copy actual en client/src/lib/pricingExperience.ts incluye texto interno como 'El landing debe vender confianza y utilidad inmediata', que revela instrucciones de desarrollo y no debe ser visible para el usuario final, afectando la experiencia y la credibilidad."
+    ],
+    "recommended_eyebrow": "Prueba Gratis Ahora",
+    "recommended_title": "Descubre si AuditaPatrón te ayuda sin costo inicial",
+    "recommended_description": "Sube tu documento laboral y obtén una auditoría clara y gratuita para ver cómo simplificamos tu vida laboral. Las opciones de pago aparecen solo cuando necesites más herramientas.",
+    "recommended_principles": [
+      "Empieza gratis con tu primer documento.",
+      "Obtén claridad antes de decidir por cualquier pago.",
+      "Accede a mejoras dentro de tu expediente, sin interrupciones."
+    ],
+    "guardrails": [
+      "Evitar todo lenguaje interno o meta para mantener un tono natural y comercial.",
+      "Asegurar que el copy sea confiable, simple y orientado a conversión para usuarios en México.",
+      "Mantener el enfoque en beneficios reales sin alterar la estructura general de la página."
+    ],
+    "minimal_edit_strategy": [
+      "Reemplazar únicamente el texto en eyebrow, title, description y principles para eliminar referencias internas, preservando el resto del contenido y layout.",
+      "Verificar que los cambios sean directos y mantengan la esencia original para una corrección rápida y efectiva."
+    ]
+  }
+}
