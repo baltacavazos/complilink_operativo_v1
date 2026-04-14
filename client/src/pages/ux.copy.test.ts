@@ -97,13 +97,14 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Acceso simple");
-    expect(source).toContain("En este dominio dejamos activo el acceso por correo para que puedas entrar o crear tu cuenta sin contraseña y sin salirte del flujo.");
-    expect(source).toContain('className="flex flex-col gap-3 sm:gap-4"');
-    expect(source).toContain('className="w-full rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold text-slate-600 sm:max-w-[18rem] sm:self-end"');
-    expect(source).toContain("Ruta corta: entras o creas tu cuenta, confirmas y vuelves al punto exacto donde te quedaste.");
-    expect(source).toContain("También sirve para entrar o crear tu cuenta al instante, sin contraseña.");
-    expect(source).toContain("Continuar con código por correo");
-    expect(source).not.toContain("<h3 className=\"mt-2 text-lg font-semibold\">Continúa con Manus</h3>");
+    expect(source).toContain("Inicia sesión sin vueltas.");
+    expect(source).toContain("Si eres el CEO");
+    expect(source).toContain("mismo correo principal del propietario");
+    expect(source).toContain("Código por correo");
+    expect(source).toContain("Tu acceso principal");
+    expect(source).toContain("Recibir código");
+    expect(source).toContain("Google sólo aparece cuando la configuración esté terminada.");
+    expect(source).not.toContain("Continúa con Manus");
   });
 
   it("compacta el primer bloque operativo de la consola CEO para lectura móvil más rápida", () => {

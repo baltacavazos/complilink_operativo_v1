@@ -1,5 +1,5 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -25,11 +25,11 @@ function getAccessErrorFromSearch() {
   const error = new URLSearchParams(window.location.search).get("error");
   switch (error) {
     case "google_not_available":
-      return "Google no está disponible todavía en este entorno. Mientras termina la configuración, puedes iniciar sesión con Manus o con código por correo.";
+      return "Google todavía no está disponible en este entorno. Mientras tanto, entra con tu código por correo.";
     case "google_callback_failed":
-      return "No pudimos completar el inicio de sesión con Google. Intenta de nuevo o usa Manus o el código por correo para continuar.";
+      return "No pudimos completar el acceso con Google. Para no frenarte, usa tu código por correo.";
     case "manus_callback_failed":
-      return "No pudimos completar el inicio de sesión con Manus. Para no frenarte, usa el código por correo y entras o creas tu cuenta desde aquí.";
+      return "No pudimos completar el acceso con Manus. Para no frenarte, usa tu código por correo.";
     default:
       return null;
   }
@@ -83,7 +83,7 @@ export default function Access() {
       setCode("");
       setErrorMessage(null);
       setEmailCooldownUntil(Date.now() + data.cooldownSeconds * 1000);
-      setStatusMessage(`Enviamos un código de 6 dígitos a ${data.maskedEmail}. Puedes solicitar otro dentro de ${data.cooldownSeconds} segundos si lo necesitas.`);
+      setStatusMessage(`Enviamos un código de 6 dígitos a ${data.maskedEmail}. Puedes pedir otro dentro de ${data.cooldownSeconds} segundos.`);
     },
     onError(error) {
       const parsed = parseStructuredAuthMessage(error.message);
@@ -94,6 +94,7 @@ export default function Access() {
       }
     },
   });
+
   const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
     onSuccess() {
       if (typeof window !== "undefined") {
@@ -154,187 +155,113 @@ export default function Access() {
   const emailCooldownSecondsRemaining = emailCooldownUntil ? Math.max(0, Math.ceil((emailCooldownUntil - nowTs) / 1000)) : 0;
   const emailCooldownActive = emailCooldownSecondsRemaining > 0;
   const googleLabel = googleStatusQuery.isLoading
-    ? "Verificando disponibilidad de Google"
+    ? "Verificando Google"
     : googleEnabled
       ? "Continuar con Google"
-      : "Google disponible en cuanto se complete la configuración";
+      : "Google disponible en cuanto termine la configuración";
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.1),_transparent_28%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
-      <div className="container py-4 sm:py-6 lg:py-10">
-        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.1),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+      <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
+        <div className="mx-auto flex w-full max-w-xl flex-col gap-3">
           <a
             href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
+            className="inline-flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al inicio
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span className="truncate">Volver al inicio</span>
           </a>
-          <div className="inline-flex max-w-full items-start gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm">
+
+          <div className="inline-flex w-full min-w-0 items-start gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50/90 px-4 py-3 text-sm text-teal-900 shadow-sm">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-            <span className="min-w-0 break-all">
+            <span className="min-w-0 break-words">
               Regresarás a <strong className="break-all">{returnTo}</strong>
             </span>
           </div>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
-          <section className="hidden overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white/95 shadow-[0_24px_80px_-42px_rgba(15,23,42,0.28)] xl:block">
-            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,118,110,0.9))] px-6 py-6 text-white sm:px-7">
-              <div className="flex items-start gap-4">
-                <AuditaPatronLogoIcon imageClassName="h-12 w-12 rounded-2xl border border-white/20 bg-white object-contain p-1.5 shadow-[0_20px_50px_-28px_rgba(2,6,23,0.6)]" />
-                <div className="space-y-2">
-                  <AuditaPatronLogoWordmark imageClassName="max-w-[210px]" subtitleClassName="text-xs uppercase tracking-[0.16em] text-white/70" />
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
-                    Iniciar sesión o crear cuenta
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar o crear cuenta</p>
-                <h1 className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
-                  Inicia sesión y vuelve a trabajar sin rodeos.
-                </h1>
-                <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  {manusLoginAvailable
-                    ? (
-                      <>
-                        Puedes iniciar sesión con Manus o crear tu cuenta con un código por correo, sin contraseña y sin perder tu ruta a <strong>{returnTo}</strong>.
-                      </>
-                    )
-                    : (
-                      <>
-                        En este dominio activamos el acceso por correo como vía principal para que puedas entrar o crear tu cuenta sin rebotes y volver a <strong>{returnTo}</strong>.
-                      </>
-                    )}
-                </p>
+        <section className="mx-auto mt-4 flex w-full max-w-xl flex-1 flex-col justify-center">
+          <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.22)] sm:p-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
+              <div className="min-w-0">
+                <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Acceso simple</p>
               </div>
             </div>
 
-            <div className="px-4 py-3 sm:px-7 sm:py-5">
-              <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 px-4 py-3 text-sm leading-6 text-teal-950">
-                Ruta corta: entras o creas tu cuenta, confirmas y vuelves al punto exacto donde te quedaste.
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-auto w-full max-w-3xl space-y-5 xl:max-w-none">
-            <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)] sm:p-6">
-              <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso simple</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Inicia sesión o crea tu cuenta sin pasos de sobra</h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    {manusLoginAvailable
-                      ? "Puedes usar Manus o, si prefieres una vía más directa desde el teléfono, entrar o crear tu cuenta con código por correo."
-                      : "En este dominio dejamos activo el acceso por correo para que puedas entrar o crear tu cuenta sin contraseña y sin salirte del flujo."}
-                  </p>
-                </div>
-                <div className="w-full rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold text-slate-600 sm:max-w-[18rem] sm:self-end">
-                  <span className="block text-[10px] uppercase tracking-[0.16em] text-slate-400">Ruta objetivo</span>
-                  <span className="mt-1 block break-all text-sm font-semibold text-slate-800">{returnTo}</span>
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                  {manusLoginAvailable ? "Opción principal" : "Acceso activo"}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  {manusLoginAvailable
-                    ? (
-                      <>
-                        Es la forma más corta de entrar y volver enseguida a <strong className="break-all">{returnTo}</strong>. Si esta opción falla en tu teléfono, usa el acceso por correo que crea tu cuenta al validar el código.
-                      </>
-                    )
-                    : "Para evitar rebotes de autenticación en este dominio, aquí te dejamos la vía que sí funciona de forma estable: recibes un código, lo validas y entras al instante."}
-                </p>
-                {manusLoginUrl ? (
-                  <Button
-                    size="lg"
-                    className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
-                    onClick={() => {
-                      window.location.href = manusLoginUrl;
-                    }}
-                  >
-                    Continuar con Manus
-                  </Button>
-                ) : (
-                  <Button
-                    size="lg"
-                    className="mt-5 h-14 w-full justify-center rounded-2xl bg-white text-base font-semibold text-slate-950 shadow-lg shadow-black/10 hover:bg-slate-100"
-                    onClick={() => {
-                      document.getElementById("acceso-correo")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                  >
-                    Continuar con código por correo
-                  </Button>
-                )}
-                <p className="mt-3 text-[11px] leading-5 text-slate-400">
-                  {manusLoginAvailable
-                    ? "Al terminar, te devolvemos automáticamente al punto exacto donde ibas."
-                    : "Tu cuenta se crea automáticamente si todavía no existe y después vuelves a la misma ruta."}
-                </p>
-              </div>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
-                  <p className="font-semibold text-slate-900">Alternativa: Google</p>
-                  <p className="mt-1.5">Solo si prefieres ese proveedor.</p>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="mt-3 h-11 w-full justify-center rounded-2xl border-slate-200 bg-white"
-                    disabled={!googleEnabled || googleStatusQuery.isLoading}
-                    onClick={() => {
-                      window.location.href = getGoogleLoginUrl(returnTo);
-                    }}
-                  >
-                    {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {googleLabel}
-                  </Button>
-                </div>
-                <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
-                  <p className="font-semibold text-slate-900">Código por correo</p>
-                  <p className="mt-1.5">También sirve para entrar o crear tu cuenta al instante, sin contraseña.</p>
-                  <p className="mt-2 text-[11px] font-medium text-slate-400">Disponible justo debajo</p>
-                </div>
-              </div>
+            <div className="mt-5 min-w-0 space-y-3">
+              <h1 className="max-w-[18ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
+                Inicia sesión sin vueltas.
+              </h1>
+              <p className="text-sm leading-7 text-slate-600">
+                Te enviamos un código a tu correo y entras al instante. Si todavía no tienes cuenta, se crea automáticamente al validar ese código.
+              </p>
             </div>
 
-            <div id="acceso-correo" className="rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)] sm:p-6">
+            <div className="mt-5 rounded-[1.4rem] border border-teal-100 bg-teal-50 px-4 py-4 text-sm leading-6 text-teal-950">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Si eres el CEO</p>
+              <p className="mt-2">
+                Inicia sesión con el <strong>mismo correo principal del propietario</strong>. Ese correo conserva tu acceso de administrador automáticamente.
+              </p>
+            </div>
+
+            {!manusLoginAvailable ? (
+              <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Acceso activo en este dominio</p>
+                <p className="mt-2">
+                  Aquí la vía estable es <strong>código por correo</strong>. Así evitamos el rebote de autenticación que daba el acceso con Manus en el dominio público.
+                </p>
+              </div>
+            ) : manusLoginUrl ? (
+              <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">También disponible en preview</p>
+                <p className="mt-2">Si estás entrando desde la previsualización hospedada, Manus también puede servirte como atajo.</p>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="mt-4 h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-950"
+                  onClick={() => {
+                    window.location.href = manusLoginUrl;
+                  }}
+                >
+                  Continuar con Manus
+                </Button>
+              </div>
+            ) : null}
+
+            <div id="acceso-correo" className="mt-5 min-w-0 rounded-[1.5rem] border border-slate-950 bg-slate-950 p-4 text-white sm:p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white">
                   <Mail className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso por correo</p>
-                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">Entrar o crear cuenta con código</h2>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Código por correo</p>
+                  <h2 className="text-lg font-semibold tracking-tight text-white">Tu acceso principal</h2>
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-7 text-slate-600">
-                Recibes un código temporal, validas el acceso y vuelves a tu ruta. Si es tu primera vez, tu usuario se crea automáticamente al confirmar el código; no necesitas contraseña.
+              <p className="mt-4 text-sm leading-6 text-slate-300">
+                Usa tu correo de trabajo. Si eres el CEO, usa aquí el correo principal con el que administras la cuenta.
               </p>
 
               {statusMessage ? (
-                <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                <div className="mt-4 rounded-2xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
                   {statusMessage}
                 </div>
               ) : null}
 
               {errorMessage ? (
-                <div className="mt-5 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                <div className="mt-4 flex items-start gap-3 rounded-2xl border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{errorMessage}</span>
+                  <span className="min-w-0 break-words">{errorMessage}</span>
                 </div>
               ) : null}
 
               {emailStep === "request" ? (
-                <form className="mt-6 space-y-4" onSubmit={handleRequestCode}>
+                <form className="mt-5 space-y-4" onSubmit={handleRequestCode}>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-900" htmlFor="access-email">
+                    <label className="text-sm font-medium text-white" htmlFor="access-email">
                       Correo corporativo
                     </label>
                     <input
@@ -348,12 +275,15 @@ export default function Access() {
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       placeholder="nombre@empresa.com"
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                      className="h-12 w-full min-w-0 rounded-2xl border border-white/15 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
+                    <p className="text-xs leading-5 text-slate-400">
+                      Si eres el CEO, escribe aquí tu correo principal de propietario.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-900" htmlFor="access-name">
+                    <label className="text-sm font-medium text-white" htmlFor="access-name">
                       Nombre visible (opcional)
                     </label>
                     <input
@@ -363,24 +293,24 @@ export default function Access() {
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       placeholder="Cómo quieres aparecer en la consola"
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                      className="h-12 w-full min-w-0 rounded-2xl border border-white/15 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
 
                   <Button
                     type="submit"
                     size="lg"
-                    className="h-12 w-full rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
+                    className="h-12 w-full rounded-2xl bg-white text-base font-semibold text-slate-950 hover:bg-slate-100"
                     disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                   >
                     {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Recibir código para iniciar sesión o crear cuenta"}
+                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Recibir código"}
                   </Button>
                 </form>
               ) : (
-                <form className="mt-6 space-y-4" onSubmit={handleVerifyCode}>
+                <form className="mt-5 space-y-4" onSubmit={handleVerifyCode}>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-900" htmlFor="verify-email">
+                    <label className="text-sm font-medium text-white" htmlFor="verify-email">
                       Correo verificado
                     </label>
                     <input
@@ -388,12 +318,12 @@ export default function Access() {
                       type="email"
                       value={submittedEmail || email}
                       readOnly
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base text-slate-950 outline-none"
+                      className="h-12 w-full rounded-2xl border border-white/15 bg-white px-4 text-base text-slate-950 outline-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-900" htmlFor="verify-code">
+                    <label className="text-sm font-medium text-white" htmlFor="verify-code">
                       Código de seis dígitos
                     </label>
                     <input
@@ -407,15 +337,15 @@ export default function Access() {
                       value={code}
                       onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="000000"
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base tracking-[0.4em] text-slate-950 outline-none transition-colors placeholder:tracking-normal placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                      className="h-12 w-full rounded-2xl border border-white/15 bg-white px-4 text-base tracking-[0.35em] text-slate-950 outline-none transition-colors placeholder:tracking-normal placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       type="submit"
                       size="lg"
-                      className="h-12 rounded-2xl bg-slate-950 text-white hover:bg-slate-900"
+                      className="h-12 w-full rounded-2xl bg-white text-slate-950 hover:bg-slate-100"
                       disabled={verifyEmailCode.isPending || loading}
                     >
                       {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -425,7 +355,7 @@ export default function Access() {
                       type="button"
                       size="lg"
                       variant="outline"
-                      className="h-12 rounded-2xl border-slate-200 bg-white"
+                      className="h-12 w-full rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10"
                       disabled={requestEmailCode.isPending || emailCooldownActive}
                       onClick={async () => {
                         setErrorMessage(null);
@@ -442,14 +372,14 @@ export default function Access() {
                   </div>
 
                   {emailCooldownActive ? (
-                    <p className="text-sm text-slate-500">
-                      Puedes pedir un nuevo código en <strong className="text-slate-900">{emailCooldownSecondsRemaining}s</strong>.
+                    <p className="text-sm text-slate-400">
+                      Puedes pedir un nuevo código en <strong className="text-white">{emailCooldownSecondsRemaining}s</strong>.
                     </p>
                   ) : null}
 
                   <button
                     type="button"
-                    className="text-sm font-medium text-teal-700 transition-colors hover:text-teal-800"
+                    className="text-sm font-medium text-teal-300 transition-colors hover:text-teal-200"
                     onClick={() => {
                       setEmailStep("request");
                       setCode("");
@@ -462,8 +392,25 @@ export default function Access() {
                 </form>
               )}
             </div>
-          </section>
-        </div>
+
+            <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Otra opción</p>
+              <p className="mt-2">Google sólo aparece cuando la configuración esté terminada. Mientras tanto, el acceso por correo es la vía recomendada.</p>
+              <Button
+                size="lg"
+                variant="outline"
+                className="mt-4 h-12 w-full rounded-2xl border-slate-200 bg-white"
+                disabled={!googleEnabled || googleStatusQuery.isLoading}
+                onClick={() => {
+                  window.location.href = getGoogleLoginUrl(returnTo);
+                }}
+              >
+                {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {googleLabel}
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

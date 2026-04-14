@@ -1125,3 +1125,7 @@
 - [x] Arreglar el descuadre visual y cualquier desborde lateral de la pantalla /acceso en móvil
 - [x] Contrastar con OpenAI, Grok y Gemini la corrección mínima y robusta para login móvil y layout de /acceso antes de implementar
 - [x] Validar con pruebas técnicas y revisión móvil real que el login y la maquetación de /acceso queden estables antes del siguiente checkpoint
+- [x] Corregir el desborde persistente de la pantalla /acceso en móvil para que quede 100% centrada y sin cortes laterales visibles
+- [x] Hacer explícita y funcional la vía de inicio de sesión del CEO en dominio público y previsualización, sin depender de adivinanzas ni rutas ocultas
+- [x] Contrastar con OpenAI, Grok y Gemini la solución mínima para layout móvil y acceso CEO antes de implementarla
+- [ ] Validar con pruebas técnicas y revisión visual real el acceso CEO y la estabilidad de /acceso antes del siguiente checkpoint

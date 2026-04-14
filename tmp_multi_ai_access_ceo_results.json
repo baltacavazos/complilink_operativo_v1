@@ -1,0 +1,155 @@
+{
+  "prompt": "Actúa como un lead product engineer obsesionado con UX móvil-first para México y responde en español.\n\nProducto:\n- App: AuditaPatron.\n- Dominio público: auditapatron.com.\n- Público principal de esta pantalla: personas que van a iniciar sesión desde el celular.\n- Usuario crítico: el propietario del sistema, que debe entrar como CEO/admin.\n- En dominio público NO debe dependerse de OAuth de Manus porque causa rebotes o errores; la vía estable es correo con código o magic link.\n\nProblema actual:\n- La pantalla /acceso venía mostrando desborde lateral y composición confusa en móvil.\n- El usuario preguntó explícitamente: \"Esto sigue descuadrado, yo como CEO cómo hago sign in?\"\n- Necesitamos una solución mínima y robusta que deje clarísimo cómo entra el CEO y elimine cualquier sensación de layout roto.\n\nEstado deseado de /acceso:\n- Una sola columna, centrada, sin scroll lateral, sin tarjetas compitiendo entre sí.\n- CTA principal inequívoco para acceso por correo.\n- Copy que explique en menos de 8 segundos cómo entra el CEO.\n- El resto de opciones, si existen, deben quedar claramente secundarias o incluso ocultas en el dominio público.\n- Si la cuenta no existe, debe crearse al continuar con correo, sin fricción adicional.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"consensus\": \"texto corto\",\n  \"layout_decision\": {\n    \"structure\": \"single_column | split_but_stacked | minimal_form_only\",\n    \"why\": \"texto corto\",\n    \"must_avoid\": [\"regla 1\", \"regla 2\", \"regla 3\"]\n  },\n  \"ceo_sign_in_copy\": {\n    \"headline\": \"texto corto\",\n    \"support\": \"texto corto\",\n    \"instruction\": \"texto corto\",\n    \"primary_cta\": \"texto corto\"\n  },\n  \"public_domain_rules\": {\n    \"show_manus\": false,\n    \"show_google\": false,\n    \"email_is_primary\": true,\n    \"why\": \"texto corto\"\n  },\n  \"implementation_minimum\": {\n    \"frontend\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"validation\": [\"prueba 1\", \"prueba 2\", \"prueba 3\"],\n    \"risk_controls\": [\"control 1\", \"control 2\", \"control 3\"]\n  },\n  \"user_answer\": {\n    \"exact_answer_for_ceo\": \"texto corto\",\n    \"one_sentence_reassurance\": \"texto corto\"\n  },\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Devuelve solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Piensa como si fueras a corregir sólo lo mínimo, sin agregar features nuevas.\n- Prioriza claridad instantánea, cero scroll lateral y cero ambigüedad para el CEO.",
+  "results": [
+    {
+      "provider": "chatgpt",
+      "ok": true,
+      "output": {
+        "consensus": "Una sola columna centrada con acceso por correo claro y directo para el CEO, sin distracciones ni scroll lateral.",
+        "layout_decision": {
+          "structure": "single_column",
+          "why": "Evita desbordes y confusión, facilita foco en el acceso principal y mejora la experiencia móvil-first.",
+          "must_avoid": [
+            "scroll lateral",
+            "tarjetas o elementos compitiendo por atención",
+            "opciones de login secundarias visibles en dominio público"
+          ]
+        },
+        "ceo_sign_in_copy": {
+          "headline": "Acceso seguro para CEO y administradores",
+          "support": "Ingresa tu correo y recibe un código o enlace para entrar sin complicaciones.",
+          "instruction": "Introduce tu correo para iniciar sesión como CEO o admin.",
+          "primary_cta": "Enviar código de acceso"
+        },
+        "public_domain_rules": {
+          "show_manus": false,
+          "show_google": false,
+          "email_is_primary": true,
+          "why": "OAuth de Manus genera errores y rebotes; el acceso por correo es estable y universal para todos los usuarios, especialmente el CEO."
+        },
+        "implementation_minimum": {
+          "frontend": [
+            "Diseñar formulario de una sola columna centrado sin scroll lateral",
+            "Mostrar solo campo de correo y botón CTA principal",
+            "Al enviar correo, crear cuenta si no existe sin pasos adicionales"
+          ],
+          "validation": [
+            "Verificar que no haya scroll lateral en dispositivos móviles comunes",
+            "Confirmar que el CTA principal sea claramente visible y legible",
+            "Probar flujo de creación automática de cuenta al ingresar correo nuevo"
+          ],
+          "risk_controls": [
+            "Bloquear acceso a opciones OAuth en dominio público",
+            "Monitorear errores de envío de código y enlaces mágicos",
+            "Garantizar que el diseño no se rompa en diferentes tamaños de pantalla"
+          ]
+        },
+        "user_answer": {
+          "exact_answer_for_ceo": "Como CEO, simplemente ingresa tu correo y recibirás un código o enlace para acceder directamente.",
+          "one_sentence_reassurance": "La pantalla está optimizada para que el acceso sea claro, rápido y sin errores desde cualquier celular."
+        },
+        "priority_score": 95
+      }
+    },
+    {
+      "provider": "grok",
+      "ok": true,
+      "output": {
+        "consensus": "Simplificar a una sola columna centrada para UX móvil óptima.",
+        "layout_decision": {
+          "structure": "single_column",
+          "why": "Evita desbordes y confusión en pantallas pequeñas.",
+          "must_avoid": [
+            "Scroll lateral",
+            "Tarjetas compitiendo",
+            "Opciones secundarias visibles"
+          ]
+        },
+        "ceo_sign_in_copy": {
+          "headline": "Accede como CEO",
+          "support": "Usa tu correo para un inicio seguro.",
+          "instruction": "Ingresa tu correo y recibe un código o enlace mágico.",
+          "primary_cta": "Continuar con correo"
+        },
+        "public_domain_rules": {
+          "show_manus": false,
+          "show_google": false,
+          "email_is_primary": true,
+          "why": "Evita rebotes y errores en dominio público."
+        },
+        "implementation_minimum": {
+          "frontend": [
+            "Centrar formulario en columna única",
+            "Eliminar opciones OAuth visibles",
+            "Añadir creación automática de cuenta si no existe"
+          ],
+          "validation": [
+            "Probar en móvil sin scroll lateral",
+            "Verificar claridad en <8 segundos",
+            "Asegurar flujo sin fricción para CEO"
+          ],
+          "risk_controls": [
+            "Limitar a correo en público",
+            "Monitorear errores de OAuth",
+            "Registrar accesos para auditoría"
+          ]
+        },
+        "user_answer": {
+          "exact_answer_for_ceo": "Ingresa tu correo en la pantalla de acceso y sigue el código o enlace enviado.",
+          "one_sentence_reassurance": "El layout ahora es claro y estable en móvil, sin complicaciones."
+        },
+        "priority_score": 90
+      }
+    },
+    {
+      "provider": "gemini",
+      "ok": true,
+      "output": {
+        "consensus": "Rediseño móvil-first de /acceso: claridad total para el CEO vía email, eliminando desbordes y fricción.",
+        "layout_decision": {
+          "structure": "single_column",
+          "why": "Garantizar una experiencia móvil impecable, centrada y sin scroll lateral. Prioridad absoluta a la claridad para el CEO y la eliminación de cualquier sensación de layout roto.",
+          "must_avoid": [
+            "Scroll lateral en móvil",
+            "Múltiples tarjetas compitiendo por atención",
+            "Ambigüedad en el flujo de acceso principal"
+          ]
+        },
+        "ceo_sign_in_copy": {
+          "headline": "Acceso a AuditaPatron",
+          "support": "Para propietarios y administradores, el acceso más seguro y directo es con su correo electrónico registrado.",
+          "instruction": "Introduce tu correo y te enviaremos un código de verificación instantáneo para iniciar sesión.",
+          "primary_cta": "Continuar con Correo"
+        },
+        "public_domain_rules": {
+          "show_manus": false,
+          "show_google": false,
+          "email_is_primary": true,
+          "why": "Evitar rebotes y errores de OAuth de terceros en dominio público. El acceso por correo es la vía más estable, segura y directa para nuestros usuarios críticos, incluyendo el CEO, y permite la creación de cuenta sin fricción."
+        },
+        "implementation_minimum": {
+          "frontend": [
+            "Refactorizar el layout de /acceso a una sola columna centrada, usando flexbox/grid para responsividad y eliminando cualquier desborde.",
+            "Asegurar que el formulario de correo sea el elemento principal y más visible, sin elementos que compitan por atención.",
+            "Implementar media queries para garantizar cero scroll lateral en anchos de pantalla móviles comunes (320px - 480px)."
+          ],
+          "validation": [
+            "Pruebas exhaustivas en dispositivos iOS y Android (simuladores y físicos) para verificar la ausencia de desbordes y la correcta composición centrada.",
+            "Validar el flujo de acceso del CEO: introducir correo, recibir código, iniciar sesión exitosamente.",
+            "Confirmar que la creación de cuenta por correo funciona sin fricción si el correo no existe, llevando al usuario directamente al dashboard."
+          ],
+          "risk_controls": [
+            "Revisión de seguridad del flujo de magic link/código por correo para prevenir vulnerabilidades.",
+            "Monitoreo de métricas de acceso post-implementación para detectar cualquier impacto negativo en la tasa de conversión o errores.",
+            "Plan de rollback claro en caso de fallos críticos en producción que afecten la capacidad de acceso."
+          ]
+        },
+        "user_answer": {
+          "exact_answer_for_ceo": "Como CEO, simplemente introduce tu correo electrónico registrado en el campo principal de la pantalla de acceso y haz clic en 'Continuar con Correo'. Recibirás un código instantáneo para iniciar sesión de forma segura.",
+          "one_sentence_reassurance": "Hemos simplificado el acceso para que sea claro, rápido y seguro, especialmente para ti, eliminando cualquier problema de visualización."
+        },
+        "priority_score": 95
+      }
+    }
+  ]
+}
