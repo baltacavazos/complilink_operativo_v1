@@ -6,11 +6,14 @@ describe("Auditapatron homepage and audit flow content", () => {
   const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
   const auditFlowSource = readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8");
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
+  const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");
 
   it("shows a clearer worker-centered value proposition focused on document auditing", () => {
     expect(homeSource).toContain("Sube un documento laboral");
     expect(homeSource).toContain("y recibe una auditoría clara.");
-    expect(homeSource).toContain("Empieza con lo que ya tienes a la mano y convierte ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.");
+    expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
+    expect(pricingSource).toContain("Primero úsalo gratis");
+    expect(pricingSource).toContain("No necesitas pagar para entender si AuditaPatrón te puede ayudar.");
     expect(homeSource).toContain("Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido.");
     expect(homeSource).toContain("Empieza con el documento correcto");
     expect(homeSource).toContain("Sin reunir todo de una vez");
@@ -75,6 +78,11 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura útil al momento.");
     expect(auditFlowSource).toContain("Sube el archivo y te devolvemos qué entendimos, qué hallazgo pesa más y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
+    expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
+    expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");
+    expect(auditFlowSource).toContain("Cerrar y seguir gratis");
+    expect(pricingSource).toContain("Preparación guiada de tu siguiente paso laboral");
+    expect(pricingSource).toContain("$199 MXN pago único");
     expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
     expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");
     expect(auditFlowSource).not.toContain("CompliLink Operativo");

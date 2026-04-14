@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent, trackFunnelStep } from "@/lib/analytics";
+import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type TourStep = {
@@ -1255,7 +1256,7 @@ function HeroSection() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Entra aquí para subir ese archivo y recibir tu primera lectura útil antes de pasar a comparaciones o preguntas más avanzadas.
+                Entra aquí para subir ese archivo y recibir tu primera lectura útil antes de pasar a comparaciones o preguntas más avanzadas. Primero va la parte gratuita; si después quieres avanzar con mayor respaldo, esa opción aparecerá dentro de tu expediente y solo si te hace sentido.
               </p>
             </button>
           </div>
@@ -2139,19 +2140,21 @@ function FAQSection() {
 }
 
 function FinalCtaSection() {
+  const pricingExperience = getAuditapatronPricingExperience(0);
+
   return (
     <section className="bg-[#e8f1f0] py-14 sm:bg-[#f3f7f7] sm:py-16">
       <div className="container">
         <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-              Empieza cuando quieras
+              {pricingExperience.landing.eyebrow}
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
-              Tu primer documento ya puede devolverte más claridad y tranquilidad.
+              {pricingExperience.landing.title}
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Empieza con lo que ya tienes a la mano y convierte ese primer archivo en orden, contexto y un expediente digital que seguirá contigo.
+              {pricingExperience.landing.description}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -2165,11 +2168,29 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => scrollToId("ejemplo-reporte")}
-                >
-                  Ver cómo se ve el reporte
+                onClick={() => scrollToId("ejemplo-reporte")}
+              >
+                Ver cómo se ve el reporte
               </Button>
             </div>
+
+            <div className="mt-8 grid gap-3 lg:grid-cols-3">
+              {pricingExperience.landing.principles.map((principle, index) => (
+                <article
+                  key={principle}
+                  className="rounded-[1.25rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
+                >
+                  <div className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                    0{index + 1}
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{principle}</p>
+                </article>
+              ))}
+            </div>
+
+            <p className="mt-6 max-w-2xl text-sm leading-6 text-slate-600">
+              Si más adelante necesitas avanzar con mayor respaldo, esa opción aparece dentro de tu expediente, con contexto y sin interrumpir tu primera revisión.
+            </p>
           </div>
         </div>
       </div>

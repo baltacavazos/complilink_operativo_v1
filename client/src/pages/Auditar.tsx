@@ -37,6 +37,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_GATE_COPY, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type LegalGateErrorType = "validation" | "concurrency" | "transient" | "fatal";
@@ -2081,6 +2082,7 @@ export default function Auditar() {
   const [legalGateMetrics, setLegalGateMetrics] = useState<LegalGateMetricsState>(INITIAL_LEGAL_GATE_METRICS);
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
   const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] = useState(false);
+  const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
@@ -2352,6 +2354,7 @@ export default function Auditar() {
   const legalPendingDocuments = legalAcceptance?.missingDocuments ?? [];
   const legalGateRequired = Boolean(caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted);
   const documents = caseDetailQuery.data?.documents ?? [];
+  const pricingExperience = getAuditapatronPricingExperience(documents.length);
 
   useEffect(() => {
     if (!currentCaseScopeKey || caseDetailQuery.status !== "success" || trackedExpedienteScopeRef.current === currentCaseScopeKey) {
@@ -4304,6 +4307,43 @@ export default function Auditar() {
                           Cuando revalides IMSS e Infonavit desde tu expediente, aquí verás la fecha, el estado y el cambio detectado entre revisiones.
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[1.25rem] border border-teal-100 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-4 shadow-sm">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-2xl">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+                          {pricingExperience.platform.eyebrow}
+                        </span>
+                        {pricingExperience.platform.showPrice ? (
+                          <span className="rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white">
+                            {pricingExperience.platform.priceLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-3 text-lg font-semibold text-slate-950">{pricingExperience.platform.title}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">{pricingExperience.platform.description}</p>
+                      <p className="mt-3 text-xs leading-5 text-slate-500">{pricingExperience.platform.reassurance}</p>
+                    </div>
+
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[240px]">
+                      <Button
+                        className="h-11 rounded-full bg-slate-900 text-white hover:bg-slate-800"
+                        onClick={() => setCasePreparationDrawerOpen(true)}
+                      >
+                        {pricingExperience.platform.primaryCtaLabel}
+                        <Sparkles className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-11 rounded-full border-teal-200 bg-white text-teal-900 hover:bg-teal-50"
+                        onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                      >
+                        {pricingExperience.platform.secondaryCtaLabel}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -6685,6 +6725,62 @@ export default function Auditar() {
           </aside>
         </div>
       </div>
+
+      <Drawer open={casePreparationDrawerOpen} onOpenChange={setCasePreparationDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle>{pricingExperience.platform.title}</DrawerTitle>
+            <DrawerDescription>
+              Esta opción aparece hasta que ya viste valor en tu expediente. Es una mejora opcional para ordenar mejor tu siguiente paso; no sustituye asesoría legal individual y no es necesaria para seguir usando la parte gratuita.
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3 px-4 pb-2">
+            <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50/80 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+                  Activación opcional
+                </span>
+                <span className="rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white">
+                  {pricingExperience.platform.priceLabel}
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{pricingExperience.platform.description}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                <p className="font-semibold text-slate-950">Qué recibirías</p>
+                <p className="mt-2">Un borrador inicial más ordenado con base en los documentos que ya reuniste y en el contexto visible de tu expediente.</p>
+              </article>
+              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                <p className="font-semibold text-slate-950">Cuándo conviene</p>
+                <p className="mt-2">Cuando ya entendiste mejor tu caso y quieres llegar mejor preparado a una orientación, conciliación o siguiente paso formal.</p>
+              </article>
+              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                <p className="font-semibold text-slate-950">Qué no hace</p>
+                <p className="mt-2">No reemplaza a una autoridad, a una abogada o abogado, ni promete resultados. Solo organiza mejor lo que ya tienes.</p>
+              </article>
+            </div>
+            <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+              {pricingExperience.platform.reassurance}
+            </div>
+          </div>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                Cerrar y seguir gratis
+              </Button>
+            </DrawerClose>
+            <DrawerClose asChild>
+              <Button
+                className="rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
+                onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+              >
+                Volver a mi expediente
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       <Drawer open={uploadSourceOpen} onOpenChange={setUploadSourceOpen}>
         <DrawerContent>

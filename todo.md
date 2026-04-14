@@ -1,5 +1,7 @@
 # Project TODO
 
+- [x] Investigar exhaustivamente si conviene ofrecer en Auditapatrón un módulo de pago para que Helios redacte una eventual queja ante PROFEDET con base en los documentos del usuario, incluyendo casos de uso, necesidad real, modelo de cobro y actualización del estudio de monetización.
+
 - [x] Resolver la conexión de esta sesión con el nuevo runtime de Helios y revalidar el bridge con el secreto efectivo correcto
 
 - [x] Alinear esta sesión con el nuevo runtime de Helios para validar contra el secreto efectivo correcto
@@ -1094,3 +1096,7 @@
 - [x] Elaborar un reporte de handoff listo para copiar y pegar en otro chat, con evidencia, diagnóstico y plan de corrección para dejar funcionando la conexión Auditapatrón ↔ Helios.
 - [ ] Corregir en producción la autenticación/configuración real del bridge Auditapatrón ↔ Helios, revisar la conectividad hacia `/api/auditapatron/webhook`, repetir las tres pruebas y no cerrar el trabajo mientras algún endpoint siga devolviendo 403.
 - [ ] Validar la alineación final en producción sobre `https://www.complilink.mx` ejecutando únicamente `GET /api/internal/helios/bridge/contract`, `POST /api/internal/helios/bridge` con payload válido mínimo y `POST /api/integrations/auditapatron/bridge` con payload válido mínimo, usando el token actual del runtime y sin cambiar nada si los tres responden 200.
+- [ ] Elaborar un estudio profundo de monetización freemium para Auditapatrón enfocado exclusivamente en trabajadores en México, con deliberación comparada entre Grok, Gemini, ChatGPT y análisis propio
+- [ ] Refinar el estudio para enfocarlo exclusivamente en la monetización de Auditapatrón para trabajadores, excluyendo CompliLink y Helios del análisis estratégico
+- [x] Deliberar con múltiples IAs la mejor forma de implementar en el landing y la plataforma de Auditapatrón la estrategia de precios, enfatizando el valor gratuito y evitando que el usuario se sienta acosado para pagar, e integrar la recomendación al estudio de monetización.
+- [x] Deliberar con múltiples IAs la mejor implementación estética y de interfaz para la estrategia de precios de Auditapatrón, decidir si conviene mostrar precios en el landing, en la plataforma o en ambos, e implementar los cambios con énfasis en valor gratuito y monetización no invasiva.
