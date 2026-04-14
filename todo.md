@@ -1082,3 +1082,4 @@
 - [ ] Revisar el archivo adjunto `pasted_content.txt` y ejecutar sus instrucciones dentro del proyecto AuditaPatron/Helios con validación posterior.
 - [x] Ejecutar una segunda prueba controlada enfocada sólo en autenticación para validar si `Authorization: Bearer ...` usa exactamente el secreto vigente del bridge en CompliLink y documentar la evidencia exacta de los pasos 1, 2 y 3.
 - [x] Revisar el archivo adjunto `pasted_content_2.txt` y ejecutar sus instrucciones exactas dentro del proyecto AuditaPatron/Helios con evidencia verificable.
+- [x] Validar en producción la versión publicada 039bc2eb en el dominio real y ejecutar las tres comprobaciones del bridge con el token actual, guardando evidencia breve de status y body sin exponer el secreto.
