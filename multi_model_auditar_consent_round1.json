@@ -1,0 +1,157 @@
+{
+  "openai": {
+    "ok": true,
+    "result": {
+      "main_problem": "El bloque de consentimiento legal, aunque integrado, se percibe como un elemento separado y de tono ámbar que genera fricción visual y cognitiva, disminuyendo la confianza y aumentando la sensación de interrupción justo antes de guardar el documento.",
+      "recommended_fix": {
+        "name": "Integración visual y textual del consentimiento en el CTA principal",
+        "summary": "Fusionar el consentimiento legal directamente dentro del botón de acción principal mediante un microcopy dinámico y un indicador visual sutil que confirme la aceptación al momento de pulsar, eliminando la casilla visible y el bloque ámbar, pero manteniendo la trazabilidad y validación.",
+        "why_it_builds_trust": "Al mostrar claramente en el CTA que la aceptación legal es parte inseparable de la acción principal, el usuario percibe transparencia y control, reforzado con un mensaje contextual que explica que al guardar acepta los términos vigentes, aumentando la confianza sin distracciones.",
+        "why_it_reduces_friction": "Eliminar la casilla visible y el bloque separado reduce la carga visual y el paso adicional de marcar, simplificando la interacción a un solo toque, lo que disminuye la fricción percibida sin sacrificar la validación ni la trazabilidad legal.",
+        "where_to_apply": [
+          "/auditar vista previa móvil",
+          "/auditar vista previa desktop"
+        ],
+        "ui_changes": [
+          "Eliminar el bloque ámbar con checkbox visible en la vista previa antes de guardar.",
+          "Incorporar un microcopy dinámico dentro del CTA principal que diga: 'Aceptar y guardar documento (incluye aceptación legal)'.",
+          "Agregar un pequeño ícono de información junto al texto del CTA que al tocar despliegue un tooltip breve con la explicación legal."
+        ],
+        "copy_changes": [
+          "Cambiar el texto del CTA a: 'Aceptar y guardar documento (incluye aceptación legal)'.",
+          "Tooltip o info emergente con texto: 'Al guardar, confirmas que aceptas los términos y aviso de privacidad vigentes, registrados en este momento.'",
+          "Eliminar mensajes de error relacionados con la casilla, reemplazándolos por validación directa al pulsar el CTA sin aceptación."
+        ],
+        "interaction_changes": [
+          "Al pulsar el CTA, validar internamente que el consentimiento se registre junto con la acción principal sin requerir checkbox.",
+          "Si hay error en registro legal, mostrar mensaje tranquilizador y permitir reintento sin bloquear la acción principal.",
+          "Mantener eventos de trazabilidad en backend igual que antes, disparados al confirmar la acción principal."
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "tasa de aceptación legal sin errores",
+        "secondary_metric": "tiempo promedio para completar guardado con consentimiento"
+      },
+      "risks": [
+        "Usuarios pueden no percibir explícitamente el consentimiento si el microcopy no es suficientemente claro.",
+        "Posible confusión inicial por eliminar la casilla visible que tradicionalmente indica aceptación.",
+        "Requiere ajuste cuidadoso del copy para cumplir con requisitos legales sin perder claridad."
+      ],
+      "v1_do": [
+        "Realizar pruebas A/B con usuarios para validar comprensión del microcopy integrado.",
+        "Mantener la trazabilidad y eventos legales actuales sin cambios en backend.",
+        "Diseñar tooltip informativo accesible y claro para explicar la aceptación legal."
+      ],
+      "v1_avoid": [
+        "Eliminar el consentimiento legal o la trazabilidad asociada.",
+        "Separar la aceptación legal en un paso o pantalla distinta.",
+        "Introducir nuevos componentes o dependencias técnicas."
+      ]
+    }
+  },
+  "grok": {
+    "ok": true,
+    "result": {
+      "main_problem": "El bloque de consentimiento en /auditar se percibe como una interrupción visual separada, lo que reduce la confianza del usuario al enfatizar repeticiones y aumenta la fricción en el flujo principal de guardado.",
+      "recommended_fix": {
+        "name": "Integración sutil del consentimiento visual",
+        "summary": "Modificar la presentación del bloque de consentimiento para integrarlo más fluidamente en el flujo principal, reduciendo su prominencia sin alterar la trazabilidad.",
+        "why_it_builds_trust": "Hace que el consentimiento parezca un paso natural del proceso, reforzando la idea de que es parte integral y no una barrera externa.",
+        "why_it_reduces_friction": "Minimiza la repetición visual y el énfasis en elementos como el tono ámbar, permitiendo un avance más intuitivo hacia la acción principal.",
+        "where_to_apply": [
+          "Pantalla /auditar en móvil",
+          "Pantalla /auditar en desktop"
+        ],
+        "ui_changes": [
+          "Cambiar el color de fondo de la tarjeta a un tono neutral para reducir alarma visual",
+          "Integrar el checkbox dentro del área del CTA principal para mayor cohesión",
+          "Ajustar el tamaño del bloque para que ocupe menos espacio en la jerarquía visual"
+        ],
+        "copy_changes": [
+          "Simplificar el encabezado a 'Confirma y guarda' para hacerlo más directo y amigable",
+          "Eliminar repeticiones en el texto de contexto, manteniendo solo lo esencial",
+          "Actualizar el mensaje de error a 'Marca para continuar' para ser menos confrontacional"
+        ],
+        "interaction_changes": [
+          "Hacer que el enlace al drawer legal sea un hover o tap breve para acceso rápido",
+          "Proporcionar feedback inmediato al marcar la casilla, como un tick sutil",
+          "Mantener la activación de la casilla ligada al CTA para preservar la integración"
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "Aumento en la tasa de completación de guardado en el primer intento",
+        "secondary_metric": "Reducción en el tiempo promedio de interacción en /auditar"
+      },
+      "risks": [
+        "Posible reducción en la atención al consentimiento si no se destaca lo suficiente",
+        "Riesgo de errores en la integración visual que afecten la trazabilidad",
+        "Incompatibilidad menor en la experiencia entre dispositivos"
+      ],
+      "v1_do": [
+        "Probar cambios en móvil primero con un grupo pequeño de usuarios",
+        "Verificar métricas de uso post-implementación",
+        "Ajustar basado en feedback cualitativo"
+      ],
+      "v1_avoid": [
+        "Eliminar la casilla de verificación obligatoria",
+        "Introducir dependencias nuevas en el backend",
+        "Separar el consentimiento del flujo principal de acciones"
+      ]
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "result": {
+      "main_problem": "El uso de una tarjeta ámbar con tono de advertencia y la redundancia explicativa generan una fricción cognitiva de 'bloqueo legal' que interrumpe el flujo de cierre, en lugar de sentirse como una validación profesional de la integridad del documento.",
+      "recommended_fix": {
+        "name": "Validación de Integridad y Confianza (VIC)",
+        "summary": "Transformar el bloque de consentimiento de una 'alerta de detención' a una 'confirmación de calidad', eliminando el color ámbar por tonos neutros de confianza, simplificando el micro-copy y agrupando la trazabilidad legal bajo un lenguaje de protección de datos.",
+        "why_it_builds_trust": "Sustituye el tono punitivo por uno de seguridad documental (estándar LFPDPPP), reforzando que la aceptación es para proteger la validez legal del usuario y no solo para cumplir un requisito de la app.",
+        "why_it_reduces_friction": "Elimina la señal visual de 'peligro/advertencia' (ámbar) que causa vacilación en el último paso y reduce la carga de lectura al eliminar explicaciones redundantes sobre cuándo se registra la firma.",
+        "where_to_apply": [
+          "Bloque de consentimiento inline en /auditar",
+          "Micro-copy del checkbox legal",
+          "Estado visual de la tarjeta de autorización"
+        ],
+        "ui_changes": [
+          "Cambiar el fondo ámbar por un contenedor con borde sutil gris y un fondo blanco o azul muy tenue (#F8FAFC).",
+          "Sustituir el encabezado genérico por un icono de 'escudo de seguridad' pequeño junto al texto.",
+          "Aumentar el área de toque (hit area) del checkbox a un mínimo de 44x44px para cumplimiento móvil."
+        ],
+        "copy_changes": [
+          "Cambiar encabezado a: 'Confirmación de integridad documental'.",
+          "Simplificar checkbox a: 'He revisado el documento y acepto los términos y aviso de privacidad.'",
+          "Sustituir explicaciones redundantes por una sola línea: 'Tu aceptación se vincula de forma segura a este folio al guardar.'"
+        ],
+        "interaction_changes": [
+          "Habilitar el CTA principal ('Aceptar y guardar') mediante una transición de opacidad suave solo tras marcar el checkbox.",
+          "Feedback háptico ligero en móvil al activar la casilla.",
+          "Apertura del drawer legal mediante un 'overlay' que no reinicie el scroll del formulario principal."
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "Tasa de conversión de Vista Previa a Documento Guardado",
+        "secondary_metric": "Reducción del tiempo de permanencia (dwell time) en el bloque de consentimiento"
+      },
+      "risks": [
+        "Que el usuario ignore el bloque al ser menos llamativo visualmente que el ámbar.",
+        "Resistencia del equipo legal si prefieren un lenguaje más formal/tradicional.",
+        "Necesidad de asegurar contraste suficiente en el nuevo estilo neutro para accesibilidad."
+      ],
+      "v1_do": [
+        "Usar lenguaje en primera persona ('He revisado', 'Acepto').",
+        "Mantener el enlace a términos siempre visible y subrayado.",
+        "Alinear el diseño con un componente de 'Resumen' o 'Validación' en lugar de 'Alerta'."
+      ],
+      "v1_avoid": [
+        "Usar términos legales densos como 'Manifiesto mi consentimiento expreso'.",
+        "Ocultar el checkbox en un acordeón o clic adicional.",
+        "Utilizar colores rojos o naranjas que sugieran un error del usuario."
+      ],
+      "_gemini_model": "gemini-flash-latest"
+    }
+  }
+}

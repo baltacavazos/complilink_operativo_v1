@@ -51,6 +51,38 @@ export type FirstDossierExecutiveSummary = {
   dataSourceNote: string;
 };
 
+export type FirstDossierHistoryTrendDirection = "up" | "down" | "flat" | "new";
+
+export type FirstDossierHistoryPoint = {
+  bucketStart: string;
+  starts: number;
+  confirmations: number;
+  uploads: number;
+  visibleDropOffCount: number;
+  visibleDropOffRate: number | null;
+  averagePreviewToConfirmationSeconds: number | null;
+  legalGateConflictCount: number;
+  dominantStage: FirstDossierPriorityStage;
+  dominantStageLabel: string;
+};
+
+export type FirstDossierHistorySummary = {
+  weeklyDropOffRate: number | null;
+  previousWeeklyDropOffRate: number | null;
+  weeklyDropOffDelta: number | null;
+  weeklyTrendDirection: FirstDossierHistoryTrendDirection;
+  statusLabel: string;
+  dominantStage: FirstDossierPriorityStage;
+  dominantStageLabel: string;
+  latestDailyDropOffCount: number;
+  latestDailyCompletionRate: number | null;
+  latestDailyPreviewToConfirmationSeconds: number | null;
+  dailySeries: FirstDossierHistoryPoint[];
+  weeklySeries: FirstDossierHistoryPoint[];
+  insight: string;
+  dataSourceNote: string;
+};
+
 export type GuardrailFollowUpStatus = "pending" | "tracking" | "resolved";
 
 export type GuardrailReasonRankingItem = {
@@ -97,6 +129,7 @@ export type AuditMonitoringSummary = {
   filePreviewToConfirmRate: number | null;
   dominantCaptureMode: "camera" | "file" | "balanced" | "none";
   firstDossier: FirstDossierExecutiveSummary;
+  firstDossierHistory: FirstDossierHistorySummary;
 };
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
@@ -139,6 +172,14 @@ type AccessRiskBucket = {
   description: string;
   count: number;
   severity: Exclude<AuditEventSeverity, "all">;
+};
+
+type FirstDossierHistoryBucket = {
+  starts: number;
+  confirmations: number;
+  uploads: number;
+  legalGateConflictCount: number;
+  previewToConfirmationSamples: number[];
 };
 
 function uniqueCount(values: Array<string | null | undefined>) {
@@ -341,6 +382,201 @@ function getWeekStartIso(timestampMs: number) {
   return weekStart.toISOString();
 }
 
+function getDayStartIso(timestampMs: number) {
+  const dayStart = new Date(timestampMs);
+  dayStart.setUTCHours(0, 0, 0, 0);
+  return dayStart.toISOString();
+}
+
+function getFirstDossierStageLabel(stage: FirstDossierPriorityStage) {
+  if (stage === "preview_confirmation") return "Preview → confirmación";
+  if (stage === "confirmation_upload") return "Confirmación → carga";
+  if (stage === "legal_gate") return "Gate legal";
+  if (stage === "healthy") return "Sin fricción dominante";
+  return "Sin base visible";
+}
+
+function ensureFirstDossierHistoryBucket(map: Map<string, FirstDossierHistoryBucket>, key: string) {
+  const existing = map.get(key);
+  if (existing) return existing;
+
+  const created: FirstDossierHistoryBucket = {
+    starts: 0,
+    confirmations: 0,
+    uploads: 0,
+    legalGateConflictCount: 0,
+    previewToConfirmationSamples: [],
+  };
+  map.set(key, created);
+  return created;
+}
+
+function getFirstDossierDominantStageFromBucket(bucket: FirstDossierHistoryBucket): FirstDossierPriorityStage {
+  const previewGapCount = Math.max(bucket.starts - bucket.confirmations, 0);
+  const uploadGapCount = Math.max(bucket.confirmations - bucket.uploads, 0);
+
+  if (bucket.legalGateConflictCount > 0 && bucket.legalGateConflictCount >= Math.max(previewGapCount, uploadGapCount)) {
+    return "legal_gate";
+  }
+
+  if (previewGapCount >= uploadGapCount && previewGapCount > 0) {
+    return "preview_confirmation";
+  }
+
+  if (uploadGapCount > 0) {
+    return "confirmation_upload";
+  }
+
+  if (bucket.starts > 0 || bucket.confirmations > 0 || bucket.uploads > 0) {
+    return "healthy";
+  }
+
+  return "no_signal";
+}
+
+function buildFirstDossierHistoryPoint(bucketStart: string, bucket: FirstDossierHistoryBucket): FirstDossierHistoryPoint {
+  const visibleDropOffCount = Math.max(bucket.starts - bucket.uploads, 0);
+  const averagePreviewToConfirmationSeconds =
+    bucket.previewToConfirmationSamples.length > 0
+      ? Math.round(bucket.previewToConfirmationSamples.reduce((total, value) => total + value, 0) / bucket.previewToConfirmationSamples.length)
+      : null;
+  const dominantStage = getFirstDossierDominantStageFromBucket(bucket);
+
+  return {
+    bucketStart,
+    starts: bucket.starts,
+    confirmations: bucket.confirmations,
+    uploads: bucket.uploads,
+    visibleDropOffCount,
+    visibleDropOffRate: getPercentage(visibleDropOffCount, bucket.starts),
+    averagePreviewToConfirmationSeconds,
+    legalGateConflictCount: bucket.legalGateConflictCount,
+    dominantStage,
+    dominantStageLabel: getFirstDossierStageLabel(dominantStage),
+  };
+}
+
+function buildFirstDossierHistorySummary(params: {
+  previewAnalyzedEvents: AuditFeedItem[];
+  previewConfirmedEvents: AuditFeedItem[];
+  documentUploadEvents: AuditFeedItem[];
+  legalGateConflictEvents: AuditFeedItem[];
+}): FirstDossierHistorySummary {
+  const dailyBuckets = new Map<string, FirstDossierHistoryBucket>();
+  const weeklyBuckets = new Map<string, FirstDossierHistoryBucket>();
+
+  const registerByTimestamp = (
+    timestampMs: number | null,
+    mutate: (dailyBucket: FirstDossierHistoryBucket, weeklyBucket: FirstDossierHistoryBucket) => void,
+  ) => {
+    if (timestampMs === null) return;
+    const dayBucket = ensureFirstDossierHistoryBucket(dailyBuckets, getDayStartIso(timestampMs));
+    const weekBucket = ensureFirstDossierHistoryBucket(weeklyBuckets, getWeekStartIso(timestampMs));
+    mutate(dayBucket, weekBucket);
+  };
+
+  for (const item of params.previewAnalyzedEvents) {
+    registerByTimestamp(toTimestampMs(item.createdAt), (dayBucket, weekBucket) => {
+      dayBucket.starts += 1;
+      weekBucket.starts += 1;
+    });
+  }
+
+  for (const item of params.previewConfirmedEvents) {
+    const sample = getPreviewToConfirmationSeconds(item);
+    registerByTimestamp(toTimestampMs(item.createdAt), (dayBucket, weekBucket) => {
+      dayBucket.confirmations += 1;
+      weekBucket.confirmations += 1;
+      if (sample !== null) {
+        dayBucket.previewToConfirmationSamples.push(sample);
+        weekBucket.previewToConfirmationSamples.push(sample);
+      }
+    });
+  }
+
+  for (const item of params.documentUploadEvents) {
+    registerByTimestamp(toTimestampMs(item.createdAt), (dayBucket, weekBucket) => {
+      dayBucket.uploads += 1;
+      weekBucket.uploads += 1;
+    });
+  }
+
+  for (const item of params.legalGateConflictEvents) {
+    registerByTimestamp(toTimestampMs(item.createdAt), (dayBucket, weekBucket) => {
+      dayBucket.legalGateConflictCount += 1;
+      weekBucket.legalGateConflictCount += 1;
+    });
+  }
+
+  const dailySeries = Array.from(dailyBuckets.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .slice(-7)
+    .map(([bucketStart, bucket]) => buildFirstDossierHistoryPoint(bucketStart, bucket));
+
+  const weeklySeries = Array.from(weeklyBuckets.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .slice(-6)
+    .map(([bucketStart, bucket]) => buildFirstDossierHistoryPoint(bucketStart, bucket));
+
+  const latestWeek = weeklySeries.at(-1) ?? null;
+  const previousWeek = weeklySeries.length > 1 ? weeklySeries[weeklySeries.length - 2] : null;
+  const latestDay = dailySeries.at(-1) ?? null;
+
+  const weeklyDropOffRate = latestWeek?.visibleDropOffRate ?? null;
+  const previousWeeklyDropOffRate = previousWeek?.visibleDropOffRate ?? null;
+  const weeklyDropOffDelta =
+    weeklyDropOffRate === null || previousWeeklyDropOffRate === null ? null : weeklyDropOffRate - previousWeeklyDropOffRate;
+
+  let weeklyTrendDirection: FirstDossierHistoryTrendDirection = "new";
+  if (weeklyDropOffDelta !== null) {
+    weeklyTrendDirection = weeklyDropOffDelta === 0 ? "flat" : weeklyDropOffDelta > 0 ? "up" : "down";
+  }
+
+  const statusLabel =
+    weeklyDropOffRate === null
+      ? "Sin base semanal"
+      : weeklyTrendDirection === "down"
+        ? "Mejora semanal"
+        : weeklyTrendDirection === "up"
+          ? "Fricción en aumento"
+          : weeklyTrendDirection === "flat"
+            ? "Fricción estable"
+            : "Serie en arranque";
+
+  const dominantStage = latestWeek?.dominantStage ?? "no_signal";
+  const dominantStageLabel = latestWeek?.dominantStageLabel ?? getFirstDossierStageLabel("no_signal");
+  const latestDailyCompletionRate = latestDay ? getPercentage(latestDay.uploads, latestDay.starts) : null;
+
+  const insight =
+    latestWeek === null
+      ? "La vista histórica aparecerá cuando el audit trail visible acumule suficientes eventos del primer expediente por día y semana."
+      : dominantStage === "legal_gate"
+        ? "La semana más reciente sugiere que la caída visible se explica más por conflictos del gate legal que por el embudo documental puro."
+        : dominantStage === "preview_confirmation"
+          ? "La fricción reciente se concentra antes de confirmar: conviene vigilar claridad del preview y señales de confianza en el primer expediente."
+          : dominantStage === "confirmation_upload"
+            ? "El mayor corte semanal aparece después de confirmar: el cierre de carga todavía compite con pasos secundarios o dudas finales."
+            : "La serie reciente no muestra una fricción dominante clara; conviene vigilar si la caída semanal vuelve a crecer antes de intervenir más fuerte.";
+
+  return {
+    weeklyDropOffRate,
+    previousWeeklyDropOffRate,
+    weeklyDropOffDelta,
+    weeklyTrendDirection,
+    statusLabel,
+    dominantStage,
+    dominantStageLabel,
+    latestDailyDropOffCount: latestDay?.visibleDropOffCount ?? 0,
+    latestDailyCompletionRate,
+    latestDailyPreviewToConfirmationSeconds: latestDay?.averagePreviewToConfirmationSeconds ?? null,
+    dailySeries,
+    weeklySeries,
+    insight,
+    dataSourceNote:
+      "Serie derivada del audit trail visible y agregada en ventanas móviles de hasta 7 días y 6 semanas. El historial usa preview, confirmación, carga y conflictos visibles de gate legal; aún no consolida eventos cliente a cliente como atajos o vacilación.",
+  };
+}
+
 export function getGuardrailSuggestedAction(reason: string) {
   const normalizedReason = reason.trim().toLowerCase();
 
@@ -441,10 +677,11 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
   const documentUploadEvents = items.filter((item) => item.action === "document.upload");
   const guardrailEvents = items.filter((item) => item.action === "document.guardrail_rejected");
   const guardrailRejections = guardrailEvents.length;
-  const legalGateAcceptances = items.filter((item) => item.action === "consent.legal_package_accept").length;
-  const legalGateLockConflicts = items.filter((item) => item.action === "consent.legal_package_lock_conflict").length;
-  const legalGateEvents = items
-    .filter((item) => item.action === "consent.legal_package_accept" || item.action === "consent.legal_package_lock_conflict")
+  const legalGateAcceptanceEvents = items.filter((item) => item.action === "consent.legal_package_accept");
+  const legalGateConflictEvents = items.filter((item) => item.action === "consent.legal_package_lock_conflict");
+  const legalGateAcceptances = legalGateAcceptanceEvents.length;
+  const legalGateLockConflicts = legalGateConflictEvents.length;
+  const legalGateEvents = [...legalGateAcceptanceEvents, ...legalGateConflictEvents]
     .slice()
     .sort((left, right) => (toTimestampMs(left.createdAt) ?? 0) - (toTimestampMs(right.createdAt) ?? 0));
 
@@ -596,6 +833,12 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     averagePreviewToConfirmationSeconds,
     dominantCaptureMode,
   });
+  const firstDossierHistory = buildFirstDossierHistorySummary({
+    previewAnalyzedEvents,
+    previewConfirmedEvents,
+    documentUploadEvents,
+    legalGateConflictEvents,
+  });
 
   return {
     totalEvents: items.length,
@@ -624,6 +867,7 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     filePreviewToConfirmRate: getPercentage(filePreviewConfirmedEvents, fileCaptureSelections),
     dominantCaptureMode,
     firstDossier,
+    firstDossierHistory,
   };
 }
 

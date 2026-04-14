@@ -14,6 +14,7 @@ import {
   buildReanalyzeDraftActionState,
   buildUploadProgressState,
   formatVisibleFileSize,
+  getContextualDossierNextTarget,
   getUploadCompactGuardrails,
   getUploadHelpDisclosureSummary,
   getUploadHelpMobileHint,
@@ -45,6 +46,34 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("Estamos analizando tu documento");
     expect(auditarSource).toContain("No necesitas volver a tocar nada.");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
+  });
+});
+
+describe("getContextualDossierNextTarget", () => {
+  it("prioriza CFDI cuando ya existe nómina en el expediente", () => {
+    expect(getContextualDossierNextTarget(new Set(["payroll_receipt"]))?.type).toBe("cfdi");
+  });
+
+  it("prioriza nómina cuando ya existe un soporte IMSS", () => {
+    expect(getContextualDossierNextTarget(new Set(["imss"]))?.type).toBe("payroll_receipt");
+  });
+
+  it("prioriza evidencia relacionada cuando ya existe contrato", () => {
+    expect(getContextualDossierNextTarget(new Set(["contract"]))?.type).toBe("evidence");
+  });
+});
+
+describe("next document recommendation copy", () => {
+  it("muestra copy contextual para contrastar nómina con CFDI y una CTA más directa", () => {
+    expect(auditarSource).toContain('headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina"');
+    expect(auditarSource).toContain('cta: "Subir mi CFDI ahora"');
+    expect(auditarSource).toContain('Sugerencia automática según tu expediente');
+    expect(auditarSource).toContain('El siguiente paso que más puede ayudarte hoy');
+  });
+
+  it("reemplaza el fallback pasivo por uno más proactivo cuando no hay nextTarget específico", () => {
+    expect(auditarSource).toContain('headline: "Tu expediente puede ganar más claridad"');
+    expect(auditarSource).toContain('cta: "Subir otro documento y seguir"');
   });
 });
 

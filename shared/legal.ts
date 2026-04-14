@@ -36,7 +36,7 @@ export const LEGAL_GATE_COPY = {
   subtext:
     "Tu aceptación se registra con fecha, versión, dirección IP y navegador. Si después deseas ejercer derechos ARCO u oponerte a finalidades secundarias, podrás hacerlo desde tu sección de privacidad o escribiendo a privacidad@auditapatron.com.",
   checkbox:
-    "He leído y acepto el Aviso de Privacidad Integral v2.0 y los Términos y Condiciones de Uso v2.0 de AuditaPatron.",
+    "Autorizo registrar este documento con el Aviso de Privacidad y los Términos vigentes de AuditaPatron.",
   button: "Continuar",
 } as const;
 

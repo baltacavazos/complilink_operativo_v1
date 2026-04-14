@@ -1710,6 +1710,90 @@ function lowercaseFirstLetter(value: string) {
   return `${value.charAt(0).toLowerCase()}${value.slice(1)}`;
 }
 
+function getDossierTargetByType(type: DossierTarget["type"]) {
+  return dossierTargets.find((item) => item.type === type) ?? null;
+}
+
+export function getContextualDossierNextTarget(presentTypes: Set<string>) {
+  const has = (type: DossierTarget["type"]) => presentTypes.has(type);
+
+  if (presentTypes.size === 0) {
+    return getDossierTargetByType("payroll_receipt");
+  }
+
+  if (has("payroll_receipt") && !has("cfdi")) {
+    return getDossierTargetByType("cfdi");
+  }
+
+  if (has("cfdi") && !has("payroll_receipt")) {
+    return getDossierTargetByType("payroll_receipt");
+  }
+
+  if (has("contract") && !has("evidence")) {
+    return getDossierTargetByType("evidence");
+  }
+
+  if (has("imss") && !has("payroll_receipt")) {
+    return getDossierTargetByType("payroll_receipt");
+  }
+
+  return dossierTargets.find((item) => !presentTypes.has(item.type)) ?? null;
+}
+
+function getContextualNextDocumentPreset(nextTarget: DossierTarget | undefined, presentTypes: Set<string>) {
+  if (!nextTarget) {
+    return null;
+  }
+
+  const has = (type: DossierTarget["type"]) => presentTypes.has(type);
+
+  if (nextTarget.type === "cfdi" && has("payroll_receipt")) {
+    return {
+      headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina",
+      intro: "Como ya subiste recibos de nómina, el CFDI puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
+      reasonTitle: "Por qué este paso tiene sentido ahora",
+      reasonBody: "Conecta pagos, descuentos y periodos desde dos fuentes que suelen revelar diferencias útiles con muy poco esfuerzo.",
+      coverage: "Esa combinación suele volver el expediente más claro desde el inicio, porque ya no dependes de una sola versión del pago.",
+      cta: "Subir mi CFDI ahora",
+    } as const;
+  }
+
+  if (nextTarget.type === "payroll_receipt" && has("cfdi")) {
+    return {
+      headline: "Sigue con tu nómina para darle contexto al CFDI",
+      intro: "Si ya tienes CFDI, sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
+      reasonTitle: "Lo que ganas con este cruce",
+      reasonBody: "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
+      coverage: "Cuando CFDI y nómina se leen juntos, el expediente empieza a responder con más contexto y menos zonas preliminares.",
+      cta: "Subir mi nómina ahora",
+    } as const;
+  }
+
+  if (nextTarget.type === "evidence" && has("contract")) {
+    return {
+      headline: "Tu contrato puede ganar contexto con un anexo o evidencia relacionada",
+      intro: "Si ya subiste contrato o condiciones iniciales, un anexo, cambio de condiciones o evidencia complementaria puede explicar mejor cómo siguió la relación laboral.",
+      reasonTitle: "Qué conviene sumar después del contrato",
+      reasonBody: "Ese tipo de evidencia ayuda a conectar lo pactado con lo que realmente ocurrió, sobre todo si hubo ajustes, instrucciones o cambios posteriores.",
+      coverage: "Así tu expediente deja de depender sólo del documento inicial y empieza a reflejar mejor la historia completa del caso.",
+      cta: "Subir evidencia relacionada",
+    } as const;
+  }
+
+  if (nextTarget.type === "payroll_receipt" && has("imss")) {
+    return {
+      headline: "Sigue con tu nómina para comparar mejor tu señal de IMSS",
+      intro: "Como ya tienes un soporte IMSS, los recibos de nómina ayudan a revisar si pagos, periodos y seguridad social cuentan la misma historia.",
+      reasonTitle: "Por qué conviene hacer este cruce ahora",
+      reasonBody: "Ese contraste suele aclarar rápido diferencias útiles y darle más sustento a la lectura del expediente.",
+      coverage: "Con IMSS y nómina en el mismo expediente, la orientación gana contexto y empieza a volverse más precisa.",
+      cta: "Subir mi nómina ahora",
+    } as const;
+  }
+
+  return null;
+}
+
 function formatListWithConjunction(values: string[]) {
   const filtered = values.filter(Boolean);
   if (filtered.length === 0) return "";
@@ -1782,43 +1866,48 @@ function getPersonalizedNextDocumentCopy(params: {
 }) {
   const presentSummary = getPresentDocumentSummary(params.presentTypes);
   const firstUncertainty = params.opinion?.uncertainties?.find((item) => item?.trim());
+  const contextualPreset = getContextualNextDocumentPreset(params.nextTarget, params.presentTypes);
 
   if (params.nextTarget) {
     return {
-      headline: `Documento sugerido: ${params.nextTarget.label}`,
-      intro: presentSummary
-        ? `Con lo que ya subiste, como ${presentSummary}, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`
-        : `Con tu expediente actual, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`,
-      reasonTitle: "Por qué ahora puede ser el archivo más útil",
-      reasonBody: firstUncertainty
-        ? `${params.nextTarget.description} Además, hoy todavía conviene aclarar algo importante: ${firstUncertainty}`
-        : `${params.nextTarget.description} ${params.nextTarget.benefit}`,
+      headline: contextualPreset?.headline ?? `Documento sugerido: ${params.nextTarget.label}`,
+      intro:
+        contextualPreset?.intro ??
+        (presentSummary
+          ? `Con lo que ya subiste, como ${presentSummary}, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`
+          : `Tu expediente puede empezar con ${params.nextTarget.label.toLowerCase()} para darte una primera lectura más clara y útil.`),
+      reasonTitle: contextualPreset?.reasonTitle ?? "Por qué ahora puede ser el archivo más útil",
+      reasonBody:
+        firstUncertainty && !contextualPreset
+          ? `${params.nextTarget.description} Además, hoy todavía conviene aclarar algo importante: ${firstUncertainty}`
+          : contextualPreset?.reasonBody ?? `${params.nextTarget.description} ${params.nextTarget.benefit}`,
       followUp:
         params.opinion?.recommendedNextStep ??
-        "Cada documento ayuda a reducir estimaciones y a dejar más partes del expediente en terreno claro.",
-      coverage: presentSummary
-        ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional da más contexto para conectar señales con menos partes preliminares.`
-        : "Tu expediente apenas está empezando. Cada documento útil que subas da más contexto para orientarte mejor.",
-      cta: "Subir este documento ahora",
+        "Con cada documento útil, tu expediente gana claridad y te sugiere el siguiente paso sin complicarte el proceso.",
+      coverage:
+        contextualPreset?.coverage ??
+        (presentSummary
+          ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional da más contexto para conectar señales con menos partes preliminares.`
+          : "Tu expediente apenas está empezando. Cada documento útil que subas da más contexto para orientarte mejor."),
+      cta: contextualPreset?.cta ?? "Subir este documento ahora",
     } as const;
   }
 
   return {
-    headline: "Tu expediente ya cubre varias piezas clave",
+    headline: "Tu expediente puede ganar más claridad",
     intro: presentSummary
-      ? `Ya subiste ${presentSummary}. Tu expediente ya tiene una base amplia para seguir ordenando tu caso con más contexto.`
-      : "Tu expediente ya tiene una base amplia de documentos para seguir ordenando tu caso con más contexto.",
-    reasonTitle: "Qué puede sumar si tienes otro archivo",
+      ? `Ya subiste ${presentSummary}. Si tienes otro archivo relacionado, podemos conectarlo para entender mejor tu caso.`
+      : "Con el siguiente documento útil, tu expediente puede empezar a darte una lectura más clara sin pasos extra.",
+    reasonTitle: "Lo que más puede sumar ahora",
     reasonBody: firstUncertainty
-      ? `Si cuentas con otro archivo específico de tu caso, puede ayudar a aclarar mejor esto: ${firstUncertainty}`
-      : "Si tienes otro archivo específico de tu caso, también puede ayudar a confirmar o contrastar mejor tu historia laboral.",
+      ? `Si cuentas con otro archivo relacionado, puede ayudarnos a aclarar mejor esto: ${firstUncertainty}`
+      : "Otro documento relacionado puede confirmar mejor tu historia laboral y darle más contexto a la lectura del caso.",
     followUp:
       params.opinion?.recommendedNextStep ??
-        "La revisión sigue usando cada documento para separar lo claro de lo que todavía conviene confirmar.",
-
+        "La revisión sigue conectando cada documento para separar lo claro de lo que todavía conviene confirmar.",
     coverage:
-      "Mientras más documentos útiles incorpores, más crece tu expediente y más contexto tendrás para orientarte mejor.",
-    cta: "Subir otro documento útil",
+      "Cada archivo útil hace crecer tu expediente y vuelve más precisa la orientación que ves aquí.",
+    cta: "Subir otro documento y seguir",
   } as const;
 }
 
@@ -2636,7 +2725,7 @@ export default function Auditar() {
   const dossierStatus = useMemo(() => {
     const completed = dossierTargets.filter((item) => presentTypes.has(item.type)).length;
     const percent = Math.max(12, Math.round((completed / dossierTargets.length) * 100));
-    const nextTarget = dossierTargets.find((item) => !presentTypes.has(item.type));
+    const nextTarget = getContextualDossierNextTarget(presentTypes);
     const label = completed >= 4 ? "Respaldo sólido" : completed >= 2 ? "Respaldo en crecimiento" : "Base inicial";
 
     return {
@@ -2915,7 +3004,7 @@ export default function Auditar() {
     return nextTypes;
   }, [pendingDraft, presentTypes]);
   const previewNextTarget = useMemo(
-    () => dossierTargets.find((item) => !previewPresentTypes.has(item.type)) ?? null,
+    () => getContextualDossierNextTarget(previewPresentTypes),
     [previewPresentTypes],
   );
   const previewNextDocumentCopy = useMemo(
@@ -3051,7 +3140,7 @@ export default function Auditar() {
       });
       setLegalGateError(
         buildLegalGateErrorState(
-          "Confirma la casilla para registrar tu aceptación y continuar con el expediente.",
+          "Marca la casilla para seguir con este documento y registrar tu autorización.",
           "validation",
         ),
       );
@@ -5457,23 +5546,23 @@ export default function Auditar() {
                   ) : null}
 
                   {shouldShowInlineLegalConsent ? (
-                    <div className="mt-5 rounded-[1.25rem] border border-amber-200 bg-amber-50/70 p-4">
+                    <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.42)]">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="max-w-2xl">
-                          <p className="text-sm font-semibold text-amber-950">Antes de guardar, confirma tu autorización</p>
-                          <p className="mt-1 text-sm leading-6 text-amber-900/90">
-                            Protegemos tu información y registramos la versión legal vigente en el mismo momento en que guardas este documento.
+                          <p className="text-sm font-semibold text-slate-950">Tu autorización se registra junto con este documento.</p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">
+                            Así protegemos tu expediente y dejamos constancia de la versión legal vigente en el mismo paso.
                           </p>
                         </div>
                         <button
                           type="button"
-                          className="text-sm font-semibold text-amber-950 underline decoration-amber-300 underline-offset-4"
+                          className="text-sm font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
                           onClick={() => setLegalDocumentsDrawerOpen(true)}
                         >
-                          Ver documentos vigentes
+                          Revisar aviso y términos
                         </button>
                       </div>
-                      <label className="mt-4 flex items-start gap-3 rounded-[1rem] border border-amber-200 bg-white/85 p-3">
+                      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.38)] transition-colors hover:border-teal-200">
                         <input
                           type="checkbox"
                           checked={legalGateChecked}
@@ -5491,7 +5580,7 @@ export default function Auditar() {
                               setLegalGateError(null);
                             }
                           }}
-                          className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                          className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500"
                         />
                         <span className="text-sm leading-6 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
                       </label>
@@ -5603,23 +5692,23 @@ export default function Auditar() {
               ) : null}
 
               {shouldShowInlineLegalConsent ? (
-                <div className="mt-5 hidden rounded-[1.25rem] border border-amber-200 bg-amber-50/70 p-4 sm:block">
+                <div className="mt-5 hidden rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.42)] sm:block">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-2xl">
-                      <p className="text-sm font-semibold text-amber-950">Autorización integrada a la acción principal</p>
-                      <p className="mt-1 text-sm leading-6 text-amber-900/90">
-                        Cuando avances con este documento, registraremos tu aceptación del aviso de privacidad y de los términos vigentes en ese mismo paso.
+                      <p className="text-sm font-semibold text-slate-950">Tu autorización se registra junto con este documento.</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        Así protegemos tu expediente y dejamos constancia de la versión legal vigente en el mismo paso.
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="text-sm font-semibold text-amber-950 underline decoration-amber-300 underline-offset-4"
+                      className="text-sm font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
                       onClick={() => setLegalDocumentsDrawerOpen(true)}
                     >
-                      Revisar términos y aviso
+                      Revisar aviso y términos
                     </button>
                   </div>
-                  <label className="mt-4 flex items-start gap-3 rounded-[1rem] border border-amber-200 bg-white/85 p-3">
+                  <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.38)] transition-colors hover:border-teal-200">
                     <input
                       type="checkbox"
                       checked={legalGateChecked}
@@ -7076,10 +7165,10 @@ export default function Auditar() {
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Siguiente documento recomendado</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Siguiente documento recomendado</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">El siguiente paso que más puede ayudarte hoy</h2>
 
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                <p className="text-sm font-semibold text-teal-900">Lo que más puede ayudarte ahora</p>
+                <p className="text-sm font-semibold text-teal-900">Sugerencia automática según tu expediente</p>
                 <p className="mt-2 text-xl font-semibold text-slate-950">{nextDocumentCopy.headline}</p>
                 <p className="mt-2 text-sm leading-7 text-teal-950">{nextDocumentCopy.intro}</p>
               </div>
@@ -7262,21 +7351,21 @@ export default function Auditar() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden">
         <div className="mx-auto max-w-6xl">
           {shouldShowInlineLegalConsent ? (
-            <div className="mb-3 rounded-[1.15rem] border border-amber-200 bg-amber-50/95 p-3">
+            <div className="mb-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-3.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-amber-950">Confirma tu autorización en este paso</p>
-                  <p className="mt-1 text-xs leading-5 text-amber-900/90">Tu aceptación se registra junto con la acción principal del documento.</p>
+                <div className="pr-1">
+                  <p className="text-sm font-semibold text-slate-950">Tu autorización se registra en este mismo paso.</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">Protegemos tu expediente y dejamos la versión legal vigente ligada a este documento.</p>
                 </div>
                 <button
                   type="button"
-                  className="text-xs font-semibold text-amber-950 underline underline-offset-4"
+                  className="text-xs font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
                   onClick={() => setLegalDocumentsDrawerOpen(true)}
                 >
-                  Ver términos
+                  Revisar aviso y términos
                 </button>
               </div>
-              <label className="mt-3 flex items-start gap-3 rounded-[0.95rem] border border-amber-200 bg-white/85 p-3">
+              <label className="mt-3 flex min-h-[4.25rem] cursor-pointer items-start gap-3.5 rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.38)] transition-colors hover:border-teal-200">
                 <input
                   type="checkbox"
                   checked={legalGateChecked}

@@ -123,6 +123,19 @@ function formatWeekLabel(value: string | null | undefined) {
   }).format(date);
 }
 
+function formatDayLabel(value: string | null | undefined) {
+  if (!value) return "Sin día";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sin día";
+
+  return new Intl.DateTimeFormat("es-MX", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 function formatDurationCompact(seconds: number | null | undefined) {
   if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return "Sin muestra";
   if (seconds < 60) return `${formatNumber(seconds)} s`;
@@ -2912,6 +2925,130 @@ export default function CeoDashboard() {
                             <p className="font-semibold">Siguiente foco recomendado</p>
                             <p className="mt-1 leading-6">{auditSummary.firstDossier.nextAction}</p>
                             <p className="mt-2 text-xs leading-5 text-cyan-900/80">{auditSummary.firstDossier.dataSourceNote}</p>
+                          </div>
+                          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Histórico visible de fricción</p>
+                                <h5 className="mt-1 text-base font-semibold text-slate-950">{auditSummary.firstDossierHistory.statusLabel}</h5>
+                                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{auditSummary.firstDossierHistory.insight}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">
+                                  {auditSummary.firstDossierHistory.weeklyDropOffRate === null
+                                    ? "Sin base semanal"
+                                    : `${formatNumber(auditSummary.firstDossierHistory.weeklyDropOffRate)}% caída semanal`}
+                                </Badge>
+                                <Badge
+                                  className={
+                                    auditSummary.firstDossierHistory.weeklyTrendDirection === "down"
+                                      ? "rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800"
+                                      : auditSummary.firstDossierHistory.weeklyTrendDirection === "up"
+                                        ? "rounded-full border border-amber-200 bg-amber-50 text-amber-800"
+                                        : "rounded-full border border-slate-200 bg-white text-slate-700"
+                                  }
+                                >
+                                  {auditSummary.firstDossierHistory.weeklyDropOffDelta === null
+                                    ? "Sin comparación previa"
+                                    : auditSummary.firstDossierHistory.weeklyDropOffDelta === 0
+                                      ? "0 pts vs semana previa"
+                                      : `${auditSummary.firstDossierHistory.weeklyDropOffDelta > 0 ? "+" : ""}${formatNumber(auditSummary.firstDossierHistory.weeklyDropOffDelta)} pts vs previa`}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                              <div className="rounded-2xl border border-slate-200 bg-white/90 p-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Último día visible</p>
+                                <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.firstDossierHistory.latestDailyDropOffCount)}</p>
+                                <p className="mt-1 text-xs leading-5 text-slate-500">Caídas visibles en la jornada más reciente del audit trail.</p>
+                              </div>
+                              <div className="rounded-2xl border border-slate-200 bg-white/90 p-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cierre diario</p>
+                                <p className="mt-2 text-xl font-semibold text-slate-950">
+                                  {auditSummary.firstDossierHistory.latestDailyCompletionRate === null
+                                    ? "Sin base"
+                                    : `${formatNumber(auditSummary.firstDossierHistory.latestDailyCompletionRate)}%`}
+                                </p>
+                                <p className="mt-1 text-xs leading-5 text-slate-500">
+                                  {auditSummary.firstDossierHistory.latestDailyPreviewToConfirmationSeconds === null
+                                    ? "Aún no hay suficiente confirmación visible para medir el ritmo diario."
+                                    : `Ritmo medio preview → confirmación: ${formatDurationCompact(auditSummary.firstDossierHistory.latestDailyPreviewToConfirmationSeconds)}.`}
+                                </p>
+                              </div>
+                              <div className="rounded-2xl border border-slate-200 bg-white/90 p-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Dominio reciente</p>
+                                <p className="mt-2 text-xl font-semibold text-slate-950">{auditSummary.firstDossierHistory.dominantStageLabel}</p>
+                                <p className="mt-1 text-xs leading-5 text-slate-500">Etapa que más explica la fricción visible en la semana más reciente.</p>
+                              </div>
+                            </div>
+                            <div className="mt-4 grid gap-3 xl:grid-cols-2">
+                              <div className="rounded-2xl border border-slate-200 bg-white/90 p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Últimas semanas</p>
+                                  <p className="text-[11px] text-slate-500">Hasta 6 cortes visibles</p>
+                                </div>
+                                <div className="mt-3 space-y-2">
+                                  {auditSummary.firstDossierHistory.weeklySeries.length === 0 ? (
+                                    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                                      La serie semanal aparecerá cuando el audit trail visible acumule más de un corte del primer expediente.
+                                    </p>
+                                  ) : (
+                                    auditSummary.firstDossierHistory.weeklySeries.map((point) => (
+                                      <div key={point.bucketStart} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                          <p className="text-sm font-semibold text-slate-900">Semana de {formatWeekLabel(point.bucketStart)}</p>
+                                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{point.dominantStageLabel}</Badge>
+                                        </div>
+                                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                          <span>{formatNumber(point.starts)} inicios</span>
+                                          <span>{formatNumber(point.confirmations)} confirmaciones</span>
+                                          <span>{formatNumber(point.uploads)} cargas</span>
+                                          <span>{formatNumber(point.legalGateConflictCount)} conflictos legales</span>
+                                        </div>
+                                        <p className="mt-2 text-sm text-slate-600">
+                                          {point.visibleDropOffRate === null
+                                            ? "Sin base visible de caída para esa semana."
+                                            : `${formatNumber(point.visibleDropOffRate)}% de caída visible con ${formatNumber(point.visibleDropOffCount)} expediente(s) que no completan el tramo observable.`}
+                                        </p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                              <div className="rounded-2xl border border-slate-200 bg-white/90 p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Últimos días</p>
+                                  <p className="text-[11px] text-slate-500">Hasta 7 jornadas visibles</p>
+                                </div>
+                                <div className="mt-3 space-y-2">
+                                  {auditSummary.firstDossierHistory.dailySeries.length === 0 ? (
+                                    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                                      La serie diaria aparecerá cuando el primer expediente deje trazas visibles en días distintos.
+                                    </p>
+                                  ) : (
+                                    auditSummary.firstDossierHistory.dailySeries.map((point) => (
+                                      <div key={point.bucketStart} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                          <p className="text-sm font-semibold text-slate-900">{formatDayLabel(point.bucketStart)}</p>
+                                          <Badge className="rounded-full border border-slate-200 bg-white text-slate-700">{point.dominantStageLabel}</Badge>
+                                        </div>
+                                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                          <span>{formatNumber(point.starts)} inicios</span>
+                                          <span>{formatNumber(point.confirmations)} confirmaciones</span>
+                                          <span>{formatNumber(point.uploads)} cargas</span>
+                                        </div>
+                                        <p className="mt-2 text-sm text-slate-600">
+                                          {point.averagePreviewToConfirmationSeconds === null
+                                            ? "Sin ritmo visible suficiente para medir preview → confirmación ese día."
+                                            : `Preview → confirmación en ${formatDurationCompact(point.averagePreviewToConfirmationSeconds)} promedio.`}
+                                        </p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <p className="mt-3 text-xs leading-5 text-slate-500">{auditSummary.firstDossierHistory.dataSourceNote}</p>
                           </div>
                         </div>
                       </div>

@@ -1,0 +1,171 @@
+{
+  "openai": {
+    "ok": true,
+    "result": {
+      "section_name": "Evolución histórica de fricción del primer expediente",
+      "north_star_metric": "Tasa semanal de abandono visible del primer expediente",
+      "recommended_view": {
+        "hero_signal": "Tasa semanal de abandono visible con tendencia y comparación con semana previa",
+        "daily_series": "Tiempo medio visible entre preview y confirmación (día a día)",
+        "weekly_series": "Distribución semanal de fricción dominante (preview, confirmación, subida, gate legal)",
+        "supporting_cards": [
+          "Número diario de abandonos visibles",
+          "Porcentaje diario de arranques visibles completados",
+          "Brecha semanal promedio entre preview y guardado"
+        ],
+        "insight_rule": "Si la tasa semanal de abandono aumenta consecutivamente por 2 semanas, se considera deterioro sostenido; cambios en fricción dominante indican etapa de proceso con mayor riesgo"
+      },
+      "priority_metrics": [
+        {
+          "name": "Tasa semanal de abandono visible",
+          "why": "Mide directamente la fricción crítica que impacta la finalización del primer expediente"
+        },
+        {
+          "name": "Tiempo visible entre preview y confirmación",
+          "why": "Indica eficiencia y posibles cuellos de botella en la captura de datos"
+        },
+        {
+          "name": "Fricción dominante semanal",
+          "why": "Permite identificar qué etapa del flujo genera mayor resistencia o problemas"
+        },
+        {
+          "name": "Número diario de abandonos visibles",
+          "why": "Ayuda a detectar incidentes puntuales o picos inesperados de fricción"
+        }
+      ],
+      "interpretation_rules": [
+        "Incremento sostenido en tasa de abandono semanal indica deterioro en experiencia",
+        "Cambio en fricción dominante sugiere transición en etapa problemática del flujo",
+        "Variaciones diarias en tiempo entre preview y confirmación deben analizarse en contexto semanal para evitar falsas alarmas"
+      ],
+      "microcopy": {
+        "title": "Vista histórica de fricción del primer expediente",
+        "subtitle": "Datos basados en eventos visibles; tendencias diarias y semanales para monitoreo ejecutivo",
+        "data_limit_note": "La información refleja solo eventos auditados visibles; no incluye datos ocultos o no registrados, por lo que debe interpretarse como señal cualitativa y no métrica exacta"
+      },
+      "v1_do": [
+        "Priorizar señales claras y resumidas para lectura rápida",
+        "Mostrar tendencias semanales para evitar ruido de datos diarios",
+        "Mantener coherencia visual y narrativa con la Consola CEO actual"
+      ],
+      "v1_avoid": [
+        "Evitar visualizaciones complejas o con exceso de detalle",
+        "No presentar métricas sin base visible suficiente para evitar falsa precisión",
+        "No incluir exploración analítica profunda que dificulte monitoreo continuo"
+      ]
+    }
+  },
+  "grok": {
+    "ok": true,
+    "result": {
+      "section_name": "Evolución Histórica de Fricción en Primer Expediente",
+      "north_star_metric": "Tasa de Abandono Visible Semanal",
+      "recommended_view": {
+        "hero_signal": "Variación Semanal en Tasa de Abandono",
+        "daily_series": "Tendencia Diaria de Fricción Total",
+        "weekly_series": "Tendencia Semanal de Fricción por Etapa",
+        "supporting_cards": [
+          "Fricción en Preview",
+          "Fricción en Confirmación",
+          "Fricción en Gate Legal"
+        ],
+        "insight_rule": "Comparar tendencias semanales para identificar si la fricción está mejorando, empeorando o estabilizándose"
+      },
+      "priority_metrics": [
+        {
+          "name": "Tasa de Abandono Visible",
+          "why": "Ayuda a detectar aumentos o disminuciones en abandonos para evaluar la retención de usuarios"
+        },
+        {
+          "name": "Tiempo entre Preview y Confirmación",
+          "why": "Permite medir mejoras en el flujo del usuario y detectar cuellos de botella"
+        },
+        {
+          "name": "Fricción Dominante por Etapa",
+          "why": "Identifica si la fricción se concentra en preview, confirmación, subida o gate legal para priorizar acciones"
+        },
+        {
+          "name": "Variación Semanal de Fricción Total",
+          "why": "Distingue entre incidentes puntuales y deterioros sostenidos para una respuesta ejecutiva informada"
+        }
+      ],
+      "interpretation_rules": [
+        "Si la tasa de abandono aumenta semana a semana, investigar causas inmediatas",
+        "Tendencias estables indican estabilidad en el proceso, sin necesidad de intervención",
+        "Descensos en fricción sugieren que las mejoras operativas están funcionando"
+      ],
+      "microcopy": {
+        "title": "Historial de Fricción",
+        "subtitle": "Monitoreo evolutivo del primer expediente",
+        "data_limit_note": "Los datos se basan en interacciones visibles; no incluyen métricas precisas ni datos no auditados para evitar interpretaciones erróneas"
+      },
+      "v1_do": [
+        "Mantener vistas simples y enfocadas en tendencias clave",
+        "Incluir recomendaciones de acción basadas en datos históricos",
+        "Usar colores y gráficos minimalistas para resaltar cambios"
+      ],
+      "v1_avoid": [
+        "Evitar visualizaciones complejas o interactivas que sobrecarguen la interfaz",
+        "No presentar métricas con alta precisión sin base visible",
+        "Evitar interpretaciones ambiguas que podrían generar confusión ejecutiva"
+      ]
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "result": {
+      "section_name": "Histórico de Fricción: Primer Expediente",
+      "north_star_metric": "Índice de Fluidez del Onboarding (Conversión de Inicio a Guardado)",
+      "recommended_view": {
+        "hero_signal": "Delta porcentual de la tasa de abandono vs. promedio de las últimas 4 semanas",
+        "daily_series": "Volumen de expedientes iniciados vs. completados (Barras apiladas)",
+        "weekly_series": "Tasa de conversión por etapa: Preview, Confirmación, Carga y Gate Legal (Líneas de tendencia)",
+        "supporting_cards": [
+          "Etapa con mayor fricción dominante de la semana",
+          "Tiempo promedio entre Preview y Confirmación",
+          "Tasa de rebote específica en Gate Legal"
+        ],
+        "insight_rule": "Si la fricción se desplaza de etapa sin mejorar la conversión total, marcar como 'Desplazamiento de Cuello de Botella'; si la conversión sube, marcar como 'Optimización Efectiva'."
+      },
+      "priority_metrics": [
+        {
+          "name": "Tasa de Abandono Semanal (TAS)",
+          "why": "Permite distinguir si el deterioro es una tendencia sostenida o un incidente técnico puntual."
+        },
+        {
+          "name": "Concentración de Fricción por Etapa",
+          "why": "Identifica si el problema es de usabilidad (Preview/Confirmación) o de cumplimiento (Gate Legal)."
+        },
+        {
+          "name": "Latencia de Confirmación Histórica",
+          "why": "Mide la duda del usuario; un aumento sugiere que el contenido del documento genera incertidumbre legal."
+        },
+        {
+          "name": "Ratio de Recuperación de Abandonos",
+          "why": "Indica si los usuarios que abandonan regresan para completar el proceso tras un primer intento fallido."
+        }
+      ],
+      "interpretation_rules": [
+        "Comparar siempre el desempeño actual contra la media móvil de 30 días para suavizar picos operativos.",
+        "Un aumento en el tiempo de Preview-Confirmación con caída en conversión indica falta de claridad en el documento.",
+        "Si el abandono en Gate Legal sube pero el resto es estable, el problema es de validación de identidad o base de datos."
+      ],
+      "microcopy": {
+        "title": "Evolución de Salud del Primer Expediente",
+        "subtitle": "Análisis histórico de conversión y puntos de abandono en el flujo de alta.",
+        "data_limit_note": "Datos basados exclusivamente en eventos registrados en el audit trail visible de la consola."
+      },
+      "v1_do": [
+        "Utilizar sparklines para mostrar la tendencia diaria sin saturar de números.",
+        "Resaltar visualmente la etapa que concentra más del 40% de las caídas.",
+        "Incluir una etiqueta de 'Estado' (Mejorando/Estable/Deterioro) basada en la última semana."
+      ],
+      "v1_avoid": [
+        "Evitar gráficos de dispersión o mapas de calor complejos que requieran entrenamiento.",
+        "No mostrar métricas de tiempo real que fluctúen por volumen bajo en horas no hábiles.",
+        "Evitar el uso de más de 3 colores distintos para no romper la estética ejecutiva."
+      ],
+      "_gemini_model": "gemini-flash-latest"
+    }
+  }
+}

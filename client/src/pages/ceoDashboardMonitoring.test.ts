@@ -135,6 +135,49 @@ describe("ceoDashboardMonitoring", () => {
         nextAction: "Revisar copy, espera y concurrencia del gate legal antes de atribuir la caída al motor documental.",
         dataSourceNote: "Lectura derivada del audit trail visible: preview, confirmación, carga y gate legal. Los eventos cliente a cliente del primer expediente todavía no están consolidados aquí.",
       },
+      firstDossierHistory: {
+        weeklyDropOffRate: 0,
+        previousWeeklyDropOffRate: null,
+        weeklyDropOffDelta: null,
+        weeklyTrendDirection: "new",
+        statusLabel: "Serie en arranque",
+        dominantStage: "legal_gate",
+        dominantStageLabel: "Gate legal",
+        latestDailyDropOffCount: 0,
+        latestDailyCompletionRate: 100,
+        latestDailyPreviewToConfirmationSeconds: 50,
+        dailySeries: [
+          {
+            bucketStart: "2026-04-10T00:00:00.000Z",
+            starts: 1,
+            confirmations: 1,
+            uploads: 1,
+            visibleDropOffCount: 0,
+            visibleDropOffRate: 0,
+            averagePreviewToConfirmationSeconds: 50,
+            legalGateConflictCount: 1,
+            dominantStage: "legal_gate",
+            dominantStageLabel: "Gate legal",
+          },
+        ],
+        weeklySeries: [
+          {
+            bucketStart: "2026-04-06T00:00:00.000Z",
+            starts: 1,
+            confirmations: 1,
+            uploads: 1,
+            visibleDropOffCount: 0,
+            visibleDropOffRate: 0,
+            averagePreviewToConfirmationSeconds: 50,
+            legalGateConflictCount: 1,
+            dominantStage: "legal_gate",
+            dominantStageLabel: "Gate legal",
+          },
+        ],
+        insight: "La semana más reciente sugiere que la caída visible se explica más por conflictos del gate legal que por el embudo documental puro.",
+        dataSourceNote:
+          "Serie derivada del audit trail visible y agregada en ventanas móviles de hasta 7 días y 6 semanas. El historial usa preview, confirmación, carga y conflictos visibles de gate legal; aún no consolida eventos cliente a cliente como atajos o vacilación.",
+      },
     });
   });
 
@@ -234,6 +277,159 @@ describe("ceoDashboardMonitoring", () => {
         },
       ],
     });
+  });
+
+  it("arma una serie histórica visible por día y semana para leer tendencia del primer expediente", () => {
+    const summary = buildAuditMonitoringSummary([
+      buildAuditItem({
+        id: 81,
+        action: "document.preview_analyzed",
+        caseId: "case-701",
+        createdAt: "2026-04-01T10:00:00.000Z",
+        afterState: { captureMode: "file" },
+      }),
+      buildAuditItem({
+        id: 82,
+        action: "document.preview_confirmed",
+        caseId: "case-701",
+        createdAt: "2026-04-01T10:01:00.000Z",
+        afterState: { previewCreatedAt: "2026-04-01T10:00:00.000Z", captureMode: "file" },
+      }),
+      buildAuditItem({
+        id: 83,
+        action: "document.upload",
+        caseId: "case-701",
+        createdAt: "2026-04-01T10:02:00.000Z",
+      }),
+      buildAuditItem({
+        id: 84,
+        action: "document.preview_analyzed",
+        caseId: "case-702",
+        createdAt: "2026-04-01T11:00:00.000Z",
+        afterState: { captureMode: "file" },
+      }),
+      buildAuditItem({
+        id: 91,
+        action: "document.preview_analyzed",
+        caseId: "case-801",
+        createdAt: "2026-04-08T10:00:00.000Z",
+        afterState: { captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 92,
+        action: "document.preview_analyzed",
+        caseId: "case-802",
+        createdAt: "2026-04-08T10:05:00.000Z",
+        afterState: { captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 93,
+        action: "document.preview_analyzed",
+        caseId: "case-803",
+        createdAt: "2026-04-08T10:10:00.000Z",
+        afterState: { captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 94,
+        action: "document.preview_confirmed",
+        caseId: "case-801",
+        createdAt: "2026-04-08T10:01:00.000Z",
+        afterState: { previewCreatedAt: "2026-04-08T10:00:00.000Z", captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 95,
+        action: "document.preview_confirmed",
+        caseId: "case-802",
+        createdAt: "2026-04-08T10:07:00.000Z",
+        afterState: { previewCreatedAt: "2026-04-08T10:05:00.000Z", captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 96,
+        action: "document.preview_confirmed",
+        caseId: "case-803",
+        createdAt: "2026-04-08T10:13:00.000Z",
+        afterState: { previewCreatedAt: "2026-04-08T10:10:00.000Z", captureMode: "camera" },
+      }),
+      buildAuditItem({
+        id: 97,
+        action: "document.upload",
+        caseId: "case-801",
+        createdAt: "2026-04-08T10:20:00.000Z",
+      }),
+      buildAuditItem({
+        id: 98,
+        action: "consent.legal_package_lock_conflict",
+        entityType: "consent",
+        caseId: "case-804",
+        createdAt: "2026-04-08T11:00:00.000Z",
+      }),
+    ]);
+
+    expect(summary.firstDossierHistory).toMatchObject({
+      weeklyDropOffRate: 67,
+      previousWeeklyDropOffRate: 50,
+      weeklyDropOffDelta: 17,
+      weeklyTrendDirection: "up",
+      statusLabel: "Fricción en aumento",
+      dominantStage: "confirmation_upload",
+      dominantStageLabel: "Confirmación → carga",
+      latestDailyDropOffCount: 2,
+      latestDailyCompletionRate: 33,
+      latestDailyPreviewToConfirmationSeconds: 120,
+      weeklySeries: [
+        {
+          bucketStart: "2026-03-30T00:00:00.000Z",
+          starts: 2,
+          confirmations: 1,
+          uploads: 1,
+          visibleDropOffCount: 1,
+          visibleDropOffRate: 50,
+          averagePreviewToConfirmationSeconds: 60,
+          legalGateConflictCount: 0,
+          dominantStage: "preview_confirmation",
+          dominantStageLabel: "Preview → confirmación",
+        },
+        {
+          bucketStart: "2026-04-06T00:00:00.000Z",
+          starts: 3,
+          confirmations: 3,
+          uploads: 1,
+          visibleDropOffCount: 2,
+          visibleDropOffRate: 67,
+          averagePreviewToConfirmationSeconds: 120,
+          legalGateConflictCount: 1,
+          dominantStage: "confirmation_upload",
+          dominantStageLabel: "Confirmación → carga",
+        },
+      ],
+      dailySeries: [
+        {
+          bucketStart: "2026-04-01T00:00:00.000Z",
+          starts: 2,
+          confirmations: 1,
+          uploads: 1,
+          visibleDropOffCount: 1,
+          visibleDropOffRate: 50,
+          averagePreviewToConfirmationSeconds: 60,
+          legalGateConflictCount: 0,
+          dominantStage: "preview_confirmation",
+          dominantStageLabel: "Preview → confirmación",
+        },
+        {
+          bucketStart: "2026-04-08T00:00:00.000Z",
+          starts: 3,
+          confirmations: 3,
+          uploads: 1,
+          visibleDropOffCount: 2,
+          visibleDropOffRate: 67,
+          averagePreviewToConfirmationSeconds: 120,
+          legalGateConflictCount: 1,
+          dominantStage: "confirmation_upload",
+          dominantStageLabel: "Confirmación → carga",
+        },
+      ],
+    });
+    expect(summary.firstDossierHistory.insight).toContain("después de confirmar");
   });
 
   it("normaliza etiquetas y tonos para rechazos operativos", () => {

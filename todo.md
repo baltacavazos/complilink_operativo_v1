@@ -1112,3 +1112,7 @@
 - [x] Rediseñar el resultado post-subida en /auditar para que el valor recibido, el hallazgo principal y el siguiente paso queden mucho más claros
 - [x] Convertir la telemetría del primer expediente en una lectura visible y accionable dentro de la Consola CEO
 - [x] Reauditar el flujo móvil real de primera carga y confirmación con OpenAI, Grok y Gemini, e implementar la siguiente mejora mobile-first priorizada
+
+- [x] Añadir una vista histórica de fricción del primer expediente por día y semana dentro de la Consola CEO
+- [x] Refinar el consentimiento previo al guardado en /auditar para generar más confianza con menos fricción
+- [x] Optimizar el estado vacío del expediente para sugerir con mayor precisión el siguiente documento según el contexto
