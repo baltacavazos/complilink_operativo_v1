@@ -1145,3 +1145,6 @@
 - [x] Añadir pruebas que validen la navegación del header público y eviten regresiones en los CTA superiores
 - [x] Corregir la navegación superior rota del landing para que 'Cómo funciona', 'Tu expediente' y 'Asistente' lleven a sus secciones correctas en desktop y menú móvil
 - [x] Auditar enlaces y botones visibles del landing relacionados con la navegación principal y blindarlos con pruebas de no regresión
+- [x] Corregir el acceso CEO por código de correo para que no falle con Resend al enviar a dominios corporativos
+- [x] Revisar la configuración de remitente y verificación de dominio del flujo CEO y dejar pruebas de no regresión del acceso por correo
+- [x] Reabrir la tarjeta de OWNER_BACKUP_EMAIL para que el usuario pueda corregir el correo de respaldo temporal del acceso CEO

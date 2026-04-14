@@ -57,6 +57,12 @@ function buildFallbackName(email: string, providedName?: string | null) {
   return normalizeEmail(email);
 }
 
+function isResendExternalRecipientRestriction(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return message.includes("resend rejected the request: 403") && message.includes("you can only send testing emails to your own email address");
+}
+
 export class AuthFlowError extends Error {
   constructor(
     public readonly code:
@@ -316,6 +322,24 @@ async function sendEmailCodeWithResend(params: { email: string; code: string }) 
   });
 }
 
+async function deliverEmailCode(params: { requestedEmail: string; code: string }) {
+  try {
+    await sendEmailCodeWithResend({ email: params.requestedEmail, code: params.code });
+    return { deliveredToEmail: params.requestedEmail, usedOwnerBackupEmail: false };
+  } catch (error) {
+    const ownerUser = await db.getUserByEmail(params.requestedEmail);
+    const ownerBackupEmail = normalizeEmail(ENV.ownerBackupEmail || "");
+    const canUseOwnerFallback = Boolean(ownerUser?.role === "admin" && ownerBackupEmail && ownerBackupEmail !== params.requestedEmail);
+
+    if (!canUseOwnerFallback || !isResendExternalRecipientRestriction(error)) {
+      throw error;
+    }
+
+    await sendEmailCodeWithResend({ email: ownerBackupEmail, code: params.code });
+    return { deliveredToEmail: ownerBackupEmail, usedOwnerBackupEmail: true };
+  }
+}
+
 export async function startEmailLogin(params: { req: Request; res: Response; email: string; name?: string | null }) {
   const email = normalizeEmail(params.email);
   assertEmailCodeRequestAllowed(email);
@@ -328,12 +352,13 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
     name: buildFallbackName(email, params.name),
   });
 
-  await sendEmailCodeWithResend({ email, code });
+  const delivery = await deliverEmailCode({ requestedEmail: email, code });
   recordEmailCodeRequest(email);
   setEmailChallengeCookie(params.req, params.res, challengeToken);
 
   return {
-    maskedEmail: maskEmail(email),
+    maskedEmail: maskEmail(delivery.deliveredToEmail),
+    usedOwnerBackupEmail: delivery.usedOwnerBackupEmail,
     expiresInSeconds: Math.floor(EMAIL_CODE_TTL_MS / 1000),
     cooldownSeconds: Math.floor(EMAIL_RESEND_COOLDOWN_MS / 1000),
     maxRequestsPerWindow: EMAIL_RESEND_MAX_REQUESTS,
