@@ -4617,14 +4617,15 @@ export default function Auditar() {
 
                 <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
                   <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
-                    <p className="font-semibold text-slate-950">Tú controlas lo que pasa con este archivo</p>
+                    <p className="font-semibold text-slate-950">Tú confirmas el guardado; AuditaPatron hace el trabajo pesado</p>
                     <p className="mt-1">
-                      Elegirlo sólo prepara el borrador. Antes de guardar, revisas la lectura y confirmas si realmente quieres integrarlo al expediente.
+                      Elegir el archivo pone en marcha una lectura automática para prepararte un borrador claro. Antes de guardarlo, revisas qué entendimos y decides si realmente quieres integrarlo al expediente.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">PDF, XML o imagen</span>
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">Hasta 15 MB</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Sin guardado automático</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Lectura automática</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Confirmas antes de guardar</span>
                     </div>
                   </div>
 
@@ -4648,7 +4649,7 @@ export default function Auditar() {
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {shouldCompactMobileUploadEntry
-                          ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`
+                          ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`
                           : preferredCaptureMode === "camera"
                             ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
                             : preferredCaptureMode === "file"
@@ -4778,7 +4779,7 @@ export default function Auditar() {
                     ) : null}
                     <details className="mt-3 rounded-2xl border border-white/60 bg-white/55 px-3 py-2 text-xs text-slate-700">
                       <summary className="cursor-pointer list-none font-semibold text-slate-800">
-                        Ver más contexto de esta etapa
+                        Ver qué está haciendo AuditaPatron en esta etapa
                       </summary>
                       <div className="mt-2 space-y-2 leading-5">
                         <p>{getUploadTransitionCopy(uploadProgressState.stepKey)}</p>
@@ -4827,23 +4828,23 @@ export default function Auditar() {
                       <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">Listo para análisis</span>
                     </div>
                     <p className="mt-1">{selectedFile.name} · {formatVisibleFileSize(selectedFile.size)}</p>
-                    <p className="mt-2 leading-6">La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.</p>
+                    <p className="mt-2 leading-6">La revisión preliminar empieza sola en cuanto termina la carga: extraemos señales, ordenamos el borrador y te preparamos la vista previa sin pedirte un paso manual adicional antes del guardado final.</p>
                     <p className="mt-2 text-xs leading-5 text-emerald-900/80">Elegir el archivo no lo guarda todavía en el expediente: primero verás el borrador y después decidirás si confirmas.</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Aún no eliges archivo. Empieza con una foto, PDF o XML del documento que tengas más a la mano; apenas lo selecciones, aquí verás el avance y el siguiente paso sugerido antes de guardarlo.
+                    Aún no eliges archivo. Empieza con una foto, PDF o XML del documento que tengas más a la mano; apenas lo selecciones, aquí verás el avance, lo que entendimos y el siguiente paso sugerido antes de guardarlo.
                   </div>
                 )}
               </div>
 
               <label className="mt-5 block">
-                <span className="text-sm font-medium text-slate-700">Si quieres, cuéntanos qué es este archivo o para qué te ayuda</span>
+                <span className="text-sm font-medium text-slate-700">Si quieres, dale una pista rápida a AuditaPatron sobre qué contiene este archivo</span>
                 <textarea
                   value={textHint}
                   onChange={(event) => setTextHint(event.target.value)}
                   rows={3}
-                  placeholder="Ejemplo: recibo de nómina de marzo, alta IMSS, contrato inicial, captura de instrucciones por WhatsApp..."
+                  placeholder="Ejemplo: recibo de nómina de marzo, alta IMSS, contrato inicial o captura de instrucciones por WhatsApp. Si no escribes nada, igual empezamos con lo visible."
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-teal-500"
                 />
               </label>
@@ -4853,7 +4854,7 @@ export default function Auditar() {
                   <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
                   <div className="space-y-2">
                     <p>
-                      Tu documento queda protegido dentro del flujo de AuditaPatron. Primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
+                      Tu documento queda protegido dentro del flujo de AuditaPatron. Mientras nosotros ordenamos la lectura automática, tú conservas la decisión final: primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
                     </p>
                     <div className="grid gap-2 sm:grid-cols-2">
                       <div className="rounded-2xl bg-white/80 px-3 py-2 text-xs leading-5 text-teal-950">

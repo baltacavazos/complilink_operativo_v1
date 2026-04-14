@@ -87,7 +87,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
-    expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Después te mostraremos el borrador y el siguiente documento sugerido.`');
+    expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`');
     expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
     expect(source).toContain('Documento sugerido preparado');
     expect(source).toContain('Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.');
@@ -118,9 +118,9 @@ describe("copy visible de la experiencia", () => {
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {
     const source = readComponent("components/HeliosCopilotSheet.tsx");
 
-    expect(source).toContain("Tu asistente laboral");
-    expect(source).toContain("Pregunta sobre riesgos, pasos sugeridos o dudas de tu expediente");
-    expect(source).toContain("Tu asistente laboral puede explicarte tu expediente con palabras simples");
+    expect(source).toContain("Helios ya leyó lo visible de tu expediente");
+    expect(source).toContain("Escribe tu duda o toca un atajo. Helios ya parte de lo visible en tu expediente");
+    expect(source).toContain("Helios ya tiene suficiente contexto para empezar");
     expect(source).not.toContain("Copiloto laboral de Helios");
   });
 

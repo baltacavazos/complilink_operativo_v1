@@ -1023,6 +1023,38 @@ function HeroSection() {
           </div>
 
           <div
+            className="motion-enter-soft mt-4 grid w-full max-w-3xl gap-3 sm:grid-cols-3"
+            style={{ ["--motion-delay" as string]: "330ms" }}
+          >
+            {[
+              {
+                eyebrow: "Empiezas con uno",
+                title: "Sube el documento que ya tienes a la mano",
+                detail: "No necesitas preparar una carpeta completa para recibir una primera lectura útil.",
+              },
+              {
+                eyebrow: "Automático",
+                title: "AuditaPatron empieza a leer y ordenar solo",
+                detail: "Detecta señales, arma un borrador y te muestra el siguiente paso sin pedirte vueltas extra.",
+              },
+              {
+                eyebrow: "Claro",
+                title: "Recibes primero lo más importante",
+                detail: "Te devolvemos qué entendimos, qué pesa más y qué conviene subir después con palabras simples.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-[1.35rem] border border-slate-200 bg-white/92 p-4 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.24)]"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{item.eyebrow}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+
+          <div
             className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
@@ -1045,7 +1077,7 @@ function HeroSection() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales de confianza</p>
                   <p className="mt-1 text-sm font-medium leading-6 text-slate-700">
-                    Lenguaje claro, rutas guiadas y un enfoque prudente: primero ves la auditoría del documento, luego decides si quieres profundizar con tu expediente y tu asistente laboral.
+                    Lenguaje claro, rutas guiadas y un enfoque prudente: primero ves la auditoría del documento, sin preparar todo de una vez; después decides si quieres profundizar con tu expediente y tu asistente laboral.
                   </p>
                 </div>
               </div>

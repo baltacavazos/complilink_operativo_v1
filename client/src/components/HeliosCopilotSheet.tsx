@@ -70,10 +70,10 @@ export function HeliosCopilotSheet({
               </div>
               <div className="min-w-0">
                 <SheetTitle className="text-lg tracking-[-0.02em] text-slate-950 dark:text-slate-50">
-                  Tu asistente laboral
+                  Helios ya leyó lo visible de tu expediente
                 </SheetTitle>
                 <SheetDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  Haz preguntas rápidas sobre este expediente y recibe una explicación clara basada en los documentos ya integrados.
+                  Puedes preguntarle algo puntual o dejar que te resuma primero lo importante, lo incierto y el siguiente paso más útil con base en tus documentos integrados.
                 </SheetDescription>
               </div>
             </div>
@@ -86,15 +86,27 @@ export function HeliosCopilotSheet({
               {summary ? <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{summary}</p> : null}
               <div className="flex flex-wrap gap-2 text-xs font-semibold">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">Basado en el expediente visible</span>
+                <span className="rounded-full bg-white px-3 py-1 text-slate-700 dark:bg-slate-900 dark:text-slate-200">Puede resumir, explicar y priorizar</span>
                 {typeof confidenceScore === "number" ? (
                   <span className="rounded-full bg-teal-50 px-3 py-1 text-teal-800 dark:bg-teal-400/14 dark:text-teal-100">Confianza orientativa {confidenceScore}%</span>
                 ) : null}
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {[
+                  "Resumen automático del expediente",
+                  "Qué hallazgo pesa más hoy",
+                  "Qué conviene subir después",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-700 dark:border-white/10 dark:bg-slate-950/70 dark:text-slate-200">
+                    {item}
+                  </div>
+                ))}
               </div>
             </div>
 
             {visibleSuggestedPrompts.length ? (
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/85">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Puedes empezar con</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Atajos para avanzar sin pensar demasiado</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {visibleSuggestedPrompts.map((prompt) => (
                     <Button
@@ -161,8 +173,8 @@ export function HeliosCopilotSheet({
                 isLoading={isLoading}
                 className="h-full border-slate-200 shadow-none dark:border-white/10"
                 height="100%"
-                placeholder="Pregunta sobre riesgos, pasos sugeridos o dudas de tu expediente"
-                emptyStateMessage="Tu asistente laboral puede explicarte tu expediente con palabras simples y decirte qué conviene revisar primero."
+                placeholder="Escribe tu duda o toca un atajo. Helios ya parte de lo visible en tu expediente"
+                emptyStateMessage="Helios ya tiene suficiente contexto para empezar: puede resumirte el expediente, traducir lo complejo y decirte qué conviene revisar o subir primero."
                 suggestedPrompts={[]}
               />
             </div>
@@ -180,7 +192,7 @@ export function HeliosCopilotSheet({
                 className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/12 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                 onClick={() => onOpenChange(false)}
               >
-                Seguir revisando el expediente
+                Volver al expediente
               </Button>
             </div>
           </div>
