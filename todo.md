@@ -1083,3 +1083,5 @@
 - [x] Ejecutar una segunda prueba controlada enfocada sólo en autenticación para validar si `Authorization: Bearer ...` usa exactamente el secreto vigente del bridge en CompliLink y documentar la evidencia exacta de los pasos 1, 2 y 3.
 - [x] Revisar el archivo adjunto `pasted_content_2.txt` y ejecutar sus instrucciones exactas dentro del proyecto AuditaPatron/Helios con evidencia verificable.
 - [x] Validar en producción la versión publicada 039bc2eb en el dominio real y ejecutar las tres comprobaciones del bridge con el token actual, guardando evidencia breve de status y body sin exponer el secreto.
+- [x] Elaborar un reporte de handoff listo para copiar y pegar en otro chat, con evidencia, diagnóstico y plan de corrección para dejar funcionando la conexión Auditapatrón ↔ Helios.
+- [ ] Corregir en producción la autenticación/configuración real del bridge Auditapatrón ↔ Helios, revisar la conectividad hacia `/api/auditapatron/webhook`, repetir las tres pruebas y no cerrar el trabajo mientras algún endpoint siga devolviendo 403.

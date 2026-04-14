@@ -468,4 +468,86 @@ describe("auditaPatronReturnWebhook", () => {
     });
     expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
   });
+
+  it("expone el contrato interno de Helios con autenticación por bearer", async () => {
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/internal/helios/bridge/contract`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "ok",
+      service: "complilink-auditapatron-bridge",
+      endpoints: {
+        contract: "/api/internal/helios/bridge/contract",
+        heliosBridge: "/api/internal/helios/bridge",
+        auditapatronBridge: "/api/integrations/auditapatron/bridge",
+      },
+      authentication: {
+        sharedSecret: {
+          acceptedHeaders: ["Authorization", "x-helios-token", "x-auditapatron-token"],
+        },
+      },
+    });
+  });
+
+  it("acepta x-helios-token en el POST interno y si el payload es incompleto responde 400 en vez de 403", async () => {
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/internal/helios/bridge`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-helios-token": "return-webhook-secret-123456",
+      },
+      body: JSON.stringify({ documentId: "DOC-BRIDGE-001" }),
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      received: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "missing_field",
+          field: "event",
+        },
+      ],
+    });
+  });
+
+  it("acepta x-auditapatron-token en el POST de integración y si el payload es incompleto responde 400 en vez de 403", async () => {
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/integrations/auditapatron/bridge`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auditapatron-token": "return-webhook-secret-123456",
+      },
+      body: JSON.stringify({ documentId: "DOC-BRIDGE-001" }),
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      received: false,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "missing_field",
+          field: "event",
+        },
+      ],
+    });
+  });
 });

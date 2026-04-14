@@ -127,7 +127,49 @@ function hasSharedSecretAuth(req: Request) {
     return true;
   }
 
-  return req.header("x-auditapatron-token")?.trim() === expectedSecret;
+  return [req.header("x-auditapatron-token"), req.header("x-helios-token")].some(
+    (headerValue) => headerValue?.trim() === expectedSecret,
+  );
+}
+
+function buildBridgeContractResponse() {
+  return {
+    status: "ok",
+    service: "complilink-auditapatron-bridge",
+    bridge: "auditapatron",
+    responseContract: RESPONSE_CONTRACT,
+    authentication: {
+      sharedSecret: {
+        acceptedHeaders: ["Authorization", "x-helios-token", "x-auditapatron-token"],
+        bearerFormat: "Bearer <bridge-secret>",
+      },
+      signature: {
+        acceptedHeaders: ["X-AuditaPatron-Timestamp", "X-AuditaPatron-Signature"],
+        algorithm: "HMAC-SHA256(timestamp + '.' + body)",
+      },
+    },
+    endpoints: {
+      contract: "/api/internal/helios/bridge/contract",
+      heliosBridge: "/api/internal/helios/bridge",
+      auditapatronBridge: "/api/integrations/auditapatron/bridge",
+      auditapatronHealth: "/api/auditapatron/health",
+      auditapatronWebhook: "/api/auditapatron/webhook",
+      compliLinkReturnWebhook: "/api/auditapatron/complilink-webhook",
+    },
+  };
+}
+
+function handleHeliosBridgeContract(req: Request, res: Response) {
+  if (!hasSharedSecretAuth(req)) {
+    res.status(403).json({
+      received: false,
+      issues: buildWebhookIssues("authentication_failed", "Invalid bridge credentials."),
+      responseContract: RESPONSE_CONTRACT,
+    });
+    return;
+  }
+
+  res.status(200).json(buildBridgeContractResponse());
 }
 
 function verifyReturnWebhookAuthentication(req: RawBodyRequest, rawBody: string) {
@@ -611,6 +653,9 @@ async function handleCompliLinkReturnWebhook(req: RawBodyRequest, res: Response)
 
 export function registerCompliLinkReturnWebhook(app: Express) {
   app.get("/api/auditapatron/health", handleAuditaPatronHealth);
+  app.get("/api/internal/helios/bridge/contract", handleHeliosBridgeContract);
   app.post("/api/auditapatron/webhook", handleAuditaPatronIncomingWebhook);
   app.post("/api/auditapatron/complilink-webhook", handleCompliLinkReturnWebhook);
+  app.post("/api/internal/helios/bridge", handleCompliLinkReturnWebhook);
+  app.post("/api/integrations/auditapatron/bridge", handleCompliLinkReturnWebhook);
 }
