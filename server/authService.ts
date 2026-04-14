@@ -218,8 +218,10 @@ async function resolveOrCreateUser(params: {
   name?: string | null;
 }) {
   const normalizedEmail = params.email ? normalizeEmail(params.email) : null;
-  const existingUser = normalizedEmail ? await db.getUserByEmail(normalizedEmail) : undefined;
-  const openId = existingUser?.openId ?? `${params.provider}:${params.providerUserId}`;
+  const isOwnerManusIdentity = params.provider === "manus" && params.providerUserId === ENV.ownerOpenId;
+  const canonicalOwnerUser = isOwnerManusIdentity ? await db.getUserByOpenId(ENV.ownerOpenId) : undefined;
+  const existingUser = canonicalOwnerUser ?? (normalizedEmail ? await db.getUserByEmail(normalizedEmail) : undefined);
+  const openId = isOwnerManusIdentity ? ENV.ownerOpenId : existingUser?.openId ?? `${params.provider}:${params.providerUserId}`;
   const name = params.name?.trim() || existingUser?.name || normalizedEmail || params.providerUserId;
 
   await db.upsertUser({
@@ -228,6 +230,7 @@ async function resolveOrCreateUser(params: {
     email: normalizedEmail ?? existingUser?.email ?? null,
     loginMethod: params.provider,
     lastSignedIn: new Date(),
+    ...(isOwnerManusIdentity ? { role: "admin" as const } : {}),
   });
 
   const user = await db.getUserByOpenId(openId);

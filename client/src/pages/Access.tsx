@@ -28,6 +28,8 @@ function getAccessErrorFromSearch() {
       return "Google no está disponible todavía en este entorno. Mientras termina la configuración, puedes entrar con Manus o con código por correo.";
     case "google_callback_failed":
       return "No pudimos completar el acceso con Google. Intenta de nuevo o usa Manus o el código por correo para continuar.";
+    case "manus_callback_failed":
+      return "No pudimos completar el inicio de sesión con Manus. Intenta otra vez o usa el código por correo para entrar o crear tu cuenta desde aquí.";
     default:
       return null;
   }
@@ -180,25 +182,25 @@ export default function Access() {
                 <div className="space-y-2">
                   <AuditaPatronLogoWordmark imageClassName="max-w-[210px]" subtitleClassName="text-xs uppercase tracking-[0.16em] text-white/70" />
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
-                    Acceso operativo
+                    Iniciar sesión o crear cuenta
                   </div>
                 </div>
               </div>
 
               <div className="mt-3 space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar y continuar</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/90">Entrar o crear cuenta</p>
                 <h1 className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
-                  Accede, recupera tu sesión y vuelve a trabajar sin rodeos.
+                  Inicia sesión y vuelve a trabajar sin rodeos.
                 </h1>
                 <p className="max-w-xl text-sm leading-7 text-slate-200">
-                  Entra, recupera tu sesión y vuelve a <strong>{returnTo}</strong> sin pasos extra.
+                  Puedes entrar con Manus o crear tu cuenta con un código por correo, sin contraseña y sin perder tu ruta a <strong>{returnTo}</strong>.
                 </p>
               </div>
             </div>
 
             <div className="px-4 py-3 sm:px-7 sm:py-5">
               <div className="rounded-[1.3rem] border border-dashed border-teal-200 bg-teal-50/70 px-4 py-3 text-sm leading-6 text-teal-950">
-                Ruta corta: entras, confirmas y vuelves al punto exacto donde te quedaste.
+                Ruta corta: entras o creas tu cuenta, confirmas y vuelves al punto exacto donde te quedaste.
               </div>
             </div>
           </section>
@@ -207,10 +209,10 @@ export default function Access() {
             <div className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.26)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Ruta recomendada</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Entra y vuelve a tu ruta en el menor número de pasos</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso simple</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Inicia sesión o crea tu cuenta en el menor número de pasos</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                    La vía principal va primero. Los respaldos quedan debajo solo por si los necesitas.
+                    Manus sigue siendo la vía más corta. Si es tu primera vez o vienes desde el teléfono, debajo también puedes entrar o crear tu cuenta con código por correo.
                   </p>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -221,7 +223,7 @@ export default function Access() {
               <div className="mt-5 rounded-[1.35rem] border border-slate-950 bg-slate-950 p-4 text-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.34)] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Opción principal</p>
                 <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>.
+                  Es la forma más corta de entrar y volver enseguida a <strong>{returnTo}</strong>. Si esta opción falla en tu teléfono, usa el acceso por correo que crea tu cuenta al validar el código.
                 </p>
                 <Button
                   size="lg"
@@ -253,8 +255,8 @@ export default function Access() {
                   </Button>
                 </div>
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600 sm:p-4">
-                  <p className="font-semibold text-slate-900">Alternativa: código por correo</p>
-                  <p className="mt-1.5">Déjalo como respaldo si no puedes usar la vía principal.</p>
+                  <p className="font-semibold text-slate-900">Código por correo</p>
+                  <p className="mt-1.5">También sirve para entrar o crear tu cuenta al instante, sin contraseña.</p>
                   <p className="mt-2 text-[11px] font-medium text-slate-400">Disponible debajo</p>
                 </div>
               </div>
@@ -266,13 +268,13 @@ export default function Access() {
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Respaldo operativo</p>
-                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">Entrar con código por correo</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Acceso por correo</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">Entrar o crear cuenta con código</h2>
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-7 text-slate-600">
-                Usa este flujo solo como respaldo. Recibes un código temporal, validas el acceso y vuelves a tu ruta sin crear contraseña.
+                Recibes un código temporal, validas el acceso y vuelves a tu ruta. Si es tu primera vez, tu usuario se crea automáticamente al confirmar el código; no necesitas contraseña.
               </p>
 
               {statusMessage ? (
@@ -298,6 +300,9 @@ export default function Access() {
                       id="access-email"
                       type="email"
                       autoComplete="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      enterKeyHint="next"
                       required
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
@@ -328,7 +333,7 @@ export default function Access() {
                     disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                   >
                     {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Enviar código de acceso"}
+                    {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s para pedir otro código` : "Recibir código para entrar o crear cuenta"}
                   </Button>
                 </form>
               ) : (
@@ -356,6 +361,7 @@ export default function Access() {
                       inputMode="numeric"
                       pattern="[0-9]{6}"
                       maxLength={6}
+                      enterKeyHint="done"
                       required
                       value={code}
                       onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
@@ -372,7 +378,7 @@ export default function Access() {
                       disabled={verifyEmailCode.isPending || loading}
                     >
                       {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Validar e ingresar
+                      Validar e iniciar sesión
                     </Button>
                     <Button
                       type="button"

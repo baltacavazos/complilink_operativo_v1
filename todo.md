@@ -1116,3 +1116,8 @@
 - [x] Añadir una vista histórica de fricción del primer expediente por día y semana dentro de la Consola CEO
 - [x] Refinar el consentimiento previo al guardado en /auditar para generar más confianza con menos fricción
 - [x] Optimizar el estado vacío del expediente para sugerir con mayor precisión el siguiente documento según el contexto
+- [x] Auditar por qué el inicio de sesión falla desde teléfono y corregir el acceso móvil en AuditaPatron
+- [x] Habilitar un alta de usuarios lo más simple e intuitiva posible dentro del flujo de acceso
+- [x] Dejar configurado el rol CEO para el usuario propietario y el rol user para el resto de usuarios
+- [x] Contrastar con OpenAI, Grok y Gemini la mejor solución de acceso, registro y roles antes de implementarla
+- [x] Validar con pruebas técnicas y flujo real móvil el acceso, alta y roles antes del siguiente checkpoint

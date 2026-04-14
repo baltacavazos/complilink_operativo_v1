@@ -12,13 +12,19 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function getSafeReturnTo(req: Request) {
+  const returnTo = getQueryParam(req, "returnTo") || "/";
+  return returnTo.startsWith("/") ? returnTo : "/";
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
+    const returnTo = getSafeReturnTo(req);
 
     if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+      res.redirect(302, `/acceso?error=manus_callback_failed&returnTo=${encodeURIComponent(returnTo)}`);
       return;
     }
 
@@ -27,7 +33,7 @@ export function registerOAuthRoutes(app: Express) {
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
 
       if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
+        res.redirect(302, `/acceso?error=manus_callback_failed&returnTo=${encodeURIComponent(returnTo)}`);
         return;
       }
 
@@ -42,10 +48,10 @@ export function registerOAuthRoutes(app: Express) {
         name: user.name || userInfo.name || userInfo.email || "CompliLink",
       });
 
-      res.redirect(302, "/");
+      res.redirect(302, returnTo);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      res.redirect(302, `/acceso?error=manus_callback_failed&returnTo=${encodeURIComponent(returnTo)}`);
     }
   });
 

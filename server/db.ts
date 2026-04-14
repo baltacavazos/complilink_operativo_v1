@@ -246,7 +246,13 @@ export async function getUserByEmail(email: string) {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const result = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
+  const adminPriority = sql<number>`case when ${users.role} = 'admin' then 1 else 0 end`;
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .orderBy(desc(adminPriority), desc(users.lastSignedIn), desc(users.id))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
