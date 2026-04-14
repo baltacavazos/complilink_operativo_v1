@@ -1140,3 +1140,8 @@
 - [x] Recortar el microcopy de dos bloques secundarios del landing para que la home sea más directa y ligera en móvil y desktop
 - [x] Añadir una prueba E2E o de integración que detecte y bloquee frases internas o meta en la home pública
 - [x] Revalidar la preview del landing tras esta ronda y dejar checkpoint listo para publicación
+- [x] Auditar exhaustivamente los botones superiores del landing en preview para verificar que 'Cómo funciona', 'Tu expediente' y 'Asistente' respondan correctamente
+- [x] Corregir cualquier enlace roto o interacción incompleta en la navegación superior del landing
+- [x] Añadir pruebas que validen la navegación del header público y eviten regresiones en los CTA superiores
+- [x] Corregir la navegación superior rota del landing para que 'Cómo funciona', 'Tu expediente' y 'Asistente' lleven a sus secciones correctas en desktop y menú móvil
+- [x] Auditar enlaces y botones visibles del landing relacionados con la navegación principal y blindarlos con pruebas de no regresión

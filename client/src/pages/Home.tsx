@@ -424,8 +424,57 @@ const prediagnosticRecommendations: Record<
   },
 };
 
+const SCROLL_TARGET_FALLBACKS: Record<string, string[]> = {
+  "como-funciona": ["como-funciona", "ruta-movil-como-funciona"],
+  expediente: ["expediente", "ruta-movil-expediente"],
+  copiloto: ["copiloto"],
+  preguntas: ["preguntas"],
+};
+
+function isUsableScrollTarget(target: HTMLElement) {
+  const rect = target.getBoundingClientRect();
+  const styles = window.getComputedStyle(target);
+
+  return rect.width > 0 && rect.height > 0 && styles.display !== "none" && styles.visibility !== "hidden";
+}
+
+function resolveScrollTarget(id: string) {
+  const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];
+  let fallbackTarget: HTMLElement | null = null;
+
+  for (const candidateId of candidateIds) {
+    const directMatch = document.getElementById(candidateId);
+    const sectionMatch = document.querySelector<HTMLElement>(`section#${CSS.escape(candidateId)}`);
+
+    for (const candidate of [sectionMatch, directMatch]) {
+      if (!candidate) {
+        continue;
+      }
+
+      if (!fallbackTarget) {
+        fallbackTarget = candidate;
+      }
+
+      if (isUsableScrollTarget(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  return fallbackTarget;
+}
+
 function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const target = resolveScrollTarget(id);
+
+  if (!target) {
+    return;
+  }
+
+  const headerOffset = 96;
+  const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+  window.history.replaceState(null, "", `#${id}`);
+  window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
 const PRIMARY_CTA_LABEL = "Auditar ahora";
@@ -482,6 +531,10 @@ function SiteHeader() {
             <a
               key={link.href}
               href={link.href}
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToId(link.href.replace("#", ""));
+              }}
               className="rounded-full px-2.25 py-1.5 text-[0.84rem] font-medium text-slate-300/80 transition hover:bg-white/8 hover:text-white"
             >
               {link.label}
@@ -560,7 +613,11 @@ function SiteHeader() {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={() => setOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setOpen(false);
+                      scrollToId(link.href.replace("#", ""));
+                    }}
                     className="flex items-center justify-between px-4 py-4 text-[0.97rem] font-semibold text-slate-700 transition duration-200 ease-out hover:bg-slate-50 hover:text-slate-950"
                   >
                     <span>{link.label}</span>
@@ -1976,10 +2033,10 @@ function PrivacySection() {
 }
 
 function MobilePriorityPathSection() {
-  const [selectedMobilePriorityPath, setSelectedMobilePriorityPath] = useState<string | undefined>("como-funciona");
+  const [selectedMobilePriorityPath, setSelectedMobilePriorityPath] = useState<string | undefined>("ruta-movil-como-funciona");
   const mobilePriorityPathItems = [
     {
-      id: "como-funciona",
+      id: "ruta-movil-como-funciona",
       eyebrow: "Qué pasa cuando empiezas",
       title: "Sube un documento y entiende el proceso sin enredos",
       description:
@@ -1993,7 +2050,7 @@ function MobilePriorityPathSection() {
       secondaryHref: "#preguntas",
     },
     {
-      id: "expediente",
+      id: "ruta-movil-expediente",
       eyebrow: "Qué gana tu expediente",
       title: "Cada documento suma contexto y respaldo real",
       description:
@@ -2287,6 +2344,8 @@ export default function Home() {
         <SectionDivider />
         <DossierSection />
       </div>
+      <SectionDivider />
+      <CopilotPreviewSection />
       <SectionDivider />
       <FAQSection />
       <SectionDivider />

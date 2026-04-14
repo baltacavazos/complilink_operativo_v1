@@ -13,8 +13,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Sube un documento laboral");
     expect(homeSource).toContain("y recibe una auditoría clara.");
     expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
-    expect(pricingSource).toContain("Primero úsalo gratis");
-    expect(pricingSource).toContain("No necesitas pagar para entender si AuditaPatrón te puede ayudar.");
+    expect(pricingSource).toContain("Prueba gratis y con claridad desde el inicio");
+    expect(pricingSource).toContain("Puedes seguir usando la auditoría y tu expediente sin pagar ni desbloquear nada por obligación.");
     expect(homeSource).toContain("Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido.");
     expect(homeSource).toContain("AuditaPatron empieza a leer y ordenar solo");
     expect(homeSource).toContain("Recibes primero lo más importante");
@@ -97,6 +97,20 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("hidden motion-hover-lift h-10 border-transparent bg-transparent");
     expect(homeSource).toContain("order-2 mt-4 flex w-full max-w-sm");
     expect(homeSource).toContain("pb-7 pt-5");
+  });
+
+  it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {
+    expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
+    expect(homeSource).toContain('{ href: "#expediente", label: "Tu expediente" }');
+    expect(homeSource).toContain('{ href: "#copiloto", label: "Asistente" }');
+    expect(homeSource).toContain('const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];');
+    expect(homeSource).toContain('const sectionMatch = document.querySelector<HTMLElement>(`section#${CSS.escape(candidateId)}`);');
+    expect(homeSource).toContain('window.history.replaceState(null, "", `#${id}`)');
+    expect(homeSource).toContain('<CopilotPreviewSection />');
+    expect(homeSource).toContain('id: "ruta-movil-como-funciona"');
+    expect(homeSource).toContain('id: "ruta-movil-expediente"');
+    expect(homeSource).not.toContain('id: "como-funciona",\n      eyebrow: "Qué pasa cuando empiezas"');
+    expect(homeSource).not.toContain('id: "expediente",\n      eyebrow: "Qué gana tu expediente"');
   });
 
   it("simplifies the first mobile upload touchpoint with a visible mode toggle, autofocus and selector analytics", () => {

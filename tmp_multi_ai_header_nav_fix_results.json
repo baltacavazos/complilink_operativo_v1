@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-04-14T21:17:31.147Z",
+  "promptSummary": "Consenso multi-IA para corregir la navegación superior del landing con ids duplicados",
+  "openai": {
+    "root_cause": [
+      "Existencia de múltiples elementos con el mismo id en la página, causando que los enlaces con href a esos ids apunten al primer elemento duplicado en lugar del deseado.",
+      "El navegador resuelve el hash al primer elemento con el id, que es un DIV superior no deseado, en lugar de la SECTION real esperada.",
+      "Esto provoca que el scroll no se realice al bloque correcto cuando se usan los enlaces del header."
+    ],
+    "minimal_code_changes": [
+      "Modificar los manejadores de click de los botones del header para prevenir el comportamiento por defecto del enlace.",
+      "Usar la función scrollToId(id) para hacer scroll programáticamente al elemento correcto con getElementById(id), asegurando que se desplaza al bloque esperado.",
+      "Mantener los href con hash para accesibilidad y SEO, pero evitar que el navegador realice el scroll automático.",
+      "Ejemplo: en el componente Header, agregar onClick={e => { e.preventDefault(); scrollToId('como-funciona'); }} en el enlace correspondiente."
+    ],
+    "test_guardrails": [
+      "Verificar que al hacer click en cada botón del header, el scroll se realiza al bloque correcto con el id esperado.",
+      "Comprobar que el hash en la URL cambia correctamente sin que el navegador realice scroll automático incorrecto.",
+      "Probar tanto en vista desktop como en menú móvil que el comportamiento es consistente.",
+      "Usar Playwright para simular clicks y validar posición del scroll y estado del hash.",
+      "Agregar pruebas unitarias con Vitest para asegurar que la función scrollToId se llama con el id correcto."
+    ],
+    "recommended_fix": [
+      "En el componente del header, para cada enlace con href='#id', agregar un manejador onClick que prevenga el comportamiento por defecto y llame a scrollToId('id').",
+      "Ejemplo para el botón 'Cómo funciona':",
+      "  <a href='#como-funciona' onClick={e => { e.preventDefault(); scrollToId('como-funciona'); }}>Cómo funciona</a>",
+      "Repetir para 'Tu expediente' y 'Asistente' con sus respectivos ids.",
+      "Esto garantiza que el scroll se realice al elemento correcto, evitando el problema de ids duplicados sin modificar la estructura del DOM ni eliminar ids.",
+      "Mantener la función scrollToId como está para centralizar el comportamiento de scroll."
+    ]
+  },
+  "gemini": {
+    "root_cause": [
+      "Existencia de IDs duplicados en el DOM para los anclajes de navegación ('#como-funciona', '#expediente', '#copiloto').",
+      "El comportamiento por defecto del navegador para los enlaces de anclaje (href='#id') es desplazarse al *primer* elemento encontrado con ese ID en el DOM.",
+      "La función `document.getElementById(id)` (utilizada por la función `scrollToId` existente) también devuelve el *primer* elemento con el ID especificado, lo que impide el desplazamiento al bloque `SECTION` deseado y en su lugar se desplaza a un DIV superior no deseado."
+    ],
+    "minimal_code_changes": [
+      "Modificar la implementación de la función `scrollToId(id)` para que utilice `document.querySelector('section#' + id)` en lugar de `document.getElementById(id)`. Esto asegura que se selecciona específicamente la etiqueta `SECTION` con el ID deseado.",
+      "Actualizar los enlaces de navegación del header (tanto en la versión desktop como en el menú móvil) para que intercepten el evento `click`, llamen a `e.preventDefault()` y luego invoquen explícitamente la función `scrollToId(id)` con el ID correspondiente."
+    ],
+    "test_guardrails": [
+      "**Vitest (Unitarios):**",
+      "- Crear un mock para `document.querySelector` que simule la existencia de una `SECTION` con el ID esperado y verificar que `scrollIntoView` es llamado en el elemento correcto.",
+      "- Probar casos donde el elemento objetivo no existe para asegurar que `scrollToId` no lanza errores y no intenta hacer scroll.",
+      "**Playwright (E2E/Integración):**",
+      "- **Desktop:** Navegar a la página de AuditaPatron. Hacer clic en cada enlace del header ('Cómo funciona', 'Tu expediente', 'Asistente'). Verificar que la URL cambia al hash correcto y que la `SECTION` correspondiente (ej. `section#como-funciona`) es visible en el viewport después del scroll.",
+      "- **Móvil:** Abrir el menú móvil. Hacer clic en cada enlace del menú. Verificar que la URL cambia al hash correcto y que la `SECTION` correspondiente es visible en el viewport. Asegurarse de que el menú se cierra o se comporta como se espera después del clic.",
+      "- Verificar que no hay errores en la consola del navegador durante la navegación y el scroll."
+    ],
+    "recommended_fix": [
+      "**Corrección Mínima y Robusta (Corto Plazo):**",
+      "1.  **Actualizar la función `scrollToId`:**",
+      "    Modificar la función existente (probablemente en `client/src/utils/scroll.ts` o similar) para que apunte específicamente a la `SECTION` deseada:",
+      "    ```typescript",
+      "    export const scrollToId = (id: string) => {\n      const targetElement = document.querySelector(`section#${id}`);\n      if (targetElement) {\n        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });\n        // Opcional: Actualizar el hash de la URL para mantener la consistencia\n        window.history.pushState(null, '', `#${id}`);\n      }\n    };",
+      "    ```",
+      "2.  **Modificar los enlaces del Header:**",
+      "    En el componente del Header (ej. `client/src/components/Header.tsx`), para cada enlace de navegación afectado, añadir un `onClick` handler que prevenga el comportamiento por defecto y llame a la función `scrollToId`:",
+      "    ```tsx",
+      "    // Ejemplo para un enlace en el Header (aplicar a todos los afectados, desktop y móvil)\n    <a\n      href=\"#como-funciona\"\n      onClick={(e) => {\n        e.preventDefault(); // Previene el scroll por defecto del navegador\n        scrollToId('como-funciona');\n      }}\n    >\n      Cómo funciona\n    </a>",
+      "    ```",
+      "**Recomendación a Largo Plazo (Mejor Práctica y Solución Definitiva):**",
+      "La causa raíz del problema son los IDs duplicados en el DOM. Aunque la solución anterior es un parche robusto, la mejor práctica y la solución definitiva es asegurar que todos los IDs en el DOM sean únicos. Esto es un principio fundamental de HTML y evitará problemas similares en el futuro, además de mejorar la accesibilidad y la semántica.",
+      "1.  **Refactorizar IDs:** Identificar y eliminar los IDs duplicados. Si los 'DIVs superiores con topDoc 0' necesitan ser referenciados, se deben usar clases o atributos `data-*` en su lugar, o generar IDs únicos dinámicamente si son instancias de un componente repetible."
+    ]
+  },
+  "grok": {
+    "root_cause": [
+      "IDs duplicados en la DOM para secciones como 'como-funciona', 'expediente' y 'copiloto', lo que hace que el navegador y document.getElementById seleccionen el primer elemento en lugar del correcto.",
+      "La función scrollToId utiliza document.getElementById, que devuelve solo el primer elemento coincidente, ignorando elementos posteriores con el mismo ID."
+    ],
+    "minimal_code_changes": [
+      "Renombrar los IDs duplicados en Home.tsx y otros componentes relevantes para que sean únicos, por ejemplo, cambiar 'como-funciona' en bloques internos a 'como-funciona-mobile'.",
+      "Asegurarse de que los enlaces en el header (href='#como-funciona', etc.) apunten a los IDs renombrados, y actualizar scrollToId si es necesario para usar el nuevo ID."
+    ],
+    "test_guardrails": [
+      "Usar Playwright para escribir pruebas que simulen clics en los botones del header y verifiquen que el viewport se desplaza a la sección correcta en desktop y mobile views.",
+      "Usar Vitest para comprobar que querySelectorAll para cada ID devuelve solo un elemento, asegurando la unicidad de IDs en el DOM renderizado."
+    ],
+    "recommended_fix": [
+      "1. Inspecciona Home.tsx y la estructura DOM para identificar y renombrar los IDs duplicados a valores únicos, manteniendo la lógica existente.",
+      "2. Actualiza los enlaces en el header para que coincidan con los nuevos IDs, y verifica que scrollToId funcione con ellos.",
+      "3. Prueba manualmente en diferentes vistas (desktop y mobile) para confirmar el desplazamiento correcto antes de ejecutar pruebas automatizadas.",
+      "4. Ejecuta las pruebas con Vitest y Playwright para validar la corrección y evitar regresiones."
+    ]
+  }
+}
