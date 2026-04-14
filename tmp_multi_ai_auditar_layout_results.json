@@ -1,0 +1,158 @@
+{
+  "prompt": "Actúa como un lead product engineer obsesionado con claridad visual y UX mobile-first para México. Responde en español.\n\nProducto:\n- App: AuditaPatron.\n- Pantalla foco: /auditar, vista autenticada.\n- Problema reportado por el usuario: \"Demasiada información, no encajan bien algunos recuadros\".\n\nContexto visible actual:\n- En la zona media de /auditar aparecen varios bloques paralelos con tarjetas pequeñas y estrechas.\n- Hay un bloque de seguimiento automático con métricas y un embudo operativo mínimo que hoy puede renderizar 4 tarjetas en paralelo.\n- También hay una zona previa con varias tarjetas pequeñas de resumen, un bloque de siguiente documento, historial de revalidaciones y una tarjeta comercial opcional.\n- El resultado percibido es demasiada densidad y algunos recuadros se sienten mal encajados o demasiado estrechos.\n\nRestricciones:\n- No agregar funcionalidades nuevas.\n- Hacer el cambio mínimo pero contundente.\n- Priorizar legibilidad, equilibrio y claridad de la siguiente acción.\n- Evitar tarjetas muy altas y angostas.\n- Debe seguir funcionando en móvil y desktop.\n\nQuiero una respuesta ESTRICTA en JSON con esta forma exacta:\n{\n  \"consensus\": \"texto corto\",\n  \"main_problem\": \"texto corto\",\n  \"layout_fix\": {\n    \"top_priority\": \"texto corto\",\n    \"grid_decision\": \"2_cols_max | 1_col_priority_stack | mixed\",\n    \"why\": \"texto corto\",\n    \"must_remove_or_reduce\": [\"item 1\", \"item 2\", \"item 3\"]\n  },\n  \"section_actions\": {\n    \"social_security_zone\": [\"accion 1\", \"accion 2\", \"accion 3\"],\n    \"monitoring_zone\": [\"accion 1\", \"accion 2\", \"accion 3\"],\n    \"optional_paid_zone\": [\"accion 1\", \"accion 2\"]\n  },\n  \"implementation_minimum\": {\n    \"css_or_layout\": [\"paso 1\", \"paso 2\", \"paso 3\"],\n    \"copy\": [\"ajuste 1\", \"ajuste 2\"],\n    \"validation\": [\"prueba 1\", \"prueba 2\", \"prueba 3\"]\n  },\n  \"priority_score\": 0\n}\n\nReglas adicionales:\n- Devuelve solo JSON válido.\n- priority_score debe ser un número de 0 a 100.\n- Piensa como alguien que quiere arreglar el layout hoy mismo con el menor riesgo posible.\n- Favorece menos columnas, menos cajas simultáneas y más aire visual.",
+  "results": [
+    {
+      "provider": "chatgpt",
+      "ok": true,
+      "output": {
+        "consensus": "Reducir la densidad visual y mejorar el encaje de tarjetas para mayor claridad.",
+        "main_problem": "Demasiadas tarjetas pequeñas y estrechas en paralelo generan sensación de desorden y mala legibilidad.",
+        "layout_fix": {
+          "top_priority": "Reducir a máximo 2 columnas para evitar tarjetas angostas y mejorar legibilidad.",
+          "grid_decision": "2_cols_max",
+          "why": "Menos columnas generan tarjetas más anchas, mejorando el equilibrio visual y facilitando la lectura en móvil y desktop.",
+          "must_remove_or_reduce": [
+            "cantidad de tarjetas paralelas en bloque de seguimiento automático",
+            "tarjetas pequeñas de resumen en zona previa",
+            "tarjeta comercial opcional si no aporta claridad inmediata"
+          ]
+        },
+        "section_actions": {
+          "social_security_zone": [
+            "Reducir tarjetas a 1 o 2 por fila para evitar estrechez",
+            "Aumentar padding interno para mejorar legibilidad",
+            "Eliminar elementos redundantes o poco relevantes"
+          ],
+          "monitoring_zone": [
+            "Limitar a 2 tarjetas paralelas máximo en embudo operativo",
+            "Incrementar espacio entre tarjetas para evitar sensación de amontonamiento",
+            "Priorizar métricas clave y ocultar detalles secundarios en acordeón o tooltip"
+          ],
+          "optional_paid_zone": [
+            "Colocar tarjeta comercial al final en una sola columna",
+            "Reducir tamaño y simplificar contenido para no competir visualmente"
+          ]
+        },
+        "implementation_minimum": {
+          "css_or_layout": [
+            "Modificar grid-template-columns a máximo 2 columnas en desktop y 1 en móvil",
+            "Aumentar gap entre tarjetas a mínimo 16px",
+            "Ajustar padding interno de tarjetas para evitar altura excesiva y mejorar legibilidad"
+          ],
+          "copy": [
+            "Simplificar textos en tarjetas para evitar saturación",
+            "Destacar llamada a la acción principal con texto claro y conciso"
+          ],
+          "validation": [
+            "Probar en dispositivos móviles reales para confirmar legibilidad",
+            "Verificar que no haya scroll horizontal en desktop ni móvil",
+            "Confirmar que la acción principal sea clara y visible sin distracciones"
+          ]
+        },
+        "priority_score": 85
+      }
+    },
+    {
+      "provider": "grok",
+      "ok": true,
+      "output": {
+        "consensus": "Reducir densidad para mejorar UX móvil",
+        "main_problem": "Sobrecarga visual con tarjetas estrechas",
+        "layout_fix": {
+          "top_priority": "Aumentar aire visual en móvil",
+          "grid_decision": "1_col_priority_stack",
+          "why": "Favorece legibilidad y evita estrechez",
+          "must_remove_or_reduce": [
+            "Tarjetas paralelas en embudo",
+            "Historial de revalidaciones extenso",
+            "Tarjeta comercial si no esencial"
+          ]
+        },
+        "section_actions": {
+          "social_security_zone": [
+            "Alinear tarjetas en stack vertical",
+            "Reducir ancho mínimo",
+            "Añadir padding superior"
+          ],
+          "monitoring_zone": [
+            "Limitar a 2 tarjetas por fila en desktop",
+            "Stackear métricas en móvil",
+            "Eliminar duplicados visuales"
+          ],
+          "optional_paid_zone": [
+            "Hacerla colapsable",
+            "Reducir altura"
+          ]
+        },
+        "implementation_minimum": {
+          "css_or_layout": [
+            "Cambiar grid a flex column en media query móvil",
+            "Ajustar min-width de tarjetas a 100%",
+            "Añadir margin-bottom entre secciones"
+          ],
+          "copy": [
+            "Acortar textos de resumen",
+            "Simplificar labels de métricas"
+          ],
+          "validation": [
+            "Probar en iOS y Android browsers",
+            "Verificar responsive en desktop",
+            "Medir tiempo de carga post-cambio"
+          ]
+        },
+        "priority_score": 85
+      }
+    },
+    {
+      "provider": "gemini",
+      "ok": true,
+      "output": {
+        "consensus": "La pantalla está sobrecargada visualmente, afectando la legibilidad y la jerarquía de la información clave.",
+        "main_problem": "Exceso de densidad de información y tarjetas mal ajustadas, dificultando la comprensión y la acción principal.",
+        "layout_fix": {
+          "top_priority": "Simplificar la estructura visual para mejorar la legibilidad y la claridad de la acción principal en móvil.",
+          "grid_decision": "1_col_priority_stack",
+          "why": "Priorizar una pila vertical en móvil para asegurar legibilidad y flujo, adaptándose a 2 columnas en desktop solo si el contenido lo permite sin sacrificar espacio ni generar tarjetas estrechas.",
+          "must_remove_or_reduce": [
+            "Disposición paralela de múltiples tarjetas pequeñas en la zona media.",
+            "El bloque de seguimiento automático renderizando 4 tarjetas en paralelo.",
+            "Varias tarjetas pequeñas de resumen dispersas en la zona previa."
+          ]
+        },
+        "section_actions": {
+          "social_security_zone": [
+            "Consolidar las tarjetas de resumen en un componente único o sección con métricas clave y un diseño más amplio.",
+            "Dar prominencia visual clara al 'siguiente documento' como la acción más importante en esta zona.",
+            "Integrar el 'historial de revalidaciones' en un acceso secundario (ej. botón 'Ver historial') o un componente expandible."
+          ],
+          "monitoring_zone": [
+            "Reorganizar las 4 tarjetas de seguimiento en una pila vertical en móvil, o un carrusel horizontal (swipeable) si el contenido es muy similar.",
+            "Aumentar el tamaño de las tarjetas de seguimiento para mejorar la legibilidad de las métricas y el 'tap target'.",
+            "Destacar la métrica más crítica o la acción de seguimiento más urgente dentro de este bloque."
+          ],
+          "optional_paid_zone": [
+            "Mover la tarjeta comercial opcional a una posición menos intrusiva, como el final de la pantalla o un footer.",
+            "Reducir su tamaño o hacerla colapsable por defecto si no es la acción principal que el usuario debe tomar en esta pantalla."
+          ]
+        },
+        "implementation_minimum": {
+          "css_or_layout": [
+            "Aplicar `display: grid` con `grid-template-columns: 1fr` para móvil y `repeat(auto-fit, minmax(320px, 1fr))` para desktop, limitando a un máximo de 2 columnas.",
+            "Asegurar que todas las tarjetas tengan un `min-height` y `padding` adecuados para evitar la sensación de estrechez y mejorar el aire visual.",
+            "Implementar `gap` entre los componentes principales y las tarjetas para crear separación y reducir la densidad."
+          ],
+          "copy": [
+            "Revisar y acortar los títulos de las tarjetas para que sean más concisos y orientados a la acción.",
+            "Asegurar que el texto principal dentro de cada tarjeta sea escaneable y comunique el valor o la acción de forma inmediata."
+          ],
+          "validation": [
+            "Prueba de usabilidad rápida con 3-5 usuarios en dispositivos móviles para validar la claridad de la acción principal y la legibilidad.",
+            "Revisión de QA en diferentes tamaños de pantalla (móvil, tablet, desktop) para asegurar el ajuste y la responsividad.",
+            "Monitorear métricas de interacción (ej. clics en 'siguiente documento') para validar la mejora en la claridad de la acción."
+          ]
+        },
+        "priority_score": 85
+      }
+    }
+  ]
+}

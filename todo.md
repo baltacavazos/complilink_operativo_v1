@@ -1129,3 +1129,8 @@
 - [x] Hacer explícita y funcional la vía de inicio de sesión del CEO en dominio público y previsualización, sin depender de adivinanzas ni rutas ocultas
 - [x] Contrastar con OpenAI, Grok y Gemini la solución mínima para layout móvil y acceso CEO antes de implementarla
 - [ ] Validar con pruebas técnicas y revisión visual real el acceso CEO y la estabilidad de /acceso antes del siguiente checkpoint
+- [x] Corregir en /auditar los recuadros que no encajan bien en la composición visible reportada por el usuario
+- [x] Reducir la densidad de información en la zona media de /auditar para que la jerarquía se entienda más rápido y sin ruido
+- [x] Verificar si el problema visto por el usuario sigue en el código actual o sólo en la versión publicada antes del siguiente checkpoint
+- [x] Ejecutar la corrección integral de /auditar hasta dejar resuelto el exceso de información y los recuadros mal encajados usando el consenso de OpenAI, Grok y Gemini
+- [x] Iterar las veces necesarias sobre la maquetación de /auditar hasta que la composición quede limpia, estable y verificable

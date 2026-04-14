@@ -4591,7 +4591,7 @@ export default function Auditar() {
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué está pasando ahora</p>
                     <p className="mt-2 font-semibold text-slate-950">Tu expediente se ordena, resguarda y revisa por ti</p>
@@ -4606,7 +4606,7 @@ export default function Auditar() {
                     <p className="mt-2 text-sm leading-6 text-slate-700">{getHeliosActivationCopy(visibleHeliosOpinion?.mode)}</p>
                   </div>
 
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4 md:col-span-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cruce IMSS e Infonavit</p>
                     <p className="mt-2 font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -4651,21 +4651,31 @@ export default function Auditar() {
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-4 space-y-3">
+                    <div className="mt-4">
                       {socialSecurityRevalidationHistory.length ? (
-                        socialSecurityRevalidationHistory.map((entry) => (
-                          <div key={`${entry.recordedAt}-${entry.summary}`} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <p className="font-semibold text-slate-900">{entry.statusLabel}</p>
-                              <span className="text-xs font-medium text-slate-500">{formatDate(entry.recordedAt)}</span>
-                            </div>
-                            <p className="mt-2 text-sm leading-6 text-slate-700">{entry.summary}</p>
-                            <p className="mt-2 text-xs leading-5 text-slate-500">
-                              {entry.coverageScore ? `Cobertura estimada: ${entry.coverageScore}%` : "Cobertura registrada en esta revalidación."}
-                              {entry.recommendedNextStep ? ` · ${entry.recommendedNextStep}` : ""}
-                            </p>
+                        <details className="group rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-slate-900">
+                            <span>Ver historial detallado</span>
+                            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-600">
+                              {socialSecurityRevalidationHistory.length} registro{socialSecurityRevalidationHistory.length === 1 ? "" : "s"}
+                            </span>
+                          </summary>
+                          <div className="mt-3 space-y-3">
+                            {socialSecurityRevalidationHistory.map((entry) => (
+                              <div key={`${entry.recordedAt}-${entry.summary}`} className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <p className="font-semibold text-slate-900">{entry.statusLabel}</p>
+                                  <span className="text-xs font-medium text-slate-500">{formatDate(entry.recordedAt)}</span>
+                                </div>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">{entry.summary}</p>
+                                <p className="mt-2 text-xs leading-5 text-slate-500">
+                                  {entry.coverageScore ? `Cobertura estimada: ${entry.coverageScore}%` : "Cobertura registrada en esta revalidación."}
+                                  {entry.recommendedNextStep ? ` · ${entry.recommendedNextStep}` : ""}
+                                </p>
+                              </div>
+                            ))}
                           </div>
-                        ))
+                        </details>
                       ) : (
                         <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
                           Cuando revalides IMSS e Infonavit desde tu expediente, aquí verás la fecha, el estado y el cambio detectado entre revisiones.
@@ -4677,7 +4687,7 @@ export default function Auditar() {
 
                 <div className="mt-4 rounded-[1.25rem] border border-teal-100 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-4 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="max-w-2xl">
+                    <div className="min-w-0 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
                           {pricingExperience.platform.eyebrow}
@@ -4689,8 +4699,9 @@ export default function Auditar() {
                         ) : null}
                       </div>
                       <p className="mt-3 text-lg font-semibold text-slate-950">{pricingExperience.platform.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{pricingExperience.platform.description}</p>
-                      <p className="mt-3 text-xs leading-5 text-slate-500">{pricingExperience.platform.reassurance}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">
+                        Esta preparación es opcional. Si por ahora solo quieres seguir con tu expediente y los documentos sugeridos, puedes continuar sin pagar ni desbloquear nada.
+                      </p>
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[240px]">
@@ -6420,7 +6431,7 @@ export default function Auditar() {
                 </span>
               </div>
 
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div className="mt-3 grid grid-cols-2 gap-2 text-center">
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">En espera</p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
@@ -6429,7 +6440,7 @@ export default function Auditar() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">Revisar</p>
                   <p className="mt-2 text-xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
                 </div>
-                <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3">
+                <div className="col-span-2 rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3 sm:col-span-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">Listos</p>
                   <p className="mt-2 text-xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
                 </div>
@@ -6858,7 +6869,7 @@ export default function Auditar() {
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento automático</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">En espera</p>
                   <p className="mt-2 text-2xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
@@ -6867,7 +6878,7 @@ export default function Auditar() {
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Conviene revisar</p>
                   <p className="mt-2 text-2xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
                 </div>
-                <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4">
+                <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4 sm:col-span-2 lg:col-span-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Ya respondidos</p>
                   <p className="mt-2 text-2xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
                 </div>
@@ -6879,7 +6890,7 @@ export default function Auditar() {
               </div>
 
               <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Embudo operativo mínimo</p>
                     <p className="mt-2 text-lg font-semibold text-slate-950">Del acceso inicial al primer documento útil</p>
@@ -6889,7 +6900,7 @@ export default function Auditar() {
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
                   {operationalFunnelSteps.map((step, index) => (
                     <div
                       key={step.id}

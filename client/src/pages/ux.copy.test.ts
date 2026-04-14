@@ -91,6 +91,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
     expect(source).toContain('Documento sugerido preparado');
     expect(source).toContain('Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.');
+    expect(source).toContain('mt-4 grid gap-3 md:grid-cols-2');
+    expect(source).toContain('md:col-span-2');
+    expect(source).toContain('Ver historial detallado');
+    expect(source).toContain('Esta preparación es opcional. Si por ahora solo quieres seguir con tu expediente y los documentos sugeridos, puedes continuar sin pagar ni desbloquear nada.');
+    expect(source).toContain('mt-3 grid grid-cols-2 gap-2 text-center');
+    expect(source).toContain('sm:grid-cols-2 lg:grid-cols-3');
+    expect(source).toContain('mt-4 grid gap-3 md:grid-cols-2');
+    expect(source).not.toContain('mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4');
   });
 
   it("refuerza la ruta principal en acceso sin competir visualmente con alternativas", () => {
