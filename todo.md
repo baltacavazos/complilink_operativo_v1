@@ -1,5 +1,13 @@
 # Project TODO
 
+- [x] Resolver la conexión de esta sesión con el nuevo runtime de Helios y revalidar el bridge con el secreto efectivo correcto
+
+- [x] Alinear esta sesión con el nuevo runtime de Helios para validar contra el secreto efectivo correcto
+
+- [x] Revalidar desde este mismo proyecto/runtime los 6 checks del bridge en www.complilink.mx y compli-mx-phtbkw9q.manus.space y entregar la tabla final actualizada
+
+- [x] Repetir la validación del bridge Helios/Auditapatrón en www.complilink.mx y compli-mx-phtbkw9q.manus.space con los 3 checks exactos y reportar la tabla consolidada
+
 - [x] Cerrar la auditoría integral multi-modelo de home, /auditar, /acceso y Consola CEO con ChatGPT, Grok y Gemini
 - [x] Sintetizar consenso de simplificación V1 sin agregar funciones nuevas
 - [x] Implementar una micro-ronda de reducción de scroll y compactación de copy sólo en los puntos consensuados
@@ -1085,3 +1093,4 @@
 - [x] Validar en producción la versión publicada 039bc2eb en el dominio real y ejecutar las tres comprobaciones del bridge con el token actual, guardando evidencia breve de status y body sin exponer el secreto.
 - [x] Elaborar un reporte de handoff listo para copiar y pegar en otro chat, con evidencia, diagnóstico y plan de corrección para dejar funcionando la conexión Auditapatrón ↔ Helios.
 - [ ] Corregir en producción la autenticación/configuración real del bridge Auditapatrón ↔ Helios, revisar la conectividad hacia `/api/auditapatron/webhook`, repetir las tres pruebas y no cerrar el trabajo mientras algún endpoint siga devolviendo 403.
+- [ ] Validar la alineación final en producción sobre `https://www.complilink.mx` ejecutando únicamente `GET /api/internal/helios/bridge/contract`, `POST /api/internal/helios/bridge` con payload válido mínimo y `POST /api/integrations/auditapatron/bridge` con payload válido mínimo, usando el token actual del runtime y sin cambiar nada si los tres responden 200.
