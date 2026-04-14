@@ -2747,6 +2747,18 @@ export default function Auditar() {
   );
   const guardrails = lastUpload?.preliminaryAnalysis?.guardrails ?? [];
   const lastUploadReadiness = getDocumentReadiness(lastUpload?.classification?.classificationConfidence);
+  const primaryLastUploadShortcut = lastUploadShortcuts[0] ?? null;
+  const secondaryLastUploadShortcuts = primaryLastUploadShortcut ? lastUploadShortcuts.slice(1) : lastUploadShortcuts;
+  const lastUploadResultHeadline =
+    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.headline) ?? uploadInsight?.label ?? "Tu documento ya quedó integrado a tu expediente";
+  const lastUploadResultLead =
+    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.lead ?? lastHeliosOpinion?.summary) ??
+    uploadInsight?.contribution ??
+    "Ya hay una primera lectura útil para entender qué aporta este documento y cómo seguir avanzando.";
+  const lastUploadNextStepSummary =
+    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.nextStepSummary ?? lastHeliosOpinion?.recommendedNextStep) ??
+    uploadInsight?.nextSuggestion ??
+    "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
   const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
   const monitoringDocuments = complilinkMonitoring?.documents ?? [];
   const pendingMonitoringDocuments = monitoringDocuments.filter(
@@ -2845,6 +2857,7 @@ export default function Auditar() {
     [preferredCaptureMode, selectedFile, selectedRecommendedTargetType],
   );
   const isProcessingDocument = analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
+  const isAutoAnalyzingSelectedFile = analyzeDraftMutation.isPending && Boolean(selectedFile) && !pendingDraft;
   const selectedFileValidationMessage = useMemo(() => validateDocumentUploadFile(selectedFile), [selectedFile]);
   const uploadProgressState = useMemo(
     () =>
@@ -4898,27 +4911,46 @@ export default function Auditar() {
                           ? "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"
                           : "bg-slate-900 hover:bg-slate-950"
                       }`}
+                      disabled={isAutoAnalyzingSelectedFile}
                       onClick={openPreferredPicker}
                     >
-                      {selectedFile
-                        ? "Cambiar documento"
-                        : shouldCompactMobileUploadEntry
-                          ? activeCaptureMode === "camera"
-                            ? "Toma foto para empezar"
-                            : "Elige archivo para empezar"
-                          : uploadPrimaryActionLabel}
+                      {isAutoAnalyzingSelectedFile
+                        ? "Analizando documento..."
+                        : selectedFile
+                          ? "Cambiar documento"
+                          : shouldCompactMobileUploadEntry
+                            ? activeCaptureMode === "camera"
+                              ? "Toma foto para empezar"
+                              : "Elige archivo para empezar"
+                            : uploadPrimaryActionLabel}
                     </Button>
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
-                        {shouldCompactMobileUploadEntry
-                          ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`
-                          : preferredCaptureMode === "camera"
-                            ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
-                            : preferredCaptureMode === "file"
-                              ? "Abriremos primero tus archivos para quitarte un toque innecesario."
-                              : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
+                        {isAutoAnalyzingSelectedFile
+                          ? "Estamos leyendo tu documento para abrir la vista previa sin que tengas que tocar nada más."
+                          : shouldCompactMobileUploadEntry
+                            ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`
+                            : preferredCaptureMode === "camera"
+                              ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
+                              : preferredCaptureMode === "file"
+                                ? "Abriremos primero tus archivos para quitarte un toque innecesario."
+                                : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
                       </p>
-                      {shouldCompactMobileUploadEntry ? (
+                      {isAutoAnalyzingSelectedFile ? (
+                        <div className="rounded-[1rem] border border-teal-200 bg-teal-50/80 px-4 py-3 text-teal-950 shadow-sm">
+                          <div className="flex items-start gap-3">
+                            <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
+                              <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold">Estamos analizando tu documento</p>
+                              <p className="mt-1 text-xs leading-5 text-teal-900/90">
+                                Mientras termina la lectura automática, bloqueamos cámara y archivo para evitar cargas duplicadas. Enseguida te mostraremos el borrador para revisarlo.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : shouldCompactMobileUploadEntry ? (
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
@@ -4950,6 +4982,7 @@ export default function Auditar() {
                           <button
                             type="button"
                             className="shrink-0 text-xs font-semibold text-teal-700 underline decoration-teal-200 underline-offset-4"
+                            disabled={isAutoAnalyzingSelectedFile}
                             onClick={() => setUploadSourceOpen(true)}
                           >
                             Cambiar método
@@ -4967,6 +5000,7 @@ export default function Auditar() {
                           ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
                           : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                       }`}
+                      disabled={isAutoAnalyzingSelectedFile}
                       onClick={openCameraPicker}
                     >
                       <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -4979,6 +5013,7 @@ export default function Auditar() {
                           ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
                           : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                       }`}
+                      disabled={isAutoAnalyzingSelectedFile}
                       onClick={openFilePicker}
                     >
                       <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
@@ -5033,6 +5068,12 @@ export default function Auditar() {
                       <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
                     </div>
                     <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{uploadProgressState.stageLabel}</p>
+                    {isAutoAnalyzingSelectedFile ? (
+                      <div className="mt-3 rounded-2xl border border-white/70 bg-white/75 px-3 py-3 text-sm leading-6 text-slate-800 shadow-sm">
+                        <p className="font-semibold text-slate-950">No necesitas volver a tocar nada.</p>
+                        <p className="mt-1">Ya recibimos tu documento y estamos preparando la vista previa para que sólo revises y confirmes.</p>
+                      </div>
+                    ) : null}
                     <p className="mt-2 break-words text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
                     <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
@@ -5685,17 +5726,81 @@ export default function Auditar() {
                 )
               ) : (
                 <div className="mt-4 space-y-4">
-                  <div className="rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
-                        <p className="mt-1 text-sm leading-7 text-teal-900">{uploadInsight?.nextSuggestion}</p>
+                  <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="max-w-3xl">
+                        <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Documento guardado</span>
+                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                            {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                          </span>
+                          <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
+                        </div>
+                        <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
+                          {lastUploadResultHeadline}
+                        </h3>
+                        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-[0.98rem]">
+                          {lastUploadResultLead}
+                        </p>
+                      </div>
+
+                      <div className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 text-sm leading-7 text-slate-700 shadow-sm lg:max-w-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Lo que sigue ahora</p>
+                        <p className="mt-2 font-semibold text-slate-950">Un siguiente paso claro, sin rodeos</p>
+                        <p className="mt-2 text-sm leading-7 text-slate-600">{lastUploadNextStepSummary}</p>
                       </div>
                     </div>
-                    {lastUploadShortcuts.length ? (
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        {lastUploadShortcuts.map((shortcut) => (
+
+                    <div className="mt-5 grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
+                      <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                        <div className="flex items-start gap-3">
+                          <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
+                            <p className="mt-1 text-sm leading-7 text-teal-900">{lastUploadNextStepSummary}</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
+                          onClick={() =>
+                            primaryLastUploadShortcut
+                              ? handleContextualShortcut(primaryLastUploadShortcut, lastUpload.classification.documentType, "confirmed")
+                              : openHeliosCopilot()
+                          }
+                        >
+                          {primaryLastUploadShortcut ? primaryLastUploadShortcut.label : "Abrir asistente laboral"}
+                          <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
+                        </Button>
+                        <p className="mt-2 text-xs leading-5 text-teal-800">
+                          {primaryLastUploadShortcut
+                            ? primaryLastUploadShortcut.description
+                            : "Puedes abrir el asistente para entender mejor este resultado y decidir tu siguiente movimiento."}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                        <div className="rounded-[1.2rem] border border-emerald-100 bg-white p-4 shadow-sm">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Lo que ya aporta</p>
+                          <p className="mt-2 font-semibold text-slate-950">{uploadInsight?.label ?? "Ya hay una primera lectura útil"}</p>
+                          <p className="mt-2 text-sm leading-7 text-slate-600">
+                            {uploadInsight?.contribution ??
+                              "Este documento ya suma contexto real a tu expediente y mejora la lectura del caso."}
+                          </p>
+                        </div>
+                        <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cómo leerlo</p>
+                          <p className="mt-2 font-semibold text-slate-950">Lo claro queda aparte de lo preliminar</p>
+                          <p className="mt-2 text-sm leading-7 text-slate-600">
+                            Así puedes ver rápido qué ya quedó más firme y qué todavía conviene revisar con calma.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {secondaryLastUploadShortcuts.length ? (
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {secondaryLastUploadShortcuts.map((shortcut) => (
                           <button
                             key={shortcut.id}
                             type="button"
@@ -5710,102 +5815,118 @@ export default function Auditar() {
                     ) : null}
                   </div>
 
-                  {lastUpload?.scanAssistance ? (
-                    <div className={`rounded-[1.3rem] border p-4 ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).containerClasses}`}>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex items-start gap-3">
-                          <FileSearch className="mt-1 h-5 w-5 shrink-0 text-slate-700" strokeWidth={1.8} />
-                          <div>
-                            <p className="font-semibold text-slate-950">
-                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).friendlyHeadline}
-                            </p>
-                            <p className="mt-1 text-sm leading-7 text-slate-700">
-                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).userGuidance}
-                            </p>
+                  <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-950">Ver detalles del análisis</p>
+                        <p className="mt-1 text-xs leading-6 text-slate-500">
+                          Aquí queda el apoyo visual, el resumen técnico y el estado de revisión por si quieres profundizar.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        Abrir detalles
+                      </span>
+                    </summary>
+
+                    <div className="mt-4 space-y-4">
+                      {lastUpload?.scanAssistance ? (
+                        <div className={`rounded-[1.3rem] border p-4 ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).containerClasses}`}>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex items-start gap-3">
+                              <FileSearch className="mt-1 h-5 w-5 shrink-0 text-slate-700" strokeWidth={1.8} />
+                              <div>
+                                <p className="font-semibold text-slate-950">
+                                  {(lastUpload.scanAssistance as ScanAssistAssessmentView).friendlyHeadline}
+                                </p>
+                                <p className="mt-1 text-sm leading-7 text-slate-700">
+                                  {(lastUpload.scanAssistance as ScanAssistAssessmentView).userGuidance}
+                                </p>
+                              </div>
+                            </div>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeClasses}`}
+                            >
+                              {getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeLabel}
+                            </span>
                           </div>
-                        </div>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeClasses}`}
-                        >
-                          {getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeLabel}
-                        </span>
-                      </div>
 
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                          Confianza visual {(lastUpload.scanAssistance as ScanAssistAssessmentView).confidence}%
-                        </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                          {getExpectedTypeAlignmentCopy((lastUpload.scanAssistance as ScanAssistAssessmentView).expectedTypeAlignment)}
-                        </span>
-                      </div>
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              Confianza visual {(lastUpload.scanAssistance as ScanAssistAssessmentView).confidence}%
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              {getExpectedTypeAlignmentCopy((lastUpload.scanAssistance as ScanAssistAssessmentView).expectedTypeAlignment)}
+                            </span>
+                          </div>
 
-                      {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.length ? (
-                        <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                          {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.map((item) => (
-                            <p key={item}>• {item}</p>
-                          ))}
+                          {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.length ? (
+                            <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.map((item) => (
+                                <p key={item}>• {item}</p>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       ) : null}
-                    </div>
-                  ) : null}
 
-                  <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">Resumen sencillo</p>
-                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                        {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
-                      </h3>
-                      <p className="mt-3 text-sm leading-7 text-slate-700">{lastUpload.preliminaryAnalysis.summary}</p>
-                      <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                          Tipo: {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
-                        </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                          Revisión: {getProcessingProfileLabel(lastUpload.preliminaryAnalysis.processingProfile)}
-                        </span>
-                        <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
-                      </div>
-                    </div>
+                      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+                        <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">Resumen sencillo</p>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                            {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                          </h3>
+                          <p className="mt-3 text-sm leading-7 text-slate-700">{lastUpload.preliminaryAnalysis.summary}</p>
+                          <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              Tipo: {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              Revisión: {getProcessingProfileLabel(lastUpload.preliminaryAnalysis.processingProfile)}
+                            </span>
+                            <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
+                          </div>
+                        </div>
 
-                    <div className="space-y-4">
-                      <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
-                          <div>
-                            <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
-                            <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                        <div className="space-y-4">
+                          <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
+                            <div className="flex items-start gap-3">
+                              <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                              <div>
+                                <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
+                                <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div
+                            className={`rounded-[1.3rem] border p-4 ${
+                              engineStatus.tone === "success"
+                                ? "border-emerald-100 bg-emerald-50"
+                                : engineStatus.tone === "warning"
+                                  ? "border-amber-200 bg-amber-50"
+                                  : "border-slate-200 bg-slate-50"
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              {engineStatus.tone === "warning" ? (
+                                <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
+                              ) : (
+                                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                              )}
+                              <div>
+                                <p className="font-semibold text-slate-950">{engineStatus.title}</p>
+                                <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div
-                        className={`rounded-[1.3rem] border p-4 ${
-                          engineStatus.tone === "success"
-                            ? "border-emerald-100 bg-emerald-50"
-                            : engineStatus.tone === "warning"
-                              ? "border-amber-200 bg-amber-50"
-                              : "border-slate-200 bg-slate-50"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          {engineStatus.tone === "warning" ? (
-                            <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
-                          ) : (
-                            <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                          )}
-                          <div>
-                            <p className="font-semibold text-slate-950">{engineStatus.title}</p>
-                            <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
-                          </div>
-                        </div>
+                      <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
+                        Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro, qué todavía conviene revisar con calma y qué ya forma parte de tu expediente digital.
                       </div>
                     </div>
-                  </div>
-
-                  <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
-                    Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro, qué todavía conviene revisar con calma y qué ya forma parte de tu expediente digital.
-                  </div>
+                  </details>
 
                   {lastHeliosOpinion ? (
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">

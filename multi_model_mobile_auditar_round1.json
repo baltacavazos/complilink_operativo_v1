@@ -1,0 +1,153 @@
+{
+  "openai": {
+    "ok": true,
+    "result": {
+      "main_problem": "La transición entre la selección del documento y el análisis automático no comunica claramente al usuario que el sistema está procesando, generando incertidumbre y posibles acciones repetidas o abandono.",
+      "recommended_fix": {
+        "name": "Indicador de progreso y bloqueo temporal tras selección",
+        "summary": "Incorporar un indicador visual claro y un bloqueo temporal del CTA principal justo después de la selección del documento para mostrar que el análisis automático está en curso y evitar acciones duplicadas.",
+        "why_it_matters": "Mejora la percepción de respuesta del sistema, reduce la confusión y evita que el usuario intente cargar o cambiar documentos mientras el análisis está activo, lo que disminuye errores y fricciones.",
+        "where_to_apply": [
+          "Entrada compacta del primer expediente",
+          "Transición entre selección y análisis automático"
+        ],
+        "ui_changes": [
+          "Agregar un spinner o barra de progreso visible junto al CTA principal tras la selección",
+          "Deshabilitar temporalmente el conmutador cámara/archivo durante el análisis",
+          "Mostrar un mensaje breve y claro tipo 'Analizando tu documento, por favor espera...'"
+        ],
+        "interaction_changes": [
+          "Bloquear interacciones que puedan cancelar o reiniciar el análisis mientras está en curso",
+          "Evitar que el usuario pueda tocar el CTA principal hasta que el análisis finalice",
+          "Permitir reactivar el conmutador y CTA solo después de completar el análisis o error"
+        ],
+        "copy_changes": [
+          "Cambiar microcopy del CTA a 'Analizando...' durante el proceso",
+          "Agregar mensaje informativo debajo del CTA: 'Estamos procesando tu documento para mostrar la vista previa.'",
+          "Eliminar ambigüedades en mensajes para que el usuario entienda que no debe intervenir hasta terminar"
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "reducción de intentos de carga duplicados durante análisis",
+        "secondary_metric": "aumento en tasa de confirmación del primer expediente sin reintentos"
+      },
+      "risks": [
+        "Posible percepción de lentitud si el análisis tarda más de lo esperado",
+        "Usuarios impacientes podrían abandonar si no se comunica bien el progreso",
+        "Implementación incorrecta podría bloquear interacciones necesarias en casos de error"
+      ],
+      "v1_do": [
+        "Implementar indicador visual claro y accesible en la pantalla principal de carga",
+        "Deshabilitar temporalmente controles que puedan interferir con el análisis",
+        "Usar microcopy directo y tranquilizador para comunicar el estado"
+      ],
+      "v1_avoid": [
+        "No agregar pasos adicionales o pantallas intermedias que compliquen el flujo",
+        "No permitir que el usuario pueda cancelar o reiniciar análisis sin feedback claro",
+        "No usar mensajes técnicos o confusos que generen dudas"
+      ]
+    }
+  },
+  "grok": {
+    "ok": true,
+    "result": {
+      "main_problem": "Falta de claridad en la transición de selección a análisis automático, lo que puede generar confusión y abandono en usuarios durante el primer expediente en dispositivos móviles.",
+      "recommended_fix": {
+        "name": "Añadir indicador de progreso dinámico durante el análisis",
+        "summary": "Implementar un loader visual con mensajes actualizados para guiar al usuario durante la etapa de análisis automático, mejorando la percepción de control y fluidez.",
+        "why_it_matters": "Esto reduce la incertidumbre y la posible frustración en usuarios primerizos, fomentando una experiencia más confiable y alineada con el enfoque mobile-first.",
+        "where_to_apply": [
+          "Etapa de análisis automático",
+          "Transición post-selección de archivo/cámara"
+        ],
+        "ui_changes": [
+          "Agregar un loader circular animado en el centro de la pantalla",
+          "Mostrar un fondo semi-opaco para enfocar el indicador",
+          "Ocultar temporalmente elementos secundarios como el conmutador"
+        ],
+        "interaction_changes": [
+          "Hacer el loader no interactivo para evitar distracciones",
+          "Permitir una opción de cancelación con un botón sutil",
+          "Asegurar que el flujo continúe automáticamente al finalizar"
+        ],
+        "copy_changes": [
+          "Cambiar a 'Analizando tu documento, esto toma unos segundos…'",
+          "Agregar '¡Casi listo! Preparando tu vista previa'",
+          "Incluir 'Si hay errores, te avisaremos pronto' al final"
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "Aumento en la tasa de completación del flujo de confirmación",
+        "secondary_metric": "Reducción en el tiempo promedio de interacción durante el análisis"
+      },
+      "risks": [
+        "Posible sobrecarga visual en pantallas muy pequeñas",
+        "Compatibilidad variable con navegadores móviles",
+        "Retraso mínimo si el loader no se optimiza correctamente"
+      ],
+      "v1_do": [
+        "Probar el indicador en dispositivos reales",
+        "Medir el impacto en sesiones de usuarios",
+        "Iterar basado en feedback inicial"
+      ],
+      "v1_avoid": [
+        "Alterar la lógica de análisis automático",
+        "Añadir elementos interactivos complejos",
+        "Cambiar el diseño general del flujo"
+      ]
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "result": {
+      "main_problem": "Sobrecarga cognitiva y parálisis de decisión en la vista previa del primer expediente debido a la competencia visual entre los atajos contextuales, opciones de reanálisis y el botón de confirmación principal.",
+      "recommended_fix": {
+        "name": "Jerarquía de Acción Única y Revelación Progresiva",
+        "summary": "Reestructurar la vista previa para priorizar el botón de confirmación como acción única de alta jerarquía, moviendo los atajos y opciones de reanálisis a un contenedor secundario o bajo demanda (progressive disclosure).",
+        "why_it_matters": "En el primer expediente, el usuario busca validación y cierre. Demasiadas opciones laterales generan duda sobre si el análisis automático fue correcto, aumentando el abandono en el último paso.",
+        "where_to_apply": [
+          "Vista previa pendiente de confirmar",
+          "Bloque de acciones secundarias y shortcuts"
+        ],
+        "ui_changes": [
+          "Implementar un botón de confirmación 'Sticky' en la parte inferior con elevación (z-index).",
+          "Agrupar atajos contextuales y reanálisis dentro de un componente colapsable o un botón secundario tipo '¿Algo está mal?'.",
+          "Resaltar visualmente los campos extraídos con un fondo sutil verde/azul para denotar 'éxito de lectura'."
+        ],
+        "interaction_changes": [
+          "Ocultar los shortcuts contextuales hasta que el usuario interactúe con un campo o haga scroll.",
+          "Deshabilitar el botón de confirmación durante los primeros 500ms de carga para forzar una revisión visual rápida.",
+          "Transición suave (fade-in) de los datos analizados para confirmar que el sistema 'terminó' de trabajar."
+        ],
+        "copy_changes": [
+          "Cambiar 'Confirmar' por 'Todo correcto, guardar'.",
+          "Sustituir etiquetas técnicas por lenguaje de asistencia: 'Revisamos tu documento y esto encontramos'.",
+          "Usar un microcopy de soporte bajo el CTA: 'Podrás editar estos datos más tarde si lo necesitas'."
+        ]
+      },
+      "expected_impact": {
+        "confidence": "high",
+        "primary_metric": "Tasa de conversión de Borrador a Confirmado (Draft-to-Confirm Rate)",
+        "secondary_metric": "Tiempo promedio de permanencia en la pantalla de vista previa (Time-to-Action)"
+      },
+      "risks": [
+        "Que el usuario no encuentre la opción de corregir si el OCR falla críticamente.",
+        "Fricción si el botón sticky tapa información relevante en dispositivos con pantallas muy pequeñas (iPhone SE/Android Go).",
+        "Sensación de falta de control si la simplificación es excesiva para perfiles administrativos."
+      ],
+      "v1_do": [
+        "Mantener el CTA de confirmación siempre visible en el viewport móvil.",
+        "Diferenciar claramente entre 'datos leídos' y 'acciones de edición'.",
+        "Utilizar feedback háptico al mostrar los resultados del análisis."
+      ],
+      "v1_avoid": [
+        "Mostrar más de dos botones con el mismo peso visual.",
+        "Usar modales intrusivos para los atajos contextuales.",
+        "Permitir que el usuario guarde sin que el análisis automático haya finalizado visualmente."
+      ],
+      "_gemini_model": "gemini-flash-latest"
+    }
+  }
+}

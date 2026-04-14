@@ -1108,3 +1108,7 @@
 - [x] Hacer más expresivos y tranquilizadores los estados de progreso y vacíos del flujo /auditar sin añadir ruido visual
 - [x] Personalizar sugerencias y atajos de /auditar según el tipo de documento detectado para acelerar el primer expediente
 - [x] Instrumentar analítica mínima de fricción del primer expediente en /auditar para medir inicio, dudas, abandono, uso de atajos y confirmación
+
+- [x] Rediseñar el resultado post-subida en /auditar para que el valor recibido, el hallazgo principal y el siguiente paso queden mucho más claros
+- [x] Convertir la telemetría del primer expediente en una lectura visible y accionable dentro de la Consola CEO
+- [x] Reauditar el flujo móvil real de primera carga y confirmación con OpenAI, Grok y Gemini, e implementar la siguiente mejora mobile-first priorizada

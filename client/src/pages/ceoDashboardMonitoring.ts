@@ -31,6 +31,26 @@ export type LegalGateWeeklyTrendPoint = {
   isOutOfRange: boolean;
 };
 
+export type FirstDossierPriorityStage = "no_signal" | "preview_confirmation" | "confirmation_upload" | "legal_gate" | "healthy";
+
+export type FirstDossierExecutiveSummary = {
+  visibleStarts: number;
+  visibleConfirmations: number;
+  visibleUploads: number;
+  previewGapCount: number;
+  uploadGapCount: number;
+  visibleDropOffCount: number;
+  visibleDropOffRate: number | null;
+  legalGateOpenCount: number;
+  dominantCaptureMode: "camera" | "file" | "balanced" | "none";
+  paceLabel: string;
+  priorityStage: FirstDossierPriorityStage;
+  priorityLabel: string;
+  narrative: string;
+  nextAction: string;
+  dataSourceNote: string;
+};
+
 export type GuardrailFollowUpStatus = "pending" | "tracking" | "resolved";
 
 export type GuardrailReasonRankingItem = {
@@ -76,6 +96,7 @@ export type AuditMonitoringSummary = {
   cameraPreviewToConfirmRate: number | null;
   filePreviewToConfirmRate: number | null;
   dominantCaptureMode: "camera" | "file" | "balanced" | "none";
+  firstDossier: FirstDossierExecutiveSummary;
 };
 
 export type AuditEventFamily = "all" | "guardrail" | "document" | "access" | "policy" | "alert" | "case" | "dashboard" | "other";
@@ -222,6 +243,87 @@ function getDominantCaptureMode(cameraCount: number, fileCount: number): "camera
   if (cameraCount === 0 && fileCount === 0) return "none";
   if (cameraCount === fileCount) return "balanced";
   return cameraCount > fileCount ? "camera" : "file";
+}
+
+function buildFirstDossierExecutiveSummary(params: {
+  starts: number;
+  confirmations: number;
+  uploads: number;
+  legalGateOpenCount: number;
+  averagePreviewToConfirmationSeconds: number | null;
+  dominantCaptureMode: "camera" | "file" | "balanced" | "none";
+}): FirstDossierExecutiveSummary {
+  const previewGapCount = Math.max(params.starts - params.confirmations, 0);
+  const uploadGapCount = Math.max(params.confirmations - params.uploads, 0);
+  const visibleDropOffCount = Math.max(params.starts - params.uploads, 0);
+  const visibleDropOffRate = getPercentage(visibleDropOffCount, params.starts);
+
+  const paceLabel =
+    params.averagePreviewToConfirmationSeconds === null
+      ? "Todavía no hay tiempo medio visible entre preview y confirmación."
+      : params.averagePreviewToConfirmationSeconds < 60
+        ? `Confirmación visible en ${params.averagePreviewToConfirmationSeconds} s promedio.`
+        : `Confirmación visible en ${(params.averagePreviewToConfirmationSeconds / 60).toFixed(1)} min promedio.`;
+
+  if (params.starts === 0) {
+    return {
+      visibleStarts: 0,
+      visibleConfirmations: 0,
+      visibleUploads: 0,
+      previewGapCount: 0,
+      uploadGapCount: 0,
+      visibleDropOffCount: 0,
+      visibleDropOffRate: null,
+      legalGateOpenCount: params.legalGateOpenCount,
+      dominantCaptureMode: params.dominantCaptureMode,
+      paceLabel,
+      priorityStage: "no_signal",
+      priorityLabel: "Sin base visible aún",
+      narrative: "La consola todavía no ve suficientes eventos del primer expediente para construir una lectura ejecutiva confiable.",
+      nextAction: "Esperar más actividad visible antes de extraer una prioridad operativa.",
+      dataSourceNote: "Lectura derivada sólo del audit trail visible; aún no incorpora eventos cliente a cliente como atajos o vacilación.",
+    };
+  }
+
+  let priorityStage: FirstDossierPriorityStage = "healthy";
+  let priorityLabel = "Flujo visible estable";
+  let narrative = "El primer expediente visible ya recorre preview, confirmación y carga sin una fricción dominante clara.";
+  let nextAction = "Mantener seguimiento de tiempo de confirmación y del modo de captura predominante para no perder esta estabilidad.";
+
+  if (params.legalGateOpenCount > 0 && params.legalGateOpenCount >= Math.max(previewGapCount, uploadGapCount)) {
+    priorityStage = "legal_gate";
+    priorityLabel = "Fricción dominante en gate legal";
+    narrative = `El mayor corte visible no está en el documento sino en ${params.legalGateOpenCount} conflicto(s) abiertos del gate legal que siguen frenando expedientes.`;
+    nextAction = "Revisar copy, espera y concurrencia del gate legal antes de atribuir la caída al motor documental.";
+  } else if (previewGapCount >= uploadGapCount && previewGapCount > 0) {
+    priorityStage = "preview_confirmation";
+    priorityLabel = "Se enfría antes de confirmar";
+    narrative = `La pérdida visible principal ocurre entre preview y confirmación: ${previewGapCount} expediente(s) no terminan de validarse tras el análisis inicial.`;
+    nextAction = "Revisar claridad del preview, naming del documento y señales de confianza antes del clic de confirmar.";
+  } else if (uploadGapCount > 0) {
+    priorityStage = "confirmation_upload";
+    priorityLabel = "Se cae después de confirmar";
+    narrative = `La fricción visible se concentra tras la confirmación: ${uploadGapCount} expediente(s) no llegan a carga final aun después de validar el preview.`;
+    nextAction = "Reforzar el CTA posterior a la confirmación y comprobar si el cierre final compite con pasos secundarios.";
+  }
+
+  return {
+    visibleStarts: params.starts,
+    visibleConfirmations: params.confirmations,
+    visibleUploads: params.uploads,
+    previewGapCount,
+    uploadGapCount,
+    visibleDropOffCount,
+    visibleDropOffRate,
+    legalGateOpenCount: params.legalGateOpenCount,
+    dominantCaptureMode: params.dominantCaptureMode,
+    paceLabel,
+    priorityStage,
+    priorityLabel,
+    narrative,
+    nextAction,
+    dataSourceNote: "Lectura derivada del audit trail visible: preview, confirmación, carga y gate legal. Los eventos cliente a cliente del primer expediente todavía no están consolidados aquí.",
+  };
 }
 
 function getLegalGateScopeId(item: AuditFeedItem) {
@@ -485,6 +587,15 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     legalGateResolutionSamples.length > 0
       ? Math.round(legalGateResolutionSamples.reduce((total, value) => total + value, 0) / legalGateResolutionSamples.length)
       : null;
+  const dominantCaptureMode = getDominantCaptureMode(cameraCaptureSelections, fileCaptureSelections);
+  const firstDossier = buildFirstDossierExecutiveSummary({
+    starts: previewAnalyzedEvents.length,
+    confirmations: previewConfirmedEvents.length,
+    uploads: documentUploadEvents.length,
+    legalGateOpenCount: legalGateAbandonments,
+    averagePreviewToConfirmationSeconds,
+    dominantCaptureMode,
+  });
 
   return {
     totalEvents: items.length,
@@ -511,7 +622,8 @@ export function buildAuditMonitoringSummary(items: AuditFeedItem[]): AuditMonito
     guardrailReasonRanking,
     cameraPreviewToConfirmRate: getPercentage(cameraPreviewConfirmedEvents, cameraCaptureSelections),
     filePreviewToConfirmRate: getPercentage(filePreviewConfirmedEvents, fileCaptureSelections),
-    dominantCaptureMode: getDominantCaptureMode(cameraCaptureSelections, fileCaptureSelections),
+    dominantCaptureMode,
+    firstDossier,
   };
 }
 

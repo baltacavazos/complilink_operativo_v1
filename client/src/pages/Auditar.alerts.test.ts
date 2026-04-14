@@ -38,6 +38,14 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain('"Toma foto para empezar"');
     expect(auditarSource).toContain('"Elige archivo para empezar"');
   });
+
+  it("bloquea temporalmente los controles y explica el análisis automático en móvil", () => {
+    expect(auditarSource).toContain("isAutoAnalyzingSelectedFile");
+    expect(auditarSource).toContain('"Analizando documento..."');
+    expect(auditarSource).toContain("Estamos analizando tu documento");
+    expect(auditarSource).toContain("No necesitas volver a tocar nada.");
+    expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
+  });
 });
 
 describe("buildHeliosPriorityAlerts", () => {

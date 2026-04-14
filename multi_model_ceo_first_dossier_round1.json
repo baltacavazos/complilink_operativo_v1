@@ -1,0 +1,171 @@
+{
+  "openai": {
+    "ok": true,
+    "result": {
+      "section_name": "Primer Expediente",
+      "north_star": "Maximizar la tasa de cierre exitoso del primer expediente identificando y reduciendo fricciones clave en el flujo documental.",
+      "recommended_layout": {
+        "hero_metric": "Usuarios que inician primer expediente",
+        "supporting_cards": [
+          "Tasa de abandono en selección de archivo",
+          "Tiempo medio hasta confirmación",
+          "Uso de atajos contextuales"
+        ],
+        "mini_funnel": [
+          "Inicio de expediente",
+          "Selección de archivo",
+          "Confirmación",
+          "Guardado final"
+        ],
+        "insight_block": "Concentración de fricción y efecto de atajos en cierre"
+      },
+      "priority_metrics": [
+        {
+          "name": "Usuarios que inician primer expediente",
+          "why": "Mide la adopción inicial y el interés real en comenzar el proceso, base para todo análisis posterior."
+        },
+        {
+          "name": "Tasa de abandono en selección de archivo",
+          "why": "Identifica el punto crítico donde los usuarios pierden interés o encuentran dificultades, foco principal de fricción."
+        },
+        {
+          "name": "Tiempo medio hasta confirmación",
+          "why": "Refleja la eficiencia y fluidez del proceso, indicador clave para detectar demoras o confusión."
+        },
+        {
+          "name": "Uso de atajos contextuales",
+          "why": "Evalúa si las herramientas de aceleración están siendo aprovechadas y su impacto en la velocidad de cierre."
+        }
+      ],
+      "auto_insights": [
+        "Incremento en abandono durante selección de archivo supera 10% esta semana",
+        "Usuarios que usan atajos cierran primer expediente 25% más rápido",
+        "Tiempo medio hasta confirmación se mantiene estable, sin mejoras recientes"
+      ],
+      "v1_do": [
+        "Mostrar métricas clave en tarjetas ejecutivas compactas",
+        "Incluir mini-funnel visual simple con etapas claras y porcentajes",
+        "Agregar microcopy claro que explique cada métrica y su relevancia"
+      ],
+      "v1_avoid": [
+        "No incluir análisis complejos ni múltiples drill-downs en esta versión",
+        "Evitar saturar la consola con demasiadas métricas o gráficos",
+        "No usar terminología técnica o ambigua que dificulte la interpretación rápida"
+      ],
+      "copy_tone": "Claro, directo y ejecutivo, con lenguaje accesible que facilite decisiones rápidas sin jerga técnica"
+    }
+  },
+  "grok": {
+    "ok": true,
+    "result": {
+      "section_name": "Primer Expediente Resumen",
+      "north_star": "Aumentar la tasa de completación del primer expediente para mejorar el onboarding de usuarios",
+      "recommended_layout": {
+        "hero_metric": "Tasa de inicio y completación del primer expediente",
+        "supporting_cards": [
+          "Tasa de abandono en etapas clave",
+          "Tiempo promedio de resolución",
+          "Uso de atajos contextuales"
+        ],
+        "mini_funnel": [
+          "Inicio del expediente",
+          "Selección de archivo",
+          "Análisis y confirmación",
+          "Guardado final"
+        ],
+        "insight_block": "Fricción principal en el embudo y recomendaciones accionables"
+      },
+      "priority_metrics": [
+        {
+          "name": "Usuarios que inician el primer expediente",
+          "why": "Mide el engagement inicial y ayuda a identificar problemas de adopción temprana"
+        },
+        {
+          "name": "Tasa de completación del embudo",
+          "why": "Revela cuántos usuarios llegan al final, permitiendo detectar cuellos de botella en el flujo"
+        },
+        {
+          "name": "Puntos de fricción por etapa",
+          "why": "Facilita la optimización del proceso al resaltar áreas de alto abandono"
+        },
+        {
+          "name": "Efectividad de atajos",
+          "why": "Evalúa si estos elementos aceleran el cierre de casos, impactando la experiencia general"
+        }
+      ],
+      "auto_insights": [
+        "Alto abandono en selección de archivo indica posible confusión en el proceso",
+        "Bajo uso de atajos sugiere necesidad de mayor promoción",
+        "Mejora en tiempos de resolución podría correlacionarse con tasas de completación"
+      ],
+      "v1_do": [
+        "Integrar métricas clave en tarjetas compactas",
+        "Proporcionar drill-down mínimo para detalles rápidos",
+        "Usar microcopy claro para insights accionables"
+      ],
+      "v1_avoid": [
+        "Evitar agregar elementos visuales sobrecargados",
+        "No incluir análisis complejos que requieran interacción extensa",
+        "Prevenir interpretaciones erróneas con framing preciso"
+      ],
+      "copy_tone": "Profesional, conciso y accionable"
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "result": {
+      "section_name": "Rendimiento Primer Expediente",
+      "north_star": "Optimizar la tasa de éxito y eficiencia en la creación del primer expediente laboral, minimizando la fricción.",
+      "recommended_layout": {
+        "hero_metric": "Tasa de Completado Primer Expediente",
+        "supporting_cards": [
+          "Tiempo Medio de Completado",
+          "Puntos de Fricción Identificados",
+          "Uso de Atajos Contextuales"
+        ],
+        "mini_funnel": [
+          "Inicios",
+          "Selección de Archivo",
+          "Análisis y Confirmación",
+          "Guardado Exitoso"
+        ],
+        "insight_block": "Identificación de cuellos de botella o mejoras de eficiencia."
+      },
+      "priority_metrics": [
+        {
+          "name": "Tasa de Completado Primer Expediente",
+          "why": "Mide el éxito final del flujo más crítico, respondiendo cuántos usuarios logran guardar su primer documento."
+        },
+        {
+          "name": "Tiempo Medio de Completado",
+          "why": "Indica la eficiencia del proceso, permitiendo identificar si el flujo es ágil o si hay demoras excesivas."
+        },
+        {
+          "name": "Puntos de Abandono Críticos",
+          "why": "Responde directamente dónde se concentra la fricción, señalando las etapas con mayor pérdida de usuarios."
+        },
+        {
+          "name": "Impacto de Atajos Contextuales",
+          "why": "Evalúa la efectividad de las ayudas, mostrando si los atajos realmente contribuyen a una finalización más rápida o exitosa."
+        }
+      ],
+      "auto_insights": [
+        "La tasa de completado del primer expediente ha mejorado/empeorado un X% esta semana, alcanzando el Y%.",
+        "El X% de los abandonos se concentra en la etapa de 'Análisis de Archivo', sugiriendo un punto de fricción clave.",
+        "Los usuarios que utilizaron atajos contextuales completaron el expediente un X% más rápido que el promedio."
+      ],
+      "v1_do": [
+        "Mostrar métricas clave del funnel (inicios, pasos intermedios, completado) de forma visual y compacta.",
+        "Resaltar el punto de mayor fricción o abandono con una alerta o indicador claro.",
+        "Integrar el tono y estilo de las tarjetas ejecutivas existentes en la Consola CEO."
+      ],
+      "v1_avoid": [
+        "Evitar gráficos complejos o tablas detalladas que requieran análisis profundo.",
+        "No incluir opciones de filtrado o segmentación avanzada en esta primera versión.",
+        "Abstenerse de mostrar datos históricos extensos; enfocarse en tendencias recientes y estado actual."
+      ],
+      "copy_tone": "Directo, conciso, accionable y profesional, alineado con el microcopy ejecutivo existente.",
+      "_gemini_model": "gemini-2.5-flash"
+    }
+  }
+}

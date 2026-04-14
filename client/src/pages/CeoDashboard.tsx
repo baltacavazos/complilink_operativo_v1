@@ -2862,6 +2862,58 @@ export default function CeoDashboard() {
                                 : `Gate legal visible: ${formatNumber(auditSummary.legalGateAbandonments)} conflictos siguen abiertos sobre ${formatNumber(auditSummary.legalGateLockConflicts)} choques y ${formatNumber(auditSummary.legalGateAcceptances)} aceptaciones; conviene revisar espera o concurrencia antes de atribuir la caída al documento.`}
                           </p>
                         </div>
+                        <div className="mt-4 rounded-2xl border border-cyan-200 bg-white/90 p-4 shadow-sm">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Lectura ejecutiva: primer expediente visible</p>
+                              <h4 className="mt-1 text-lg font-semibold text-slate-950">{auditSummary.firstDossier.priorityLabel}</h4>
+                              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{auditSummary.firstDossier.narrative}</p>
+                            </div>
+                            <Badge
+                              className={
+                                auditSummary.firstDossier.priorityStage === "healthy"
+                                  ? "rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800"
+                                  : auditSummary.firstDossier.priorityStage === "legal_gate"
+                                    ? "rounded-full border border-amber-200 bg-amber-50 text-amber-800"
+                                    : "rounded-full border border-cyan-200 bg-cyan-50 text-cyan-800"
+                              }
+                            >
+                              {auditSummary.firstDossier.visibleDropOffRate === null
+                                ? "Sin base visible"
+                                : `${formatNumber(auditSummary.firstDossier.visibleDropOffRate)}% caída visible`}
+                            </Badge>
+                          </div>
+                          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible</p>
+                              <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.firstDossier.visibleStarts)}</p>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">Expedientes con preview visible en consola.</p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Caída observable</p>
+                              <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.firstDossier.visibleDropOffCount)}</p>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">
+                                {auditSummary.firstDossier.previewGapCount > 0
+                                  ? `${formatNumber(auditSummary.firstDossier.previewGapCount)} se enfrían antes de confirmar.`
+                                  : auditSummary.firstDossier.uploadGapCount > 0
+                                    ? `${formatNumber(auditSummary.firstDossier.uploadGapCount)} se caen después de confirmar.`
+                                    : "No se observa una pérdida dominante dentro del embudo visible."}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Modo dominante</p>
+                              <p className="mt-2 text-xl font-semibold capitalize text-slate-950">
+                                {auditSummary.firstDossier.dominantCaptureMode === "none" ? "Sin base" : auditSummary.firstDossier.dominantCaptureMode}
+                              </p>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">{auditSummary.firstDossier.paceLabel}</p>
+                            </div>
+                          </div>
+                          <div className="mt-4 rounded-2xl border border-cyan-100 bg-cyan-50/70 p-3 text-sm text-cyan-950">
+                            <p className="font-semibold">Siguiente foco recomendado</p>
+                            <p className="mt-1 leading-6">{auditSummary.firstDossier.nextAction}</p>
+                            <p className="mt-2 text-xs leading-5 text-cyan-900/80">{auditSummary.firstDossier.dataSourceNote}</p>
+                          </div>
+                        </div>
                       </div>
                       <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm">
                         <div className="flex items-center justify-between gap-3">

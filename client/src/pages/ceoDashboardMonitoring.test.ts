@@ -118,6 +118,68 @@ describe("ceoDashboardMonitoring", () => {
       cameraPreviewToConfirmRate: 100,
       filePreviewToConfirmRate: null,
       dominantCaptureMode: "camera",
+      firstDossier: {
+        visibleStarts: 1,
+        visibleConfirmations: 1,
+        visibleUploads: 1,
+        previewGapCount: 0,
+        uploadGapCount: 0,
+        visibleDropOffCount: 0,
+        visibleDropOffRate: 0,
+        legalGateOpenCount: 1,
+        dominantCaptureMode: "camera",
+        paceLabel: "Confirmación visible en 50 s promedio.",
+        priorityStage: "legal_gate",
+        priorityLabel: "Fricción dominante en gate legal",
+        narrative: "El mayor corte visible no está en el documento sino en 1 conflicto(s) abiertos del gate legal que siguen frenando expedientes.",
+        nextAction: "Revisar copy, espera y concurrencia del gate legal antes de atribuir la caída al motor documental.",
+        dataSourceNote: "Lectura derivada del audit trail visible: preview, confirmación, carga y gate legal. Los eventos cliente a cliente del primer expediente todavía no están consolidados aquí.",
+      },
+    });
+  });
+
+  it("prioriza la caída antes de confirmar cuando el preview se enfría más que el cierre final", () => {
+    const items = [
+      buildAuditItem({
+        id: 51,
+        action: "document.preview_analyzed",
+        entityType: "document",
+        caseId: "case-601",
+        afterState: { captureMode: "file" },
+      }),
+      buildAuditItem({
+        id: 52,
+        action: "document.preview_analyzed",
+        entityType: "document",
+        caseId: "case-602",
+        afterState: { captureMode: "file" },
+      }),
+      buildAuditItem({
+        id: 53,
+        action: "document.preview_confirmed",
+        entityType: "document",
+        caseId: "case-601",
+        afterState: { previewCreatedAt: "2026-04-10T11:59:20.000Z", captureMode: "file" },
+        createdAt: "2026-04-10T12:00:00.000Z",
+      }),
+    ];
+
+    expect(buildAuditMonitoringSummary(items).firstDossier).toEqual({
+      visibleStarts: 2,
+      visibleConfirmations: 1,
+      visibleUploads: 0,
+      previewGapCount: 1,
+      uploadGapCount: 1,
+      visibleDropOffCount: 2,
+      visibleDropOffRate: 100,
+      legalGateOpenCount: 0,
+      dominantCaptureMode: "file",
+      paceLabel: "Confirmación visible en 40 s promedio.",
+      priorityStage: "preview_confirmation",
+      priorityLabel: "Se enfría antes de confirmar",
+      narrative: "La pérdida visible principal ocurre entre preview y confirmación: 1 expediente(s) no terminan de validarse tras el análisis inicial.",
+      nextAction: "Revisar claridad del preview, naming del documento y señales de confianza antes del clic de confirmar.",
+      dataSourceNote: "Lectura derivada del audit trail visible: preview, confirmación, carga y gate legal. Los eventos cliente a cliente del primer expediente todavía no están consolidados aquí.",
     });
   });
 

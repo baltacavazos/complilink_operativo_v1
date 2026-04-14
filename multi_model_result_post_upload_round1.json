@@ -1,0 +1,142 @@
+{
+  "openai": {
+    "ok": true,
+    "result": {
+      "diagnosis": [
+        "El valor principal recibido no se destaca visualmente en los primeros segundos, generando posible confusión.",
+        "Demasiados bloques compiten por atención, lo que puede abrumar y dispersar el foco del usuario.",
+        "El siguiente paso sugerido está presente pero no domina visualmente como la acción más relevante.",
+        "La lectura se percibe extensa y poco inmediata, dificultando una respuesta rápida y tranquilizadora."
+      ],
+      "recommended_changes": [
+        {
+          "title": "Destacar mensaje principal de guardado exitoso",
+          "impact": "high",
+          "effort": "low",
+          "why": "Resalta inmediatamente el valor recibido, generando confianza y claridad en los primeros segundos.",
+          "implementation_hint": "Incrementar tamaño de fuente, usar color destacado y ubicarlo en la parte superior visible sin alterar estructura."
+        },
+        {
+          "title": "Agrupar y colapsar bloques secundarios",
+          "impact": "medium",
+          "effort": "medium",
+          "why": "Reduce la sensación de saturación visual y permite al usuario enfocarse primero en lo esencial, explorando detalles si desea.",
+          "implementation_hint": "Implementar acordeones o pestañas para bloques como asistencia de escaneo, aporte del documento y estado del motor."
+        },
+        {
+          "title": "Jerarquizar visualmente el siguiente paso sugerido",
+          "impact": "high",
+          "effort": "low",
+          "why": "Facilita que el usuario identifique y actúe sobre la acción más útil sin confusión ni competencia visual.",
+          "implementation_hint": "Usar botón destacado o tarjeta con color de fondo contrastante y aumentar tamaño relativo dentro del bloque."
+        }
+      ],
+      "priority_order": [
+        "Destacar mensaje principal de guardado exitoso",
+        "Jerarquizar visualmente el siguiente paso sugerido",
+        "Agrupar y colapsar bloques secundarios"
+      ],
+      "avoid": [
+        "Agregar nuevas funcionalidades o bloques que aumenten la complejidad visible",
+        "Mostrar nombres técnicos o detalles internos al usuario final",
+        "Romper la estructura técnica existente o afectar la responsividad móvil"
+      ],
+      "north_star": "El usuario siente claridad inmediata, tranquilidad y sabe exactamente qué se logró y qué hacer a continuación sin sentirse abrumado."
+    }
+  },
+  "grok": {
+    "ok": true,
+    "result": {
+      "diagnosis": [
+        "El valor principal del análisis no se comunica de manera inmediata en los primeros 3-5 segundos, lo que puede confundir a usuarios no expertos.",
+        "Varios bloques de información compiten por la atención, generando una sobrecarga visual que dificulta la focalización en lo esencial.",
+        "El siguiente paso sugerido no es visualmente dominante, lo que reduce su efectividad como guía principal para el usuario.",
+        "El contenido se percibe como una lectura extensa en lugar de una respuesta rápida y tranquilizadora, potencialmente aumentando la frustración.",
+        "La distinción entre elementos preliminares y confirmados no es intuitivamente clara, lo que podría generar incertidumbre en la interacción."
+      ],
+      "recommended_changes": [
+        {
+          "title": "Enfatizar mensaje principal",
+          "impact": "high",
+          "effort": "low",
+          "why": "Ayuda a que el usuario identifique rápidamente el valor recibido, mejorando la claridad y satisfacción inicial.",
+          "implementation_hint": "Modificar el orden de los elementos para colocar un headline resumido y destacado al inicio, usando negritas o colores en el CSS existente sin alterar el HTML principal."
+        },
+        {
+          "title": "Destacar siguiente paso",
+          "impact": "high",
+          "effort": "low",
+          "why": "Hace que la acción más útil sea obvia y prioritaria, guiando al usuario de forma inmediata y reduciendo la confusión.",
+          "implementation_hint": "Añadir un estilo visual como un botón prominente o fondo contrastado al bloque de 'siguiente paso sugerido', reutilizando clases CSS actuales para mantener la compatibilidad mobile."
+        },
+        {
+          "title": "Agrupar bloques secundarios",
+          "impact": "medium",
+          "effort": "low",
+          "why": "Reduce la competencia visual y hace la interfaz más digerible, permitiendo una experiencia más fluida y menos abrumadora en dispositivos móviles.",
+          "implementation_hint": "Usar secciones colapsables o agrupar elementos opcionales bajo encabezados, ajustando solo la jerarquía en el DOM existente sin introducir nuevo código."
+        }
+      ],
+      "priority_order": [
+        "Enfatizar mensaje principal",
+        "Destacar siguiente paso",
+        "Agrupar bloques secundarios"
+      ],
+      "avoid": [
+        "Agregar nuevas funciones o elementos que aumenten la complejidad visible.",
+        "Romper la estructura técnica existente o mencionar nombres internos del motor.",
+        "Realizar cambios que no sean compatibles con mobile-first, como aumentar el texto excesivamente."
+      ],
+      "north_star": "Una respuesta mobile-first que ofrece confirmación clara, valor inmediato y una acción guiada en los primeros segundos, sintiéndose simple y tranquilizadora."
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "result": {
+      "diagnosis": [
+        "Sobrecarga cognitiva inicial: Demasiados bloques compiten por la atención en los primeros segundos, dificultando la identificación del valor principal.",
+        "Jerarquía de acción difusa: El 'siguiente paso sugerido' no tiene la prominencia visual necesaria para ser la acción dominante y más útil.",
+        "Falta de un 'hero' visual: No hay un elemento central que comunique de forma inmediata el estado y el impacto del documento.",
+        "Flujo de lectura no optimizado: La pantalla se percibe como una lectura extensa en lugar de una respuesta concisa y tranquilizadora.",
+        "Distinción preliminar/confirmado poco clara: La diferencia entre lo que ya está en el expediente y lo que es un análisis preliminar puede perderse entre tanto contenido."
+      ],
+      "recommended_changes": [
+        {
+          "title": "Mensaje Central y CTA Dominante",
+          "impact": "high",
+          "effort": "low",
+          "why": "Reduce la carga cognitiva, comunica inmediatamente el éxito/estado del documento y guía al usuario a la acción más importante de forma clara y sin ambigüedades.",
+          "implementation_hint": "Mover el mensaje de guardado exitoso y el 'Siguiente paso sugerido para ti' a la parte superior de la pantalla, justo debajo de un encabezado claro. El CTA debe ser un botón primario de gran tamaño, alto contraste y texto conciso, dominando visualmente la pantalla inicial. Considerar un 'hero section' con el mensaje principal y el CTA."
+        },
+        {
+          "title": "Resumen Esencial Agrupado",
+          "impact": "medium",
+          "effort": "low",
+          "why": "Hace que la información central (tipo de documento, resumen, estado y aporte) sea digerible de un vistazo, reduciendo el desorden visual al agrupar elementos relacionados.",
+          "implementation_hint": "Inmediatamente después del CTA dominante, agrupar el 'Resumen sencillo' (tipo documental, resumen, etiquetas de revisión/estado) con el 'aporte del documento (uploadInsight)' y el 'estado del motor (engineStatus)'. Renombrar 'Resumen sencillo' a algo más directo como 'Tu Documento' o 'Detalles Clave'. Utilizar tarjetas o bloques visualmente distintos pero compactos para esta sección."
+        },
+        {
+          "title": "Detalles y Asistencia en Segundo Plano",
+          "impact": "medium",
+          "effort": "low",
+          "why": "Asegura que el usuario reciba el mensaje principal y la acción primero, permitiéndole luego profundizar en los detalles si lo desea. Evita que la información avanzada sature la vista inicial.",
+          "implementation_hint": "Mover el bloque de 'asistencia de escaneo', el 'texto aclarando la diferencia entre lo confirmado y lo estimado', y el 'resultado enriquecido del análisis' (hallazgos, comparación, incertidumbres, asistente contextual) a una sección posterior. Podrían presentarse bajo un encabezado 'Ver Detalles del Análisis' o 'Información Adicional', o incluso como secciones colapsables para mantener la pantalla inicial limpia."
+        }
+      ],
+      "priority_order": [
+        "Mensaje Central y CTA Dominante",
+        "Resumen Esencial Agrupado",
+        "Detalles y Asistencia en Segundo Plano"
+      ],
+      "avoid": [
+        "Añadir animaciones complejas o transiciones que ralenticen la carga o distraigan.",
+        "Introducir nuevas funcionalidades o campos de entrada en esta ronda.",
+        "Utilizar jerga técnica o nombres de módulos internos del motor al usuario final.",
+        "Eliminar información valiosa; el objetivo es reordenarla y jerarquizarla, no suprimirla.",
+        "Diseños que requieran scroll horizontal o gestos complejos en móvil."
+      ],
+      "north_star": "El usuario siente alivio y claridad inmediata sobre el estado de su documento y sabe exactamente qué hacer a continuación, sin esfuerzo.",
+      "_gemini_model": "gemini-2.5-flash"
+    }
+  }
+}
