@@ -27,7 +27,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
       eyebrow: "Prueba gratis y con claridad desde el inicio",
       title: "Sube tu documento laboral y recibe una auditoría clara y confiable.",
       description:
-        "Empieza con tu primer documento y entiende mejor tu situación laboral en minutos. Si más adelante necesitas más respaldo, las opciones adicionales aparecen dentro de tu expediente, cuando realmente te sirvan.",
+        "Sube tu primer documento y entiende tu situación laboral en minutos. Las opciones para avanzar estarán disponibles en tu expediente.",
       principles: [
         "Empieza gratis con tu primer documento.",
         "Recibe claridad antes de tomar cualquier decisión.",
@@ -41,8 +41,8 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         : "Opcional para cuando quieras avanzar con más respaldo",
       title: "Preparación guiada de tu siguiente paso laboral",
       description: hasEnoughContext
-        ? "Cuando tu expediente ya juntó señales útiles, puedes activar una preparación guiada para convertir tus documentos en un borrador ordenado del siguiente paso que quieras dar."
-        : "Primero sigue fortaleciendo tu expediente gratis. Cuando quieras avanzar con más respaldo, podrás activar una preparación guiada basada en los documentos que ya reuniste.",
+        ? "Si tu expediente ya reúne señales útiles, puedes activar una preparación guiada para ordenar tu siguiente paso con más claridad."
+        : "Fortalece tu expediente gratis. Cuando quieras avanzar, podrás activar una preparación guiada con tus documentos.",
       priceLabel: "$199 MXN pago único",
       primaryCtaLabel: "Entender esta opción",
       secondaryCtaLabel: "Seguir gratis por ahora",

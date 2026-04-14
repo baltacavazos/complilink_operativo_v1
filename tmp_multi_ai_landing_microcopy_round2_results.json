@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-04-14T21:04:40.734Z",
+  "promptSummary": "Micro-ronda tri-IA para recortar dos microcopies secundarios del landing de AuditaPatron y blindar frases internas",
+  "openai": {
+    "top_two_blocks_to_shorten": [
+      "A",
+      "B"
+    ],
+    "recommended_rewrites": {
+      "A": "Sube tu primer documento y entiende tu situación laboral en minutos. Más opciones aparecerán en tu expediente cuando las necesites.",
+      "B": "Si necesitas más respaldo, esa opción estará disponible en tu expediente, sin interrumpir tu revisión.",
+      "C": "Primero fortalece tu expediente gratis. Luego podrás activar una preparación guiada según tus documentos."
+    },
+    "guardrail_phrases_to_block": [
+      "más respaldo",
+      "opciones adicionales",
+      "cuando realmente te sirvan",
+      "con contexto",
+      "sin interrumpir",
+      "preparación guiada"
+    ],
+    "rationale": [
+      "Se seleccionaron los bloques A y B porque contienen frases redundantes y poco directas que pueden simplificarse para aligerar el mensaje sin cambiar la estructura.",
+      "El hero ya comunica claramente la acción principal, por lo que los bloques secundarios deben ser breves y enfocados.",
+      "Las frases internas o técnicas como 'más respaldo', 'preparación guiada' y 'con contexto' pueden confundir o parecer internas, por eso se recomienda bloquearlas para evitar filtraciones futuras.",
+      "El bloque C se mantiene con una versión más corta pero no se toca para no exceder el límite de dos bloques."
+    ]
+  },
+  "gemini": {
+    "top_two_blocks_to_shorten": [
+      "A",
+      "B"
+    ],
+    "recommended_rewrites": {
+      "A": "Sube tu primer documento y entiende tu situación laboral en minutos. Las opciones para avanzar estarán disponibles en tu expediente.",
+      "B": "Las opciones para avanzar con tu caso estarán disponibles en tu expediente.",
+      "C": "Fortalece tu expediente gratis. Cuando quieras avanzar, activa una preparación guiada con tus documentos."
+    },
+    "guardrail_phrases_to_block": [
+      "más respaldo",
+      "mayor respaldo",
+      "cuando realmente te sirvan",
+      "sin interrumpir tu primera revisión",
+      "opciones adicionales",
+      "esa opción aparece"
+    ],
+    "rationale": [
+      "Los bloques A y B contienen lenguaje repetitivo y frases que suenan a procesos internos ('más respaldo', 'cuando realmente te sirvan', 'sin interrumpir tu primera revisión').",
+      "Al acortarlos, la landing se vuelve más directa y ligera, enfocándose en el valor inmediato de la auditoría y presentando las opciones futuras de forma concisa y clara.",
+      "Las frases bloqueadas buscan evitar la reintroducción de terminología vaga o centrada en el proceso, manteniendo un lenguaje centrado en el usuario y el beneficio."
+    ],
+    "model": "gemini-2.5-flash"
+  },
+  "grok": {
+    "top_two_blocks_to_shorten": [
+      "A",
+      "B"
+    ],
+    "recommended_rewrites": {
+      "A": "Comienza con tu primer documento para entender tu situación laboral en minutos. Opciones adicionales en tu expediente cuando las necesites.",
+      "B": "Avanza con más respaldo cuando lo necesites, disponible en tu expediente con contexto.",
+      "C": "Fortalece tu expediente gratis primero. Activa preparación guiada con más respaldo basado en tus documentos."
+    },
+    "guardrail_phrases_to_block": [
+      "copy interno filtrado",
+      "pricingExperience.landing.description"
+    ],
+    "rationale": [
+      "Seleccioné A y B por su redundancia y oportunidad de acortamiento para hacer el landing más directo y ligero, sin alterar la estructura.",
+      "Las reescrituras reducen la longitud mientras preservan el mensaje clave, mejorando la claridad y experiencia del usuario.",
+      "Guardrail_phrases_to_block se basa en frases internas previamente identificadas para prevenir filtraciones y mantener la profesionalidad."
+    ]
+  }
+}

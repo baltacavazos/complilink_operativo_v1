@@ -1137,3 +1137,6 @@
 - [x] Eliminar del landing cualquier copy interno o instrucción de trabajo que haya quedado visible al usuario final
 - [x] Revisar integralmente el landing móvil y desktop para asegurar que todo el mensaje sea comercial, coherente y orientado a conversión
 - [x] Contrastar con OpenAI, Grok y Gemini la mejor corrección del landing antes de cerrar esta iteración
+- [x] Recortar el microcopy de dos bloques secundarios del landing para que la home sea más directa y ligera en móvil y desktop
+- [x] Añadir una prueba E2E o de integración que detecte y bloquee frases internas o meta en la home pública
+- [x] Revalidar la preview del landing tras esta ronda y dejar checkpoint listo para publicación

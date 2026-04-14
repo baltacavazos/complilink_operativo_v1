@@ -8,8 +8,11 @@ describe("getAuditapatronPricingExperience", () => {
     expect(experience.landing.showPrice).toBe(false);
     expect(experience.landing.eyebrow).toContain("gratis");
     expect(experience.landing.title).toContain("auditoría clara y confiable");
+    expect(experience.landing.description).toContain("Sube tu primer documento y entiende tu situación laboral en minutos.");
     expect(experience.landing.description).not.toContain("El landing debe");
     expect(experience.landing.description).not.toContain("vender confianza");
+    expect(experience.landing.description).not.toContain("cuando realmente te sirvan");
+    expect(experience.landing.description).not.toContain("opciones adicionales");
     expect(experience.landing.principles).toContain("Empieza gratis con tu primer documento.");
   });
 
@@ -20,5 +23,7 @@ describe("getAuditapatronPricingExperience", () => {
     expect(experience.platform.priceLabel).toBe("$199 MXN pago único");
     expect(experience.platform.reassurance).toContain("sin pagar");
     expect(experience.platform.eyebrow).toContain("contexto");
+    expect(experience.platform.description).not.toContain("cuando realmente te sirvan");
+    expect(experience.platform.description).not.toContain("sin interrumpir");
   });
 });

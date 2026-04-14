@@ -2221,7 +2221,7 @@ function FinalCtaSection() {
             </div>
 
             <p className="mt-6 max-w-2xl text-sm leading-6 text-slate-600">
-              Si más adelante necesitas avanzar con mayor respaldo, esa opción aparece dentro de tu expediente, con contexto y sin interrumpir tu primera revisión.
+              Si más adelante quieres avanzar, esa opción estará disponible dentro de tu expediente.
             </p>
           </div>
         </div>
