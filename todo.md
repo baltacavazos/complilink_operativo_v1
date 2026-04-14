@@ -1074,3 +1074,10 @@
 - [x] Convertir los hallazgos clave en tarjetas comparables entre documentos del mismo expediente dentro de /auditar.
 - [x] Cerrar la integración para que cada documento confirmado se despache y consulte siempre contra Helios remoto en lugar de depender del modo mock.
 - [x] Consultar con ChatGPT, Grok y Gemini la mejor UX y jerarquía para la apertura contextual del asistente y la comparativa entre documentos antes de implementar.
+- [ ] Investigar por qué al subir un documento en /auditar no aparece información visible para el usuario.
+- [ ] Confirmar en flujo real si el documento se despacha a Helios, si Helios responde y si el frontend renderiza esa respuesta.
+- [ ] Revisar el archivo `auditapatron-helios-prueba.pdf` para identificar su tipo, contenido y utilidad como prueba del flujo documental.
+- [ ] Usar `auditapatron-helios-prueba.pdf` como prueba controlada en AuditaPatron para verificar respuesta visible y estado de la conexión con Helios.
+- [x] Ejecutar una prueba controlada de conexión con el token configurado contra `https://www.complilink.mx/api/internal/helios/bridge/contract`, `https://www.complilink.mx/api/internal/helios/bridge` y `https://www.complilink.mx/api/integrations/auditapatron/bridge`, devolviendo la respuesta exacta de cada paso.
+- [ ] Revisar el archivo adjunto `pasted_content.txt` y ejecutar sus instrucciones dentro del proyecto AuditaPatron/Helios con validación posterior.
+- [x] Ejecutar una segunda prueba controlada enfocada sólo en autenticación para validar si `Authorization: Bearer ...` usa exactamente el secreto vigente del bridge en CompliLink y documentar la evidencia exacta de los pasos 1, 2 y 3.
