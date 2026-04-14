@@ -1081,3 +1081,4 @@
 - [x] Ejecutar una prueba controlada de conexión con el token configurado contra `https://www.complilink.mx/api/internal/helios/bridge/contract`, `https://www.complilink.mx/api/internal/helios/bridge` y `https://www.complilink.mx/api/integrations/auditapatron/bridge`, devolviendo la respuesta exacta de cada paso.
 - [ ] Revisar el archivo adjunto `pasted_content.txt` y ejecutar sus instrucciones dentro del proyecto AuditaPatron/Helios con validación posterior.
 - [x] Ejecutar una segunda prueba controlada enfocada sólo en autenticación para validar si `Authorization: Bearer ...` usa exactamente el secreto vigente del bridge en CompliLink y documentar la evidencia exacta de los pasos 1, 2 y 3.
+- [x] Revisar el archivo adjunto `pasted_content_2.txt` y ejecutar sus instrucciones exactas dentro del proyecto AuditaPatron/Helios con evidencia verificable.
