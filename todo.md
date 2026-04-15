@@ -1148,3 +1148,6 @@
 - [x] Corregir el acceso CEO por código de correo para que no falle con Resend al enviar a dominios corporativos
 - [x] Revisar la configuración de remitente y verificación de dominio del flujo CEO y dejar pruebas de no regresión del acceso por correo
 - [x] Reabrir la tarjeta de OWNER_BACKUP_EMAIL para que el usuario pueda corregir el correo de respaldo temporal del acceso CEO
+- [x] Hacer explícito en /acceso cuándo el código del CEO se envía al buzón de respaldo temporal del propietario
+- [x] Añadir una prueba E2E del flujo completo de solicitar y validar código para el acceso CEO
+- [x] Revisar el estado del dominio de correo saliente y preparar la salida segura del fallback temporal cuando la verificación esté lista

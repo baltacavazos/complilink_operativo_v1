@@ -58,6 +58,23 @@ function parseStructuredAuthMessage(rawMessage: string) {
   };
 }
 
+function buildEmailCodeStatusMessage(params: {
+  maskedEmail: string;
+  usedOwnerBackupEmail: boolean;
+  cooldownSeconds: number;
+}) {
+  const timestamp = new Intl.DateTimeFormat("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date());
+
+  if (params.usedOwnerBackupEmail) {
+    return `Enviamos tu código al buzón de respaldo registrado (${params.maskedEmail}) a las ${timestamp}. Revisa esa bandeja para continuar. Puedes pedir otro dentro de ${params.cooldownSeconds} segundos.`;
+  }
+
+  return `Enviamos un código de 6 dígitos a ${params.maskedEmail} a las ${timestamp}. Puedes pedir otro dentro de ${params.cooldownSeconds} segundos.`;
+}
+
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
   const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
@@ -78,12 +95,19 @@ export default function Access() {
   const requestEmailCode = trpc.auth.requestEmailCode.useMutation({
     onSuccess(data) {
       const normalizedEmail = email.trim().toLowerCase();
+      const usedOwnerBackupEmail = Boolean((data as { usedOwnerBackupEmail?: boolean }).usedOwnerBackupEmail);
       setSubmittedEmail(normalizedEmail);
       setEmailStep("verify");
       setCode("");
       setErrorMessage(null);
       setEmailCooldownUntil(Date.now() + data.cooldownSeconds * 1000);
-      setStatusMessage(`Enviamos un código de 6 dígitos a ${data.maskedEmail}. Puedes pedir otro dentro de ${data.cooldownSeconds} segundos.`);
+      setStatusMessage(
+        buildEmailCodeStatusMessage({
+          maskedEmail: data.maskedEmail,
+          usedOwnerBackupEmail,
+          cooldownSeconds: data.cooldownSeconds,
+        }),
+      );
     },
     onError(error) {
       const parsed = parseStructuredAuthMessage(error.message);

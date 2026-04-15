@@ -1690,6 +1690,7 @@ export const appRouter = router({
           return {
             success: true,
             maskedEmail: result.maskedEmail,
+            usedOwnerBackupEmail: result.usedOwnerBackupEmail,
             expiresInSeconds: result.expiresInSeconds,
             cooldownSeconds: result.cooldownSeconds,
             maxRequestsPerWindow: result.maxRequestsPerWindow,

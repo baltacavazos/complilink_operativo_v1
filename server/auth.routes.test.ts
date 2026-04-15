@@ -85,6 +85,7 @@ describe("auth router", () => {
   it("requests an email code and returns masked metadata plus cooldown details", async () => {
     authServiceMocks.startEmailLogin.mockResolvedValue({
       maskedEmail: "al***@empresa.com",
+      usedOwnerBackupEmail: false,
       expiresInSeconds: 600,
       cooldownSeconds: 60,
       maxRequestsPerWindow: 5,
@@ -106,6 +107,7 @@ describe("auth router", () => {
     expect(result).toEqual({
       success: true,
       maskedEmail: "al***@empresa.com",
+      usedOwnerBackupEmail: false,
       expiresInSeconds: 600,
       cooldownSeconds: 60,
       maxRequestsPerWindow: 5,

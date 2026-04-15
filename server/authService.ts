@@ -264,7 +264,36 @@ function setEmailChallengeCookie(req: Request, res: Response, token: string) {
 
 export function clearEmailChallengeCookie(req: Request, res: Response) {
   const cookieOptions = getSessionCookieOptions(req);
-  res.clearCookie(EMAIL_LOGIN_COOKIE, { ...cookieOptions, maxAge: -1 });
+  res.clearCookie(EMAIL_LOGIN_COOKIE, cookieOptions);
+}
+
+export async function createTestingEmailLoginChallenge(params: {
+  req: Request;
+  res: Response;
+  email: string;
+  name?: string | null;
+  code?: string;
+}) {
+  const email = normalizeEmail(params.email);
+  const code = params.code?.trim() || "111111";
+
+  if (!/^\d{6}$/.test(code)) {
+    throw new Error("Testing email code must contain exactly 6 digits");
+  }
+
+  const challengeToken = await signEmailChallengeToken({
+    email,
+    codeHash: hashEmailCode(email, code),
+    name: buildFallbackName(email, params.name),
+  });
+
+  setEmailChallengeCookie(params.req, params.res, challengeToken);
+
+  return {
+    email,
+    code,
+    name: buildFallbackName(email, params.name),
+  } as const;
 }
 
 type ResendAttachment = {
