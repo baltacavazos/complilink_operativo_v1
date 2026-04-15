@@ -1214,3 +1214,6 @@
 - [x] Dejar un único CTA principal en el post-upload y esconder acciones secundarias para reducir fatiga de decisión
 - [x] Separar visualmente el análisis del documento actual del estado general del expediente dentro de /auditar
 - [x] Eliminar o esconder lenguaje técnico-operativo y módulos secundarios en el primer contacto post-upload
+- [x] Añadir una microtransición entre archivo recibido y veredicto listo en el post-upload de /auditar
+- [x] Hacer más explícito el semáforo del veredicto para que el usuario entienda de inmediato si el documento salió bien, incompleto o requiere revisión
+- [x] Cubrir con una prueba E2E el flujo móvil subir → analizar → veredicto en /auditar

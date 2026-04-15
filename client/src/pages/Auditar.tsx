@@ -1473,20 +1473,64 @@ function getDocumentReadiness(confidence?: number | null) {
 
   if ((confidence ?? 0) >= 65) {
     return {
-      label: "Lectura útil",
-      classes: "bg-teal-100 text-teal-800",
+      label: "Lectura útil con revisión",
+      classes: "bg-amber-100 text-amber-800",
       description:
-        "Este documento ya aporta contexto útil, aunque algunas partes pueden necesitar revisión adicional.",
+        "Ya encontramos señales útiles, aunque todavía conviene revisar algunos detalles antes de sacar conclusiones.",
     } as const;
   }
 
   return {
-    label: "Conviene revisar",
-    classes: "bg-amber-100 text-amber-800",
+    label: "Lectura inicial",
+    classes: "bg-slate-200 text-slate-700",
     description:
-      "El sistema encontró valor en este archivo, pero conviene revisar con más cuidado algunos detalles.",
+      "Este archivo abre la lectura, pero todavía conviene complementarlo con otra evidencia más clara.",
   } as const;
 }
+
+function getDocumentVerdictState(confidence?: number | null) {
+  if ((confidence ?? 0) >= 85) {
+    return {
+      label: "Bien detectado",
+      shortLabel: "Bien",
+      classes: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+      panelClasses: "border-emerald-100 bg-emerald-50",
+      description: "Se puede usar ya como una señal fuerte dentro del expediente.",
+    } as const;
+  }
+
+  if ((confidence ?? 0) >= 65) {
+    return {
+      label: "Requiere revisión",
+      shortLabel: "Revisar",
+      classes: "bg-amber-100 text-amber-900 border border-amber-200",
+      panelClasses: "border-amber-100 bg-amber-50",
+      description: "Ya aporta contexto, pero conviene revisar detalles antes de confiar por completo.",
+    } as const;
+  }
+
+  return {
+    label: "Necesita refuerzo",
+    shortLabel: "Refuerzo",
+    classes: "bg-slate-200 text-slate-800 border border-slate-300",
+    panelClasses: "border-slate-200 bg-slate-50",
+    description: "Abre la lectura, pero todavía hace falta otro archivo o una versión más clara.",
+  } as const;
+}
+
+function getResultRevealCopy(documentType?: string | null) {
+  const documentLabel = documentType
+    ? getSimpleDocumentTypeLabel(documentType)
+    : "Documento";
+
+  return {
+    eyebrow: "Archivo recibido",
+    title: `${documentLabel} listo para mostrar resultado`,
+    description:
+      "Ordenamos primero lo más útil para enseñarte un veredicto simple antes del detalle completo.",
+  } as const;
+}
+
 
 function asHeliosOpinion(value: unknown): HeliosOpinionView | null {
   if (!value || typeof value !== "object") return null;
@@ -2875,6 +2919,59 @@ export default function Auditar() {
       "1"
     );
   }, []);
+  const postUploadHarnessMode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return (
+      new URLSearchParams(window.location.search).get("postUploadHarness") ===
+      "1"
+    );
+  }, []);
+  const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode;
+
+  useEffect(() => {
+    if (!postUploadHarnessMode) {
+      return;
+    }
+
+    setPendingDraft(null);
+    setSubmitError(null);
+    setLastUpload({
+      draftId: "post-upload-harness",
+      classification: {
+        documentType: "payroll_receipt",
+        classificationConfidence: 86,
+      },
+      preliminaryAnalysis: {
+        summary:
+          "Este recibo ya sirve como una señal fuerte dentro del expediente y conviene contrastarlo con el CFDI del mismo periodo.",
+        processingProfile: "mobile_harness_demo",
+        confirmedData: {
+          periodo: "Primera quincena de marzo de 2026",
+          neto: "$8,420 MXN",
+        },
+        estimatedData: {
+          deducciones: "$1,180 MXN",
+        },
+        guardrails: [
+          "Todavía conviene contrastarlo con tu CFDI del mismo periodo para cerrar la revisión con más seguridad.",
+        ],
+      },
+      nextSuggestedDocument: {
+        key: "cfdi",
+        title: "CFDI del mismo periodo",
+        reason:
+          "Te ayuda a comparar lo timbrado con lo que realmente te pagaron y confirmar si ambos coinciden.",
+      },
+      newClarityNotification: {
+        title: "Ya hay una lectura inicial útil",
+        message:
+          "Con este archivo ya podemos decirte qué documento es y cuál conviene subir después.",
+        delta: 18,
+      },
+    });
+  }, [postUploadHarnessMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -3608,6 +3705,9 @@ export default function Auditar() {
   const lastUploadReadiness = getDocumentReadiness(
     lastUpload?.classification?.classificationConfidence
   );
+  const lastUploadVerdict = getDocumentVerdictState(
+    lastUpload?.classification?.classificationConfidence
+  );
   const primaryLastUploadShortcut = lastUploadShortcuts[0] ?? null;
   const secondaryLastUploadShortcuts = primaryLastUploadShortcut
     ? lastUploadShortcuts.slice(1)
@@ -3629,6 +3729,41 @@ export default function Auditar() {
     ) ??
     uploadInsight?.nextSuggestion ??
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
+  const [showResultReveal, setShowResultReveal] = useState(false);
+  const lastRevealedUploadIdRef = useRef<string | null>(null);
+  const lastUploadRevealId = lastUpload
+    ? [
+        lastUpload.draftId ?? "confirmed",
+        lastUpload.classification.documentType,
+        lastUpload.preliminaryAnalysis.summary,
+      ].join("::")
+    : null;
+
+  useEffect(() => {
+    const uploadId = lastUploadRevealId;
+
+    if (!uploadId) {
+      setShowResultReveal(false);
+      lastRevealedUploadIdRef.current = null;
+      return;
+    }
+
+    if (lastRevealedUploadIdRef.current === uploadId) {
+      return;
+    }
+
+    lastRevealedUploadIdRef.current = uploadId;
+    setShowResultReveal(true);
+
+    const timer = window.setTimeout(() => {
+      setShowResultReveal(false);
+    }, 2200);
+
+    return () => window.clearTimeout(timer);
+  }, [lastUploadRevealId]);
+  const resultRevealCopy = getResultRevealCopy(
+    lastUpload?.classification.documentType
+  );
   const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
   const monitoringDocuments = complilinkMonitoring?.documents ?? [];
   const pendingMonitoringDocuments = monitoringDocuments.filter(
@@ -4967,7 +5102,7 @@ export default function Auditar() {
     );
   }
 
-  if (!auth.isAuthenticated && !legalGateHarnessMode) {
+  if (!auth.isAuthenticated && !auditarHarnessBypass) {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-10 text-slate-950">
         <div className="container mx-auto max-w-6xl">
@@ -5237,6 +5372,22 @@ export default function Auditar() {
                 Simular conflicto del lock
               </Button>
             </div>
+          </section>
+        ) : null}
+
+        {postUploadHarnessMode ? (
+          <section
+            className="mt-6 rounded-[1.5rem] border border-dashed border-teal-300 bg-teal-50/80 p-4 shadow-sm"
+            data-testid="post-upload-harness"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">
+              Modo de prueba del veredicto post-upload
+            </p>
+            <p className="mt-2 text-sm leading-6 text-teal-950">
+              Esta vista deja un resultado móvil simulado para validar el
+              revelado, el semáforo y el CTA principal sin depender de login ni
+              de una subida real.
+            </p>
           </section>
         ) : null}
 
@@ -7750,10 +7901,45 @@ export default function Auditar() {
                 )
               ) : (
                 <div className="mt-4 space-y-4">
+                  {showResultReveal ? (
+                    <div
+                      data-testid="auditar-result-reveal"
+                      className="overflow-hidden rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] p-4 shadow-sm transition-all duration-500 ease-out"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                          <Sparkles
+                            className="h-5 w-5 animate-pulse text-teal-700"
+                            strokeWidth={1.9}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                            {resultRevealCopy.eyebrow}
+                          </p>
+                          <p className="mt-2 text-base font-semibold text-slate-950 sm:text-lg">
+                            {resultRevealCopy.title}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-slate-700">
+                            {resultRevealCopy.description}
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              Archivo recibido
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                              Veredicto en pantalla
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
-                        Documento analizado
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Documento recibido
                       </span>
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                         {getSimpleDocumentTypeLabel(
@@ -7761,38 +7947,58 @@ export default function Auditar() {
                         )}
                       </span>
                       <span
-                        className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}
+                        data-testid="auditar-verdict-pill"
+                        className={`rounded-full px-3 py-1 ${lastUploadVerdict.classes}`}
                       >
-                        {lastUploadReadiness.label}
+                        {lastUploadVerdict.label}
                       </span>
                     </div>
 
                     <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
                       <div className="rounded-[1.25rem] border border-white/80 bg-white/92 p-4 shadow-sm sm:p-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Veredicto rápido
+                          Lo importante primero
                         </p>
                         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
-                          {uploadInsight?.label ?? lastUploadResultHeadline}
+                          {lastUploadResultHeadline}
                         </h3>
                         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-[0.98rem]">
                           {lastUploadResultLead}
                         </p>
 
-                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="mt-4 grid gap-3 sm:grid-cols-3">
                           <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              Qué sí vimos
+                              Documento
                             </p>
-                            <p className="mt-2 text-sm leading-7 text-slate-700">
-                              {uploadInsight?.contribution ?? lastUploadResultHeadline}
+                            <p className="mt-2 text-sm font-semibold text-slate-950">
+                              {getSimpleDocumentTypeLabel(
+                                lastUpload.classification.documentType
+                              )}
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-slate-700">
+                              {uploadInsight?.contribution ??
+                                "Ya quedó integrado para darte una primera lectura útil dentro del expediente."}
+                            </p>
+                          </div>
+                          <div
+                            className={`rounded-[1rem] p-4 ${lastUploadVerdict.panelClasses}`}
+                          >
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                              Estado
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-slate-950">
+                              {lastUploadVerdict.shortLabel}
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-slate-700">
+                              {lastUploadVerdict.description}
                             </p>
                           </div>
                           <div className="rounded-[1rem] border border-amber-100 bg-amber-50 p-4">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
-                              Qué conviene hacer ahora
+                              Haz esto ahora
                             </p>
-                            <p className="mt-2 text-sm leading-7 text-amber-950">
+                            <p className="mt-2 text-sm leading-6 text-amber-950">
                               {lastUploadNextStepSummary}
                             </p>
                           </div>
@@ -7807,7 +8013,7 @@ export default function Auditar() {
                           />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-                              Siguiente paso
+                              Acción principal
                             </p>
                             <p className="mt-2 text-lg font-semibold text-teal-950">
                               {primaryLastUploadShortcut
@@ -7823,6 +8029,7 @@ export default function Auditar() {
                         </div>
 
                         <Button
+                          data-testid="auditar-primary-verdict-cta"
                           type="button"
                           className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
                           onClick={() =>
@@ -7842,7 +8049,7 @@ export default function Auditar() {
                         </Button>
 
                         <p className="mt-3 text-xs leading-5 text-teal-900/80">
-                          Si quieres confirmar cómo llegamos a este resultado, abajo puedes abrir el detalle completo del documento.
+                          Debajo puedes abrir el detalle completo solo si quieres ver cómo llegamos a este resultado.
                         </p>
                       </div>
                     </div>
@@ -7852,11 +8059,11 @@ export default function Auditar() {
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">
-                          Ver detalles del análisis
+                          Ver cómo se obtuvo este resultado
                         </p>
                         <p className="mt-1 text-xs leading-6 text-slate-500">
-                          Aquí queda el apoyo visual, el resumen técnico y el
-                          estado de revisión por si quieres profundizar.
+                          Aquí quedan la lectura detallada, el apoyo visual y el
+                          contexto técnico solo para cuando quieras profundizar.
                         </p>
                       </div>
                       <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
