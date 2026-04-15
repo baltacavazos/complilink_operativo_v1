@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2/promise";
 import {
@@ -582,11 +582,56 @@ export async function getAccessibleTenantIds(userId: number) {
   return Array.from(new Set(rows.map((row) => row.tenantId)));
 }
 
-export async function getAccessibleCaseIds(userId: number, tenantId?: string) {
+function normalizeIdentityLabel(value?: string | null) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenizeIdentityLabel(value?: string | null) {
+  return normalizeIdentityLabel(value)
+    .split(" ")
+    .filter((token) => token.length >= 3);
+}
+
+export function documentSeemsToBelongToAnotherPerson(expectedName?: string | null, detectedName?: string | null) {
+  const expectedTokens = tokenizeIdentityLabel(expectedName);
+  const detectedTokens = tokenizeIdentityLabel(detectedName);
+
+  if (expectedTokens.length < 2 || detectedTokens.length < 2) {
+    return false;
+  }
+
+  const overlap = expectedTokens.filter((token) => detectedTokens.includes(token));
+  return overlap.length < 2;
+}
+
+export async function isCeoBypassUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const rows = await db
+  const result = await db
+    .select({ openId: users.openId, role: users.role })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return result[0]?.role === "admin" && result[0]?.openId === ENV.ownerOpenId;
+}
+
+async function getPrimaryCaseIdForUser(userId: number, tenantId?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  if (await isCeoBypassUser(userId)) {
+    return null;
+  }
+
+  const grantedCases = await db
     .select({ caseId: caseAccess.caseId })
     .from(caseAccess)
     .where(
@@ -595,9 +640,48 @@ export async function getAccessibleCaseIds(userId: number, tenantId?: string) {
         eq(caseAccess.status, "active"),
         tenantId ? eq(caseAccess.tenantId, tenantId) : undefined,
       ),
-    );
+    )
+    .orderBy(asc(caseAccess.createdAt));
 
-  return Array.from(new Set(rows.map((row) => row.caseId)));
+  const assignedCases = await db
+    .select({ caseId: laborCases.caseId })
+    .from(laborCases)
+    .where(
+      and(
+        eq(laborCases.assignedUserId, userId),
+        tenantId ? eq(laborCases.tenantId, tenantId) : undefined,
+      ),
+    )
+    .orderBy(asc(laborCases.createdAt));
+
+  const orderedCaseIds = Array.from(
+    new Set([...grantedCases.map((row) => row.caseId), ...assignedCases.map((row) => row.caseId)]),
+  );
+
+  return orderedCaseIds[0] ?? null;
+}
+
+export async function getAccessibleCaseIds(userId: number, tenantId?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  if (await isCeoBypassUser(userId)) {
+    const rows = await db
+      .select({ caseId: caseAccess.caseId })
+      .from(caseAccess)
+      .where(
+        and(
+          eq(caseAccess.userId, userId),
+          eq(caseAccess.status, "active"),
+          tenantId ? eq(caseAccess.tenantId, tenantId) : undefined,
+        ),
+      );
+
+    return Array.from(new Set(rows.map((row) => row.caseId)));
+  }
+
+  const primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
+  return primaryCaseId ? [primaryCaseId] : [];
 }
 
 export async function assertTenantAccess(userId: number, tenantId: string) {
@@ -627,7 +711,19 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await assertTenantAccess(userId, tenantId);
+  const tenantMembership = await assertTenantAccess(userId, tenantId);
+  const ceoBypass = await isCeoBypassUser(userId);
+
+  if (!ceoBypass) {
+    const primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
+    if (!primaryCaseId) {
+      throw new Error("No personal case assigned to this account");
+    }
+
+    if (primaryCaseId !== caseId) {
+      throw new Error("This account is limited to a single personal case");
+    }
+  }
 
   const caseGrant = await db
     .select()
@@ -660,6 +756,10 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
     .limit(1);
 
   if (!tenantWide[0]) {
+    if (!ceoBypass) {
+      return tenantMembership;
+    }
+
     throw new Error("Access denied for case");
   }
 

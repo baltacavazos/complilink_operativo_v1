@@ -18,6 +18,7 @@ const dbMocks = vi.hoisted(() => ({
   createAuditLog: vi.fn(),
   createAuditLogs: vi.fn(),
   createCaseRecord: vi.fn(),
+  documentSeemsToBelongToAnotherPerson: vi.fn(),
   ensureTenantForUser: vi.fn(),
   findAuditLogEntry: vi.fn(),
   getAuditarDraftById: vi.fn(),
@@ -25,6 +26,7 @@ const dbMocks = vi.hoisted(() => ({
   getDashboardForUser: vi.fn(),
   getCeoDashboardSnapshot: vi.fn(),
   getSystemSnapshot: vi.fn(),
+  isCeoBypassUser: vi.fn(),
   isDatabaseLockContentionError: vi.fn(),
   getVisibleDocumentForUser: vi.fn(),
   grantCaseAccess: vi.fn(),
@@ -154,6 +156,7 @@ describe("appRouter case workflows", () => {
         { status: "conciliation", count: 1 },
       ],
     } as never);
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(false);
     vi.mocked(db.getCeoDashboardSnapshot).mockResolvedValue({
       generatedAt: new Date("2026-04-08T09:30:00.000Z"),
       summary: {
@@ -193,6 +196,7 @@ describe("appRouter case workflows", () => {
       recentMemberships: [],
       recentDocuments: [],
     } as never);
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValue(false);
     vi.mocked(db.createCaseRecord).mockImplementation(async (input) => ({
       id: 101,
       updatedAt: new Date("2026-04-05T10:00:00.000Z"),
@@ -863,8 +867,92 @@ describe("appRouter case workflows", () => {
     );
   });
 
-  it("rate limits burst uploads on the heavy Auditar endpoint", async () => {
+  it("rejects upload when a normal user submits a document that appears to belong to another person", async () => {
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
+
     const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 81,
+        openId: "worker-single-case",
+        email: "worker-single-case@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "recibo_otra_persona.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        textHint: "Trabajador: Juan Pérez\nEmpresa: Empresa Alterna SA de CV",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/expediente digital está vinculado a una sola persona/i);
+
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects draft analysis when a normal user submits a document that appears to belong to another person", async () => {
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 82,
+        openId: "worker-single-case-preview",
+        email: "worker-single-case-preview@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "vista_otra_persona.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        textHint: "Trabajador: Juan Pérez\nEmpresa: Empresa Alterna SA de CV",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/expediente digital está vinculado a una sola persona/i);
+
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+  });
+
+  it("allows the same upload for CEO bypass users so operational testing remains unrestricted", async () => {
+    vi.mocked(db.isCeoBypassUser).mockResolvedValueOnce(true);
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "prueba_ceo_otra_persona.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        textHint: "Trabajador: Juan Pérez\nEmpresa: Empresa Alterna SA de CV",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(db.addDocumentRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+      }),
+    );
+  });
+
+  it("rate limits burst uploads on the Auditar upload endpoint", async () => {
+   const caller = appRouter.createCaller(
       createProtectedContext({
         id: 71,
         openId: "auditar-rate-upload",

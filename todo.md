@@ -1256,7 +1256,12 @@
 - [x] Cierre V1: definir checklist explícito de imprescindibles vs post-V1 para congelar mejoras no críticas.
 - [x] Cierre V1: endurecer los flujos críticos pendientes de subida, análisis, resultado, expediente y acceso.
 - [x] Cierre V1: validar estabilidad integral de rutas críticas con TypeScript, Vitest y revisión operativa final.
-- [ ] Cierre V1: preparar checkpoint final orientado a salida de V1 con lista clara de pendientes post-V1.
+- [x] Cierre V1: preparar checkpoint final orientado a salida de V1 con lista clara de pendientes post-V1.
 - [x] Cierre V1: sacar la Consola CEO de la navegación pública del Home para que la V1 quede enfocada en el flujo del usuario final.
 - [x] Cierre V1: añadir cobertura de pruebas para la pantalla /acceso y sus estados críticos de entrada con correo.
 - [x] Cierre V1: validar explícitamente las rutas críticas públicas y restringidas para evitar confusión de alcance en la V1.
+- [x] Cierre V1 crítico: impedir que un usuario normal use su cuenta para auditar expedientes de varias personas; cada cuenta debe quedar limitada a un solo expediente/persona.
+- [x] Cierre V1 crítico: mantener bypass completo para el perfil CEO, permitiéndole subir y probar sin la restricción de expediente único.
+- [x] Cierre V1 crítico: validar con pruebas backend y de rutas que la restricción por usuario no rompa el flujo normal ni el bypass CEO.
+- [x] Cierre V1 crítico: detectar si un usuario normal sube un documento que parece pertenecer a otra persona y notificarle cordialmente, con fecha y hora, que su expediente está limitado a una sola persona.
+- [x] Cierre V1 crítico: consensuar el mejor punto de aplicación de esa notificación para que bloquee el uso incorrecto sin confundir al usuario ni romper el flujo legítimo.

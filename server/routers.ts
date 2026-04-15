@@ -22,6 +22,7 @@ import {
   createCeoBridgeSchedule,
   deleteCeoBridgePreset,
   deleteCeoBridgeSchedule,
+  documentSeemsToBelongToAnotherPerson,
   ensureTenantForUser,
   findAuditLogEntry,
   getCaseDetailForUser,
@@ -51,6 +52,7 @@ import {
   addDocumentRecord,
   getAuditarDraftById,
   updateDocumentPostProcessing,
+  isCeoBypassUser,
   isDatabaseLockContentionError,
   withDatabaseLock,
 } from "./db";
@@ -139,6 +141,43 @@ const ceoBridgePresetFiltersSchema = z.object({
   dateWindowDays: ceoAllowedDateWindowDaysSchema.optional(),
   query: z.string().trim().min(1).max(160).optional(),
 });
+
+const SINGLE_CASE_IDENTITY_MESSAGE =
+  "Este expediente digital está vinculado a una sola persona. Detectamos que el documento parece pertenecer a otra persona. Por favor revisa el archivo y usa la cuenta correspondiente. Si crees que es un error, contáctanos y te ayudamos.";
+
+function getDetectedWorkerName(preliminaryAnalysis: {
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+}) {
+  return (
+    getRecordStringValue(preliminaryAnalysis.confirmedData, "workerName") ??
+    getRecordStringValue(preliminaryAnalysis.estimatedData, "workerName") ??
+    null
+  );
+}
+
+function assertDocumentIdentityGuardrail(params: {
+  ceoBypass: boolean;
+  expectedWorkerName?: string | null;
+  detectedWorkerName?: string | null;
+}) {
+  if (params.ceoBypass) {
+    return;
+  }
+
+  if (!params.expectedWorkerName || !params.detectedWorkerName) {
+    return;
+  }
+
+  if (!documentSeemsToBelongToAnotherPerson(params.expectedWorkerName, params.detectedWorkerName)) {
+    return;
+  }
+
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message: SINGLE_CASE_IDENTITY_MESSAGE,
+  });
+}
 const ceoBridgePresetSchema = z.object({
   tenantId: z.string().trim().min(3).max(80).optional(),
   name: z.string().trim().min(3).max(120),
@@ -3135,6 +3174,7 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
         const { safeFileName } = validateAuditarUploadMetadata({
           fileName: input.fileName,
@@ -3166,6 +3206,12 @@ export const appRouter = router({
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
           });
+        const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
+        assertDocumentIdentityGuardrail({
+          ceoBypass,
+          expectedWorkerName: detail.case.employeeName,
+          detectedWorkerName,
+        });
         const createdAt = new Date();
 
         const draftPayload: AuditarDraftContractPayload = {
@@ -3793,6 +3839,7 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
         const { safeFileName } = validateAuditarUploadMetadata({
           fileName: input.fileName,
@@ -3825,6 +3872,12 @@ export const appRouter = router({
             textHint: input.textHint,
           });
 
+        const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
+        assertDocumentIdentityGuardrail({
+          ceoBypass,
+          expectedWorkerName: detail.case.employeeName,
+          detectedWorkerName,
+        });
         const processedAt = new Date();
 
         const documentRecord = await addDocumentRecord({
