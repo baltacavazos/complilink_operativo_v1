@@ -143,7 +143,7 @@ const ceoBridgePresetFiltersSchema = z.object({
 });
 
 const SINGLE_CASE_IDENTITY_MESSAGE =
-  "Este expediente digital está vinculado a una sola persona. Detectamos que el documento parece pertenecer a otra persona. Por favor revisa el archivo y usa la cuenta correspondiente. Si crees que es un error, contáctanos y te ayudamos.";
+  "Este expediente digital está vinculado a una sola persona. El documento que subiste parece pertenecer a alguien distinto al expediente actual. Para proteger tu información y mantener un solo expediente por usuario, revisa el archivo o entra con la cuenta correcta. Si crees que es un error, contáctanos y te ayudamos.";
 
 function getDetectedWorkerName(preliminaryAnalysis: {
   confirmedData?: Record<string, unknown> | null;

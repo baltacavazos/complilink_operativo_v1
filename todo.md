@@ -1,5 +1,10 @@
 # Project TODO
 
+- [x] Ronda ligera V1: reforzar el resultado visible en el hero de Home sin tocar CTAs ni la estructura de 3 pasos.
+- [x] Ronda ligera V1: aclarar en /acceso la promesa del código por correo y el retorno directo al expediente/auditoría.
+- [x] Ronda ligera V1: afinar en /auditar el mensaje cordial de bloqueo para explicar con más claridad el límite de un expediente por usuario y el siguiente paso.
+- [x] Ronda ligera V1: revalidar la experiencia punta a punta para usuario normal y perfil CEO después del pulido final.
+
 - [x] Ronda 7: hacer visible y fácil de usar el archivo digital dentro de /auditar, con acceso claro a los documentos del expediente y navegación más intuitiva en móvil.
 - [x] Ronda 7: validar el nuevo acceso al archivo digital con TypeScript y Vitest.
 
@@ -1265,3 +1270,6 @@
 - [x] Cierre V1 crítico: validar con pruebas backend y de rutas que la restricción por usuario no rompa el flujo normal ni el bypass CEO.
 - [x] Cierre V1 crítico: detectar si un usuario normal sube un documento que parece pertenecer a otra persona y notificarle cordialmente, con fecha y hora, que su expediente está limitado a una sola persona.
 - [x] Cierre V1 crítico: consensuar el mejor punto de aplicación de esa notificación para que bloquee el uso incorrecto sin confundir al usuario ni romper el flujo legítimo.
+- [ ] Cierre V1 visual: auditar con visión tri-IA ligera la claridad del Home y `/acceso` sin tocar la lógica crítica ya validada.
+- [ ] Cierre V1 visual: ajustar microcopy, jerarquía visual y claridad de CTA en Home y `/acceso`.
+- [ ] Cierre V1 visual: validar la ronda final con TypeScript, Vitest y revisión de estado del proyecto.

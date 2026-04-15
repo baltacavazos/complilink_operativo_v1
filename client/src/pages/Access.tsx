@@ -240,7 +240,7 @@ export default function Access() {
           </a>
 
           <p className="px-1 text-xs font-medium text-slate-500">
-            Luego vuelves a <strong className="break-all text-slate-700">{returnTo}</strong>
+            Luego vuelves a <strong className="break-all text-slate-700">{returnTo}</strong>. Después de entrar, volverás directo a esa misma ruta.
           </p>
         </div>
 
@@ -259,7 +259,7 @@ export default function Access() {
                 Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
+                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Después vuelves directo a tu expediente o auditoría. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
               </p>
             </div>
 
@@ -384,7 +384,7 @@ Entrar
 
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-slate-500">
-                      {emailCooldownActive ? `Puedes reenviar en ${emailCooldownSecondsRemaining}s` : "Si no llegó"}
+                      {emailCooldownActive ? `Puedes reenviar en ${emailCooldownSecondsRemaining}s` : "Si todavía no llegó"}
                   </span>
                   <button
                     type="button"

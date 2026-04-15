@@ -936,14 +936,14 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-            Verás qué archivo subiste, qué encontramos y qué conviene revisar primero.
+            Verás de inmediato qué archivo subiste, qué hallazgo principal apareció y qué conviene revisar primero.
           </p>
 
           <p
             className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Empieza con el recibo, contrato o CFDI que ya tienes a la mano. AuditaPatron lo lee, te lo explica en palabras simples y te muestra el siguiente paso sin llenarte de pantallas.
+            Empieza con el recibo, contrato o CFDI que ya tienes a la mano. AuditaPatron lo lee, te devuelve un resultado claro desde el primer intento y te muestra el siguiente paso sin llenarte de pantallas.
           </p>
 
           <div
@@ -1071,7 +1071,8 @@ function HeroSection() {
 Ejemplo del resultado que recibes
                   </p>
                   <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-Esto verás apenas subas tu documento.
+	Esto verás apenas subas tu documento.
+
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
@@ -1079,7 +1080,8 @@ Esto verás apenas subas tu documento.
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-Primero ves lo esencial: qué documento entendimos, qué señal apareció y qué te conviene hacer después.
+	Primero ves lo esencial: qué documento entendimos, qué señal apareció y qué te conviene hacer después.
+
               </p>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
