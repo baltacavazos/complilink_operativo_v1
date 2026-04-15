@@ -266,12 +266,93 @@ export function formatVisibleFileSize(bytes: number) {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+const AUDITAR_TECHNICAL_PREVIEW_PATTERNS = [
+  /TRPCClientError/i,
+  /TypeError/i,
+  /ReferenceError/i,
+  /SyntaxError/i,
+  /Unhandled/i,
+  /node_modules/i,
+  /localhost/i,
+  /127\.0\.0\.1/i,
+  /@fs\//i,
+  /https?:\/\//i,
+  /function(?:\s+[A-Za-z0-9_$]+)?\s*\(/i,
+  /=>/,
+  /\bconst\b|\blet\b|\bvar\b/i,
+  /webpack|vite|react-dom|jsx-runtime/i,
+];
+
+type SanitizePreviewTextOptions = {
+  maxLength?: number;
+  emptyFallback?: string;
+  technicalFallback?: string;
+};
+
+function isLikelyTechnicalPreviewBlob(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  if (AUDITAR_TECHNICAL_PREVIEW_PATTERNS.some((pattern) => pattern.test(value))) {
+    return true;
+  }
+
+  if (/[^\s]{120,}/.test(value)) {
+    return true;
+  }
+
+  const symbolMatches = value.match(/[{}\[\]();<>/=\\@]/g) ?? [];
+  const symbolDensity = value.length > 0 ? symbolMatches.length / value.length : 0;
+  const commaDensity = value.length > 0 ? (value.match(/,/g) ?? []).length / value.length : 0;
+
+  return (value.length >= 180 && symbolDensity >= 0.12) || (value.length >= 240 && commaDensity >= 0.04);
+}
+
+export function sanitizePreviewText(value: unknown, options: SanitizePreviewTextOptions = {}) {
+  const { maxLength = 180, emptyFallback = "", technicalFallback = "Contenido técnico omitido para mantener la lectura clara." } = options;
+  const normalized =
+    typeof value === "number"
+      ? String(value)
+      : typeof value === "string"
+        ? value.replace(/\s+/g, " ").trim()
+        : String(value ?? "").replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return emptyFallback;
+  }
+
+  if (isLikelyTechnicalPreviewBlob(normalized)) {
+    return technicalFallback;
+  }
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, Math.max(24, maxLength - 1)).trimEnd()}…`;
+}
+
+function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
+  const candidate = error instanceof Error ? error.message : fallback;
+  return sanitizePreviewText(candidate, {
+    maxLength: 220,
+    emptyFallback: fallback,
+    technicalFallback: "No pudimos completar esta parte del documento. Intenta repetir la captura o subir el archivo original.",
+  });
+}
+
 function isUnsupportedMobileImageFormat(file: File) {
   const lowerName = file.name.toLowerCase();
-  return MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS.some((extension) => lowerName.endsWith(extension)) || file.type === "image/heic" || file.type === "image/heif";
+  return (
+    MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS.some((extension) => lowerName.endsWith(extension)) ||
+    file.type === "image/heic" ||
+    file.type === "image/heif"
+  );
 }
 
 export function validateDocumentUploadFile(file: File | null) {
+
   if (!file) {
     return null;
   }
@@ -1612,7 +1693,75 @@ function formatAnalysisValue(key: string, value: unknown) {
 }
 
 function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
-  return Object.entries(record ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== "");
+  return Object.entries(record ?? {})
+    .map(
+      ([key, value]) =>
+        [
+          key,
+          sanitizePreviewText(value, {
+            maxLength: 120,
+            emptyFallback: "",
+            technicalFallback: "Contenido técnico omitido para mantener la vista previa clara.",
+          }),
+        ] as [string, string],
+    )
+    .filter(([, value]) => value.length > 0);
+}
+
+export function sanitizeStructuredExtractionView(view?: StructuredExtractionView | null) {
+  if (!view) {
+    return null;
+  }
+
+  return {
+    ...view,
+    headline: sanitizePreviewText(view.headline, {
+      maxLength: 120,
+      emptyFallback: "Vista previa documental",
+      technicalFallback: "Vista previa documental",
+    }),
+    summary: sanitizePreviewText(view.summary, {
+      maxLength: 220,
+      emptyFallback: "La lectura previa quedó incompleta. Conviene revisar el documento original antes de guardarlo.",
+      technicalFallback: "La lectura previa quedó demasiado técnica o extensa. Conviene repetir la captura o revisar el archivo original.",
+    }),
+    fields: view.fields
+      .map((field) => ({
+        ...field,
+        label: sanitizePreviewText(field.label, {
+          maxLength: 60,
+          emptyFallback: "Dato detectado",
+          technicalFallback: "Dato detectado",
+        }),
+        value: sanitizePreviewText(field.value, {
+          maxLength: 160,
+          emptyFallback: "",
+          technicalFallback: "Contenido técnico omitido para mantener la vista previa clara.",
+        }),
+      }))
+      .filter((field) => field.value.length > 0)
+      .slice(0, 12),
+    missingFields: view.missingFields
+      .map((item) =>
+        sanitizePreviewText(item, {
+          maxLength: 80,
+          emptyFallback: "",
+          technicalFallback: "",
+        }),
+      )
+      .filter((item) => item.length > 0)
+      .slice(0, 6),
+    reviewNotes: view.reviewNotes
+      .map((item) =>
+        sanitizePreviewText(item, {
+          maxLength: 160,
+          emptyFallback: "",
+          technicalFallback: "Se ocultó una nota técnica para mantener esta revisión clara.",
+        }),
+      )
+      .filter((item) => item.length > 0)
+      .slice(0, 4),
+  };
 }
 
 const editablePreviewFieldKeys = new Set<string>([
@@ -1633,9 +1782,12 @@ const editablePreviewFieldPriority: Record<PreviewEditableFieldView["source"], n
 
 function normalizeEditableFieldValue(value: unknown) {
   if (value === null || value === undefined) return "";
-  if (typeof value === "string") return value.trim();
   if (typeof value === "number") return String(value);
-  return String(value).trim();
+  return sanitizePreviewText(value, {
+    maxLength: 120,
+    emptyFallback: "",
+    technicalFallback: "",
+  });
 }
 
 function buildPreviewEditableFields(draft?: DraftPreviewResultView | null) {
@@ -2977,7 +3129,10 @@ export default function Auditar() {
     () => getVisibleAnalysisEntries(pendingDraft?.preliminaryAnalysis?.estimatedData),
     [pendingDraft],
   );
-  const previewStructuredExtraction = pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null;
+  const previewStructuredExtraction = useMemo(
+    () => sanitizeStructuredExtractionView(pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null),
+    [pendingDraft],
+  );
   const previewEditableFields = useMemo(() => buildPreviewEditableFields(pendingDraft), [pendingDraft]);
   const manualOverridePayload = useMemo(
     () => buildManualOverridePayload(previewEditableFields, manualFieldValues),
@@ -3268,7 +3423,7 @@ export default function Auditar() {
       await revalidateSocialSecurityMutation.mutateAsync(caseDetailInput);
       await Promise.all([utils.cases.detail.invalidate(caseDetailInput), caseDetailQuery.refetch()]);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No fue posible revalidar IMSS e Infonavit en este momento.");
+      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible revalidar IMSS e Infonavit en este momento."));
     }
   };
 
@@ -3825,7 +3980,7 @@ export default function Auditar() {
       setTextHint("");
       setPickerKey((value) => value + 1);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No fue posible analizar el archivo.");
+      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible analizar el archivo."));
     }
   };
 
@@ -3937,7 +4092,7 @@ export default function Auditar() {
         utils.cases.detail.invalidate({ tenantId: selectedTenantId, caseId: selectedCaseId }),
       ]);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No fue posible guardar el documento.");
+      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible guardar el documento."));
     }
   };
 
@@ -5360,7 +5515,7 @@ export default function Auditar() {
                                   {field.status === "confirmed" ? "Confirmado" : "Estimado"}
                                 </span>
                               </div>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">{field.value}</p>
+                              <p className="mt-1 break-words text-sm leading-6 text-slate-800">{field.value}</p>
                             </div>
                           ))}
                         </div>
@@ -5604,7 +5759,7 @@ export default function Auditar() {
                     <AlertCircle className="mt-1 h-5 w-5 shrink-0" strokeWidth={1.8} />
                     <div className="space-y-2">
                       <p className="font-semibold text-amber-950">Algo interrumpió la carga, pero tus datos siguen a salvo.</p>
-                      <p>{submitError}</p>
+                      <p className="break-words">{submitError}</p>
                       <p className="text-xs leading-5 text-amber-900">Puedes reintentar ahora mismo o elegir otro archivo sin perder el control del flujo.</p>
                     </div>
                   </div>

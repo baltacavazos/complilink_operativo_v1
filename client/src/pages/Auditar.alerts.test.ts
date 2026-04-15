@@ -23,6 +23,8 @@ import {
   getUploadStepAriaLabel,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
+  sanitizePreviewText,
+  sanitizeStructuredExtractionView,
   shouldAutoAnalyzeSelectedFile,
   validateDocumentUploadFile,
 } from "./Auditar";
@@ -625,6 +627,65 @@ describe("buildInlineLegalConsentState", () => {
       shouldShowInlineLegalConsent: false,
       confirmPrimaryActionLabel: "Confirmar y guardar documento",
       uploadPrimaryActionLabel: "Elegir archivo para continuar",
+    });
+  });
+});
+
+
+describe("preview sanitization", () => {
+  it("reemplaza blobs técnicos por un fallback corto y legible", () => {
+    const technicalBlob = "TRPCClientError: Failed query at http://localhost:3000 node_modules react-dom jsx-runtime function App(){ return null; }";
+
+    expect(
+      sanitizePreviewText(technicalBlob, {
+        technicalFallback: "Contenido técnico omitido para mantener la lectura clara.",
+      }),
+    ).toBe("Contenido técnico omitido para mantener la lectura clara.");
+  });
+
+  it("recorta textos largos pero mantiene visibles los resúmenes normales", () => {
+    const longNarrative =
+      "Este resumen mantiene lenguaje humano y claro para la persona usuaria, pero necesita recortarse en móvil para no desbordar la tarjeta de revisión antes de guardar el documento dentro del expediente laboral.";
+
+    expect(
+      sanitizePreviewText(longNarrative, {
+        maxLength: 80,
+        technicalFallback: "no-aplica",
+      }),
+    ).toBe("Este resumen mantiene lenguaje humano y claro para la persona usuaria, pero nec…");
+  });
+
+  it("sanea la structuredExtraction para que el preview no imprima dumps visibles", () => {
+    expect(
+      sanitizeStructuredExtractionView({
+        headline: "Resumen detectado",
+        summary: "TRPCClientError: Failed query at http://localhost:3000 node_modules react-dom jsx-runtime function App(){ return null; }",
+        fields: [
+          {
+            key: "workerName",
+            label: "Nombre visible",
+            value: "TRPCClientError: Failed query at http://localhost:3000 node_modules react-dom jsx-runtime function App(){ return null; }",
+            status: "confirmed",
+            confidence: "high",
+          },
+        ],
+        missingFields: ["Periodo"],
+        reviewNotes: ["function brokenPreview(){ return 'blob'; }"],
+      }),
+    ).toEqual({
+      headline: "Resumen detectado",
+      summary: "La lectura previa quedó demasiado técnica o extensa. Conviene repetir la captura o revisar el archivo original.",
+      fields: [
+        {
+          key: "workerName",
+          label: "Nombre visible",
+          value: "Contenido técnico omitido para mantener la vista previa clara.",
+          status: "confirmed",
+          confidence: "high",
+        },
+      ],
+      missingFields: ["Periodo"],
+      reviewNotes: ["Se ocultó una nota técnica para mantener esta revisión clara."],
     });
   });
 });

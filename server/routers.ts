@@ -614,6 +614,125 @@ type DraftPreliminaryAnalysis = ReturnType<typeof buildPreliminaryLaborAnalysis>
   structuredExtraction: StructuredExtractionResult;
 };
 
+const STRUCTURED_EXTRACTION_TECHNICAL_PATTERNS = [
+  /TRPCClientError/i,
+  /TypeError/i,
+  /ReferenceError/i,
+  /SyntaxError/i,
+  /Unhandled/i,
+  /node_modules/i,
+  /localhost/i,
+  /127\.0\.0\.1/i,
+  /@fs\//i,
+  /https?:\/\//i,
+  /function(?:\s+[A-Za-z0-9_$]+)?\s*\(/i,
+  /=>/,
+  /\bconst\b|\blet\b|\bvar\b/i,
+  /webpack|vite|react-dom|jsx-runtime/i,
+];
+
+type SanitizeStructuredPreviewTextOptions = {
+  maxLength?: number;
+  emptyFallback?: string;
+  technicalFallback?: string;
+};
+
+function looksLikeTechnicalStructuredPreviewBlob(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  if (STRUCTURED_EXTRACTION_TECHNICAL_PATTERNS.some((pattern) => pattern.test(value))) {
+    return true;
+  }
+
+  if (/[^\s]{120,}/.test(value)) {
+    return true;
+  }
+
+  const symbolDensity = value.length > 0 ? (value.match(/[{}\[\]();<>/=\\@]/g) ?? []).length / value.length : 0;
+  const commaDensity = value.length > 0 ? (value.match(/,/g) ?? []).length / value.length : 0;
+
+  return (value.length >= 180 && symbolDensity >= 0.12) || (value.length >= 240 && commaDensity >= 0.04);
+}
+
+function sanitizeStructuredPreviewText(value: unknown, options: SanitizeStructuredPreviewTextOptions = {}) {
+  const {
+    maxLength = 180,
+    emptyFallback = "",
+    technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
+  } = options;
+  const normalized = typeof value === "string" ? value.replace(/\s+/g, " ").trim() : String(value ?? "").replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return emptyFallback;
+  }
+
+  if (looksLikeTechnicalStructuredPreviewBlob(normalized)) {
+    return technicalFallback;
+  }
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, Math.max(24, maxLength - 1)).trimEnd()}…`;
+}
+
+function sanitizeStructuredExtractionResult(result: StructuredExtractionResult, fallback: StructuredExtractionResult): StructuredExtractionResult {
+  const sanitizedFields = result.fields
+    .map((field) => ({
+      ...field,
+      key: field.key.trim(),
+      label: sanitizeStructuredPreviewText(field.label, {
+        maxLength: 60,
+        emptyFallback: "Dato detectado",
+        technicalFallback: "Dato detectado",
+      }),
+      value: sanitizeStructuredPreviewText(field.value, {
+        maxLength: 160,
+        emptyFallback: "",
+        technicalFallback: "Contenido técnico omitido para mantener la vista previa clara.",
+      }),
+    }))
+    .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
+    .slice(0, 12);
+
+  return {
+    headline: sanitizeStructuredPreviewText(result.headline, {
+      maxLength: 120,
+      emptyFallback: fallback.headline,
+      technicalFallback: fallback.headline,
+    }),
+    summary: sanitizeStructuredPreviewText(result.summary, {
+      maxLength: 220,
+      emptyFallback: fallback.summary,
+      technicalFallback: fallback.summary,
+    }),
+    fields: sanitizedFields.length > 0 ? sanitizedFields : fallback.fields.slice(0, 10),
+    missingFields: result.missingFields
+      .map((item) =>
+        sanitizeStructuredPreviewText(item, {
+          maxLength: 80,
+          emptyFallback: "",
+          technicalFallback: "",
+        }),
+      )
+      .filter((item) => item.length > 0)
+      .slice(0, 6),
+    reviewNotes: result.reviewNotes
+      .map((item) =>
+        sanitizeStructuredPreviewText(item, {
+          maxLength: 160,
+          emptyFallback: "",
+          technicalFallback: "Se ocultó una nota técnica para mantener esta revisión clara.",
+        }),
+      )
+      .filter((item) => item.length > 0)
+      .slice(0, 4),
+  };
+}
+
 type AuditarDraftContractPayload = {
   draftId: string;
   fileName: string;
@@ -739,10 +858,11 @@ async function analyzeStructuredDocumentPreview(params: {
   classification: ReturnType<typeof classifyMexicanLaborDocument>;
   preliminaryAnalysis: ReturnType<typeof buildPreliminaryLaborAnalysis>;
 }): Promise<StructuredExtractionResult> {
-  const fallback = buildStructuredExtractionFallback({
+  const rawFallback = buildStructuredExtractionFallback({
     classification: params.classification,
     preliminaryAnalysis: params.preliminaryAnalysis,
   });
+  const fallback = sanitizeStructuredExtractionResult(rawFallback, rawFallback);
 
   const supportsImageVision = params.mimeType.startsWith("image/");
   const supportsPdfVision = params.mimeType === "application/pdf";
@@ -840,29 +960,32 @@ async function analyzeStructuredDocumentPreview(params: {
 
     const parsed = JSON.parse(serialized) as StructuredExtractionResult;
 
-    return {
-      headline: typeof parsed.headline === "string" && parsed.headline.trim().length > 0 ? parsed.headline.trim() : fallback.headline,
-      summary: typeof parsed.summary === "string" && parsed.summary.trim().length > 0 ? parsed.summary.trim() : fallback.summary,
-      fields: Array.isArray(parsed.fields)
-        ? parsed.fields
-            .filter((field) => field && typeof field.key === "string" && typeof field.label === "string" && typeof field.value === "string")
-            .map((field): StructuredExtractionField => ({
-              key: field.key.trim(),
-              label: field.label.trim(),
-              value: field.value.trim(),
-              status: field.status === "estimated" ? "estimated" : "confirmed",
-              confidence: field.confidence === "high" ? "high" : field.confidence === "low" ? "low" : "medium",
-            }))
-            .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
-            .slice(0, 12)
-        : fallback.fields,
-      missingFields: Array.isArray(parsed.missingFields)
-        ? parsed.missingFields.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 6)
-        : fallback.missingFields,
-      reviewNotes: Array.isArray(parsed.reviewNotes)
-        ? parsed.reviewNotes.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
-        : fallback.reviewNotes,
-    };
+    return sanitizeStructuredExtractionResult(
+      {
+        headline: typeof parsed.headline === "string" && parsed.headline.trim().length > 0 ? parsed.headline.trim() : fallback.headline,
+        summary: typeof parsed.summary === "string" && parsed.summary.trim().length > 0 ? parsed.summary.trim() : fallback.summary,
+        fields: Array.isArray(parsed.fields)
+          ? parsed.fields
+              .filter((field) => field && typeof field.key === "string" && typeof field.label === "string" && typeof field.value === "string")
+              .map((field): StructuredExtractionField => ({
+                key: field.key.trim(),
+                label: field.label.trim(),
+                value: field.value.trim(),
+                status: field.status === "estimated" ? "estimated" : "confirmed",
+                confidence: field.confidence === "high" ? "high" : field.confidence === "low" ? "low" : "medium",
+              }))
+              .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
+              .slice(0, 12)
+          : fallback.fields,
+        missingFields: Array.isArray(parsed.missingFields)
+          ? parsed.missingFields.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 6)
+          : fallback.missingFields,
+        reviewNotes: Array.isArray(parsed.reviewNotes)
+          ? parsed.reviewNotes.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
+          : fallback.reviewNotes,
+      },
+      fallback,
+    );
   } catch {
     return fallback;
   }

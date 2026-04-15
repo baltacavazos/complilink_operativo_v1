@@ -1160,3 +1160,6 @@
 - [x] Rediseñar la entrada móvil de /auditar para reducir scroll, dejar una sola jerarquía clara y eliminar copy narrativo redundante
 - [x] Hacer el feedback del upload más específico y accionable cuando el archivo no sea compatible o exceda límites reales
 - [x] Añadir y actualizar pruebas Vitest/E2E para blindar la nueva validación y la UX móvil compacta
+- [x] Corregir la vista previa móvil de /auditar que está renderizando texto técnico crudo dentro del documento en lugar de una lectura legible
+- [x] Blindar el renderizado del preview para que respuestas técnicas, dumps o contenido inesperado no se inyecten en la experiencia visual del usuario
+- [x] Añadir pruebas específicas para el caso de preview móvil roto y para el fallback seguro de contenido no legible
