@@ -694,6 +694,8 @@ type HeliosResultCardView = {
   suggestedQuestions?: string[];
   signalsChecked?: string[];
   simpleExplanation?: HeliosSimpleExplanationItemView[];
+  discrepancySignals?: HeliosSimpleExplanationItemView[];
+  pendingClarifications?: HeliosSimpleExplanationItemView[];
 };
 
 type HeliosLegalHighlightsView = {
@@ -1595,11 +1597,93 @@ function getHeliosRiskCopy(value?: string | null) {
       } as const;
     default:
       return {
-        label: "Riesgo preliminar",
-        classes: "bg-slate-100 text-slate-700",
+        label: "Revisión inicial",
+        classes: "bg-slate-200 text-slate-700",
       } as const;
   }
 }
+
+function getHeliosSeverityNarrative(value?: string | null) {
+  switch (value) {
+    case "critical":
+      return {
+        eyebrow: "Atención inmediata",
+        title: "Aquí sí vemos algo que conviene revisar hoy",
+        description:
+          "Hay señales que no se ven normales y vale la pena actuar rápido para evitar que el caso crezca.",
+        panelClasses: "border-rose-200 bg-rose-50",
+        eyebrowClasses: "text-rose-700",
+      } as const;
+    case "high":
+      return {
+        eyebrow: "Atención alta",
+        title: "Aquí sí hay algo importante por revisar",
+        description:
+          "Ya encontramos señales suficientes para tratar este punto como relevante, aunque todavía puede requerir contraste adicional.",
+        panelClasses: "border-amber-200 bg-amber-50",
+        eyebrowClasses: "text-amber-800",
+      } as const;
+    case "medium":
+      return {
+        eyebrow: "Conviene confirmarlo",
+        title: "Hay algo que vale la pena revisar con calma",
+        description:
+          "No parece una alerta máxima, pero sí hay indicios que conviene validar antes de cerrar una conclusión.",
+        panelClasses: "border-cyan-200 bg-cyan-50",
+        eyebrowClasses: "text-cyan-800",
+      } as const;
+    case "low":
+      return {
+        eyebrow: "Sin alerta fuerte",
+        title: "Por ahora no vemos una señal grave",
+        description:
+          "Con lo que Helios ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
+        panelClasses: "border-emerald-200 bg-emerald-50",
+        eyebrowClasses: "text-emerald-800",
+      } as const;
+    default:
+      return {
+        eyebrow: "Lectura inicial",
+        title: "Ya hay una primera lectura útil",
+        description:
+          "Helios ya revisó lo disponible y ordenó lo más importante para que sepas qué sí entendimos y qué falta confirmar.",
+        panelClasses: "border-slate-200 bg-slate-50",
+        eyebrowClasses: "text-slate-700",
+      } as const;
+  }
+}
+
+function getExplanationVariant(seed?: string | null) {
+  const normalizedSeed = seed?.trim();
+
+  if (!normalizedSeed) {
+    return "direct" as const;
+  }
+
+  const score = normalizedSeed
+    .split("")
+    .reduce((total, char) => total + char.charCodeAt(0), 0);
+
+  return score % 2 === 0 ? ("direct" as const) : ("guided" as const);
+}
+
+function getExplanationVariantCopy(
+  variant: "direct" | "guided",
+  severityTitle: string
+) {
+  if (variant === "guided") {
+    return {
+      badge: "Variante guiada",
+      intro: `Te lo ordenamos paso por paso: qué sí vimos, qué no termina de cuadrar y qué falta para cerrar ${severityTitle.toLowerCase()}.`,
+    } as const;
+  }
+
+  return {
+    badge: "Variante directa",
+    intro: `Te digo lo esencial sin rodeos: qué ya vimos, qué podría no cuadrar y qué falta para cerrar ${severityTitle.toLowerCase()}.`,
+  } as const;
+}
+
 
 function getHeliosModeLabel(value?: string | null) {
   return value === "remote" ? "Revisión ampliada" : "Revisión inicial";
@@ -3727,6 +3811,120 @@ export default function Auditar() {
     visibleHeliosOpinion?.resultCard?.simpleExplanation,
     visibleHeliosOpinion?.summary,
   ]);
+  const visibleDiscrepancyItems = useMemo<HeliosSimpleExplanationItemView[]>(() => {
+    const baseItems =
+      lastHeliosOpinion?.resultCard?.discrepancySignals ??
+      visibleHeliosOpinion?.resultCard?.discrepancySignals ??
+      [];
+
+    if (baseItems.length) {
+      return baseItems.slice(0, 3);
+    }
+
+    const derivedItems =
+      lastHeliosOpinion?.resultCard?.keyFindings
+        ?.filter(item => item.tone === "attention")
+        .map(item => ({
+          label: item.label,
+          summary: warmVisibleNamingCopy(item.value) ?? item.value,
+          tone: "attention" as const,
+        })) ?? [];
+
+    if (derivedItems.length) {
+      return derivedItems.slice(0, 3);
+    }
+
+    const primaryConcern =
+      warmVisibleNamingCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
+      lastHeliosOpinion?.legalHighlights?.primaryConcern ??
+      null;
+
+    return primaryConcern
+      ? [
+          {
+            label: "Punto por revisar",
+            summary: primaryConcern,
+            tone: "attention",
+          },
+        ]
+      : [];
+  }, [
+    lastHeliosOpinion?.legalHighlights?.primaryConcern,
+    lastHeliosOpinion?.resultCard?.discrepancySignals,
+    lastHeliosOpinion?.resultCard?.keyFindings,
+    visibleHeliosOpinion?.resultCard?.discrepancySignals,
+  ]);
+  const visiblePendingItems = useMemo<HeliosSimpleExplanationItemView[]>(() => {
+    const baseItems =
+      lastHeliosOpinion?.resultCard?.pendingClarifications ??
+      visibleHeliosOpinion?.resultCard?.pendingClarifications ??
+      [];
+
+    if (baseItems.length) {
+      return baseItems.slice(0, 3);
+    }
+
+    const items: HeliosSimpleExplanationItemView[] = [];
+    const concern =
+      warmVisibleNamingCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
+      lastHeliosOpinion?.legalHighlights?.primaryConcern ??
+      null;
+
+    if (concern) {
+      items.push({
+        label: "Todavía falta confirmar",
+        summary: concern,
+        tone: "neutral",
+      });
+    }
+
+    const nextStepSummary =
+      warmVisibleNamingCopy(
+        lastHeliosOpinion?.resultCard?.nextStepSummary ??
+          lastHeliosOpinion?.recommendedNextStep
+      ) ??
+      lastHeliosOpinion?.resultCard?.nextStepSummary ??
+      lastHeliosOpinion?.recommendedNextStep ??
+      null;
+
+    if (nextStepSummary) {
+      items.push({
+        label: "Siguiente paso útil",
+        summary: nextStepSummary,
+        tone: "support",
+      });
+    }
+
+    if (socialSecurityRecommendedDocument) {
+      items.push({
+        label: "Documento que ayudaría",
+        summary: `Sube ${socialSecurityRecommendedDocument.title}. ${socialSecurityRecommendedDocument.reason}`,
+        tone: "support",
+      });
+    }
+
+    return Array.from(
+      new Map(items.map(item => [`${item.label}:${item.summary}`, item] as const)).values()
+    ).slice(0, 3);
+  }, [
+    lastHeliosOpinion?.legalHighlights?.primaryConcern,
+    lastHeliosOpinion?.resultCard?.pendingClarifications,
+    socialSecurityRecommendedDocument,
+    visibleHeliosOpinion?.resultCard?.pendingClarifications,
+  ]);
+  const lastUploadSeverityNarrative = getHeliosSeverityNarrative(
+    lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel
+  );
+  const explanationVariant = getExplanationVariant(
+    lastUpload?.draftId ??
+      lastHeliosOpinion?.generatedAt ??
+      lastUpload?.classification.documentType ??
+      null
+  );
+  const explanationVariantCopy = getExplanationVariantCopy(
+    explanationVariant,
+    lastUploadSeverityNarrative.title
+  );
   const timelineEntries = useMemo(() => {
     const confirmedEntries = [...documents]
       .sort(
@@ -4891,6 +5089,8 @@ export default function Auditar() {
         viewportSegment,
         ctaLabel: primaryLastUploadShortcut?.label ?? "Abrir asistente laboral",
         ctaAction: primaryLastUploadShortcut?.action ?? "assistant",
+        explanationVariant,
+        severityLabel: lastUploadSeverityNarrative.eyebrow,
         timeToVerdictMs,
         scrollDepthPx: verdictMaxScrollDepthRef.current,
       });
@@ -5252,6 +5452,8 @@ export default function Auditar() {
           caseId: selectedCaseId,
           documentType: lastUpload.classification.documentType,
           viewportSegment,
+          explanationVariant,
+          severityLabel: lastUploadSeverityNarrative.eyebrow,
           timeToVerdictMs,
           scrollDepthPx: verdictMaxScrollDepthRef.current,
         });
@@ -8571,15 +8773,32 @@ export default function Auditar() {
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr,0.95fr]">
                         <div className="space-y-4">
+                          <div className={`rounded-[1rem] border p-4 ${lastUploadSeverityNarrative.panelClasses}`} data-testid="auditar-severity-summary">
+                            <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${lastUploadSeverityNarrative.eyebrowClasses}`}>
+                              {lastUploadSeverityNarrative.eyebrow}
+                            </p>
+                            <p className="mt-2 text-base font-semibold text-slate-950">
+                              {lastUploadSeverityNarrative.title}
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-slate-800">
+                              {lastUploadSeverityNarrative.description}
+                            </p>
+                          </div>
+
                           {visibleSimpleExplanation.length ? (
                             <div className="rounded-[1rem] border border-cyan-100 bg-cyan-50/70 p-4" data-testid="auditar-simple-explanation">
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                  <p className="text-sm font-semibold text-cyan-950">
-                                    En simple
-                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="text-sm font-semibold text-cyan-950">
+                                      En simple
+                                    </p>
+                                    <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-800" data-testid="auditar-explanation-variant">
+                                      {explanationVariantCopy.badge}
+                                    </span>
+                                  </div>
                                   <p className="mt-1 text-sm leading-6 text-cyan-900">
-                                    Esto es lo más útil que Helios ya agotó antes de pedirte otro archivo.
+                                    {explanationVariantCopy.intro}
                                   </p>
                                 </div>
                                 {visibleSignalsChecked.length ? (
@@ -8627,6 +8846,62 @@ export default function Auditar() {
                               ) : null}
                             </div>
                           ) : null}
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4" data-testid="auditar-discrepancies-panel">
+                              <p className="text-sm font-semibold text-amber-950">
+                                Posibles discrepancias
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-amber-900">
+                                Aquí separamos lo que sí podría no cuadrar de lo que todavía solo hace falta confirmar.
+                              </p>
+                              {visibleDiscrepancyItems.length ? (
+                                <div className="mt-3 space-y-2">
+                                  {visibleDiscrepancyItems.map((item, index) => (
+                                    <div key={`${item.label}-${index}`} className="rounded-[0.95rem] border border-amber-200 bg-white/80 p-3">
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="mt-3 text-sm leading-6 text-amber-950">
+                                  Por ahora no vemos una discrepancia fuerte solo con este archivo.
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4" data-testid="auditar-pending-panel">
+                              <p className="text-sm font-semibold text-slate-950">
+                                Lo que todavía falta confirmar
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-700">
+                                Esto no significa problema. Solo indica lo que ayudaría a cerrar mejor la lectura.
+                              </p>
+                              {visiblePendingItems.length ? (
+                                <div className="mt-3 space-y-2">
+                                  {visiblePendingItems.map((item, index) => (
+                                    <div key={`${item.label}-${index}`} className="rounded-[0.95rem] border border-slate-200 bg-white p-3">
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="mt-3 text-sm leading-6 text-slate-700">
+                                  Con lo disponible, Helios ya agotó esta parte y por ahora no dejó pendientes visibles.
+                                </p>
+                              )}
+                            </div>
+                          </div>
 
                           <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
                             <p className="text-sm font-semibold text-slate-950">

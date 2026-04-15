@@ -1236,3 +1236,8 @@
 - [x] Helios en /auditar: explicar con lenguaje extremadamente simple qué ya se pudo concluir, qué falta y por qué
 - [x] Helios en /auditar: consultar a ChatGPT, Grok y Gemini la estrategia óptima de orquestación y mensajes simples antes de implementar
 - [x] Helios en /auditar: revalidar con Vitest y pruebas de flujo la nueva capa de enriquecimiento y explicación simple
+- [x] Nueva ronda en /auditar: ajustar el tono del resumen según gravedad y urgencia
+- [x] Nueva ronda en /auditar: separar visual y lógicamente las posibles discrepancias frente a la información pendiente
+- [x] Nueva ronda en /auditar: medir qué explicación simple funciona mejor en móvil con eventos comparables
+- [x] Nueva ronda en /auditar: consultar a ChatGPT, Grok y Gemini la estrategia conjunta antes de implementar
+- [x] Nueva ronda en /auditar: revalidar con Vitest y pruebas de flujo todos los cambios aplicados de una vez
