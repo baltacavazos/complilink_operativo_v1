@@ -1,0 +1,114 @@
+{
+  "openai": {
+    "status_code": 200,
+    "body": {
+      "id": "chatcmpl-DUmFQ1FdBnFVuLEPVVFHDnvIvHd2U",
+      "object": "chat.completion",
+      "created": 1776227676,
+      "model": "gpt-4.1-mini-2025-04-14",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"root_cause\": \"exceso de módulos y contenido sin jerarquía clara\",\n  \"why_no_magic\": [\n    \"resultado principal no destacado ni inmediato\",\n    \"demasiados bloques con peso visual similar\",\n    \"sobrecarga de información educativa y operativa visible\"\n  ],\n  \"keep_visible_above_fold\": [\n    \"documento detectado\",\n    \"hallazgo principal\",\n    \"siguiente paso\",\n    \"CTA clara\"\n  ],\n  \"move_below_fold_or_collapse\": [\n    \"sugerencias\",\n    \"ayuda\",\n    \"historial\",\n    \"comparación\",\n    \"alertas\",\n    \"línea de tiempo\",\n    \"estados de expediente\",\n    \"paneles auxiliares\"\n  ],\n  \"ux_principle\": \"mostrar primero el resultado clave y permitir profundizar bajo demanda\",\n  \"recommended_layout\": \"resultado principal arriba con módulos secundarios colapsados o en pestañas\",\n  \"first_fix\": \"reorganizar la pantalla para que solo el hallazgo principal y CTA estén visibles inicialmente\"\n}",
+            "refusal": null,
+            "annotations": []
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 652,
+        "completion_tokens": 222,
+        "total_tokens": 874,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "service_tier": "default",
+      "system_fingerprint": "fp_2050a57334"
+    }
+  },
+  "grok": {
+    "status_code": 200,
+    "body": {
+      "id": "8cebe70e-be39-9dcf-abf9-6c0ae20a2058",
+      "object": "chat.completion",
+      "created": 1776227678,
+      "model": "grok-4-0709",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"root_cause\": \"Acumulación de múltiples módulos en una vista vertical sin jerarquía clara\",\n  \"why_no_magic\": [\n    \"Falta de veredicto inmediato y contundente al subir el documento\",\n    \"Sobrecarga de secciones educativas y operativas que diluyen el foco\",\n    \"Ausencia de patrón 'resultado principal arriba, detalles bajo demanda'\"\n  ],\n  \"keep_visible_above_fold\": [\n    \"Documento detectado\",\n    \"Hallazgo principal\",\n    \"Siguiente paso\",\n    \"CTA clara\"\n  ],\n  \"move_below_fold_or_collapse\": [\n    \"Sugerencias y ayuda\",\n    \"Historial y timeline\",\n    \"Comparativas y alertas\",\n    \"Paneles auxiliares y estados de expediente\"\n  ],\n  \"ux_principle\": \"En móvil, prioriza jerarquía con resultado clave above the fold para claridad inmediata.\",\n  \"recommended_layout\": \"Vista compacta con hallazgo dominante arriba y secciones colapsables abajo.\",\n  \"first_fix\": \"Reestructurar Auditar.tsx para elevar solo los 4 elementos clave al top.\"\n}",
+            "refusal": null
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 1328,
+        "completion_tokens": 233,
+        "total_tokens": 2035,
+        "prompt_tokens_details": {
+          "text_tokens": 1328,
+          "audio_tokens": 0,
+          "image_tokens": 0,
+          "cached_tokens": 676
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 474,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        },
+        "num_sources_used": 0,
+        "cost_in_usd_ticks": 130680000
+      },
+      "system_fingerprint": "fp_3ae5e0d6f8"
+    }
+  },
+  "gemini": {
+    "status_code": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "parts": [
+              {
+                "text": "{\n  \"root_cause\": \"Mezcla de múltiples objetivos (confirmar, educar, sugerir, vender, historial) en una sola vista, generando sobrecarga de información.\",\n  \"why_no_magic\": [\n    \"Ausencia de un veredicto corto, claro y contundente en los primeros segundos.\",\n    \"Jerarquía visual confusa donde el resultado principal no domina.\",\n    \"Pantalla excesivamente larga que diluye el impacto del análisis.\"\n  ],\n  \"keep_visible_above_fold\": [\n    \"Documento detectado/confirmado\",\n    \"Hallazgo principal/veredicto\",\n    \"Siguiente paso sugerido\",\n    \"CTA clara\"\n  ],\n  \"move_below_fold_or_collapse\": [\n    \"Secciones educativas y explicativas\",\n    \"Historial y línea de tiempo\",\n    \"Comparativas y alertas detalladas\",\n    \"Paneles auxiliares y estados de expediente\"\n  ],\n  \"ux_principle\": \"Priorizar el resultado principal y ofrecer detalles bajo demanda para una experiencia compacta y eficiente en móvil.\",\n  \"recommended_layout\": \"Un patrón de 'resultado principal arriba, detalles bajo demanda' con secciones colapsables o en capas secundarias.\",\n  \"first_fix\": \"Reestructurar la jerarquía visual para mostrar solo el documento, hallazgo principal, siguiente paso y CTA arriba del pliegue.\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "usageMetadata": {
+        "promptTokenCount": 656,
+        "candidatesTokenCount": 315,
+        "totalTokenCount": 2046,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 656
+          }
+        ],
+        "thoughtsTokenCount": 1075
+      },
+      "modelVersion": "gemini-2.5-flash",
+      "responseId": "bhXfaZjDDtLF-sAPq9SAsAM"
+    }
+  }
+}

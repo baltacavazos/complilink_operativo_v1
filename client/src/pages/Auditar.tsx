@@ -7789,7 +7789,7 @@ export default function Auditar() {
                       </div>
                     </div>
 
-                    <div className="mt-5 grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
+                    <div className="mt-5 grid gap-3 xl:grid-cols-[1.12fr_0.88fr]">
                       <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
                         <div className="flex items-start gap-3">
                           <Sparkles
@@ -7797,14 +7797,26 @@ export default function Auditar() {
                             strokeWidth={1.8}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-teal-950">
-                              Siguiente paso sugerido para ti
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+                              Resultado inmediato
                             </p>
-                            <p className="mt-1 text-sm leading-7 text-teal-900">
-                              {lastUploadNextStepSummary}
+                            <p className="mt-2 font-semibold text-teal-950">
+                              {uploadInsight?.label ?? lastUploadResultHeadline}
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-teal-900">
+                              {uploadInsight?.contribution ?? lastUploadNextStepSummary}
                             </p>
                           </div>
                         </div>
+                      </div>
+
+                      <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Lo que sigue ahora
+                        </p>
+                        <p className="mt-2 font-semibold text-slate-950">
+                          {lastUploadNextStepSummary}
+                        </p>
                         <Button
                           type="button"
                           className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
@@ -7823,45 +7835,17 @@ export default function Auditar() {
                             : "Abrir asistente laboral"}
                           <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                         </Button>
-                        <p className="mt-2 text-xs leading-5 text-teal-800">
+                        <p className="mt-2 text-xs leading-5 text-slate-600">
                           {primaryLastUploadShortcut
                             ? primaryLastUploadShortcut.description
-                            : "Puedes abrir el asistente para entender mejor este resultado y decidir tu siguiente movimiento."}
+                            : "Si quieres profundizar, el asistente te explica este resultado y te ayuda a elegir el siguiente documento útil."}
                         </p>
-                      </div>
-
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-[1.2rem] border border-emerald-100 bg-white p-4 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                            Lo que ya aporta
-                          </p>
-                          <p className="mt-2 font-semibold text-slate-950">
-                            {uploadInsight?.label ??
-                              "Ya hay una primera lectura útil"}
-                          </p>
-                          <p className="mt-2 text-sm leading-7 text-slate-600">
-                            {uploadInsight?.contribution ??
-                              "Este documento ya suma contexto real a tu expediente y mejora la lectura del caso."}
-                          </p>
-                        </div>
-                        <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                            Cómo leerlo
-                          </p>
-                          <p className="mt-2 font-semibold text-slate-950">
-                            Lo claro queda aparte de lo preliminar
-                          </p>
-                          <p className="mt-2 text-sm leading-7 text-slate-600">
-                            Así puedes ver rápido qué ya quedó más firme y qué
-                            todavía conviene revisar con calma.
-                          </p>
-                        </div>
                       </div>
                     </div>
 
                     {secondaryLastUploadShortcuts.length ? (
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {secondaryLastUploadShortcuts.map(shortcut => (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {secondaryLastUploadShortcuts.slice(0, 2).map(shortcut => (
                           <button
                             key={shortcut.id}
                             type="button"
@@ -7872,18 +7856,17 @@ export default function Auditar() {
                                 "confirmed"
                               )
                             }
-                            className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-teal-200 hover:bg-teal-50"
+                            className="rounded-full border border-white/80 bg-white px-4 py-2 text-left text-xs font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-slate-950"
                           >
-                            <span className="text-sm font-semibold text-slate-950">
-                              {shortcut.label}
-                            </span>
-                            <span className="mt-1 block text-xs leading-5 text-slate-600">
-                              {shortcut.description}
-                            </span>
+                            {shortcut.label}
                           </button>
                         ))}
                       </div>
                     ) : null}
+
+                    <p className="mt-4 text-xs leading-5 text-slate-500">
+                      Debajo dejamos solo la profundidad opcional. Primero ves el resultado; después decides si quieres abrir detalle, historial o comparación.
+                    </p>
                   </div>
 
                   <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
@@ -8066,7 +8049,6 @@ export default function Auditar() {
                         con calma y qué ya forma parte de tu expediente digital.
                       </div>
                     </div>
-                  </details>
 
                   {lastHeliosOpinion ? (
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
@@ -8493,11 +8475,32 @@ export default function Auditar() {
                       </div>
                     </div>
                   ) : null}
-                </div>
-              )}
+              </details>
             </div>
+          )}
+          </div>
 
-            {timelineEntries.length > 0 ? (
+          {(timelineEntries.length > 0 || documents.length > 0) ? (
+            <details className="group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Actividad completa del expediente
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">
+                    Línea de tiempo, historial y comparaciones
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    El resultado principal ya quedó arriba. Abre este bloque solo si quieres profundizar más.
+                  </p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  Abrir actividad
+                </span>
+              </summary>
+
+              <div className="mt-4 space-y-4">
+                {timelineEntries.length > 0 ? (
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -8898,9 +8901,12 @@ export default function Auditar() {
                 </div>
               </div>
             ) : null}
-          </section>
+              </div>
+            </details>
+          ) : null}
+        </section>
 
-          <aside className="space-y-6">
+          <aside className="hidden space-y-6 xl:block">
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Expediente laboral seleccionado

@@ -1,0 +1,11 @@
+Hallazgos iniciales del PDF subido por el usuario sobre el estado post-análisis en /auditar:
+
+1. La pantalla posterior al análisis es extremadamente larga en móvil y apila demasiados bloques verticales antes de cerrar la tarea.
+2. El resultado inicial no domina la jerarquía. En vez de un resumen inmediato, aparecen muchas tarjetas, timelines, paneles explicativos, comparativas y bloques secundarios con peso visual similar.
+3. La experiencia no se siente "mágica" porque el usuario sube un archivo y no recibe un veredicto corto, claro y contundente en los primeros segundos de lectura.
+4. Hay sobrecarga de secciones educativas, operativas y de detalle que probablemente deberían estar colapsadas, resumidas o movidas a capas secundarias.
+5. La longitud parece provenir no de un solo bloque aislado, sino de la suma de múltiples módulos: resumen, sugerencias, ayuda, historial, comparación, alertas, línea de tiempo, estados de expediente, pasos siguientes y paneles auxiliares.
+6. La pantalla carece de un patrón fuerte de "resultado principal arriba, detalles bajo demanda". Eso rompe la expectativa móvil de ver el hallazgo y luego decidir si se profundiza.
+7. La hipótesis principal es que el flujo post-análisis mezcló demasiadas metas en una misma vista: confirmar documento, educar, sugerir próximos pasos, vender valor, mostrar estado del expediente y exponer historial técnico.
+
+Siguiente objetivo de inspección: identificar en Auditar.tsx cuáles contenedores concretos componen esta cascada vertical y proponer una versión compacta donde solo queden visibles arriba: documento detectado, hallazgo principal, siguiente paso y una CTA clara.

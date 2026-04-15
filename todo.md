@@ -1202,3 +1202,7 @@
 - [ ] Traducir el copy abstracto o técnico a lenguaje cotidiano con beneficios concretos y ejemplos simples
 - [ ] Recortar bloques redundantes o secundarios que compiten con la acción principal en la home y en /auditar
 - [ ] Revalidar con pruebas y navegación real que la nueva experiencia sea más corta, clara y comprensible
+- [x] Investigar por qué la pantalla posterior al análisis en /auditar quedó demasiado larga después de subir un documento
+- [x] Diagnosticar por qué tras subir el documento no aparece un resultado inmediato, compacto y sorprendente para el usuario
+- [x] Rediseñar el estado post-análisis de /auditar para que entregue primero un resumen corto, claro y accionable antes de cualquier detalle secundario
+- [x] Revalidar con pruebas y revisión visual el flujo real subir documento → análisis → resultado compacto en /auditar
