@@ -116,6 +116,7 @@ export default function Access() {
   const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
   const { loading, user } = useAuth();
+  const [rememberedEmail, setRememberedEmail] = useState(() => getStoredEmail());
   const [email, setEmail] = useState(() => getStoredEmail());
   const [code, setCode] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState("");
@@ -133,6 +134,7 @@ export default function Access() {
       const usedOwnerBackupEmail = Boolean((data as { usedOwnerBackupEmail?: boolean }).usedOwnerBackupEmail);
 
       storeEmail(normalizedEmail);
+      setRememberedEmail(normalizedEmail);
       setEmail(normalizedEmail);
       setSubmittedEmail(normalizedEmail);
       setEmailStep("verify");
@@ -161,6 +163,7 @@ export default function Access() {
       const normalizedEmail = (submittedEmail || email).trim().toLowerCase();
       if (normalizedEmail) {
         storeEmail(normalizedEmail);
+        setRememberedEmail(normalizedEmail);
       }
 
       if (typeof window !== "undefined") {
@@ -256,9 +259,17 @@ export default function Access() {
                 Inicia sesión
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo y te mandamos un código de 6 dígitos. Si ya habías entrado desde este equipo, lo dejamos listo para ti.
+                Escribe tu correo y te mandamos un código de 6 dígitos. Si ya habías entrado desde este equipo, te mostramos el último correo para avanzar más rápido.
               </p>
             </div>
+
+            {rememberedEmail && emailStep === "request" ? (
+              <div className="mt-5 rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-950">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Te reconocimos en este equipo</p>
+                <p className="mt-2 break-all font-medium">{rememberedEmail}</p>
+                <p className="mt-1 leading-6 text-teal-900/80">Si quieres, entra con ese correo. Si no, cámbialo antes de pedir el código.</p>
+              </div>
+            ) : null}
 
             {statusMessage ? (
               <div className="mt-5 rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">

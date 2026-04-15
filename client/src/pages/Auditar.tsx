@@ -4264,14 +4264,17 @@ export default function Auditar() {
             </Button>
             <Button
               variant="ghost"
-              className="rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white"
+              className="hidden rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white sm:inline-flex"
               onClick={() => {
                 setMobileOnboardingIndex(0);
                 uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
-              Subir archivo ahora
+              Ir al formulario
             </Button>
+            <span className="text-xs font-medium text-slate-300 sm:hidden">
+              El formulario para subir tu archivo está justo abajo.
+            </span>
             <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
               {remoteViewStateSyncLabel}
             </span>

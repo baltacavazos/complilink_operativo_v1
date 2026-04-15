@@ -107,7 +107,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Acceso simple");
     expect(source).toContain("Inicia sesión");
     expect(source).toContain("Escribe tu correo y te mandamos un código de 6 dígitos.");
-    expect(source).toContain("Si ya habías entrado desde este equipo, lo dejamos listo para ti.");
+    expect(source).toContain("Si ya habías entrado desde este equipo, te mostramos el último correo para avanzar más rápido.");
+    expect(source).toContain("Te reconocimos en este equipo");
+    expect(source).toContain("Si quieres, entra con ese correo. Si no, cámbialo antes de pedir el código.");
     expect(source).toContain("Después vuelves a");
     expect(source).toContain("Usa el correo con el que administras tu cuenta.");
     expect(source).toContain("Enviar código");

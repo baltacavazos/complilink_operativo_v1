@@ -1183,3 +1183,7 @@
 - [x] Verificar y corregir cualquier desbordamiento horizontal o estrechamiento hacia la derecha en /auditar móvil
 - [x] Completar el flujo post-upload de /auditar para que al subir el documento analice automáticamente y muestre qué es, qué encontró y qué significa en una sola vista más contundente
 - [x] Revalidar login móvil y /auditar en viewport real con pruebas automatizadas y checkpoint estable
+- [x] Compactar los CTAs duplicados del hero de /auditar para que la entrada principal sea más directa y menos redundante
+- [x] Validar /acceso en una sesión móvil limpia sin autenticación persistida para revisar el flujo real de entrada
+- [x] Añadir un estado visible de reconocimiento para usuarios recurrentes en /acceso sin recargar de ruido la pantalla
+- [x] Revalidar pruebas y navegador tras la segunda ronda de refinamiento de acceso y /auditar
