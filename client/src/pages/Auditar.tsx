@@ -676,6 +676,12 @@ type HeliosResultFindingView = {
   tone?: "neutral" | "support" | "attention";
 };
 
+type HeliosSimpleExplanationItemView = {
+  label: string;
+  summary: string;
+  tone?: "neutral" | "support" | "attention";
+};
+
 type HeliosResultCardView = {
   headline?: string | null;
   lead?: string | null;
@@ -686,6 +692,8 @@ type HeliosResultCardView = {
   dossierUpdateSummary?: string | null;
   assistantIntro?: string | null;
   suggestedQuestions?: string[];
+  signalsChecked?: string[];
+  simpleExplanation?: HeliosSimpleExplanationItemView[];
 };
 
 type HeliosLegalHighlightsView = {
@@ -881,6 +889,8 @@ type ConfirmedUploadResultView = {
     statusLabel?: string | null;
     summary?: string | null;
     recommendedNextStep?: string | null;
+    imssDocumentsCount?: number;
+    infonavitSignalsCount?: number;
     lastRevalidatedAt?: string | null;
     lastRevalidationSummary?: string | null;
     revalidationHistory?: Array<{
@@ -3632,6 +3642,91 @@ export default function Auditar() {
             "Este documento puede ayudarte a ganar más claridad dentro del expediente.",
         }
       : null;
+  const visibleSignalsChecked = useMemo(() => {
+    const baseSignals =
+      lastHeliosOpinion?.resultCard?.signalsChecked ??
+      visibleHeliosOpinion?.resultCard?.signalsChecked ??
+      [];
+    const extraSignals: string[] = [];
+
+    if ((effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0) > 0) {
+      extraSignals.push(
+        `${effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0} señal${(effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0) === 1 ? "" : "es"} IMSS`
+      );
+    }
+
+    if ((effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0) > 0) {
+      extraSignals.push(
+        `${effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0} señal${(effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0) === 1 ? "" : "es"} Infonavit`
+      );
+    }
+
+    if (effectiveSocialSecurityValidation?.statusLabel?.trim()) {
+      extraSignals.push(effectiveSocialSecurityValidation.statusLabel.trim());
+    }
+
+    return Array.from(new Set([...baseSignals, ...extraSignals])).slice(0, 6);
+  }, [
+    effectiveSocialSecurityValidation?.imssDocumentsCount,
+    effectiveSocialSecurityValidation?.infonavitSignalsCount,
+    effectiveSocialSecurityValidation?.statusLabel,
+    lastHeliosOpinion?.resultCard?.signalsChecked,
+    visibleHeliosOpinion?.resultCard?.signalsChecked,
+  ]);
+  const visibleSimpleExplanation = useMemo<HeliosSimpleExplanationItemView[]>(() => {
+    const baseExplanation =
+      lastHeliosOpinion?.resultCard?.simpleExplanation ??
+      visibleHeliosOpinion?.resultCard?.simpleExplanation ??
+      [];
+
+    if (baseExplanation.length) {
+      return baseExplanation.slice(0, 3);
+    }
+
+    const items: HeliosSimpleExplanationItemView[] = [];
+    const primarySummary =
+      warmVisibleNamingCopy(lastHeliosOpinion?.summary ?? visibleHeliosOpinion?.summary) ??
+      lastHeliosOpinion?.summary ??
+      visibleHeliosOpinion?.summary ??
+      null;
+
+    if (primarySummary) {
+      items.push({
+        label: "Qué ya vimos",
+        summary: primarySummary,
+        tone: "support",
+      });
+    }
+
+    if (socialSecuritySummary) {
+      items.push({
+        label: "Qué más revisamos",
+        summary: warmVisibleNamingCopy(socialSecuritySummary) ?? socialSecuritySummary,
+        tone:
+          (effectiveSocialSecurityValidation?.coverageScore ?? 0) >= 60
+            ? "support"
+            : "neutral",
+      });
+    }
+
+    if (socialSecurityRecommendedDocument) {
+      items.push({
+        label: "Si quieres más certeza",
+        summary: `Sube ${socialSecurityRecommendedDocument.title}. ${socialSecurityRecommendedDocument.reason}`,
+        tone: "attention",
+      });
+    }
+
+    return items.slice(0, 3);
+  }, [
+    effectiveSocialSecurityValidation?.coverageScore,
+    lastHeliosOpinion?.resultCard?.simpleExplanation,
+    lastHeliosOpinion?.summary,
+    socialSecurityRecommendedDocument,
+    socialSecuritySummary,
+    visibleHeliosOpinion?.resultCard?.simpleExplanation,
+    visibleHeliosOpinion?.summary,
+  ]);
   const timelineEntries = useMemo(() => {
     const confirmedEntries = [...documents]
       .sort(
@@ -8476,6 +8571,63 @@ export default function Auditar() {
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr,0.95fr]">
                         <div className="space-y-4">
+                          {visibleSimpleExplanation.length ? (
+                            <div className="rounded-[1rem] border border-cyan-100 bg-cyan-50/70 p-4" data-testid="auditar-simple-explanation">
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-semibold text-cyan-950">
+                                    En simple
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-cyan-900">
+                                    Esto es lo más útil que Helios ya agotó antes de pedirte otro archivo.
+                                  </p>
+                                </div>
+                                {visibleSignalsChecked.length ? (
+                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800">
+                                    {visibleSignalsChecked.length} señales revisadas
+                                  </span>
+                                ) : null}
+                              </div>
+
+                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                {visibleSimpleExplanation.map(
+                                  (item, index) => (
+                                    <div
+                                      key={`${item.label}-${index}`}
+                                      className={`rounded-[0.95rem] border p-3 ${
+                                        item.tone === "attention"
+                                          ? "border-amber-200 bg-amber-50"
+                                          : item.tone === "support"
+                                            ? "border-emerald-200 bg-white"
+                                            : "border-cyan-200 bg-white"
+                                      }`}
+                                    >
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+
+                              {visibleSignalsChecked.length ? (
+                                <div className="mt-3 flex flex-wrap gap-2" data-testid="auditar-signals-checked">
+                                  {visibleSignalsChecked.map(item => (
+                                    <span
+                                      key={item}
+                                      className="rounded-full border border-cyan-200 bg-white px-3 py-1 text-[11px] font-semibold text-cyan-900"
+                                    >
+                                      {warmVisibleNamingCopy(item) ?? item}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : null}
+
                           <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
                             <p className="text-sm font-semibold text-slate-950">
                               Lo más importante que encontramos

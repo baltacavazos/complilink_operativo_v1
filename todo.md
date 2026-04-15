@@ -1224,3 +1224,15 @@
 - [x] Cuarta ronda en /auditar: volver contextual la CTA principal según el tipo de documento detectado
 - [x] Cuarta ronda en /auditar: medir tiempo y scroll hasta el veredicto en móvil con analytics básicos
 - [x] Revalidar la cuarta ronda de /auditar con Vitest y Playwright sin romper la experiencia compacta
+- [ ] Quinta ronda en /auditar: recortar aún más texto visible en móvil dentro del bloque de veredicto
+- [ ] Quinta ronda en /auditar: reducir scroll en móvil reorganizando jerarquía y densidad del post-upload
+- [ ] Quinta ronda en /auditar: consultar a ChatGPT, Grok y Gemini antes de aplicar la compactación adicional
+- [ ] Quinta ronda en /auditar: revalidar con Vitest y Playwright que la experiencia siga clara y estable
+- [x] Revisar en /auditar qué ocurre hoy si el usuario solo sube un recibo de nómina
+- [x] Verificar si el motor actual aprovecha conectores y señales adicionales cuando solo existe nómina
+- [x] Confirmar si ya existe detección útil de discrepancias para nómina sin documentos complementarios
+- [x] Helios en /auditar: usar de forma proactiva todas las señales y conectores disponibles para extraer el máximo valor posible en cada caso
+- [x] Helios en /auditar: enriquecer automáticamente casos con un solo documento, especialmente nómina única, antes de pedir más archivos
+- [x] Helios en /auditar: explicar con lenguaje extremadamente simple qué ya se pudo concluir, qué falta y por qué
+- [x] Helios en /auditar: consultar a ChatGPT, Grok y Gemini la estrategia óptima de orquestación y mensajes simples antes de implementar
+- [x] Helios en /auditar: revalidar con Vitest y pruebas de flujo la nueva capa de enriquecimiento y explicación simple

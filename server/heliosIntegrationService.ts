@@ -27,6 +27,12 @@ export type HeliosResultFinding = {
   tone: "neutral" | "support" | "attention";
 };
 
+export type HeliosSimpleExplanationItem = {
+  label: string;
+  summary: string;
+  tone: "neutral" | "support" | "attention";
+};
+
 export type HeliosResultCard = {
   headline: string;
   lead: string;
@@ -37,6 +43,8 @@ export type HeliosResultCard = {
   dossierUpdateSummary: string;
   assistantIntro: string;
   suggestedQuestions: string[];
+  signalsChecked: string[];
+  simpleExplanation: HeliosSimpleExplanationItem[];
 };
 
 export type HeliosLegalHighlights = {
@@ -123,6 +131,32 @@ function getBestVisibleValue(params: BuildHeliosOpinionParams, key: string) {
 
 function lowercaseFirst(text: string) {
   return text.length ? `${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
+}
+
+const VISIBLE_FIELD_LABELS: Array<{ key: string; label: string }> = [
+  { key: "workerName", label: "nombre" },
+  { key: "employerName", label: "empresa" },
+  { key: "employerRfc", label: "RFC" },
+  { key: "period", label: "periodo" },
+  { key: "apparentAmount", label: "monto" },
+  { key: "apparentEffectiveDate", label: "fecha" },
+  { key: "jobTitle", label: "puesto" },
+];
+
+function collectVisibleFieldLabels(
+  params: BuildHeliosOpinionParams,
+  scope: "confirmed" | "estimated" | "any" = "any",
+) {
+  const getter =
+    scope === "confirmed"
+      ? getConfirmed
+      : scope === "estimated"
+        ? getEstimated
+        : getBestVisibleValue;
+
+  return VISIBLE_FIELD_LABELS.filter(({ key }) => getter(params, key))
+    .map(({ label }) => label)
+    .slice(0, 4);
 }
 
 function joinVisibleLabels(values: string[]) {
@@ -475,7 +509,80 @@ function getLead(params: BuildHeliosOpinionParams, findings: HeliosResultFinding
     ? `Por ahora ya se alcanzan a ver ${joinVisibleLabels(visibleLabels)}.`
     : `Por ahora ya se alcanzan a ver señales útiles sobre ${lowercaseFirst(getPrimaryFocus(params.documentType))}.`;
 
-  return `${evidenceFragment} Esta lectura todavía es preliminar, pero ya te deja ver qué significa este archivo para tu caso.`;
+  return `${evidenceFragment} Antes de pedirte algo más, Helios ya agotó lo visible, las reglas básicas de consistencia y el contexto inmediato del expediente.`;
+}
+
+function getSignalsChecked(params: BuildHeliosOpinionParams) {
+  const signals = [
+    "tipo de documento detectado",
+    "campos visibles del archivo",
+    "reglas básicas de consistencia",
+  ];
+
+  const visibleFieldLabels = collectVisibleFieldLabels(params, "any");
+  if (visibleFieldLabels.length > 0) {
+    signals.push(`datos visibles como ${joinVisibleLabels(visibleFieldLabels)}`);
+  }
+
+  if (params.documentType === "payroll_receipt" || params.documentType === "cfdi") {
+    signals.push("montos, pagos y descuentos visibles");
+  } else if (params.documentType === "contract") {
+    signals.push("puesto, fecha y condiciones visibles");
+  } else if (params.documentType === "imss") {
+    signals.push("salario registrado y continuidad visible");
+  }
+
+  if (asTextList(params.preliminaryAnalysis?.guardrails).length > 0) {
+    signals.push("alertas y faltantes detectados");
+  }
+
+  return Array.from(new Set(signals)).slice(0, 5);
+}
+
+function buildSimpleExplanation(
+  params: BuildHeliosOpinionParams,
+  uncertainties: string[],
+): { signalsChecked: string[]; simpleExplanation: HeliosSimpleExplanationItem[] } {
+  const documentLabel = getDocumentTypeLabel(params.documentType);
+  const confirmedLabels = collectVisibleFieldLabels(params, "confirmed");
+  const estimatedLabels = collectVisibleFieldLabels(params, "estimated");
+  const signalsChecked = getSignalsChecked(params);
+  const nextStep = getRecommendedNextStep(params.documentType);
+  const pendingSummary =
+    uncertainties[0] ??
+    "Todavía conviene contrastar este archivo con más evidencia antes de cerrar una conclusión más fuerte.";
+
+  return {
+    signalsChecked,
+    simpleExplanation: [
+      {
+        label: "Qué ya revisé por ti",
+        summary: `Antes de pedirte algo más, Helios ya revisó ${joinVisibleLabels(signalsChecked)} dentro de este ${documentLabel}.`,
+        tone: "support",
+      },
+      {
+        label: "Lo que sí pude concluir",
+        summary:
+          confirmedLabels.length > 0
+            ? `Ya pude ubicar con claridad ${joinVisibleLabels(confirmedLabels)} dentro del archivo.`
+            : `Ya pude sacar una primera lectura útil sin inventar datos que no se vean claros en el archivo.`,
+        tone: "support",
+      },
+      {
+        label: "Lo que todavía no puedo asegurar",
+        summary:
+          estimatedLabels.length > 0
+            ? `${pendingSummary} También hay pistas sobre ${joinVisibleLabels(estimatedLabels)}, pero todavía no lo tomo como hecho cerrado.`
+            : pendingSummary,
+        tone: "attention",
+      },
+      {
+        label: "Si quieres más claridad, esto sigue",
+        summary: nextStep,
+        tone: "neutral",
+      },
+    ],
+  };
 }
 
 function getNextStepLabel(documentType: string) {
@@ -532,6 +639,7 @@ function buildResultCard(params: BuildHeliosOpinionParams, uncertainties: string
   const keyFindings = getKeyFindings(params);
   const nextStepSummary = getRecommendedNextStep(params.documentType);
   const firstUncertainty = uncertainties[0];
+  const { signalsChecked, simpleExplanation } = buildSimpleExplanation(params, uncertainties);
 
   return {
     headline: getHeadline(params),
@@ -544,8 +652,10 @@ function buildResultCard(params: BuildHeliosOpinionParams, uncertainties: string
     dossierUpdateLabel: "Tu expediente ya se actualizó",
     dossierUpdateSummary: getDossierUpdateSummary(params),
     assistantIntro:
-      "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué falta confirmar o ayudarte a elegir el siguiente archivo más útil.",
+      "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué sí pude concluir, qué sigue pendiente y ayudarte a elegir el siguiente archivo más útil.",
     suggestedQuestions: getSuggestedQuestions(params),
+    signalsChecked,
+    simpleExplanation,
   };
 }
 
@@ -622,8 +732,36 @@ function buildPendingRemoteResultCard(params: BuildHeliosOpinionParams): HeliosR
     nextStepSummary: "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
     dossierUpdateLabel: "Tu expediente ya se actualizó",
     dossierUpdateSummary: getDossierUpdateSummary(params),
-    assistantIntro: "Puedo ayudarte a entender qué está revisando Helios y qué documento conviene subir después mientras llega la respuesta final.",
+    assistantIntro: "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
     suggestedQuestions,
+    signalsChecked: [
+      "tipo de documento detectado",
+      "campos visibles del archivo",
+      "estado del motor Helios",
+      "contexto inmediato del expediente",
+    ],
+    simpleExplanation: [
+      {
+        label: "Qué ya revisé por ti",
+        summary: "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+        tone: "support",
+      },
+      {
+        label: "Lo que sí pude concluir",
+        summary: "Ya sabemos qué tipo de documento es y cómo puede ayudar dentro de tu expediente.",
+        tone: "support",
+      },
+      {
+        label: "Lo que todavía no puedo asegurar",
+        summary: "La lectura jurídica fina todavía depende de que termine el procesamiento remoto del documento completo.",
+        tone: "attention",
+      },
+      {
+        label: "Si quieres más claridad, esto sigue",
+        summary: "Mientras llega la respuesta final, puedes seguir subiendo archivos del mismo periodo para enriquecer el expediente.",
+        tone: "neutral",
+      },
+    ],
   };
 }
 
@@ -879,8 +1017,38 @@ export function buildRemoteHeliosOpinionContract(params: {
       nextStepSummary: recommendedNextStep,
       dossierUpdateLabel: "Tu expediente quedó enriquecido",
       dossierUpdateSummary: "La respuesta remota ya quedó ligada a este documento para futuras comparaciones dentro del expediente.",
-      assistantIntro: "Ahora puedo explicarte esta lectura remota en palabras simples y compararla con otros documentos de tu expediente.",
+      assistantIntro: "Ahora puedo explicarte esta lectura remota en palabras simples, decirte qué sí quedó claro y qué sigue pendiente.",
       suggestedQuestions,
+      signalsChecked: [
+        "documento completo",
+        "respuesta remota del motor",
+        "hallazgos priorizados",
+        "contexto del expediente",
+      ],
+      simpleExplanation: [
+        {
+          label: "Qué ya revisé por ti",
+          summary: "Helios ya terminó la lectura remota y priorizó los hallazgos más útiles de este documento.",
+          tone: "support",
+        },
+        {
+          label: "Lo que sí pude concluir",
+          summary: summary,
+          tone: "support",
+        },
+        {
+          label: "Lo que todavía no puedo asegurar",
+          summary:
+            guardrails[0] ??
+            "Esta lectura todavía conviene contrastarla con el resto del expediente antes de cerrar una estrategia más fuerte.",
+          tone: "attention",
+        },
+        {
+          label: "Si quieres más claridad, esto sigue",
+          summary: recommendedNextStep,
+          tone: "neutral",
+        },
+      ],
     },
     legalHighlights: buildLegalHighlights(summary, guardrails, recommendedNextStep),
     rawPayload: payload,
