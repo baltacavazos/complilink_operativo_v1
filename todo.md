@@ -1168,3 +1168,9 @@
 - [x] Reducir el flujo post-upload móvil a una experiencia casi mágica con una sola narrativa principal, menos líneas, menos bloques y pasos inequívocos
 - [x] Consultar a ChatGPT, Grok y Gemini sobre el rediseño post-upload móvil y comparar consenso antes de implementar
 - [x] Añadir y actualizar pruebas del nuevo flujo post-upload móvil y de la corrección de layout
+- [x] Investigar por qué el acceso desde móvil no reconoce la sesión previa y obliga a solicitar OTP por correo repetidamente
+- [x] Verificar si la persistencia de sesión móvil en AuditaPatron está diseñada así o si existe un fallo de cookies/sesión
+- [x] Explicar con claridad al usuario si el comportamiento actual es esperado o requiere corrección técnica prioritaria
+- [x] Corregir la persistencia de sesión en móvil para que el usuario no tenga que pedir OTP por correo cada vez que vuelve a entrar desde el mismo teléfono
+- [x] Revisar y corregir la estrategia de cookies entre auditapatron.com y www.auditapatron.com para evitar pérdida de sesión por host distinto
+- [x] Añadir validaciones y pruebas del flujo de autenticación persistente en móvil antes de entregar el fix

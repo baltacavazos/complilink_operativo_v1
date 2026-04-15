@@ -58,7 +58,7 @@ describe("auth.logout", () => {
     expect(sessionCookie?.options).toMatchObject({
       maxAge: -1,
       secure: true,
-      sameSite: "none",
+      sameSite: "lax",
       httpOnly: true,
       path: "/",
     });
