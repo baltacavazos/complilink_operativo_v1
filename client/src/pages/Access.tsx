@@ -240,7 +240,7 @@ export default function Access() {
           </a>
 
           <p className="px-1 text-xs font-medium text-slate-500">
-            Después vuelves a <strong className="break-all text-slate-700">{returnTo}</strong>
+            Luego vuelves a <strong className="break-all text-slate-700">{returnTo}</strong>
           </p>
         </div>
 
@@ -256,10 +256,10 @@ export default function Access() {
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[14ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Inicia sesión
+                Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo y te mandamos un código de 6 dígitos. Si ya habías entrado desde este equipo, te mostramos el último correo para avanzar más rápido.
+                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
               </p>
             </div>
 
@@ -267,7 +267,7 @@ export default function Access() {
               <div className="mt-5 rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-950">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Te reconocimos en este equipo</p>
                 <p className="mt-2 break-all font-medium">{rememberedEmail}</p>
-                <p className="mt-1 leading-6 text-teal-900/80">Si quieres, entra con ese correo. Si no, cámbialo antes de pedir el código.</p>
+                <p className="mt-1 leading-6 text-teal-900/80">Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.</p>
               </div>
             ) : null}
 
@@ -304,7 +304,7 @@ export default function Access() {
                     className="h-12 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                   />
                   <p className="text-xs leading-5 text-slate-500">
-                    Usa el correo con el que administras tu cuenta.
+                    Usa el correo con el que quieres entrar hoy.
                   </p>
                 </div>
 
@@ -319,13 +319,13 @@ export default function Access() {
                     ? "Enviando código..."
                     : emailCooldownActive
                       ? `Espera ${emailCooldownSecondsRemaining}s`
-                      : "Enviar código"}
+                      : "Recibir código"}
                 </Button>
 
                 {requestEmailCode.isPending ? (
                   <p className="flex items-center gap-2 text-sm text-slate-500">
                     <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
-                    Estamos preparando tu código y abriendo el siguiente paso.
+                    Estamos enviando tu código.
                   </p>
                 ) : null}
               </form>
@@ -379,12 +379,12 @@ export default function Access() {
                   disabled={verifyEmailCode.isPending || loading || code.trim().length < 6}
                 >
                   {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Verificar y entrar
+Entrar
                 </Button>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-slate-500">
-                    {emailCooldownActive ? `Puedes reenviar en ${emailCooldownSecondsRemaining}s` : "¿No te llegó?"}
+                      {emailCooldownActive ? `Puedes reenviar en ${emailCooldownSecondsRemaining}s` : "Si no llegó"}
                   </span>
                   <button
                     type="button"

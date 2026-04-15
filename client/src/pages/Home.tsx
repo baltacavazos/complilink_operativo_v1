@@ -910,35 +910,12 @@ function HeroSection() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
-          <div className="motion-enter-soft flex flex-wrap items-center justify-center gap-2 lg:justify-start" style={{ ["--motion-delay" as string]: "20ms" }}>
-            {(Object.entries(heroCopyVariants) as Array<[keyof typeof heroCopyVariants, (typeof heroCopyVariants)[keyof typeof heroCopyVariants]]>).map(([key, variant]) => {
-              const isActive = selectedHeroVariant === key;
-
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleHeroVariantChange(key)}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-teal-300 bg-teal-50 text-teal-900 shadow-[0_18px_40px_-32px_rgba(13,148,136,0.34)]"
-                      : "border-white/80 bg-white/75 text-slate-600 hover:border-teal-200 hover:text-slate-900"
-                  }`}
-                  aria-pressed={isActive}
-                >
-                  {variant.tabLabel}
-                </button>
-              );
-            })}
-          </div>
-
           <div
-            className="motion-enter-soft mt-3 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/88 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.4)] sm:px-4 sm:py-2 sm:text-xs"
-            style={{ ["--motion-delay" as string]: "60ms" }}
+            className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] sm:px-4 sm:py-2 sm:text-xs"
+            style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            <span className="sm:hidden">{activeHeroVariant.eyebrowMobile}</span>
-            <span className="hidden sm:inline">{activeHeroVariant.eyebrowDesktop}</span>
+            Sube 1 documento y entiende qué revisar
           </div>
 
           <h1
@@ -946,12 +923,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              Sube un documento laboral
-              <span className="mt-1 block text-amber-700">y recibe una auditoría clara.</span>
+              Sube un documento
+              <span className="mt-1 block text-amber-700">y te decimos qué sigue.</span>
             </span>
             <span className="hidden sm:block">
-              Sube un documento laboral
-              <span className="block text-amber-700">y recibe una auditoría clara.</span>
+              Sube un documento
+              <span className="block text-amber-700">y te decimos qué sigue.</span>
             </span>
           </h1>
 
@@ -959,55 +936,32 @@ function HeroSection() {
             className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-            Empieza con un solo archivo. AuditaPatron lo ordena y te devuelve qué entendió y qué conviene revisar después.
+            Verás qué archivo subiste, qué encontramos y qué conviene revisar primero.
           </p>
 
           <p
             className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Sube un recibo, contrato o CFDI y recibe hallazgos claros con el siguiente paso sugerido. Después, si quieres, tu asistente laboral te ayuda a entender mejor tu expediente.
+            Empieza con el recibo, contrato o CFDI que ya tienes a la mano. AuditaPatron lo lee, te lo explica en palabras simples y te muestra el siguiente paso sin llenarte de pantallas.
           </p>
 
           <div
-            className="motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-3.5 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
+            className="motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
             style={{ ["--motion-delay" as string]: "250ms" }}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Empieza con el documento correcto
+                  Si no sabes cuál subir primero
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-700">
-                  Elige la situación que más se parece a tu caso y te sugerimos qué archivo conviene subir primero para obtener una auditoría útil sin reunir todo de una vez.
+                  Empieza con cualquier archivo que ya tengas. Si quieres ir a lo seguro, aquí te mostramos una opción útil para arrancar sin pensar demasiado.
                 </p>
               </div>
               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                Sin reunir todo de una vez
+                Un archivo basta para empezar
               </span>
-            </div>
-
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              {heroPrediagnosticOptions.map((option) => {
-                const isActive = selectedHeroPrediagnostic === option.id;
-
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => handleHeroPrediagnosticSelect(option.id)}
-                    className={`rounded-[1.25rem] border px-3.5 py-3 text-left transition ${
-                      isActive
-                        ? "border-teal-300 bg-teal-50 text-teal-950 shadow-[0_18px_42px_-34px_rgba(13,148,136,0.34)]"
-                        : "border-slate-200 bg-slate-50/80 text-slate-700 hover:border-teal-200 hover:bg-white"
-                    }`}
-                    aria-pressed={isActive}
-                  >
-                    <p className="text-sm font-semibold leading-5">{option.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{option.helper}</p>
-                  </button>
-                );
-              })}
             </div>
 
             <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4">
@@ -1016,7 +970,7 @@ function HeroSection() {
                   {activePrediagnostic.badge}
                 </span>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Primer documento sugerido
+                  Documento recomendado para arrancar
                 </span>
               </div>
               <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.resultTitle}</p>
@@ -1025,35 +979,11 @@ function HeroSection() {
               </p>
               <p className="mt-3 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
               <p className="mt-3 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
-              <div className="mt-4 flex flex-col gap-3 border-t border-slate-200/80 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
-                    Variante activa: {activeHeroVariant.tabLabel}
-                  </span>
-                  <span className="rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
-                    Auditoría inicial en segundos
-                  </span>
-                </div>
-                <Button
-                  className="h-11 rounded-full bg-teal-600 px-5 text-sm font-semibold text-white hover:bg-teal-700"
-                  onClick={() =>
-                    goToAuditFlow({
-                      entry_point: "hero_prediagnostic_result",
-                      hero_variant: selectedHeroVariant,
-                      prediagnostic: selectedHeroPrediagnostic,
-                      cta_label: activePrediagnostic.ctaLabel,
-                    })
-                  }
-                >
-                  {activePrediagnostic.ctaLabel}
-                  <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
-                </Button>
-              </div>
             </div>
           </div>
 
           <div
-            className="motion-enter-soft order-2 mt-4 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start"
+            className="motion-enter-soft order-2 mt-4 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -1067,16 +997,12 @@ function HeroSection() {
                 })
               }
             >
-              {activeHeroVariant.ctaPrimary}
+              Quiero revisar mi documento
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-            <Button
-              variant="outline"
-              className="hidden motion-hover-lift h-10 border-transparent bg-transparent px-2 text-sm font-semibold text-slate-600 shadow-none transition duration-200 ease-out hover:text-slate-950 active:scale-[0.99] sm:inline-flex sm:h-12 sm:rounded-full sm:border-slate-200 sm:bg-white sm:px-7 sm:text-base sm:text-slate-700 sm:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)] sm:hover:-translate-y-0.5 sm:hover:bg-slate-50"
-              onClick={handleHeroSecondaryCta}
-            >
-              {activeHeroVariant.ctaSecondary}
-            </Button>
+              <p className="text-sm leading-6 text-slate-600">
+              Entras, subes un archivo y ves un resultado claro. Lo demás aparece después, solo si hace falta.
+            </p>
           </div>
 
           <div
@@ -1085,19 +1011,19 @@ function HeroSection() {
           >
             {[
               {
-                eyebrow: "Empiezas con uno",
-                title: "Sube el documento que ya tienes a la mano",
-                detail: "No necesitas preparar una carpeta completa para recibir una primera lectura útil.",
+                eyebrow: "Paso 1",
+                title: "Sube el archivo que ya tienes",
+                detail: "No necesitas juntar todo para empezar a entender tu situación.",
               },
               {
-                eyebrow: "Automático",
-                title: "AuditaPatron empieza a leer y ordenar solo",
-                detail: "Detecta señales, arma un borrador y te muestra el siguiente paso sin pedirte vueltas extra.",
+                eyebrow: "Paso 2",
+                title: "Lo leemos y te mostramos lo importante",
+                detail: "Detectamos señales y te enseñamos primero lo que sí conviene revisar.",
               },
               {
-                eyebrow: "Claro",
-                title: "Recibes primero lo más importante",
-                detail: "Te devolvemos qué entendimos, qué pesa más y qué conviene subir después con palabras simples.",
+                eyebrow: "Paso 3",
+                title: "Recibes una explicación fácil de entender",
+                detail: "Ves qué entendimos, qué hallazgo aparece y qué podrías subir después.",
               },
             ].map((item) => (
               <div
@@ -1112,47 +1038,18 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
+            className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-4 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="flex -space-x-2">
-                  {[
-                    "bg-teal-100 text-teal-900",
-                    "bg-sky-100 text-sky-900",
-                    "bg-emerald-100 text-emerald-900",
-                  ].map((tone, index) => (
-                    <span
-                      key={tone}
-                      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white text-xs font-semibold shadow-sm ${tone}`}
-                    >
-                      {index === 0 ? "R" : index === 1 ? "C" : "N"}
-                    </span>
-                  ))}
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales de confianza</p>
-                  <p className="mt-1 text-sm font-medium leading-6 text-slate-700">
-                    Lenguaje claro, rutas guiadas y un enfoque prudente: primero ves la auditoría del documento, sin preparar todo de una vez; después decides si quieres profundizar con tu expediente y tu asistente laboral.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {socialProofItems.map((item) => (
-                <div key={item.caseId} className="motion-hover-lift rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3.5 shadow-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{item.caseId}</p>
-                    <span className="rounded-full border border-teal-100 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                      Señal verificada
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm font-semibold leading-6 text-slate-900">{item.label}</p>
-                  <p className="mt-2 text-sm font-medium leading-6 text-slate-800">“{item.quote}”</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-600">{item.supportingDetail}</p>
-                  <p className="mt-2 rounded-[1rem] border border-teal-100 bg-teal-50/80 px-3 py-2 text-xs leading-5 text-teal-900">{item.verification}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lo que hace simple esta experiencia</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {[
+                "Empiezas con un solo archivo.",
+                "Te explicamos todo sin tecnicismos.",
+                "Ves primero qué hacer después.",
+              ].map((item) => (
+                <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3.5 shadow-sm">
+                  <p className="text-sm font-semibold leading-6 text-slate-900">{item}</p>
                 </div>
               ))}
             </div>
@@ -1171,10 +1068,10 @@ function HeroSection() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Vista previa del reporte que recibes
+Ejemplo del resultado que recibes
                   </p>
                   <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-                    Un ejemplo simple de cómo AuditaPatron traduce tu documento en hallazgos accionables.
+Esto verás apenas subas tu documento.
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
@@ -1182,7 +1079,7 @@ function HeroSection() {
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                Esta vista resume lo que importa primero: la señal detectada, el documento que la respalda y el siguiente paso sugerido para seguir construyendo tu expediente.
+Primero ves lo esencial: qué documento entendimos, qué señal apareció y qué te conviene hacer después.
               </p>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -1208,7 +1105,7 @@ function HeroSection() {
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Puedes recorrer estados reales: documento recibido, hallazgo preliminar y siguiente paso sugerido.
+Así se ve la experiencia: documento recibido, hallazgo principal y siguiente paso sugerido.
               </p>
 
               <div className="mt-4 rounded-[1.05rem] border border-teal-100 bg-white/90 px-4 py-3 shadow-sm">

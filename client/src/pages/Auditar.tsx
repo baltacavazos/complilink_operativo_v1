@@ -1,9 +1,20 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { AuditaPatronLogo, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
-import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
+import {
+  AuditaPatronLogo,
+  AuditaPatronLogoIcon,
+  AuditaPatronLogoWordmark,
+} from "@/components/AuditaPatronLogo";
+import {
+  HeliosCopilotSheet,
+  type HeliosCopilotMessage,
+} from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
-import { trackEvent, trackFunnelStep, trackLegalGateEvent } from "@/lib/analytics";
+import {
+  trackEvent,
+  trackFunnelStep,
+  trackLegalGateEvent,
+} from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -38,7 +49,13 @@ import {
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
-import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_GATE_COPY, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
+import {
+  LEGAL_CONTACT_EMAIL,
+  LEGAL_DOCUMENTS,
+  LEGAL_GATE_COPY,
+  LEGAL_VERSION,
+  PRIVACY_CENTER_COPY,
+} from "@shared/legal";
 
 type LegalGateErrorType = "validation" | "concurrency" | "transient" | "fatal";
 
@@ -50,7 +67,14 @@ type LegalGateErrorState = {
   retryAvailableAt: number | null;
 };
 
-type LegalGateMetricEvent = "idle" | "attempt" | "retry" | "conflict" | "accepted" | "transient" | "fatal";
+type LegalGateMetricEvent =
+  | "idle"
+  | "attempt"
+  | "retry"
+  | "conflict"
+  | "accepted"
+  | "transient"
+  | "fatal";
 
 type LegalGateMetricsState = {
   attempts: number;
@@ -71,9 +95,24 @@ const INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {
   lastUpdatedAt: null,
 };
 const MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 12 * 1024 * 1024;
-const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".webp"] as const;
-const SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES = new Set(["application/pdf", "text/xml", "application/xml", "image/jpeg", "image/png", "image/webp"]);
-const DOCUMENT_UPLOAD_PICKER_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf,text/xml,application/xml,.xml";
+const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [
+  ".pdf",
+  ".xml",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+] as const;
+const SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES = new Set([
+  "application/pdf",
+  "text/xml",
+  "application/xml",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+const DOCUMENT_UPLOAD_PICKER_ACCEPT =
+  "image/jpeg,image/png,image/webp,application/pdf,text/xml,application/xml,.xml";
 const MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS = [".heic", ".heif"] as const;
 
 type UploadProgressStepKey = "prepare" | "analyze" | "save" | "review";
@@ -99,7 +138,10 @@ type ContextualShortcut = {
   prompt?: string;
 };
 
-const UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }> = [
+const UPLOAD_PROGRESS_STEPS: Array<{
+  key: UploadProgressStepKey;
+  label: string;
+}> = [
   { key: "prepare", label: "Preparar" },
   { key: "analyze", label: "Analizar" },
   { key: "save", label: "Guardar" },
@@ -107,8 +149,10 @@ const UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }
 ];
 
 const PERSISTENT_UPLOAD_GUARDRAILS = {
-  fileRules: "Formatos compatibles: PDF, XML, JPG, PNG o WEBP. Límite real: 12 MB por archivo.",
-  privacyRules: "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
+  fileRules:
+    "Formatos compatibles: PDF, XML, JPG, PNG o WEBP. Límite real: 12 MB por archivo.",
+  privacyRules:
+    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
@@ -116,8 +160,10 @@ const COMPACT_UPLOAD_GUARDRAILS = {
   privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
 };
 
-const UPLOAD_HELP_DISCLOSURE_SUMMARY = "Abrir ayuda rápida: seguridad, límites y momento de guardado";
-const UPLOAD_HELP_MOBILE_HINT = "Ayuda rápida: toca para ver seguridad, límites y guardado.";
+const UPLOAD_HELP_DISCLOSURE_SUMMARY =
+  "Abrir ayuda rápida: seguridad, límites y momento de guardado";
+const UPLOAD_HELP_MOBILE_HINT =
+  "Ayuda rápida: toca para ver seguridad, límites y guardado.";
 
 export function getUploadCompactGuardrails() {
   return COMPACT_UPLOAD_GUARDRAILS;
@@ -131,8 +177,12 @@ export function getUploadHelpMobileHint() {
   return UPLOAD_HELP_MOBILE_HINT;
 }
 
-export function getUploadStepAnnouncement(stageLabel: string, contextTitle?: string) {
-  const normalizedContextTitle = typeof contextTitle === "string" ? contextTitle.trim() : "";
+export function getUploadStepAnnouncement(
+  stageLabel: string,
+  contextTitle?: string
+) {
+  const normalizedContextTitle =
+    typeof contextTitle === "string" ? contextTitle.trim() : "";
 
   if (normalizedContextTitle.length > 0) {
     return `Progreso actual: ${stageLabel}. ${normalizedContextTitle}.`;
@@ -160,17 +210,24 @@ export function getUploadStepAriaLabel(params: {
   isActive: boolean;
   isComplete: boolean;
 }) {
-  const statusLabel = params.isActive ? "actual" : params.isComplete ? "completada" : "pendiente";
+  const statusLabel = params.isActive
+    ? "actual"
+    : params.isComplete
+      ? "completada"
+      : "pendiente";
   return `Etapa ${params.index} de ${params.total}: ${params.label}, ${statusLabel}.`;
 }
 
 function getUploadProgressStepState(stepKey: UploadProgressStepKey) {
-  const activeIndex = UPLOAD_PROGRESS_STEPS.findIndex((step) => step.key === stepKey);
+  const activeIndex = UPLOAD_PROGRESS_STEPS.findIndex(
+    step => step.key === stepKey
+  );
 
   return UPLOAD_PROGRESS_STEPS.map((step, index) => ({
     ...step,
     isActive: index === activeIndex,
-    isComplete: index < activeIndex || (stepKey === "review" && index === activeIndex),
+    isComplete:
+      index < activeIndex || (stepKey === "review" && index === activeIndex),
   }));
 }
 
@@ -294,7 +351,7 @@ function isLikelyTechnicalPreviewBlob(value: string) {
     return false;
   }
 
-  if (AUDITAR_TECHNICAL_PREVIEW_PATTERNS.some((pattern) => pattern.test(value))) {
+  if (AUDITAR_TECHNICAL_PREVIEW_PATTERNS.some(pattern => pattern.test(value))) {
     return true;
   }
 
@@ -303,20 +360,34 @@ function isLikelyTechnicalPreviewBlob(value: string) {
   }
 
   const symbolMatches = value.match(/[{}\[\]();<>/=\\@]/g) ?? [];
-  const symbolDensity = value.length > 0 ? symbolMatches.length / value.length : 0;
-  const commaDensity = value.length > 0 ? (value.match(/,/g) ?? []).length / value.length : 0;
+  const symbolDensity =
+    value.length > 0 ? symbolMatches.length / value.length : 0;
+  const commaDensity =
+    value.length > 0 ? (value.match(/,/g) ?? []).length / value.length : 0;
 
-  return (value.length >= 180 && symbolDensity >= 0.12) || (value.length >= 240 && commaDensity >= 0.04);
+  return (
+    (value.length >= 180 && symbolDensity >= 0.12) ||
+    (value.length >= 240 && commaDensity >= 0.04)
+  );
 }
 
-export function sanitizePreviewText(value: unknown, options: SanitizePreviewTextOptions = {}) {
-  const { maxLength = 180, emptyFallback = "", technicalFallback = "Contenido técnico omitido para mantener la lectura clara." } = options;
+export function sanitizePreviewText(
+  value: unknown,
+  options: SanitizePreviewTextOptions = {}
+) {
+  const {
+    maxLength = 180,
+    emptyFallback = "",
+    technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
+  } = options;
   const normalized =
     typeof value === "number"
       ? String(value)
       : typeof value === "string"
         ? value.replace(/\s+/g, " ").trim()
-        : String(value ?? "").replace(/\s+/g, " ").trim();
+        : String(value ?? "")
+            .replace(/\s+/g, " ")
+            .trim();
 
   if (!normalized) {
     return emptyFallback;
@@ -338,28 +409,32 @@ function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
   return sanitizePreviewText(candidate, {
     maxLength: 220,
     emptyFallback: fallback,
-    technicalFallback: "No pudimos completar esta parte del documento. Intenta repetir la captura o subir el archivo original.",
+    technicalFallback:
+      "No pudimos completar esta parte del documento. Intenta repetir la captura o subir el archivo original.",
   });
 }
 
 function isUnsupportedMobileImageFormat(file: File) {
   const lowerName = file.name.toLowerCase();
   return (
-    MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS.some((extension) => lowerName.endsWith(extension)) ||
+    MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS.some(extension =>
+      lowerName.endsWith(extension)
+    ) ||
     file.type === "image/heic" ||
     file.type === "image/heif"
   );
 }
 
 export function validateDocumentUploadFile(file: File | null) {
-
   if (!file) {
     return null;
   }
 
   const lowerName = file.name.toLowerCase();
   const isSupportedByMime = SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES.has(file.type);
-  const isSupportedByExtension = SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS.some((extension) => lowerName.endsWith(extension));
+  const isSupportedByExtension = SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS.some(
+    extension => lowerName.endsWith(extension)
+  );
 
   if (isUnsupportedMobileImageFormat(file)) {
     return "Tu celular entregó la imagen en HEIC o HEIF. Para evitar fallos, súbela como JPG, PNG, WEBP, PDF o XML.";
@@ -382,13 +457,15 @@ export function buildUploadProgressState(params: {
   isAnalyzingDraft: boolean;
   isConfirmingDraft: boolean;
 }): UploadProgressState {
-  const { selectedFile, pendingDraft, isAnalyzingDraft, isConfirmingDraft } = params;
+  const { selectedFile, pendingDraft, isAnalyzingDraft, isConfirmingDraft } =
+    params;
 
   if (isConfirmingDraft) {
     return {
       eyebrow: "Guardado en curso",
       title: "Estamos integrando tu documento al expediente",
-      description: "No necesitas repetir la carga. En cuanto termine, verás el resultado y el siguiente paso sugerido.",
+      description:
+        "No necesitas repetir la carga. En cuanto termine, verás el resultado y el siguiente paso sugerido.",
       progress: 92,
       toneClasses: "border-teal-200 bg-teal-50 text-teal-950",
       barClasses: "bg-teal-600",
@@ -402,7 +479,8 @@ export function buildUploadProgressState(params: {
     return {
       eyebrow: "Vista previa lista",
       title: "Tu documento ya quedó listo para revisión",
-      description: "Todavía no se guarda en el expediente: primero revisas lo leído y después confirmas si quieres integrarlo.",
+      description:
+        "Todavía no se guarda en el expediente: primero revisas lo leído y después confirmas si quieres integrarlo.",
       progress: 100,
       toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
       barClasses: "bg-sky-600",
@@ -416,7 +494,8 @@ export function buildUploadProgressState(params: {
     return {
       eyebrow: "Análisis en curso",
       title: "Estamos leyendo tu archivo y preparando el borrador",
-      description: "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que mantengas el control.",
+      description:
+        "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que mantengas el control.",
       progress: 72,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       barClasses: "bg-amber-500",
@@ -430,7 +509,8 @@ export function buildUploadProgressState(params: {
     return {
       eyebrow: "Archivo listo",
       title: "Documento preparado para borrador automático",
-      description: "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.",
+      description:
+        "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.",
       progress: 38,
       toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
       barClasses: "bg-emerald-500",
@@ -443,7 +523,8 @@ export function buildUploadProgressState(params: {
   return {
     eyebrow: "Control del documento",
     title: "Elige un PDF, XML o una imagen clara para empezar",
-    description: "Primero preparas el borrador, luego revisas la lectura y sólo al final decides si quieres guardar el documento en tu expediente.",
+    description:
+      "Primero preparas el borrador, luego revisas la lectura y sólo al final decides si quieres guardar el documento en tu expediente.",
     progress: 12,
     toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
     barClasses: "bg-slate-400",
@@ -457,14 +538,15 @@ function buildLegalGateErrorState(
   message: string,
   type: LegalGateErrorType,
   retryCount = 0,
-  retryAfterSeconds = 0,
+  retryAfterSeconds = 0
 ): LegalGateErrorState {
   return {
     message,
     type,
     retryCount,
     retryAfterSeconds,
-    retryAvailableAt: retryAfterSeconds > 0 ? Date.now() + retryAfterSeconds * 1000 : null,
+    retryAvailableAt:
+      retryAfterSeconds > 0 ? Date.now() + retryAfterSeconds * 1000 : null,
   };
 }
 
@@ -477,8 +559,12 @@ function extractLegalGateCauseType(value: unknown) {
   return typeof causeType === "string" ? causeType : null;
 }
 
-function resolveLegalGateError(error: unknown, retryCount = 0): LegalGateErrorState {
-  const fallbackMessage = "No fue posible registrar tu aceptación legal en este momento.";
+function resolveLegalGateError(
+  error: unknown,
+  retryCount = 0
+): LegalGateErrorState {
+  const fallbackMessage =
+    "No fue posible registrar tu aceptación legal en este momento.";
   const errorRecord = error as {
     message?: string;
     data?: {
@@ -492,22 +578,36 @@ function resolveLegalGateError(error: unknown, retryCount = 0): LegalGateErrorSt
       };
     };
   };
-  const message = typeof errorRecord?.message === "string" && errorRecord.message.trim().length > 0
-    ? errorRecord.message
-    : fallbackMessage;
-  const code = errorRecord?.data?.code ?? errorRecord?.shape?.data?.code ?? null;
-  const causeType = extractLegalGateCauseType(errorRecord?.data?.cause ?? errorRecord?.shape?.data?.cause);
+  const message =
+    typeof errorRecord?.message === "string" &&
+    errorRecord.message.trim().length > 0
+      ? errorRecord.message
+      : fallbackMessage;
+  const code =
+    errorRecord?.data?.code ?? errorRecord?.shape?.data?.code ?? null;
+  const causeType = extractLegalGateCauseType(
+    errorRecord?.data?.cause ?? errorRecord?.shape?.data?.cause
+  );
 
-   if (code === "CONFLICT" || causeType === "CONCURRENCY_LOCK_FAILURE") {
+  if (code === "CONFLICT" || causeType === "CONCURRENCY_LOCK_FAILURE") {
     return buildLegalGateErrorState(
       "Otro proceso está registrando esta aceptación. Protegimos tu expediente para evitar registros duplicados. Espera el temporizador y vuelve a intentarlo.",
       "concurrency",
       retryCount,
-      LEGAL_GATE_CONCURRENCY_RETRY_SECONDS,
+      LEGAL_GATE_CONCURRENCY_RETRY_SECONDS
     );
   }
-  if (code === "TOO_MANY_REQUESTS" || code === "TIMEOUT" || message.toLowerCase().includes("intenta de nuevo")) {
-    return buildLegalGateErrorState(message, "transient", retryCount, LEGAL_GATE_TRANSIENT_RETRY_SECONDS);
+  if (
+    code === "TOO_MANY_REQUESTS" ||
+    code === "TIMEOUT" ||
+    message.toLowerCase().includes("intenta de nuevo")
+  ) {
+    return buildLegalGateErrorState(
+      message,
+      "transient",
+      retryCount,
+      LEGAL_GATE_TRANSIENT_RETRY_SECONDS
+    );
   }
   return buildLegalGateErrorState(message, "fatal", retryCount);
 }
@@ -530,7 +630,6 @@ function describeLegalGateMetricEvent(event: LegalGateMetricEvent) {
       return "Sin actividad reciente";
   }
 }
-
 
 type DossierTarget = {
   type: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence";
@@ -703,7 +802,13 @@ type DraftPreviewResultView = {
     sha256: string;
     storageUrl: string;
     captureMode: AuditarCaptureMode | null;
-    expectedDocumentType: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence" | null;
+    expectedDocumentType:
+      | "payroll_receipt"
+      | "cfdi"
+      | "contract"
+      | "imss"
+      | "evidence"
+      | null;
   };
   classification: {
     documentType: string;
@@ -785,21 +890,25 @@ const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
     label: "Recibos de nómina",
-    description: "Ayudan a revisar pagos, deducciones y cambios entre periodos.",
-    benefit: "Permiten detectar diferencias y patrones de pago con más claridad.",
+    description:
+      "Ayudan a revisar pagos, deducciones y cambios entre periodos.",
+    benefit:
+      "Permiten detectar diferencias y patrones de pago con más claridad.",
     suggestedCount: 2,
   },
   {
     type: "cfdi",
     label: "CFDI",
-    description: "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
+    description:
+      "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
     benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
     suggestedCount: 2,
   },
   {
     type: "contract",
     label: "Contrato o condiciones iniciales",
-    description: "Aterrizan sueldo pactado, jornada, prestaciones y condiciones de inicio.",
+    description:
+      "Aterrizan sueldo pactado, jornada, prestaciones y condiciones de inicio.",
     benefit: "Ayudan a comparar lo prometido frente a lo realmente ocurrido.",
     suggestedCount: 1,
   },
@@ -807,14 +916,17 @@ const dossierTargets: DossierTarget[] = [
     type: "imss",
     label: "Soporte IMSS",
     description: "Refuerza contexto sobre alta, baja, NSS o semanas cotizadas.",
-    benefit: "Aporta respaldo sobre seguridad social y relación laboral formal.",
+    benefit:
+      "Aporta respaldo sobre seguridad social y relación laboral formal.",
     suggestedCount: 1,
   },
   {
     type: "evidence",
     label: "Evidencia complementaria",
-    description: "Correos, capturas o chats ayudan a explicar fechas, instrucciones y cambios.",
-    benefit: "Da contexto adicional cuando un recibo o CFDI por sí solos no bastan.",
+    description:
+      "Correos, capturas o chats ayudan a explicar fechas, instrucciones y cambios.",
+    benefit:
+      "Da contexto adicional cuando un recibo o CFDI por sí solos no bastan.",
     suggestedCount: 1,
   },
 ];
@@ -823,26 +935,34 @@ const priorityUploadGuides: PriorityUploadGuide[] = [
   {
     type: "payroll_receipt",
     title: "Recibos de nómina de varios periodos",
-    summary: "Suelen ser de los archivos más útiles para detectar cambios repetidos en pagos, descuentos y depósitos.",
-    value: "Mientras más periodos tengas en tu expediente, más fácil es darte una lectura comparada y detectar patrones que un solo recibo no muestra.",
+    summary:
+      "Suelen ser de los archivos más útiles para detectar cambios repetidos en pagos, descuentos y depósitos.",
+    value:
+      "Mientras más periodos tengas en tu expediente, más fácil es darte una lectura comparada y detectar patrones que un solo recibo no muestra.",
   },
   {
     type: "cfdi",
     title: "CFDI timbrados",
-    summary: "Sirven para contrastar lo que fiscalmente quedó reportado contra lo que aparece en otros documentos del caso.",
-    value: "Ayudan a aclarar diferencias que muchas veces pasan desapercibidas cuando solo existe una versión del pago o del periodo revisado.",
+    summary:
+      "Sirven para contrastar lo que fiscalmente quedó reportado contra lo que aparece en otros documentos del caso.",
+    value:
+      "Ayudan a aclarar diferencias que muchas veces pasan desapercibidas cuando solo existe una versión del pago o del periodo revisado.",
   },
   {
     type: "contract",
     title: "Contrato o condiciones de inicio",
-    summary: "Aterrizan sueldo pactado, jornada, prestaciones y acuerdos que luego conviene contrastar con la realidad.",
-    value: "Son clave para entender si lo prometido al inicio coincide con lo que después muestran nóminas, CFDI o evidencia adicional.",
+    summary:
+      "Aterrizan sueldo pactado, jornada, prestaciones y acuerdos que luego conviene contrastar con la realidad.",
+    value:
+      "Son clave para entender si lo prometido al inicio coincide con lo que después muestran nóminas, CFDI o evidencia adicional.",
   },
   {
     type: "imss",
     title: "Alta, baja o semanas cotizadas del IMSS",
-    summary: "Aportan fechas y señales de seguridad social que fortalecen la historia laboral del expediente.",
-    value: "Suman contexto útil cuando quieres respaldarte mejor, aclarar periodos o entender huecos importantes dentro del caso.",
+    summary:
+      "Aportan fechas y señales de seguridad social que fortalecen la historia laboral del expediente.",
+    value:
+      "Suman contexto útil cuando quieres respaldarte mejor, aclarar periodos o entender huecos importantes dentro del caso.",
   },
 ];
 
@@ -850,17 +970,20 @@ const mobileOnboardingSteps: MobileOnboardingStep[] = [
   {
     step: "01",
     title: "Elige el archivo más a la mano",
-    description: "Desde tu celular puedes tomar foto o subir un documento guardado sin preparar nada antes.",
+    description:
+      "Desde tu celular puedes tomar foto o subir un documento guardado sin preparar nada antes.",
   },
   {
     step: "02",
     title: "Todo se ordena en tu expediente",
-    description: "Ese archivo queda guardado en un solo lugar para que no termine perdido entre carpetas, correos o chats.",
+    description:
+      "Ese archivo queda guardado en un solo lugar para que no termine perdido entre carpetas, correos o chats.",
   },
   {
     step: "03",
     title: "Recibes claridad y la conservas",
-    description: "Ves qué ya se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
+    description:
+      "Ves qué ya se entendió, qué conviene revisar y mantienes tus documentos disponibles 24/7 cuando vuelvas a necesitarlos.",
   },
 ];
 
@@ -872,7 +995,7 @@ type AuditarPersistedViewState = {
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
-  return dossierTargets.some((item) => item.type === value);
+  return dossierTargets.some(item => item.type === value);
 }
 
 function getRecommendedDocumentHint(targetType: DossierTarget["type"]) {
@@ -892,7 +1015,9 @@ function getRecommendedDocumentHint(targetType: DossierTarget["type"]) {
   }
 }
 
-export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersistedViewState {
+export function sanitizePersistedAuditarViewState(
+  value: unknown
+): AuditarPersistedViewState {
   if (!value || typeof value !== "object") {
     return {};
   }
@@ -906,8 +1031,12 @@ export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersis
       ? (record.historyFilter as DossierHistoryFilter)
       : undefined;
   const mobileOnboardingIndex =
-    typeof record.mobileOnboardingIndex === "number" && Number.isFinite(record.mobileOnboardingIndex)
-      ? Math.min(Math.max(Math.trunc(record.mobileOnboardingIndex), 0), mobileOnboardingSteps.length - 1)
+    typeof record.mobileOnboardingIndex === "number" &&
+    Number.isFinite(record.mobileOnboardingIndex)
+      ? Math.min(
+          Math.max(Math.trunc(record.mobileOnboardingIndex), 0),
+          mobileOnboardingSteps.length - 1
+        )
       : undefined;
   const selectedRecommendedTargetType =
     record.selectedRecommendedTargetType === null
@@ -918,7 +1047,8 @@ export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersis
   const preferredCaptureMode =
     record.preferredCaptureMode === null
       ? null
-      : record.preferredCaptureMode === "camera" || record.preferredCaptureMode === "file"
+      : record.preferredCaptureMode === "camera" ||
+          record.preferredCaptureMode === "file"
         ? (record.preferredCaptureMode as AuditarCaptureMode)
         : undefined;
 
@@ -930,13 +1060,15 @@ export function sanitizePersistedAuditarViewState(value: unknown): AuditarPersis
   };
 }
 
-export function sanitizePersistedHeliosCopilotMessages(value: unknown): HeliosCopilotMessage[] {
+export function sanitizePersistedHeliosCopilotMessages(
+  value: unknown
+): HeliosCopilotMessage[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value
-    .flatMap((item) => {
+    .flatMap(item => {
       if (!item || typeof item !== "object") {
         return [];
       }
@@ -945,8 +1077,14 @@ export function sanitizePersistedHeliosCopilotMessages(value: unknown): HeliosCo
       const role = record.role;
       const content = record.content;
 
-      if ((role === "user" || role === "assistant") && typeof content === "string" && content.trim().length > 0) {
-        return [{ role, content: content.trim() } satisfies HeliosCopilotMessage];
+      if (
+        (role === "user" || role === "assistant") &&
+        typeof content === "string" &&
+        content.trim().length > 0
+      ) {
+        return [
+          { role, content: content.trim() } satisfies HeliosCopilotMessage,
+        ];
       }
 
       return [];
@@ -954,16 +1092,25 @@ export function sanitizePersistedHeliosCopilotMessages(value: unknown): HeliosCo
     .slice(-6);
 }
 
-function appendHeliosCopilotMessage(current: HeliosCopilotMessage[], next: HeliosCopilotMessage) {
+function appendHeliosCopilotMessage(
+  current: HeliosCopilotMessage[],
+  next: HeliosCopilotMessage
+) {
   return [...current, next].slice(-6);
 }
 
-export function buildDossierTypeProgress(documentTypeCounts: Record<string, number>) {
-  return dossierTargets.map((item) => {
+export function buildDossierTypeProgress(
+  documentTypeCounts: Record<string, number>
+) {
+  return dossierTargets.map(item => {
     const count = documentTypeCounts[item.type] ?? 0;
     const targetCount = item.suggestedCount;
-    const percent = Math.min(100, Math.round((Math.min(count, targetCount) / targetCount) * 100));
-    const coverageLabel = percent === 100 ? "Cubierto" : count > 0 ? "En progreso" : "Pendiente";
+    const percent = Math.min(
+      100,
+      Math.round((Math.min(count, targetCount) / targetCount) * 100)
+    );
+    const coverageLabel =
+      percent === 100 ? "Cubierto" : count > 0 ? "En progreso" : "Pendiente";
     const supportingCopy =
       percent === 100
         ? "Ya tienes base suficiente en este frente para seguir contrastando con mejor contexto."
@@ -990,10 +1137,17 @@ export function buildInlineLegalConsentState(params: {
   activeCaptureMode: AuditarCaptureMode;
   manualOverrideCount: number;
 }) {
-  const { legalGateRequired, pendingDraft, hasSelectedFile, activeCaptureMode, manualOverrideCount } = params;
+  const {
+    legalGateRequired,
+    pendingDraft,
+    hasSelectedFile,
+    activeCaptureMode,
+    manualOverrideCount,
+  } = params;
 
   return {
-    shouldShowInlineLegalConsent: legalGateRequired && (hasSelectedFile || pendingDraft),
+    shouldShowInlineLegalConsent:
+      legalGateRequired && (hasSelectedFile || pendingDraft),
     confirmPrimaryActionLabel: legalGateRequired
       ? manualOverrideCount > 0
         ? "Aceptar y guardar con ajustes"
@@ -1018,7 +1172,8 @@ export function buildAuditarTimelineEntryState(status: "draft" | "confirmed") {
       badgeClasses: "border border-amber-200 bg-amber-100 text-amber-900",
       cardClasses: "border-amber-200 border-dashed bg-amber-50/70",
       roleCardClasses: "border-amber-200 bg-white",
-      supportingCopy: "Aún no forma parte del expediente: confirma o ajusta este borrador antes de integrarlo.",
+      supportingCopy:
+        "Aún no forma parte del expediente: confirma o ajusta este borrador antes de integrarlo.",
     } as const;
   }
 
@@ -1027,11 +1182,15 @@ export function buildAuditarTimelineEntryState(status: "draft" | "confirmed") {
     badgeClasses: "border border-emerald-200 bg-emerald-100 text-emerald-800",
     cardClasses: "border-slate-200 bg-slate-50",
     roleCardClasses: "border-teal-100 bg-teal-50",
-    supportingCopy: "Este documento ya quedó confirmado dentro del expediente y sirve como base para el contraste posterior.",
+    supportingCopy:
+      "Este documento ya quedó confirmado dentro del expediente y sirve como base para el contraste posterior.",
   } as const;
 }
 
-export function buildReanalyzeDraftActionState(params: { pendingDraft: boolean; hasManualOverrides: boolean }) {
+export function buildReanalyzeDraftActionState(params: {
+  pendingDraft: boolean;
+  hasManualOverrides: boolean;
+}) {
   if (!params.pendingDraft) {
     return {
       shouldShow: false,
@@ -1082,7 +1241,9 @@ export function shouldAutoAnalyzeSelectedFile(params: {
   );
 }
 
-function getCaptureModeSupportCopy(value: AuditarCaptureMode | null | undefined) {
+function getCaptureModeSupportCopy(
+  value: AuditarCaptureMode | null | undefined
+) {
   return value === "camera"
     ? "Ideal si tu documento está en papel. Abriremos primero la cámara para escanearlo más rápido."
     : "Ideal si ya tienes un PDF, XML o una foto guardada. Abriremos primero tus archivos para quitar fricción.";
@@ -1120,7 +1281,9 @@ function getScanAssistTone(scanAssist?: ScanAssistAssessmentView | null) {
   };
 }
 
-function getExpectedTypeAlignmentCopy(value: ScanAssistAssessmentView["expectedTypeAlignment"]) {
+function getExpectedTypeAlignmentCopy(
+  value: ScanAssistAssessmentView["expectedTypeAlignment"]
+) {
   switch (value) {
     case "match":
       return "Coincide bien con el documento esperado";
@@ -1139,7 +1302,9 @@ function getSelectedFilePreparationCopy(params: {
   selectedRecommendedTargetType?: DossierTarget["type"] | null;
 }) {
   const expectedLabel = params.selectedRecommendedTargetType
-    ? getSimpleDocumentTypeLabel(params.selectedRecommendedTargetType).toLowerCase()
+    ? getSimpleDocumentTypeLabel(
+        params.selectedRecommendedTargetType
+      ).toLowerCase()
     : "documento laboral";
 
   if (!params.file) {
@@ -1197,7 +1362,8 @@ function fileToBase64(file: File) {
       }
       reject(new Error("No fue posible convertir el archivo."));
     };
-    reader.onerror = () => reject(reader.error ?? new Error("No fue posible leer el archivo."));
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("No fue posible leer el archivo."));
     reader.readAsDataURL(file);
   });
 }
@@ -1207,7 +1373,7 @@ function humanizeSnakeCase(value: string) {
     .replace(/_/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/^./, (letter) => letter.toUpperCase());
+    .replace(/^./, letter => letter.toUpperCase());
 }
 
 function getSimpleDocumentTypeLabel(value?: string | null) {
@@ -1300,7 +1466,8 @@ function getDocumentReadiness(confidence?: number | null) {
     return {
       label: "Lectura clara",
       classes: "bg-emerald-100 text-emerald-800",
-      description: "Este documento ya deja señales bastante claras para empezar a usarlo en el expediente.",
+      description:
+        "Este documento ya deja señales bastante claras para empezar a usarlo en el expediente.",
     } as const;
   }
 
@@ -1308,14 +1475,16 @@ function getDocumentReadiness(confidence?: number | null) {
     return {
       label: "Lectura útil",
       classes: "bg-teal-100 text-teal-800",
-      description: "Este documento ya aporta contexto útil, aunque algunas partes pueden necesitar revisión adicional.",
+      description:
+        "Este documento ya aporta contexto útil, aunque algunas partes pueden necesitar revisión adicional.",
     } as const;
   }
 
   return {
     label: "Conviene revisar",
     classes: "bg-amber-100 text-amber-800",
-    description: "El sistema encontró valor en este archivo, pero conviene revisar con más cuidado algunos detalles.",
+    description:
+      "El sistema encontró valor en este archivo, pero conviene revisar con más cuidado algunos detalles.",
   } as const;
 }
 
@@ -1327,15 +1496,30 @@ function asHeliosOpinion(value: unknown): HeliosOpinionView | null {
 function getHeliosRiskCopy(value?: string | null) {
   switch (value) {
     case "critical":
-      return { label: "Riesgo crítico", classes: "bg-rose-100 text-rose-800" } as const;
+      return {
+        label: "Riesgo crítico",
+        classes: "bg-rose-100 text-rose-800",
+      } as const;
     case "high":
-      return { label: "Riesgo alto", classes: "bg-red-100 text-red-800" } as const;
+      return {
+        label: "Riesgo alto",
+        classes: "bg-red-100 text-red-800",
+      } as const;
     case "medium":
-      return { label: "Riesgo medio", classes: "bg-amber-100 text-amber-800" } as const;
+      return {
+        label: "Riesgo medio",
+        classes: "bg-amber-100 text-amber-800",
+      } as const;
     case "low":
-      return { label: "Riesgo bajo", classes: "bg-emerald-100 text-emerald-800" } as const;
+      return {
+        label: "Riesgo bajo",
+        classes: "bg-emerald-100 text-emerald-800",
+      } as const;
     default:
-      return { label: "Riesgo preliminar", classes: "bg-slate-100 text-slate-700" } as const;
+      return {
+        label: "Riesgo preliminar",
+        classes: "bg-slate-100 text-slate-700",
+      } as const;
   }
 }
 
@@ -1355,7 +1539,11 @@ function getHeliosStageCopy(params: {
   engineReason?: string | null;
   documentsWithOpinion: number;
 }) {
-  if (params.opinion && params.opinion.status !== "processing" && params.opinion.status !== "sent") {
+  if (
+    params.opinion &&
+    params.opinion.status !== "processing" &&
+    params.opinion.status !== "sent"
+  ) {
     return {
       badge: "Lectura visible",
       title: "Tu expediente ya empezó a devolverte respuestas útiles",
@@ -1369,7 +1557,11 @@ function getHeliosStageCopy(params: {
     };
   }
 
-  if (params.engineStatus === "sent" || params.opinion?.status === "processing" || params.opinion?.status === "sent") {
+  if (
+    params.engineStatus === "sent" ||
+    params.opinion?.status === "processing" ||
+    params.opinion?.status === "sent"
+  ) {
     return {
       badge: "Interpretando",
       title: "Tu documento ya está siendo revisado",
@@ -1384,7 +1576,8 @@ function getHeliosStageCopy(params: {
   if (params.engineStatus === "failed") {
     return {
       badge: "Revisión pendiente",
-      title: "Hace falta reintentar una parte de la revisión, pero tu expediente sigue intacto",
+      title:
+        "Hace falta reintentar una parte de la revisión, pero tu expediente sigue intacto",
       description:
         params.engineReason === "webhook_rejected"
           ? "La etapa automática necesita revisión, aunque el documento sí quedó guardado y protegido dentro del expediente."
@@ -1459,23 +1652,28 @@ function getUploadInsight(documentType: string): UploadInsight {
   }
 }
 
-function getDocumentContextualShortcuts(documentType: string): ContextualShortcut[] {
+function getDocumentContextualShortcuts(
+  documentType: string
+): ContextualShortcut[] {
   switch (documentType) {
     case "payroll_receipt":
       return [
         {
           id: "payroll-upload-cfdi",
           label: "Subir CFDI del mismo periodo",
-          description: "Sirve para contrastar lo timbrado contra la nómina que acabas de revisar.",
+          description:
+            "Sirve para contrastar lo timbrado contra la nómina que acabas de revisar.",
           action: "upload",
           targetType: "cfdi",
         },
         {
           id: "payroll-ask-deductions",
           label: "Explicar deducciones clave",
-          description: "Helios te resume descuentos, pagos y señales llamativas en palabras simples.",
+          description:
+            "Helios te resume descuentos, pagos y señales llamativas en palabras simples.",
           action: "assistant",
-          prompt: "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
+          prompt:
+            "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
         },
       ];
     case "cfdi":
@@ -1483,16 +1681,19 @@ function getDocumentContextualShortcuts(documentType: string): ContextualShortcu
         {
           id: "cfdi-upload-payroll",
           label: "Subir recibo de nómina relacionado",
-          description: "Ayuda a comparar lo fiscal con lo que realmente te pagaron.",
+          description:
+            "Ayuda a comparar lo fiscal con lo que realmente te pagaron.",
           action: "upload",
           targetType: "payroll_receipt",
         },
         {
           id: "cfdi-ask-compare",
           label: "Pedir comparación rápida",
-          description: "Helios puede decirte qué revisar entre el CFDI y tu nómina.",
+          description:
+            "Helios puede decirte qué revisar entre el CFDI y tu nómina.",
           action: "assistant",
-          prompt: "Dime qué conviene comparar entre este CFDI y un recibo de nómina del mismo periodo.",
+          prompt:
+            "Dime qué conviene comparar entre este CFDI y un recibo de nómina del mismo periodo.",
         },
       ];
     case "contract":
@@ -1500,16 +1701,19 @@ function getDocumentContextualShortcuts(documentType: string): ContextualShortcu
         {
           id: "contract-upload-annex",
           label: "Subir anexo o condiciones relacionadas",
-          description: "Sirve para completar lo pactado al inicio o en cambios posteriores.",
+          description:
+            "Sirve para completar lo pactado al inicio o en cambios posteriores.",
           action: "upload",
           targetType: "contract",
         },
         {
           id: "contract-ask-clauses",
           label: "Resumir cláusulas importantes",
-          description: "Helios te señala lo que vale la pena contrastar después con nómina o CFDI.",
+          description:
+            "Helios te señala lo que vale la pena contrastar después con nómina o CFDI.",
           action: "assistant",
-          prompt: "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
+          prompt:
+            "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
         },
       ];
     case "imss":
@@ -1517,16 +1721,19 @@ function getDocumentContextualShortcuts(documentType: string): ContextualShortcu
         {
           id: "imss-upload-payroll",
           label: "Comparar con recibos de nómina",
-          description: "Subir nóminas ayuda a conectar movimientos IMSS con pagos reales.",
+          description:
+            "Subir nóminas ayuda a conectar movimientos IMSS con pagos reales.",
           action: "upload",
           targetType: "payroll_receipt",
         },
         {
           id: "imss-ask-gaps",
           label: "Explicar movimientos relevantes",
-          description: "Helios puede traducir altas, bajas o huecos a lenguaje más claro.",
+          description:
+            "Helios puede traducir altas, bajas o huecos a lenguaje más claro.",
           action: "assistant",
-          prompt: "Explícame qué movimientos o huecos relevantes ves en este soporte IMSS y cómo compararlos con mis nóminas.",
+          prompt:
+            "Explícame qué movimientos o huecos relevantes ves en este soporte IMSS y cómo compararlos con mis nóminas.",
         },
       ];
     case "evidence":
@@ -1534,16 +1741,19 @@ function getDocumentContextualShortcuts(documentType: string): ContextualShortcu
         {
           id: "evidence-upload-contract",
           label: "Subir contrato o nómina relacionada",
-          description: "La evidencia gana fuerza cuando queda ligada al documento base correcto.",
+          description:
+            "La evidencia gana fuerza cuando queda ligada al documento base correcto.",
           action: "upload",
           targetType: "contract",
         },
         {
           id: "evidence-ask-context",
           label: "Pedir lectura contextual",
-          description: "Helios puede decirte cómo se conecta esta evidencia con el resto del expediente.",
+          description:
+            "Helios puede decirte cómo se conecta esta evidencia con el resto del expediente.",
           action: "assistant",
-          prompt: "Explícame cómo se conecta esta evidencia con mi expediente y qué documento base conviene subir después.",
+          prompt:
+            "Explícame cómo se conecta esta evidencia con mi expediente y qué documento base conviene subir después.",
         },
       ];
     default:
@@ -1551,22 +1761,28 @@ function getDocumentContextualShortcuts(documentType: string): ContextualShortcu
         {
           id: "generic-upload-companion",
           label: "Subir documento complementario",
-          description: "Agregar nómina, CFDI o contrato suele dar más contexto a la lectura inicial.",
+          description:
+            "Agregar nómina, CFDI o contrato suele dar más contexto a la lectura inicial.",
           action: "upload",
           targetType: "payroll_receipt",
         },
         {
           id: "generic-ask-next-step",
           label: "Pedir siguiente paso claro",
-          description: "Helios puede orientar qué conviene revisar o subir a continuación.",
+          description:
+            "Helios puede orientar qué conviene revisar o subir a continuación.",
           action: "assistant",
-          prompt: "Dime cuál sería el siguiente paso más útil para este documento y por qué.",
+          prompt:
+            "Dime cuál sería el siguiente paso más útil para este documento y por qué.",
         },
       ];
   }
 }
 
-function getHeliosTimelineRole(documentType: string, opinion?: HeliosOpinionView | null) {
+function getHeliosTimelineRole(
+  documentType: string,
+  opinion?: HeliosOpinionView | null
+) {
   if (opinion?.summary) {
     return opinion.summary;
   }
@@ -1591,7 +1807,8 @@ function getEngineStatusCopy(status?: string, reason?: string | null) {
   if (status === "sent") {
     return {
       title: "Tu documento ya está en análisis",
-      description: "Quedó guardado, siguió su proceso automático y ahora esperamos la respuesta de vuelta para completar más detalle.",
+      description:
+        "Quedó guardado, siguió su proceso automático y ahora esperamos la respuesta de vuelta para completar más detalle.",
       tone: "success",
     } as const;
   }
@@ -1623,25 +1840,29 @@ function getMonitoringStatusCopy(status?: string | null) {
       return {
         label: "Respuesta recibida",
         classes: "bg-emerald-100 text-emerald-800",
-        description: "La revisión automática ya devolvió información para este documento.",
+        description:
+          "La revisión automática ya devolvió información para este documento.",
       } as const;
     case "attention":
       return {
         label: "Conviene revisarlo",
         classes: "bg-amber-100 text-amber-800",
-        description: "Ya se envió, pero la respuesta automática está tardando más de lo esperado.",
+        description:
+          "Ya se envió, pero la respuesta automática está tardando más de lo esperado.",
       } as const;
     case "waiting":
       return {
         label: "Esperando respuesta",
         classes: "bg-sky-100 text-sky-800",
-        description: "El documento ya salió y sigue en espera de respuesta automática.",
+        description:
+          "El documento ya salió y sigue en espera de respuesta automática.",
       } as const;
     default:
       return {
         label: "Aún no enviado",
         classes: "bg-slate-100 text-slate-700",
-        description: "Este documento todavía no entra a un seguimiento automático visible.",
+        description:
+          "Este documento todavía no entra a un seguimiento automático visible.",
       } as const;
   }
 }
@@ -1656,7 +1877,9 @@ function getReturnEventLabel(value?: string | null) {
     case "contract.analysis.detailed":
       return "Análisis profundo recibido";
     default:
-      return value ? humanizeSnakeCase(value.replace(/\./g, "_")) : "Respuesta recibida";
+      return value
+        ? humanizeSnakeCase(value.replace(/\./g, "_"))
+        : "Respuesta recibida";
   }
 }
 
@@ -1701,14 +1924,17 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
           sanitizePreviewText(value, {
             maxLength: 120,
             emptyFallback: "",
-            technicalFallback: "Contenido técnico omitido para mantener la vista previa clara.",
+            technicalFallback:
+              "Contenido técnico omitido para mantener la vista previa clara.",
           }),
-        ] as [string, string],
+        ] as [string, string]
     )
     .filter(([, value]) => value.length > 0);
 }
 
-export function sanitizeStructuredExtractionView(view?: StructuredExtractionView | null) {
+export function sanitizeStructuredExtractionView(
+  view?: StructuredExtractionView | null
+) {
   if (!view) {
     return null;
   }
@@ -1722,11 +1948,13 @@ export function sanitizeStructuredExtractionView(view?: StructuredExtractionView
     }),
     summary: sanitizePreviewText(view.summary, {
       maxLength: 220,
-      emptyFallback: "La lectura previa quedó incompleta. Conviene revisar el documento original antes de guardarlo.",
-      technicalFallback: "La lectura previa quedó demasiado técnica o extensa. Conviene repetir la captura o revisar el archivo original.",
+      emptyFallback:
+        "La lectura previa quedó incompleta. Conviene revisar el documento original antes de guardarlo.",
+      technicalFallback:
+        "La lectura previa quedó demasiado técnica o extensa. Conviene repetir la captura o revisar el archivo original.",
     }),
     fields: view.fields
-      .map((field) => ({
+      .map(field => ({
         ...field,
         label: sanitizePreviewText(field.label, {
           maxLength: 60,
@@ -1736,30 +1964,32 @@ export function sanitizeStructuredExtractionView(view?: StructuredExtractionView
         value: sanitizePreviewText(field.value, {
           maxLength: 160,
           emptyFallback: "",
-          technicalFallback: "Contenido técnico omitido para mantener la vista previa clara.",
+          technicalFallback:
+            "Contenido técnico omitido para mantener la vista previa clara.",
         }),
       }))
-      .filter((field) => field.value.length > 0)
+      .filter(field => field.value.length > 0)
       .slice(0, 12),
     missingFields: view.missingFields
-      .map((item) =>
+      .map(item =>
         sanitizePreviewText(item, {
           maxLength: 80,
           emptyFallback: "",
           technicalFallback: "",
-        }),
+        })
       )
-      .filter((item) => item.length > 0)
+      .filter(item => item.length > 0)
       .slice(0, 6),
     reviewNotes: view.reviewNotes
-      .map((item) =>
+      .map(item =>
         sanitizePreviewText(item, {
           maxLength: 160,
           emptyFallback: "",
-          technicalFallback: "Se ocultó una nota técnica para mantener esta revisión clara.",
-        }),
+          technicalFallback:
+            "Se ocultó una nota técnica para mantener esta revisión clara.",
+        })
       )
-      .filter((item) => item.length > 0)
+      .filter(item => item.length > 0)
       .slice(0, 4),
   };
 }
@@ -1774,7 +2004,10 @@ const editablePreviewFieldKeys = new Set<string>([
   "jobTitle",
 ]);
 
-const editablePreviewFieldPriority: Record<PreviewEditableFieldView["source"], number> = {
+const editablePreviewFieldPriority: Record<
+  PreviewEditableFieldView["source"],
+  number
+> = {
   confirmed: 3,
   estimated: 2,
   structured: 1,
@@ -1793,14 +2026,23 @@ function normalizeEditableFieldValue(value: unknown) {
 function buildPreviewEditableFields(draft?: DraftPreviewResultView | null) {
   const fields = new Map<string, PreviewEditableFieldView>();
 
-  const registerField = (key: string, label: string, value: unknown, source: PreviewEditableFieldView["source"]) => {
+  const registerField = (
+    key: string,
+    label: string,
+    value: unknown,
+    source: PreviewEditableFieldView["source"]
+  ) => {
     if (!editablePreviewFieldKeys.has(key)) return;
 
     const normalizedValue = normalizeEditableFieldValue(value);
     if (!normalizedValue) return;
 
     const existing = fields.get(key);
-    if (existing && editablePreviewFieldPriority[existing.source] >= editablePreviewFieldPriority[source]) {
+    if (
+      existing &&
+      editablePreviewFieldPriority[existing.source] >=
+        editablePreviewFieldPriority[source]
+    ) {
       return;
     }
 
@@ -1812,26 +2054,40 @@ function buildPreviewEditableFields(draft?: DraftPreviewResultView | null) {
     });
   };
 
-  Object.entries(draft?.preliminaryAnalysis?.confirmedData ?? {}).forEach(([key, value]) => {
-    registerField(key, getAnalysisFieldLabel(key), value, "confirmed");
-  });
+  Object.entries(draft?.preliminaryAnalysis?.confirmedData ?? {}).forEach(
+    ([key, value]) => {
+      registerField(key, getAnalysisFieldLabel(key), value, "confirmed");
+    }
+  );
 
-  Object.entries(draft?.preliminaryAnalysis?.estimatedData ?? {}).forEach(([key, value]) => {
-    registerField(key, getAnalysisFieldLabel(key), value, "estimated");
-  });
+  Object.entries(draft?.preliminaryAnalysis?.estimatedData ?? {}).forEach(
+    ([key, value]) => {
+      registerField(key, getAnalysisFieldLabel(key), value, "estimated");
+    }
+  );
 
-  (draft?.preliminaryAnalysis?.structuredExtraction?.fields ?? []).forEach((field) => {
-    registerField(field.key, field.label, field.value, "structured");
-  });
+  (draft?.preliminaryAnalysis?.structuredExtraction?.fields ?? []).forEach(
+    field => {
+      registerField(field.key, field.label, field.value, "structured");
+    }
+  );
 
   return Array.from(fields.values()).slice(0, 5);
 }
 
-function buildManualOverridePayload(fields: PreviewEditableFieldView[], values: Record<string, string>) {
+function buildManualOverridePayload(
+  fields: PreviewEditableFieldView[],
+  values: Record<string, string>
+) {
   return fields
-    .map((field) => {
-      const normalizedValue = (values[field.key] ?? field.value).replace(/\s+/g, " ").trim();
-      if (!normalizedValue || normalizedValue === field.value.replace(/\s+/g, " ").trim()) {
+    .map(field => {
+      const normalizedValue = (values[field.key] ?? field.value)
+        .replace(/\s+/g, " ")
+        .trim();
+      if (
+        !normalizedValue ||
+        normalizedValue === field.value.replace(/\s+/g, " ").trim()
+      ) {
         return null;
       }
 
@@ -1841,7 +2097,9 @@ function buildManualOverridePayload(fields: PreviewEditableFieldView[], values: 
         value: normalizedValue,
       };
     })
-    .filter((item): item is { key: string; label: string; value: string } => Boolean(item));
+    .filter((item): item is { key: string; label: string; value: string } =>
+      Boolean(item)
+    );
 }
 
 function getEditableFieldSupportCopy(key: string) {
@@ -1871,7 +2129,7 @@ function lowercaseFirstLetter(value: string) {
 }
 
 function getDossierTargetByType(type: DossierTarget["type"]) {
-  return dossierTargets.find((item) => item.type === type) ?? null;
+  return dossierTargets.find(item => item.type === type) ?? null;
 }
 
 export function getContextualDossierNextTarget(presentTypes: Set<string>) {
@@ -1897,10 +2155,13 @@ export function getContextualDossierNextTarget(presentTypes: Set<string>) {
     return getDossierTargetByType("payroll_receipt");
   }
 
-  return dossierTargets.find((item) => !presentTypes.has(item.type)) ?? null;
+  return dossierTargets.find(item => !presentTypes.has(item.type)) ?? null;
 }
 
-function getContextualNextDocumentPreset(nextTarget: DossierTarget | undefined, presentTypes: Set<string>) {
+function getContextualNextDocumentPreset(
+  nextTarget: DossierTarget | undefined,
+  presentTypes: Set<string>
+) {
   if (!nextTarget) {
     return null;
   }
@@ -1910,10 +2171,13 @@ function getContextualNextDocumentPreset(nextTarget: DossierTarget | undefined, 
   if (nextTarget.type === "cfdi" && has("payroll_receipt")) {
     return {
       headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina",
-      intro: "Como ya subiste recibos de nómina, el CFDI puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
+      intro:
+        "Como ya subiste recibos de nómina, el CFDI puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
       reasonTitle: "Por qué este paso tiene sentido ahora",
-      reasonBody: "Conecta pagos, descuentos y periodos desde dos fuentes que suelen revelar diferencias útiles con muy poco esfuerzo.",
-      coverage: "Esa combinación suele volver el expediente más claro desde el inicio, porque ya no dependes de una sola versión del pago.",
+      reasonBody:
+        "Conecta pagos, descuentos y periodos desde dos fuentes que suelen revelar diferencias útiles con muy poco esfuerzo.",
+      coverage:
+        "Esa combinación suele volver el expediente más claro desde el inicio, porque ya no dependes de una sola versión del pago.",
       cta: "Subir mi CFDI ahora",
     } as const;
   }
@@ -1921,21 +2185,28 @@ function getContextualNextDocumentPreset(nextTarget: DossierTarget | undefined, 
   if (nextTarget.type === "payroll_receipt" && has("cfdi")) {
     return {
       headline: "Sigue con tu nómina para darle contexto al CFDI",
-      intro: "Si ya tienes CFDI, sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
+      intro:
+        "Si ya tienes CFDI, sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
       reasonTitle: "Lo que ganas con este cruce",
-      reasonBody: "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
-      coverage: "Cuando CFDI y nómina se leen juntos, el expediente empieza a responder con más contexto y menos zonas preliminares.",
+      reasonBody:
+        "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
+      coverage:
+        "Cuando CFDI y nómina se leen juntos, el expediente empieza a responder con más contexto y menos zonas preliminares.",
       cta: "Subir mi nómina ahora",
     } as const;
   }
 
   if (nextTarget.type === "evidence" && has("contract")) {
     return {
-      headline: "Tu contrato puede ganar contexto con un anexo o evidencia relacionada",
-      intro: "Si ya subiste contrato o condiciones iniciales, un anexo, cambio de condiciones o evidencia complementaria puede explicar mejor cómo siguió la relación laboral.",
+      headline:
+        "Tu contrato puede ganar contexto con un anexo o evidencia relacionada",
+      intro:
+        "Si ya subiste contrato o condiciones iniciales, un anexo, cambio de condiciones o evidencia complementaria puede explicar mejor cómo siguió la relación laboral.",
       reasonTitle: "Qué conviene sumar después del contrato",
-      reasonBody: "Ese tipo de evidencia ayuda a conectar lo pactado con lo que realmente ocurrió, sobre todo si hubo ajustes, instrucciones o cambios posteriores.",
-      coverage: "Así tu expediente deja de depender sólo del documento inicial y empieza a reflejar mejor la historia completa del caso.",
+      reasonBody:
+        "Ese tipo de evidencia ayuda a conectar lo pactado con lo que realmente ocurrió, sobre todo si hubo ajustes, instrucciones o cambios posteriores.",
+      coverage:
+        "Así tu expediente deja de depender sólo del documento inicial y empieza a reflejar mejor la historia completa del caso.",
       cta: "Subir evidencia relacionada",
     } as const;
   }
@@ -1943,10 +2214,13 @@ function getContextualNextDocumentPreset(nextTarget: DossierTarget | undefined, 
   if (nextTarget.type === "payroll_receipt" && has("imss")) {
     return {
       headline: "Sigue con tu nómina para comparar mejor tu señal de IMSS",
-      intro: "Como ya tienes un soporte IMSS, los recibos de nómina ayudan a revisar si pagos, periodos y seguridad social cuentan la misma historia.",
+      intro:
+        "Como ya tienes un soporte IMSS, los recibos de nómina ayudan a revisar si pagos, periodos y seguridad social cuentan la misma historia.",
       reasonTitle: "Por qué conviene hacer este cruce ahora",
-      reasonBody: "Ese contraste suele aclarar rápido diferencias útiles y darle más sustento a la lectura del expediente.",
-      coverage: "Con IMSS y nómina en el mismo expediente, la orientación gana contexto y empieza a volverse más precisa.",
+      reasonBody:
+        "Ese contraste suele aclarar rápido diferencias útiles y darle más sustento a la lectura del expediente.",
+      coverage:
+        "Con IMSS y nómina en el mismo expediente, la orientación gana contexto y empieza a volverse más precisa.",
       cta: "Subir mi nómina ahora",
     } as const;
   }
@@ -1964,8 +2238,8 @@ function formatListWithConjunction(values: string[]) {
 
 function getPresentDocumentSummary(presentTypes: Set<string>) {
   const labels = dossierTargets
-    .filter((item) => presentTypes.has(item.type))
-    .map((item) => item.label.toLowerCase());
+    .filter(item => presentTypes.has(item.type))
+    .map(item => item.label.toLowerCase());
 
   return formatListWithConjunction(labels.slice(0, 3));
 }
@@ -1977,39 +2251,35 @@ function getMonitoringOverviewCopy(params: {
   receivedCount: number;
 }) {
   if (params.monitoringDocumentsCount === 0) {
-      return {
-        title: "El seguimiento automático está listo",
-        body: "En cuanto subas un documento, su revisión avanzará aquí paso a paso. Tu expediente seguirá protegido en todo momento.",
-        classes: "border-slate-200 bg-slate-50 text-slate-700",
-      } as const;
-
+    return {
+      title: "El seguimiento automático está listo",
+      body: "En cuanto subas un documento, su revisión avanzará aquí paso a paso. Tu expediente seguirá protegido en todo momento.",
+      classes: "border-slate-200 bg-slate-50 text-slate-700",
+    } as const;
   }
 
   if (params.attentionCount > 0) {
-      return {
-        title: "Conviene darle un vistazo con calma",
-        body: `Hay ${params.attentionCount} documento${params.attentionCount === 1 ? "" : "s"} cuya respuesta está tardando un poco más de lo normal. No se perdió nada: tu expediente sigue resguardado y puedes seguir subiendo documentos mientras tanto.`,
-        classes: "border-amber-200 bg-amber-50 text-amber-950",
-      } as const;
-
+    return {
+      title: "Conviene darle un vistazo con calma",
+      body: `Hay ${params.attentionCount} documento${params.attentionCount === 1 ? "" : "s"} cuya respuesta está tardando un poco más de lo normal. No se perdió nada: tu expediente sigue resguardado y puedes seguir subiendo documentos mientras tanto.`,
+      classes: "border-amber-200 bg-amber-50 text-amber-950",
+    } as const;
   }
 
   if (params.waitingCount > 0) {
-      return {
-        title: "En espera, pero avanzando",
-        body: `La revisión automática está esperando respuesta para ${params.waitingCount} documento${params.waitingCount === 1 ? "" : "s"}. Tu expediente sigue avanzando y te avisaremos cuando haya novedades visibles aquí.`,
-        classes: "border-sky-200 bg-sky-50 text-sky-950",
-      } as const;
-
+    return {
+      title: "En espera, pero avanzando",
+      body: `La revisión automática está esperando respuesta para ${params.waitingCount} documento${params.waitingCount === 1 ? "" : "s"}. Tu expediente sigue avanzando y te avisaremos cuando haya novedades visibles aquí.`,
+      classes: "border-sky-200 bg-sky-50 text-sky-950",
+    } as const;
   }
 
   if (params.receivedCount > 0) {
-      return {
-        title: "Todo al día por ahora",
-        body: `Ya llegó información automática para ${params.receivedCount} documento${params.receivedCount === 1 ? "" : "s"} y esa información ya forma parte del expediente. Si subes más archivos, el seguimiento continuará en este espacio.`,
-        classes: "border-emerald-100 bg-emerald-50 text-emerald-950",
-      } as const;
-
+    return {
+      title: "Todo al día por ahora",
+      body: `Ya llegó información automática para ${params.receivedCount} documento${params.receivedCount === 1 ? "" : "s"} y esa información ya forma parte del expediente. Si subes más archivos, el seguimiento continuará en este espacio.`,
+      classes: "border-emerald-100 bg-emerald-50 text-emerald-950",
+    } as const;
   }
 
   return {
@@ -2025,22 +2295,32 @@ function getPersonalizedNextDocumentCopy(params: {
   opinion?: HeliosOpinionView | null;
 }) {
   const presentSummary = getPresentDocumentSummary(params.presentTypes);
-  const firstUncertainty = params.opinion?.uncertainties?.find((item) => item?.trim());
-  const contextualPreset = getContextualNextDocumentPreset(params.nextTarget, params.presentTypes);
+  const firstUncertainty = params.opinion?.uncertainties?.find(item =>
+    item?.trim()
+  );
+  const contextualPreset = getContextualNextDocumentPreset(
+    params.nextTarget,
+    params.presentTypes
+  );
 
   if (params.nextTarget) {
     return {
-      headline: contextualPreset?.headline ?? `Documento sugerido: ${params.nextTarget.label}`,
+      headline:
+        contextualPreset?.headline ??
+        `Documento sugerido: ${params.nextTarget.label}`,
       intro:
         contextualPreset?.intro ??
         (presentSummary
           ? `Con lo que ya subiste, como ${presentSummary}, ${params.nextTarget.label.toLowerCase()} puede ayudarte a ${lowercaseFirstLetter(params.nextTarget.benefit)}`
           : `Tu expediente puede empezar con ${params.nextTarget.label.toLowerCase()} para darte una primera lectura más clara y útil.`),
-      reasonTitle: contextualPreset?.reasonTitle ?? "Por qué ahora puede ser el archivo más útil",
+      reasonTitle:
+        contextualPreset?.reasonTitle ??
+        "Por qué ahora puede ser el archivo más útil",
       reasonBody:
         firstUncertainty && !contextualPreset
           ? `${params.nextTarget.description} Además, hoy todavía conviene aclarar algo importante: ${firstUncertainty}`
-          : contextualPreset?.reasonBody ?? `${params.nextTarget.description} ${params.nextTarget.benefit}`,
+          : (contextualPreset?.reasonBody ??
+            `${params.nextTarget.description} ${params.nextTarget.benefit}`),
       followUp:
         params.opinion?.recommendedNextStep ??
         "Con cada documento útil, tu expediente gana claridad y te sugiere el siguiente paso sin complicarte el proceso.",
@@ -2064,7 +2344,7 @@ function getPersonalizedNextDocumentCopy(params: {
       : "Otro documento relacionado puede confirmar mejor tu historia laboral y darle más contexto a la lectura del caso.",
     followUp:
       params.opinion?.recommendedNextStep ??
-        "La revisión sigue conectando cada documento para separar lo claro de lo que todavía conviene confirmar.",
+      "La revisión sigue conectando cada documento para separar lo claro de lo que todavía conviene confirmar.",
     coverage:
       "Cada archivo útil hace crecer tu expediente y vuelve más precisa la orientación que ves aquí.",
     cta: "Subir otro documento y seguir",
@@ -2104,7 +2384,8 @@ function getComparisonFocus(leftType: string, rightType: string) {
 
 function pickHeliosComparisonPair(documents: ComparisonDocument[]) {
   const sortedDocuments = [...documents].sort(
-    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
 
   if (sortedDocuments.length < 2) {
@@ -2112,32 +2393,54 @@ function pickHeliosComparisonPair(documents: ComparisonDocument[]) {
   }
 
   const groupedDocuments = new Map<string, ComparisonDocument[]>();
-  sortedDocuments.forEach((document) => {
+  sortedDocuments.forEach(document => {
     const current = groupedDocuments.get(document.documentType) ?? [];
     current.push(document);
     groupedDocuments.set(document.documentType, current);
   });
 
-  for (const priorityType of ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]) {
+  for (const priorityType of [
+    "payroll_receipt",
+    "cfdi",
+    "contract",
+    "imss",
+    "evidence",
+  ]) {
     const matches = groupedDocuments.get(priorityType);
     if (matches && matches.length >= 2) {
-      return [matches[1], matches[0]] as [ComparisonDocument, ComparisonDocument];
+      return [matches[1], matches[0]] as [
+        ComparisonDocument,
+        ComparisonDocument,
+      ];
     }
   }
 
-  const newestContract = sortedDocuments.find((item) => item.documentType === "contract");
-  const newestPayroll = sortedDocuments.find((item) => item.documentType === "payroll_receipt");
-  const newestCfdi = sortedDocuments.find((item) => item.documentType === "cfdi");
+  const newestContract = sortedDocuments.find(
+    item => item.documentType === "contract"
+  );
+  const newestPayroll = sortedDocuments.find(
+    item => item.documentType === "payroll_receipt"
+  );
+  const newestCfdi = sortedDocuments.find(item => item.documentType === "cfdi");
 
   if (newestContract && newestPayroll) {
-    return [newestContract, newestPayroll] as [ComparisonDocument, ComparisonDocument];
+    return [newestContract, newestPayroll] as [
+      ComparisonDocument,
+      ComparisonDocument,
+    ];
   }
 
   if (newestPayroll && newestCfdi) {
-    return [newestPayroll, newestCfdi] as [ComparisonDocument, ComparisonDocument];
+    return [newestPayroll, newestCfdi] as [
+      ComparisonDocument,
+      ComparisonDocument,
+    ];
   }
 
-  return [sortedDocuments[1], sortedDocuments[0]] as [ComparisonDocument, ComparisonDocument];
+  return [sortedDocuments[1], sortedDocuments[0]] as [
+    ComparisonDocument,
+    ComparisonDocument,
+  ];
 }
 
 function buildHeliosComparisonCopy(params: {
@@ -2147,7 +2450,8 @@ function buildHeliosComparisonCopy(params: {
   selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
 }) {
   const sortedDocuments = [...params.documents].sort(
-    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
 
   if (sortedDocuments.length === 0) {
@@ -2172,10 +2476,13 @@ function buildHeliosComparisonCopy(params: {
             : "Puedes empezar con el documento que tengas más a la mano para abrir la comparación después.",
         },
       ],
-      guardrail: "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
+      guardrail:
+        "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
         "Mientras más documentos útiles subas, más contexto habrá para distinguir cambios reales de simples huecos de información.",
-      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir mi primer documento",
+      cta: params.nextTarget
+        ? `Subir ${params.nextTarget.label.toLowerCase()}`
+        : "Subir mi primer documento",
     } as const;
   }
 
@@ -2183,7 +2490,8 @@ function buildHeliosComparisonCopy(params: {
     const onlyDocument = sortedDocuments[0];
     return {
       badge: "Falta una segunda pieza",
-      headline: "Ya tienes una base, pero hace falta otro documento para comparar mejor",
+      headline:
+        "Ya tienes una base, pero hace falta otro documento para comparar mejor",
       supportingText: `Por ahora solo está ${onlyDocument.originalName}. Si subes otro archivo relacionado, será más fácil señalar cambios con claridad y menos partes preliminares.`,
       cards: [
         {
@@ -2201,14 +2509,18 @@ function buildHeliosComparisonCopy(params: {
             : "Si tienes otro documento del mismo periodo o del mismo caso, subirlo puede ayudar mucho a la comparación.",
         },
       ],
-      guardrail: "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
+      guardrail:
+        "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
         "Dos documentos bien conectados suelen darle a tu expediente una base mucho más útil que un archivo aislado.",
-      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar",
+      cta: params.nextTarget
+        ? `Subir ${params.nextTarget.label.toLowerCase()}`
+        : "Subir otro documento para comparar",
     } as const;
   }
 
-  const selectedPair = params.selectedPair ?? pickHeliosComparisonPair(sortedDocuments);
+  const selectedPair =
+    params.selectedPair ?? pickHeliosComparisonPair(sortedDocuments);
 
   if (!selectedPair) {
     return {
@@ -2232,22 +2544,28 @@ function buildHeliosComparisonCopy(params: {
             : "Si tienes un segundo documento relacionado, subirlo permitirá activar la comparación guiada.",
         },
       ],
-      guardrail: "Verás diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+      guardrail:
+        "Verás diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
       coverage:
         "Mientras más documentos conectados tenga tu expediente, más fácil será separar cambios reales de simples huecos de información.",
-      cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
+      cta: params.nextTarget
+        ? `Subir ${params.nextTarget.label.toLowerCase()}`
+        : "Subir otro documento para comparar mejor",
     } as const;
   }
 
   const [leftDocument, rightDocument] = selectedPair;
   const sameType = leftDocument.documentType === rightDocument.documentType;
-  const focus = getComparisonFocus(leftDocument.documentType, rightDocument.documentType);
+  const focus = getComparisonFocus(
+    leftDocument.documentType,
+    rightDocument.documentType
+  );
   const leftOpinion = asHeliosOpinion(leftDocument.heliosOpinion);
   const rightOpinion = asHeliosOpinion(rightDocument.heliosOpinion);
   const firstUncertainty =
-    rightOpinion?.uncertainties?.find((item) => item?.trim()) ??
-    leftOpinion?.uncertainties?.find((item) => item?.trim()) ??
-    params.opinion?.uncertainties?.find((item) => item?.trim());
+    rightOpinion?.uncertainties?.find(item => item?.trim()) ??
+    leftOpinion?.uncertainties?.find(item => item?.trim()) ??
+    params.opinion?.uncertainties?.find(item => item?.trim());
   const suggestedStep =
     rightOpinion?.recommendedNextStep ??
     leftOpinion?.recommendedNextStep ??
@@ -2261,15 +2579,15 @@ function buildHeliosComparisonCopy(params: {
     headline: sameType
       ? `Ya se pueden revisar dos ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()} para buscar cambios útiles`
       : `Ya se pueden cruzar ${getSimpleDocumentTypeLabel(leftDocument.documentType).toLowerCase()} y ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()}`,
-      supportingText: `Tomamos ${leftDocument.originalName} y ${rightDocument.originalName} para revisar ${focus}. Así recibes una lectura más clara sin tener que compararlo todo manualmente.`,
+    supportingText: `Tomamos ${leftDocument.originalName} y ${rightDocument.originalName} para revisar ${focus}. Así recibes una lectura más clara sin tener que compararlo todo manualmente.`,
 
     cards: [
       {
         title: "Documentos comparados",
         body: `${leftDocument.originalName} (${formatDate(leftDocument.createdAt)}) y ${rightDocument.originalName} (${formatDate(rightDocument.createdAt)}).`,
       },
-        {
-          title: "Lo que se está contrastando",
+      {
+        title: "Lo que se está contrastando",
 
         body: sameType
           ? `Estamos buscando cambios en ${focus} para que sea más fácil notar qué se movió entre ambos documentos.`
@@ -2277,13 +2595,18 @@ function buildHeliosComparisonCopy(params: {
       },
       {
         title: "Qué puede ayudarte a aclararlo más",
-        body: firstUncertainty ? `Por ahora todavía conviene revisar esto con calma: ${firstUncertainty}` : suggestedStep,
+        body: firstUncertainty
+          ? `Por ahora todavía conviene revisar esto con calma: ${firstUncertainty}`
+          : suggestedStep,
       },
     ],
-    guardrail: "Te mostramos diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+    guardrail:
+      "Te mostramos diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
     coverage:
       "Mientras más documentos conectados tenga tu expediente, más fácil será distinguir cambios reales de partes que todavía necesitan contexto.",
-    cta: params.nextTarget ? `Subir ${params.nextTarget.label.toLowerCase()}` : "Subir otro documento para comparar mejor",
+    cta: params.nextTarget
+      ? `Subir ${params.nextTarget.label.toLowerCase()}`
+      : "Subir otro documento para comparar mejor",
   } as const;
 }
 
@@ -2294,10 +2617,14 @@ export function buildHeliosPriorityAlerts(params: {
   selectedPair?: [ComparisonDocument, ComparisonDocument] | null;
   nextTarget?: DossierTarget | null;
   opinion?: HeliosOpinionView | null;
-  newClarityNotification?: ConfirmedUploadResultView["newClarityNotification"] | null;
+  newClarityNotification?:
+    | ConfirmedUploadResultView["newClarityNotification"]
+    | null;
 }) {
   const alerts: HeliosPriorityAlert[] = [];
-  const latestAttentionDocument = params.monitoringDocuments.find((item) => item.status === "attention");
+  const latestAttentionDocument = params.monitoringDocuments.find(
+    item => item.status === "attention"
+  );
 
   if (params.newClarityNotification) {
     alerts.push({
@@ -2311,7 +2638,9 @@ export function buildHeliosPriorityAlerts(params: {
         params.newClarityNotification.delta > 0
           ? `Ganaste ${params.newClarityNotification.delta} punto${params.newClarityNotification.delta === 1 ? "" : "s"} de claridad`
           : "Tu expediente acaba de ganar contexto útil",
-      actionLabel: params.nextTarget ? `Puede ayudarte seguir con ${params.nextTarget.label.toLowerCase()}` : "Revisa la nueva lectura de tu expediente",
+      actionLabel: params.nextTarget
+        ? `Puede ayudarte seguir con ${params.nextTarget.label.toLowerCase()}`
+        : "Revisa la nueva lectura de tu expediente",
     });
   }
 
@@ -2327,7 +2656,10 @@ export function buildHeliosPriorityAlerts(params: {
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       icon: "alert",
       timestampLabel: latestAttentionDocument
-        ? formatDate(latestAttentionDocument.respondedAt ?? latestAttentionDocument.dispatchedAt)
+        ? formatDate(
+            latestAttentionDocument.respondedAt ??
+              latestAttentionDocument.dispatchedAt
+          )
         : undefined,
       reasonLabel: latestAttentionDocument?.responseEvent
         ? getReturnEventLabel(latestAttentionDocument.responseEvent)
@@ -2339,19 +2671,32 @@ export function buildHeliosPriorityAlerts(params: {
   }
 
   const groupedDocuments = new Map<string, ComparisonDocument[]>();
-  params.documents.forEach((document) => {
+  params.documents.forEach(document => {
     const current = groupedDocuments.get(document.documentType) ?? [];
     current.push(document);
     groupedDocuments.set(document.documentType, current);
   });
 
-  const repeatedGroup = ["payroll_receipt", "cfdi", "contract", "imss", "evidence"]
-    .map((type) => groupedDocuments.get(type))
-    .find((group): group is ComparisonDocument[] => Boolean(group && group.length >= 2));
+  const repeatedGroup = [
+    "payroll_receipt",
+    "cfdi",
+    "contract",
+    "imss",
+    "evidence",
+  ]
+    .map(type => groupedDocuments.get(type))
+    .find((group): group is ComparisonDocument[] =>
+      Boolean(group && group.length >= 2)
+    );
 
   if (repeatedGroup) {
-    const label = getSimpleDocumentTypeLabel(repeatedGroup[0].documentType).toLowerCase();
-    const focus = getComparisonFocus(repeatedGroup[0].documentType, repeatedGroup[0].documentType);
+    const label = getSimpleDocumentTypeLabel(
+      repeatedGroup[0].documentType
+    ).toLowerCase();
+    const focus = getComparisonFocus(
+      repeatedGroup[0].documentType,
+      repeatedGroup[0].documentType
+    );
 
     alerts.push({
       id: "repeated-patterns",
@@ -2360,13 +2705,17 @@ export function buildHeliosPriorityAlerts(params: {
       body: `Tienes ${repeatedGroup.length} ${label} dentro del expediente. Eso da una mejor base para revisar ${focus} con más contexto y menos partes preliminares.`,
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
-      timestampLabel: formatDate(repeatedGroup[repeatedGroup.length - 1]?.createdAt),
+      timestampLabel: formatDate(
+        repeatedGroup[repeatedGroup.length - 1]?.createdAt
+      ),
       reasonLabel: `Comparación útil sobre ${focus}`,
       actionLabel: `Hay ${repeatedGroup.length} documentos del mismo tipo listos para contraste`,
     });
   }
 
-  const firstUncertainty = params.opinion?.uncertainties?.find((item) => item?.trim());
+  const firstUncertainty = params.opinion?.uncertainties?.find(item =>
+    item?.trim()
+  );
   if (firstUncertainty) {
     alerts.push({
       id: "uncertainty",
@@ -2375,14 +2724,20 @@ export function buildHeliosPriorityAlerts(params: {
       body: firstUncertainty,
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
-      timestampLabel: params.selectedPair ? formatDate(params.selectedPair[1].createdAt) : undefined,
+      timestampLabel: params.selectedPair
+        ? formatDate(params.selectedPair[1].createdAt)
+        : undefined,
       reasonLabel: "Todavía hay una parte preliminar o pendiente de confirmar",
-      actionLabel: params.nextTarget ? `Puede ayudar subir ${params.nextTarget.label.toLowerCase()}` : undefined,
+      actionLabel: params.nextTarget
+        ? `Puede ayudar subir ${params.nextTarget.label.toLowerCase()}`
+        : undefined,
     });
   }
 
   if (params.selectedPair) {
-    const sameType = params.selectedPair[0].documentType === params.selectedPair[1].documentType;
+    const sameType =
+      params.selectedPair[0].documentType ===
+      params.selectedPair[1].documentType;
     alerts.push({
       id: "comparison-ready",
       eyebrow: "Prioridad útil",
@@ -2395,8 +2750,10 @@ export function buildHeliosPriorityAlerts(params: {
       toneClasses: "border-teal-100 bg-teal-50 text-teal-950",
       icon: "file",
       timestampLabel: formatDate(params.selectedPair[1].createdAt),
-      reasonLabel: "Ya existe una pareja útil de documentos dentro del expediente",
-      actionLabel: "Puedes abrir la comparación lado a lado para revisar con más calma",
+      reasonLabel:
+        "Ya existe una pareja útil de documentos dentro del expediente",
+      actionLabel:
+        "Puedes abrir la comparación lado a lado para revisar con más calma",
     });
   }
 
@@ -2408,7 +2765,8 @@ export function buildHeliosPriorityAlerts(params: {
       body: `${params.nextTarget.description} ${params.nextTarget.benefit}`,
       toneClasses: "border-emerald-100 bg-emerald-50 text-emerald-950",
       icon: "sparkles",
-      reasonLabel: "Todavía falta una pieza útil para aclarar mejor el expediente",
+      reasonLabel:
+        "Todavía falta una pieza útil para aclarar mejor el expediente",
       actionLabel: `Siguiente documento sugerido: ${params.nextTarget.label}`,
     });
   }
@@ -2421,7 +2779,8 @@ export function buildHeliosPriorityAlerts(params: {
       body: "Cada documento adicional aporta más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
-      reasonLabel: "Tu expediente ya tiene contexto inicial suficiente para seguir creciendo",
+      reasonLabel:
+        "Tu expediente ya tiene contexto inicial suficiente para seguir creciendo",
     });
   }
 
@@ -2434,10 +2793,13 @@ export default function Auditar() {
   const bootstrapMutation = trpc.workspace.bootstrap.useMutation();
   const analyzeDraftMutation = trpc.cases.analyzeDocumentDraft.useMutation();
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
-  const persistAuditarViewStateMutation = trpc.cases.persistAuditarViewState.useMutation();
+  const persistAuditarViewStateMutation =
+    trpc.cases.persistAuditarViewState.useMutation();
   const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
-  const revalidateSocialSecurityMutation = trpc.cases.revalidateSocialSecurity.useMutation();
-  const acceptLegalPackageMutation = trpc.consent.acceptLegalPackage.useMutation();
+  const revalidateSocialSecurityMutation =
+    trpc.cases.revalidateSocialSecurity.useMutation();
+  const acceptLegalPackageMutation =
+    trpc.consent.acceptLegalPackage.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -2447,33 +2809,51 @@ export default function Auditar() {
   const [pickerKey, setPickerKey] = useState(0);
   const [uploadSourceOpen, setUploadSourceOpen] = useState(false);
   const [estimatedAcknowledged, setEstimatedAcknowledged] = useState(false);
-  const [timelineExpandedOnMobile, setTimelineExpandedOnMobile] = useState(false);
-  const [historyFilter, setHistoryFilter] = useState<DossierHistoryFilter>("all");
+  const [timelineExpandedOnMobile, setTimelineExpandedOnMobile] =
+    useState(false);
+  const [historyFilter, setHistoryFilter] =
+    useState<DossierHistoryFilter>("all");
   const [mobileOnboardingIndex, setMobileOnboardingIndex] = useState(0);
-  const [selectedRecommendedTargetType, setSelectedRecommendedTargetType] = useState<DossierTarget["type"] | null>(null);
-  const [preferredCaptureMode, setPreferredCaptureMode] = useState<AuditarCaptureMode | null>(null);
-  const [selectedCaptureMode, setSelectedCaptureMode] = useState<AuditarCaptureMode | null>(null);
+  const [selectedRecommendedTargetType, setSelectedRecommendedTargetType] =
+    useState<DossierTarget["type"] | null>(null);
+  const [preferredCaptureMode, setPreferredCaptureMode] =
+    useState<AuditarCaptureMode | null>(null);
+  const [selectedCaptureMode, setSelectedCaptureMode] =
+    useState<AuditarCaptureMode | null>(null);
   const [autoAnalyzeRequested, setAutoAnalyzeRequested] = useState(false);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
-  const [selectedComparisonRightId, setSelectedComparisonRightId] = useState("");
-  const [pendingDraft, setPendingDraft] = useState<DraftPreviewResultView | null>(null);
-  const [manualFieldValues, setManualFieldValues] = useState<Record<string, string>>({});
+  const [selectedComparisonRightId, setSelectedComparisonRightId] =
+    useState("");
+  const [pendingDraft, setPendingDraft] =
+    useState<DraftPreviewResultView | null>(null);
+  const [manualFieldValues, setManualFieldValues] = useState<
+    Record<string, string>
+  >({});
   const [previewStatusFlash, setPreviewStatusFlash] = useState(false);
   const [saveStatusFlash, setSaveStatusFlash] = useState(false);
   const [recommendedStepFlash, setRecommendedStepFlash] = useState(false);
   const [autoAdvanceFlash, setAutoAdvanceFlash] = useState(false);
-  const [lastUpload, setLastUpload] = useState<ConfirmedUploadResultView | null>(null);
+  const [lastUpload, setLastUpload] =
+    useState<ConfirmedUploadResultView | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
-  const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<string | null>(null);
+  const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
+    string | null
+  >(null);
   const [heliosCopilotOpen, setHeliosCopilotOpen] = useState(false);
-  const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<HeliosCopilotMessage[]>([]);
+  const [heliosCopilotMessages, setHeliosCopilotMessages] = useState<
+    HeliosCopilotMessage[]
+  >([]);
   const [legalGateChecked, setLegalGateChecked] = useState(false);
-  const [legalGateError, setLegalGateError] = useState<LegalGateErrorState | null>(null);
-  const [legalGateMetrics, setLegalGateMetrics] = useState<LegalGateMetricsState>(INITIAL_LEGAL_GATE_METRICS);
+  const [legalGateError, setLegalGateError] =
+    useState<LegalGateErrorState | null>(null);
+  const [legalGateMetrics, setLegalGateMetrics] =
+    useState<LegalGateMetricsState>(INITIAL_LEGAL_GATE_METRICS);
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
-  const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] = useState(false);
-  const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] = useState(false);
+  const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] =
+    useState(false);
+  const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] =
+    useState(false);
   const [showHeroJumpCta, setShowHeroJumpCta] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -2490,7 +2870,10 @@ export default function Auditar() {
     if (typeof window === "undefined") {
       return false;
     }
-    return new URLSearchParams(window.location.search).get("legalGateHarness") === "1";
+    return (
+      new URLSearchParams(window.location.search).get("legalGateHarness") ===
+      "1"
+    );
   }, []);
 
   useEffect(() => {
@@ -2508,7 +2891,8 @@ export default function Auditar() {
       }
 
       const heroOccupiesViewport = heroRect.height > window.innerHeight * 0.78;
-      const uploadStartsBelowFold = (uploadRect?.top ?? 0) > window.innerHeight * 0.9;
+      const uploadStartsBelowFold =
+        (uploadRect?.top ?? 0) > window.innerHeight * 0.9;
 
       setShowHeroJumpCta(heroOccupiesViewport || uploadStartsBelowFold);
     };
@@ -2533,7 +2917,10 @@ export default function Auditar() {
     }
 
     const updateCountdown = () => {
-      const remainingSeconds = Math.max(Math.ceil((retryAvailableAt - Date.now()) / 1000), 0);
+      const remainingSeconds = Math.max(
+        Math.ceil((retryAvailableAt - Date.now()) / 1000),
+        0
+      );
       setLegalGateRetryCountdown(remainingSeconds);
     };
 
@@ -2548,7 +2935,7 @@ export default function Auditar() {
     }
 
     const userRecord = auth.user as Record<string, unknown>;
-    const stableId = ["openId", "id", "userId", "email"].find((key) => {
+    const stableId = ["openId", "id", "userId", "email"].find(key => {
       const value = userRecord[key];
       return typeof value === "string" && value.trim().length > 0;
     });
@@ -2569,14 +2956,22 @@ export default function Auditar() {
 
     try {
       const rawValue = window.localStorage.getItem(auditarPersistenceKey);
-      const persistedState = sanitizePersistedAuditarViewState(rawValue ? JSON.parse(rawValue) : null);
+      const persistedState = sanitizePersistedAuditarViewState(
+        rawValue ? JSON.parse(rawValue) : null
+      );
 
       setHistoryFilter(persistedState.historyFilter ?? "all");
       setMobileOnboardingIndex(persistedState.mobileOnboardingIndex ?? 0);
       setSelectedRecommendedTargetType(
-        persistedState.selectedRecommendedTargetType === undefined ? null : persistedState.selectedRecommendedTargetType,
+        persistedState.selectedRecommendedTargetType === undefined
+          ? null
+          : persistedState.selectedRecommendedTargetType
       );
-      setPreferredCaptureMode(persistedState.preferredCaptureMode === undefined ? null : persistedState.preferredCaptureMode);
+      setPreferredCaptureMode(
+        persistedState.preferredCaptureMode === undefined
+          ? null
+          : persistedState.preferredCaptureMode
+      );
     } catch {
       window.localStorage.removeItem(auditarPersistenceKey);
       setHistoryFilter("all");
@@ -2589,7 +2984,11 @@ export default function Auditar() {
   }, [auditarPersistenceKey]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !auditarPersistenceKey || !persistenceReady) {
+    if (
+      typeof window === "undefined" ||
+      !auditarPersistenceKey ||
+      !persistenceReady
+    ) {
       return;
     }
 
@@ -2600,35 +2999,56 @@ export default function Auditar() {
         mobileOnboardingIndex,
         selectedRecommendedTargetType,
         preferredCaptureMode,
-      }),
+      })
     );
-  }, [auditarPersistenceKey, historyFilter, mobileOnboardingIndex, persistenceReady, preferredCaptureMode, selectedRecommendedTargetType]);
+  }, [
+    auditarPersistenceKey,
+    historyFilter,
+    mobileOnboardingIndex,
+    persistenceReady,
+    preferredCaptureMode,
+    selectedRecommendedTargetType,
+  ]);
 
   useEffect(() => {
     if (auth.loading || !auth.isAuthenticated || bootstrapStarted) return;
 
     setBootstrapStarted(true);
     bootstrapMutation.mutate(undefined, {
-      onSuccess: (result) => {
+      onSuccess: result => {
         if (!selectedTenantId) {
           setSelectedTenantId(result.tenant.tenantId);
         }
       },
     });
-  }, [auth.isAuthenticated, auth.loading, bootstrapMutation, bootstrapStarted, selectedTenantId]);
+  }, [
+    auth.isAuthenticated,
+    auth.loading,
+    bootstrapMutation,
+    bootstrapStarted,
+    selectedTenantId,
+  ]);
 
   const tenantsQuery = trpc.tenants.list.useQuery(undefined, {
     enabled: auth.isAuthenticated && bootstrapMutation.isSuccess,
     refetchOnWindowFocus: false,
   });
 
-  const casesQuery = trpc.cases.list.useQuery(selectedTenantId ? { tenantId: selectedTenantId } : undefined, {
-    enabled: auth.isAuthenticated && Boolean(selectedTenantId),
-    refetchOnWindowFocus: false,
-  });
+  const casesQuery = trpc.cases.list.useQuery(
+    selectedTenantId ? { tenantId: selectedTenantId } : undefined,
+    {
+      enabled: auth.isAuthenticated && Boolean(selectedTenantId),
+      refetchOnWindowFocus: false,
+    }
+  );
 
-  const caseDetailInput = selectedTenantId && selectedCaseId ? { tenantId: selectedTenantId, caseId: selectedCaseId } : undefined;
-  const currentCaseScopeKey = caseDetailInput ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}` : null;
+  const caseDetailInput =
+    selectedTenantId && selectedCaseId
+      ? { tenantId: selectedTenantId, caseId: selectedCaseId }
+      : undefined;
+  const currentCaseScopeKey = caseDetailInput
+    ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}`
+    : null;
   const heliosCopilotHistoryStorageKey = useMemo(() => {
     if (!auditarPersistenceKey || !currentCaseScopeKey) {
       return null;
@@ -2649,8 +3069,14 @@ export default function Auditar() {
     }
 
     try {
-      const rawValue = window.localStorage.getItem(heliosCopilotHistoryStorageKey);
-      setHeliosCopilotMessages(sanitizePersistedHeliosCopilotMessages(rawValue ? JSON.parse(rawValue) : null));
+      const rawValue = window.localStorage.getItem(
+        heliosCopilotHistoryStorageKey
+      );
+      setHeliosCopilotMessages(
+        sanitizePersistedHeliosCopilotMessages(
+          rawValue ? JSON.parse(rawValue) : null
+        )
+      );
     } catch {
       window.localStorage.removeItem(heliosCopilotHistoryStorageKey);
       setHeliosCopilotMessages([]);
@@ -2667,13 +3093,19 @@ export default function Auditar() {
       return;
     }
 
-    window.localStorage.setItem(heliosCopilotHistoryStorageKey, JSON.stringify(heliosCopilotMessages.slice(-6)));
+    window.localStorage.setItem(
+      heliosCopilotHistoryStorageKey,
+      JSON.stringify(heliosCopilotMessages.slice(-6))
+    );
   }, [heliosCopilotHistoryStorageKey, heliosCopilotMessages]);
 
-  const caseDetailQuery = trpc.cases.detail.useQuery(caseDetailInput as { tenantId: string; caseId: string }, {
-    enabled: auth.isAuthenticated && Boolean(caseDetailInput),
-    refetchOnWindowFocus: false,
-  });
+  const caseDetailQuery = trpc.cases.detail.useQuery(
+    caseDetailInput as { tenantId: string; caseId: string },
+    {
+      enabled: auth.isAuthenticated && Boolean(caseDetailInput),
+      refetchOnWindowFocus: false,
+    }
+  );
 
   useEffect(() => {
     setRemoteViewStateReadyKey(null);
@@ -2681,11 +3113,17 @@ export default function Auditar() {
   }, [currentCaseScopeKey]);
 
   useEffect(() => {
-    if (!currentCaseScopeKey || caseDetailQuery.status !== "success" || remoteViewStateReadyKey === currentCaseScopeKey) {
+    if (
+      !currentCaseScopeKey ||
+      caseDetailQuery.status !== "success" ||
+      remoteViewStateReadyKey === currentCaseScopeKey
+    ) {
       return;
     }
 
-    const remoteState = sanitizePersistedAuditarViewState(caseDetailQuery.data?.auditarViewState);
+    const remoteState = sanitizePersistedAuditarViewState(
+      caseDetailQuery.data?.auditarViewState
+    );
 
     if (remoteState.historyFilter !== undefined) {
       setHistoryFilter(remoteState.historyFilter);
@@ -2694,7 +3132,9 @@ export default function Auditar() {
       setMobileOnboardingIndex(remoteState.mobileOnboardingIndex);
     }
     if (remoteState.selectedRecommendedTargetType !== undefined) {
-      setSelectedRecommendedTargetType(remoteState.selectedRecommendedTargetType);
+      setSelectedRecommendedTargetType(
+        remoteState.selectedRecommendedTargetType
+      );
     }
     if (remoteState.preferredCaptureMode !== undefined) {
       setPreferredCaptureMode(remoteState.preferredCaptureMode);
@@ -2702,7 +3142,12 @@ export default function Auditar() {
 
     syncedRemoteViewStateRef.current = JSON.stringify(remoteState);
     setRemoteViewStateReadyKey(currentCaseScopeKey);
-  }, [caseDetailQuery.data?.auditarViewState, caseDetailQuery.status, currentCaseScopeKey, remoteViewStateReadyKey]);
+  }, [
+    caseDetailQuery.data?.auditarViewState,
+    caseDetailQuery.status,
+    currentCaseScopeKey,
+    remoteViewStateReadyKey,
+  ]);
 
   useEffect(() => {
     if (
@@ -2743,7 +3188,7 @@ export default function Auditar() {
           onSuccess: () => {
             syncedRemoteViewStateRef.current = serializedViewState;
           },
-        },
+        }
       );
     }, 450);
 
@@ -2768,7 +3213,9 @@ export default function Auditar() {
 
   useEffect(() => {
     if (!casesQuery.data?.length) return;
-    const stillExists = casesQuery.data.some((item) => item.caseId === selectedCaseId);
+    const stillExists = casesQuery.data.some(
+      item => item.caseId === selectedCaseId
+    );
     if (!selectedCaseId || !stillExists) {
       setSelectedCaseId(casesQuery.data[0].caseId);
     }
@@ -2776,14 +3223,22 @@ export default function Auditar() {
 
   const legalAcceptance = caseDetailQuery.data?.legalAcceptance;
   const legalAcceptanceDocuments = legalAcceptance?.documents ?? [];
-  const acceptedLegalDocumentsCount = legalAcceptanceDocuments.filter((document) => document.accepted).length;
+  const acceptedLegalDocumentsCount = legalAcceptanceDocuments.filter(
+    document => document.accepted
+  ).length;
   const legalPendingDocuments = legalAcceptance?.missingDocuments ?? [];
-  const legalGateRequired = Boolean(caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted);
+  const legalGateRequired = Boolean(
+    caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted
+  );
   const documents = caseDetailQuery.data?.documents ?? [];
   const pricingExperience = getAuditapatronPricingExperience(documents.length);
 
   useEffect(() => {
-    if (!currentCaseScopeKey || caseDetailQuery.status !== "success" || trackedExpedienteScopeRef.current === currentCaseScopeKey) {
+    if (
+      !currentCaseScopeKey ||
+      caseDetailQuery.status !== "success" ||
+      trackedExpedienteScopeRef.current === currentCaseScopeKey
+    ) {
       return;
     }
 
@@ -2794,10 +3249,21 @@ export default function Auditar() {
       documentCount: documents.length,
       legalAccepted: !legalGateRequired,
     });
-  }, [caseDetailQuery.status, currentCaseScopeKey, documents.length, legalGateRequired, selectedCaseId, selectedTenantId]);
+  }, [
+    caseDetailQuery.status,
+    currentCaseScopeKey,
+    documents.length,
+    legalGateRequired,
+    selectedCaseId,
+    selectedTenantId,
+  ]);
 
   useEffect(() => {
-    if (!currentCaseScopeKey || !legalGateRequired || trackedLegalGateScopeRef.current === currentCaseScopeKey) {
+    if (
+      !currentCaseScopeKey ||
+      !legalGateRequired ||
+      trackedLegalGateScopeRef.current === currentCaseScopeKey
+    ) {
       return;
     }
 
@@ -2807,27 +3273,46 @@ export default function Auditar() {
       caseId: selectedCaseId,
       missingDocumentsCount: legalPendingDocuments.length,
     });
-  }, [currentCaseScopeKey, legalGateRequired, legalPendingDocuments.length, selectedCaseId, selectedTenantId]);
+  }, [
+    currentCaseScopeKey,
+    legalGateRequired,
+    legalPendingDocuments.length,
+    selectedCaseId,
+    selectedTenantId,
+  ]);
   const heliosExpediente = caseDetailQuery.data?.heliosExpediente;
-  const socialSecurityValidation = caseDetailQuery.data?.socialSecurityValidation;
-  const uploadSocialSecurityValidation = lastUpload?.socialSecurityValidation ?? null;
-  const effectiveSocialSecurityValidation = uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
+  const socialSecurityValidation =
+    caseDetailQuery.data?.socialSecurityValidation;
+  const uploadSocialSecurityValidation =
+    lastUpload?.socialSecurityValidation ?? null;
+  const effectiveSocialSecurityValidation =
+    uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
-    () => new Map(heliosDocumentSnapshots.map((item) => [item.documentId, item] as const)),
-    [heliosDocumentSnapshots],
+    () =>
+      new Map(
+        heliosDocumentSnapshots.map(item => [item.documentId, item] as const)
+      ),
+    [heliosDocumentSnapshots]
   );
   const lastHeliosOpinion = asHeliosOpinion(lastUpload?.heliosOpinion);
   const heliosDocumentsCount = useMemo(
-    () => documents.filter((item) => Boolean(asHeliosOpinion(item.heliosOpinion))).length,
-    [documents],
+    () =>
+      documents.filter(item => Boolean(asHeliosOpinion(item.heliosOpinion)))
+        .length,
+    [documents]
   );
   const latestHeliosDocument = useMemo(
-    () => documents.find((item) => Boolean(asHeliosOpinion(item.heliosOpinion))) ?? null,
-    [documents],
+    () =>
+      documents.find(item => Boolean(asHeliosOpinion(item.heliosOpinion))) ??
+      null,
+    [documents]
   );
-  const latestPersistedHeliosOpinion = asHeliosOpinion(latestHeliosDocument?.heliosOpinion);
-  const visibleHeliosOpinion = lastHeliosOpinion ?? latestPersistedHeliosOpinion;
+  const latestPersistedHeliosOpinion = asHeliosOpinion(
+    latestHeliosDocument?.heliosOpinion
+  );
+  const visibleHeliosOpinion =
+    lastHeliosOpinion ?? latestPersistedHeliosOpinion;
   const heliosStage = getHeliosStageCopy({
     opinion: visibleHeliosOpinion,
     engineStatus: lastUpload?.engineDispatch?.status ?? undefined,
@@ -2836,7 +3321,10 @@ export default function Auditar() {
   });
   const heliosCopilotIntro = useMemo(() => {
     if (visibleHeliosOpinion?.resultCard?.assistantIntro?.trim()) {
-      return warmVisibleNamingCopy(visibleHeliosOpinion.resultCard.assistantIntro) ?? visibleHeliosOpinion.resultCard.assistantIntro;
+      return (
+        warmVisibleNamingCopy(visibleHeliosOpinion.resultCard.assistantIntro) ??
+        visibleHeliosOpinion.resultCard.assistantIntro
+      );
     }
 
     if (visibleHeliosOpinion?.summary?.trim()) {
@@ -2848,27 +3336,43 @@ export default function Auditar() {
     }
 
     return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu expediente laboral. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
-  }, [heliosDocumentsCount, visibleHeliosOpinion?.resultCard?.assistantIntro, visibleHeliosOpinion?.summary]);
+  }, [
+    heliosDocumentsCount,
+    visibleHeliosOpinion?.resultCard?.assistantIntro,
+    visibleHeliosOpinion?.summary,
+  ]);
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
-    const cardPrompts = visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
+    const cardPrompts =
+      visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
     const contextualPrompts = getDocumentContextualShortcuts(
-      pendingDraft?.classification.documentType ?? lastUpload?.classification.documentType ?? "",
+      pendingDraft?.classification.documentType ??
+        lastUpload?.classification.documentType ??
+        ""
     )
-      .map((item) => item.prompt)
+      .map(item => item.prompt)
       .filter((item): item is string => Boolean(item));
     const localPrompts = [
       "¿Qué riesgo principal ves en mi expediente?",
-      visibleHeliosOpinion?.resultCard?.nextStepSummary || visibleHeliosOpinion?.recommendedNextStep
+      visibleHeliosOpinion?.resultCard?.nextStepSummary ||
+      visibleHeliosOpinion?.recommendedNextStep
         ? "Explícame el siguiente paso sugerido con palabras simples."
         : "¿Qué paso me conviene seguir ahora?",
-      visibleHeliosOpinion?.legalHighlights?.primaryConcern || visibleHeliosOpinion?.uncertainties?.length
+      visibleHeliosOpinion?.legalHighlights?.primaryConcern ||
+      visibleHeliosOpinion?.uncertainties?.length
         ? "¿Qué puntos todavía faltan confirmar?"
         : "¿Qué documento me conviene subir después?",
       "Resúmeme mi situación actual en pocas palabras.",
     ].filter((item): item is string => Boolean(item));
 
-    return Array.from(new Set([...serverPrompts, ...cardPrompts, ...contextualPrompts, ...localPrompts])).slice(0, 4);
+    return Array.from(
+      new Set([
+        ...serverPrompts,
+        ...cardPrompts,
+        ...contextualPrompts,
+        ...localPrompts,
+      ])
+    ).slice(0, 4);
   }, [
     heliosCopilotMutation.data?.suggestedPrompts,
     lastUpload?.classification.documentType,
@@ -2880,28 +3384,41 @@ export default function Auditar() {
     visibleHeliosOpinion?.uncertainties,
   ]);
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
-    () => [{ role: "assistant", content: heliosCopilotIntro }, ...heliosCopilotMessages],
-    [heliosCopilotIntro, heliosCopilotMessages],
+    () => [
+      { role: "assistant", content: heliosCopilotIntro },
+      ...heliosCopilotMessages,
+    ],
+    [heliosCopilotIntro, heliosCopilotMessages]
   );
   const heliosCopilotSupportingDocuments = useMemo(() => {
     const prioritizedDocuments = [...documents].sort((left, right) => {
-      const leftHasOpinion = Number(Boolean(asHeliosOpinion(left.heliosOpinion)));
-      const rightHasOpinion = Number(Boolean(asHeliosOpinion(right.heliosOpinion)));
+      const leftHasOpinion = Number(
+        Boolean(asHeliosOpinion(left.heliosOpinion))
+      );
+      const rightHasOpinion = Number(
+        Boolean(asHeliosOpinion(right.heliosOpinion))
+      );
 
       if (leftHasOpinion !== rightHasOpinion) {
         return rightHasOpinion - leftHasOpinion;
       }
 
-      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+      return (
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      );
     });
 
-    return prioritizedDocuments.slice(0, 3).map((document) => {
+    return prioritizedDocuments.slice(0, 3).map(document => {
       const opinion = asHeliosOpinion(document.heliosOpinion);
       const detail = [
         `Tipo: ${getSimpleDocumentTypeLabel(document.documentType)}.`,
         opinion?.summary ? `Lectura visible: ${opinion.summary}` : null,
-        opinion?.recommendedNextStep ? `Paso sugerido: ${opinion.recommendedNextStep}` : null,
-        opinion?.uncertainties?.[0] ? `Por confirmar: ${opinion.uncertainties[0]}` : null,
+        opinion?.recommendedNextStep
+          ? `Paso sugerido: ${opinion.recommendedNextStep}`
+          : null,
+        opinion?.uncertainties?.[0]
+          ? `Por confirmar: ${opinion.uncertainties[0]}`
+          : null,
       ]
         .filter((item): item is string => Boolean(item))
         .join(" ");
@@ -2913,13 +3430,26 @@ export default function Auditar() {
       };
     });
   }, [documents]);
-  const presentTypes = useMemo(() => new Set(documents.map((item) => item.documentType)), [documents]);
+  const presentTypes = useMemo(
+    () => new Set(documents.map(item => item.documentType)),
+    [documents]
+  );
 
   const dossierStatus = useMemo(() => {
-    const completed = dossierTargets.filter((item) => presentTypes.has(item.type)).length;
-    const percent = Math.max(12, Math.round((completed / dossierTargets.length) * 100));
+    const completed = dossierTargets.filter(item =>
+      presentTypes.has(item.type)
+    ).length;
+    const percent = Math.max(
+      12,
+      Math.round((completed / dossierTargets.length) * 100)
+    );
     const nextTarget = getContextualDossierNextTarget(presentTypes);
-    const label = completed >= 4 ? "Respaldo sólido" : completed >= 2 ? "Respaldo en crecimiento" : "Base inicial";
+    const label =
+      completed >= 4
+        ? "Respaldo sólido"
+        : completed >= 2
+          ? "Respaldo en crecimiento"
+          : "Base inicial";
 
     return {
       completed,
@@ -2929,18 +3459,22 @@ export default function Auditar() {
       total: dossierTargets.length,
     };
   }, [presentTypes]);
-  const socialSecurityCoveragePercent = effectiveSocialSecurityValidation?.coverageScore ?? dossierStatus.percent;
-  const socialSecurityStatusLabel = effectiveSocialSecurityValidation?.statusLabel ?? "Cruce pendiente";
+  const socialSecurityCoveragePercent =
+    effectiveSocialSecurityValidation?.coverageScore ?? dossierStatus.percent;
+  const socialSecurityStatusLabel =
+    effectiveSocialSecurityValidation?.statusLabel ?? "Cruce pendiente";
   const socialSecuritySummary =
     effectiveSocialSecurityValidation?.summary ??
     "Todavía faltan señales suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
   const socialSecurityRecommendedNextStep =
     effectiveSocialSecurityValidation?.recommendedNextStep ??
     "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
-  const socialSecurityLastCheckLabel = effectiveSocialSecurityValidation?.lastRevalidatedAt
-    ? `Última revalidación: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
-    : "Aún no has revalidado este cruce desde tu expediente.";
-  const socialSecurityRevalidationHistory = effectiveSocialSecurityValidation?.revalidationHistory ?? [];
+  const socialSecurityLastCheckLabel =
+    effectiveSocialSecurityValidation?.lastRevalidatedAt
+      ? `Última revalidación: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
+      : "Aún no has revalidado este cruce desde tu expediente.";
+  const socialSecurityRevalidationHistory =
+    effectiveSocialSecurityValidation?.revalidationHistory ?? [];
   const socialSecurityRecommendedDocument = lastUpload?.nextSuggestedDocument
     ? {
         title: lastUpload.nextSuggestedDocument.title,
@@ -2956,11 +3490,17 @@ export default function Auditar() {
       : null;
   const timelineEntries = useMemo(() => {
     const confirmedEntries = [...documents]
-      .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime())
+      .sort(
+        (left, right) =>
+          new Date(left.createdAt).getTime() -
+          new Date(right.createdAt).getTime()
+      )
       .map((document, index) => {
         const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
         const insight = getUploadInsight(document.documentType);
-        const readiness = getDocumentReadiness(document.classificationConfidence);
+        const readiness = getDocumentReadiness(
+          document.classificationConfidence
+        );
 
         return {
           id: document.documentId,
@@ -2968,7 +3508,10 @@ export default function Auditar() {
           title: getSimpleDocumentTypeLabel(document.documentType),
           originalName: document.originalName,
           contribution: insight.contribution,
-          heliosRole: getHeliosTimelineRole(document.documentType, heliosOpinion),
+          heliosRole: getHeliosTimelineRole(
+            document.documentType,
+            heliosOpinion
+          ),
           createdAt: document.createdAt,
           readiness,
           hasVisibleOpinion: Boolean(heliosOpinion),
@@ -2980,21 +3523,27 @@ export default function Auditar() {
       return confirmedEntries;
     }
 
-    const previewInsight = getUploadInsight(pendingDraft.classification.documentType);
+    const previewInsight = getUploadInsight(
+      pendingDraft.classification.documentType
+    );
 
     return [
       ...confirmedEntries,
       {
         id: `draft-${pendingDraft.draftId}`,
         step: confirmedEntries.length + 1,
-        title: getSimpleDocumentTypeLabel(pendingDraft.classification.documentType),
+        title: getSimpleDocumentTypeLabel(
+          pendingDraft.classification.documentType
+        ),
         originalName: pendingDraft.previewAsset.fileName,
         contribution: previewInsight.contribution,
         heliosRole:
           pendingDraft.preliminaryAnalysis.summary ||
           "Este borrador ya ofrece una lectura inicial, pero seguirá fuera del expediente hasta que lo confirmes.",
         createdAt: new Date().toISOString(),
-        readiness: getDocumentReadiness(pendingDraft.scanAssistance?.confidence),
+        readiness: getDocumentReadiness(
+          pendingDraft.scanAssistance?.confidence
+        ),
         hasVisibleOpinion: true,
         lifecycleState: buildAuditarTimelineEntryState("draft"),
       },
@@ -3002,53 +3551,97 @@ export default function Auditar() {
   }, [documents, pendingDraft]);
 
   const comparisonDocuments = useMemo(
-    () => [...documents].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
-    [documents],
+    () =>
+      [...documents].sort(
+        (left, right) =>
+          new Date(right.createdAt).getTime() -
+          new Date(left.createdAt).getTime()
+      ),
+    [documents]
   );
-  const automaticComparisonPair = useMemo(() => pickHeliosComparisonPair(documents), [documents]);
+  const automaticComparisonPair = useMemo(
+    () => pickHeliosComparisonPair(documents),
+    [documents]
+  );
   const engineStatus = getEngineStatusCopy(
     lastUpload?.engineDispatch?.status ?? undefined,
-    lastUpload?.engineDispatch?.reason ?? undefined,
+    lastUpload?.engineDispatch?.reason ?? undefined
   );
-  const uploadInsight = lastUpload ? getUploadInsight(lastUpload.classification.documentType) : null;
+  const uploadInsight = lastUpload
+    ? getUploadInsight(lastUpload.classification.documentType)
+    : null;
   const pendingDraftShortcuts = useMemo(
-    () => (pendingDraft ? getDocumentContextualShortcuts(pendingDraft.classification.documentType) : []),
-    [pendingDraft],
+    () =>
+      pendingDraft
+        ? getDocumentContextualShortcuts(
+            pendingDraft.classification.documentType
+          )
+        : [],
+    [pendingDraft]
   );
   const lastUploadShortcuts = useMemo(
-    () => (lastUpload ? getDocumentContextualShortcuts(lastUpload.classification.documentType) : []),
-    [lastUpload],
+    () =>
+      lastUpload
+        ? getDocumentContextualShortcuts(lastUpload.classification.documentType)
+        : [],
+    [lastUpload]
   );
   const confirmedEntries = useMemo(
-    () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined),
-    [lastUpload],
+    () =>
+      getVisibleAnalysisEntries(
+        lastUpload?.preliminaryAnalysis?.confirmedData as
+          | Record<string, unknown>
+          | undefined
+      ),
+    [lastUpload]
   );
   const estimatedEntries = useMemo(
-    () => getVisibleAnalysisEntries(lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined),
-    [lastUpload],
+    () =>
+      getVisibleAnalysisEntries(
+        lastUpload?.preliminaryAnalysis?.estimatedData as
+          | Record<string, unknown>
+          | undefined
+      ),
+    [lastUpload]
   );
   const guardrails = lastUpload?.preliminaryAnalysis?.guardrails ?? [];
-  const lastUploadReadiness = getDocumentReadiness(lastUpload?.classification?.classificationConfidence);
+  const lastUploadReadiness = getDocumentReadiness(
+    lastUpload?.classification?.classificationConfidence
+  );
   const primaryLastUploadShortcut = lastUploadShortcuts[0] ?? null;
-  const secondaryLastUploadShortcuts = primaryLastUploadShortcut ? lastUploadShortcuts.slice(1) : lastUploadShortcuts;
+  const secondaryLastUploadShortcuts = primaryLastUploadShortcut
+    ? lastUploadShortcuts.slice(1)
+    : lastUploadShortcuts;
   const lastUploadResultHeadline =
-    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.headline) ?? uploadInsight?.label ?? "Tu documento ya quedó integrado a tu expediente";
+    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.headline) ??
+    uploadInsight?.label ??
+    "Tu documento ya quedó integrado a tu expediente";
   const lastUploadResultLead =
-    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.lead ?? lastHeliosOpinion?.summary) ??
+    warmVisibleNamingCopy(
+      lastHeliosOpinion?.resultCard?.lead ?? lastHeliosOpinion?.summary
+    ) ??
     uploadInsight?.contribution ??
     "Ya hay una primera lectura útil para entender qué aporta este documento y cómo seguir avanzando.";
   const lastUploadNextStepSummary =
-    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.nextStepSummary ?? lastHeliosOpinion?.recommendedNextStep) ??
+    warmVisibleNamingCopy(
+      lastHeliosOpinion?.resultCard?.nextStepSummary ??
+        lastHeliosOpinion?.recommendedNextStep
+    ) ??
     uploadInsight?.nextSuggestion ??
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
   const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
   const monitoringDocuments = complilinkMonitoring?.documents ?? [];
   const pendingMonitoringDocuments = monitoringDocuments.filter(
-    (item) => item.status === "waiting" || item.status === "attention",
+    item => item.status === "waiting" || item.status === "attention"
   );
-  const attentionMonitoringDocuments = pendingMonitoringDocuments.filter((item) => item.status === "attention");
+  const attentionMonitoringDocuments = pendingMonitoringDocuments.filter(
+    item => item.status === "attention"
+  );
   const timelinePreviewLimit = 3;
-  const mobileHiddenTimelineCount = Math.max(0, timelineEntries.length - timelinePreviewLimit);
+  const mobileHiddenTimelineCount = Math.max(
+    0,
+    timelineEntries.length - timelinePreviewLimit
+  );
   const monitoringOverview = getMonitoringOverviewCopy({
     monitoringDocumentsCount: monitoringDocuments.length,
     waitingCount: complilinkMonitoring?.summary.waitingCount ?? 0,
@@ -3060,7 +3653,8 @@ export default function Auditar() {
       id: "home",
       label: "Home",
       completed: auth.isAuthenticated || bootstrapMutation.isSuccess,
-      detail: "Ya entraste al entorno base desde el que empieza el recorrido operativo.",
+      detail:
+        "Ya entraste al entorno base desde el que empieza el recorrido operativo.",
     },
     {
       id: "expediente",
@@ -3088,8 +3682,11 @@ export default function Auditar() {
           : "Aún no hay documentos incorporados al expediente visible.",
     },
   ] as const;
-  const operationalFunnelCompletedCount = operationalFunnelSteps.filter((step) => step.completed).length;
-  const operationalFunnelNextStep = operationalFunnelSteps.find((step) => !step.completed) ?? null;
+  const operationalFunnelCompletedCount = operationalFunnelSteps.filter(
+    step => step.completed
+  ).length;
+  const operationalFunnelNextStep =
+    operationalFunnelSteps.find(step => !step.completed) ?? null;
 
   useEffect(() => {
     setLegalGateChecked(false);
@@ -3098,15 +3695,24 @@ export default function Auditar() {
   const documentTypeCounts = useMemo(
     () =>
       documents.reduce<Record<string, number>>((counts, document) => {
-        counts[document.documentType] = (counts[document.documentType] ?? 0) + 1;
+        counts[document.documentType] =
+          (counts[document.documentType] ?? 0) + 1;
         return counts;
       }, {}),
-    [documents],
+    [documents]
   );
-  const dossierTypeProgress = useMemo(() => buildDossierTypeProgress(documentTypeCounts), [documentTypeCounts]);
+  const dossierTypeProgress = useMemo(
+    () => buildDossierTypeProgress(documentTypeCounts),
+    [documentTypeCounts]
+  );
   const effectiveRecommendedTarget = useMemo(
-    () => dossierTargets.find((item) => item.type === selectedRecommendedTargetType) ?? dossierStatus.nextTarget ?? null,
-    [dossierStatus.nextTarget, selectedRecommendedTargetType],
+    () =>
+      dossierTargets.find(
+        item => item.type === selectedRecommendedTargetType
+      ) ??
+      dossierStatus.nextTarget ??
+      null,
+    [dossierStatus.nextTarget, selectedRecommendedTargetType]
   );
   const nextDocumentCopy = getPersonalizedNextDocumentCopy({
     nextTarget: effectiveRecommendedTarget ?? undefined,
@@ -3114,14 +3720,22 @@ export default function Auditar() {
     opinion: visibleHeliosOpinion,
   });
   const missingPriorityUploadGuides = useMemo(
-    () => priorityUploadGuides.filter((item) => !presentTypes.has(item.type)),
-    [presentTypes],
+    () => priorityUploadGuides.filter(item => !presentTypes.has(item.type)),
+    [presentTypes]
   );
-  const visiblePriorityUploadGuides = missingPriorityUploadGuides.length > 0 ? missingPriorityUploadGuides : priorityUploadGuides.slice(0, 2);
-  const activeMobileOnboardingStep = mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
-  const isFirstDocumentFlow = documents.length === 0 && !pendingDraft && !lastUpload;
+  const visiblePriorityUploadGuides =
+    missingPriorityUploadGuides.length > 0
+      ? missingPriorityUploadGuides
+      : priorityUploadGuides.slice(0, 2);
+  const activeMobileOnboardingStep =
+    mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
+  const isFirstDocumentFlow =
+    documents.length === 0 && !pendingDraft && !lastUpload;
   const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
-  const activeCaptureMode = selectedCaptureMode ?? preferredCaptureMode ?? (isFirstDocumentFlow ? "camera" : "file");
+  const activeCaptureMode =
+    selectedCaptureMode ??
+    preferredCaptureMode ??
+    (isFirstDocumentFlow ? "camera" : "file");
   const remoteViewStateSyncLabel = !currentCaseScopeKey
     ? "Elige tu caso para activar continuidad entre dispositivos."
     : persistAuditarViewStateMutation.isPending
@@ -3136,11 +3750,16 @@ export default function Auditar() {
         preferredCaptureMode,
         selectedRecommendedTargetType,
       }),
-    [preferredCaptureMode, selectedFile, selectedRecommendedTargetType],
+    [preferredCaptureMode, selectedFile, selectedRecommendedTargetType]
   );
-  const isProcessingDocument = analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
-  const isAutoAnalyzingSelectedFile = analyzeDraftMutation.isPending && Boolean(selectedFile) && !pendingDraft;
-  const selectedFileValidationMessage = useMemo(() => validateDocumentUploadFile(selectedFile), [selectedFile]);
+  const isProcessingDocument =
+    analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
+  const isAutoAnalyzingSelectedFile =
+    analyzeDraftMutation.isPending && Boolean(selectedFile) && !pendingDraft;
+  const selectedFileValidationMessage = useMemo(
+    () => validateDocumentUploadFile(selectedFile),
+    [selectedFile]
+  );
   const uploadProgressState = useMemo(
     () =>
       buildUploadProgressState({
@@ -3149,27 +3768,51 @@ export default function Auditar() {
         isAnalyzingDraft: analyzeDraftMutation.isPending,
         isConfirmingDraft: confirmDraftMutation.isPending,
       }),
-    [analyzeDraftMutation.isPending, confirmDraftMutation.isPending, pendingDraft, selectedFile],
+    [
+      analyzeDraftMutation.isPending,
+      confirmDraftMutation.isPending,
+      pendingDraft,
+      selectedFile,
+    ]
   );
-  const uploadProgressSteps = useMemo(() => getUploadProgressStepState(uploadProgressState.stepKey), [uploadProgressState.stepKey]);
-  const previewInsight = pendingDraft ? getUploadInsight(pendingDraft.classification.documentType) : null;
-  const previewReadiness = getDocumentReadiness(pendingDraft?.classification?.classificationConfidence);
+  const uploadProgressSteps = useMemo(
+    () => getUploadProgressStepState(uploadProgressState.stepKey),
+    [uploadProgressState.stepKey]
+  );
+  const previewInsight = pendingDraft
+    ? getUploadInsight(pendingDraft.classification.documentType)
+    : null;
+  const previewReadiness = getDocumentReadiness(
+    pendingDraft?.classification?.classificationConfidence
+  );
   const previewConfirmedEntries = useMemo(
-    () => getVisibleAnalysisEntries(pendingDraft?.preliminaryAnalysis?.confirmedData),
-    [pendingDraft],
+    () =>
+      getVisibleAnalysisEntries(
+        pendingDraft?.preliminaryAnalysis?.confirmedData
+      ),
+    [pendingDraft]
   );
   const previewEstimatedEntries = useMemo(
-    () => getVisibleAnalysisEntries(pendingDraft?.preliminaryAnalysis?.estimatedData),
-    [pendingDraft],
+    () =>
+      getVisibleAnalysisEntries(
+        pendingDraft?.preliminaryAnalysis?.estimatedData
+      ),
+    [pendingDraft]
   );
   const previewStructuredExtraction = useMemo(
-    () => sanitizeStructuredExtractionView(pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null),
-    [pendingDraft],
+    () =>
+      sanitizeStructuredExtractionView(
+        pendingDraft?.preliminaryAnalysis?.structuredExtraction ?? null
+      ),
+    [pendingDraft]
   );
-  const previewEditableFields = useMemo(() => buildPreviewEditableFields(pendingDraft), [pendingDraft]);
+  const previewEditableFields = useMemo(
+    () => buildPreviewEditableFields(pendingDraft),
+    [pendingDraft]
+  );
   const manualOverridePayload = useMemo(
     () => buildManualOverridePayload(previewEditableFields, manualFieldValues),
-    [manualFieldValues, previewEditableFields],
+    [manualFieldValues, previewEditableFields]
   );
   const {
     shouldShowInlineLegalConsent,
@@ -3186,14 +3829,20 @@ export default function Auditar() {
     pendingDraft: Boolean(pendingDraft),
     hasManualOverrides: manualOverridePayload.length > 0,
   });
-  const isPrimaryDocumentActionPending = isProcessingDocument || acceptLegalPackageMutation.isPending;
+  const isPrimaryDocumentActionPending =
+    isProcessingDocument || acceptLegalPackageMutation.isPending;
   const manualOverrideMap = useMemo(
-    () => new Map<string, string>(manualOverridePayload.map((item) => [item.key, item.value])),
-    [manualOverridePayload],
+    () =>
+      new Map<string, string>(
+        manualOverridePayload.map(item => [item.key, item.value])
+      ),
+    [manualOverridePayload]
   );
   const previewPresentTypes = useMemo(() => {
     const nextTypes = new Set(presentTypes);
-    const previewTarget = dossierTargets.find((item) => item.type === pendingDraft?.classification.documentType);
+    const previewTarget = dossierTargets.find(
+      item => item.type === pendingDraft?.classification.documentType
+    );
     if (previewTarget) {
       nextTypes.add(previewTarget.type);
     }
@@ -3201,7 +3850,7 @@ export default function Auditar() {
   }, [pendingDraft, presentTypes]);
   const previewNextTarget = useMemo(
     () => getContextualDossierNextTarget(previewPresentTypes),
-    [previewPresentTypes],
+    [previewPresentTypes]
   );
   const previewNextDocumentCopy = useMemo(
     () =>
@@ -3210,13 +3859,16 @@ export default function Auditar() {
         presentTypes: previewPresentTypes,
         opinion: visibleHeliosOpinion,
       }),
-    [previewNextTarget, previewPresentTypes, visibleHeliosOpinion],
+    [previewNextTarget, previewPresentTypes, visibleHeliosOpinion]
   );
   const previewConfirmedDisplayEntries = useMemo(() => {
-    const entries = previewConfirmedEntries.map(([key, value]) => [key, manualOverrideMap.get(key) ?? value] as [string, unknown]);
+    const entries = previewConfirmedEntries.map(
+      ([key, value]) =>
+        [key, manualOverrideMap.get(key) ?? value] as [string, unknown]
+    );
     const seenKeys = new Set(entries.map(([key]) => key));
 
-    previewEditableFields.forEach((field) => {
+    previewEditableFields.forEach(field => {
       const overrideValue = manualOverrideMap.get(field.key);
       if (overrideValue && !seenKeys.has(field.key)) {
         entries.unshift([field.key, overrideValue]);
@@ -3227,17 +3879,20 @@ export default function Auditar() {
     return entries;
   }, [manualOverrideMap, previewConfirmedEntries, previewEditableFields]);
   const previewEstimatedDisplayEntries = useMemo(
-    () => previewEstimatedEntries.filter(([key]) => !manualOverrideMap.has(key)),
-    [manualOverrideMap, previewEstimatedEntries],
+    () =>
+      previewEstimatedEntries.filter(([key]) => !manualOverrideMap.has(key)),
+    [manualOverrideMap, previewEstimatedEntries]
   );
   const displayPreviewStructuredExtraction = useMemo(() => {
     if (!previewStructuredExtraction) {
       return null;
     }
 
-    const editableLabelByKey = new Map(previewEditableFields.map((field) => [field.key, field.label]));
+    const editableLabelByKey = new Map(
+      previewEditableFields.map(field => [field.key, field.label])
+    );
     const existingKeys = new Set<string>();
-    const mergedFields = previewStructuredExtraction.fields.map((field) => {
+    const mergedFields = previewStructuredExtraction.fields.map(field => {
       existingKeys.add(field.key);
       const overrideValue = manualOverrideMap.get(field.key);
       if (!overrideValue) {
@@ -3253,7 +3908,7 @@ export default function Auditar() {
       };
     });
 
-    previewEditableFields.forEach((field) => {
+    previewEditableFields.forEach(field => {
       const overrideValue = manualOverrideMap.get(field.key);
       if (overrideValue && !existingKeys.has(field.key)) {
         mergedFields.unshift({
@@ -3266,13 +3921,15 @@ export default function Auditar() {
       }
     });
 
-    const overrideLabels = new Set(manualOverridePayload.map((item) => item.label.trim().toLowerCase()));
+    const overrideLabels = new Set(
+      manualOverridePayload.map(item => item.label.trim().toLowerCase())
+    );
 
     return {
       ...previewStructuredExtraction,
       fields: mergedFields.slice(0, 12),
       missingFields: previewStructuredExtraction.missingFields
-        .filter((item) => !overrideLabels.has(item.trim().toLowerCase()))
+        .filter(item => !overrideLabels.has(item.trim().toLowerCase()))
         .slice(0, 6),
       reviewNotes: manualOverridePayload.length
         ? [
@@ -3281,11 +3938,16 @@ export default function Auditar() {
           ].slice(0, 4)
         : previewStructuredExtraction.reviewNotes,
     };
-  }, [manualOverrideMap, manualOverridePayload, previewEditableFields, previewStructuredExtraction]);
+  }, [
+    manualOverrideMap,
+    manualOverridePayload,
+    previewEditableFields,
+    previewStructuredExtraction,
+  ]);
   const handleTriggerLegalGateHarnessConflict = () => {
     setLegalGateChecked(true);
     setSubmitError(null);
-    setLegalGateMetrics((current) => ({
+    setLegalGateMetrics(current => ({
       attempts: current.attempts + 1,
       retries: current.retries,
       conflicts: current.conflicts + 1,
@@ -3297,17 +3959,19 @@ export default function Auditar() {
         "Otro proceso está registrando esta aceptación. Protegimos tu expediente para evitar registros duplicados. Espera el temporizador y vuelve a intentarlo.",
         "concurrency",
         0,
-        3,
-      ),
+        3
+      )
     );
   };
 
-  const handleAcceptLegalPackage = async ({ isRetry = false }: { isRetry?: boolean } = {}) => {
+  const handleAcceptLegalPackage = async ({
+    isRetry = false,
+  }: { isRetry?: boolean } = {}) => {
     if (!caseDetailInput) {
       if (legalGateHarnessMode && isRetry) {
         setLegalGateError(null);
         setSubmitError(null);
-        setLegalGateMetrics((current) => ({
+        setLegalGateMetrics(current => ({
           attempts: current.attempts + 1,
           retries: current.retries + 1,
           conflicts: current.conflicts,
@@ -3316,7 +3980,7 @@ export default function Auditar() {
         }));
         await Promise.resolve();
         setLegalGateChecked(false);
-        setLegalGateMetrics((current) => ({
+        setLegalGateMetrics(current => ({
           ...current,
           lastEvent: "accepted",
           lastUpdatedAt: Date.now(),
@@ -3337,8 +4001,8 @@ export default function Auditar() {
       setLegalGateError(
         buildLegalGateErrorState(
           "Marca la casilla para seguir con este documento y registrar tu autorización.",
-          "validation",
-        ),
+          "validation"
+        )
       );
       return false;
     }
@@ -3348,7 +4012,7 @@ export default function Auditar() {
     try {
       setLegalGateError(null);
       setSubmitError(null);
-      setLegalGateMetrics((current) => ({
+      setLegalGateMetrics(current => ({
         attempts: current.attempts + (isRetry ? 0 : 1),
         retries: current.retries + (isRetry ? 1 : 0),
         conflicts: current.conflicts,
@@ -3372,18 +4036,24 @@ export default function Auditar() {
       trackLegalGateEvent("accepted", {
         tenantId: caseDetailInput.tenantId,
         caseId: caseDetailInput.caseId,
-        acceptedDocumentsCount: acceptedLegalDocumentsCount + legalPendingDocuments.length,
+        acceptedDocumentsCount:
+          acceptedLegalDocumentsCount + legalPendingDocuments.length,
         retryCount: nextRetryCount,
-        source: pendingDraft ? "draft_confirmation" : selectedFile ? "draft_analysis" : "gate_only",
+        source: pendingDraft
+          ? "draft_confirmation"
+          : selectedFile
+            ? "draft_analysis"
+            : "gate_only",
       });
       trackFunnelStep("legal_package_accepted", {
         tenantId: caseDetailInput.tenantId,
         caseId: caseDetailInput.caseId,
-        acceptedDocumentsCount: acceptedLegalDocumentsCount + legalPendingDocuments.length,
+        acceptedDocumentsCount:
+          acceptedLegalDocumentsCount + legalPendingDocuments.length,
         retryCount: nextRetryCount,
       });
       setLegalGateChecked(false);
-      setLegalGateMetrics((current) => ({
+      setLegalGateMetrics(current => ({
         ...current,
         lastEvent: "accepted",
         lastUpdatedAt: Date.now(),
@@ -3404,7 +4074,11 @@ export default function Auditar() {
           retryCount: nextRetryCount,
           retryAfterSeconds: resolvedError.retryAfterSeconds,
           waitTimeMs: resolvedError.retryAfterSeconds * 1000,
-          source: pendingDraft ? "draft_confirmation" : selectedFile ? "draft_analysis" : "gate_only",
+          source: pendingDraft
+            ? "draft_confirmation"
+            : selectedFile
+              ? "draft_analysis"
+              : "gate_only",
         });
         trackFunnelStep("legal_package_lock_conflict", {
           tenantId: caseDetailInput.tenantId,
@@ -3413,9 +4087,10 @@ export default function Auditar() {
         });
       }
 
-      setLegalGateMetrics((current) => ({
+      setLegalGateMetrics(current => ({
         ...current,
-        conflicts: current.conflicts + (resolvedError.type === "concurrency" ? 1 : 0),
+        conflicts:
+          current.conflicts + (resolvedError.type === "concurrency" ? 1 : 0),
         lastEvent:
           resolvedError.type === "concurrency"
             ? "conflict"
@@ -3431,12 +4106,15 @@ export default function Auditar() {
 
   const canRetryLegalGate =
     Boolean(legalGateError) &&
-    (legalGateError?.type === "concurrency" || legalGateError?.type === "transient") &&
+    (legalGateError?.type === "concurrency" ||
+      legalGateError?.type === "transient") &&
     legalGateError.retryCount < MAX_LEGAL_GATE_RETRIES;
 
   const handleRevalidateSocialSecurity = async () => {
     if (!caseDetailInput) {
-      setSubmitError("Primero elige un expediente para revalidar IMSS e Infonavit.");
+      setSubmitError(
+        "Primero elige un expediente para revalidar IMSS e Infonavit."
+      );
       return;
     }
 
@@ -3444,8 +4122,8 @@ export default function Auditar() {
       setLegalGateError(
         buildLegalGateErrorState(
           "Antes de revalidar IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
-          "validation",
-        ),
+          "validation"
+        )
       );
       return;
     }
@@ -3454,19 +4132,28 @@ export default function Auditar() {
       setSubmitError(null);
       setLegalGateError(null);
       await revalidateSocialSecurityMutation.mutateAsync(caseDetailInput);
-      await Promise.all([utils.cases.detail.invalidate(caseDetailInput), caseDetailQuery.refetch()]);
+      await Promise.all([
+        utils.cases.detail.invalidate(caseDetailInput),
+        caseDetailQuery.refetch(),
+      ]);
     } catch (error) {
-      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible revalidar IMSS e Infonavit en este momento."));
+      setSubmitError(
+        toFriendlyAuditarRuntimeMessage(
+          error,
+          "No fue posible revalidar IMSS e Infonavit en este momento."
+        )
+      );
     }
   };
 
   const handleHeliosCopilotSend = (content: string) => {
     if (!selectedTenantId || !selectedCaseId) {
-      setHeliosCopilotMessages((current) =>
+      setHeliosCopilotMessages(current =>
         appendHeliosCopilotMessage(current, {
           role: "assistant",
-          content: "Primero elige un expediente para que pueda responder con el contexto correcto.",
-        }),
+          content:
+            "Primero elige un expediente para que pueda responder con el contexto correcto.",
+        })
       );
       return;
     }
@@ -3475,19 +4162,22 @@ export default function Auditar() {
       setLegalGateError(
         buildLegalGateErrorState(
           "Antes de usar tu asistente laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
-          "validation",
-        ),
+          "validation"
+        )
       );
-      setHeliosCopilotMessages((current) =>
+      setHeliosCopilotMessages(current =>
         appendHeliosCopilotMessage(current, {
           role: "assistant",
-          content: "Antes de abrir tu asistente laboral, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
-        }),
+          content:
+            "Antes de abrir tu asistente laboral, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
+        })
       );
       return;
     }
 
-    setHeliosCopilotMessages((current) => appendHeliosCopilotMessage(current, { role: "user", content }));
+    setHeliosCopilotMessages(current =>
+      appendHeliosCopilotMessage(current, { role: "user", content })
+    );
     heliosCopilotMutation.mutate(
       {
         tenantId: selectedTenantId,
@@ -3495,20 +4185,25 @@ export default function Auditar() {
         prompt: content,
       },
       {
-        onSuccess: (response) => {
-          setHeliosCopilotMessages((current) => appendHeliosCopilotMessage(current, { role: "assistant", content: response.answer }));
+        onSuccess: response => {
+          setHeliosCopilotMessages(current =>
+            appendHeliosCopilotMessage(current, {
+              role: "assistant",
+              content: response.answer,
+            })
+          );
         },
-        onError: (error) => {
-          setHeliosCopilotMessages((current) =>
+        onError: error => {
+          setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
               content:
                 error.message ||
                 "No pude responder en este momento. Puedes intentarlo otra vez o seguir fortaleciendo tu expediente con más documentos.",
-            }),
+            })
           );
         },
-      },
+      }
     );
   };
 
@@ -3521,16 +4216,22 @@ export default function Auditar() {
   };
 
   const previewStructuredConfirmedFields = useMemo(
-    () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "confirmed"),
-    [displayPreviewStructuredExtraction],
+    () =>
+      (displayPreviewStructuredExtraction?.fields ?? []).filter(
+        field => field.status === "confirmed"
+      ),
+    [displayPreviewStructuredExtraction]
   );
   const previewStructuredEstimatedFields = useMemo(
-    () => (displayPreviewStructuredExtraction?.fields ?? []).filter((field) => field.status === "estimated"),
-    [displayPreviewStructuredExtraction],
+    () =>
+      (displayPreviewStructuredExtraction?.fields ?? []).filter(
+        field => field.status === "estimated"
+      ),
+    [displayPreviewStructuredExtraction]
   );
   const previewGuardrails = pendingDraft?.preliminaryAnalysis?.guardrails ?? [];
   const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
-    const documentEntries: DossierHistoryEntry[] = documents.map((document) => ({
+    const documentEntries: DossierHistoryEntry[] = documents.map(document => ({
       id: `document-${document.documentId}`,
       title: `Subiste ${getSimpleDocumentTypeLabel(document.documentType).toLowerCase()}`,
       description: `${document.originalName} ya quedó ordenado dentro de tu expediente digital.`,
@@ -3539,70 +4240,84 @@ export default function Auditar() {
       timestamp: document.createdAt,
     }));
 
-    const monitoringEntries: DossierHistoryEntry[] = monitoringDocuments.map((item) => ({
-      id: `monitoring-${item.documentId}`,
-      title:
-        item.status === "received"
-          ? "Llegó una actualización automática"
-          : item.status === "attention"
-            ? "Conviene revisar un seguimiento"
-            : "Tu documento sigue avanzando",
-      description:
-        item.status === "received"
-          ? `${item.documentName} ya devolvió una respuesta útil para tu expediente.`
-          : item.status === "attention"
-            ? `${item.documentName} requiere una revisión con más calma para no perder contexto importante.`
-            : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu expediente.`,
-      tag:
-        item.status === "received"
-          ? "Respuesta recibida"
-          : item.status === "attention"
-            ? "Seguimiento sensible"
-            : "Seguimiento en curso",
-      category: "response",
-      timestamp: item.respondedAt ?? item.dispatchedAt,
-    }));
+    const monitoringEntries: DossierHistoryEntry[] = monitoringDocuments.map(
+      item => ({
+        id: `monitoring-${item.documentId}`,
+        title:
+          item.status === "received"
+            ? "Llegó una actualización automática"
+            : item.status === "attention"
+              ? "Conviene revisar un seguimiento"
+              : "Tu documento sigue avanzando",
+        description:
+          item.status === "received"
+            ? `${item.documentName} ya devolvió una respuesta útil para tu expediente.`
+            : item.status === "attention"
+              ? `${item.documentName} requiere una revisión con más calma para no perder contexto importante.`
+              : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu expediente.`,
+        tag:
+          item.status === "received"
+            ? "Respuesta recibida"
+            : item.status === "attention"
+              ? "Seguimiento sensible"
+              : "Seguimiento en curso",
+        category: "response",
+        timestamp: item.respondedAt ?? item.dispatchedAt,
+      })
+    );
 
-    const summaryEntries: DossierHistoryEntry[] = visibleHeliosOpinion?.generatedAt
-      ? [
-          {
-            id: "visible-summary",
-            title: "Tu resumen del expediente se actualizó",
-            description:
-              warmVisibleNamingCopy(visibleHeliosOpinion.summary) ??
-              "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
-            tag: "Resumen actualizado",
-            category: "summary",
-            timestamp: visibleHeliosOpinion.generatedAt,
-          },
-        ]
-      : [];
+    const summaryEntries: DossierHistoryEntry[] =
+      visibleHeliosOpinion?.generatedAt
+        ? [
+            {
+              id: "visible-summary",
+              title: "Tu resumen del expediente se actualizó",
+              description:
+                warmVisibleNamingCopy(visibleHeliosOpinion.summary) ??
+                "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
+              tag: "Resumen actualizado",
+              category: "summary",
+              timestamp: visibleHeliosOpinion.generatedAt,
+            },
+          ]
+        : [];
 
     return [...documentEntries, ...monitoringEntries, ...summaryEntries]
-      .sort((left, right) => new Date(right.timestamp ?? 0).getTime() - new Date(left.timestamp ?? 0).getTime())
+      .sort(
+        (left, right) =>
+          new Date(right.timestamp ?? 0).getTime() -
+          new Date(left.timestamp ?? 0).getTime()
+      )
       .slice(0, 5);
   }, [documents, monitoringDocuments, visibleHeliosOpinion]);
   const filteredDossierHistoryEntries = useMemo(
     () =>
       historyFilter === "all"
         ? dossierHistoryEntries
-        : dossierHistoryEntries.filter((entry) => entry.category === historyFilter),
-    [dossierHistoryEntries, historyFilter],
+        : dossierHistoryEntries.filter(
+            entry => entry.category === historyFilter
+          ),
+    [dossierHistoryEntries, historyFilter]
   );
   const heliosCopilotHistoryItems = useMemo(() => {
     const recentConversation = heliosCopilotMessages
-      .filter((message) => message.role === "user" || message.role === "assistant")
+      .filter(
+        message => message.role === "user" || message.role === "assistant"
+      )
       .slice(-2)
       .map((message, index) => ({
         id: `copilot-${index}-${message.role}`,
-        title: message.role === "user" ? "Tu última pregunta al asistente" : "Última respuesta del asistente",
+        title:
+          message.role === "user"
+            ? "Tu última pregunta al asistente"
+            : "Última respuesta del asistente",
         detail: message.content,
         timestampLabel: "Ahora",
       }));
 
     const recentDossierEntries = dossierHistoryEntries
       .slice(0, recentConversation.length > 0 ? 2 : 3)
-      .map((entry) => ({
+      .map(entry => ({
         id: entry.id,
         title: entry.title,
         detail: entry.description,
@@ -3611,13 +4326,20 @@ export default function Auditar() {
 
     return [...recentConversation, ...recentDossierEntries].slice(0, 3);
   }, [dossierHistoryEntries, heliosCopilotMessages]);
-  const selectedComparisonLeft = comparisonDocuments.find((item) => item.documentId === selectedComparisonLeftId);
-  const selectedComparisonRight = comparisonDocuments.find((item) => item.documentId === selectedComparisonRightId);
+  const selectedComparisonLeft = comparisonDocuments.find(
+    item => item.documentId === selectedComparisonLeftId
+  );
+  const selectedComparisonRight = comparisonDocuments.find(
+    item => item.documentId === selectedComparisonRightId
+  );
   const activeComparisonPair =
     selectedComparisonLeft &&
     selectedComparisonRight &&
     selectedComparisonLeft.documentId !== selectedComparisonRight.documentId
-      ? ([selectedComparisonLeft, selectedComparisonRight] as [ComparisonDocument, ComparisonDocument])
+      ? ([selectedComparisonLeft, selectedComparisonRight] as [
+          ComparisonDocument,
+          ComparisonDocument,
+        ])
       : automaticComparisonPair;
   const comparisonCopy = buildHeliosComparisonCopy({
     documents,
@@ -3651,7 +4373,7 @@ export default function Auditar() {
       }>;
     }
 
-    return [comparisonLeftDocument, comparisonRightDocument].map((document) => {
+    return [comparisonLeftDocument, comparisonRightDocument].map(document => {
       const opinion = asHeliosOpinion(document.heliosOpinion);
       return {
         id: document.documentId,
@@ -3666,19 +4388,27 @@ export default function Auditar() {
   }, [comparisonLeftDocument, comparisonRightDocument]);
 
   useEffect(() => {
-    const fallbackLeft = automaticComparisonPair?.[0]?.documentId ?? comparisonDocuments[0]?.documentId ?? "";
+    const fallbackLeft =
+      automaticComparisonPair?.[0]?.documentId ??
+      comparisonDocuments[0]?.documentId ??
+      "";
     const fallbackRight =
       automaticComparisonPair?.[1]?.documentId ??
-      comparisonDocuments.find((item) => item.documentId !== fallbackLeft)?.documentId ??
+      comparisonDocuments.find(item => item.documentId !== fallbackLeft)
+        ?.documentId ??
       "";
 
-    setSelectedComparisonLeftId((current) =>
-      comparisonDocuments.some((item) => item.documentId === current) ? current : fallbackLeft,
-    );
-    setSelectedComparisonRightId((current) =>
-      comparisonDocuments.some((item) => item.documentId === current && item.documentId !== fallbackLeft)
+    setSelectedComparisonLeftId(current =>
+      comparisonDocuments.some(item => item.documentId === current)
         ? current
-        : fallbackRight,
+        : fallbackLeft
+    );
+    setSelectedComparisonRightId(current =>
+      comparisonDocuments.some(
+        item => item.documentId === current && item.documentId !== fallbackLeft
+      )
+        ? current
+        : fallbackRight
     );
   }, [automaticComparisonPair, comparisonDocuments]);
 
@@ -3693,9 +4423,19 @@ export default function Auditar() {
       return;
     }
 
-    setManualFieldValues(Object.fromEntries(buildPreviewEditableFields(pendingDraft).map((field) => [field.key, field.value])));
+    setManualFieldValues(
+      Object.fromEntries(
+        buildPreviewEditableFields(pendingDraft).map(field => [
+          field.key,
+          field.value,
+        ])
+      )
+    );
     setPreviewStatusFlash(true);
-    const timeoutId = window.setTimeout(() => setPreviewStatusFlash(false), 1800);
+    const timeoutId = window.setTimeout(
+      () => setPreviewStatusFlash(false),
+      1800
+    );
     return () => window.clearTimeout(timeoutId);
   }, [pendingDraft]);
 
@@ -3705,9 +4445,15 @@ export default function Auditar() {
       return;
     }
 
-    recommendedStepRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    recommendedStepRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
     setRecommendedStepFlash(true);
-    const timeoutId = window.setTimeout(() => setRecommendedStepFlash(false), 2200);
+    const timeoutId = window.setTimeout(
+      () => setRecommendedStepFlash(false),
+      2200
+    );
     return () => window.clearTimeout(timeoutId);
   }, [pendingDraft, previewNextTarget]);
 
@@ -3736,7 +4482,9 @@ export default function Auditar() {
       return;
     }
 
-    const selectedProgress = dossierTypeProgress.find((item) => item.type === selectedRecommendedTargetType);
+    const selectedProgress = dossierTypeProgress.find(
+      item => item.type === selectedRecommendedTargetType
+    );
     if (selectedProgress?.percent === 100) {
       setSelectedRecommendedTargetType(null);
     }
@@ -3744,12 +4492,21 @@ export default function Auditar() {
 
   const isFirstDossierJourney = documents.length === 0;
 
-  const trackFirstDossierReviewOutcome = (outcome: "confirmed" | "restarted" | "cleared") => {
-    if (!isFirstDossierJourney || !pendingDraft || previewReviewStartedAtRef.current === null) {
+  const trackFirstDossierReviewOutcome = (
+    outcome: "confirmed" | "restarted" | "cleared"
+  ) => {
+    if (
+      !isFirstDossierJourney ||
+      !pendingDraft ||
+      previewReviewStartedAtRef.current === null
+    ) {
       return;
     }
 
-    const secondsInReview = Math.max(0, Math.round((Date.now() - previewReviewStartedAtRef.current) / 1000));
+    const secondsInReview = Math.max(
+      0,
+      Math.round((Date.now() - previewReviewStartedAtRef.current) / 1000)
+    );
     if (secondsInReview >= 12) {
       trackEvent("auditar_first_dossier_review_hesitated", {
         tenantId: selectedTenantId,
@@ -3763,7 +4520,11 @@ export default function Auditar() {
     previewReviewStartedAtRef.current = null;
   };
 
-  const handleContextualShortcut = (shortcut: ContextualShortcut, documentType: string, surface: "draft" | "confirmed") => {
+  const handleContextualShortcut = (
+    shortcut: ContextualShortcut,
+    documentType: string,
+    surface: "draft" | "confirmed"
+  ) => {
     trackEvent("auditar_contextual_shortcut_used", {
       tenantId: selectedTenantId,
       caseId: selectedCaseId,
@@ -3815,7 +4576,7 @@ export default function Auditar() {
     setPendingDraft(null);
     setTextHint("");
     setSubmitError(null);
-    setPickerKey((value) => value + 1);
+    setPickerKey(value => value + 1);
     setUploadSourceOpen(false);
   };
 
@@ -3828,7 +4589,10 @@ export default function Auditar() {
         trackEvent("auditar_first_dossier_validation_blocked", {
           tenantId: selectedTenantId,
           caseId: selectedCaseId,
-          reason: file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES ? "file_too_large" : "unsupported_file",
+          reason:
+            file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES
+              ? "file_too_large"
+              : "unsupported_file",
           fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
         });
       }
@@ -3839,7 +4603,7 @@ export default function Auditar() {
       setPendingDraft(null);
       setLastUpload(null);
       setSubmitError(validationMessage);
-      setPickerKey((value) => value + 1);
+      setPickerKey(value => value + 1);
       setUploadSourceOpen(false);
       return;
     }
@@ -3871,7 +4635,11 @@ export default function Auditar() {
       previewReviewStartedAtRef.current = null;
     }
     if (file && selectedRecommendedTargetType) {
-      setTextHint((current) => current.trim() || getRecommendedDocumentHint(selectedRecommendedTargetType));
+      setTextHint(
+        current =>
+          current.trim() ||
+          getRecommendedDocumentHint(selectedRecommendedTargetType)
+      );
     }
     setSubmitError(null);
     setUploadSourceOpen(false);
@@ -3900,7 +4668,7 @@ export default function Auditar() {
 
   const handleCaptureModeSelection = (
     mode: AuditarCaptureMode,
-    surface: "compact_mobile_toggle" | "preference_panel",
+    surface: "compact_mobile_toggle" | "preference_panel"
   ) => {
     setPreferredCaptureMode(mode);
     setSelectedCaptureMode(mode);
@@ -3908,21 +4676,35 @@ export default function Auditar() {
       tenantId: selectedTenantId,
       caseId: selectedCaseId,
       mode,
-      context: shouldCompactMobileUploadEntry ? "first_upload" : "subsequent_upload",
+      context: shouldCompactMobileUploadEntry
+        ? "first_upload"
+        : "subsequent_upload",
       surface,
     });
   };
 
-  const focusRecommendedUpload = (targetType?: DossierTarget["type"] | null) => {
-    const resolvedTargetType = targetType ?? effectiveRecommendedTarget?.type ?? dossierStatus.nextTarget?.type ?? null;
+  const focusRecommendedUpload = (
+    targetType?: DossierTarget["type"] | null
+  ) => {
+    const resolvedTargetType =
+      targetType ??
+      effectiveRecommendedTarget?.type ??
+      dossierStatus.nextTarget?.type ??
+      null;
 
     if (resolvedTargetType) {
       setSelectedRecommendedTargetType(resolvedTargetType);
-      setTextHint((current) => current.trim() || getRecommendedDocumentHint(resolvedTargetType));
+      setTextHint(
+        current =>
+          current.trim() || getRecommendedDocumentHint(resolvedTargetType)
+      );
     }
 
     setSubmitError(null);
-    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    uploadSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
 
     if (selectedFile) {
       return;
@@ -3947,13 +4729,13 @@ export default function Auditar() {
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
     setSubmitError(null);
-    setPickerKey((value) => value + 1);
+    setPickerKey(value => value + 1);
 
     openPreferredPicker();
   };
 
   const handleManualFieldChange = (key: string, value: string) => {
-    setManualFieldValues((current) => ({
+    setManualFieldValues(current => ({
       ...current,
       [key]: value,
     }));
@@ -3964,14 +4746,18 @@ export default function Auditar() {
     setAutoAnalyzeRequested(false);
 
     if (!selectedTenantId || !selectedCaseId || !selectedFile) {
-      setSubmitError("Selecciona un expediente y un archivo antes de continuar.");
+      setSubmitError(
+        "Selecciona un expediente y un archivo antes de continuar."
+      );
       return;
     }
 
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
-        setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
+        setSubmitError(
+          "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
+        );
         return;
       }
     }
@@ -3998,7 +4784,12 @@ export default function Auditar() {
       const selectionToDraftSeconds =
         documentSelectionStartedAtRef.current === null
           ? undefined
-          : Math.max(0, Math.round((Date.now() - documentSelectionStartedAtRef.current) / 1000));
+          : Math.max(
+              0,
+              Math.round(
+                (Date.now() - documentSelectionStartedAtRef.current) / 1000
+              )
+            );
       trackFunnelStep("document_draft_analyzed", {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
@@ -4011,9 +4802,14 @@ export default function Auditar() {
       setSelectedFile(null);
       setSelectedCaptureMode(null);
       setTextHint("");
-      setPickerKey((value) => value + 1);
+      setPickerKey(value => value + 1);
     } catch (error) {
-      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible analizar el archivo."));
+      setSubmitError(
+        toFriendlyAuditarRuntimeMessage(
+          error,
+          "No fue posible analizar el archivo."
+        )
+      );
     }
   };
 
@@ -4051,14 +4847,18 @@ export default function Auditar() {
 
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
-      setSubmitError("Primero analiza un documento para revisarlo antes de guardarlo.");
+      setSubmitError(
+        "Primero analiza un documento para revisarlo antes de guardarlo."
+      );
       return;
     }
 
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
-        setSubmitError("Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar.");
+        setSubmitError(
+          "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
+        );
         return;
       }
     }
@@ -4080,7 +4880,12 @@ export default function Auditar() {
       const selectionToConfirmedSeconds =
         documentSelectionStartedAtRef.current === null
           ? undefined
-          : Math.max(0, Math.round((Date.now() - documentSelectionStartedAtRef.current) / 1000));
+          : Math.max(
+              0,
+              Math.round(
+                (Date.now() - documentSelectionStartedAtRef.current) / 1000
+              )
+            );
       trackFunnelStep("document_draft_confirmed", {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
@@ -4118,14 +4923,22 @@ export default function Auditar() {
       setSelectedFile(null);
       setSelectedCaptureMode(null);
       setTextHint("");
-      setPickerKey((value) => value + 1);
+      setPickerKey(value => value + 1);
 
       await Promise.all([
         utils.cases.list.invalidate({ tenantId: selectedTenantId }),
-        utils.cases.detail.invalidate({ tenantId: selectedTenantId, caseId: selectedCaseId }),
+        utils.cases.detail.invalidate({
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+        }),
       ]);
     } catch (error) {
-      setSubmitError(toFriendlyAuditarRuntimeMessage(error, "No fue posible guardar el documento."));
+      setSubmitError(
+        toFriendlyAuditarRuntimeMessage(
+          error,
+          "No fue posible guardar el documento."
+        )
+      );
     }
   };
 
@@ -4135,14 +4948,19 @@ export default function Auditar() {
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <AuditaPatronLogoIcon className="sm:hidden" imageClassName="h-10 w-10 object-contain" />
+              <AuditaPatronLogoIcon
+                className="sm:hidden"
+                imageClassName="h-10 w-10 object-contain"
+              />
               <AuditaPatronLogoWordmark
                 className="hidden sm:inline-flex"
                 imageClassName="max-w-[240px]"
                 subtitleClassName="text-[0.82rem] tracking-[0.14em] sm:text-[0.92rem]"
               />
             </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">Preparando tu espacio de revisión...</h1>
+            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+              Preparando tu espacio de revisión...
+            </h1>
           </div>
         </div>
       </main>
@@ -4155,7 +4973,10 @@ export default function Auditar() {
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white">
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+              >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 Volver al inicio
               </a>
@@ -4167,7 +4988,10 @@ export default function Auditar() {
 
           <div className="mt-5 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-              <AuditaPatronLogo className="inline-flex" imageClassName="h-auto w-full max-w-[320px] object-contain sm:max-w-[388px] lg:max-w-[430px]" />
+              <AuditaPatronLogo
+                className="inline-flex"
+                imageClassName="h-auto w-full max-w-[320px] object-contain sm:max-w-[388px] lg:max-w-[430px]"
+              />
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Hecho para trabajadores, sin lenguaje complicado
@@ -4176,7 +5000,9 @@ export default function Auditar() {
                 Tus derechos laborales, claros y protegidos
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles. Además, aquí podrás revisar con más claridad señales sobre IMSS e Infonavit sin pasos confusos.
+                AuditaPatron recibe tu documento, lo analiza, lo resguarda y te
+                devuelve resultados útiles. Además, aquí podrás revisar con más
+                claridad señales sobre IMSS e Infonavit sin pasos confusos.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -4205,15 +5031,23 @@ export default function Auditar() {
             </div>
 
             <div className="mx-auto w-full max-w-xl rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué verás aquí</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Qué verás aquí
+              </p>
               <div className="mt-4 space-y-3">
                 {[
                   "Ve rápido cómo va creciendo tu expediente.",
                   "Sube documentos y deja que AuditaPatron los procese.",
                   "Distingue lo confirmado de lo estimado, incluyendo señales de IMSS e Infonavit.",
-                ].map((item) => (
-                  <div key={item} className="flex gap-3 rounded-[1.1rem] border border-white bg-white p-3.5">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                ].map(item => (
+                  <div
+                    key={item}
+                    className="flex gap-3 rounded-[1.1rem] border border-white bg-white p-3.5"
+                  >
+                    <CheckCircle2
+                      className="mt-0.5 h-5 w-5 shrink-0 text-teal-700"
+                      strokeWidth={1.8}
+                    />
                     <p className="text-sm leading-6 text-slate-700">{item}</p>
                   </div>
                 ))}
@@ -4226,16 +5060,20 @@ export default function Auditar() {
   }
 
   return (
-      <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
-
+    <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
       <div className="container mx-auto max-w-6xl">
         {auth.canToggleUserView && auth.isViewingAsUser ? (
           <Alert className="mb-6 border-amber-200 bg-amber-50/95 text-amber-950 shadow-sm">
             <AlertCircle className="h-4 w-4 text-amber-700" />
-            <AlertTitle>Estás viendo la plataforma como usuario normal</AlertTitle>
+            <AlertTitle>
+              Estás viendo la plataforma como usuario normal
+            </AlertTitle>
             <AlertDescription className="mt-2 space-y-3 text-sm leading-6 text-amber-900">
               <p>
-                Tu identidad real como <strong>CEO maestro</strong> sigue intacta. Esta vista sólo oculta la consola ejecutiva para que puedas hacer muestras con el mismo recorrido que vería un usuario estándar.
+                Tu identidad real como <strong>CEO maestro</strong> sigue
+                intacta. Esta vista sólo oculta la consola ejecutiva para que
+                puedas hacer muestras con el mismo recorrido que vería un
+                usuario estándar.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button
@@ -4253,9 +5091,15 @@ export default function Auditar() {
             </AlertDescription>
           </Alert>
         ) : null}
-        <div ref={heroCardRef} className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left">
+        <div
+          ref={heroCardRef}
+          className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left"
+        >
           <div>
-            <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+            >
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
               Volver al inicio
             </a>
@@ -4267,20 +5111,31 @@ export default function Auditar() {
                 subtitleClassName="text-[0.78rem] tracking-[0.14em] sm:text-[0.92rem]"
               />
             </div>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">Tu revisión</p>
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
+              Tu revisión
+            </p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
               Sube tu documento. Te diremos qué es, qué encontramos y qué sigue.
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-              <span className="sm:hidden">Lo analizamos al momento y te lo explicamos sin vueltas antes de guardarlo.</span>
-              <span className="hidden sm:inline">Sube el archivo y te devolvemos una lectura clara: qué documento parece ser, qué ya se entendió y cuál sería el siguiente paso útil.</span>
+              <span className="sm:hidden">
+                Lo analizamos al momento y te lo explicamos sin vueltas antes de
+                guardarlo.
+              </span>
+              <span className="hidden sm:inline">
+                Sube el archivo y te devolvemos una lectura clara: qué documento
+                parece ser, qué ya se entendió y cuál sería el siguiente paso
+                útil.
+              </span>
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
-              <ShieldCheck className="h-3.5 w-3.5 text-teal-300" strokeWidth={1.8} />
+              <ShieldCheck
+                className="h-3.5 w-3.5 text-teal-300"
+                strokeWidth={1.8}
+              />
               Archivo protegido y usado solo para tu auditoría
             </div>
-
           </div>
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
@@ -4290,10 +5145,17 @@ export default function Auditar() {
               onClick={() => {
                 void handleRevalidateSocialSecurity();
               }}
-              disabled={!caseDetailInput || revalidateSocialSecurityMutation.isPending}
+              disabled={
+                !caseDetailInput || revalidateSocialSecurityMutation.isPending
+              }
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`} strokeWidth={1.8} />
-              {revalidateSocialSecurityMutation.isPending ? "Revalidando cruce..." : "Revalidar IMSS e Infonavit"}
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`}
+                strokeWidth={1.8}
+              />
+              {revalidateSocialSecurityMutation.isPending
+                ? "Revalidando cruce..."
+                : "Revalidar IMSS e Infonavit"}
             </Button>
             {showHeroJumpCta ? (
               <Button
@@ -4301,7 +5163,10 @@ export default function Auditar() {
                 className="hidden rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white sm:inline-flex"
                 onClick={() => {
                   setMobileOnboardingIndex(0);
-                  uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  uploadSectionRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
                 }}
               >
                 Ir al formulario
@@ -4311,21 +5176,30 @@ export default function Auditar() {
               El formulario para subir tu archivo está justo abajo.
             </span>
             <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
-              {showHeroJumpCta ? "Úsalo solo si quieres bajar directo al formulario." : remoteViewStateSyncLabel}
+              {showHeroJumpCta
+                ? "Úsalo solo si quieres bajar directo al formulario."
+                : remoteViewStateSyncLabel}
             </span>
           </div>
         </div>
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-600">Estamos preparando tu espacio y la base inicial de tu expediente...</p>
+            <p className="text-sm font-medium text-slate-600">
+              Estamos preparando tu espacio y la base inicial de tu
+              expediente...
+            </p>
           </div>
         ) : null}
 
         {bootstrapMutation.isError ? (
           <div className="mt-8 rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-amber-950">
-            <p className="font-semibold">No fue posible preparar tu espacio de revisión.</p>
-            <p className="mt-2 text-sm leading-7">{bootstrapMutation.error.message}</p>
+            <p className="font-semibold">
+              No fue posible preparar tu espacio de revisión.
+            </p>
+            <p className="mt-2 text-sm leading-7">
+              {bootstrapMutation.error.message}
+            </p>
             <Button
               className="mt-4 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
               onClick={() => {
@@ -4338,12 +5212,19 @@ export default function Auditar() {
         ) : null}
 
         {legalGateHarnessMode ? (
-          <section className="mt-6 rounded-[1.75rem] border border-dashed border-amber-300 bg-amber-50/70 p-5 shadow-sm" data-testid="legal-gate-harness">
+          <section
+            className="mt-6 rounded-[1.75rem] border border-dashed border-amber-300 bg-amber-50/70 p-5 shadow-sm"
+            data-testid="legal-gate-harness"
+          >
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-900">Modo de prueba del gate legal</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-900">
+                  Modo de prueba del gate legal
+                </p>
                 <p className="mt-2 text-sm leading-6 text-amber-950">
-                  Simula un conflicto controlado del lock para validar en navegador el temporizador, las métricas visibles y el reintento.
+                  Simula un conflicto controlado del lock para validar en
+                  navegador el temporizador, las métricas visibles y el
+                  reintento.
                 </p>
               </div>
               <Button
@@ -4355,7 +5236,6 @@ export default function Auditar() {
               >
                 Simular conflicto del lock
               </Button>
-
             </div>
           </section>
         ) : null}
@@ -4368,9 +5248,13 @@ export default function Auditar() {
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
-                <h2 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">La confirmación aparece justo cuando envías o guardas tu archivo.</h2>
+                <h2 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                  La confirmación aparece justo cuando envías o guardas tu
+                  archivo.
+                </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  No interrumpe tu flujo antes de tiempo. Solo protege el expediente y deja registro versionado en la acción principal.
+                  No interrumpe tu flujo antes de tiempo. Solo protege el
+                  expediente y deja registro versionado en la acción principal.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                   <button
@@ -4381,35 +5265,79 @@ export default function Auditar() {
                     Revisar aviso y términos vigentes
                     <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
                   </button>
-                  <span className="text-slate-500">Versión vigente {legalAcceptance?.legalVersion ?? LEGAL_VERSION}</span>
+                  <span className="text-slate-500">
+                    Versión vigente{" "}
+                    {legalAcceptance?.legalVersion ?? LEGAL_VERSION}
+                  </span>
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[21rem]">
                 <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700">
-                  <p className="font-semibold text-slate-950">Cobertura legal</p>
-                  <p className="mt-2">{acceptedLegalDocumentsCount} de {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} documentos aceptados en esta versión.</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">La aceptación se registra cuando confirmas la acción principal de este expediente.</p>
+                  <p className="font-semibold text-slate-950">
+                    Cobertura legal
+                  </p>
+                  <p className="mt-2">
+                    {acceptedLegalDocumentsCount} de{" "}
+                    {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length}{" "}
+                    documentos aceptados en esta versión.
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    La aceptación se registra cuando confirmas la acción
+                    principal de este expediente.
+                  </p>
                 </div>
-                <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700" data-testid="legal-gate-lock-metrics">
-                  <p className="font-semibold text-slate-950">Estado del resguardo</p>
+                <div
+                  className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700"
+                  data-testid="legal-gate-lock-metrics"
+                >
+                  <p className="font-semibold text-slate-950">
+                    Estado del resguardo
+                  </p>
                   <div className="mt-3 grid grid-cols-3 gap-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Intentos</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-attempts">{legalGateMetrics.attempts}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        Intentos
+                      </p>
+                      <p
+                        className="mt-1 text-lg font-semibold text-slate-950"
+                        data-testid="legal-gate-metric-attempts"
+                      >
+                        {legalGateMetrics.attempts}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Conflictos</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-conflicts">{legalGateMetrics.conflicts}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        Conflictos
+                      </p>
+                      <p
+                        className="mt-1 text-lg font-semibold text-slate-950"
+                        data-testid="legal-gate-metric-conflicts"
+                      >
+                        {legalGateMetrics.conflicts}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Reintentos</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-950" data-testid="legal-gate-metric-retries">{legalGateMetrics.retries}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        Reintentos
+                      </p>
+                      <p
+                        className="mt-1 text-lg font-semibold text-slate-950"
+                        data-testid="legal-gate-metric-retries"
+                      >
+                        {legalGateMetrics.retries}
+                      </p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-slate-600" data-testid="legal-gate-metric-status">
-                    Estado actual: {describeLegalGateMetricEvent(legalGateMetrics.lastEvent)}
+                  <p
+                    className="mt-3 text-xs leading-5 text-slate-600"
+                    data-testid="legal-gate-metric-status"
+                  >
+                    Estado actual:{" "}
+                    {describeLegalGateMetricEvent(legalGateMetrics.lastEvent)}
                     {legalGateMetrics.lastUpdatedAt
-                      ? ` · Última actualización ${new Date(legalGateMetrics.lastUpdatedAt).toLocaleTimeString("es-MX", {
+                      ? ` · Última actualización ${new Date(
+                          legalGateMetrics.lastUpdatedAt
+                        ).toLocaleTimeString("es-MX", {
                           hour: "2-digit",
                           minute: "2-digit",
                           second: "2-digit",
@@ -4417,7 +5345,13 @@ export default function Auditar() {
                       : ""}
                   </p>
                   {legalGateRetryCountdown > 0 ? (
-                    <p className="mt-2 text-xs font-semibold text-amber-900" data-testid="legal-gate-metric-timer">Temporizador de reintento activo: {legalGateRetryCountdown}s</p>
+                    <p
+                      className="mt-2 text-xs font-semibold text-amber-900"
+                      data-testid="legal-gate-metric-timer"
+                    >
+                      Temporizador de reintento activo:{" "}
+                      {legalGateRetryCountdown}s
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -4425,30 +5359,52 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        <Drawer open={legalDocumentsDrawerOpen} onOpenChange={setLegalDocumentsDrawerOpen}>
+        <Drawer
+          open={legalDocumentsDrawerOpen}
+          onOpenChange={setLegalDocumentsDrawerOpen}
+        >
           <DrawerContent>
             <DrawerHeader className="text-left">
-              <DrawerTitle>Documentos legales vigentes de tu expediente</DrawerTitle>
+              <DrawerTitle>
+                Documentos legales vigentes de tu expediente
+              </DrawerTitle>
               <DrawerDescription>
-                Revísalos con calma. La aceptación se registra únicamente cuando confirmas la acción principal de analizar o guardar dentro de este expediente.
+                Revísalos con calma. La aceptación se registra únicamente cuando
+                confirmas la acción principal de analizar o guardar dentro de
+                este expediente.
               </DrawerDescription>
             </DrawerHeader>
             <div className="space-y-3 px-4 pb-2">
-              {LEGAL_DOCUMENTS.map((document) => {
-                const status = legalAcceptanceDocuments.find((item) => item.slug === document.slug);
+              {LEGAL_DOCUMENTS.map(document => {
+                const status = legalAcceptanceDocuments.find(
+                  item => item.slug === document.slug
+                );
                 const accepted = status?.accepted ?? false;
                 return (
-                  <div key={document.slug} className="rounded-[1.1rem] border border-slate-200 bg-white p-4">
+                  <div
+                    key={document.slug}
+                    className="rounded-[1.1rem] border border-slate-200 bg-white p-4"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-950">{document.fullTitle}</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">Versión {document.version} · Vigencia {document.effectiveDate}</p>
+                        <p className="font-semibold text-slate-950">
+                          {document.fullTitle}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                          Versión {document.version} · Vigencia{" "}
+                          {document.effectiveDate}
+                        </p>
                       </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${accepted ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${accepted ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}
+                      >
                         {accepted ? "Aceptado" : "Pendiente"}
                       </span>
                     </div>
-                    <a href={document.route} className="mt-3 inline-flex text-sm font-semibold text-slate-900 underline underline-offset-4">
+                    <a
+                      href={document.route}
+                      className="mt-3 inline-flex text-sm font-semibold text-slate-900 underline underline-offset-4"
+                    >
                       Abrir documento completo
                     </a>
                   </div>
@@ -4457,7 +5413,10 @@ export default function Auditar() {
             </div>
             <DrawerFooter>
               <DrawerClose asChild>
-                <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                >
                   Cerrar
                 </Button>
               </DrawerClose>
@@ -4477,41 +5436,71 @@ export default function Auditar() {
                     Sube tu primer archivo y recibe una lectura útil al momento.
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
-                    Sube el archivo y te devolvemos qué entendimos, qué hallazgo pesa más y qué conviene revisar después.
+                    Sube el archivo y te devolvemos qué entendimos, qué hallazgo
+                    pesa más y qué conviene revisar después.
                   </p>
                   <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-3">
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">Privacidad activa</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">Tus datos se usan solo dentro de esta auditoría.</p>
+                      <p className="font-semibold text-slate-950">
+                        Privacidad activa
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                        Tus datos se usan solo dentro de esta auditoría.
+                      </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">Control total</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">Primero ves el borrador y luego decides si lo guardas.</p>
+                      <p className="font-semibold text-slate-950">
+                        Control total
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                        Primero ves el borrador y luego decides si lo guardas.
+                      </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">Siguiente paso claro</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">Después de subirlo te diremos exactamente qué sigue.</p>
+                      <p className="font-semibold text-slate-950">
+                        Siguiente paso claro
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                        Después de subirlo te diremos exactamente qué sigue.
+                      </p>
                     </article>
                   </div>
 
                   <div className="mt-4 hidden gap-3 sm:grid sm:grid-cols-3">
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Recibes</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">Lectura inicial clara</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Recibes
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        Lectura inicial clara
+                      </p>
                     </article>
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Se guarda</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">Dentro de tu expediente</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Se guarda
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        Dentro de tu expediente
+                      </p>
                     </article>
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Siguiente paso</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">Documento recomendado</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Siguiente paso
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        Documento recomendado
+                      </p>
                     </article>
                   </div>
 
-                  {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
+                  {selectedRecommendedTargetType &&
+                  effectiveRecommendedTarget ? (
                     <div className="mt-3 rounded-[1.15rem] border border-sky-100 bg-sky-50 px-3 py-2 text-[13px] leading-5 text-sky-950 sm:mt-4 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
-                      Hoy conviene empezar por <strong>{effectiveRecommendedTarget.label.toLowerCase()}</strong>.
+                      Hoy conviene empezar por{" "}
+                      <strong>
+                        {effectiveRecommendedTarget.label.toLowerCase()}
+                      </strong>
+                      .
                     </div>
                   ) : null}
 
@@ -4520,25 +5509,34 @@ export default function Auditar() {
                       className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900 sm:h-12"
                       onClick={() => setUploadSourceOpen(true)}
                     >
-                      {selectedFile ? "Cambiar documento" : "Elegir cómo subir el documento"}
+                      {selectedFile
+                        ? "Cambiar documento"
+                        : "Elegir cómo subir el documento"}
                     </Button>
                     <p className="text-xs leading-5 text-slate-500 sm:text-sm">
-                      En un solo paso puedes tomar foto o elegir un archivo guardado.
+                      En un solo paso puedes tomar foto o elegir un archivo
+                      guardado.
                     </p>
                   </div>
                 </div>
 
                 <div className="hidden gap-3 sm:grid">
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-950">Qué pasa con tu archivo</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Qué pasa con tu archivo
+                    </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Se resguarda dentro del expediente y alimenta la comparación progresiva con el resto de tus piezas.
+                      Se resguarda dentro del expediente y alimenta la
+                      comparación progresiva con el resto de tus piezas.
                     </p>
                   </article>
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-950">Cómo seguir después</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Cómo seguir después
+                    </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Si ya lo tienes listo, súbelo ahora. Si dudas, la sugerencia activa te marca el siguiente documento útil.
+                      Si ya lo tienes listo, súbelo ahora. Si dudas, la
+                      sugerencia activa te marca el siguiente documento útil.
                     </p>
                   </article>
                 </div>
@@ -4548,33 +5546,68 @@ export default function Auditar() {
             <div className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Así va tu expediente laboral</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Así va tu expediente laboral
+                  </p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Hoy tu expediente laboral va en: {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                    Hoy tu expediente laboral va en:{" "}
+                    {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento{documents.length === 1 ? "" : "s"} cargado{documents.length === 1 ? "" : "s"}, {dossierStatus.completed} de {dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: {selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. {socialSecuritySummary} {heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
+                    Ya tienes {documents.length} documento
+                    {documents.length === 1 ? "" : "s"} cargado
+                    {documents.length === 1 ? "" : "s"},{" "}
+                    {dossierStatus.completed} de {dossierStatus.total} tipos
+                    útiles y un indicador vivo que se ajusta con señales reales
+                    del expediente. La siguiente mejor acción es simple:{" "}
+                    {selectedFile
+                      ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente"
+                      : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}
+                    . {socialSecuritySummary}{" "}
+                    {heliosExpediente?.summary ??
+                      "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
                   </p>
                 </div>
 
                 <div className="motion-hover-lift w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
-                  <p className="text-sm font-semibold text-teal-900">Cruce IMSS e Infonavit hoy</p>
-                  <p className="mt-2 text-base font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
-                  <p className="mt-2 text-sm leading-6 text-teal-950">{socialSecurityRecommendedNextStep}</p>
+                  <p className="text-sm font-semibold text-teal-900">
+                    Cruce IMSS e Infonavit hoy
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">
+                    {socialSecurityStatusLabel}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-teal-950">
+                    {socialSecurityRecommendedNextStep}
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900">
                     <span className="rounded-full bg-white px-3 py-1">
-                      {socialSecurityValidation?.imssDocumentsCount ?? 0} señal{(socialSecurityValidation?.imssDocumentsCount ?? 0) === 1 ? "" : "es"} IMSS
+                      {socialSecurityValidation?.imssDocumentsCount ?? 0} señal
+                      {(socialSecurityValidation?.imssDocumentsCount ?? 0) === 1
+                        ? ""
+                        : "es"}{" "}
+                      IMSS
                     </span>
                     <span className="rounded-full bg-white px-3 py-1">
-                      {socialSecurityValidation?.infonavitSignalsCount ?? 0} señal{(socialSecurityValidation?.infonavitSignalsCount ?? 0) === 1 ? "" : "es"} Infonavit
+                      {socialSecurityValidation?.infonavitSignalsCount ?? 0}{" "}
+                      señal
+                      {(socialSecurityValidation?.infonavitSignalsCount ??
+                        0) === 1
+                        ? ""
+                        : "es"}{" "}
+                      Infonavit
                     </span>
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-teal-900">{socialSecurityLastCheckLabel}</p>
+                  <p className="mt-3 text-xs leading-5 text-teal-900">
+                    {socialSecurityLastCheckLabel}
+                  </p>
                 </div>
               </div>
 
               <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{ width: `${socialSecurityCoveragePercent}%` }} />
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                  style={{ width: `${socialSecurityCoveragePercent}%` }}
+                />
               </div>
               <div className="mt-2 flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Claridad actual del expediente</span>
@@ -4583,12 +5616,18 @@ export default function Auditar() {
 
               <div className="mt-4 flex flex-col gap-3 rounded-[1.35rem] border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Siguiente paso recomendado</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Siguiente paso recomendado
+                  </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
-                    {selectedFile ? "Ya elegiste un archivo: sólo falta subirlo para reflejarlo en el expediente." : uploadPrimaryActionLabel}
+                    {selectedFile
+                      ? "Ya elegiste un archivo: sólo falta subirlo para reflejarlo en el expediente."
+                      : uploadPrimaryActionLabel}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Prioriza un documento con mayor contexto antes de revisar módulos secundarios. El expediente se vuelve más útil en cuanto entra la siguiente pieza clave.
+                    Prioriza un documento con mayor contexto antes de revisar
+                    módulos secundarios. El expediente se vuelve más útil en
+                    cuanto entra la siguiente pieza clave.
                   </p>
                 </div>
                 <div className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-900">
@@ -4597,21 +5636,30 @@ export default function Auditar() {
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {dossierTargets.map((item) => {
-                  const progress = dossierTypeProgress.find((entry) => entry.type === item.type);
-                  const isSelectedRecommendation = item.type === selectedRecommendedTargetType;
+                {dossierTargets.map(item => {
+                  const progress = dossierTypeProgress.find(
+                    entry => entry.type === item.type
+                  );
+                  const isSelectedRecommendation =
+                    item.type === selectedRecommendedTargetType;
 
                   return (
                     <article
                       key={item.type}
                       className={`rounded-[1.25rem] border p-4 ${
-                        isSelectedRecommendation ? "border-teal-200 bg-teal-50" : "border-slate-200 bg-slate-50"
+                        isSelectedRecommendation
+                          ? "border-teal-200 bg-teal-50"
+                          : "border-slate-200 bg-slate-50"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold text-slate-900">{item.label}</p>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
+                          <p className="font-semibold text-slate-900">
+                            {item.label}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">
+                            {item.description}
+                          </p>
                         </div>
                         <div className="text-right">
                           <span
@@ -4625,7 +5673,9 @@ export default function Auditar() {
                           >
                             {progress?.percent ?? 0}%
                           </span>
-                          <p className="mt-2 text-xs font-medium text-slate-500">{progress?.coverageLabel}</p>
+                          <p className="mt-2 text-xs font-medium text-slate-500">
+                            {progress?.coverageLabel}
+                          </p>
                         </div>
                       </div>
                       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
@@ -4641,9 +5691,16 @@ export default function Auditar() {
                         />
                       </div>
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
-                        <p className="leading-6">{progress?.supportingCopy ?? item.benefit}</p>
+                        <p className="leading-6">
+                          {progress?.supportingCopy ?? item.benefit}
+                        </p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                          {progress?.count ?? 0}/{progress?.targetCount ?? item.suggestedCount} pieza{(progress?.targetCount ?? item.suggestedCount) === 1 ? "" : "s"} clave
+                          {progress?.count ?? 0}/
+                          {progress?.targetCount ?? item.suggestedCount} pieza
+                          {(progress?.targetCount ?? item.suggestedCount) === 1
+                            ? ""
+                            : "s"}{" "}
+                          clave
                         </span>
                       </div>
                     </article>
@@ -4654,13 +5711,18 @@ export default function Auditar() {
               <div className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Documentos que más enriquecen tu expediente laboral</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Documentos que más enriquecen tu expediente laboral
+                    </p>
                     <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Si vas a subir algo más, empieza por los archivos con más contexto.
+                      Si vas a subir algo más, empieza por los archivos con más
+                      contexto.
                     </h3>
                   </div>
                   <p className="max-w-xl text-sm leading-6 text-slate-600">
-                    Estos suelen ser de los documentos más útiles para darte una lectura más completa y dejar tu expediente mejor respaldado con el tiempo.
+                    Estos suelen ser de los documentos más útiles para darte una
+                    lectura más completa y dejar tu expediente mejor respaldado
+                    con el tiempo.
                   </p>
                 </div>
 
@@ -4678,35 +5740,54 @@ export default function Auditar() {
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    {missingPriorityUploadGuides.length > 0 ? "Faltantes reales detectados" : "Base prioritaria cubierta"}
+                    {missingPriorityUploadGuides.length > 0
+                      ? "Faltantes reales detectados"
+                      : "Base prioritaria cubierta"}
                   </span>
                 </div>
 
                 <div className="mt-4 grid gap-3 xl:grid-cols-2">
-                  {visiblePriorityUploadGuides.map((item) => {
+                  {visiblePriorityUploadGuides.map(item => {
                     const isPresent = presentTypes.has(item.type);
-                    const isFocused = item.type === selectedRecommendedTargetType;
+                    const isFocused =
+                      item.type === selectedRecommendedTargetType;
                     return (
                       <article
                         key={item.type}
                         className={`rounded-[1.2rem] border bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
-                          isFocused ? "border-teal-200 shadow-sm" : "border-white"
+                          isFocused
+                            ? "border-teal-200 shadow-sm"
+                            : "border-white"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Alta utilidad para tu expediente</p>
-                            <p className="mt-2 font-semibold text-slate-950">{item.title}</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                              Alta utilidad para tu expediente
+                            </p>
+                            <p className="mt-2 font-semibold text-slate-950">
+                              {item.title}
+                            </p>
                           </div>
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              isPresent ? "bg-emerald-100 text-emerald-700" : isFocused ? "bg-teal-100 text-teal-800" : "bg-amber-100 text-amber-800"
+                              isPresent
+                                ? "bg-emerald-100 text-emerald-700"
+                                : isFocused
+                                  ? "bg-teal-100 text-teal-800"
+                                  : "bg-amber-100 text-amber-800"
                             }`}
                           >
-                            {isPresent ? "Ya lo tienes" : isFocused ? "Enfocado ahora" : "Te falta y conviene subirlo"}
+                            {isPresent
+                              ? "Ya lo tienes"
+                              : isFocused
+                                ? "Enfocado ahora"
+                                : "Te falta y conviene subirlo"}
                           </span>
                         </div>
-                        <p className="mt-3 text-sm leading-6 text-slate-600">{item.summary}</p>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                          {item.summary}
+                        </p>
                         <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
                           {item.value}
                         </div>
@@ -4716,7 +5797,10 @@ export default function Auditar() {
                           onClick={() => focusRecommendedUpload(item.type)}
                         >
                           Subir este documento
-                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                          <ArrowRight
+                            className="ml-2 h-4 w-4"
+                            strokeWidth={1.8}
+                          />
                         </Button>
                       </article>
                     );
@@ -4759,11 +5843,17 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Estado de tu expediente laboral</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Estado de tu expediente laboral
+                      </p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                        {heliosExpediente?.stageLabel ? `${heliosStage.title} · ${heliosExpediente.stageLabel}` : heliosStage.title}
+                        {heliosExpediente?.stageLabel
+                          ? `${heliosStage.title} · ${heliosExpediente.stageLabel}`
+                          : heliosStage.title}
                       </h3>
-                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">{heliosExpediente?.summary ?? heliosStage.description}</p>
+                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">
+                        {heliosExpediente?.summary ?? heliosStage.description}
+                      </p>
                     </div>
                   </div>
                   <span
@@ -4783,44 +5873,73 @@ export default function Auditar() {
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Qué está pasando ahora</p>
-                    <p className="mt-2 font-semibold text-slate-950">Tu expediente se ordena, resguarda y revisa por ti</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{heliosStage.detail}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Qué está pasando ahora
+                    </p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      Tu expediente se ordena, resguarda y revisa por ti
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {heliosStage.detail}
+                    </p>
                   </div>
 
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tipo de revisión</p>
-                    <p className="mt-2 font-semibold text-slate-950">
-                      {visibleHeliosOpinion ? getHeliosModeLabel(visibleHeliosOpinion.mode) : "Modo inicial preparado"}
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Tipo de revisión
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{getHeliosActivationCopy(visibleHeliosOpinion?.mode)}</p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {visibleHeliosOpinion
+                        ? getHeliosModeLabel(visibleHeliosOpinion.mode)
+                        : "Modo inicial preparado"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {getHeliosActivationCopy(visibleHeliosOpinion?.mode)}
+                    </p>
                   </div>
 
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4 md:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cruce IMSS e Infonavit</p>
-                    <p className="mt-2 font-semibold text-slate-950">{socialSecurityStatusLabel}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {effectiveSocialSecurityValidation?.lastRevalidationSummary ?? socialSecurityRecommendedNextStep}
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Cruce IMSS e Infonavit
                     </p>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">{socialSecurityLastCheckLabel}</p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {socialSecurityStatusLabel}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {effectiveSocialSecurityValidation?.lastRevalidationSummary ??
+                        socialSecurityRecommendedNextStep}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      {socialSecurityLastCheckLabel}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Siguiente documento que más puede ayudarte</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Siguiente documento que más puede ayudarte
+                    </p>
                     <p className="mt-2 font-semibold text-slate-950">
-                      {socialSecurityRecommendedDocument?.title ?? "Todavía no hay una sugerencia documental específica"}
+                      {socialSecurityRecommendedDocument?.title ??
+                        "Todavía no hay una sugerencia documental específica"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {socialSecurityRecommendedDocument?.reason ?? socialSecurityRecommendedNextStep}
+                      {socialSecurityRecommendedDocument?.reason ??
+                        socialSecurityRecommendedNextStep}
                     </p>
                     <Button
                       variant="outline"
                       className="mt-4 h-11 rounded-full border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
-                      onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                      onClick={() =>
+                        focusRecommendedUpload(
+                          effectiveRecommendedTarget?.type ?? null
+                        )
+                      }
                     >
-                      {socialSecurityRecommendedDocument ? "Preparar esta sugerencia" : "Subir otro documento útil"}
+                      {socialSecurityRecommendedDocument
+                        ? "Preparar esta sugerencia"
+                        : "Subir otro documento útil"}
                       <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                     </Button>
                   </div>
@@ -4828,7 +5947,9 @@ export default function Auditar() {
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Historial de revalidaciones</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Historial de revalidaciones
+                        </p>
                         <p className="mt-2 font-semibold text-slate-950">
                           {socialSecurityRevalidationHistory.length
                             ? `${socialSecurityRevalidationHistory.length} revalidación${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
@@ -4847,20 +5968,37 @@ export default function Auditar() {
                           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-slate-900">
                             <span>Ver historial detallado</span>
                             <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-600">
-                              {socialSecurityRevalidationHistory.length} registro{socialSecurityRevalidationHistory.length === 1 ? "" : "s"}
+                              {socialSecurityRevalidationHistory.length}{" "}
+                              registro
+                              {socialSecurityRevalidationHistory.length === 1
+                                ? ""
+                                : "s"}
                             </span>
                           </summary>
                           <div className="mt-3 space-y-3">
-                            {socialSecurityRevalidationHistory.map((entry) => (
-                              <div key={`${entry.recordedAt}-${entry.summary}`} className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                            {socialSecurityRevalidationHistory.map(entry => (
+                              <div
+                                key={`${entry.recordedAt}-${entry.summary}`}
+                                className="rounded-[1rem] border border-slate-200 bg-white p-3"
+                              >
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <p className="font-semibold text-slate-900">{entry.statusLabel}</p>
-                                  <span className="text-xs font-medium text-slate-500">{formatDate(entry.recordedAt)}</span>
+                                  <p className="font-semibold text-slate-900">
+                                    {entry.statusLabel}
+                                  </p>
+                                  <span className="text-xs font-medium text-slate-500">
+                                    {formatDate(entry.recordedAt)}
+                                  </span>
                                 </div>
-                                <p className="mt-2 text-sm leading-6 text-slate-700">{entry.summary}</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                  {entry.summary}
+                                </p>
                                 <p className="mt-2 text-xs leading-5 text-slate-500">
-                                  {entry.coverageScore ? `Cobertura estimada: ${entry.coverageScore}%` : "Cobertura registrada en esta revalidación."}
-                                  {entry.recommendedNextStep ? ` · ${entry.recommendedNextStep}` : ""}
+                                  {entry.coverageScore
+                                    ? `Cobertura estimada: ${entry.coverageScore}%`
+                                    : "Cobertura registrada en esta revalidación."}
+                                  {entry.recommendedNextStep
+                                    ? ` · ${entry.recommendedNextStep}`
+                                    : ""}
                                 </p>
                               </div>
                             ))}
@@ -4868,7 +6006,9 @@ export default function Auditar() {
                         </details>
                       ) : (
                         <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-                          Cuando revalides IMSS e Infonavit desde tu expediente, aquí verás la fecha, el estado y el cambio detectado entre revisiones.
+                          Cuando revalides IMSS e Infonavit desde tu expediente,
+                          aquí verás la fecha, el estado y el cambio detectado
+                          entre revisiones.
                         </div>
                       )}
                     </div>
@@ -4888,9 +6028,13 @@ export default function Auditar() {
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-3 text-lg font-semibold text-slate-950">{pricingExperience.platform.title}</p>
+                      <p className="mt-3 text-lg font-semibold text-slate-950">
+                        {pricingExperience.platform.title}
+                      </p>
                       <p className="mt-2 text-sm leading-6 text-slate-700">
-                        Esta preparación es opcional. Si por ahora solo quieres seguir con tu expediente y los documentos sugeridos, puedes continuar sin pagar ni desbloquear nada.
+                        Esta preparación es opcional. Si por ahora solo quieres
+                        seguir con tu expediente y los documentos sugeridos,
+                        puedes continuar sin pagar ni desbloquear nada.
                       </p>
                     </div>
 
@@ -4905,7 +6049,11 @@ export default function Auditar() {
                       <Button
                         variant="outline"
                         className="h-11 rounded-full border-teal-200 bg-white text-teal-900 hover:bg-teal-50"
-                        onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                        onClick={() =>
+                          focusRecommendedUpload(
+                            effectiveRecommendedTarget?.type ?? null
+                          )
+                        }
                       >
                         {pricingExperience.platform.secondaryCtaLabel}
                       </Button>
@@ -4918,7 +6066,8 @@ export default function Auditar() {
             <div className="sm:hidden rounded-[1.3rem] border border-slate-200 bg-white px-3.5 py-3 shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Expediente en {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                  Expediente en{" "}
+                  {heliosExpediente?.stageLabel ?? dossierStatus.label}
                 </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
                   {dossierStatus.completed}/{dossierStatus.total}
@@ -4934,19 +6083,24 @@ export default function Auditar() {
             <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Sube tu documento</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Sube tu documento
+                  </p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                     Sube el documento y mira el resultado
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Se analiza solo. Enseguida te mostramos qué documento parece ser, qué encontramos y qué significa antes de guardarlo.
+                  Se analiza solo. Enseguida te mostramos qué documento parece
+                  ser, qué encontramos y qué significa antes de guardarlo.
                 </p>
               </div>
 
               <div className="hidden">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-900">Si vienes desde tu celular, así se siente de simple</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    Si vienes desde tu celular, así se siente de simple
+                  </p>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                     {mobileOnboardingIndex + 1}/{mobileOnboardingSteps.length}
                   </span>
@@ -4955,13 +6109,21 @@ export default function Auditar() {
                   <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-teal-700">
                     Paso {activeMobileOnboardingStep.step}
                   </div>
-                  <p className="mt-3 font-semibold text-slate-950">{activeMobileOnboardingStep.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{activeMobileOnboardingStep.description}</p>
+                  <p className="mt-3 font-semibold text-slate-950">
+                    {activeMobileOnboardingStep.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {activeMobileOnboardingStep.description}
+                  </p>
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <button
                       type="button"
                       className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
-                      onClick={() => setMobileOnboardingIndex((current) => Math.max(0, current - 1))}
+                      onClick={() =>
+                        setMobileOnboardingIndex(current =>
+                          Math.max(0, current - 1)
+                        )
+                      }
                       disabled={mobileOnboardingIndex === 0}
                     >
                       <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
@@ -4974,7 +6136,9 @@ export default function Auditar() {
                           type="button"
                           onClick={() => setMobileOnboardingIndex(index)}
                           className={`h-2.5 rounded-full transition-all ${
-                            index === mobileOnboardingIndex ? "w-6 bg-teal-600" : "w-2.5 bg-slate-300"
+                            index === mobileOnboardingIndex
+                              ? "w-6 bg-teal-600"
+                              : "w-2.5 bg-slate-300"
                           }`}
                           aria-label={`Ver paso ${item.step}`}
                         />
@@ -4983,8 +6147,18 @@ export default function Auditar() {
                     <button
                       type="button"
                       className="inline-flex h-10 items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 text-sm font-medium text-teal-800 transition hover:border-teal-300 hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-45"
-                      onClick={() => setMobileOnboardingIndex((current) => Math.min(mobileOnboardingSteps.length - 1, current + 1))}
-                      disabled={mobileOnboardingIndex === mobileOnboardingSteps.length - 1}
+                      onClick={() =>
+                        setMobileOnboardingIndex(current =>
+                          Math.min(
+                            mobileOnboardingSteps.length - 1,
+                            current + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        mobileOnboardingIndex ===
+                        mobileOnboardingSteps.length - 1
+                      }
                     >
                       Siguiente
                       <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
@@ -4993,12 +6167,16 @@ export default function Auditar() {
                 </div>
               </div>
 
-              <div className={`mt-6 gap-4 md:grid-cols-2 ${shouldCompactMobileUploadEntry || pendingDraft || selectedFile || isAutoAnalyzingSelectedFile ? "hidden sm:grid" : "grid"}`}>
+              <div
+                className={`mt-6 gap-4 md:grid-cols-2 ${shouldCompactMobileUploadEntry || pendingDraft || selectedFile || isAutoAnalyzingSelectedFile ? "hidden sm:grid" : "grid"}`}
+              >
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Tu espacio</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    Tu espacio
+                  </span>
                   <select
                     value={selectedTenantId}
-                    onChange={(event) => {
+                    onChange={event => {
                       setSelectedTenantId(event.target.value);
                       setSelectedCaseId("");
                       setPendingDraft(null);
@@ -5006,7 +6184,7 @@ export default function Auditar() {
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
-                    {tenantsQuery.data?.map((tenant) => (
+                    {tenantsQuery.data?.map(tenant => (
                       <option key={tenant.tenantId} value={tenant.tenantId}>
                         {tenant.displayName}
                       </option>
@@ -5015,17 +6193,19 @@ export default function Auditar() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Elige tu caso</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    Elige tu caso
+                  </span>
                   <select
                     value={selectedCaseId}
-                    onChange={(event) => {
+                    onChange={event => {
                       setSelectedCaseId(event.target.value);
                       setPendingDraft(null);
                       setLastUpload(null);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
-                    {casesQuery.data?.map((item) => (
+                    {casesQuery.data?.map(item => (
                       <option key={item.caseId} value={item.caseId}>
                         {item.title} · Folio {item.caseId.slice(-6)}
                       </option>
@@ -5034,40 +6214,59 @@ export default function Auditar() {
                 </label>
               </div>
 
-              <div ref={uploadSectionRef} className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
-                      <FileUp className="h-5 w-5" strokeWidth={1.8} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-950">Archivo principal</p>
-                      <p className="text-sm text-slate-600">Puede ser foto, PDF, XML u otro archivo laboral útil. Lo revisamos primero y tú decides si se guarda.</p>
-                    </div>
+              <div
+                ref={uploadSectionRef}
+                className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
+                    <FileUp className="h-5 w-5" strokeWidth={1.8} />
                   </div>
+                  <div>
+                    <p className="font-semibold text-slate-950">
+                      Archivo principal
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      Puede ser foto, PDF, XML u otro archivo laboral útil. Lo
+                      revisamos primero y tú decides si se guarda.
+                    </p>
+                  </div>
+                </div>
 
                 <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-3">
                   <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
                     <p className="font-semibold">Confidencial</p>
-                    <p className="mt-1 text-xs leading-5 text-emerald-900">Tus documentos se usan solo para esta auditoría.</p>
+                    <p className="mt-1 text-xs leading-5 text-emerald-900">
+                      Tus documentos se usan solo para esta auditoría.
+                    </p>
                   </article>
                   <article className="rounded-[1rem] border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-950">
                     <p className="font-semibold">Protegido</p>
-                    <p className="mt-1 text-xs leading-5 text-sky-900">La carga viaja protegida y queda resguardada en tu expediente.</p>
+                    <p className="mt-1 text-xs leading-5 text-sky-900">
+                      La carga viaja protegida y queda resguardada en tu
+                      expediente.
+                    </p>
                   </article>
                   <article className="rounded-[1rem] border border-violet-100 bg-violet-50 px-3 py-2 text-sm text-violet-950">
                     <p className="font-semibold">Bajo tu control</p>
-                    <p className="mt-1 text-xs leading-5 text-violet-900">Antes de guardarlo, te mostramos una vista previa para validar.</p>
+                    <p className="mt-1 text-xs leading-5 text-violet-900">
+                      Antes de guardarlo, te mostramos una vista previa para
+                      validar.
+                    </p>
                   </article>
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-
                   <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-2.5 text-sm leading-6 text-sky-950">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="font-semibold">Documento sugerido preparado</p>
+                        <p className="font-semibold">
+                          Documento sugerido preparado
+                        </p>
                         <p className="mt-1">
-                          Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.
+                          Enfocado en{" "}
+                          {effectiveRecommendedTarget.label.toLowerCase()}. Sube
+                          tu archivo para aplicar.
                         </p>
                       </div>
                       <button
@@ -5081,8 +6280,9 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
-                  <div className={`mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft ? "hidden sm:grid" : ""}`}>
-
+                <div
+                  className={`mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft ? "hidden sm:grid" : ""}`}
+                >
                   <div className="rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
@@ -5090,23 +6290,39 @@ export default function Auditar() {
                       </div>
                       <div>
                         <p className="font-semibold text-slate-950">
-                          {shouldCompactMobileUploadEntry ? "Sube tu primer documento" : "Escaneo asistido por IA"}
+                          {shouldCompactMobileUploadEntry
+                            ? "Sube tu primer documento"
+                            : "Escaneo asistido por IA"}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-700">
-                          {shouldCompactMobileUploadEntry ? "El análisis empieza solo en cuanto captures o elijas el documento. Tus datos siguen protegidos durante todo el flujo." : selectedFilePreparationCopy}
+                          {shouldCompactMobileUploadEntry
+                            ? "El análisis empieza solo en cuanto captures o elijas el documento. Tus datos siguen protegidos durante todo el flujo."
+                            : selectedFilePreparationCopy}
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 hidden flex-wrap gap-2 text-xs font-semibold sm:flex">
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Nitidez y legibilidad</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Bordes y orientación</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Coincidencia con el documento esperado</span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Nitidez y legibilidad
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Bordes y orientación
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        Coincidencia con el documento esperado
+                      </span>
                     </div>
                   </div>
 
-                  <div className={`rounded-[1.2rem] border border-slate-200 bg-white p-4 ${shouldCompactMobileUploadEntry ? "hidden sm:block" : ""}`}>
-                    <p className="text-sm font-semibold text-slate-950">Abrir primero</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">{getCaptureModeSupportCopy(preferredCaptureMode)}</p>
+                  <div
+                    className={`rounded-[1.2rem] border border-slate-200 bg-white p-4 ${shouldCompactMobileUploadEntry ? "hidden sm:block" : ""}`}
+                  >
+                    <p className="text-sm font-semibold text-slate-950">
+                      Abrir primero
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      {getCaptureModeSupportCopy(preferredCaptureMode)}
+                    </p>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -5115,7 +6331,12 @@ export default function Auditar() {
                             ? "border-teal-200 bg-teal-50 text-teal-900"
                             : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
-                        onClick={() => handleCaptureModeSelection("camera", "preference_panel")}
+                        onClick={() =>
+                          handleCaptureModeSelection(
+                            "camera",
+                            "preference_panel"
+                          )
+                        }
                       >
                         <Camera className="h-4 w-4" strokeWidth={1.8} />
                         Cámara
@@ -5123,11 +6344,14 @@ export default function Auditar() {
                       <button
                         type="button"
                         className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
-                          preferredCaptureMode === "file" || preferredCaptureMode === null
+                          preferredCaptureMode === "file" ||
+                          preferredCaptureMode === null
                             ? "border-teal-200 bg-teal-50 text-teal-900"
                             : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
-                        onClick={() => handleCaptureModeSelection("file", "preference_panel")}
+                        onClick={() =>
+                          handleCaptureModeSelection("file", "preference_panel")
+                        }
                       >
                         <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
                         Archivo
@@ -5136,15 +6360,23 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                {activeCaptureMode === "camera" && !shouldCompactMobileUploadEntry && !pendingDraft ? (
+                {activeCaptureMode === "camera" &&
+                !shouldCompactMobileUploadEntry &&
+                !pendingDraft ? (
                   <div className="mt-4 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                     <div className="rounded-[1.2rem] border border-teal-100 bg-white p-4">
-                      <p className="text-sm font-semibold text-slate-950">Guía visual para encuadrar el documento</p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Guía visual para encuadrar el documento
+                      </p>
                       <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Usa este marco como referencia al tomar la foto. Intenta que se vean las cuatro esquinas, evita sombras intensas y procura que el texto quede derecho.
+                        Usa este marco como referencia al tomar la foto. Intenta
+                        que se vean las cuatro esquinas, evita sombras intensas
+                        y procura que el texto quede derecho.
                       </p>
                       <p className="mt-3 text-xs leading-5 text-slate-500">
-                        Es una ayuda visual ligera. Si tu celular no sigue el borde perfecto, igual puedes continuar mientras el documento se vea completo y legible.
+                        Es una ayuda visual ligera. Si tu celular no sigue el
+                        borde perfecto, igual puedes continuar mientras el
+                        documento se vea completo y legible.
                       </p>
                     </div>
                     <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
@@ -5185,10 +6417,18 @@ export default function Auditar() {
                   <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm sm:hidden">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Documento cargado</p>
-                        <p className="mt-1 truncate text-sm font-semibold text-slate-950">{pendingDraft.previewAsset.fileName}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          Documento cargado
+                        </p>
+                        <p className="mt-1 truncate text-sm font-semibold text-slate-950">
+                          {pendingDraft.previewAsset.fileName}
+                        </p>
                         <p className="mt-1 text-xs leading-5 text-slate-600">
-                          {formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)} · Si prefieres, puedes cambiarlo y rehacer el análisis.
+                          {formatVisibleFileSize(
+                            pendingDraft.previewAsset.sizeBytes
+                          )}{" "}
+                          · Si prefieres, puedes cambiarlo y rehacer el
+                          análisis.
                         </p>
                       </div>
                       <Button
@@ -5204,16 +6444,26 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
-                <div className={`mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4 ${pendingDraft ? "hidden sm:block" : ""}`}>
+                <div
+                  className={`mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4 ${pendingDraft ? "hidden sm:block" : ""}`}
+                >
                   <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-950">Sube un documento y revisa el borrador</p>
-                        <p className="mt-1 text-xs leading-5 text-slate-600">La carga empieza sola. Tú decides si se guarda.</p>
+                        <p className="font-semibold text-slate-950">
+                          Sube un documento y revisa el borrador
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-slate-600">
+                          La carga empieza sola. Tú decides si se guarda.
+                        </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">
-                        <span className="rounded-full bg-white px-3 py-1">12 MB</span>
-                        <span className="rounded-full bg-white px-3 py-1">PDF · XML · imagen</span>
+                        <span className="rounded-full bg-white px-3 py-1">
+                          12 MB
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1">
+                          PDF · XML · imagen
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -5254,12 +6504,19 @@ export default function Auditar() {
                         <div className="rounded-[1rem] border border-teal-200 bg-teal-50/80 px-4 py-3 text-teal-950 shadow-sm">
                           <div className="flex items-start gap-3">
                             <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
-                              <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+                              <RefreshCw
+                                className="h-4 w-4 animate-spin"
+                                strokeWidth={1.8}
+                              />
                             </span>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold">Estamos analizando tu documento</p>
+                              <p className="text-sm font-semibold">
+                                Estamos analizando tu documento
+                              </p>
                               <p className="mt-1 text-xs leading-5 text-teal-900/90">
-                                Bloqueamos la cámara y los archivos unos segundos para evitar duplicados. Enseguida abriremos el borrador.
+                                Bloqueamos la cámara y los archivos unos
+                                segundos para evitar duplicados. Enseguida
+                                abriremos el borrador.
                               </p>
                             </div>
                           </div>
@@ -5272,10 +6529,13 @@ export default function Auditar() {
                             disabled={isAutoAnalyzingSelectedFile}
                             onClick={() => setUploadSourceOpen(true)}
                           >
-                            {selectedFile ? "Cambiar documento" : "Elegir cámara o archivo"}
+                            {selectedFile
+                              ? "Cambiar documento"
+                              : "Elegir cámara o archivo"}
                           </button>
                           <p className="mt-2 text-xs leading-5 text-slate-500">
-                            Al tocar aquí eliges si quieres tomar foto o subir un archivo guardado.
+                            Al tocar aquí eliges si quieres tomar foto o subir
+                            un archivo guardado.
                           </p>
                         </div>
                       ) : (
@@ -5310,7 +6570,8 @@ export default function Auditar() {
                     <Button
                       variant="outline"
                       className={`h-12 rounded-2xl ${
-                        preferredCaptureMode === "file" || preferredCaptureMode === null
+                        preferredCaptureMode === "file" ||
+                        preferredCaptureMode === null
                           ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
                           : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                       }`}
@@ -5326,19 +6587,34 @@ export default function Auditar() {
                     aria-describedby="upload-guardrails-summary"
                     className={`${pendingDraft ? "mt-4 hidden sm:block" : "mt-4"} rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
-                    <p className="sr-only" aria-live="polite" aria-atomic="true">
-                      {getUploadStepAnnouncement(uploadProgressState.stageLabel, uploadProgressState.title)}
+                    <p
+                      className="sr-only"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      {getUploadStepAnnouncement(
+                        uploadProgressState.stageLabel,
+                        uploadProgressState.title
+                      )}
                     </p>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">{uploadProgressState.eyebrow}</p>
-                        <p className="mt-2 break-words font-semibold">{uploadProgressState.title}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
+                          {uploadProgressState.eyebrow}
+                        </p>
+                        <p className="mt-2 break-words font-semibold">
+                          {uploadProgressState.title}
+                        </p>
                       </div>
                       <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 transition-colors duration-300">
                         {uploadProgressState.progress}%
                       </span>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" role="list" aria-label="Progreso de la carga y análisis del documento">
+                    <div
+                      className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4"
+                      role="list"
+                      aria-label="Progreso de la carga y análisis del documento"
+                    >
                       {uploadProgressSteps.map((step, index) => (
                         <div
                           key={step.key}
@@ -5359,17 +6635,33 @@ export default function Auditar() {
                                 : "border-white/40 bg-white/40 text-slate-600"
                           }`}
                         >
-                          <span className="block text-[11px] uppercase tracking-[0.16em] opacity-70">Etapa {index + 1}</span>
+                          <span className="block text-[11px] uppercase tracking-[0.16em] opacity-70">
+                            Etapa {index + 1}
+                          </span>
                           <span className="mt-1 block">{step.label}</span>
-                          <span className="sr-only">{step.isActive ? "Etapa actual" : step.isComplete ? "Etapa completada" : "Etapa pendiente"}</span>
+                          <span className="sr-only">
+                            {step.isActive
+                              ? "Etapa actual"
+                              : step.isComplete
+                                ? "Etapa completada"
+                                : "Etapa pendiente"}
+                          </span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/70" aria-hidden="true">
-                      <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
+                    <div
+                      className="mt-4 h-2 overflow-hidden rounded-full bg-white/70"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`}
+                        style={{ width: `${uploadProgressState.progress}%` }}
+                      />
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs opacity-90">
-                      <span className="font-semibold uppercase tracking-[0.14em]">{uploadProgressState.stageLabel}</span>
+                      <span className="font-semibold uppercase tracking-[0.14em]">
+                        {uploadProgressState.stageLabel}
+                      </span>
                       <span className="hidden sm:inline">•</span>
                       <span className="truncate">
                         {pendingDraft
@@ -5380,17 +6672,29 @@ export default function Auditar() {
                       </span>
                     </div>
                     {isAutoAnalyzingSelectedFile ? (
-                      <p className="mt-2 text-sm leading-5 opacity-90">Ya recibimos tu documento. Enseguida abriremos la vista previa.</p>
+                      <p className="mt-2 text-sm leading-5 opacity-90">
+                        Ya recibimos tu documento. Enseguida abriremos la vista
+                        previa.
+                      </p>
                     ) : (
-                      <p className="mt-2 text-sm leading-5 opacity-90">{uploadProgressState.description}</p>
+                      <p className="mt-2 text-sm leading-5 opacity-90">
+                        {uploadProgressState.description}
+                      </p>
                     )}
                     {selectedFileValidationMessage ? (
-                      <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
+                      <p className="mt-2 text-xs font-medium text-amber-900">
+                        {selectedFileValidationMessage}
+                      </p>
                     ) : null}
                   </div>
 
-                  <div id="upload-guardrails-summary" className={`mt-3 ${pendingDraft ? "hidden sm:flex" : "flex"} flex-wrap items-center gap-2 rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-700`}>
-                    <span className="font-semibold text-slate-900">Límites:</span>
+                  <div
+                    id="upload-guardrails-summary"
+                    className={`mt-3 ${pendingDraft ? "hidden sm:flex" : "flex"} flex-wrap items-center gap-2 rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-700`}
+                  >
+                    <span className="font-semibold text-slate-900">
+                      Límites:
+                    </span>
                     <span>{getUploadCompactGuardrails().fileRules}</span>
                     <span className="hidden sm:inline text-slate-400">•</span>
                     <span>{getUploadCompactGuardrails().privacyRules}</span>
@@ -5401,17 +6705,31 @@ export default function Auditar() {
                   <div className="mt-4 hidden rounded-[1.2rem] border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950 sm:block">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold">Vista previa lista</p>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-900">Revisar y confirmar</span>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-900">
+                        Revisar y confirmar
+                      </span>
                     </div>
-                    <p className="mt-1">{pendingDraft.previewAsset.fileName} · {formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)}</p>
+                    <p className="mt-1">
+                      {pendingDraft.previewAsset.fileName} ·{" "}
+                      {formatVisibleFileSize(
+                        pendingDraft.previewAsset.sizeBytes
+                      )}
+                    </p>
                   </div>
                 ) : selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold">Documento listo para análisis</p>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">En cola</span>
+                      <p className="font-semibold">
+                        Documento listo para análisis
+                      </p>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">
+                        En cola
+                      </span>
                     </div>
-                    <p className="mt-1">{selectedFile.name} · {formatVisibleFileSize(selectedFile.size)}</p>
+                    <p className="mt-1">
+                      {selectedFile.name} ·{" "}
+                      {formatVisibleFileSize(selectedFile.size)}
+                    </p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
@@ -5420,19 +6738,28 @@ export default function Auditar() {
                 )}
               </div>
 
-              <label className={`mt-4 block ${pendingDraft ? "hidden sm:block" : ""}`}>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Contexto opcional</span>
+              <label
+                className={`mt-4 block ${pendingDraft ? "hidden sm:block" : ""}`}
+              >
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Contexto opcional
+                </span>
                 <textarea
                   value={textHint}
-                  onChange={(event) => setTextHint(event.target.value)}
+                  onChange={event => setTextHint(event.target.value)}
                   rows={2}
                   placeholder="Ejemplo: recibo de nómina de marzo o alta IMSS."
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-teal-500"
                 />
               </label>
 
-              <div className={`mt-4 flex flex-wrap items-center gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50 px-4 py-3 text-xs leading-5 text-teal-950 ${pendingDraft ? "hidden sm:flex" : ""}`}>
-                <Lock className="h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+              <div
+                className={`mt-4 flex flex-wrap items-center gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50 px-4 py-3 text-xs leading-5 text-teal-950 ${pendingDraft ? "hidden sm:flex" : ""}`}
+              >
+                <Lock
+                  className="h-4 w-4 shrink-0 text-teal-700"
+                  strokeWidth={1.8}
+                />
                 <span className="font-semibold">Privacidad activa.</span>
                 <span>Tú revisas antes de guardar.</span>
                 <span className="hidden sm:inline text-teal-400">•</span>
@@ -5443,17 +6770,27 @@ export default function Auditar() {
                 <>
                   <div className="mt-6 space-y-3 sm:hidden">
                     <div className="overflow-hidden rounded-[1.5rem] bg-slate-950 p-5 text-white shadow-[0_28px_70px_-42px_rgba(2,6,23,0.8)]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-teal-200">Análisis listo</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-teal-200">
+                        Análisis listo
+                      </p>
                       <h3 className="mt-2 text-[1.85rem] font-semibold tracking-[-0.04em]">
-                        {getSimpleDocumentTypeLabel(pendingDraft.classification.documentType)}
+                        {getSimpleDocumentTypeLabel(
+                          pendingDraft.classification.documentType
+                        )}
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-slate-300">
-                        {pendingDraft.previewAsset.fileName} · {formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)}
+                        {pendingDraft.previewAsset.fileName} ·{" "}
+                        {formatVisibleFileSize(
+                          pendingDraft.previewAsset.sizeBytes
+                        )}
                       </p>
                       <div className="mt-4 rounded-[1.2rem] bg-white/10 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">Qué significa</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">
+                          Qué significa
+                        </p>
                         <p className="mt-2 text-sm leading-6 text-white">
-                          {displayPreviewStructuredExtraction?.summary ?? pendingDraft.preliminaryAnalysis.summary}
+                          {displayPreviewStructuredExtraction?.summary ??
+                            pendingDraft.preliminaryAnalysis.summary}
                         </p>
                       </div>
                     </div>
@@ -5461,39 +6798,70 @@ export default function Auditar() {
                     <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Qué encontramos</p>
-                          <p className="mt-1 text-base font-semibold text-slate-950">Lo más útil para decidir si lo guardas</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            Qué encontramos
+                          </p>
+                          <p className="mt-1 text-base font-semibold text-slate-950">
+                            Lo más útil para decidir si lo guardas
+                          </p>
                         </div>
-                        <span className={`rounded-full px-3 py-1 text-[11px] font-semibold ${previewReadiness.classes}`}>{previewReadiness.label}</span>
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-semibold ${previewReadiness.classes}`}
+                        >
+                          {previewReadiness.label}
+                        </span>
                       </div>
                       <div className="mt-4 space-y-3">
-                        {[...previewStructuredConfirmedFields, ...previewStructuredEstimatedFields].slice(0, 3).map((field) => (
-                          <div key={`${field.key}-${field.label}`} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{field.label}</p>
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                                  field.status === "confirmed" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                                }`}
-                              >
-                                {field.status === "confirmed" ? "Confirmado" : "Estimado"}
-                              </span>
+                        {[
+                          ...previewStructuredConfirmedFields,
+                          ...previewStructuredEstimatedFields,
+                        ]
+                          .slice(0, 3)
+                          .map(field => (
+                            <div
+                              key={`${field.key}-${field.label}`}
+                              className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  {field.label}
+                                </p>
+                                <span
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                    field.status === "confirmed"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-amber-100 text-amber-800"
+                                  }`}
+                                >
+                                  {field.status === "confirmed"
+                                    ? "Confirmado"
+                                    : "Estimado"}
+                                </span>
+                              </div>
+                              <p className="mt-2 break-words text-sm leading-6 text-slate-900">
+                                {field.value}
+                              </p>
                             </div>
-                            <p className="mt-2 break-words text-sm leading-6 text-slate-900">{field.value}</p>
-                          </div>
-                        ))}
-                        {previewStructuredConfirmedFields.length === 0 && previewStructuredEstimatedFields.length === 0 ? (
+                          ))}
+                        {previewStructuredConfirmedFields.length === 0 &&
+                        previewStructuredEstimatedFields.length === 0 ? (
                           <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-                            Todavía no hay datos claros para mostrar. Si la foto quedó floja, te conviene reintentar antes de guardar.
+                            Todavía no hay datos claros para mostrar. Si la foto
+                            quedó floja, te conviene reintentar antes de
+                            guardar.
                           </div>
                         ) : null}
                       </div>
                     </div>
 
                     <div className="rounded-[1.35rem] border border-emerald-100 bg-emerald-50 p-4 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">Siguiente paso</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                        Siguiente paso
+                      </p>
                       <p className="mt-2 text-base font-semibold text-slate-950">
-                        {previewNextTarget ? previewNextDocumentCopy.headline : "Si esto se ve bien, ya puedes guardarlo."}
+                        {previewNextTarget
+                          ? previewNextDocumentCopy.headline
+                          : "Si esto se ve bien, ya puedes guardarlo."}
                       </p>
                       <p className="mt-2 text-sm leading-6 text-emerald-950">
                         {previewNextTarget
@@ -5504,10 +6872,15 @@ export default function Auditar() {
                         <Button
                           variant="outline"
                           className="mt-4 h-11 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
-                          onClick={() => focusRecommendedUpload(previewNextTarget.type)}
+                          onClick={() =>
+                            focusRecommendedUpload(previewNextTarget.type)
+                          }
                         >
                           Seguir con esta sugerencia
-                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                          <ArrowRight
+                            className="ml-2 h-4 w-4"
+                            strokeWidth={1.8}
+                          />
                         </Button>
                       ) : null}
                     </div>
@@ -5518,17 +6891,25 @@ export default function Auditar() {
                           Corregir un dato antes de guardar
                         </summary>
                         <p className="mt-2 text-sm leading-6 text-teal-900">
-                          Solo si ves algo claramente incorrecto. Si no, puedes guardar directo.
+                          Solo si ves algo claramente incorrecto. Si no, puedes
+                          guardar directo.
                         </p>
                         <div className="mt-4 space-y-3">
-                          {previewEditableFields.map((field) => {
-                            const currentValue = manualFieldValues[field.key] ?? field.value;
-                            const isEdited = currentValue.trim() !== field.value.trim();
+                          {previewEditableFields.map(field => {
+                            const currentValue =
+                              manualFieldValues[field.key] ?? field.value;
+                            const isEdited =
+                              currentValue.trim() !== field.value.trim();
 
                             return (
-                              <label key={field.key} className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm">
+                              <label
+                                key={field.key}
+                                className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm"
+                              >
                                 <div className="flex items-center justify-between gap-2">
-                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">{field.label}</p>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
+                                    {field.label}
+                                  </p>
                                   <span
                                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                                       isEdited
@@ -5538,12 +6919,21 @@ export default function Auditar() {
                                           : "bg-amber-100 text-amber-800"
                                     }`}
                                   >
-                                    {isEdited ? "Ajustado" : field.source === "confirmed" ? "Confirmado" : "Sugerido"}
+                                    {isEdited
+                                      ? "Ajustado"
+                                      : field.source === "confirmed"
+                                        ? "Confirmado"
+                                        : "Sugerido"}
                                   </span>
                                 </div>
                                 <input
                                   value={currentValue}
-                                  onChange={(event) => handleManualFieldChange(field.key, event.target.value)}
+                                  onChange={event =>
+                                    handleManualFieldChange(
+                                      field.key,
+                                      event.target.value
+                                    )
+                                  }
                                   placeholder={field.value}
                                   className="mt-3 h-11 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
                                 />
@@ -5554,16 +6944,19 @@ export default function Auditar() {
                       </details>
                     ) : null}
 
-                    {(displayPreviewStructuredExtraction?.reviewNotes?.length || previewGuardrails.length) ? (
+                    {displayPreviewStructuredExtraction?.reviewNotes?.length ||
+                    previewGuardrails.length ? (
                       <details className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm">
                         <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900">
                           Qué revisar antes de guardar
                         </summary>
                         <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                          {displayPreviewStructuredExtraction?.reviewNotes?.slice(0, 2).map((item) => (
-                            <p key={`mobile-note-${item}`}>• {item}</p>
-                          ))}
-                          {previewGuardrails.slice(0, 2).map((item) => (
+                          {displayPreviewStructuredExtraction?.reviewNotes
+                            ?.slice(0, 2)
+                            .map(item => (
+                              <p key={`mobile-note-${item}`}>• {item}</p>
+                            ))}
+                          {previewGuardrails.slice(0, 2).map(item => (
                             <p key={`mobile-guardrail-${item}`}>• {item}</p>
                           ))}
                         </div>
@@ -5571,366 +6964,543 @@ export default function Auditar() {
                     ) : null}
                   </div>
 
-                <div className="mt-6 hidden rounded-[1.45rem] border border-sky-200 bg-sky-50 p-5 sm:block sm:p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">Vista previa antes de guardar</p>
-                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                        Ya analizamos tu documento. Revisa primero lo importante antes de integrarlo a tu expediente.
-                      </h3>
-                      <p className="mt-2 text-sm leading-7 text-slate-700">
-                        Aquí todavía nada reemplaza ni estorba lo que ya tenías bien guardado. Si algo se ve incompleto, puedes repetir la foto o elegir otro archivo.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        Tipo: {getSimpleDocumentTypeLabel(pendingDraft.classification.documentType)}
-                      </span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        Revisión: {getProcessingProfileLabel(pendingDraft.preliminaryAnalysis.processingProfile)}
-                      </span>
-                      <span className={`rounded-full px-3 py-1 ${previewReadiness.classes}`}>{previewReadiness.label}</span>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`mt-4 rounded-[1.2rem] border bg-white/90 p-4 transition-all duration-300 ${
-                      previewStatusFlash ? "border-sky-300 shadow-[0_24px_60px_-38px_rgba(14,165,233,0.55)] ring-2 ring-sky-100" : "border-white/80"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className={`mt-1 inline-flex h-2.5 w-2.5 rounded-full ${previewStatusFlash ? "animate-pulse bg-sky-500" : "bg-sky-300"}`} />
+                  <div className="mt-6 hidden rounded-[1.45rem] border border-sky-200 bg-sky-50 p-5 sm:block sm:p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <p className="font-semibold text-slate-950">Vista previa lista para revisión rápida</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-700">
-                          {manualOverridePayload.length
-                            ? `Llevas ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} manual${manualOverridePayload.length === 1 ? "" : "es"} preparado${manualOverridePayload.length === 1 ? "" : "s"} para el guardado final.`
-                            : "Si ves un dato importante mal leído, puedes corregirlo aquí. Es opcional y toma solo unos segundos."}
+                        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
+                          Vista previa antes de guardar
+                        </p>
+                        <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                          Ya analizamos tu documento. Revisa primero lo
+                          importante antes de integrarlo a tu expediente.
+                        </h3>
+                        <p className="mt-2 text-sm leading-7 text-slate-700">
+                          Aquí todavía nada reemplaza ni estorba lo que ya
+                          tenías bien guardado. Si algo se ve incompleto, puedes
+                          repetir la foto o elegir otro archivo.
                         </p>
                       </div>
-                    </div>
-                  </div>
-
-                  {pendingDraftShortcuts.length ? (
-                    <div className="mt-4 rounded-[1.2rem] border border-indigo-100 bg-indigo-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <Sparkles className="mt-1 h-5 w-5 shrink-0 text-indigo-700" strokeWidth={1.8} />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-indigo-950">Atajos útiles para este documento</p>
-                          <p className="mt-1 text-sm leading-6 text-indigo-900">
-                            Según el tipo detectado, puedes avanzar más rápido con uno de estos pasos sin salirte del flujo.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        {pendingDraftShortcuts.map((shortcut) => (
-                          <button
-                            key={shortcut.id}
-                            type="button"
-                            onClick={() => handleContextualShortcut(shortcut, pendingDraft.classification.documentType, "draft")}
-                            className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
-                          >
-                            <span className="text-sm font-semibold text-slate-950">{shortcut.label}</span>
-                            <span className="mt-1 block text-xs leading-5 text-slate-600">{shortcut.description}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
-                      <p className="font-semibold text-slate-950">{pendingDraft.scanAssistance.friendlyHeadline}</p>
-                      <p className="mt-2 text-sm leading-7 text-slate-700">{pendingDraft.scanAssistance.userGuidance}</p>
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                          Confianza visual {pendingDraft.scanAssistance.confidence}%
+                      <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          Tipo:{" "}
+                          {getSimpleDocumentTypeLabel(
+                            pendingDraft.classification.documentType
+                          )}
                         </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                          {getExpectedTypeAlignmentCopy(pendingDraft.scanAssistance.expectedTypeAlignment)}
+                        <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                          Revisión:{" "}
+                          {getProcessingProfileLabel(
+                            pendingDraft.preliminaryAnalysis.processingProfile
+                          )}
                         </span>
-                        {previewInsight ? (
-                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">{previewInsight.label}</span>
-                        ) : null}
-                      </div>
-                      {pendingDraft.scanAssistance.issues.length ? (
-                        <div className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
-                          {pendingDraft.scanAssistance.issues.map((item) => (
-                            <p key={item}>• {item}</p>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
-                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">Lectura estructurada</p>
-                      <h4 className="mt-2 font-semibold text-slate-950">
-                        {displayPreviewStructuredExtraction?.headline ?? "Resumen del documento"}
-                      </h4>
-                      <p className="mt-2 text-sm leading-7 text-slate-700">
-                        {displayPreviewStructuredExtraction?.summary ?? pendingDraft.preliminaryAnalysis.summary}
-                      </p>
-                      {previewStructuredConfirmedFields.length || previewStructuredEstimatedFields.length ? (
-                        <div className="mt-4 space-y-2">
-                          {[...previewStructuredConfirmedFields, ...previewStructuredEstimatedFields].slice(0, 6).map((field) => (
-                            <div key={`${field.key}-${field.label}`} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{field.label}</p>
-                                <span
-                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                                    field.status === "confirmed" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                                  }`}
-                                >
-                                  {field.status === "confirmed" ? "Confirmado" : "Estimado"}
-                                </span>
-                              </div>
-                              <p className="mt-1 break-words text-sm leading-6 text-slate-800">{field.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4 transition-all duration-300">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-teal-950">Corrige rápido solo lo que sí veas claro</p>
-                          <p className="mt-2 text-sm leading-7 text-teal-900">
-                            Esta revisión es opcional. Solo ajusta los datos que identifiques con claridad para dejar más preciso el guardado final.
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
-                          {manualOverridePayload.length
-                            ? `${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"}`
-                            : "Opcional"}
+                        <span
+                          className={`rounded-full px-3 py-1 ${previewReadiness.classes}`}
+                        >
+                          {previewReadiness.label}
                         </span>
                       </div>
-
-                      {previewEditableFields.length === 0 ? (
-                        <p className="mt-4 text-sm leading-7 text-teal-900">
-                          Esta vista previa no detectó campos prioritarios para corrección manual. Si la foto quedó floja, conviene repetir la captura.
-                        </p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {previewEditableFields.map((field) => {
-                            const currentValue = manualFieldValues[field.key] ?? field.value;
-                            const isEdited = currentValue.trim() !== field.value.trim();
-
-                            return (
-                              <label key={field.key} className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm transition-all duration-300">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">{field.label}</p>
-                                  <span
-                                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                                      isEdited
-                                        ? "bg-teal-100 text-teal-900"
-                                        : field.source === "confirmed"
-                                          ? "bg-emerald-100 text-emerald-800"
-                                          : "bg-amber-100 text-amber-800"
-                                    }`}
-                                  >
-                                    {isEdited ? "Ajustado" : field.source === "confirmed" ? "Confirmado" : "Sugerido"}
-                                  </span>
-                                </div>
-                                <input
-                                  value={currentValue}
-                                  onChange={(event) => handleManualFieldChange(field.key, event.target.value)}
-                                  placeholder={field.value}
-                                  className="mt-3 h-11 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
-                                />
-                                <p className="mt-2 text-xs leading-5 text-teal-900">{getEditableFieldSupportCopy(field.key)}</p>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
 
                     <div
-                      ref={recommendedStepRef}
-                      className={`rounded-[1.2rem] border bg-emerald-50 p-4 transition-all duration-300 ${
-                        recommendedStepFlash
-                          ? "border-emerald-300 shadow-[0_24px_60px_-38px_rgba(16,185,129,0.45)] ring-2 ring-emerald-100"
-                          : "border-emerald-100"
+                      className={`mt-4 rounded-[1.2rem] border bg-white/90 p-4 transition-all duration-300 ${
+                        previewStatusFlash
+                          ? "border-sky-300 shadow-[0_24px_60px_-38px_rgba(14,165,233,0.55)] ring-2 ring-sky-100"
+                          : "border-white/80"
                       }`}
                     >
-                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                        {recommendedStepFlash ? "Siguiente paso sugerido" : "Sugerencia útil para seguir"}
-                      </p>
-                      <h4 className="mt-2 text-lg font-semibold text-slate-950">{previewNextDocumentCopy.headline}</h4>
-                      <p className="mt-2 text-sm leading-7 text-emerald-950">{previewNextDocumentCopy.intro}</p>
-                      <div className="mt-4 rounded-[1rem] border border-white/80 bg-white p-3">
-                        <p className="text-sm font-semibold text-slate-950">{previewNextDocumentCopy.reasonTitle}</p>
-                        <p className="mt-2 text-sm leading-7 text-slate-700">{previewNextDocumentCopy.reasonBody}</p>
-                        <p className="mt-2 text-xs leading-6 text-slate-500">{previewNextDocumentCopy.coverage}</p>
-                      </div>
-                      {previewNextTarget ? (
-                        <Button
-                          variant="outline"
-                          className="mt-4 h-11 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
-                          onClick={() => focusRecommendedUpload(previewNextTarget.type)}
-                        >
-                          Seguir con esta sugerencia
-                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-semibold text-emerald-950">Lo que ya se ve claro</p>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
-                          {previewConfirmedDisplayEntries.length} dato{previewConfirmedDisplayEntries.length === 1 ? "" : "s"}
-                        </span>
-                      </div>
-                      {previewConfirmedDisplayEntries.length === 0 ? (
-                        <p className="mt-3 text-sm leading-7 text-emerald-900">
-                          Todavía no hay suficiente información clara para mostrar datos confirmados en esta vista previa.
-                        </p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {previewConfirmedDisplayEntries.map(([key, value]) => (
-                            <div key={key} className="rounded-[1rem] bg-white p-3">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">{getAnalysisFieldLabel(key)}</p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-semibold text-amber-950">Lo que conviene revisar</p>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
-                          {previewEstimatedDisplayEntries.length} dato{previewEstimatedDisplayEntries.length === 1 ? "" : "s"}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-sm leading-7 text-amber-900">
-                        Tómalos como orientación inicial. Si no te convence la lectura o la foto quedó floja, puedes repetir la captura antes de guardar.
-                      </p>
-                      {previewEstimatedDisplayEntries.length === 0 ? (
-                        <p className="mt-3 text-sm leading-7 text-amber-900">
-                          Por ahora no hay estimaciones adicionales que revisar en esta vista previa.
-                        </p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {previewEstimatedDisplayEntries.map(([key, value]) => (
-                            <div key={key} className="rounded-[1rem] bg-white p-3">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">{getAnalysisFieldLabel(key)}</p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {displayPreviewStructuredExtraction?.missingFields?.length || displayPreviewStructuredExtraction?.reviewNotes?.length || previewGuardrails.length ? (
-                    <div className="mt-4 rounded-[1.2rem] border border-white/80 bg-white p-4">
-                      <p className="font-semibold text-slate-950">Qué revisar antes de guardar</p>
-                      <div className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
-                        {displayPreviewStructuredExtraction?.missingFields?.map((item) => (
-                          <p key={`missing-${item}`}>• Todavía no se alcanzó a leer con claridad: {item}.</p>
-                        ))}
-                        {displayPreviewStructuredExtraction?.reviewNotes?.map((item) => (
-                          <p key={`note-${item}`}>• {item}</p>
-                        ))}
-                        {previewGuardrails.map((item) => (
-                          <p key={`guardrail-${item}`}>• {item}</p>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {shouldShowInlineLegalConsent ? (
-                    <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.42)]">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="max-w-2xl">
-                          <p className="text-sm font-semibold text-slate-950">Tu autorización se registra junto con este documento.</p>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">
-                            Así protegemos tu expediente y dejamos constancia de la versión legal vigente en el mismo paso.
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={`mt-1 inline-flex h-2.5 w-2.5 rounded-full ${previewStatusFlash ? "animate-pulse bg-sky-500" : "bg-sky-300"}`}
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-950">
+                            Vista previa lista para revisión rápida
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {manualOverridePayload.length
+                              ? `Llevas ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} manual${manualOverridePayload.length === 1 ? "" : "es"} preparado${manualOverridePayload.length === 1 ? "" : "s"} para el guardado final.`
+                              : "Si ves un dato importante mal leído, puedes corregirlo aquí. Es opcional y toma solo unos segundos."}
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          className="text-sm font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
-                          onClick={() => setLegalDocumentsDrawerOpen(true)}
-                        >
-                          Revisar aviso y términos
-                        </button>
                       </div>
-                      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.38)] transition-colors hover:border-teal-200">
-                        <input
-                          type="checkbox"
-                          checked={legalGateChecked}
-                          onChange={(event) => {
-                            const checked = event.target.checked;
-                            setLegalGateChecked(checked);
-                            trackLegalGateEvent("consent_toggled", {
-                              tenantId: selectedTenantId,
-                              caseId: selectedCaseId,
-                              checked,
-                              location: "review_card",
-                              hasPendingDraft: Boolean(pendingDraft),
-                            });
-                            if (checked) {
-                              setLegalGateError(null);
-                            }
-                          }}
-                          className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500"
-                        />
-                        <span className="text-sm leading-6 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
-                      </label>
                     </div>
-                  ) : null}
 
-                  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
-                        manualOverridePayload.length
-                          ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
-                          : "bg-teal-600 hover:bg-teal-700"
-                      }`}
-                      disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
-                      onClick={() => void handleConfirmDraft()}
-                    >
-                      {confirmDraftMutation.isPending
-                        ? "Guardando documento..."
-                        : acceptLegalPackageMutation.isPending
-                          ? "Registrando autorización..."
-                          : confirmPrimaryActionLabel}
-                      {isPrimaryDocumentActionPending ? (
-                        <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
-                      ) : (
-                        <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      disabled={isPrimaryDocumentActionPending}
-                      onClick={restartPreviewFlow}
-                    >
-                      {reanalyzeDraftAction.label}
-                    </Button>
+                    {pendingDraftShortcuts.length ? (
+                      <div className="mt-4 rounded-[1.2rem] border border-indigo-100 bg-indigo-50 p-4">
+                        <div className="flex items-start gap-3">
+                          <Sparkles
+                            className="mt-1 h-5 w-5 shrink-0 text-indigo-700"
+                            strokeWidth={1.8}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-indigo-950">
+                              Atajos útiles para este documento
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-indigo-900">
+                              Según el tipo detectado, puedes avanzar más rápido
+                              con uno de estos pasos sin salirte del flujo.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          {pendingDraftShortcuts.map(shortcut => (
+                            <button
+                              key={shortcut.id}
+                              type="button"
+                              onClick={() =>
+                                handleContextualShortcut(
+                                  shortcut,
+                                  pendingDraft.classification.documentType,
+                                  "draft"
+                                )
+                              }
+                              className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+                            >
+                              <span className="text-sm font-semibold text-slate-950">
+                                {shortcut.label}
+                              </span>
+                              <span className="mt-1 block text-xs leading-5 text-slate-600">
+                                {shortcut.description}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+                      <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
+                        <p className="font-semibold text-slate-950">
+                          {pendingDraft.scanAssistance.friendlyHeadline}
+                        </p>
+                        <p className="mt-2 text-sm leading-7 text-slate-700">
+                          {pendingDraft.scanAssistance.userGuidance}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                            Confianza visual{" "}
+                            {pendingDraft.scanAssistance.confidence}%
+                          </span>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                            {getExpectedTypeAlignmentCopy(
+                              pendingDraft.scanAssistance.expectedTypeAlignment
+                            )}
+                          </span>
+                          {previewInsight ? (
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
+                              {previewInsight.label}
+                            </span>
+                          ) : null}
+                        </div>
+                        {pendingDraft.scanAssistance.issues.length ? (
+                          <div className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            {pendingDraft.scanAssistance.issues.map(item => (
+                              <p key={item}>• {item}</p>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
+                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Lectura estructurada
+                        </p>
+                        <h4 className="mt-2 font-semibold text-slate-950">
+                          {displayPreviewStructuredExtraction?.headline ??
+                            "Resumen del documento"}
+                        </h4>
+                        <p className="mt-2 text-sm leading-7 text-slate-700">
+                          {displayPreviewStructuredExtraction?.summary ??
+                            pendingDraft.preliminaryAnalysis.summary}
+                        </p>
+                        {previewStructuredConfirmedFields.length ||
+                        previewStructuredEstimatedFields.length ? (
+                          <div className="mt-4 space-y-2">
+                            {[
+                              ...previewStructuredConfirmedFields,
+                              ...previewStructuredEstimatedFields,
+                            ]
+                              .slice(0, 6)
+                              .map(field => (
+                                <div
+                                  key={`${field.key}-${field.label}`}
+                                  className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                      {field.label}
+                                    </p>
+                                    <span
+                                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                        field.status === "confirmed"
+                                          ? "bg-emerald-100 text-emerald-800"
+                                          : "bg-amber-100 text-amber-800"
+                                      }`}
+                                    >
+                                      {field.status === "confirmed"
+                                        ? "Confirmado"
+                                        : "Estimado"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 break-words text-sm leading-6 text-slate-800">
+                                    {field.value}
+                                  </p>
+                                </div>
+                              ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                      <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4 transition-all duration-300">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-teal-950">
+                              Corrige rápido solo lo que sí veas claro
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-teal-900">
+                              Esta revisión es opcional. Solo ajusta los datos
+                              que identifiques con claridad para dejar más
+                              preciso el guardado final.
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
+                            {manualOverridePayload.length
+                              ? `${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"}`
+                              : "Opcional"}
+                          </span>
+                        </div>
+
+                        {previewEditableFields.length === 0 ? (
+                          <p className="mt-4 text-sm leading-7 text-teal-900">
+                            Esta vista previa no detectó campos prioritarios
+                            para corrección manual. Si la foto quedó floja,
+                            conviene repetir la captura.
+                          </p>
+                        ) : (
+                          <div className="mt-4 space-y-3">
+                            {previewEditableFields.map(field => {
+                              const currentValue =
+                                manualFieldValues[field.key] ?? field.value;
+                              const isEdited =
+                                currentValue.trim() !== field.value.trim();
+
+                              return (
+                                <label
+                                  key={field.key}
+                                  className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm transition-all duration-300"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+                                      {field.label}
+                                    </p>
+                                    <span
+                                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                        isEdited
+                                          ? "bg-teal-100 text-teal-900"
+                                          : field.source === "confirmed"
+                                            ? "bg-emerald-100 text-emerald-800"
+                                            : "bg-amber-100 text-amber-800"
+                                      }`}
+                                    >
+                                      {isEdited
+                                        ? "Ajustado"
+                                        : field.source === "confirmed"
+                                          ? "Confirmado"
+                                          : "Sugerido"}
+                                    </span>
+                                  </div>
+                                  <input
+                                    value={currentValue}
+                                    onChange={event =>
+                                      handleManualFieldChange(
+                                        field.key,
+                                        event.target.value
+                                      )
+                                    }
+                                    placeholder={field.value}
+                                    className="mt-3 h-11 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
+                                  />
+                                  <p className="mt-2 text-xs leading-5 text-teal-900">
+                                    {getEditableFieldSupportCopy(field.key)}
+                                  </p>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div
+                        ref={recommendedStepRef}
+                        className={`rounded-[1.2rem] border bg-emerald-50 p-4 transition-all duration-300 ${
+                          recommendedStepFlash
+                            ? "border-emerald-300 shadow-[0_24px_60px_-38px_rgba(16,185,129,0.45)] ring-2 ring-emerald-100"
+                            : "border-emerald-100"
+                        }`}
+                      >
+                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                          {recommendedStepFlash
+                            ? "Siguiente paso sugerido"
+                            : "Sugerencia útil para seguir"}
+                        </p>
+                        <h4 className="mt-2 text-lg font-semibold text-slate-950">
+                          {previewNextDocumentCopy.headline}
+                        </h4>
+                        <p className="mt-2 text-sm leading-7 text-emerald-950">
+                          {previewNextDocumentCopy.intro}
+                        </p>
+                        <div className="mt-4 rounded-[1rem] border border-white/80 bg-white p-3">
+                          <p className="text-sm font-semibold text-slate-950">
+                            {previewNextDocumentCopy.reasonTitle}
+                          </p>
+                          <p className="mt-2 text-sm leading-7 text-slate-700">
+                            {previewNextDocumentCopy.reasonBody}
+                          </p>
+                          <p className="mt-2 text-xs leading-6 text-slate-500">
+                            {previewNextDocumentCopy.coverage}
+                          </p>
+                        </div>
+                        {previewNextTarget ? (
+                          <Button
+                            variant="outline"
+                            className="mt-4 h-11 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
+                            onClick={() =>
+                              focusRecommendedUpload(previewNextTarget.type)
+                            }
+                          >
+                            Seguir con esta sugerencia
+                            <ArrowRight
+                              className="ml-2 h-4 w-4"
+                              strokeWidth={1.8}
+                            />
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-semibold text-emerald-950">
+                            Lo que ya se ve claro
+                          </p>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
+                            {previewConfirmedDisplayEntries.length} dato
+                            {previewConfirmedDisplayEntries.length === 1
+                              ? ""
+                              : "s"}
+                          </span>
+                        </div>
+                        {previewConfirmedDisplayEntries.length === 0 ? (
+                          <p className="mt-3 text-sm leading-7 text-emerald-900">
+                            Todavía no hay suficiente información clara para
+                            mostrar datos confirmados en esta vista previa.
+                          </p>
+                        ) : (
+                          <div className="mt-4 space-y-3">
+                            {previewConfirmedDisplayEntries.map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="rounded-[1rem] bg-white p-3"
+                                >
+                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                    {getAnalysisFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-800">
+                                    {formatAnalysisValue(key, value)}
+                                  </p>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-semibold text-amber-950">
+                            Lo que conviene revisar
+                          </p>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                            {previewEstimatedDisplayEntries.length} dato
+                            {previewEstimatedDisplayEntries.length === 1
+                              ? ""
+                              : "s"}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-amber-900">
+                          Tómalos como orientación inicial. Si no te convence la
+                          lectura o la foto quedó floja, puedes repetir la
+                          captura antes de guardar.
+                        </p>
+                        {previewEstimatedDisplayEntries.length === 0 ? (
+                          <p className="mt-3 text-sm leading-7 text-amber-900">
+                            Por ahora no hay estimaciones adicionales que
+                            revisar en esta vista previa.
+                          </p>
+                        ) : (
+                          <div className="mt-4 space-y-3">
+                            {previewEstimatedDisplayEntries.map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="rounded-[1rem] bg-white p-3"
+                                >
+                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                    {getAnalysisFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-800">
+                                    {formatAnalysisValue(key, value)}
+                                  </p>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {displayPreviewStructuredExtraction?.missingFields
+                      ?.length ||
+                    displayPreviewStructuredExtraction?.reviewNotes?.length ||
+                    previewGuardrails.length ? (
+                      <div className="mt-4 rounded-[1.2rem] border border-white/80 bg-white p-4">
+                        <p className="font-semibold text-slate-950">
+                          Qué revisar antes de guardar
+                        </p>
+                        <div className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+                          {displayPreviewStructuredExtraction?.missingFields?.map(
+                            item => (
+                              <p key={`missing-${item}`}>
+                                • Todavía no se alcanzó a leer con claridad:{" "}
+                                {item}.
+                              </p>
+                            )
+                          )}
+                          {displayPreviewStructuredExtraction?.reviewNotes?.map(
+                            item => (
+                              <p key={`note-${item}`}>• {item}</p>
+                            )
+                          )}
+                          {previewGuardrails.map(item => (
+                            <p key={`guardrail-${item}`}>• {item}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {shouldShowInlineLegalConsent ? (
+                      <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.42)]">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="max-w-2xl">
+                            <p className="text-sm font-semibold text-slate-950">
+                              Tu autorización se registra junto con este
+                              documento.
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              Así protegemos tu expediente y dejamos constancia
+                              de la versión legal vigente en el mismo paso.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-sm font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
+                            onClick={() => setLegalDocumentsDrawerOpen(true)}
+                          >
+                            Revisar aviso y términos
+                          </button>
+                        </div>
+                        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.38)] transition-colors hover:border-teal-200">
+                          <input
+                            type="checkbox"
+                            checked={legalGateChecked}
+                            onChange={event => {
+                              const checked = event.target.checked;
+                              setLegalGateChecked(checked);
+                              trackLegalGateEvent("consent_toggled", {
+                                tenantId: selectedTenantId,
+                                caseId: selectedCaseId,
+                                checked,
+                                location: "review_card",
+                                hasPendingDraft: Boolean(pendingDraft),
+                              });
+                              if (checked) {
+                                setLegalGateError(null);
+                              }
+                            }}
+                            className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500"
+                          />
+                          <span className="text-sm leading-6 text-slate-700">
+                            {LEGAL_GATE_COPY.checkbox}
+                          </span>
+                        </label>
+                      </div>
+                    ) : null}
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
+                          manualOverridePayload.length
+                            ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
+                            : "bg-teal-600 hover:bg-teal-700"
+                        }`}
+                        disabled={
+                          isPrimaryDocumentActionPending ||
+                          !selectedTenantId ||
+                          !selectedCaseId
+                        }
+                        onClick={() => void handleConfirmDraft()}
+                      >
+                        {confirmDraftMutation.isPending
+                          ? "Guardando documento..."
+                          : acceptLegalPackageMutation.isPending
+                            ? "Registrando autorización..."
+                            : confirmPrimaryActionLabel}
+                        {isPrimaryDocumentActionPending ? (
+                          <RefreshCw
+                            className="ml-2 h-4 w-4 animate-spin"
+                            strokeWidth={1.8}
+                          />
+                        ) : (
+                          <ArrowRight
+                            className="ml-2 h-4 w-4"
+                            strokeWidth={1.8}
+                          />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        disabled={isPrimaryDocumentActionPending}
+                        onClick={restartPreviewFlow}
+                      >
+                        {reanalyzeDraftAction.label}
+                      </Button>
+                    </div>
                   </div>
-                </div>
                 </>
               ) : null}
 
               {submitError ? (
                 <div className="mt-6 rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="mt-1 h-5 w-5 shrink-0" strokeWidth={1.8} />
+                    <AlertCircle
+                      className="mt-1 h-5 w-5 shrink-0"
+                      strokeWidth={1.8}
+                    />
                     <div className="space-y-2">
-                      <p className="font-semibold text-amber-950">Algo interrumpió la carga, pero tus datos siguen a salvo.</p>
+                      <p className="font-semibold text-amber-950">
+                        Algo interrumpió la carga, pero tus datos siguen a
+                        salvo.
+                      </p>
                       <p className="break-words">{submitError}</p>
-                      <p className="text-xs leading-5 text-amber-900">Puedes reintentar ahora mismo o elegir otro archivo sin perder el control del flujo.</p>
+                      <p className="text-xs leading-5 text-amber-900">
+                        Puedes reintentar ahora mismo o elegir otro archivo sin
+                        perder el control del flujo.
+                      </p>
                     </div>
                   </div>
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -5962,11 +7532,17 @@ export default function Auditar() {
               ) : null}
 
               {legalGateError ? (
-                <div className="mt-6 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900" data-testid="legal-gate-error">
-                  <p className="font-semibold text-rose-950">No pudimos registrar tu autorización todavía.</p>
+                <div
+                  className="mt-6 rounded-[1.2rem] border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-900"
+                  data-testid="legal-gate-error"
+                >
+                  <p className="font-semibold text-rose-950">
+                    No pudimos registrar tu autorización todavía.
+                  </p>
                   <p className="mt-2">{legalGateError.message}</p>
                   <p className="mt-2 text-xs text-rose-800/90">
-                    Tu archivo y tu progreso siguen resguardados. Puedes reintentar desde aquí sin duplicar el expediente.
+                    Tu archivo y tu progreso siguen resguardados. Puedes
+                    reintentar desde aquí sin duplicar el expediente.
                   </p>
                   {canRetryLegalGate ? (
                     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -5977,17 +7553,37 @@ export default function Auditar() {
                         onClick={() => {
                           void handleAcceptLegalPackage({ isRetry: true });
                         }}
-                        disabled={acceptLegalPackageMutation.isPending || legalGateRetryCountdown > 0 || legalGateError.retryCount >= MAX_LEGAL_GATE_RETRIES}
+                        disabled={
+                          acceptLegalPackageMutation.isPending ||
+                          legalGateRetryCountdown > 0 ||
+                          legalGateError.retryCount >= MAX_LEGAL_GATE_RETRIES
+                        }
                         data-testid="legal-gate-retry-button"
                       >
                         <RefreshCw className="mr-2 size-4" />
-                        {legalGateRetryCountdown > 0 ? `Disponible en ${legalGateRetryCountdown}s` : "Reintentar autorización"}
+                        {legalGateRetryCountdown > 0
+                          ? `Disponible en ${legalGateRetryCountdown}s`
+                          : "Reintentar autorización"}
                       </Button>
-                      <span className="text-xs text-rose-700" data-testid="legal-gate-retry-copy">
-                        Reintento {Math.min(legalGateError.retryCount + 1, MAX_LEGAL_GATE_RETRIES)} de {MAX_LEGAL_GATE_RETRIES}
+                      <span
+                        className="text-xs text-rose-700"
+                        data-testid="legal-gate-retry-copy"
+                      >
+                        Reintento{" "}
+                        {Math.min(
+                          legalGateError.retryCount + 1,
+                          MAX_LEGAL_GATE_RETRIES
+                        )}{" "}
+                        de {MAX_LEGAL_GATE_RETRIES}
                       </span>
-                      <span className="text-xs font-semibold text-rose-800" data-testid="legal-gate-retry-countdown" data-seconds={legalGateRetryCountdown}>
-                        {legalGateRetryCountdown > 0 ? `Disponible nuevamente en ${legalGateRetryCountdown}s` : "Reintento inmediato disponible"}
+                      <span
+                        className="text-xs font-semibold text-rose-800"
+                        data-testid="legal-gate-retry-countdown"
+                        data-seconds={legalGateRetryCountdown}
+                      >
+                        {legalGateRetryCountdown > 0
+                          ? `Disponible nuevamente en ${legalGateRetryCountdown}s`
+                          : "Reintento inmediato disponible"}
                       </span>
                     </div>
                   ) : null}
@@ -5998,9 +7594,12 @@ export default function Auditar() {
                 <div className="mt-5 hidden rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.42)] sm:block">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-2xl">
-                      <p className="text-sm font-semibold text-slate-950">Tu autorización se registra junto con este documento.</p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Tu autorización se registra junto con este documento.
+                      </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
-                        Así protegemos tu expediente y dejamos constancia de la versión legal vigente en el mismo paso.
+                        Así protegemos tu expediente y dejamos constancia de la
+                        versión legal vigente en el mismo paso.
                       </p>
                     </div>
                     <button
@@ -6015,7 +7614,7 @@ export default function Auditar() {
                     <input
                       type="checkbox"
                       checked={legalGateChecked}
-                      onChange={(event) => {
+                      onChange={event => {
                         const checked = event.target.checked;
                         setLegalGateChecked(checked);
                         trackLegalGateEvent("consent_toggled", {
@@ -6031,7 +7630,9 @@ export default function Auditar() {
                       }}
                       className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                     />
-                    <span className="text-sm leading-6 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+                    <span className="text-sm leading-6 text-slate-700">
+                      {LEGAL_GATE_COPY.checkbox}
+                    </span>
                   </label>
                 </div>
               ) : null}
@@ -6044,7 +7645,11 @@ export default function Auditar() {
                         ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
                         : "bg-teal-600 hover:bg-teal-700"
                     }`}
-                    disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
+                    disabled={
+                      isPrimaryDocumentActionPending ||
+                      !selectedTenantId ||
+                      !selectedCaseId
+                    }
                     onClick={() => {
                       if (pendingDraft) {
                         void handleConfirmDraft();
@@ -6069,7 +7674,10 @@ export default function Auditar() {
                           ? confirmPrimaryActionLabel
                           : uploadPrimaryActionLabel}
                     {isPrimaryDocumentActionPending ? (
-                      <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
+                      <RefreshCw
+                        className="ml-2 h-4 w-4 animate-spin"
+                        strokeWidth={1.8}
+                      />
                     ) : (
                       <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                     )}
@@ -6077,7 +7685,8 @@ export default function Auditar() {
 
                   {autoAdvanceFlash && !pendingDraft ? (
                     <p className="text-xs font-medium leading-5 text-teal-700">
-                      Autoavance activado: en cuanto termine el análisis te llevamos a la revisión rápida para confirmar el documento.
+                      Autoavance activado: en cuanto termine el análisis te
+                      llevamos a la revisión rápida para confirmar el documento.
                     </p>
                   ) : null}
                 </div>
@@ -6085,24 +7694,41 @@ export default function Auditar() {
                 <Button
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50 lg:w-auto lg:px-6"
-                  onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
+                  onClick={
+                    pendingDraft ? restartPreviewFlow : clearSelectedFile
+                  }
                   disabled={isPrimaryDocumentActionPending}
                 >
-                  {pendingDraft ? reanalyzeDraftAction.label : "Limpiar formulario"}
+                  {pendingDraft
+                    ? reanalyzeDraftAction.label
+                    : "Limpiar formulario"}
                 </Button>
               </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tu último documento</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Tu último documento
+              </p>
 
               {saveStatusFlash && lastUpload ? (
                 <div className="mt-4 rounded-[1.3rem] border border-emerald-200 bg-emerald-50 p-4 text-sm leading-7 text-emerald-950 shadow-sm transition-all duration-300">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                    <CheckCircle2
+                      className="mt-1 h-5 w-5 shrink-0 text-emerald-700"
+                      strokeWidth={1.8}
+                    />
                     <div>
-                      <p className="font-semibold">Documento guardado y expediente actualizado</p>
-                      <p className="mt-1">La vista previa ya se convirtió en un documento real dentro de tu expediente. Si hiciste ajustes manuales, también quedaron incorporados en este guardado para mantener una lectura consistente sobre la misma base documental.</p>
+                      <p className="font-semibold">
+                        Documento guardado y expediente actualizado
+                      </p>
+                      <p className="mt-1">
+                        La vista previa ya se convirtió en un documento real
+                        dentro de tu expediente. Si hiciste ajustes manuales,
+                        también quedaron incorporados en este guardado para
+                        mantener una lectura consistente sobre la misma base
+                        documental.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -6111,11 +7737,15 @@ export default function Auditar() {
               {!lastUpload ? (
                 pendingDraft ? (
                   <div className="mt-4 rounded-[1.3rem] border border-sky-200 bg-sky-50 p-5 text-sm leading-7 text-sky-950">
-                    Tu documento ya quedó listo para confirmarse. En cuanto lo guardes, aquí verás el resultado final, el siguiente paso sugerido y el estado de seguimiento automático.
+                    Tu documento ya quedó listo para confirmarse. En cuanto lo
+                    guardes, aquí verás el resultado final, el siguiente paso
+                    sugerido y el estado de seguimiento automático.
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                    Empieza con el documento más reciente que ya tengas contigo. Aquí verás qué aportó, qué falta por confirmar y cuál es el siguiente paso útil.
+                    Empieza con el documento más reciente que ya tengas contigo.
+                    Aquí verás qué aportó, qué falta por confirmar y cuál es el
+                    siguiente paso útil.
                   </div>
                 )
               ) : (
@@ -6124,11 +7754,19 @@ export default function Auditar() {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="max-w-3xl">
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Documento guardado</span>
-                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                            {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
+                            Documento guardado
                           </span>
-                          <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
+                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                            {getSimpleDocumentTypeLabel(
+                              lastUpload.classification.documentType
+                            )}
+                          </span>
+                          <span
+                            className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}
+                          >
+                            {lastUploadReadiness.label}
+                          </span>
                         </div>
                         <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
                           {lastUploadResultHeadline}
@@ -6139,19 +7777,32 @@ export default function Auditar() {
                       </div>
 
                       <div className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 text-sm leading-7 text-slate-700 shadow-sm lg:max-w-sm">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Lo que sigue ahora</p>
-                        <p className="mt-2 font-semibold text-slate-950">Un siguiente paso claro, sin rodeos</p>
-                        <p className="mt-2 text-sm leading-7 text-slate-600">{lastUploadNextStepSummary}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Lo que sigue ahora
+                        </p>
+                        <p className="mt-2 font-semibold text-slate-950">
+                          Un siguiente paso claro, sin rodeos
+                        </p>
+                        <p className="mt-2 text-sm leading-7 text-slate-600">
+                          {lastUploadNextStepSummary}
+                        </p>
                       </div>
                     </div>
 
                     <div className="mt-5 grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
                       <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
                         <div className="flex items-start gap-3">
-                          <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                          <Sparkles
+                            className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                            strokeWidth={1.8}
+                          />
                           <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-teal-950">Siguiente paso sugerido para ti</p>
-                            <p className="mt-1 text-sm leading-7 text-teal-900">{lastUploadNextStepSummary}</p>
+                            <p className="font-semibold text-teal-950">
+                              Siguiente paso sugerido para ti
+                            </p>
+                            <p className="mt-1 text-sm leading-7 text-teal-900">
+                              {lastUploadNextStepSummary}
+                            </p>
                           </div>
                         </div>
                         <Button
@@ -6159,11 +7810,17 @@ export default function Auditar() {
                           className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
                           onClick={() =>
                             primaryLastUploadShortcut
-                              ? handleContextualShortcut(primaryLastUploadShortcut, lastUpload.classification.documentType, "confirmed")
+                              ? handleContextualShortcut(
+                                  primaryLastUploadShortcut,
+                                  lastUpload.classification.documentType,
+                                  "confirmed"
+                                )
                               : openHeliosCopilot()
                           }
                         >
-                          {primaryLastUploadShortcut ? primaryLastUploadShortcut.label : "Abrir asistente laboral"}
+                          {primaryLastUploadShortcut
+                            ? primaryLastUploadShortcut.label
+                            : "Abrir asistente laboral"}
                           <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                         </Button>
                         <p className="mt-2 text-xs leading-5 text-teal-800">
@@ -6175,18 +7832,28 @@ export default function Auditar() {
 
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                         <div className="rounded-[1.2rem] border border-emerald-100 bg-white p-4 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Lo que ya aporta</p>
-                          <p className="mt-2 font-semibold text-slate-950">{uploadInsight?.label ?? "Ya hay una primera lectura útil"}</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                            Lo que ya aporta
+                          </p>
+                          <p className="mt-2 font-semibold text-slate-950">
+                            {uploadInsight?.label ??
+                              "Ya hay una primera lectura útil"}
+                          </p>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
                             {uploadInsight?.contribution ??
                               "Este documento ya suma contexto real a tu expediente y mejora la lectura del caso."}
                           </p>
                         </div>
                         <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cómo leerlo</p>
-                          <p className="mt-2 font-semibold text-slate-950">Lo claro queda aparte de lo preliminar</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                            Cómo leerlo
+                          </p>
+                          <p className="mt-2 font-semibold text-slate-950">
+                            Lo claro queda aparte de lo preliminar
+                          </p>
                           <p className="mt-2 text-sm leading-7 text-slate-600">
-                            Así puedes ver rápido qué ya quedó más firme y qué todavía conviene revisar con calma.
+                            Así puedes ver rápido qué ya quedó más firme y qué
+                            todavía conviene revisar con calma.
                           </p>
                         </div>
                       </div>
@@ -6194,15 +7861,25 @@ export default function Auditar() {
 
                     {secondaryLastUploadShortcuts.length ? (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {secondaryLastUploadShortcuts.map((shortcut) => (
+                        {secondaryLastUploadShortcuts.map(shortcut => (
                           <button
                             key={shortcut.id}
                             type="button"
-                            onClick={() => handleContextualShortcut(shortcut, lastUpload.classification.documentType, "confirmed")}
+                            onClick={() =>
+                              handleContextualShortcut(
+                                shortcut,
+                                lastUpload.classification.documentType,
+                                "confirmed"
+                              )
+                            }
                             className="rounded-[1rem] border border-white/80 bg-white px-4 py-3 text-left transition hover:border-teal-200 hover:bg-teal-50"
                           >
-                            <span className="text-sm font-semibold text-slate-950">{shortcut.label}</span>
-                            <span className="mt-1 block text-xs leading-5 text-slate-600">{shortcut.description}</span>
+                            <span className="text-sm font-semibold text-slate-950">
+                              {shortcut.label}
+                            </span>
+                            <span className="mt-1 block text-xs leading-5 text-slate-600">
+                              {shortcut.description}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -6212,9 +7889,12 @@ export default function Auditar() {
                   <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">Ver detalles del análisis</p>
+                        <p className="text-sm font-semibold text-slate-950">
+                          Ver detalles del análisis
+                        </p>
                         <p className="mt-1 text-xs leading-6 text-slate-500">
-                          Aquí queda el apoyo visual, el resumen técnico y el estado de revisión por si quieres profundizar.
+                          Aquí queda el apoyo visual, el resumen técnico y el
+                          estado de revisión por si quieres profundizar.
                         </p>
                       </div>
                       <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -6224,38 +7904,69 @@ export default function Auditar() {
 
                     <div className="mt-4 space-y-4">
                       {lastUpload?.scanAssistance ? (
-                        <div className={`rounded-[1.3rem] border p-4 ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).containerClasses}`}>
+                        <div
+                          className={`rounded-[1.3rem] border p-4 ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).containerClasses}`}
+                        >
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="flex items-start gap-3">
-                              <FileSearch className="mt-1 h-5 w-5 shrink-0 text-slate-700" strokeWidth={1.8} />
+                              <FileSearch
+                                className="mt-1 h-5 w-5 shrink-0 text-slate-700"
+                                strokeWidth={1.8}
+                              />
                               <div>
                                 <p className="font-semibold text-slate-950">
-                                  {(lastUpload.scanAssistance as ScanAssistAssessmentView).friendlyHeadline}
+                                  {
+                                    (
+                                      lastUpload.scanAssistance as ScanAssistAssessmentView
+                                    ).friendlyHeadline
+                                  }
                                 </p>
                                 <p className="mt-1 text-sm leading-7 text-slate-700">
-                                  {(lastUpload.scanAssistance as ScanAssistAssessmentView).userGuidance}
+                                  {
+                                    (
+                                      lastUpload.scanAssistance as ScanAssistAssessmentView
+                                    ).userGuidance
+                                  }
                                 </p>
                               </div>
                             </div>
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-semibold ${getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeClasses}`}
                             >
-                              {getScanAssistTone(lastUpload.scanAssistance as ScanAssistAssessmentView).badgeLabel}
+                              {
+                                getScanAssistTone(
+                                  lastUpload.scanAssistance as ScanAssistAssessmentView
+                                ).badgeLabel
+                              }
                             </span>
                           </div>
 
                           <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                              Confianza visual {(lastUpload.scanAssistance as ScanAssistAssessmentView).confidence}%
+                              Confianza visual{" "}
+                              {
+                                (
+                                  lastUpload.scanAssistance as ScanAssistAssessmentView
+                                ).confidence
+                              }
+                              %
                             </span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                              {getExpectedTypeAlignmentCopy((lastUpload.scanAssistance as ScanAssistAssessmentView).expectedTypeAlignment)}
+                              {getExpectedTypeAlignmentCopy(
+                                (
+                                  lastUpload.scanAssistance as ScanAssistAssessmentView
+                                ).expectedTypeAlignment
+                              )}
                             </span>
                           </div>
 
-                          {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.length ? (
+                          {(
+                            lastUpload.scanAssistance as ScanAssistAssessmentView
+                          ).issues.length ? (
                             <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                              {(lastUpload.scanAssistance as ScanAssistAssessmentView).issues.map((item) => (
+                              {(
+                                lastUpload.scanAssistance as ScanAssistAssessmentView
+                              ).issues.map(item => (
                                 <p key={item}>• {item}</p>
                               ))}
                             </div>
@@ -6265,29 +7976,52 @@ export default function Auditar() {
 
                       <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                         <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">Resumen sencillo</p>
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
+                            Resumen sencillo
+                          </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                            {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                            {getSimpleDocumentTypeLabel(
+                              lastUpload.classification.documentType
+                            )}
                           </h3>
-                          <p className="mt-3 text-sm leading-7 text-slate-700">{lastUpload.preliminaryAnalysis.summary}</p>
+                          <p className="mt-3 text-sm leading-7 text-slate-700">
+                            {lastUpload.preliminaryAnalysis.summary}
+                          </p>
                           <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                              Tipo: {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                              Tipo:{" "}
+                              {getSimpleDocumentTypeLabel(
+                                lastUpload.classification.documentType
+                              )}
                             </span>
                             <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                              Revisión: {getProcessingProfileLabel(lastUpload.preliminaryAnalysis.processingProfile)}
+                              Revisión:{" "}
+                              {getProcessingProfileLabel(
+                                lastUpload.preliminaryAnalysis.processingProfile
+                              )}
                             </span>
-                            <span className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}>{lastUploadReadiness.label}</span>
+                            <span
+                              className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}
+                            >
+                              {lastUploadReadiness.label}
+                            </span>
                           </div>
                         </div>
 
                         <div className="space-y-4">
                           <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
                             <div className="flex items-start gap-3">
-                              <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-700" strokeWidth={1.8} />
+                              <CheckCircle2
+                                className="mt-1 h-5 w-5 shrink-0 text-emerald-700"
+                                strokeWidth={1.8}
+                              />
                               <div>
-                                <p className="font-semibold text-emerald-950">{uploadInsight?.label}</p>
-                                <p className="mt-1 text-sm leading-7 text-emerald-900">{uploadInsight?.contribution}</p>
+                                <p className="font-semibold text-emerald-950">
+                                  {uploadInsight?.label}
+                                </p>
+                                <p className="mt-1 text-sm leading-7 text-emerald-900">
+                                  {uploadInsight?.contribution}
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -6303,13 +8037,23 @@ export default function Auditar() {
                           >
                             <div className="flex items-start gap-3">
                               {engineStatus.tone === "warning" ? (
-                                <AlertCircle className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
+                                <AlertCircle
+                                  className="mt-1 h-5 w-5 shrink-0 text-amber-700"
+                                  strokeWidth={1.8}
+                                />
                               ) : (
-                                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                                <ShieldCheck
+                                  className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                                  strokeWidth={1.8}
+                                />
                               )}
                               <div>
-                                <p className="font-semibold text-slate-950">{engineStatus.title}</p>
-                                <p className="mt-1 text-sm leading-7 text-slate-700">{engineStatus.description}</p>
+                                <p className="font-semibold text-slate-950">
+                                  {engineStatus.title}
+                                </p>
+                                <p className="mt-1 text-sm leading-7 text-slate-700">
+                                  {engineStatus.description}
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -6317,7 +8061,9 @@ export default function Auditar() {
                       </div>
 
                       <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
-                        Lo confirmado aparece separado de lo estimado para que sepas qué ya está claro, qué todavía conviene revisar con calma y qué ya forma parte de tu expediente digital.
+                        Lo confirmado aparece separado de lo estimado para que
+                        sepas qué ya está claro, qué todavía conviene revisar
+                        con calma y qué ya forma parte de tu expediente digital.
                       </div>
                     </div>
                   </details>
@@ -6326,51 +8072,82 @@ export default function Auditar() {
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Resultado de tu documento</p>
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">
+                            Resultado de tu documento
+                          </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                            {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.headline) ?? "Ya revisamos tu documento y hay una primera lectura útil"}
+                            {warmVisibleNamingCopy(
+                              lastHeliosOpinion.resultCard?.headline
+                            ) ??
+                              "Ya revisamos tu documento y hay una primera lectura útil"}
                           </h3>
                           <p className="mt-3 text-sm leading-7 text-slate-700">
-                            {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.lead ?? lastHeliosOpinion.summary) ??
+                            {warmVisibleNamingCopy(
+                              lastHeliosOpinion.resultCard?.lead ??
+                                lastHeliosOpinion.summary
+                            ) ??
                               "Ya hay una primera lectura clara para que entiendas qué aporta este documento a tu expediente laboral."}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                          <span className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}>
-                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
+                          <span
+                            className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}
+                          >
+                            {
+                              getHeliosRiskCopy(lastHeliosOpinion.riskLevel)
+                                .label
+                            }
                           </span>
-                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Confianza {lastHeliosOpinion.confidenceScore}%</span>
+                          {typeof lastHeliosOpinion.confidenceScore ===
+                          "number" ? (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                              Confianza {lastHeliosOpinion.confidenceScore}%
+                            </span>
                           ) : null}
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{getHeliosModeLabel(lastHeliosOpinion.mode)}</span>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                            {getHeliosModeLabel(lastHeliosOpinion.mode)}
+                          </span>
                         </div>
                       </div>
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr,0.95fr]">
                         <div className="space-y-4">
                           <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
-                            <p className="text-sm font-semibold text-slate-950">Lo más importante que encontramos</p>
-                            {lastHeliosOpinion.resultCard?.keyFindings?.length ? (
+                            <p className="text-sm font-semibold text-slate-950">
+                              Lo más importante que encontramos
+                            </p>
+                            {lastHeliosOpinion.resultCard?.keyFindings
+                              ?.length ? (
                               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                {lastHeliosOpinion.resultCard.keyFindings.map((item, index) => (
-                                  <div
-                                    key={`${item.label}-${item.value}-${index}`}
-                                    className={`rounded-[0.95rem] border p-3 ${
-                                      item.tone === "attention"
-                                        ? "border-amber-200 bg-amber-50"
-                                        : item.tone === "support"
-                                          ? "border-emerald-200 bg-emerald-50"
-                                          : "border-slate-200 bg-white"
-                                    }`}
-                                  >
-                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
-                                    <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{warmVisibleNamingCopy(item.value) ?? item.value}</p>
-                                  </div>
-                                ))}
+                                {lastHeliosOpinion.resultCard.keyFindings.map(
+                                  (item, index) => (
+                                    <div
+                                      key={`${item.label}-${item.value}-${index}`}
+                                      className={`rounded-[0.95rem] border p-3 ${
+                                        item.tone === "attention"
+                                          ? "border-amber-200 bg-amber-50"
+                                          : item.tone === "support"
+                                            ? "border-emerald-200 bg-emerald-50"
+                                            : "border-slate-200 bg-white"
+                                      }`}
+                                    >
+                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm font-medium leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.value) ??
+                                          item.value}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
                               </div>
                             ) : (
                               <p className="mt-3 text-sm leading-7 text-slate-700">
-                                {warmVisibleNamingCopy(lastHeliosOpinion.summary) ?? "Este documento ya aporta una primera lectura útil a tu expediente."}
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.summary
+                                ) ??
+                                  "Este documento ya aporta una primera lectura útil a tu expediente."}
                               </p>
                             )}
                           </div>
@@ -6379,33 +8156,60 @@ export default function Auditar() {
                             <div className="rounded-[1rem] border border-violet-100 bg-violet-50 p-4">
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                  <p className="text-sm font-semibold text-violet-950">Compara hallazgos entre documentos</p>
+                                  <p className="text-sm font-semibold text-violet-950">
+                                    Compara hallazgos entre documentos
+                                  </p>
                                   <p className="mt-1 text-sm leading-7 text-violet-900">
-                                    Así se ve lo más importante del documento actual frente a otro archivo del mismo expediente, sin salir de esta vista.
+                                    Así se ve lo más importante del documento
+                                    actual frente a otro archivo del mismo
+                                    expediente, sin salir de esta vista.
                                   </p>
                                 </div>
                                 {comparisonSuggestedLabel ? (
-                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800">{comparisonSuggestedLabel}</span>
+                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800">
+                                    {comparisonSuggestedLabel}
+                                  </span>
                                 ) : null}
                               </div>
 
                               <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                                {comparisonHighlightCards.map((card) => (
-                                  <article key={card.id} className="rounded-[1rem] border border-white/80 bg-white p-4 shadow-sm">
-                                    <p className="text-sm font-semibold text-slate-950">{card.title}</p>
-                                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">{card.subtitle}</p>
-                                    <p className="mt-3 text-sm leading-6 text-slate-700">{card.summary}</p>
+                                {comparisonHighlightCards.map(card => (
+                                  <article
+                                    key={card.id}
+                                    className="rounded-[1rem] border border-white/80 bg-white p-4 shadow-sm"
+                                  >
+                                    <p className="text-sm font-semibold text-slate-950">
+                                      {card.title}
+                                    </p>
+                                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">
+                                      {card.subtitle}
+                                    </p>
+                                    <p className="mt-3 text-sm leading-6 text-slate-700">
+                                      {card.summary}
+                                    </p>
                                     {card.findings.length ? (
                                       <div className="mt-3 space-y-2">
                                         {card.findings.map((item, index) => (
-                                          <div key={`${card.id}-${item.label}-${index}`} className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
-                                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
-                                            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">{warmVisibleNamingCopy(item.value) ?? item.value}</p>
+                                          <div
+                                            key={`${card.id}-${item.label}-${index}`}
+                                            className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3"
+                                          >
+                                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                              {item.label}
+                                            </p>
+                                            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
+                                              {warmVisibleNamingCopy(
+                                                item.value
+                                              ) ?? item.value}
+                                            </p>
                                           </div>
                                         ))}
                                       </div>
                                     ) : (
-                                      <p className="mt-3 text-sm leading-6 text-slate-600">Todavía no hay hallazgos comparables visibles para este documento.</p>
+                                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                                        Todavía no hay hallazgos comparables
+                                        visibles para este documento.
+                                      </p>
                                     )}
                                   </article>
                                 ))}
@@ -6416,36 +8220,54 @@ export default function Auditar() {
                           <div className="grid gap-4 lg:grid-cols-2">
                             <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
                               <p className="text-sm font-semibold text-teal-950">
-                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.nextStepLabel) ?? "Siguiente paso sugerido"}
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.resultCard?.nextStepLabel
+                                ) ?? "Siguiente paso sugerido"}
                               </p>
                               <p className="mt-2 text-sm leading-7 text-teal-900">
-                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.nextStepSummary ?? lastHeliosOpinion.recommendedNextStep) ??
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.resultCard
+                                    ?.nextStepSummary ??
+                                    lastHeliosOpinion.recommendedNextStep
+                                ) ??
                                   "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
                               </p>
                             </div>
 
                             <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4">
                               <p className="text-sm font-semibold text-emerald-950">
-                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.dossierUpdateLabel) ?? "Tu expediente ya se actualizó"}
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.resultCard
+                                    ?.dossierUpdateLabel
+                                ) ?? "Tu expediente ya se actualizó"}
                               </p>
                               <p className="mt-2 text-sm leading-7 text-emerald-900">
-                                {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.dossierUpdateSummary) ??
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.resultCard
+                                    ?.dossierUpdateSummary
+                                ) ??
                                   "Este documento ya quedó guardado dentro de tu expediente laboral para futuras comparaciones y respuestas."}
                               </p>
                             </div>
                           </div>
 
                           <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
-                            <p className="text-sm font-semibold text-amber-950">Qué sigue siendo preliminar</p>
+                            <p className="text-sm font-semibold text-amber-950">
+                              Qué sigue siendo preliminar
+                            </p>
                             {lastHeliosOpinion.uncertainties?.length ? (
                               <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
-                                {lastHeliosOpinion.uncertainties.map((item) => (
-                                  <p key={item}>• {warmVisibleNamingCopy(item)}</p>
+                                {lastHeliosOpinion.uncertainties.map(item => (
+                                  <p key={item}>
+                                    • {warmVisibleNamingCopy(item)}
+                                  </p>
                                 ))}
                               </div>
                             ) : (
                               <p className="mt-2 text-sm leading-7 text-amber-900">
-                                Esta lectura todavía conviene contrastarla con más hechos y documentos antes de cerrar conclusiones.
+                                Esta lectura todavía conviene contrastarla con
+                                más hechos y documentos antes de cerrar
+                                conclusiones.
                               </p>
                             )}
                           </div>
@@ -6455,28 +8277,43 @@ export default function Auditar() {
                           <div className="rounded-[1rem] border border-sky-100 bg-sky-50 p-4">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-sky-950">Asistente laboral contextual</p>
+                                <p className="text-sm font-semibold text-sky-950">
+                                  Asistente laboral contextual
+                                </p>
                                 <p className="mt-2 text-sm leading-7 text-sky-900">
-                                  {warmVisibleNamingCopy(lastHeliosOpinion.resultCard?.assistantIntro) ??
+                                  {warmVisibleNamingCopy(
+                                    lastHeliosOpinion.resultCard?.assistantIntro
+                                  ) ??
                                     "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué falta confirmar o ayudarte a elegir el siguiente archivo más útil."}
                                 </p>
                               </div>
-                              <Sparkles className="mt-1 h-5 w-5 shrink-0 text-sky-700" strokeWidth={1.8} />
+                              <Sparkles
+                                className="mt-1 h-5 w-5 shrink-0 text-sky-700"
+                                strokeWidth={1.8}
+                              />
                             </div>
 
-                            {(lastHeliosOpinion.resultCard?.suggestedQuestions?.length || heliosCopilotSuggestedPrompts.length) ? (
+                            {lastHeliosOpinion.resultCard?.suggestedQuestions
+                              ?.length ||
+                            heliosCopilotSuggestedPrompts.length ? (
                               <div className="mt-3 flex flex-wrap gap-2">
-                                {(lastHeliosOpinion.resultCard?.suggestedQuestions ?? heliosCopilotSuggestedPrompts).slice(0, 3).map((item) => (
-                                  <Button
-                                    key={item}
-                                    type="button"
-                                    variant="outline"
-                                    className="h-auto rounded-full border-sky-200 bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-sky-900 hover:bg-sky-100"
-                                    onClick={() => openHeliosCopilot(item)}
-                                  >
-                                    {item}
-                                  </Button>
-                                ))}
+                                {(
+                                  lastHeliosOpinion.resultCard
+                                    ?.suggestedQuestions ??
+                                  heliosCopilotSuggestedPrompts
+                                )
+                                  .slice(0, 3)
+                                  .map(item => (
+                                    <Button
+                                      key={item}
+                                      type="button"
+                                      variant="outline"
+                                      className="h-auto rounded-full border-sky-200 bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-sky-900 hover:bg-sky-100"
+                                      onClick={() => openHeliosCopilot(item)}
+                                    >
+                                      {item}
+                                    </Button>
+                                  ))}
                               </div>
                             ) : null}
 
@@ -6486,23 +8323,36 @@ export default function Auditar() {
                               onClick={() => openHeliosCopilot()}
                             >
                               Abrir asistente laboral
-                              <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
+                              <ArrowRight
+                                className="h-4 w-4"
+                                strokeWidth={1.9}
+                              />
                             </Button>
                           </div>
 
                           {lastHeliosOpinion.legalOpinion ? (
                             <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                              <p className="text-sm font-semibold text-slate-950">Lectura ampliada</p>
-                              <p className="mt-2">{warmVisibleNamingCopy(lastHeliosOpinion.legalOpinion)}</p>
+                              <p className="text-sm font-semibold text-slate-950">
+                                Lectura ampliada
+                              </p>
+                              <p className="mt-2">
+                                {warmVisibleNamingCopy(
+                                  lastHeliosOpinion.legalOpinion
+                                )}
+                              </p>
                             </div>
                           ) : null}
                         </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                        <span>Generado: {formatDate(lastHeliosOpinion.generatedAt)}</span>
+                        <span>
+                          Generado: {formatDate(lastHeliosOpinion.generatedAt)}
+                        </span>
                         {lastHeliosOpinion.disclaimer ? (
-                          <span className="max-w-3xl leading-6">{lastHeliosOpinion.disclaimer}</span>
+                          <span className="max-w-3xl leading-6">
+                            {lastHeliosOpinion.disclaimer}
+                          </span>
                         ) : null}
                       </div>
                     </div>
@@ -6511,11 +8361,19 @@ export default function Auditar() {
                   {lastUpload?.engineDispatch?.status === "sent" ? (
                     <div className="rounded-[1.3rem] border border-sky-200 bg-sky-50 p-4 text-sm leading-7 text-sky-950">
                       <div className="flex items-start gap-3">
-                        <RefreshCw className="mt-1 h-5 w-5 shrink-0 text-sky-700" strokeWidth={1.8} />
+                        <RefreshCw
+                          className="mt-1 h-5 w-5 shrink-0 text-sky-700"
+                          strokeWidth={1.8}
+                        />
                         <div>
-                          <p className="font-semibold">Seguimos esperando la respuesta automática</p>
+                          <p className="font-semibold">
+                            Seguimos esperando la respuesta automática
+                          </p>
                           <p className="mt-1">
-                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
+                            Este documento ya entró a revisión automática. Aquí
+                            verás si la respuesta ya llegó, mientras sigue
+                            guardado y disponible dentro de tu expediente
+                            digital.
                           </p>
                         </div>
                       </div>
@@ -6525,24 +8383,33 @@ export default function Auditar() {
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-emerald-950">Datos claros</p>
+                        <p className="font-semibold text-emerald-950">
+                          Datos claros
+                        </p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
-                          {confirmedEntries.length} dato{confirmedEntries.length === 1 ? "" : "s"}
+                          {confirmedEntries.length} dato
+                          {confirmedEntries.length === 1 ? "" : "s"}
                         </span>
                       </div>
 
                       {confirmedEntries.length === 0 ? (
                         <p className="mt-3 text-sm leading-7 text-emerald-900">
-                          Aquí aparecerá lo que ya se ve con claridad en este documento.
+                          Aquí aparecerá lo que ya se ve con claridad en este
+                          documento.
                         </p>
                       ) : (
                         <div className="mt-4 space-y-3">
                           {confirmedEntries.map(([key, value]) => (
-                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                            <div
+                              key={key}
+                              className="rounded-[1rem] bg-white p-3"
+                            >
                               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
                                 {getAnalysisFieldLabel(key)}
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">
+                                {formatAnalysisValue(key, value)}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -6551,28 +8418,36 @@ export default function Auditar() {
 
                     <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 p-4">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-amber-950">Datos a revisar</p>
+                        <p className="font-semibold text-amber-950">
+                          Datos a revisar
+                        </p>
                         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
-                          {estimatedEntries.length} dato{estimatedEntries.length === 1 ? "" : "s"}
+                          {estimatedEntries.length} dato
+                          {estimatedEntries.length === 1 ? "" : "s"}
                         </span>
                       </div>
 
                       <p className="mt-3 text-sm leading-7 text-amber-900">
-                        Tómalos como orientación inicial. Pueden ayudar, pero todavía conviene confirmarlos con más contexto.
+                        Tómalos como orientación inicial. Pueden ayudar, pero
+                        todavía conviene confirmarlos con más contexto.
                       </p>
 
                       <div className="mt-4 rounded-[1rem] border border-amber-200 bg-white p-3">
                         <button
                           type="button"
                           className="flex w-full items-start gap-3 text-left"
-                          onClick={() => setEstimatedAcknowledged((value) => !value)}
+                          onClick={() =>
+                            setEstimatedAcknowledged(value => !value)
+                          }
                         >
                           <CheckCircle2
                             className={`mt-0.5 h-5 w-5 shrink-0 ${estimatedAcknowledged ? "text-emerald-600" : "text-amber-600"}`}
                             strokeWidth={1.8}
                           />
                           <div>
-                            <p className="text-sm font-semibold text-slate-950">Entiendo que esto sigue en revisión</p>
+                            <p className="text-sm font-semibold text-slate-950">
+                              Entiendo que esto sigue en revisión
+                            </p>
                             <p className="mt-1 text-xs leading-6 text-slate-600">
                               {estimatedAcknowledged
                                 ? "Perfecto. Esto queda como orientación útil, no como cierre definitivo."
@@ -6589,11 +8464,16 @@ export default function Auditar() {
                       ) : (
                         <div className="mt-4 space-y-3">
                           {estimatedEntries.map(([key, value]) => (
-                            <div key={key} className="rounded-[1rem] bg-white p-3">
+                            <div
+                              key={key}
+                              className="rounded-[1rem] bg-white p-3"
+                            >
                               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
                                 {getAnalysisFieldLabel(key)}
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">{formatAnalysisValue(key, value)}</p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">
+                                {formatAnalysisValue(key, value)}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -6603,9 +8483,11 @@ export default function Auditar() {
 
                   {guardrails.length > 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
-                      <p className="font-semibold text-slate-950">Antes de tomar decisiones</p>
+                      <p className="font-semibold text-slate-950">
+                        Antes de tomar decisiones
+                      </p>
                       <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
-                        {guardrails.map((item) => (
+                        {guardrails.map(item => (
                           <p key={item}>• {item}</p>
                         ))}
                       </div>
@@ -6619,106 +8501,151 @@ export default function Auditar() {
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Línea de tiempo del expediente</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Cómo se fue fortaleciendo tu expediente
-                  </h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-                     Documento por documento, aquí ves cómo se fueron conectando señales para darte más claridad sobre tu caso.
-
-                  </p>
-                  {timelineEntries.length > timelinePreviewLimit ? (
-                    <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
-                      En móvil te mostramos primero lo esencial para reducir scroll. Si quieres, puedes abrir el resto en cualquier momento.
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                      Línea de tiempo del expediente
                     </p>
-                  ) : null}
-                </div>
-                <div className="flex flex-col items-start gap-2 sm:items-end">
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                    <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-amber-900">Borrador analizado</span>
-                    <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-emerald-800">Documento confirmado</span>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                      Cómo se fue fortaleciendo tu expediente
+                    </h2>
+                    <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                      Documento por documento, aquí ves cómo se fueron
+                      conectando señales para darte más claridad sobre tu caso.
+                    </p>
+                    {timelineEntries.length > timelinePreviewLimit ? (
+                      <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
+                        En móvil te mostramos primero lo esencial para reducir
+                        scroll. Si quieres, puedes abrir el resto en cualquier
+                        momento.
+                      </p>
+                    ) : null}
                   </div>
-                  <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    {timelineEntries.length} etapa{timelineEntries.length === 1 ? "" : "s"}
-                  </div>
-                </div>
-              </div>
-
-              {timelineEntries.length === 0 ? (
-                <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  Tu línea de tiempo empieza con el primer archivo guardado. Cuando confirmes uno, aquí verás el orden del expediente y qué cambió con cada documento.
-                </div>
-              ) : (
-                <div className="mt-6 space-y-4">
-                  {timelineEntries.map((entry, index) => (
-                    <div
-                      key={entry.id}
-                      className={`${index >= timelinePreviewLimit && !timelineExpandedOnMobile ? "hidden sm:flex" : "flex"} gap-4 transition-all duration-200`}
-                    >
-                      <div className="flex w-10 shrink-0 flex-col items-center">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all duration-200 ${
-                            entry.hasVisibleOpinion ? "bg-teal-600 text-white shadow-sm" : "bg-slate-200 text-slate-700"
-                          }`}
-                        >
-                          {entry.step}
-                        </div>
-                        {index !== timelineEntries.length - 1 ? <div className="mt-2 w-px flex-1 bg-slate-200" /> : null}
-                      </div>
-
-                      <article
-                        className={`flex-1 rounded-[1.35rem] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm ${entry.lifecycleState.cardClasses}`}
-                      >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-semibold text-slate-950">{entry.title}</p>
-                              <span className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] ${entry.lifecycleState.badgeClasses}`}>
-                                {entry.lifecycleState.label}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-sm leading-6 text-slate-600">{entry.originalName}</p>
-                            <p className="mt-1 text-xs leading-6 text-slate-500">Incorporado el {formatDate(entry.createdAt)}</p>
-                            <p className="mt-2 text-xs leading-5 text-slate-600">{entry.lifecycleState.supportingCopy}</p>
-                          </div>
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${entry.readiness.classes}`}>{entry.readiness.label}</span>
-                        </div>
-
-                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                          <div className="rounded-[1rem] border border-white bg-white p-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Lo que aportó</p>
-                            <p className="mt-2 text-sm leading-7 text-slate-700">{entry.contribution}</p>
-                          </div>
-                          <div className={`rounded-[1rem] border p-3 ${entry.lifecycleState.roleCardClasses}`}>
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Cómo aportó al expediente</p>
-                            <p className="mt-2 text-sm leading-7 text-slate-900">{entry.heliosRole}</p>
-                          </div>
-                        </div>
-                      </article>
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                      <span className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-amber-900">
+                        Borrador analizado
+                      </span>
+                      <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-emerald-800">
+                        Documento confirmado
+                      </span>
                     </div>
-                  ))}
-
-                  {timelineEntries.length > timelinePreviewLimit ? (
-                    <button
-                      type="button"
-                      className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 active:scale-[0.99] sm:hidden"
-                      onClick={() => setTimelineExpandedOnMobile((value) => !value)}
-                    >
-                      {timelineExpandedOnMobile
-                        ? "Mostrar menos"
-                        : `Mostrar ${mobileHiddenTimelineCount} etapa${mobileHiddenTimelineCount === 1 ? "" : "s"} más`}
-                    </button>
-                  ) : null}
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {timelineEntries.length} etapa
+                      {timelineEntries.length === 1 ? "" : "s"}
+                    </div>
+                  </div>
                 </div>
-              )}
+
+                {timelineEntries.length === 0 ? (
+                  <div className="mt-6 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                    Tu línea de tiempo empieza con el primer archivo guardado.
+                    Cuando confirmes uno, aquí verás el orden del expediente y
+                    qué cambió con cada documento.
+                  </div>
+                ) : (
+                  <div className="mt-6 space-y-4">
+                    {timelineEntries.map((entry, index) => (
+                      <div
+                        key={entry.id}
+                        className={`${index >= timelinePreviewLimit && !timelineExpandedOnMobile ? "hidden sm:flex" : "flex"} gap-4 transition-all duration-200`}
+                      >
+                        <div className="flex w-10 shrink-0 flex-col items-center">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all duration-200 ${
+                              entry.hasVisibleOpinion
+                                ? "bg-teal-600 text-white shadow-sm"
+                                : "bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {entry.step}
+                          </div>
+                          {index !== timelineEntries.length - 1 ? (
+                            <div className="mt-2 w-px flex-1 bg-slate-200" />
+                          ) : null}
+                        </div>
+
+                        <article
+                          className={`flex-1 rounded-[1.35rem] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm ${entry.lifecycleState.cardClasses}`}
+                        >
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-semibold text-slate-950">
+                                  {entry.title}
+                                </p>
+                                <span
+                                  className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] ${entry.lifecycleState.badgeClasses}`}
+                                >
+                                  {entry.lifecycleState.label}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-sm leading-6 text-slate-600">
+                                {entry.originalName}
+                              </p>
+                              <p className="mt-1 text-xs leading-6 text-slate-500">
+                                Incorporado el {formatDate(entry.createdAt)}
+                              </p>
+                              <p className="mt-2 text-xs leading-5 text-slate-600">
+                                {entry.lifecycleState.supportingCopy}
+                              </p>
+                            </div>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${entry.readiness.classes}`}
+                            >
+                              {entry.readiness.label}
+                            </span>
+                          </div>
+
+                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                            <div className="rounded-[1rem] border border-white bg-white p-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                Lo que aportó
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-slate-700">
+                                {entry.contribution}
+                              </p>
+                            </div>
+                            <div
+                              className={`rounded-[1rem] border p-3 ${entry.lifecycleState.roleCardClasses}`}
+                            >
+                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                                Cómo aportó al expediente
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-slate-900">
+                                {entry.heliosRole}
+                              </p>
+                            </div>
+                          </div>
+                        </article>
+                      </div>
+                    ))}
+
+                    {timelineEntries.length > timelinePreviewLimit ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 active:scale-[0.99] sm:hidden"
+                        onClick={() =>
+                          setTimelineExpandedOnMobile(value => !value)
+                        }
+                      >
+                        {timelineExpandedOnMobile
+                          ? "Mostrar menos"
+                          : `Mostrar ${mobileHiddenTimelineCount} etapa${mobileHiddenTimelineCount === 1 ? "" : "s"} más`}
+                      </button>
+                    ) : null}
+                  </div>
+                )}
               </div>
             ) : null}
 
             <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento rápido</p>
-                  <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Seguimiento rápido
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                    Cómo va la respuesta automática
+                  </h2>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {complilinkMonitoring?.summary.waitingCount ?? 0} en espera
@@ -6727,20 +8654,34 @@ export default function Auditar() {
 
               <div className="mt-3 grid grid-cols-2 gap-2 text-center">
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">En espera</p>
-                  <p className="mt-2 text-xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    En espera
+                  </p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">
+                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                  </p>
                 </div>
                 <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">Revisar</p>
-                  <p className="mt-2 text-xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                    Revisar
+                  </p>
+                  <p className="mt-2 text-xl font-semibold text-amber-950">
+                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                  </p>
                 </div>
                 <div className="col-span-2 rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3 sm:col-span-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">Listos</p>
-                  <p className="mt-2 text-xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                    Listos
+                  </p>
+                  <p className="mt-2 text-xl font-semibold text-emerald-950">
+                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                  </p>
                 </div>
               </div>
 
-              <div className={`mt-4 rounded-[1rem] border p-4 text-sm leading-6 ${monitoringOverview.classes}`}>
+              <div
+                className={`mt-4 rounded-[1rem] border p-4 text-sm leading-6 ${monitoringOverview.classes}`}
+              >
                 <p className="font-semibold">{monitoringOverview.title}</p>
                 <p className="mt-2">{monitoringOverview.body}</p>
               </div>
@@ -6750,168 +8691,264 @@ export default function Auditar() {
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Tus documentos</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Documentos ya incorporados al expediente
-                  </h2>
-                </div>
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {documents.length} documento{documents.length === 1 ? "" : "s"}
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {documents.length === 0 ? (
-                  <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                    Aún no tienes documentos en este expediente. Puedes empezar con el archivo que tengas más a la mano.
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                      Tus documentos
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                      Documentos ya incorporados al expediente
+                    </h2>
                   </div>
-                ) : (
-                  documents.map((document) => {
-                    const readiness = getDocumentReadiness(document.classificationConfidence);
-                    const heliosOpinion = asHeliosOpinion(document.heliosOpinion);
-                    const heliosRisk = getHeliosRiskCopy(heliosOpinion?.riskLevel);
-                    const heliosDocument = heliosDocumentSnapshotById.get(document.documentId);
-                    return (
-                      <article key={document.documentId} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                          <div>
-                            <p className="font-semibold text-slate-950">{document.originalName}</p>
-                            <p className="mt-1 text-sm leading-6 text-slate-600">
-                              Tipo sugerido: {heliosDocument?.canonicalLabel ?? getSimpleDocumentTypeLabel(document.documentType)}
-                            </p>
-                            <p className="mt-1 text-sm leading-6 text-slate-500">Incorporado el {formatDate(document.createdAt)}</p>
-                          </div>
+                  <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {documents.length} documento
+                    {documents.length === 1 ? "" : "s"}
+                  </div>
+                </div>
 
-                          <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                            <span className={`rounded-full px-3 py-1 ${readiness.classes}`}>{readiness.label}</span>
-                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getConsentLabel(document.consentStatus)}</span>
-                            <span className="rounded-full bg-white px-3 py-1 text-slate-700">{getVisibilityLabel(document.visibility)}</span>
-                            <span className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}>
-                              {heliosDocument?.statusLabel ?? (heliosOpinion ? "Lectura preliminar lista" : "Lectura pendiente")}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
-                          {readiness.description}
-                        </div>
-
-                        <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-950">
-                          <p className="font-semibold text-teal-950">
-                            {heliosDocument ? `${heliosDocument.canonicalLabel} dentro de tu expediente laboral` : "Este archivo ya pertenece a tu expediente laboral"}
-                          </p>
-                          <p className="mt-1">
-                              {warmVisibleNamingCopy(heliosDocument?.summary) ?? "Tu asistente laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
-                          </p>
-                        </div>
-
-                        {heliosOpinion ? (
-                          <details className="mt-4 rounded-[1rem] border border-teal-100 bg-white p-4">
-                            <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                              <div>
-                                <p className="text-sm font-semibold text-slate-950">Abrir lectura preliminar</p>
-                                <p className="mt-1 text-sm leading-6 text-slate-600">
-                                  {warmVisibleNamingCopy(heliosOpinion.summary) ?? "Ya hay una lectura inicial guardada dentro de tu expediente laboral."}
-                                </p>
-                              </div>
-                              <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                                <span className={`rounded-full px-3 py-1 ${heliosRisk.classes}`}>{heliosRisk.label}</span>
-                                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{getHeliosModeLabel(heliosOpinion.mode)}</span>
-                              </div>
-                            </summary>
-
-                            <div className="mt-4 space-y-4 border-t border-slate-200 pt-4">
-                              {heliosOpinion.legalOpinion ? (
-                                <div className="rounded-[1rem] bg-slate-50 p-3 text-sm leading-7 text-slate-700">{heliosOpinion.legalOpinion}</div>
-                              ) : null}
-
-                              <div className="grid gap-4 lg:grid-cols-2">
-                                <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
-                                  <p className="font-semibold text-teal-950">Siguiente paso sugerido</p>
-                                  <p className="mt-2 text-sm leading-7 text-teal-900">
-                                    {heliosOpinion.recommendedNextStep ?? "Conectar este archivo con más evidencia del expediente."}
-                                  </p>
-                                  {heliosOpinion.recommendedActions?.length ? (
-                                    <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
-                                      {heliosOpinion.recommendedActions.map((item) => (
-                                        <p key={item}>• {warmVisibleNamingCopy(item)}</p>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                </div>
-
-                                <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
-                                  <p className="font-semibold text-amber-950">Puntos que todavía conviene confirmar</p>
-                                  {heliosOpinion.uncertainties?.length ? (
-                                    <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
-                                      {heliosOpinion.uncertainties.map((item) => (
-                                        <p key={item}>• {warmVisibleNamingCopy(item)}</p>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <p className="mt-2 text-sm leading-7 text-amber-900">
-                                      Por ahora no hay observaciones adicionales visibles, pero sigue siendo una lectura preliminar.
-                                    </p>
+                <div className="mt-6 space-y-4">
+                  {documents.length === 0 ? (
+                    <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                      Aún no tienes documentos en este expediente. Puedes
+                      empezar con el archivo que tengas más a la mano.
+                    </div>
+                  ) : (
+                    documents.map(document => {
+                      const readiness = getDocumentReadiness(
+                        document.classificationConfidence
+                      );
+                      const heliosOpinion = asHeliosOpinion(
+                        document.heliosOpinion
+                      );
+                      const heliosRisk = getHeliosRiskCopy(
+                        heliosOpinion?.riskLevel
+                      );
+                      const heliosDocument = heliosDocumentSnapshotById.get(
+                        document.documentId
+                      );
+                      return (
+                        <article
+                          key={document.documentId}
+                          className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4"
+                        >
+                          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                              <p className="font-semibold text-slate-950">
+                                {document.originalName}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-600">
+                                Tipo sugerido:{" "}
+                                {heliosDocument?.canonicalLabel ??
+                                  getSimpleDocumentTypeLabel(
+                                    document.documentType
                                   )}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
-                                {typeof heliosOpinion.confidenceScore === "number" ? (
-                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Confianza {heliosOpinion.confidenceScore}%</span>
-                                ) : null}
-                                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Generado {formatDate(heliosOpinion.generatedAt)}</span>
-                              </div>
-
-                              {heliosOpinion.disclaimer ? (
-                                <p className="text-xs leading-6 text-slate-500">{heliosOpinion.disclaimer}</p>
-                              ) : null}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-500">
+                                Incorporado el {formatDate(document.createdAt)}
+                              </p>
                             </div>
-                          </details>
-                        ) : (
-                          <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
-                            Todavía no hay una lectura visible guardada para este documento dentro de tu expediente laboral.
+
+                            <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                              <span
+                                className={`rounded-full px-3 py-1 ${readiness.classes}`}
+                              >
+                                {readiness.label}
+                              </span>
+                              <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                                {getConsentLabel(document.consentStatus)}
+                              </span>
+                              <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                                {getVisibilityLabel(document.visibility)}
+                              </span>
+                              <span
+                                className={`rounded-full px-3 py-1 ${heliosOpinion ? "bg-teal-100 text-teal-800" : "bg-slate-200 text-slate-700"}`}
+                              >
+                                {heliosDocument?.statusLabel ??
+                                  (heliosOpinion
+                                    ? "Lectura preliminar lista"
+                                    : "Lectura pendiente")}
+                              </span>
+                            </div>
                           </div>
-                        )}
-                      </article>
-                    );
-                  })
-                )}
-              </div>
+
+                          <div className="mt-4 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
+                            {readiness.description}
+                          </div>
+
+                          <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-950">
+                            <p className="font-semibold text-teal-950">
+                              {heliosDocument
+                                ? `${heliosDocument.canonicalLabel} dentro de tu expediente laboral`
+                                : "Este archivo ya pertenece a tu expediente laboral"}
+                            </p>
+                            <p className="mt-1">
+                              {warmVisibleNamingCopy(heliosDocument?.summary) ??
+                                "Tu asistente laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
+                            </p>
+                          </div>
+
+                          {heliosOpinion ? (
+                            <details className="mt-4 rounded-[1rem] border border-teal-100 bg-white p-4">
+                              <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-950">
+                                    Abrir lectura preliminar
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                                    {warmVisibleNamingCopy(
+                                      heliosOpinion.summary
+                                    ) ??
+                                      "Ya hay una lectura inicial guardada dentro de tu expediente laboral."}
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                                  <span
+                                    className={`rounded-full px-3 py-1 ${heliosRisk.classes}`}
+                                  >
+                                    {heliosRisk.label}
+                                  </span>
+                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                                    {getHeliosModeLabel(heliosOpinion.mode)}
+                                  </span>
+                                </div>
+                              </summary>
+
+                              <div className="mt-4 space-y-4 border-t border-slate-200 pt-4">
+                                {heliosOpinion.legalOpinion ? (
+                                  <div className="rounded-[1rem] bg-slate-50 p-3 text-sm leading-7 text-slate-700">
+                                    {heliosOpinion.legalOpinion}
+                                  </div>
+                                ) : null}
+
+                                <div className="grid gap-4 lg:grid-cols-2">
+                                  <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-3">
+                                    <p className="font-semibold text-teal-950">
+                                      Siguiente paso sugerido
+                                    </p>
+                                    <p className="mt-2 text-sm leading-7 text-teal-900">
+                                      {heliosOpinion.recommendedNextStep ??
+                                        "Conectar este archivo con más evidencia del expediente."}
+                                    </p>
+                                    {heliosOpinion.recommendedActions
+                                      ?.length ? (
+                                      <div className="mt-3 space-y-2 text-sm leading-6 text-teal-950">
+                                        {heliosOpinion.recommendedActions.map(
+                                          item => (
+                                            <p key={item}>
+                                              • {warmVisibleNamingCopy(item)}
+                                            </p>
+                                          )
+                                        )}
+                                      </div>
+                                    ) : null}
+                                  </div>
+
+                                  <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
+                                    <p className="font-semibold text-amber-950">
+                                      Puntos que todavía conviene confirmar
+                                    </p>
+                                    {heliosOpinion.uncertainties?.length ? (
+                                      <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
+                                        {heliosOpinion.uncertainties.map(
+                                          item => (
+                                            <p key={item}>
+                                              • {warmVisibleNamingCopy(item)}
+                                            </p>
+                                          )
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <p className="mt-2 text-sm leading-7 text-amber-900">
+                                        Por ahora no hay observaciones
+                                        adicionales visibles, pero sigue siendo
+                                        una lectura preliminar.
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                                  {typeof heliosOpinion.confidenceScore ===
+                                  "number" ? (
+                                    <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                                      Confianza {heliosOpinion.confidenceScore}%
+                                    </span>
+                                  ) : null}
+                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                                    Generado{" "}
+                                    {formatDate(heliosOpinion.generatedAt)}
+                                  </span>
+                                </div>
+
+                                {heliosOpinion.disclaimer ? (
+                                  <p className="text-xs leading-6 text-slate-500">
+                                    {heliosOpinion.disclaimer}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </details>
+                          ) : (
+                            <div className="mt-4 rounded-[1rem] border border-dashed border-slate-200 bg-white p-3 text-sm leading-6 text-slate-500">
+                              Todavía no hay una lectura visible guardada para
+                              este documento dentro de tu expediente laboral.
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             ) : null}
           </section>
 
           <aside className="space-y-6">
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Expediente laboral seleccionado</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Expediente laboral seleccionado
+              </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                {heliosExpediente?.displayName ?? caseDetailQuery.data?.case.title ?? "Selecciona un expediente"}
+                {heliosExpediente?.displayName ??
+                  caseDetailQuery.data?.case.title ??
+                  "Selecciona un expediente"}
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
                 <p>
-                  <span className="font-semibold text-slate-900">Persona trabajadora:</span>{" "}
-                  {caseDetailQuery.data?.case.employeeName ?? "Sin nombre visible"}
+                  <span className="font-semibold text-slate-900">
+                    Persona trabajadora:
+                  </span>{" "}
+                  {caseDetailQuery.data?.case.employeeName ??
+                    "Sin nombre visible"}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-900">Patrón o empresa:</span>{" "}
-                  {caseDetailQuery.data?.case.employerEntity ?? "Sin empresa visible"}
+                  <span className="font-semibold text-slate-900">
+                    Patrón o empresa:
+                  </span>{" "}
+                  {caseDetailQuery.data?.case.employerEntity ??
+                    "Sin empresa visible"}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-900">Estado del caso:</span>{" "}
+                  <span className="font-semibold text-slate-900">
+                    Estado del caso:
+                  </span>{" "}
                   {getCaseStatusLabel(caseDetailQuery.data?.case.status)}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-900">Etapa del expediente:</span>{" "}
+                  <span className="font-semibold text-slate-900">
+                    Etapa del expediente:
+                  </span>{" "}
                   {heliosExpediente?.stageLabel ?? "Sin etapa visible"}
                 </p>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
                 <div className="flex items-start gap-3">
-                  <Sparkles className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                  <Sparkles
+                    className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                    strokeWidth={1.8}
+                  />
                   <div>
-                        <p className="font-semibold text-teal-950">Tu expediente se va volviendo más claro con cada documento</p>
+                    <p className="font-semibold text-teal-950">
+                      Tu expediente se va volviendo más claro con cada documento
+                    </p>
 
                     <p className="mt-2 text-sm leading-7 text-teal-900">
                       {heliosExpediente?.summary ??
@@ -6921,17 +8958,35 @@ export default function Auditar() {
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        {heliosExpediente?.documentsCount ?? documents.length} documento{(heliosExpediente?.documentsCount ?? documents.length) === 1 ? "" : "s"} en el expediente
+                        {heliosExpediente?.documentsCount ?? documents.length}{" "}
+                        documento
+                        {(heliosExpediente?.documentsCount ??
+                          documents.length) === 1
+                          ? ""
+                          : "s"}{" "}
+                        en el expediente
                       </span>
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        {heliosExpediente?.documentsWithOpinion ?? heliosDocumentsCount} con lectura visible
+                        {heliosExpediente?.documentsWithOpinion ??
+                          heliosDocumentsCount}{" "}
+                        con lectura visible
                       </span>
                     </div>
                     {latestPersistedHeliosOpinion ? (
                       <div className="mt-3 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">
-                        <p className="font-semibold text-slate-950">Última lectura guardada en tu expediente</p>
-                        <p className="mt-1">{warmVisibleNamingCopy(latestPersistedHeliosOpinion.summary)}</p>
-                        <p className="mt-2 text-xs text-slate-500">Documento: {latestHeliosDocument?.originalName ?? "Sin detalle visible"}</p>
+                        <p className="font-semibold text-slate-950">
+                          Última lectura guardada en tu expediente
+                        </p>
+                        <p className="mt-1">
+                          {warmVisibleNamingCopy(
+                            latestPersistedHeliosOpinion.summary
+                          )}
+                        </p>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Documento:{" "}
+                          {latestHeliosDocument?.originalName ??
+                            "Sin detalle visible"}
+                        </p>
                       </div>
                     ) : null}
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -6952,37 +9007,54 @@ export default function Auditar() {
                       </Button>
                     </div>
                     <p className="mt-3 text-xs leading-6 text-teal-900">
-                      Haz preguntas rápidas sobre riesgos, documentos faltantes o el siguiente paso útil con base en lo que ya se analizó, sin salir de tu expediente.
+                      Haz preguntas rápidas sobre riesgos, documentos faltantes
+                      o el siguiente paso útil con base en lo que ya se analizó,
+                      sin salir de tu expediente.
                     </p>
-                      <HeliosCopilotSheet
-                        open={heliosCopilotOpen}
-                        onOpenChange={setHeliosCopilotOpen}
-                        onSendMessage={handleHeliosCopilotSend}
-                        messages={heliosCopilotConversation}
-                        isLoading={heliosCopilotMutation.isPending}
-                        suggestedPrompts={heliosCopilotSuggestedPrompts}
-                        caseTitle={caseDetailQuery.data?.case.title}
-                        employeeName={caseDetailQuery.data?.case.employeeName}
-                        confidenceScore={heliosCopilotMutation.data?.confidenceScore ?? visibleHeliosOpinion?.confidenceScore ?? null}
-                        disclaimer={warmVisibleNamingCopy(heliosCopilotMutation.data?.disclaimer ?? visibleHeliosOpinion?.disclaimer ?? null)}
-                        summary={warmVisibleNamingCopy(visibleHeliosOpinion?.summary ?? null)}
-                        historyItems={heliosCopilotHistoryItems}
-                        supportingDocuments={heliosCopilotSupportingDocuments}
-                      />
-
+                    <HeliosCopilotSheet
+                      open={heliosCopilotOpen}
+                      onOpenChange={setHeliosCopilotOpen}
+                      onSendMessage={handleHeliosCopilotSend}
+                      messages={heliosCopilotConversation}
+                      isLoading={heliosCopilotMutation.isPending}
+                      suggestedPrompts={heliosCopilotSuggestedPrompts}
+                      caseTitle={caseDetailQuery.data?.case.title}
+                      employeeName={caseDetailQuery.data?.case.employeeName}
+                      confidenceScore={
+                        heliosCopilotMutation.data?.confidenceScore ??
+                        visibleHeliosOpinion?.confidenceScore ??
+                        null
+                      }
+                      disclaimer={warmVisibleNamingCopy(
+                        heliosCopilotMutation.data?.disclaimer ??
+                          visibleHeliosOpinion?.disclaimer ??
+                          null
+                      )}
+                      summary={warmVisibleNamingCopy(
+                        visibleHeliosOpinion?.summary ?? null
+                      )}
+                      historyItems={heliosCopilotHistoryItems}
+                      supportingDocuments={heliosCopilotSupportingDocuments}
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Historial simple del expediente</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Lo último que se movió en tu caso</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Historial simple del expediente
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                Lo último que se movió en tu caso
+              </h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                Así puedes entender qué pasó recientemente sin buscar entre carpetas, mensajes o varios sistemas distintos.
+                Así puedes entender qué pasó recientemente sin buscar entre
+                carpetas, mensajes o varios sistemas distintos.
               </p>
               <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
-                El filtro que elijas aquí se conserva en este dispositivo para que retomes tu expediente donde lo dejaste.
+                El filtro que elijas aquí se conserva en este dispositivo para
+                que retomes tu expediente donde lo dejaste.
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -6991,13 +9063,15 @@ export default function Auditar() {
                   { value: "document", label: "Documentos" },
                   { value: "response", label: "Respuestas" },
                   { value: "summary", label: "Resúmenes" },
-                ].map((option) => {
+                ].map(option => {
                   const active = historyFilter === option.value;
                   return (
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => setHistoryFilter(option.value as DossierHistoryFilter)}
+                      onClick={() =>
+                        setHistoryFilter(option.value as DossierHistoryFilter)
+                      }
                       className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                         active
                           ? "bg-slate-900 text-white shadow-sm"
@@ -7019,16 +9093,27 @@ export default function Auditar() {
                       : "Todavía no hay movimientos con este filtro. Cámbialo o sube otro documento para seguir construyendo el historial."}
                   </div>
                 ) : (
-                  filteredDossierHistoryEntries.map((entry) => (
-                    <article key={entry.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                  filteredDossierHistoryEntries.map(entry => (
+                    <article
+                      key={entry.id}
+                      className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="font-semibold text-slate-950">{entry.title}</p>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">{entry.description}</p>
+                          <p className="font-semibold text-slate-950">
+                            {entry.title}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">
+                            {entry.description}
+                          </p>
                         </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{entry.tag}</span>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                          {entry.tag}
+                        </span>
                       </div>
-                      <p className="mt-3 text-xs leading-6 text-slate-500">{formatDate(entry.timestamp)}</p>
+                      <p className="mt-3 text-xs leading-6 text-slate-500">
+                        {formatDate(entry.timestamp)}
+                      </p>
                     </article>
                   ))
                 )}
@@ -7036,49 +9121,77 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Privacidad y consentimiento</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Marco legal visible para tu expediente</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Privacidad y consentimiento
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                Marco legal visible para tu expediente
+              </h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                {PRIVACY_CENTER_COPY.intro} La versión vigente que aplica hoy en AuditaPatron es {LEGAL_VERSION}.
+                {PRIVACY_CENTER_COPY.intro} La versión vigente que aplica hoy en
+                AuditaPatron es {LEGAL_VERSION}.
               </p>
 
-              <div className={`mt-4 rounded-[1.2rem] border p-4 ${legalAcceptance?.isAccepted ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
+              <div
+                className={`mt-4 rounded-[1.2rem] border p-4 ${legalAcceptance?.isAccepted ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className={`text-sm font-semibold ${legalAcceptance?.isAccepted ? "text-emerald-950" : "text-amber-950"}`}>
-                      {legalAcceptance?.isAccepted ? "Aceptación versionada al día" : "Aceptación legal pendiente"}
+                    <p
+                      className={`text-sm font-semibold ${legalAcceptance?.isAccepted ? "text-emerald-950" : "text-amber-950"}`}
+                    >
+                      {legalAcceptance?.isAccepted
+                        ? "Aceptación versionada al día"
+                        : "Aceptación legal pendiente"}
                     </p>
-                    <p className={`mt-2 text-sm leading-7 ${legalAcceptance?.isAccepted ? "text-emerald-900" : "text-amber-900"}`}>
+                    <p
+                      className={`mt-2 text-sm leading-7 ${legalAcceptance?.isAccepted ? "text-emerald-900" : "text-amber-900"}`}
+                    >
                       {legalAcceptance?.isAccepted
                         ? `Tu expediente ya registra la aceptación del paquete legal ${legalAcceptance.legalVersion}.`
                         : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y tu asistente laboral.`}
                     </p>
                   </div>
                   <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">
-                    {acceptedLegalDocumentsCount}/{legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length} aceptados
+                    {acceptedLegalDocumentsCount}/
+                    {legalAcceptanceDocuments.length || LEGAL_DOCUMENTS.length}{" "}
+                    aceptados
                   </div>
                 </div>
                 {legalAcceptance?.acceptedAt ? (
-                  <p className={`mt-3 text-xs uppercase tracking-[0.12em] ${legalAcceptance?.isAccepted ? "text-emerald-800" : "text-amber-800"}`}>
-                    Última aceptación registrada: {formatDate(legalAcceptance.acceptedAt)}
+                  <p
+                    className={`mt-3 text-xs uppercase tracking-[0.12em] ${legalAcceptance?.isAccepted ? "text-emerald-800" : "text-amber-800"}`}
+                  >
+                    Última aceptación registrada:{" "}
+                    {formatDate(legalAcceptance.acceptedAt)}
                   </p>
                 ) : null}
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {PRIVACY_CENTER_COPY.rightsSummary.map((item) => (
-                  <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                {PRIVACY_CENTER_COPY.rightsSummary.map(item => (
+                  <div
+                    key={item}
+                    className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+                  >
                     {item}
                   </div>
                 ))}
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
-                <p className="text-sm font-semibold text-teal-950">Revocación y derechos ARCO</p>
-                <p className="mt-2 text-sm leading-7 text-teal-900">{PRIVACY_CENTER_COPY.revocationNotice}</p>
+                <p className="text-sm font-semibold text-teal-950">
+                  Revocación y derechos ARCO
+                </p>
+                <p className="mt-2 text-sm leading-7 text-teal-900">
+                  {PRIVACY_CENTER_COPY.revocationNotice}
+                </p>
                 <p className="mt-3 text-sm leading-7 text-teal-900">
                   Si quieres ejercer derechos ARCO o pedir apoyo, escríbenos a{" "}
-                  <a className="font-semibold underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>
+                  <a
+                    className="font-semibold underline underline-offset-4"
+                    href={`mailto:${LEGAL_CONTACT_EMAIL}`}
+                  >
                     {LEGAL_CONTACT_EMAIL}
                   </a>
                   .
@@ -7086,7 +9199,7 @@ export default function Auditar() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {LEGAL_DOCUMENTS.map((document) => (
+                {LEGAL_DOCUMENTS.map(document => (
                   <a
                     key={document.slug}
                     href={document.route}
@@ -7099,42 +9212,62 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Ciclo de valor visible</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Ciclo de valor visible
+              </p>
               <div className="mt-2 flex items-start gap-3">
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-2">
-                  <Sparkles className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
+                  <Sparkles
+                    className="h-5 w-5 text-teal-700"
+                    strokeWidth={1.8}
+                  />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Así se fortalece tu expediente</h2>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Así se fortalece tu expediente
+                  </h2>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    AuditaPatron recibe tus documentos, los organiza, los contrasta, los resguarda y te devuelve una explicación cada vez más clara y útil.
+                    AuditaPatron recibe tus documentos, los organiza, los
+                    contrasta, los resguarda y te devuelve una explicación cada
+                    vez más clara y útil.
                   </p>
                 </div>
               </div>
 
               <div className="mt-4 grid gap-3 lg:grid-cols-4">
                 <article className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Paso 1</p>
-                    <p className="mt-2 font-semibold text-slate-950">AuditaPatron recibe y protege</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Tu archivo entra a un expediente seguro, queda resguardado y listo para ordenarse sin que tengas que hacer pasos técnicos extra.
-                    </p>
-
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Paso 1
+                  </p>
+                  <p className="mt-2 font-semibold text-slate-950">
+                    AuditaPatron recibe y protege
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Tu archivo entra a un expediente seguro, queda resguardado y
+                    listo para ordenarse sin que tengas que hacer pasos técnicos
+                    extra.
+                  </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Paso 2</p>
-                    <p className="mt-2 font-semibold text-slate-950">La revisión encuentra contexto útil</p>
-                    <p className="mt-2 text-sm leading-6 text-teal-950">
-
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                    Paso 2
+                  </p>
+                  <p className="mt-2 font-semibold text-slate-950">
+                    La revisión encuentra contexto útil
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-teal-950">
                     {heliosDocumentsCount === 0
-                        ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar, incluyendo señales útiles de IMSS e Infonavit cuando existan en tu expediente."
-                        : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
-
+                      ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar, incluyendo señales útiles de IMSS e Infonavit cuando existan en tu expediente."
+                      : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">Paso 3</p>
-                  <p className="mt-2 font-semibold text-slate-950">La respuesta vuelve más completa</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+                    Paso 3
+                  </p>
+                  <p className="mt-2 font-semibold text-slate-950">
+                    La respuesta vuelve más completa
+                  </p>
                   <p className="mt-2 text-sm leading-6 text-sky-950">
                     {monitoringDocuments.length === 0
                       ? "Cuando haya seguimiento activo, aquí verás cómo la revisión automática vuelve con más detalle para fortalecer el expediente."
@@ -7142,55 +9275,91 @@ export default function Auditar() {
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Paso 4</p>
-                    <p className="mt-2 font-semibold text-slate-950">Tú recibes una guía más clara</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    Paso 4
+                  </p>
+                  <p className="mt-2 font-semibold text-slate-950">
+                    Tú recibes una guía más clara
+                  </p>
 
                   <p className="mt-2 text-sm leading-6 text-emerald-950">
-                    Las alertas, comparaciones y siguientes documentos sugeridos aparecen en lenguaje simple para ayudarte a decidir con calma.
+                    Las alertas, comparaciones y siguientes documentos sugeridos
+                    aparecen en lenguaje simple para ayudarte a decidir con
+                    calma.
                   </p>
                 </article>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-950">Por qué esto te aporta más valor con el tiempo</p>
+                <p className="text-sm font-semibold text-slate-950">
+                  Por qué esto te aporta más valor con el tiempo
+                </p>
                 <p className="mt-2 text-sm leading-7 text-slate-700">
-                  Cada documento nuevo fortalece tu expediente, y cada retorno útil de la revisión automática ayuda a afinar la lectura del caso. Así recibes resultados más consistentes sin sumar complejidad.
+                  Cada documento nuevo fortalece tu expediente, y cada retorno
+                  útil de la revisión automática ayuda a afinar la lectura del
+                  caso. Así recibes resultados más consistentes sin sumar
+                  complejidad.
                 </p>
               </div>
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Seguimiento automático</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Cómo va la respuesta automática</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Seguimiento automático
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                Cómo va la respuesta automática
+              </h2>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">En espera</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">{complilinkMonitoring?.summary.waitingCount ?? 0}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    En espera
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                  </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Conviene revisar</p>
-                  <p className="mt-2 text-2xl font-semibold text-amber-950">{complilinkMonitoring?.summary.attentionCount ?? 0}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                    Conviene revisar
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-amber-950">
+                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                  </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4 sm:col-span-2 lg:col-span-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Ya respondidos</p>
-                  <p className="mt-2 text-2xl font-semibold text-emerald-950">{complilinkMonitoring?.summary.receivedCount ?? 0}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    Ya respondidos
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-emerald-950">
+                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                  </p>
                 </div>
               </div>
 
-              <div className={`mt-4 rounded-[1.3rem] border p-4 ${monitoringOverview.classes}`}>
+              <div
+                className={`mt-4 rounded-[1.3rem] border p-4 ${monitoringOverview.classes}`}
+              >
                 <p className="font-semibold">{monitoringOverview.title}</p>
-                <p className="mt-2 text-sm leading-7">{monitoringOverview.body}</p>
+                <p className="mt-2 text-sm leading-7">
+                  {monitoringOverview.body}
+                </p>
               </div>
 
               <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Embudo operativo mínimo</p>
-                    <p className="mt-2 text-lg font-semibold text-slate-950">Del acceso inicial al primer documento útil</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Embudo operativo mínimo
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-slate-950">
+                      Del acceso inicial al primer documento útil
+                    </p>
                   </div>
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                    {operationalFunnelCompletedCount}/{operationalFunnelSteps.length} hitos visibles
+                    {operationalFunnelCompletedCount}/
+                    {operationalFunnelSteps.length} hitos visibles
                   </span>
                 </div>
 
@@ -7205,7 +9374,9 @@ export default function Auditar() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Paso {index + 1}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Paso {index + 1}
+                        </p>
                         <span
                           className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                             step.completed
@@ -7216,8 +9387,12 @@ export default function Auditar() {
                           {step.completed ? "Listo" : "Pendiente"}
                         </span>
                       </div>
-                      <p className="mt-3 font-semibold text-slate-950">{step.label}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{step.detail}</p>
+                      <p className="mt-3 font-semibold text-slate-950">
+                        {step.label}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">
+                        {step.detail}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -7237,25 +9412,48 @@ export default function Auditar() {
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
-                  {pendingMonitoringDocuments.map((item) => {
+                  {pendingMonitoringDocuments.map(item => {
                     const state = getMonitoringStatusCopy(item.status);
                     const friendlyMessage =
                       item.status === "attention"
                         ? "La respuesta está tardando un poco más de lo normal, pero tu documento sigue resguardado dentro del expediente."
                         : "Este documento ya entró a revisión automática y está esperando respuesta. Mientras llega, puedes seguir fortaleciendo tu expediente con otros archivos.";
                     return (
-                      <div key={item.documentId} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                      <div
+                        key={item.documentId}
+                        className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+                      >
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <p className="text-sm font-semibold text-slate-950">{item.documentName}</p>
-                            <p className="mt-1 text-sm leading-6 text-slate-600">{friendlyMessage}</p>
+                            <p className="text-sm font-semibold text-slate-950">
+                              {item.documentName}
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              {friendlyMessage}
+                            </p>
                           </div>
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${state.classes}`}>{state.label}</span>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${state.classes}`}
+                          >
+                            {state.label}
+                          </span>
                         </div>
                         <div className="mt-3 text-xs leading-6 text-slate-500">
-                          <p>Enviado el {item.dispatchedAt ? formatDate(item.dispatchedAt) : "sin fecha visible"}</p>
-                          {item.respondedAt ? <p>Respondido el {formatDate(item.respondedAt)}</p> : null}
-                          {item.responseEvent ? <p>Último movimiento: {getReturnEventLabel(item.responseEvent)}</p> : null}
+                          <p>
+                            Enviado el{" "}
+                            {item.dispatchedAt
+                              ? formatDate(item.dispatchedAt)
+                              : "sin fecha visible"}
+                          </p>
+                          {item.respondedAt ? (
+                            <p>Respondido el {formatDate(item.respondedAt)}</p>
+                          ) : null}
+                          {item.responseEvent ? (
+                            <p>
+                              Último movimiento:{" "}
+                              {getReturnEventLabel(item.responseEvent)}
+                            </p>
+                          ) : null}
                         </div>
                         <div className="mt-3 rounded-[1rem] border border-white bg-white p-3 text-sm leading-6 text-slate-700">
                           {item.message}
@@ -7268,26 +9466,38 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Comparación guiada</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Comparación guiada
+              </p>
               <div className="mt-2 flex items-start gap-3">
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-2">
-                  <FileSearch className="h-5 w-5 text-teal-700" strokeWidth={1.8} />
+                  <FileSearch
+                    className="h-5 w-5 text-teal-700"
+                    strokeWidth={1.8}
+                  />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">¿Qué cambió aquí?</h2>
-                    <p className="mt-2 text-sm leading-7 text-slate-600">
-                      Comparamos documentos del expediente para resaltar diferencias útiles y ayudarte a entender qué conviene revisar después, sin perder de vista que todo queda ordenado en un solo lugar.
-                    </p>
-
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                    ¿Qué cambió aquí?
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    Comparamos documentos del expediente para resaltar
+                    diferencias útiles y ayudarte a entender qué conviene
+                    revisar después, sin perder de vista que todo queda ordenado
+                    en un solo lugar.
+                  </p>
                 </div>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">Compara tú mismo dos documentos del expediente</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Compara tú mismo dos documentos del expediente
+                    </p>
                     <p className="mt-1 text-sm leading-7 text-slate-600">
-                      Si quieres, puedes cambiar la pareja sugerida para revisar otro contraste sin salir del expediente.
+                      Si quieres, puedes cambiar la pareja sugerida para revisar
+                      otro contraste sin salir del expediente.
                     </p>
                   </div>
                   {automaticComparisonPair ? (
@@ -7295,8 +9505,12 @@ export default function Auditar() {
                       variant="outline"
                       className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                       onClick={() => {
-                        setSelectedComparisonLeftId(automaticComparisonPair[0].documentId);
-                        setSelectedComparisonRightId(automaticComparisonPair[1].documentId);
+                        setSelectedComparisonLeftId(
+                          automaticComparisonPair[0].documentId
+                        );
+                        setSelectedComparisonRightId(
+                          automaticComparisonPair[1].documentId
+                        );
                       }}
                     >
                       Usar la comparación sugerida
@@ -7306,17 +9520,25 @@ export default function Auditar() {
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento 1</p>
-                    <Select value={selectedComparisonLeftId} onValueChange={setSelectedComparisonLeftId} disabled={comparisonSelectionLocked}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Documento 1
+                    </p>
+                    <Select
+                      value={selectedComparisonLeftId}
+                      onValueChange={setSelectedComparisonLeftId}
+                      disabled={comparisonSelectionLocked}
+                    >
                       <SelectTrigger className="mt-2 h-11 w-full rounded-[1rem] border-slate-200 bg-white">
                         <SelectValue placeholder="Selecciona un documento" />
                       </SelectTrigger>
                       <SelectContent>
-                        {comparisonDocuments.map((document) => (
+                        {comparisonDocuments.map(document => (
                           <SelectItem
                             key={document.documentId}
                             value={document.documentId}
-                            disabled={document.documentId === selectedComparisonRightId}
+                            disabled={
+                              document.documentId === selectedComparisonRightId
+                            }
                           >
                             {document.originalName}
                           </SelectItem>
@@ -7326,17 +9548,25 @@ export default function Auditar() {
                   </div>
 
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento 2</p>
-                    <Select value={selectedComparisonRightId} onValueChange={setSelectedComparisonRightId} disabled={comparisonSelectionLocked}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Documento 2
+                    </p>
+                    <Select
+                      value={selectedComparisonRightId}
+                      onValueChange={setSelectedComparisonRightId}
+                      disabled={comparisonSelectionLocked}
+                    >
                       <SelectTrigger className="mt-2 h-11 w-full rounded-[1rem] border-slate-200 bg-white">
                         <SelectValue placeholder="Selecciona otro documento" />
                       </SelectTrigger>
                       <SelectContent>
-                        {comparisonDocuments.map((document) => (
+                        {comparisonDocuments.map(document => (
                           <SelectItem
                             key={document.documentId}
                             value={document.documentId}
-                            disabled={document.documentId === selectedComparisonLeftId}
+                            disabled={
+                              document.documentId === selectedComparisonLeftId
+                            }
                           >
                             {document.originalName}
                           </SelectItem>
@@ -7348,66 +9578,117 @@ export default function Auditar() {
 
                 {comparisonSelectionLocked ? (
                   <p className="mt-3 text-xs leading-6 text-slate-500">
-                    Sube al menos dos documentos para activar la comparación manual.
+                    Sube al menos dos documentos para activar la comparación
+                    manual.
                   </p>
                 ) : comparisonSuggestedLabel ? (
-                  <p className="mt-3 text-xs leading-6 text-slate-500">Sugerencia actual: {comparisonSuggestedLabel}.</p>
+                  <p className="mt-3 text-xs leading-6 text-slate-500">
+                    Sugerencia actual: {comparisonSuggestedLabel}.
+                  </p>
                 ) : null}
               </div>
 
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
-                <p className="text-sm font-semibold text-teal-900">{comparisonCopy.badge}</p>
-                <p className="mt-2 text-xl font-semibold text-slate-950">{comparisonCopy.headline}</p>
-                <p className="mt-2 text-sm leading-7 text-teal-950">{comparisonCopy.supportingText}</p>
+                <p className="text-sm font-semibold text-teal-900">
+                  {comparisonCopy.badge}
+                </p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">
+                  {comparisonCopy.headline}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-teal-950">
+                  {comparisonCopy.supportingText}
+                </p>
               </div>
 
               {comparisonLeftDocument && comparisonRightDocument ? (
                 <div className="mt-4 grid gap-3 xl:grid-cols-[1fr_1fr_0.9fr]">
                   <article className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento original</p>
-                    <p className="mt-2 font-semibold text-slate-950">{comparisonLeftDocument.originalName}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Documento original
+                    </p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {comparisonLeftDocument.originalName}
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                      <span className="rounded-full bg-white px-3 py-1">{getSimpleDocumentTypeLabel(comparisonLeftDocument.documentType)}</span>
-                      <span className="rounded-full bg-white px-3 py-1">{formatDate(comparisonLeftDocument.createdAt)}</span>
+                      <span className="rounded-full bg-white px-3 py-1">
+                        {getSimpleDocumentTypeLabel(
+                          comparisonLeftDocument.documentType
+                        )}
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1">
+                        {formatDate(comparisonLeftDocument.createdAt)}
+                      </span>
                     </div>
                     <p className="mt-3 text-sm leading-7 text-slate-700">
-                      {asHeliosOpinion(comparisonLeftDocument.heliosOpinion)?.summary ?? "Este documento ya forma parte del expediente y sirve como punto de partida para el contraste."}
+                      {asHeliosOpinion(comparisonLeftDocument.heliosOpinion)
+                        ?.summary ??
+                        "Este documento ya forma parte del expediente y sirve como punto de partida para el contraste."}
                     </p>
                   </article>
 
                   <article className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Documento comparado</p>
-                    <p className="mt-2 font-semibold text-slate-950">{comparisonRightDocument.originalName}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Documento comparado
+                    </p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      {comparisonRightDocument.originalName}
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                      <span className="rounded-full bg-white px-3 py-1">{getSimpleDocumentTypeLabel(comparisonRightDocument.documentType)}</span>
-                      <span className="rounded-full bg-white px-3 py-1">{formatDate(comparisonRightDocument.createdAt)}</span>
+                      <span className="rounded-full bg-white px-3 py-1">
+                        {getSimpleDocumentTypeLabel(
+                          comparisonRightDocument.documentType
+                        )}
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1">
+                        {formatDate(comparisonRightDocument.createdAt)}
+                      </span>
                     </div>
                     <p className="mt-3 text-sm leading-7 text-slate-700">
-                      {asHeliosOpinion(comparisonRightDocument.heliosOpinion)?.summary ?? "Este documento añade una segunda referencia para entender mejor qué cambió o qué falta aclarar."}
+                      {asHeliosOpinion(comparisonRightDocument.heliosOpinion)
+                        ?.summary ??
+                        "Este documento añade una segunda referencia para entender mejor qué cambió o qué falta aclarar."}
                     </p>
                   </article>
 
                   <article className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Resumen de diferencias</p>
-                    <p className="mt-2 font-semibold text-slate-950">Lo primero que conviene revisar</p>
-                    <p className="mt-3 text-sm leading-7 text-emerald-950">{comparisonCopy.cards[1]?.body}</p>
-                    <p className="mt-3 text-xs leading-6 text-emerald-900">Último punto comparado: {formatDate(comparisonRightDocument.createdAt)}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                      Resumen de diferencias
+                    </p>
+                    <p className="mt-2 font-semibold text-slate-950">
+                      Lo primero que conviene revisar
+                    </p>
+                    <p className="mt-3 text-sm leading-7 text-emerald-950">
+                      {comparisonCopy.cards[1]?.body}
+                    </p>
+                    <p className="mt-3 text-xs leading-6 text-emerald-900">
+                      Último punto comparado:{" "}
+                      {formatDate(comparisonRightDocument.createdAt)}
+                    </p>
                   </article>
                 </div>
               ) : null}
 
               <div className="mt-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-teal-700" strokeWidth={1.8} />
-                  <p className="text-sm font-semibold text-slate-950">Alertas priorizadas</p>
+                  <Sparkles
+                    className="h-4 w-4 text-teal-700"
+                    strokeWidth={1.8}
+                  />
+                  <p className="text-sm font-semibold text-slate-950">
+                    Alertas priorizadas
+                  </p>
                 </div>
                 <p className="mt-1 text-sm leading-7 text-slate-600">
-                    Convertimos señales repetidas y puntos sensibles en alertas más fáciles de priorizar dentro de un expediente claro, ordenado y siempre disponible para ti.
-
+                  Convertimos señales repetidas y puntos sensibles en alertas
+                  más fáciles de priorizar dentro de un expediente claro,
+                  ordenado y siempre disponible para ti.
                 </p>
                 <div className="mt-3 grid gap-3">
-                  {comparisonAlerts.map((alert) => (
-                    <Alert key={alert.id} className={`${alert.toneClasses} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm`}>
+                  {comparisonAlerts.map(alert => (
+                    <Alert
+                      key={alert.id}
+                      className={`${alert.toneClasses} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm`}
+                    >
                       {alert.icon === "alert" ? (
                         <AlertCircle className="h-4 w-4" strokeWidth={1.8} />
                       ) : alert.icon === "file" ? (
@@ -7417,21 +9698,33 @@ export default function Auditar() {
                       )}
                       <AlertTitle>{alert.eyebrow}</AlertTitle>
                       <AlertDescription className="text-current">
-                        <p className="font-semibold text-current">{alert.title}</p>
+                        <p className="font-semibold text-current">
+                          {alert.title}
+                        </p>
                         <p>{alert.body}</p>
-                        {alert.timestampLabel || alert.reasonLabel || alert.actionLabel ? (
+                        {alert.timestampLabel ||
+                        alert.reasonLabel ||
+                        alert.actionLabel ? (
                           <div className="mt-3 grid gap-2 text-xs leading-6 text-current/80 sm:grid-cols-3">
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
                               <p className="font-semibold">Fecha y hora</p>
-                              <p>{alert.timestampLabel ?? "Sin fecha visible"}</p>
+                              <p>
+                                {alert.timestampLabel ?? "Sin fecha visible"}
+                              </p>
                             </div>
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
                               <p className="font-semibold">Motivo</p>
-                              <p>{alert.reasonLabel ?? "Señal útil detectada en tu expediente"}</p>
+                              <p>
+                                {alert.reasonLabel ??
+                                  "Señal útil detectada en tu expediente"}
+                              </p>
                             </div>
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">
                               <p className="font-semibold">Qué puedes hacer</p>
-                              <p>{alert.actionLabel ?? "Seguir fortaleciendo el expediente con calma."}</p>
+                              <p>
+                                {alert.actionLabel ??
+                                  "Seguir fortaleciendo el expediente con calma."}
+                              </p>
                             </div>
                           </div>
                         ) : null}
@@ -7442,21 +9735,29 @@ export default function Auditar() {
               </div>
 
               <div className="mt-4 grid gap-3">
-                {comparisonCopy.cards.map((card) => (
+                {comparisonCopy.cards.map(card => (
                   <div
                     key={card.title}
                     className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm"
                   >
                     <p className="font-semibold text-slate-950">{card.title}</p>
-                    <p className="mt-2 text-sm leading-7 text-slate-700">{card.body}</p>
+                    <p className="mt-2 text-sm leading-7 text-slate-700">
+                      {card.body}
+                    </p>
                   </div>
                 ))}
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm">
-                <p className="text-sm font-semibold text-emerald-900">Cómo esta comparación gana claridad</p>
-                <p className="mt-2 text-sm leading-7 text-emerald-950">{comparisonCopy.coverage}</p>
-                <p className="mt-2 text-xs leading-6 text-emerald-900">{comparisonCopy.guardrail}</p>
+                <p className="text-sm font-semibold text-emerald-900">
+                  Cómo esta comparación gana claridad
+                </p>
+                <p className="mt-2 text-sm leading-7 text-emerald-950">
+                  {comparisonCopy.coverage}
+                </p>
+                <p className="mt-2 text-xs leading-6 text-emerald-900">
+                  {comparisonCopy.guardrail}
+                </p>
               </div>
 
               <Button
@@ -7469,26 +9770,47 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Siguiente documento recomendado</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">El siguiente paso que más puede ayudarte hoy</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Siguiente documento recomendado
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                El siguiente paso que más puede ayudarte hoy
+              </h2>
 
               <div className="mt-4 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4">
-                <p className="text-sm font-semibold text-teal-900">Sugerencia automática según tu expediente</p>
-                <p className="mt-2 text-xl font-semibold text-slate-950">{nextDocumentCopy.headline}</p>
-                <p className="mt-2 text-sm leading-7 text-teal-950">{nextDocumentCopy.intro}</p>
+                <p className="text-sm font-semibold text-teal-900">
+                  Sugerencia automática según tu expediente
+                </p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">
+                  {nextDocumentCopy.headline}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-teal-950">
+                  {nextDocumentCopy.intro}
+                </p>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-950">{nextDocumentCopy.reasonTitle}</p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">{nextDocumentCopy.reasonBody}</p>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{nextDocumentCopy.followUp}</p>
+                <p className="font-semibold text-slate-950">
+                  {nextDocumentCopy.reasonTitle}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  {nextDocumentCopy.reasonBody}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {nextDocumentCopy.followUp}
+                </p>
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4">
-                <p className="text-sm font-semibold text-emerald-900">Cómo va creciendo tu expediente</p>
-                <p className="mt-2 text-sm leading-7 text-emerald-950">{nextDocumentCopy.coverage}</p>
+                <p className="text-sm font-semibold text-emerald-900">
+                  Cómo va creciendo tu expediente
+                </p>
+                <p className="mt-2 text-sm leading-7 text-emerald-950">
+                  {nextDocumentCopy.coverage}
+                </p>
                 <p className="mt-2 text-xs leading-6 text-emerald-900">
-                  Hoy tu expediente ya cubre {dossierStatus.completed} de {dossierStatus.total} piezas clave.
+                  Hoy tu expediente ya cubre {dossierStatus.completed} de{" "}
+                  {dossierStatus.total} piezas clave.
                   {selectedRecommendedTargetType && effectiveRecommendedTarget
                     ? ` Además, dejamos enfocado ${effectiveRecommendedTarget.label.toLowerCase()} para que retomes esa sugerencia sin empezar de cero.`
                     : ""}
@@ -7497,21 +9819,37 @@ export default function Auditar() {
 
               <Button
                 className="mt-4 h-11 w-full rounded-full bg-teal-600 text-white hover:bg-teal-700"
-                onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                onClick={() =>
+                  focusRecommendedUpload(
+                    effectiveRecommendedTarget?.type ?? null
+                  )
+                }
               >
                 {nextDocumentCopy.cta}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
 
               <div className="mt-4 space-y-3">
-                {dossierTargets.map((item) => {
+                {dossierTargets.map(item => {
                   const isPresent = presentTypes.has(item.type);
                   return (
-                    <div key={item.type} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                      <CheckCircle2 className={`mt-1 h-5 w-5 shrink-0 ${isPresent ? "text-emerald-600" : "text-slate-400"}`} strokeWidth={1.8} />
+                    <div
+                      key={item.type}
+                      className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <CheckCircle2
+                        className={`mt-1 h-5 w-5 shrink-0 ${isPresent ? "text-emerald-600" : "text-slate-400"}`}
+                        strokeWidth={1.8}
+                      />
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.label}</p>
-                        <p className="text-sm leading-6 text-slate-600">{isPresent ? "Ya forma parte del expediente." : item.benefit}</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {item.label}
+                        </p>
+                        <p className="text-sm leading-6 text-slate-600">
+                          {isPresent
+                            ? "Ya forma parte del expediente."
+                            : item.benefit}
+                        </p>
                       </div>
                     </div>
                   );
@@ -7520,15 +9858,23 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Lo que cuidamos al revisar</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Lo que cuidamos al revisar
+              </p>
               <div className="mt-4 space-y-3">
                 {[
                   "Tu archivo queda guardado con trazabilidad.",
                   "Lo confirmado y lo estimado se muestran por separado.",
                   "Si algo necesita revisión humana, te lo diremos con claridad.",
-                ].map((item) => (
-                  <div key={item} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                    <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                ].map(item => (
+                  <div
+                    key={item}
+                    className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <ShieldCheck
+                      className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                      strokeWidth={1.8}
+                    />
                     <p className="text-sm leading-7 text-slate-700">{item}</p>
                   </div>
                 ))}
@@ -7536,15 +9882,23 @@ export default function Auditar() {
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Qué suele aclararse mejor</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Qué suele aclararse mejor
+              </p>
               <div className="mt-4 space-y-3">
                 {[
                   "Diferencias entre recibos y CFDI cuando se comparan varios periodos.",
                   "Cambios repetidos en deducciones o montos a lo largo del tiempo.",
                   "Condiciones pactadas frente a lo que realmente ocurrió cuando también existe contrato o evidencia complementaria.",
-                ].map((item) => (
-                  <div key={item} className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                    <FileSearch className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
+                ].map(item => (
+                  <div
+                    key={item}
+                    className="flex gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <FileSearch
+                      className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                      strokeWidth={1.8}
+                    />
                     <p className="text-sm leading-7 text-slate-700">{item}</p>
                   </div>
                 ))}
@@ -7554,12 +9908,18 @@ export default function Auditar() {
         </div>
       </div>
 
-      <Drawer open={casePreparationDrawerOpen} onOpenChange={setCasePreparationDrawerOpen}>
+      <Drawer
+        open={casePreparationDrawerOpen}
+        onOpenChange={setCasePreparationDrawerOpen}
+      >
         <DrawerContent>
           <DrawerHeader className="text-left">
             <DrawerTitle>{pricingExperience.platform.title}</DrawerTitle>
             <DrawerDescription>
-              Esta opción aparece hasta que ya viste valor en tu expediente. Es una mejora opcional para ordenar mejor tu siguiente paso; no sustituye asesoría legal individual y no es necesaria para seguir usando la parte gratuita.
+              Esta opción aparece hasta que ya viste valor en tu expediente. Es
+              una mejora opcional para ordenar mejor tu siguiente paso; no
+              sustituye asesoría legal individual y no es necesaria para seguir
+              usando la parte gratuita.
             </DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 px-4 pb-2">
@@ -7572,20 +9932,32 @@ export default function Auditar() {
                   {pricingExperience.platform.priceLabel}
                 </span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-700">{pricingExperience.platform.description}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                {pricingExperience.platform.description}
+              </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
                 <p className="font-semibold text-slate-950">Qué recibirías</p>
-                <p className="mt-2">Un borrador inicial más ordenado con base en los documentos que ya reuniste y en el contexto visible de tu expediente.</p>
+                <p className="mt-2">
+                  Un borrador inicial más ordenado con base en los documentos
+                  que ya reuniste y en el contexto visible de tu expediente.
+                </p>
               </article>
               <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
                 <p className="font-semibold text-slate-950">Cuándo conviene</p>
-                <p className="mt-2">Cuando ya entendiste mejor tu caso y quieres llegar mejor preparado a una orientación, conciliación o siguiente paso formal.</p>
+                <p className="mt-2">
+                  Cuando ya entendiste mejor tu caso y quieres llegar mejor
+                  preparado a una orientación, conciliación o siguiente paso
+                  formal.
+                </p>
               </article>
               <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
                 <p className="font-semibold text-slate-950">Qué no hace</p>
-                <p className="mt-2">No reemplaza a una autoridad, a una abogada o abogado, ni promete resultados. Solo organiza mejor lo que ya tienes.</p>
+                <p className="mt-2">
+                  No reemplaza a una autoridad, a una abogada o abogado, ni
+                  promete resultados. Solo organiza mejor lo que ya tienes.
+                </p>
               </article>
             </div>
             <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
@@ -7594,14 +9966,21 @@ export default function Auditar() {
           </div>
           <DrawerFooter>
             <DrawerClose asChild>
-              <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              <Button
+                variant="outline"
+                className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              >
                 Cerrar y seguir gratis
               </Button>
             </DrawerClose>
             <DrawerClose asChild>
               <Button
                 className="rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
-                onClick={() => focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null)}
+                onClick={() =>
+                  focusRecommendedUpload(
+                    effectiveRecommendedTarget?.type ?? null
+                  )
+                }
               >
                 Volver a mi expediente
               </Button>
@@ -7615,7 +9994,9 @@ export default function Auditar() {
           <DrawerHeader className="text-left">
             <DrawerTitle>Elige cómo quieres subir tu documento</DrawerTitle>
             <DrawerDescription>
-              Puedes tomar una foto en ese momento o elegir un archivo que ya tengas guardado en tu celular o computadora. Recordaremos tu opción para la siguiente vez.
+              Puedes tomar una foto en ese momento o elegir un archivo que ya
+              tengas guardado en tu celular o computadora. Recordaremos tu
+              opción para la siguiente vez.
             </DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 px-4 pb-2">
@@ -7645,7 +10026,10 @@ export default function Auditar() {
           </div>
           <DrawerFooter>
             <DrawerClose asChild>
-              <Button variant="outline" className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              <Button
+                variant="outline"
+                className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              >
                 Cerrar
               </Button>
             </DrawerClose>
@@ -7659,8 +10043,13 @@ export default function Auditar() {
             <div className="mb-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-3.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               <div className="flex items-start justify-between gap-3">
                 <div className="pr-1">
-                  <p className="text-sm font-semibold text-slate-950">Tu autorización se registra en este mismo paso.</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-600">Protegemos tu expediente y dejamos la versión legal vigente ligada a este documento.</p>
+                  <p className="text-sm font-semibold text-slate-950">
+                    Tu autorización se registra en este mismo paso.
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">
+                    Protegemos tu expediente y dejamos la versión legal vigente
+                    ligada a este documento.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -7674,7 +10063,7 @@ export default function Auditar() {
                 <input
                   type="checkbox"
                   checked={legalGateChecked}
-                  onChange={(event) => {
+                  onChange={event => {
                     const checked = event.target.checked;
                     setLegalGateChecked(checked);
                     trackLegalGateEvent("consent_toggled", {
@@ -7690,7 +10079,9 @@ export default function Auditar() {
                   }}
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
-                <span className="text-xs leading-5 text-slate-700">{LEGAL_GATE_COPY.checkbox}</span>
+                <span className="text-xs leading-5 text-slate-700">
+                  {LEGAL_GATE_COPY.checkbox}
+                </span>
               </label>
             </div>
           ) : null}
@@ -7701,7 +10092,11 @@ export default function Auditar() {
                 ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
                 : "bg-teal-600 hover:bg-teal-700"
             }`}
-            disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
+            disabled={
+              isPrimaryDocumentActionPending ||
+              !selectedTenantId ||
+              !selectedCaseId
+            }
             onClick={() => {
               if (pendingDraft) {
                 void handleConfirmDraft();
@@ -7728,7 +10123,8 @@ export default function Auditar() {
           </Button>
           {autoAdvanceFlash && !pendingDraft ? (
             <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
-              Autoavance activado: terminando el análisis abrimos la revisión rápida automáticamente.
+              Autoavance activado: terminando el análisis abrimos la revisión
+              rápida automáticamente.
             </p>
           ) : null}
 
@@ -7743,7 +10139,11 @@ export default function Auditar() {
                   : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
             {pendingDraft || selectedFile ? (
-              <button className="font-semibold text-slate-700" onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile} type="button">
+              <button
+                className="font-semibold text-slate-700"
+                onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
+                type="button"
+              >
                 {pendingDraft ? reanalyzeDraftAction.label : "Limpiar"}
               </button>
             ) : null}

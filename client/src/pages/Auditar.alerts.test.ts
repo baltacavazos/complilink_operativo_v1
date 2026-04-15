@@ -46,7 +46,7 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("isAutoAnalyzingSelectedFile");
     expect(auditarSource).toContain('"Analizando documento..."');
     expect(auditarSource).toContain("Estamos analizando tu documento");
-    expect(auditarSource).toContain("Ya recibimos tu documento. Enseguida abriremos la vista previa.");
+    expect(auditarSource).toContain("Ya recibimos tu documento. Enseguida abriremos la vista");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
   });
 });

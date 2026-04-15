@@ -118,6 +118,10 @@
 - [x] Descartar por completo la homepage actual de CompliLink como base visible del producto
 - [x] Reconstruir desde cero la home de AuditaPatron con nueva narrativa, jerarquía y propuesta visual
 - [x] Definir una arquitectura de secciones para AuditaPatron centrada en auditoría laboral, carga documental, evidencia y confianza
+- [x] Aplicar el consenso tri-IA en la home para recortar la promesa y mostrar mejor el resultado real de la auditoría
+- [x] Aplicar el consenso tri-IA en /acceso para que el flujo por correo se sienta todavía más directo y continuo desde móvil
+- [x] Aplicar el consenso tri-IA en /auditar para reforzar el camino único, la jerarquía móvil y la vista de resultado
+- [x] Revalidar compilación, Vitest y sesión móvil después de los cambios del consenso tri-IA
 - [x] Validar la nueva home de AuditaPatron visual y técnicamente antes de entregarla
 - [x] Deliberar con ChatGPT, Grok y Gemini la mejor estructura, mensaje y experiencia para la nueva home de AuditaPatron antes de implementarla
 - [x] Redefinir la home de AuditaPatron para que sea lo más llamativa, fácil e intuitiva posible para trabajadores masivos
@@ -1191,3 +1195,10 @@
 - [x] Añadir una microanimación o estado de progreso visible al envío del código por correo en /acceso
 - [x] Unificar en móvil la elección entre cámara y archivo para reducir fricción al subir documentos en /auditar
 - [x] Revalidar la tercera ronda con contraste multi-IA, pruebas y revisión móvil limpia
+- [ ] Reescribir el hero de la landing con una promesa más concreta, corta y entendible para cualquier persona
+- [ ] Dejar un solo CTA principal arriba del fold y relegar acciones secundarias para reducir fatiga de decisión
+- [ ] Mostrar un ejemplo real y fácil de entender del resultado final de la auditoría para cerrar la brecha entre promesa y evidencia
+- [ ] Simplificar la transición entre landing y login para que se perciba como el mismo flujo y no como una ruptura
+- [ ] Traducir el copy abstracto o técnico a lenguaje cotidiano con beneficios concretos y ejemplos simples
+- [ ] Recortar bloques redundantes o secundarios que compiten con la acción principal en la home y en /auditar
+- [ ] Revalidar con pruebas y navegación real que la nueva experiencia sea más corta, clara y comprensible
