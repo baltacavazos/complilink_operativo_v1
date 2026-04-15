@@ -127,6 +127,7 @@ type UploadProgressState = {
   stageLabel: string;
   etaLabel: string;
   stepKey: UploadProgressStepKey;
+  humanMessages?: string[];
 };
 
 type ContextualShortcut = {
@@ -189,6 +190,27 @@ export function getUploadStepAnnouncement(
   }
 
   return `Progreso actual: ${stageLabel}.`;
+}
+
+export function getHumanUploadProgressMessages(
+  stepKey: UploadProgressStepKey
+) {
+  switch (stepKey) {
+    case "analyze":
+      return [
+        "Leyendo los detalles...",
+        "Buscando señales importantes...",
+        "Preparando tu veredicto...",
+      ];
+    case "save":
+      return [
+        "Protegiendo tu documento...",
+        "Integrándolo al expediente...",
+        "Dejando listo el resultado...",
+      ];
+    default:
+      return [];
+  }
 }
 
 export function getAuditarViewportSegment(width: number) {
@@ -472,6 +494,7 @@ export function buildUploadProgressState(params: {
       stageLabel: getUploadStageLabel("save"),
       etaLabel: getUploadEtaLabel("save"),
       stepKey: "save",
+      humanMessages: getHumanUploadProgressMessages("save"),
     };
   }
 
@@ -502,6 +525,7 @@ export function buildUploadProgressState(params: {
       stageLabel: getUploadStageLabel("analyze"),
       etaLabel: getUploadEtaLabel("analyze"),
       stepKey: "analyze",
+      humanMessages: getHumanUploadProgressMessages("analyze"),
     };
   }
 
@@ -1820,6 +1844,29 @@ function getDocumentContextualShortcuts(
             "Dime cuál sería el siguiente paso más útil para este documento y por qué.",
         },
       ];
+  }
+}
+
+export function getPrimaryContextualShortcut(
+  documentType: string,
+  shortcuts: ContextualShortcut[]
+) {
+  const shortcutById = (id: string) =>
+    shortcuts.find(shortcut => shortcut.id === id) ?? null;
+
+  switch (documentType) {
+    case "payroll_receipt":
+      return shortcutById("payroll-upload-cfdi") ?? shortcuts[0] ?? null;
+    case "cfdi":
+      return shortcutById("cfdi-upload-payroll") ?? shortcuts[0] ?? null;
+    case "contract":
+      return shortcutById("contract-ask-clauses") ?? shortcuts[0] ?? null;
+    case "imss":
+      return shortcutById("imss-ask-gaps") ?? shortcuts[0] ?? null;
+    case "evidence":
+      return shortcutById("evidence-ask-context") ?? shortcuts[0] ?? null;
+    default:
+      return shortcuts.find(shortcut => shortcut.action === "assistant") ?? shortcuts[0] ?? null;
   }
 }
 
@@ -3708,9 +3755,18 @@ export default function Auditar() {
   const lastUploadVerdict = getDocumentVerdictState(
     lastUpload?.classification?.classificationConfidence
   );
-  const primaryLastUploadShortcut = lastUploadShortcuts[0] ?? null;
+  const primaryLastUploadShortcut = useMemo(
+    () =>
+      getPrimaryContextualShortcut(
+        lastUpload?.classification.documentType ?? "",
+        lastUploadShortcuts
+      ),
+    [lastUpload?.classification.documentType, lastUploadShortcuts]
+  );
   const secondaryLastUploadShortcuts = primaryLastUploadShortcut
-    ? lastUploadShortcuts.slice(1)
+    ? lastUploadShortcuts.filter(
+        shortcut => shortcut.id !== primaryLastUploadShortcut.id
+      )
     : lastUploadShortcuts;
   const lastUploadResultHeadline =
     warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -3731,6 +3787,10 @@ export default function Auditar() {
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
   const [showResultReveal, setShowResultReveal] = useState(false);
   const lastRevealedUploadIdRef = useRef<string | null>(null);
+  const verdictPanelRef = useRef<HTMLDivElement | null>(null);
+  const verdictAnalyticsStartedAtRef = useRef<number | null>(null);
+  const verdictAnalyticsTrackedIdRef = useRef<string | null>(null);
+  const verdictMaxScrollDepthRef = useRef(0);
   const lastUploadRevealId = lastUpload
     ? [
         lastUpload.draftId ?? "confirmed",
@@ -3914,6 +3974,36 @@ export default function Auditar() {
     () => getUploadProgressStepState(uploadProgressState.stepKey),
     [uploadProgressState.stepKey]
   );
+  const [uploadProgressMessageIndex, setUploadProgressMessageIndex] =
+    useState(0);
+  const uploadProgressMessagesKey =
+    uploadProgressState.humanMessages?.join("|") ?? "";
+  const uploadProgressHumanMessage =
+    uploadProgressState.humanMessages?.[uploadProgressMessageIndex] ??
+    uploadProgressState.title;
+
+  useEffect(() => {
+    if (uploadProgressState.humanMessages?.length) {
+      setUploadProgressMessageIndex(0);
+    }
+
+    if ((uploadProgressState.humanMessages?.length ?? 0) <= 1) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setUploadProgressMessageIndex(currentIndex => {
+        const totalMessages = uploadProgressState.humanMessages?.length ?? 0;
+        if (totalMessages <= 1) {
+          return 0;
+        }
+
+        return (currentIndex + 1) % totalMessages;
+      });
+    }, 800);
+
+    return () => window.clearInterval(intervalId);
+  }, [uploadProgressMessagesKey, uploadProgressState.humanMessages]);
   const previewInsight = pendingDraft
     ? getUploadInsight(pendingDraft.classification.documentType)
     : null;
@@ -4692,6 +4782,37 @@ export default function Auditar() {
     }
   };
 
+  const handlePrimaryVerdictCta = () => {
+    if (viewportSegment === "mobile" && lastUpload) {
+      const timeToVerdictMs =
+        verdictAnalyticsStartedAtRef.current === null
+          ? undefined
+          : Math.max(0, Date.now() - verdictAnalyticsStartedAtRef.current);
+
+      trackEvent("auditar_mobile_verdict_cta_clicked", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentType: lastUpload.classification.documentType,
+        viewportSegment,
+        ctaLabel: primaryLastUploadShortcut?.label ?? "Abrir asistente laboral",
+        ctaAction: primaryLastUploadShortcut?.action ?? "assistant",
+        timeToVerdictMs,
+        scrollDepthPx: verdictMaxScrollDepthRef.current,
+      });
+    }
+
+    if (primaryLastUploadShortcut) {
+      handleContextualShortcut(
+        primaryLastUploadShortcut,
+        lastUpload?.classification.documentType ?? "unknown",
+        "confirmed"
+      );
+      return;
+    }
+
+    openHeliosCopilot();
+  };
+
   const clearSelectedFile = () => {
     if (isFirstDossierJourney && (selectedFile || pendingDraft)) {
       trackEvent("auditar_first_dossier_cleared", {
@@ -4980,6 +5101,80 @@ export default function Auditar() {
 
   const viewportSegment = getAuditarViewportSegment(window.innerWidth);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || viewportSegment !== "mobile") {
+      return;
+    }
+
+    const captureScrollDepth = () => {
+      verdictMaxScrollDepthRef.current = Math.max(
+        verdictMaxScrollDepthRef.current,
+        Math.max(0, Math.round(window.scrollY))
+      );
+    };
+
+    captureScrollDepth();
+    window.addEventListener("scroll", captureScrollDepth, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", captureScrollDepth);
+    };
+  }, [viewportSegment, lastUploadRevealId]);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      viewportSegment !== "mobile" ||
+      !lastUpload ||
+      !lastUploadRevealId ||
+      !verdictPanelRef.current ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return;
+    }
+
+    const currentVerdictId = lastUploadRevealId;
+    const observer = new IntersectionObserver(
+      entries => {
+        const entry = entries[0];
+
+        if (!entry?.isIntersecting) {
+          return;
+        }
+
+        if (verdictAnalyticsTrackedIdRef.current === currentVerdictId) {
+          return;
+        }
+
+        verdictAnalyticsTrackedIdRef.current = currentVerdictId;
+        const timeToVerdictMs =
+          verdictAnalyticsStartedAtRef.current === null
+            ? undefined
+            : Math.max(0, Date.now() - verdictAnalyticsStartedAtRef.current);
+
+        trackEvent("auditar_mobile_verdict_viewed", {
+          tenantId: selectedTenantId,
+          caseId: selectedCaseId,
+          documentType: lastUpload.classification.documentType,
+          viewportSegment,
+          timeToVerdictMs,
+          scrollDepthPx: verdictMaxScrollDepthRef.current,
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(verdictPanelRef.current);
+
+    return () => observer.disconnect();
+  }, [
+    lastUpload,
+    lastUploadRevealId,
+    selectedCaseId,
+    selectedTenantId,
+    viewportSegment,
+  ]);
+
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
       setSubmitError(
@@ -5000,6 +5195,11 @@ export default function Auditar() {
 
     try {
       setSubmitError(null);
+      if (viewportSegment === "mobile") {
+        verdictAnalyticsStartedAtRef.current = Date.now();
+        verdictAnalyticsTrackedIdRef.current = null;
+        verdictMaxScrollDepthRef.current = Math.max(0, Math.round(window.scrollY));
+      }
       const result = await confirmDraftMutation.mutateAsync({
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
@@ -6753,9 +6953,9 @@ export default function Auditar() {
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
                           {uploadProgressState.eyebrow}
                         </p>
-                        <p className="mt-2 break-words font-semibold">
-                          {uploadProgressState.title}
-                        </p>
+                          <p className="mt-2 break-words font-semibold">
+                            {uploadProgressHumanMessage}
+                          </p>
                       </div>
                       <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 transition-colors duration-300">
                         {uploadProgressState.progress}%
@@ -7936,7 +8136,11 @@ export default function Auditar() {
                     </div>
                   ) : null}
 
-                  <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6">
+                  <div
+                    ref={verdictPanelRef}
+                    data-testid="auditar-verdict-panel"
+                    className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6"
+                  >
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                         Documento recibido
@@ -8032,15 +8236,7 @@ export default function Auditar() {
                           data-testid="auditar-primary-verdict-cta"
                           type="button"
                           className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
-                          onClick={() =>
-                            primaryLastUploadShortcut
-                              ? handleContextualShortcut(
-                                  primaryLastUploadShortcut,
-                                  lastUpload.classification.documentType,
-                                  "confirmed"
-                                )
-                              : openHeliosCopilot()
-                          }
+                          onClick={handlePrimaryVerdictCta}
                         >
                           {primaryLastUploadShortcut
                             ? primaryLastUploadShortcut.label

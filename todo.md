@@ -1217,3 +1217,10 @@
 - [x] Añadir una microtransición entre archivo recibido y veredicto listo en el post-upload de /auditar
 - [x] Hacer más explícito el semáforo del veredicto para que el usuario entienda de inmediato si el documento salió bien, incompleto o requiere revisión
 - [x] Cubrir con una prueba E2E el flujo móvil subir → analizar → veredicto en /auditar
+- [x] Añadir una animación breve y humana de progreso durante el análisis real en /auditar
+- [x] Hacer que el CTA principal del veredicto cambie según el tipo de documento detectado y el siguiente paso más útil
+- [x] Instrumentar la medición de scroll y tiempo hasta el veredicto en móvil para evaluar si la experiencia realmente se volvió más corta
+- [x] Cuarta ronda en /auditar: añadir progreso humano breve durante el análisis real del documento
+- [x] Cuarta ronda en /auditar: volver contextual la CTA principal según el tipo de documento detectado
+- [x] Cuarta ronda en /auditar: medir tiempo y scroll hasta el veredicto en móvil con analytics básicos
+- [x] Revalidar la cuarta ronda de /auditar con Vitest y Playwright sin romper la experiencia compacta

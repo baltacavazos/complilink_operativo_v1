@@ -15,6 +15,8 @@ import {
   buildUploadProgressState,
   formatVisibleFileSize,
   getContextualDossierNextTarget,
+  getHumanUploadProgressMessages,
+  getPrimaryContextualShortcut,
   getUploadCompactGuardrails,
   getUploadHelpDisclosureSummary,
   getUploadHelpMobileHint,
@@ -48,6 +50,15 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("Estamos analizando tu documento");
     expect(auditarSource).toContain("Ya recibimos tu documento. Enseguida abriremos la vista");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
+  });
+
+  it("inyecta progreso humano y tracking discreto del veredicto móvil en la cuarta ronda", () => {
+    expect(auditarSource).toContain("Leyendo los detalles...");
+    expect(auditarSource).toContain("Buscando señales importantes...");
+    expect(auditarSource).toContain("Preparando tu veredicto...");
+    expect(auditarSource).toContain("auditar_mobile_verdict_viewed");
+    expect(auditarSource).toContain("auditar_mobile_verdict_cta_clicked");
+    expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
   });
 });
 
@@ -377,6 +388,11 @@ describe("buildUploadProgressState", () => {
       stageLabel: "Etapa 3 de 4 · Guardando con control",
       etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
+      humanMessages: [
+        "Protegiendo tu documento...",
+        "Integrándolo al expediente...",
+        "Dejando listo el resultado...",
+      ],
     });
   });
 
@@ -423,6 +439,11 @@ describe("buildUploadProgressState", () => {
       progress: 72,
       stageLabel: "Etapa 2 de 4 · Analizando contenido",
       stepKey: "analyze",
+      humanMessages: [
+        "Leyendo los detalles...",
+        "Buscando señales importantes...",
+        "Preparando tu veredicto...",
+      ],
     });
 
     expect(
@@ -439,6 +460,64 @@ describe("buildUploadProgressState", () => {
       etaLabel: "Siguiente acción: revisar lo importante y confirmar solo si quieres guardarlo.",
       stepKey: "review",
     });
+  });
+});
+
+describe("getHumanUploadProgressMessages", () => {
+  it("devuelve mensajes breves y humanos para análisis y guardado sin alargar la pantalla", () => {
+    expect(getHumanUploadProgressMessages("analyze")).toEqual([
+      "Leyendo los detalles...",
+      "Buscando señales importantes...",
+      "Preparando tu veredicto...",
+    ]);
+    expect(getHumanUploadProgressMessages("save")).toEqual([
+      "Protegiendo tu documento...",
+      "Integrándolo al expediente...",
+      "Dejando listo el resultado...",
+    ]);
+    expect(getHumanUploadProgressMessages("review")).toEqual([]);
+  });
+});
+
+describe("getPrimaryContextualShortcut", () => {
+  it("prioriza una acción de comprensión para contrato, IMSS y evidencia, y una de contraste para nómina y CFDI", () => {
+    expect(
+      getPrimaryContextualShortcut("contract", [
+        {
+          id: "contract-upload-annex",
+          label: "Subir anexo o condiciones relacionadas",
+          description: "Sirve para completar lo pactado al inicio o en cambios posteriores.",
+          action: "upload",
+          targetType: "contract",
+        },
+        {
+          id: "contract-ask-clauses",
+          label: "Resumir cláusulas importantes",
+          description: "Helios te señala lo que vale la pena contrastar después con nómina o CFDI.",
+          action: "assistant",
+          prompt: "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
+        },
+      ])?.id,
+    ).toBe("contract-ask-clauses");
+
+    expect(
+      getPrimaryContextualShortcut("payroll_receipt", [
+        {
+          id: "payroll-upload-cfdi",
+          label: "Subir CFDI del mismo periodo",
+          description: "Sirve para contrastar lo timbrado contra la nómina que acabas de revisar.",
+          action: "upload",
+          targetType: "cfdi",
+        },
+        {
+          id: "payroll-ask-deductions",
+          label: "Explicar deducciones clave",
+          description: "Helios te resume descuentos, pagos y señales llamativas en palabras simples.",
+          action: "assistant",
+          prompt: "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
+        },
+      ])?.id,
+    ).toBe("payroll-upload-cfdi");
   });
 });
 
