@@ -210,7 +210,7 @@ const auditarEditableFieldKeys = [
 ] as const;
 
 const auditarEditableFieldKeySet = new Set<string>(auditarEditableFieldKeys);
-const AUDITAR_ALLOWED_UPLOAD_MIME_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+const AUDITAR_ALLOWED_UPLOAD_MIME_TYPES = new Set(["application/pdf", "text/xml", "application/xml", "image/jpeg", "image/png", "image/webp"]);
 const AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH = 160;
 const AUDITAR_MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 const AUDITAR_DRAFT_TTL_MS = 2 * 60 * 60 * 1000;
@@ -899,7 +899,7 @@ function validateAuditarUploadMetadata(params: { fileName: string; mimeType: str
   }
 
   if (!AUDITAR_ALLOWED_UPLOAD_MIME_TYPES.has(params.mimeType)) {
-    throw new Error("Por ahora solo puedes subir archivos PDF, JPG, PNG o WEBP para una revisión confiable.");
+    throw new Error("Por ahora solo puedes subir archivos PDF, XML, JPG, PNG o WEBP para una revisión confiable.");
   }
 
   if (safeFileName.length > AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH) {
@@ -916,12 +916,15 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
   const matchesJpeg = params.binary.byteLength >= 3 && params.binary[0] === 0xff && params.binary[1] === 0xd8 && params.binary[2] === 0xff;
   const matchesPng = params.binary.byteLength >= 8 && params.binary.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
   const matchesWebp = params.binary.byteLength >= 12 && params.binary.subarray(0, 4).equals(Buffer.from("RIFF")) && params.binary.subarray(8, 12).equals(Buffer.from("WEBP"));
+  const normalizedTextHeader = params.binary.subarray(0, Math.min(params.binary.byteLength, 256)).toString("utf8").replace(/^\uFEFF/, "").trimStart();
+  const matchesXml = normalizedTextHeader.startsWith("<") && (normalizedTextHeader.startsWith("<?xml") || normalizedTextHeader.startsWith("<cfdi:") || normalizedTextHeader.startsWith("<Comprobante") || normalizedTextHeader.startsWith("<"));
 
   const isValidBinary =
     (params.mimeType === "application/pdf" && matchesPdf) ||
     (params.mimeType === "image/jpeg" && matchesJpeg) ||
     (params.mimeType === "image/png" && matchesPng) ||
-    (params.mimeType === "image/webp" && matchesWebp);
+    (params.mimeType === "image/webp" && matchesWebp) ||
+    ((params.mimeType === "text/xml" || params.mimeType === "application/xml") && matchesXml);
 
   if (!isValidBinary) {
     throw new Error("El contenido real del archivo no coincide con el tipo declarado. Vuelve a exportarlo o súbelo en su formato original.");

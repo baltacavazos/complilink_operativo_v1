@@ -1151,3 +1151,12 @@
 - [x] Hacer explícito en /acceso cuándo el código del CEO se envía al buzón de respaldo temporal del propietario
 - [x] Añadir una prueba E2E del flujo completo de solicitar y validar código para el acceso CEO
 - [x] Revisar el estado del dominio de correo saliente y preparar la salida segura del fallback temporal cuando la verificación esté lista
+- [ ] Auditar y corregir el error del primer upload móvil que muestra 'algo interrumpió la carga pero tus datos están a salvo' y deja el flujo sin funcionar
+- [ ] Reducir el scroll excesivo de la experiencia móvil inicial para que el recorrido sea más corto, claro y usable
+- [ ] Eliminar del flujo móvil inicial todo texto tipo relato o instrucción redundante que no aporte a la acción inmediata del usuario
+- [ ] Rediseñar la primera pantalla móvil para que cada siguiente paso sea obvio sin necesitar explicaciones largas ni ayuda contextual extensa
+- [ ] Auditar la UX móvil hasta alcanzar un estándar percibido mínimo de 9/10 en claridad, intuición y continuidad del flujo
+- [x] Alinear validaciones de archivo entre cliente y servidor para evitar fallos del primer upload móvil por tamaño, MIME y formatos inconsistentes
+- [x] Rediseñar la entrada móvil de /auditar para reducir scroll, dejar una sola jerarquía clara y eliminar copy narrativo redundante
+- [x] Hacer el feedback del upload más específico y accionable cuando el archivo no sea compatible o exceda límites reales
+- [x] Añadir y actualizar pruebas Vitest/E2E para blindar la nueva validación y la UX móvil compacta

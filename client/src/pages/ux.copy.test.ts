@@ -87,8 +87,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
-    expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`');
-    expect(source).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
+    expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} El borrador se abre aquí mismo.`');
+    expect(source).toContain('fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB."');
     expect(source).toContain('Documento sugerido preparado');
     expect(source).toContain('Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.');
     expect(source).toContain('mt-4 grid gap-3 md:grid-cols-2');

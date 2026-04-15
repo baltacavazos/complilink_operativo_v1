@@ -70,8 +70,11 @@ const INITIAL_LEGAL_GATE_METRICS: LegalGateMetricsState = {
   lastEvent: "idle",
   lastUpdatedAt: null,
 };
-const MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 15 * 1024 * 1024;
-const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"] as const;
+const MAX_DOCUMENT_UPLOAD_SIZE_BYTES = 12 * 1024 * 1024;
+const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [".pdf", ".xml", ".jpg", ".jpeg", ".png", ".webp"] as const;
+const SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES = new Set(["application/pdf", "text/xml", "application/xml", "image/jpeg", "image/png", "image/webp"]);
+const DOCUMENT_UPLOAD_PICKER_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf,text/xml,application/xml,.xml";
+const MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS = [".heic", ".heif"] as const;
 
 type UploadProgressStepKey = "prepare" | "analyze" | "save" | "review";
 
@@ -104,12 +107,12 @@ const UPLOAD_PROGRESS_STEPS: Array<{ key: UploadProgressStepKey; label: string }
 ];
 
 const PERSISTENT_UPLOAD_GUARDRAILS = {
-  fileRules: "Formatos permitidos: PDF, XML o imagen clara. Límite preventivo: 15 MB por archivo.",
+  fileRules: "Formatos compatibles: PDF, XML, JPG, PNG o WEBP. Límite real: 12 MB por archivo.",
   privacyRules: "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
-  fileRules: "PDF, XML o imagen clara · máximo 15 MB.",
+  fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
   privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
 };
 
@@ -263,25 +266,30 @@ export function formatVisibleFileSize(bytes: number) {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+function isUnsupportedMobileImageFormat(file: File) {
+  const lowerName = file.name.toLowerCase();
+  return MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS.some((extension) => lowerName.endsWith(extension)) || file.type === "image/heic" || file.type === "image/heif";
+}
+
 export function validateDocumentUploadFile(file: File | null) {
   if (!file) {
     return null;
   }
 
   const lowerName = file.name.toLowerCase();
-  const isSupportedByMime =
-    file.type.startsWith("image/") ||
-    file.type === "application/pdf" ||
-    file.type === "text/xml" ||
-    file.type === "application/xml";
+  const isSupportedByMime = SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES.has(file.type);
   const isSupportedByExtension = SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS.some((extension) => lowerName.endsWith(extension));
 
+  if (isUnsupportedMobileImageFormat(file)) {
+    return "Tu celular entregó la imagen en HEIC o HEIF. Para evitar fallos, súbela como JPG, PNG, WEBP, PDF o XML.";
+  }
+
   if (!isSupportedByMime && !isSupportedByExtension) {
-    return "Este archivo no es compatible todavía. Sube PDF, XML o una imagen clara del documento para continuar.";
+    return "Este archivo no es compatible todavía. Sube PDF, XML, JPG, PNG o WEBP para continuar.";
   }
 
   if (file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES) {
-    return `El archivo pesa ${formatVisibleFileSize(file.size)} y supera el límite preventivo de 15 MB. Comprime la imagen o exporta el PDF en tamaño más ligero antes de subirlo.`;
+    return `El archivo pesa ${formatVisibleFileSize(file.size)} y rebasa el límite real de 12 MB. Comprime la imagen o exporta el PDF en tamaño más ligero antes de subirlo.`;
   }
 
   return null;
@@ -4976,7 +4984,7 @@ export default function Auditar() {
                   ref={cameraInputRef}
                   key={`camera-${pickerKey}`}
                   type="file"
-                  accept="image/*,application/pdf,.xml,text/xml,application/xml"
+                  accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
                   capture="environment"
                   onChange={handleFileChange}
                   className="hidden"
@@ -4985,22 +4993,22 @@ export default function Auditar() {
                   ref={fileInputRef}
                   key={`file-${pickerKey}`}
                   type="file"
-                  accept="image/*,application/pdf,.xml,text/xml,application/xml"
+                  accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
                   onChange={handleFileChange}
                   className="hidden"
                 />
 
                 <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4">
-                  <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
-                    <p className="font-semibold text-slate-950">Tú confirmas el guardado; AuditaPatron hace el trabajo pesado</p>
-                    <p className="mt-1">
-                      Elegir el archivo pone en marcha una lectura automática para prepararte un borrador claro. Antes de guardarlo, revisas qué entendimos y decides si realmente quieres integrarlo al expediente.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">PDF, XML o imagen</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Hasta 15 MB</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Lectura automática</span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">Confirmas antes de guardar</span>
+                  <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-slate-950">Sube un documento y revisa el borrador</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-600">La carga empieza sola. Tú decides si se guarda.</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">
+                        <span className="rounded-full bg-white px-3 py-1">12 MB</span>
+                        <span className="rounded-full bg-white px-3 py-1">PDF · XML · imagen</span>
+                      </div>
                     </div>
                   </div>
 
@@ -5027,14 +5035,14 @@ export default function Auditar() {
                     <div className="space-y-3">
                       <p className="text-xs leading-5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
-                          ? "Estamos leyendo tu documento para abrir la vista previa sin que tengas que tocar nada más."
+                          ? "Estamos preparando tu vista previa."
                           : shouldCompactMobileUploadEntry
-                            ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`
+                            ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} El borrador se abre aquí mismo.`
                             : preferredCaptureMode === "camera"
-                              ? "Abriremos primero la cámara para que tomes la foto sin pasos extra."
+                              ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
-                                ? "Abriremos primero tus archivos para quitarte un toque innecesario."
-                                : "Abriremos primero tus archivos para avanzar más rápido. Si prefieres foto, puedes cambiarlo aquí."}
+                                ? "Abriremos tus archivos primero."
+                                : "Abriremos tus archivos; si prefieres foto puedes cambiarlo aquí."}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[1rem] border border-teal-200 bg-teal-50/80 px-4 py-3 text-teal-950 shadow-sm">
@@ -5045,7 +5053,7 @@ export default function Auditar() {
                             <div className="min-w-0">
                               <p className="text-sm font-semibold">Estamos analizando tu documento</p>
                               <p className="mt-1 text-xs leading-5 text-teal-900/90">
-                                Mientras termina la lectura automática, bloqueamos cámara y archivo para evitar cargas duplicadas. Enseguida te mostraremos el borrador para revisarlo.
+                                Bloqueamos la cámara y los archivos unos segundos para evitar duplicados. Enseguida abriremos el borrador.
                               </p>
                             </div>
                           </div>
@@ -5167,116 +5175,75 @@ export default function Auditar() {
                     <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/70" aria-hidden="true">
                       <div className={`h-full rounded-full transition-all duration-500 ${uploadProgressState.barClasses}`} style={{ width: `${uploadProgressState.progress}%` }} />
                     </div>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{uploadProgressState.stageLabel}</p>
-                    {isAutoAnalyzingSelectedFile ? (
-                      <div className="mt-3 rounded-2xl border border-white/70 bg-white/75 px-3 py-3 text-sm leading-6 text-slate-800 shadow-sm">
-                        <p className="font-semibold text-slate-950">No necesitas volver a tocar nada.</p>
-                        <p className="mt-1">Ya recibimos tu documento y estamos preparando la vista previa para que sólo revises y confirmes.</p>
-                      </div>
-                    ) : null}
-                    <p className="mt-2 break-words text-sm leading-6 opacity-90">{uploadProgressState.description}</p>
-                    <p className="mt-2 text-xs leading-5 opacity-80">{uploadProgressState.etaLabel}</p>
-                    <p className="mt-2 text-xs leading-5 opacity-80">{getUploadSecuritySummary(uploadProgressState.stepKey)}</p>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/60 bg-white/65 px-3 py-2 text-xs leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-900">Qué está pasando ahora:</span> {getUploadMomentumCopy(uploadProgressState.stepKey)}
-                      </div>
-                      <div className="rounded-2xl border border-white/60 bg-white/65 px-3 py-2 text-xs leading-5 text-slate-700">
-                        <span className="font-semibold text-slate-900">Qué verás enseguida:</span> {getUploadOutcomeCopy(uploadProgressState.stepKey)}
-                      </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs opacity-90">
+                      <span className="font-semibold uppercase tracking-[0.14em]">{uploadProgressState.stageLabel}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="truncate">
+                        {pendingDraft
+                          ? `${pendingDraft.previewAsset.fileName} · ${formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)}`
+                          : selectedFile
+                            ? `${selectedFile.name} · ${formatVisibleFileSize(selectedFile.size)}`
+                            : getUploadCompactGuardrails().fileRules}
+                      </span>
                     </div>
+                    {isAutoAnalyzingSelectedFile ? (
+                      <p className="mt-2 text-sm leading-5 opacity-90">Ya recibimos tu documento. Enseguida abriremos la vista previa.</p>
+                    ) : (
+                      <p className="mt-2 text-sm leading-5 opacity-90">{uploadProgressState.description}</p>
+                    )}
                     {selectedFileValidationMessage ? (
                       <p className="mt-2 text-xs font-medium text-amber-900">{selectedFileValidationMessage}</p>
                     ) : null}
-                    <details className="mt-3 rounded-2xl border border-white/60 bg-white/55 px-3 py-2 text-xs text-slate-700">
-                      <summary className="cursor-pointer list-none font-semibold text-slate-800">
-                        Ver qué está haciendo AuditaPatron en esta etapa
-                      </summary>
-                      <div className="mt-2 space-y-2 leading-5">
-                        <p>{getUploadTransitionCopy(uploadProgressState.stepKey)}</p>
-                        <p>{getUploadPersistentSupportCopy(selectedFile)}</p>
-                      </div>
-                    </details>
                   </div>
 
-                  <div id="upload-guardrails-summary" className="mt-4 rounded-[1.1rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Límites y privacidad visibles</p>
-                    <div className="mt-3 space-y-2">
-                      <p className="leading-6"><span className="font-semibold text-slate-900">Límites:</span> {getUploadCompactGuardrails().fileRules}</p>
-                      <p className="leading-6"><span className="font-semibold text-slate-900">Control:</span> {getUploadCompactGuardrails().privacyRules}</p>
-                    </div>
-                      <details className="mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
-                      <summary className="cursor-pointer list-none font-semibold text-slate-900">
-                        <span className="inline-flex items-center gap-2">
-                          <AlertCircle className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
-                          <span>{getUploadHelpDisclosureSummary()}</span>
-                        </span>
-                        <span className="mt-1 block text-[11px] font-normal leading-4 text-slate-600 sm:hidden">
-                          {getUploadHelpMobileHint()}
-                        </span>
-                      </summary>
-
-                      <div className="mt-2 space-y-2 leading-5">
-                        <p>{PERSISTENT_UPLOAD_GUARDRAILS.fileRules}</p>
-                        <p>{PERSISTENT_UPLOAD_GUARDRAILS.privacyRules}</p>
-                      </div>
-                    </details>
+                  <div id="upload-guardrails-summary" className="mt-3 flex flex-wrap items-center gap-2 rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-700">
+                    <span className="font-semibold text-slate-900">Límites:</span>
+                    <span>{getUploadCompactGuardrails().fileRules}</span>
+                    <span className="hidden sm:inline text-slate-400">•</span>
+                    <span>{getUploadCompactGuardrails().privacyRules}</span>
                   </div>
                 </div>
 
                 {pendingDraft ? (
                   <div className="mt-4 rounded-[1.2rem] border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
-                    <p className="font-semibold">Vista previa lista para confirmarse</p>
-                    <p className="mt-1">{pendingDraft.previewAsset.fileName} · {(pendingDraft.previewAsset.sizeBytes / 1024).toFixed(1)} KB</p>
-                    <p className="mt-2 leading-6">
-                      Este archivo ya fue analizado, pero todavía no se guarda en tu expediente hasta que lo confirmes.
-                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold">Vista previa lista</p>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-900">Revisar y confirmar</span>
+                    </div>
+                    <p className="mt-1">{pendingDraft.previewAsset.fileName} · {formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)}</p>
                   </div>
                 ) : selectedFile ? (
                   <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold">Documento recibido para borrador automático</p>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">Listo para análisis</span>
+                      <p className="font-semibold">Documento listo para análisis</p>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">En cola</span>
                     </div>
                     <p className="mt-1">{selectedFile.name} · {formatVisibleFileSize(selectedFile.size)}</p>
-                    <p className="mt-2 leading-6">La revisión preliminar empieza sola en cuanto termina la carga: extraemos señales, ordenamos el borrador y te preparamos la vista previa sin pedirte un paso manual adicional antes del guardado final.</p>
-                    <p className="mt-2 text-xs leading-5 text-emerald-900/80">Elegir el archivo no lo guarda todavía en el expediente: primero verás el borrador y después decidirás si confirmas.</p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                    Aún no eliges archivo. Empieza con una foto, PDF o XML del documento que tengas más a la mano; apenas lo selecciones, aquí verás el avance, lo que entendimos y el siguiente paso sugerido antes de guardarlo.
+                    Elige el documento más claro que tengas a la mano.
                   </div>
                 )}
               </div>
 
-              <label className="mt-5 block">
-                <span className="text-sm font-medium text-slate-700">Si quieres, dale una pista rápida a AuditaPatron sobre qué contiene este archivo</span>
+              <label className="mt-4 block">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Contexto opcional</span>
                 <textarea
                   value={textHint}
                   onChange={(event) => setTextHint(event.target.value)}
-                  rows={3}
-                  placeholder="Ejemplo: recibo de nómina de marzo, alta IMSS, contrato inicial o captura de instrucciones por WhatsApp. Si no escribes nada, igual empezamos con lo visible."
+                  rows={2}
+                  placeholder="Ejemplo: recibo de nómina de marzo o alta IMSS."
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-teal-500"
                 />
               </label>
 
-              <div className="mt-5 flex flex-col gap-3 rounded-[1.3rem] border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
-                <div className="flex items-start gap-3">
-                  <Lock className="mt-1 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                  <div className="space-y-2">
-                    <p>
-                      Tu documento queda protegido dentro del flujo de AuditaPatron. Mientras nosotros ordenamos la lectura automática, tú conservas la decisión final: primero te mostramos una vista previa para separar lo confirmado de lo estimado y solo después decides si quieres guardarlo en tu expediente.
-                    </p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-2xl bg-white/80 px-3 py-2 text-xs leading-5 text-teal-950">
-                        <strong className="font-semibold">Privacidad activa:</strong> tus archivos se usan solo para esta auditoría.
-                      </div>
-                      <div className="rounded-2xl bg-white/80 px-3 py-2 text-xs leading-5 text-teal-950">
-                        <strong className="font-semibold">Recuperación clara:</strong> si algo falla, puedes reintentar sin perder el control del flujo.
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[1.2rem] border border-teal-100 bg-teal-50 px-4 py-3 text-xs leading-5 text-teal-950">
+                <Lock className="h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                <span className="font-semibold">Privacidad activa.</span>
+                <span>Tú revisas antes de guardar.</span>
+                <span className="hidden sm:inline text-teal-400">•</span>
+                <span>Si algo falla, puedes reintentar.</span>
               </div>
 
               {pendingDraft ? (

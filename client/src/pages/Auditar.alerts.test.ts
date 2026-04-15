@@ -44,7 +44,7 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("isAutoAnalyzingSelectedFile");
     expect(auditarSource).toContain('"Analizando documento..."');
     expect(auditarSource).toContain("Estamos analizando tu documento");
-    expect(auditarSource).toContain("No necesitas volver a tocar nada.");
+    expect(auditarSource).toContain("Ya recibimos tu documento. Enseguida abriremos la vista previa.");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
   });
 });
@@ -272,12 +272,15 @@ describe("validateDocumentUploadFile", () => {
     expect(validateDocumentUploadFile(pdf)).toBeNull();
   });
 
-  it("rechaza formatos no compatibles y archivos que exceden 15 MB", () => {
+  it("rechaza formatos no compatibles, HEIC y archivos que exceden 12 MB", () => {
     const unsupported = new File(["hola"], "contrato.exe", { type: "application/octet-stream" });
     expect(validateDocumentUploadFile(unsupported)).toContain("no es compatible");
 
-    const largePdf = new File([new Uint8Array(16 * 1024 * 1024)], "pesado.pdf", { type: "application/pdf" });
-    expect(validateDocumentUploadFile(largePdf)).toContain("supera el límite preventivo de 15 MB");
+    const heic = new File(["hola"], "foto.heic", { type: "image/heic" });
+    expect(validateDocumentUploadFile(heic)).toContain("HEIC o HEIF");
+
+    const largePdf = new File([new Uint8Array(13 * 1024 * 1024)], "pesado.pdf", { type: "application/pdf" });
+    expect(validateDocumentUploadFile(largePdf)).toContain("rebasa el límite real de 12 MB");
   });
 });
 
@@ -308,7 +311,7 @@ describe("getUploadStepAriaLabel", () => {
 describe("getUploadCompactGuardrails", () => {
   it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
     expect(getUploadCompactGuardrails()).toEqual({
-      fileRules: "PDF, XML o imagen clara · máximo 15 MB.",
+      fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
       privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
     });
   });

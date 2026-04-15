@@ -79,8 +79,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
     expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles.");
     expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura útil al momento.");
-    expect(auditFlowSource).toContain("Tú confirmas el guardado; AuditaPatron hace el trabajo pesado");
-    expect(auditFlowSource).toContain("Elegir el archivo pone en marcha una lectura automática para prepararte un borrador claro.");
+    expect(auditFlowSource).toContain("Sube un documento y revisa el borrador");
+    expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
     expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");
@@ -119,8 +119,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Toma foto para empezar");
     expect(auditFlowSource).toContain("Elige archivo para empezar");
     expect(auditFlowSource).toContain("El análisis empieza solo en cuanto captures o elijas el documento.");
-    expect(auditFlowSource).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} Apenas lo subas, empezaremos solos el borrador y después te mostraremos el siguiente documento sugerido.`');
-    expect(auditFlowSource).toContain('fileRules: "PDF, XML o imagen clara · máximo 15 MB."');
+    expect(auditFlowSource).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} El borrador se abre aquí mismo.`');
+    expect(auditFlowSource).toContain('fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB."');
     expect(auditFlowSource).toContain("upload_mode_selected");
     expect(auditFlowSource).toContain("compact_mobile_toggle");
     expect(auditFlowSource).toContain("preference_panel");

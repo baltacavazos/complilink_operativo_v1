@@ -1,0 +1,98 @@
+{
+  "openai": {
+    "root_cause_hypothesis": [
+      "Inconsistencia entre validaciones de tamaño y mime en frontend (15MB y más mime) y backend (12MB y mime más restrictivo) genera rechazo inesperado.",
+      "El primer archivo subido puede superar el límite backend o tener mime no aceptado, causando el error visible.",
+      "Demasiado texto y bloques explicativos generan scroll excesivo y dispersan la atención del usuario.",
+      "El mensaje de error genérico no especifica claramente la causa real, generando confusión."
+    ],
+    "most_likely_primary_cause": "La discrepancia entre validaciones frontend y backend en tamaño y mime provoca el error al subir el primer archivo.",
+    "ux_compaction_actions": [
+      "Unificar y sincronizar validaciones de tamaño y mime entre frontend y backend para evitar rechazos inesperados.",
+      "Reducir y condensar textos explicativos, usando tooltips o modales para detalles secundarios.",
+      "Eliminar o combinar bloques de apoyo redundantes para minimizar scroll en móvil.",
+      "Mejorar mensajes de error para que sean específicos y guíen al usuario a corregir el problema.",
+      "Implementar un flujo guiado paso a paso con feedback inmediato tras cada acción.",
+      "Optimizar inputs del picker para que solo acepten formatos y tamaños válidos según backend."
+    ],
+    "guardrails_to_keep": [
+      "Validación estricta de mime y tamaño para evitar archivos inválidos.",
+      "Mensajes de error visibles y claros, aunque mejorados en especificidad.",
+      "Uso de capture=environment para facilitar captura directa en móvil.",
+      "Mantener la seguridad y consistencia en la validación backend."
+    ],
+    "copy_to_delete_first": [
+      "Textos explicativos largos y repetitivos en la pantalla de subida.",
+      "Bloques de apoyo que repiten información ya dada en otras secciones.",
+      "Tarjetas de progreso que no aportan valor claro o son redundantes.",
+      "Disclosures que no son críticos para la acción inmediata del usuario.",
+      "Detalles técnicos o legales que pueden ir en secciones secundarias.",
+      "Mensajes genéricos que no aportan guía clara al usuario."
+    ],
+    "confidence": "high"
+  },
+  "grok": {
+    "root_cause_hypothesis": [
+      "Discrepancia en el tamaño máximo de archivos: frontend permite hasta 15 MB, pero backend solo hasta 12 MB, causando rechazos.",
+      "Incompatibilidad en los tipos de mime: frontend acepta más extensiones como .xml, mientras backend solo permite específicos como application/pdf.",
+      "Validación de firma binaria en backend que rechaza archivos no coincidentes, incluso si pasan las validaciones iniciales.",
+      "Error en el procesamiento de analyzeDocumentDraft que genera el mensaje de interrupción al subir el primer archivo."
+    ],
+    "most_likely_primary_cause": "La inconsistencia entre las validaciones de frontend y backend provoca rechazos de archivos que inicialmente parecen válidos.",
+    "ux_compaction_actions": [
+      "Reemplazar textos explicativos largos por iconos intuitivos y tooltips.",
+      "Implementar layouts responsivos con secciones colapsables para reducir scroll en móvil.",
+      "Priorizar elementos clave en la pantalla principal y mover detalles a un menú secundario.",
+      "Usar pasos guiados con animaciones en lugar de bloques de texto redundante.",
+      "Consolidar tarjetas de progreso en un solo indicador compacto.",
+      "Eliminar elementos no esenciales para lograr una interfaz más minimalista y autoexplicativa."
+    ],
+    "guardrails_to_keep": [
+      "Validaciones de tamaño y tipo de archivo en frontend para prevenir subidas inválidas.",
+      "Mensajes de error informativos para mantener la guía del usuario.",
+      "Confirmación de subida exitosa para asegurar integridad de datos.",
+      "Validación de firma binaria en backend para seguridad y compliance."
+    ],
+    "copy_to_delete_first": [
+      "Textos de apoyo en bloques no esenciales que duplican información.",
+      "Detalles extensos en disclosures que no son críticos para el flujo principal.",
+      "Copy redundante en tarjetas de progreso y secciones de ayuda.",
+      "Explicaciones detalladas de errores que pueden simplificarse a un mensaje breve.",
+      "Descripciones adicionales en inputs de subida que sobran con la interfaz guiada.",
+      "Mensajes de bienvenida o introductorios que no agregan valor inmediato."
+    ],
+    "confidence": "medium"
+  },
+  "gemini": {
+    "root_cause_hypothesis": [
+      "Discrepancia en el tamaño máximo de archivo permitido: Frontend (15MB) vs. Backend (12MB).",
+      "Inconsistencia en los tipos MIME aceptados: Frontend (más amplio) vs. Backend (más restrictivo, sin XML, HEIC, HEIF).",
+      "Fallo en la validación de firma binaria del backend para tipos MIME no soportados o mal declarados por el frontend/dispositivo.",
+      "Mensaje de error genérico ('Algo interrumpió la carga...') que no informa al usuario la causa real del fallo."
+    ],
+    "most_likely_primary_cause": "La causa principal es la inconsistencia en las reglas de validación de tamaño y tipos MIME entre el frontend y el backend, permitiendo que archivos válidos para el frontend fallen en el backend sin un feedback claro al usuario.",
+    "ux_compaction_actions": [
+      "Unificar las reglas de validación de tamaño y tipos MIME entre frontend y backend para evitar falsos positivos.",
+      "Implementar mensajes de error específicos y accionables para cada tipo de fallo de validación (ej. 'Archivo demasiado grande', 'Tipo no permitido').",
+      "Aplicar 'progressive disclosure' para ocultar detalles y explicaciones extensas, mostrando solo la información esencial por defecto.",
+      "Reemplazar bloques de texto con elementos visuales, iconos y guías contextuales para una interfaz más compacta.",
+      "Optimizar el flujo de carga para reducir pasos y eliminar información redundante en la pantalla móvil.",
+      "Realizar validación de tamaño y tipo MIME en frontend *antes* de la carga para proporcionar feedback instantáneo al usuario."
+    ],
+    "guardrails_to_keep": [
+      "La validación estricta de MIME y firma binaria en backend por seguridad y consistencia de datos.",
+      "La funcionalidad `capture=environment` para facilitar la toma de fotos directamente desde el móvil.",
+      "El mensaje de 'tus datos siguen a salvo' (siempre que sea cierto y se contextualice adecuadamente).",
+      "El soporte para los tipos de archivo esenciales: PDF, JPG, PNG, WEBP."
+    ],
+    "copy_to_delete_first": [
+      "Bloques extensos de texto explicativo sobre el proceso de carga de archivos.",
+      "Tarjetas de progreso o estados redundantes que no añaden valor único.",
+      "Disclosures o detalles legales no críticos para la acción inmediata del usuario.",
+      "El mensaje de error genérico 'Algo interrumpió la carga, pero tus datos siguen a salvo'.",
+      "Secciones de 'apoyo' o 'ayuda' que no sean contextuales al paso actual.",
+      "Cualquier copy que duplique información ya presente o implícita en la interfaz."
+    ],
+    "confidence": "high"
+  }
+}
