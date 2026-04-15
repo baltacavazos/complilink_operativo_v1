@@ -3020,6 +3020,9 @@ export default function Auditar() {
   const [autoAdvanceFlash, setAutoAdvanceFlash] = useState(false);
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
+    null
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
@@ -3044,6 +3047,7 @@ export default function Auditar() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const heroCardRef = useRef<HTMLDivElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
+  const digitalArchiveSectionRef = useRef<HTMLDivElement | null>(null);
   const recommendedStepRef = useRef<HTMLDivElement | null>(null);
   const syncedRemoteViewStateRef = useRef("");
   const trackedExpedienteScopeRef = useRef("");
@@ -3469,6 +3473,16 @@ export default function Auditar() {
     caseDetailInput && legalAcceptance && !legalAcceptance.isAccepted
   );
   const documents = caseDetailQuery.data?.documents ?? [];
+  const recentDocuments = useMemo(
+    () =>
+      [...documents].sort(
+        (left, right) =>
+          new Date(right.createdAt).getTime() -
+          new Date(left.createdAt).getTime()
+      ),
+    [documents]
+  );
+  const latestArchiveDocument = recentDocuments[0] ?? null;
   const pricingExperience = getAuditapatronPricingExperience(documents.length);
 
   useEffect(() => {
@@ -5106,6 +5120,80 @@ export default function Auditar() {
     }
 
     openHeliosCopilot();
+  };
+
+  const scrollToDigitalArchive = (
+    source: "quick_access" | "result_panel" | "section_header"
+  ) => {
+    digitalArchiveSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    trackEvent("auditar_digital_archive_scrolled", {
+      tenantId: selectedTenantId,
+      caseId: selectedCaseId,
+      source,
+      documentCount: documents.length,
+    });
+  };
+
+  const handleOpenArchiveDocument = async (
+    documentId: string,
+    source: "quick_access" | "document_card" | "section_header"
+  ) => {
+    if (!selectedTenantId || !selectedCaseId) {
+      return;
+    }
+
+    setSubmitError(null);
+    setOpeningDocumentId(documentId);
+
+    try {
+      const access = await utils.documents.access.fetch({
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentId,
+      });
+
+      trackEvent("auditar_digital_archive_document_opened", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentId,
+        source,
+      });
+
+      if (typeof window !== "undefined") {
+        window.open(access.downloadUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.error(error);
+      setSubmitError(
+        "No pudimos abrir tu documento por ahora. Intenta de nuevo en unos segundos."
+      );
+      trackEvent("auditar_digital_archive_document_open_failed", {
+        tenantId: selectedTenantId,
+        caseId: selectedCaseId,
+        documentId,
+        source,
+      });
+    } finally {
+      setOpeningDocumentId(current =>
+        current === documentId ? null : current
+      );
+    }
+  };
+
+  const handleDigitalArchiveQuickAction = async () => {
+    if (latestArchiveDocument) {
+      await handleOpenArchiveDocument(
+        latestArchiveDocument.documentId,
+        "quick_access"
+      );
+      return;
+    }
+
+    scrollToDigitalArchive("quick_access");
   };
 
   const clearSelectedFile = () => {
@@ -8545,10 +8633,68 @@ export default function Auditar() {
                           Debajo puedes abrir el detalle completo solo si quieres ver cómo llegamos a este resultado.
                         </p>
                       </div>
+                  </div>
+                </div>
+
+                {documents.length > 0 ? (
+                  <div className="rounded-[1.35rem] border border-sky-100 bg-[linear-gradient(135deg,_rgba(239,246,255,0.96),_rgba(255,255,255,0.98))] p-4 shadow-sm sm:p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                          Mi archivo digital
+                        </p>
+                        <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                          Tu expediente ya quedó guardado y lo puedes abrir cuando quieras
+                        </h3>
+                        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">
+                          Cada documento que confirmas se queda ordenado aquí.
+                          Puedes abrir el último de inmediato o bajar a ver todo tu
+                          archivo digital sin perder el hilo de esta revisión.
+                        </p>
+                      </div>
+                      <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+                        {documents.length} documento
+                        {documents.length === 1 ? "" : "s"}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+                      <div className="rounded-[1rem] border border-white/80 bg-white/90 p-3 text-sm leading-6 text-slate-700 shadow-sm">
+                        <p className="font-semibold text-slate-950">
+                          Último archivo guardado
+                        </p>
+                        <p className="mt-1 break-words text-slate-700">
+                          {latestArchiveDocument?.originalName ??
+                            "Tu expediente ya tiene documentos disponibles."}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        className="h-11 rounded-full bg-slate-950 px-5 text-white hover:bg-slate-900"
+                        disabled={Boolean(openingDocumentId)}
+                        onClick={() => void handleDigitalArchiveQuickAction()}
+                      >
+                        <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                        {openingDocumentId === latestArchiveDocument?.documentId
+                          ? "Abriendo documento..."
+                          : latestArchiveDocument
+                            ? "Ver último documento"
+                            : "Abrir archivo digital"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                        onClick={() => scrollToDigitalArchive("result_panel")}
+                      >
+                        Ver todo mi archivo
+                      </Button>
                     </div>
                   </div>
+                ) : null}
 
                   <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
+
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">
@@ -9500,19 +9646,52 @@ export default function Auditar() {
             </div>
 
             {documents.length > 0 ? (
-              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-center justify-between gap-4">
+              <div
+                ref={digitalArchiveSectionRef}
+                id="mi-archivo-digital"
+                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                      Tus documentos
+                      Mi archivo digital
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Documentos ya incorporados al expediente
+                      Aquí están tus documentos guardados
                     </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
+                      Este es tu expediente digital. Puedes abrir cualquier
+                      documento, volver a revisarlo y seguir fortaleciendo tu caso
+                      sin perderte entre bloques largos.
+                    </p>
                   </div>
-                  <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    {documents.length} documento
-                    {documents.length === 1 ? "" : "s"}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {documents.length} documento
+                      {documents.length === 1 ? "" : "s"}
+                    </div>
+                    {latestArchiveDocument ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-100"
+                        disabled={Boolean(openingDocumentId)}
+                        onClick={() =>
+                          void handleOpenArchiveDocument(
+                            latestArchiveDocument.documentId,
+                            "section_header"
+                          )
+                        }
+                      >
+                        <FolderOpen
+                          className="mr-2 h-4 w-4"
+                          strokeWidth={1.8}
+                        />
+                        {openingDocumentId === latestArchiveDocument.documentId
+                          ? "Abriendo..."
+                          : "Abrir el más reciente"}
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
 
@@ -9579,6 +9758,36 @@ export default function Auditar() {
                                     : "Lectura pendiente")}
                               </span>
                             </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            <Button
+                              type="button"
+                              className="h-11 rounded-full bg-slate-950 px-4 text-white hover:bg-slate-900"
+                              disabled={openingDocumentId === document.documentId}
+                              onClick={() =>
+                                void handleOpenArchiveDocument(
+                                  document.documentId,
+                                  "document_card"
+                                )
+                              }
+                            >
+                              <FolderOpen
+                                className="mr-2 h-4 w-4"
+                                strokeWidth={1.8}
+                              />
+                              {openingDocumentId === document.documentId
+                                ? "Abriendo documento..."
+                                : "Ver documento"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-11 rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-100"
+                              onClick={() => openHeliosCopilot()}
+                            >
+                              Entender este documento
+                            </Button>
                           </div>
 
                           <div className="mt-4 rounded-[1rem] bg-white p-3 text-sm leading-6 text-slate-700">

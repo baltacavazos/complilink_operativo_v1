@@ -1,5 +1,8 @@
 # Project TODO
 
+- [x] Ronda 7: hacer visible y fácil de usar el archivo digital dentro de /auditar, con acceso claro a los documentos del expediente y navegación más intuitiva en móvil.
+- [x] Ronda 7: validar el nuevo acceso al archivo digital con TypeScript y Vitest.
+
 - [x] Investigar exhaustivamente si conviene ofrecer en Auditapatrón un módulo de pago para que Helios redacte una eventual queja ante PROFEDET con base en los documentos del usuario, incluyendo casos de uso, necesidad real, modelo de cobro y actualización del estudio de monetización.
 
 - [x] Resolver la conexión de esta sesión con el nuevo runtime de Helios y revalidar el bridge con el secreto efectivo correcto
@@ -1241,3 +1244,7 @@
 - [x] Nueva ronda en /auditar: medir qué explicación simple funciona mejor en móvil con eventos comparables
 - [x] Nueva ronda en /auditar: consultar a ChatGPT, Grok y Gemini la estrategia conjunta antes de implementar
 - [x] Nueva ronda en /auditar: revalidar con Vitest y pruebas de flujo todos los cambios aplicados de una vez
+- [ ] Nueva mejora en /auditar: dar acceso claro y directo del usuario a su archivo digital
+- [ ] Nueva mejora en /auditar: rediseñar la interfaz del archivo digital para que sea sumamente intuitiva y fácil de entender
+- [ ] Nueva mejora en /auditar: consultar a ChatGPT, Grok y Gemini la mejor estructura de acceso y comprensión antes de implementar
+- [ ] Nueva mejora en /auditar: revalidar con TypeScript, Vitest y flujo principal la nueva experiencia del archivo digital

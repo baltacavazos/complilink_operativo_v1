@@ -62,6 +62,24 @@ describe("compact mobile upload entry", () => {
   });
 });
 
+describe("digital archive access", () => {
+  it("hace visible el archivo digital desde el resultado principal y permite saltar al expediente", () => {
+    expect(auditarSource).toContain("Mi archivo digital");
+    expect(auditarSource).toContain(
+      "Tu expediente ya quedó guardado y lo puedes abrir cuando quieras",
+    );
+    expect(auditarSource).toContain('id="mi-archivo-digital"');
+    expect(auditarSource).toContain("Ver todo mi archivo");
+  });
+
+  it("añade apertura segura del documento y CTA clara por tarjeta", () => {
+    expect(auditarSource).toContain("utils.documents.access.fetch");
+    expect(auditarSource).toContain("auditar_digital_archive_document_opened");
+    expect(auditarSource).toContain("Aquí están tus documentos guardados");
+    expect(auditarSource).toContain('"Ver documento"');
+  });
+});
+
 describe("getContextualDossierNextTarget", () => {
   it("prioriza CFDI cuando ya existe nómina en el expediente", () => {
     expect(getContextualDossierNextTarget(new Set(["payroll_receipt"]))?.type).toBe("cfdi");
