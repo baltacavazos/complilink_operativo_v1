@@ -1163,3 +1163,8 @@
 - [x] Corregir la vista previa móvil de /auditar que está renderizando texto técnico crudo dentro del documento en lugar de una lectura legible
 - [x] Blindar el renderizado del preview para que respuestas técnicas, dumps o contenido inesperado no se inyecten en la experiencia visual del usuario
 - [x] Añadir pruebas específicas para el caso de preview móvil roto y para el fallback seguro de contenido no legible
+- [x] Corregir el layout de /auditar en móvil para eliminar el estrechamiento visual hacia la derecha y cualquier desbordamiento horizontal o jerarquía rota
+- [x] Rediseñar radicalmente la pantalla posterior a la subida para que muestre en automático qué documento es, qué encontró, qué significa y cuál es el siguiente paso
+- [x] Reducir el flujo post-upload móvil a una experiencia casi mágica con una sola narrativa principal, menos líneas, menos bloques y pasos inequívocos
+- [x] Consultar a ChatGPT, Grok y Gemini sobre el rediseño post-upload móvil y comparar consenso antes de implementar
+- [x] Añadir y actualizar pruebas del nuevo flujo post-upload móvil y de la corrección de layout
