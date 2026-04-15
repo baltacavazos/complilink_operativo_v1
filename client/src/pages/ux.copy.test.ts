@@ -125,6 +125,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).toContain("Usa el correo con el que quieres entrar hoy.");
     expect(source).toContain("Después vuelves directo a ");
+    expect(source).toContain("Después de entrar: ");
     expect(source).toContain("Recibir código");
     expect(source).toContain("Enviando código...");
     expect(source).toContain("Estamos enviando tu código.");

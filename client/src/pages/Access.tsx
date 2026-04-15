@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { AlertCircle, ArrowLeft, Loader2, Mail } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Mail } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 
 const LAST_EMAIL_KEY = "auditapatron_last_login_email";
@@ -259,6 +259,10 @@ export default function Access() {
           <p className="px-1 text-xs font-medium text-slate-500">
             Luego vuelves a <strong className="text-slate-700">{returnToLabel}</strong>. Después de entrar, volverás directo ahí.
           </p>
+          <div className="ml-1 inline-flex w-fit items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 shadow-sm">
+            <ArrowRight className="h-4 w-4 shrink-0 text-teal-700" />
+            <span>Después de entrar: {returnToLabel}</span>
+          </div>
         </div>
 
         <section className="mx-auto mt-4 flex w-full max-w-md flex-1 flex-col justify-center">

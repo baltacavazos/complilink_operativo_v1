@@ -1276,3 +1276,6 @@
 - [x] Post-V1: reemplazar la ruta técnica visible en /acceso por una etiqueta humana del destino de retorno.
 - [x] Post-V1: añadir o reforzar cobertura de pruebas para el bloqueo por expediente único cuando el documento pertenece a otra persona.
 - [x] Post-V1: compactar ligeramente el primer scroll móvil de Home para acercar antes el ejemplo de resultado.
+- [x] Post-V1 extra: hacer más visual el destino de retorno en /acceso con contexto humano además del texto actual.
+- [x] Post-V1 extra: reforzar la validación visible o técnica del bloqueo por expediente único para cubrir mejor la experiencia del usuario.
+- [x] Post-V1 extra: compactar también el segundo bloque móvil de Home para sostener un ritmo más ágil en celular.

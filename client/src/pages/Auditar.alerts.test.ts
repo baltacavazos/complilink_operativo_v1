@@ -32,6 +32,7 @@ import {
 } from "./Auditar";
 
 const auditarSource = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
+const routersSource = readFileSync(new URL("../../../server/routers.ts", import.meta.url), "utf8");
 
 describe("compact mobile upload entry", () => {
   it("mantiene dominante la acción principal de subida en el primer flujo móvil", () => {
@@ -59,6 +60,16 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("auditar_mobile_verdict_viewed");
     expect(auditarSource).toContain("auditar_mobile_verdict_cta_clicked");
     expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
+  });
+});
+
+describe("single-case blocking alert", () => {
+  it("mantiene visible el patrón de alerta y el copy orientado a solución cuando un documento parece pertenecer a otra persona", () => {
+    expect(auditarSource).toContain("No fue posible preparar tu espacio de revisión.");
+    expect(auditarSource).toContain("{bootstrapMutation.error.message}");
+    expect(routersSource).toContain("Este expediente digital está vinculado a una sola persona.");
+    expect(routersSource).toContain("parece pertenecer a alguien distinto al expediente actual.");
+    expect(routersSource).toContain("entra con la cuenta correcta");
   });
 });
 

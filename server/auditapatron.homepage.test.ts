@@ -93,6 +93,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("order-2 mt-3 flex w-full max-w-sm");
     expect(homeSource).toContain("goToAuditFlow({");
     expect(homeSource).toContain("Ver cómo se ve el reporte");
+    expect(homeSource).toContain("mt-2.5 w-full max-w-xl rounded-[1.45rem]");
+    expect(homeSource).toContain("rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm");
   });
 
   it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {

@@ -1038,17 +1038,17 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-3 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-4 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
+            className="motion-enter-soft mt-2.5 w-full max-w-xl rounded-[1.45rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] sm:p-4"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lo que hace simple esta experiencia</p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="mt-2.5 grid gap-2.5 sm:grid-cols-3">
               {[
                 "Empiezas con un solo archivo.",
                 "Te explicamos todo sin tecnicismos.",
                 "Ves primero qué hacer después.",
               ].map((item) => (
-                <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3.5 shadow-sm">
+                <div key={item} className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm">
                   <p className="text-sm font-semibold leading-6 text-slate-900">{item}</p>
                 </div>
               ))}
