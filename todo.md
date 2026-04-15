@@ -1187,3 +1187,7 @@
 - [x] Validar /acceso en una sesión móvil limpia sin autenticación persistida para revisar el flujo real de entrada
 - [x] Añadir un estado visible de reconocimiento para usuarios recurrentes en /acceso sin recargar de ruido la pantalla
 - [x] Revalidar pruebas y navegador tras la segunda ronda de refinamiento de acceso y /auditar
+- [x] Convertir el CTA “Ir al formulario” en una ayuda contextual y no redundante dentro del hero de /auditar
+- [x] Añadir una microanimación o estado de progreso visible al envío del código por correo en /acceso
+- [x] Unificar en móvil la elección entre cámara y archivo para reducir fricción al subir documentos en /auditar
+- [x] Revalidar la tercera ronda con contraste multi-IA, pruebas y revisión móvil limpia

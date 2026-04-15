@@ -2474,8 +2474,10 @@ export default function Auditar() {
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
   const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] = useState(false);
   const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] = useState(false);
+  const [showHeroJumpCta, setShowHeroJumpCta] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const heroCardRef = useRef<HTMLDivElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const recommendedStepRef = useRef<HTMLDivElement | null>(null);
   const syncedRemoteViewStateRef = useRef("");
@@ -2490,6 +2492,37 @@ export default function Auditar() {
     }
     return new URLSearchParams(window.location.search).get("legalGateHarness") === "1";
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const evaluateHeroJumpCta = () => {
+      const heroRect = heroCardRef.current?.getBoundingClientRect();
+      const uploadRect = uploadSectionRef.current?.getBoundingClientRect();
+
+      if (!heroRect) {
+        setShowHeroJumpCta(false);
+        return;
+      }
+
+      const heroOccupiesViewport = heroRect.height > window.innerHeight * 0.78;
+      const uploadStartsBelowFold = (uploadRect?.top ?? 0) > window.innerHeight * 0.9;
+
+      setShowHeroJumpCta(heroOccupiesViewport || uploadStartsBelowFold);
+    };
+
+    const animationFrameId = window.requestAnimationFrame(evaluateHeroJumpCta);
+    window.addEventListener("resize", evaluateHeroJumpCta);
+    window.addEventListener("scroll", evaluateHeroJumpCta);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", evaluateHeroJumpCta);
+      window.removeEventListener("scroll", evaluateHeroJumpCta);
+    };
+  }, [lastUpload, mobileOnboardingIndex, pendingDraft, selectedFile]);
 
   useEffect(() => {
     const retryAvailableAt = legalGateError?.retryAvailableAt ?? null;
@@ -4220,7 +4253,7 @@ export default function Auditar() {
             </AlertDescription>
           </Alert>
         ) : null}
-        <div className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left">
+        <div ref={heroCardRef} className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white">
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
@@ -4262,21 +4295,23 @@ export default function Auditar() {
               <RefreshCw className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`} strokeWidth={1.8} />
               {revalidateSocialSecurityMutation.isPending ? "Revalidando cruce..." : "Revalidar IMSS e Infonavit"}
             </Button>
-            <Button
-              variant="ghost"
-              className="hidden rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white sm:inline-flex"
-              onClick={() => {
-                setMobileOnboardingIndex(0);
-                uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-            >
-              Ir al formulario
-            </Button>
+            {showHeroJumpCta ? (
+              <Button
+                variant="ghost"
+                className="hidden rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white sm:inline-flex"
+                onClick={() => {
+                  setMobileOnboardingIndex(0);
+                  uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                Ir al formulario
+              </Button>
+            ) : null}
             <span className="text-xs font-medium text-slate-300 sm:hidden">
               El formulario para subir tu archivo está justo abajo.
             </span>
             <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
-              {remoteViewStateSyncLabel}
+              {showHeroJumpCta ? "Úsalo solo si quieres bajar directo al formulario." : remoteViewStateSyncLabel}
             </span>
           </div>
         </div>
@@ -4480,26 +4515,16 @@ export default function Auditar() {
                     </div>
                   ) : null}
 
-                  <div className="mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
+                  <div className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
                     <Button
                       className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900 sm:h-12"
-                      onClick={openPreferredPicker}
+                      onClick={() => setUploadSourceOpen(true)}
                     >
-                      {selectedFile
-                        ? "Cambiar documento"
-                        : activeCaptureMode === "camera"
-                          ? "Tomar foto y empezar"
-                          : "Elegir documento y continuar"}
+                      {selectedFile ? "Cambiar documento" : "Elegir cómo subir el documento"}
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-11 rounded-2xl border-teal-200 bg-white text-teal-900 hover:bg-teal-50 sm:h-12"
-                      onClick={() => {
-                        handleCaptureModeSelection(activeCaptureMode === "camera" ? "file" : "camera", "compact_mobile_toggle");
-                      }}
-                    >
-                      {activeCaptureMode === "camera" ? "Prefiero elegir archivo" : "Prefiero usar la cámara"}
-                    </Button>
+                    <p className="text-xs leading-5 text-slate-500 sm:text-sm">
+                      En un solo paso puedes tomar foto o elegir un archivo guardado.
+                    </p>
                   </div>
                 </div>
 
@@ -5240,31 +5265,18 @@ export default function Auditar() {
                           </div>
                         </div>
                       ) : shouldCompactMobileUploadEntry ? (
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-[1rem] border border-dashed border-teal-200 bg-white/80 px-3 py-3">
                           <button
                             type="button"
-                            className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
-                              activeCaptureMode === "camera"
-                                ? "border-teal-200 bg-teal-50 text-teal-900"
-                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                            }`}
-                            onClick={() => handleCaptureModeSelection("camera", "compact_mobile_toggle")}
+                            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-teal-50 text-sm font-semibold text-teal-900 transition hover:bg-teal-100"
+                            disabled={isAutoAnalyzingSelectedFile}
+                            onClick={() => setUploadSourceOpen(true)}
                           >
-                            <Camera className="h-4 w-4" strokeWidth={1.8} />
-                            Cámara
+                            {selectedFile ? "Cambiar documento" : "Elegir cámara o archivo"}
                           </button>
-                          <button
-                            type="button"
-                            className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition ${
-                              activeCaptureMode === "file"
-                                ? "border-teal-200 bg-teal-50 text-teal-900"
-                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                            }`}
-                            onClick={() => handleCaptureModeSelection("file", "compact_mobile_toggle")}
-                          >
-                            <FolderOpen className="h-4 w-4" strokeWidth={1.8} />
-                            Archivo
-                          </button>
+                          <p className="mt-2 text-xs leading-5 text-slate-500">
+                            Al tocar aquí eliges si quieres tomar foto o subir un archivo guardado.
+                          </p>
                         </div>
                       ) : (
                         <div className="flex items-start justify-end">

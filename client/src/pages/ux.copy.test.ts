@@ -87,6 +87,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
+    expect(source).toContain('Elegir cómo subir el documento');
+    expect(source).toContain('En un solo paso puedes tomar foto o elegir un archivo guardado.');
+    expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('`${COMPACT_UPLOAD_GUARDRAILS.fileRules} El borrador se abre aquí mismo.`');
     expect(source).toContain('fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB."');
     expect(source).toContain('Documento sugerido preparado');
@@ -113,6 +116,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Después vuelves a");
     expect(source).toContain("Usa el correo con el que administras tu cuenta.");
     expect(source).toContain("Enviar código");
+    expect(source).toContain("Enviando código...");
+    expect(source).toContain("Estamos preparando tu código y abriendo el siguiente paso.");
     expect(source).toContain("Código enviado");
     expect(source).toContain("Verificar y entrar");
     expect(source).toContain("Reenviar código");

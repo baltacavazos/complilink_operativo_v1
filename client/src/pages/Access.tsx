@@ -315,8 +315,19 @@ export default function Access() {
                   disabled={requestEmailCode.isPending || loading || emailCooldownActive}
                 >
                   {requestEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
-                  {emailCooldownActive ? `Espera ${emailCooldownSecondsRemaining}s` : "Enviar código"}
+                  {requestEmailCode.isPending
+                    ? "Enviando código..."
+                    : emailCooldownActive
+                      ? `Espera ${emailCooldownSecondsRemaining}s`
+                      : "Enviar código"}
                 </Button>
+
+                {requestEmailCode.isPending ? (
+                  <p className="flex items-center gap-2 text-sm text-slate-500">
+                    <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+                    Estamos preparando tu código y abriendo el siguiente paso.
+                  </p>
+                ) : null}
               </form>
             ) : (
               <form className="mt-6 space-y-4" onSubmit={handleVerifyCode}>
