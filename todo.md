@@ -1174,3 +1174,12 @@
 - [x] Corregir la persistencia de sesión en móvil para que el usuario no tenga que pedir OTP por correo cada vez que vuelve a entrar desde el mismo teléfono
 - [x] Revisar y corregir la estrategia de cookies entre auditapatron.com y www.auditapatron.com para evitar pérdida de sesión por host distinto
 - [x] Añadir validaciones y pruebas del flujo de autenticación persistente en móvil antes de entregar el fix
+- [x] Rediseñar radicalmente el flujo de login móvil para que iniciar sesión sea evidente, corto y sin fricción innecesaria
+- [x] Corregir el estado de error y expiración del OTP para que no confunda al usuario ni lo deje atrapado en un flujo caótico
+- [x] Simplificar la pantalla de acceso a una sola vía principal clara y una jerarquía visual mucho más limpia
+- [x] Consultar a ChatGPT, Grok y Gemini sobre la forma más simple y confiable de iniciar sesión para usuarios recurrentes antes de implementar
+- [x] Añadir y actualizar pruebas del nuevo flujo de acceso móvil y del manejo visible de OTP
+- [x] Rediseñar /acceso para móvil con una sola ruta primaria por correo, menos ruido visual y persistencia más clara para usuarios recurrentes
+- [x] Verificar y corregir cualquier desbordamiento horizontal o estrechamiento hacia la derecha en /auditar móvil
+- [x] Completar el flujo post-upload de /auditar para que al subir el documento analice automáticamente y muestre qué es, qué encontró y qué significa en una sola vista más contundente
+- [x] Revalidar login móvil y /auditar en viewport real con pruebas automatizadas y checkpoint estable

@@ -6021,57 +6021,59 @@ export default function Auditar() {
                 </div>
               ) : null}
 
-              <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row">
-                    <Button
-                      className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
-                        pendingDraft && manualOverridePayload.length
-                          ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
-                          : "bg-teal-600 hover:bg-teal-700"
-                      }`}
-                      disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
-                      onClick={() => {
-                        if (pendingDraft) {
-                          void handleConfirmDraft();
-                          return;
-                        }
-                        if (!selectedFile) {
-                          openPreferredPicker();
-                          return;
-                        }
-                        void handleUpload();
-                      }}
-                    >
-                      {isProcessingDocument
-                        ? pendingDraft
-                          ? "Guardando documento..."
-                          : autoAdvanceFlash
-                            ? "Autoavance activado..."
-                            : "Analizando documento..."
-                        : acceptLegalPackageMutation.isPending
-                          ? "Registrando autorización..."
-                          : pendingDraft
-                            ? confirmPrimaryActionLabel
-                            : uploadPrimaryActionLabel}
-                      {isPrimaryDocumentActionPending ? (
-                        <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
-                      ) : (
-                        <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-                      )}
-                    </Button>
-                    {autoAdvanceFlash && !pendingDraft ? (
-                      <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
-                        Autoavance activado: en cuanto termine el análisis te llevamos a la revisión rápida para confirmar el documento.
-                      </p>
-                    ) : null}
+              <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start">
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <Button
+                    className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
+                      pendingDraft && manualOverridePayload.length
+                        ? "bg-teal-700 shadow-[0_18px_40px_-24px_rgba(15,118,110,0.7)] hover:bg-teal-800"
+                        : "bg-teal-600 hover:bg-teal-700"
+                    }`}
+                    disabled={isPrimaryDocumentActionPending || !selectedTenantId || !selectedCaseId}
+                    onClick={() => {
+                      if (pendingDraft) {
+                        void handleConfirmDraft();
+                        return;
+                      }
+                      if (!selectedFile) {
+                        openPreferredPicker();
+                        return;
+                      }
+                      void handleUpload();
+                    }}
+                  >
+                    {isProcessingDocument
+                      ? pendingDraft
+                        ? "Guardando documento..."
+                        : autoAdvanceFlash
+                          ? "Autoavance activado..."
+                          : "Analizando documento..."
+                      : acceptLegalPackageMutation.isPending
+                        ? "Registrando autorización..."
+                        : pendingDraft
+                          ? confirmPrimaryActionLabel
+                          : uploadPrimaryActionLabel}
+                    {isPrimaryDocumentActionPending ? (
+                      <RefreshCw className="ml-2 h-4 w-4 animate-spin" strokeWidth={1.8} />
+                    ) : (
+                      <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                    )}
+                  </Button>
+
+                  {autoAdvanceFlash && !pendingDraft ? (
+                    <p className="text-xs font-medium leading-5 text-teal-700">
+                      Autoavance activado: en cuanto termine el análisis te llevamos a la revisión rápida para confirmar el documento.
+                    </p>
+                  ) : null}
+                </div>
 
                 <Button
                   variant="outline"
-                  className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  className="h-12 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50 lg:w-auto lg:px-6"
                   onClick={pendingDraft ? restartPreviewFlow : clearSelectedFile}
                   disabled={isPrimaryDocumentActionPending}
                 >
-                    {pendingDraft ? reanalyzeDraftAction.label : "Limpiar formulario"}
-
+                  {pendingDraft ? reanalyzeDraftAction.label : "Limpiar formulario"}
                 </Button>
               </div>
             </div>

@@ -101,18 +101,23 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain('mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4');
   });
 
-  it("refuerza la ruta principal en acceso sin competir visualmente con alternativas", () => {
+  it("refuerza la ruta principal en acceso con una sola vía clara por correo", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Acceso simple");
-    expect(source).toContain("Inicia sesión sin vueltas.");
-    expect(source).toContain("Si eres el CEO");
-    expect(source).toContain("mismo correo principal del propietario");
-    expect(source).toContain("Código por correo");
-    expect(source).toContain("Tu acceso principal");
-    expect(source).toContain("Recibir código");
-    expect(source).toContain("Google sólo aparece cuando la configuración esté terminada.");
-    expect(source).not.toContain("Continúa con Manus");
+    expect(source).toContain("Inicia sesión");
+    expect(source).toContain("Escribe tu correo y te mandamos un código de 6 dígitos.");
+    expect(source).toContain("Si ya habías entrado desde este equipo, lo dejamos listo para ti.");
+    expect(source).toContain("Después vuelves a");
+    expect(source).toContain("Usa el correo con el que administras tu cuenta.");
+    expect(source).toContain("Enviar código");
+    expect(source).toContain("Código enviado");
+    expect(source).toContain("Verificar y entrar");
+    expect(source).toContain("Reenviar código");
+    expect(source).toContain("Más opciones de acceso");
+    expect(source).not.toContain("Si eres el CEO");
+    expect(source).not.toContain("Tu acceso principal");
+    expect(source).not.toContain("Google sólo aparece cuando la configuración esté terminada.");
   });
 
   it("compacta el primer bloque operativo de la consola CEO para lectura móvil más rápida", () => {
