@@ -1252,3 +1252,11 @@
 - [x] Ronda 8: incorporar filtros simples por tipo y fecha dentro del archivo digital en /auditar.
 - [x] Ronda 8: crear una acción fija en móvil para volver rápidamente al expediente digital en /auditar.
 - [x] Ronda 8: validar las tres mejoras del archivo digital con TypeScript y Vitest.
+- [x] Cierre V1: auditar con ChatGPT, Grok y Gemini los bloqueadores reales y los indispensables para considerar AuditaPatron listo para V1.
+- [x] Cierre V1: definir checklist explícito de imprescindibles vs post-V1 para congelar mejoras no críticas.
+- [x] Cierre V1: endurecer los flujos críticos pendientes de subida, análisis, resultado, expediente y acceso.
+- [x] Cierre V1: validar estabilidad integral de rutas críticas con TypeScript, Vitest y revisión operativa final.
+- [ ] Cierre V1: preparar checkpoint final orientado a salida de V1 con lista clara de pendientes post-V1.
+- [x] Cierre V1: sacar la Consola CEO de la navegación pública del Home para que la V1 quede enfocada en el flujo del usuario final.
+- [x] Cierre V1: añadir cobertura de pruebas para la pantalla /acceso y sus estados críticos de entrada con correo.
+- [x] Cierre V1: validar explícitamente las rutas críticas públicas y restringidas para evitar confusión de alcance en la V1.

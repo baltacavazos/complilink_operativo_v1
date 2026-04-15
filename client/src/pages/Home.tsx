@@ -547,10 +547,10 @@ function SiteHeader() {
             variant="outline"
             className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
             onClick={() => {
-              window.location.href = "/ceo";
+              window.location.href = "/acceso?returnTo=/auditar";
             }}
           >
-            Consola CEO
+            Entrar
           </Button>
           <Button
             variant="outline"
@@ -633,10 +633,10 @@ function SiteHeader() {
                 className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 active:scale-[0.99]"
                 onClick={() => {
                   setOpen(false);
-                  window.location.href = "/ceo";
+                  window.location.href = "/acceso?returnTo=/auditar";
                 }}
               >
-                Consola CEO
+                Entrar
               </Button>
               <Button
                 variant="outline"
