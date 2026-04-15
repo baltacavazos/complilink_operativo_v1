@@ -80,6 +80,28 @@ describe("digital archive access", () => {
   });
 });
 
+describe("digital archive round 8", () => {
+  it("añade tipología visual y extensión visible en cada tarjeta del expediente", () => {
+    expect(auditarSource).toContain("getArchiveDocumentVisual");
+    expect(auditarSource).toContain("getArchiveFileExtensionLabel");
+    expect(auditarSource).toContain("documentTypeLabel");
+    expect(auditarSource).toContain("fileExtensionLabel");
+  });
+
+  it("incorpora filtros simples por tipo y fecha dentro del archivo digital", () => {
+    expect(auditarSource).toContain("Filtrar por tipo o fecha");
+    expect(auditarSource).toContain("Cualquier fecha");
+    expect(auditarSource).toContain("Últimos 30 días");
+    expect(auditarSource).toContain("No encontramos documentos con este filtro");
+  });
+
+  it("expone un retorno móvil fijo al expediente cuando ya hay documentos", () => {
+    expect(auditarSource).toContain('data-testid="auditar-mobile-archive-return"');
+    expect(auditarSource).toContain("Volver al expediente filtrado");
+    expect(auditarSource).toContain("Volver al expediente");
+  });
+});
+
 describe("getContextualDossierNextTarget", () => {
   it("prioriza CFDI cuando ya existe nómina en el expediente", () => {
     expect(getContextualDossierNextTarget(new Set(["payroll_receipt"]))?.type).toBe("cfdi");

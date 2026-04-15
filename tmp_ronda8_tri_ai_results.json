@@ -1,0 +1,120 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_ronda8_tri_ai_prompt.md",
+  "results": [
+    {
+      "ok": true,
+      "model": "gpt-4.1-mini-2025-04-14",
+      "parsed": {
+        "recommended_visual_strategy": "hybrid",
+        "visual_reason": "Combinar miniaturas con insignias de tipo documental facilita la rápida identificación visual y textual, ayudando a usuarios no técnicos a reconocer documentos sin confusión.",
+        "recommended_filters": [
+          "type",
+          "date",
+          "recent_first",
+          "chips"
+        ],
+        "mobile_return_pattern": "sticky_button",
+        "priority_order": [
+          "visual",
+          "filters",
+          "mobile_return"
+        ],
+        "ui_copy": {
+          "section_hint": "Tu archivo digital organizado para fácil acceso.",
+          "recent_button": "Abrir documento más reciente",
+          "filter_label": "Filtrar por:",
+          "mobile_return_label": "Volver al expediente"
+        },
+        "risks": [
+          "Demasiados filtros pueden confundir usuarios no técnicos.",
+          "Miniaturas pueden aumentar tiempo de carga si no se optimizan.",
+          "Botón fijo puede tapar contenido si no se posiciona correctamente."
+        ],
+        "implementation_notes": [
+          "Optimizar miniaturas para carga rápida en móvil.",
+          "Usar chips claros y con texto legible para filtros.",
+          "Sticky button debe tener tamaño adecuado y contraste para visibilidad sin obstruir.",
+          "Mantener lenguaje simple y evitar términos técnicos en etiquetas.",
+          "Probar con usuarios reales para validar intuición y confianza."
+        ]
+      },
+      "raw": "{\n  \"recommended_visual_strategy\": \"hybrid\",\n  \"visual_reason\": \"Combinar miniaturas con insignias de tipo documental facilita la rápida identificación visual y textual, ayudando a usuarios no técnicos a reconocer documentos sin confusión.\",\n  \"recommended_filters\": [\"type\", \"date\", \"recent_first\", \"chips\"],\n  \"mobile_return_pattern\": \"sticky_button\",\n  \"priority_order\": [\"visual\", \"filters\", \"mobile_return\"],\n  \"ui_copy\": {\n    \"section_hint\": \"Tu archivo digital organizado para fácil acceso.\",\n    \"recent_button\": \"Abrir documento más reciente\",\n    \"filter_label\": \"Filtrar por:\",\n    \"mobile_return_label\": \"Volver al expediente\"\n  },\n  \"risks\": [\n    \"Demasiados filtros pueden confundir usuarios no técnicos.\",\n    \"Miniaturas pueden aumentar tiempo de carga si no se optimizan.\",\n    \"Botón fijo puede tapar contenido si no se posiciona correctamente.\"\n  ],\n  \"implementation_notes\": [\n    \"Optimizar miniaturas para carga rápida en móvil.\",\n    \"Usar chips claros y con texto legible para filtros.\",\n    \"Sticky button debe tener tamaño adecuado y contraste para visibilidad sin obstruir.\",\n    \"Mantener lenguaje simple y evitar términos técnicos en etiquetas.\",\n    \"Probar con usuarios reales para validar intuición y confianza.\"\n  ]\n}",
+      "provider": "openai"
+    },
+    {
+      "ok": true,
+      "model": "grok-3-mini",
+      "parsed": {
+        "recommended_visual_strategy": "hybrid",
+        "visual_reason": "El enfoque híbrido combina una miniatura para una vista previa rápida y una insignia de tipo para identificar el documento, lo que hace que sea intuitivo y transmita confianza sin sobrecargar la interfaz.",
+        "recommended_filters": [
+          "type",
+          "date",
+          "chips",
+          "month_grouping"
+        ],
+        "mobile_return_pattern": "floating_chip",
+        "priority_order": [
+          "visual",
+          "filters",
+          "mobile_return"
+        ],
+        "ui_copy": {
+          "section_hint": "Explora tu archivo digital de forma sencilla y organizada.",
+          "recent_button": "Ver el documento más reciente",
+          "filter_label": "Filtrar por tipo o fecha",
+          "mobile_return_label": "Volver al expediente"
+        },
+        "risks": [
+          "Sobrecarga visual si las miniaturas son demasiado detalladas",
+          "Posible lentitud en dispositivos móviles con conexiones lentas"
+        ],
+        "implementation_notes": [
+          "Usar miniaturas generadas dinámicamente con lazy loading para optimizar el rendimiento",
+          "Asegurar que las insignias sean simples y accesibles con texto alternativo"
+        ]
+      },
+      "raw": "{\n  \"recommended_visual_strategy\": \"hybrid\",\n  \"visual_reason\": \"El enfoque híbrido combina una miniatura para una vista previa rápida y una insignia de tipo para identificar el documento, lo que hace que sea intuitivo y transmita confianza sin sobrecargar la interfaz.\",\n  \"recommended_filters\": [\"type\", \"date\", \"chips\", \"month_grouping\"],\n  \"mobile_return_pattern\": \"floating_chip\",\n  \"priority_order\": [\"visual\", \"filters\", \"mobile_return\"],\n  \"ui_copy\": {\n    \"section_hint\": \"Explora tu archivo digital de forma sencilla y organizada.\",\n    \"recent_button\": \"Ver el documento más reciente\",\n    \"filter_label\": \"Filtrar por tipo o fecha\",\n    \"mobile_return_label\": \"Volver al expediente\"\n  },\n  \"risks\": [\"Sobrecarga visual si las miniaturas son demasiado detalladas\", \"Posible lentitud en dispositivos móviles con conexiones lentas\"],\n  \"implementation_notes\": [\"Usar miniaturas generadas dinámicamente con lazy loading para optimizar el rendimiento\", \"Asegurar que las insignias sean simples y accesibles con texto alternativo\"]\n}",
+      "provider": "grok"
+    },
+    {
+      "ok": true,
+      "model": "gemini-2.5-flash",
+      "parsed": {
+        "recommended_visual_strategy": "file_type_badge",
+        "visual_reason": "Las insignias de tipo de archivo (ej. icono PDF) son universalmente reconocibles, transmiten orden y profesionalismo sin sobrecargar la interfaz. Son más eficientes que las miniaturas para documentos legales que suelen ser texto y no aportan valor visual distintivo.",
+        "recommended_filters": [
+          "type",
+          "date",
+          "chips",
+          "month_grouping"
+        ],
+        "mobile_return_pattern": "sticky_button",
+        "priority_order": [
+          "visual",
+          "filters",
+          "mobile_return"
+        ],
+        "ui_copy": {
+          "section_hint": "Explora y gestiona tus documentos digitales de forma segura.",
+          "recent_button": "Ver el más reciente",
+          "filter_label": "Filtrar",
+          "mobile_return_label": "Volver a expediente"
+        },
+        "risks": [
+          "Sobrecargar la interfaz si los filtros no se implementan de forma compacta y accesible en móvil.",
+          "Posible confusión inicial si la iconografía de tipo de archivo no es clara o consistente para todos los usuarios.",
+          "Riesgo de que el botón fijo de retorno oculte contenido importante si no se maneja bien el padding y la posición."
+        ],
+        "implementation_notes": [
+          "Utilizar iconos SVG o de fuente para las insignias de tipo de archivo para escalabilidad y claridad, con etiquetas de texto accesibles.",
+          "Implementar los filtros de tipo como 'chips' seleccionables y el filtro de fecha como un selector de rango o agrupamiento por mes/año, preferiblemente en un modal o sección colapsable en móvil.",
+          "El botón fijo de retorno debe tener un z-index alto y un padding adecuado para no obstruir el contenido principal, anclado en la parte inferior de la pantalla.",
+          "Considerar un estado vacío claro para cuando no haya documentos que coincidan con los filtros aplicados."
+        ]
+      },
+      "raw": "{\n  \"recommended_visual_strategy\": \"file_type_badge\",\n  \"visual_reason\": \"Las insignias de tipo de archivo (ej. icono PDF) son universalmente reconocibles, transmiten orden y profesionalismo sin sobrecargar la interfaz. Son más eficientes que las miniaturas para documentos legales que suelen ser texto y no aportan valor visual distintivo.\",\n  \"recommended_filters\": [\n    \"type\",\n    \"date\",\n    \"chips\",\n    \"month_grouping\"\n  ],\n  \"mobile_return_pattern\": \"sticky_button\",\n  \"priority_order\": [\n    \"visual\",\n    \"filters\",\n    \"mobile_return\"\n  ],\n  \"ui_copy\": {\n    \"section_hint\": \"Explora y gestiona tus documentos digitales de forma segura.\",\n    \"recent_button\": \"Ver el más reciente\",\n    \"filter_label\": \"Filtrar\",\n    \"mobile_return_label\": \"Volver a expediente\"\n  },\n  \"risks\": [\n    \"Sobrecargar la interfaz si los filtros no se implementan de forma compacta y accesible en móvil.\",\n    \"Posible confusión inicial si la iconografía de tipo de archivo no es clara o consistente para todos los usuarios.\",\n    \"Riesgo de que el botón fijo de retorno oculte contenido importante si no se maneja bien el padding y la posición.\"\n  ],\n  \"implementation_notes\": [\n    \"Utilizar iconos SVG o de fuente para las insignias de tipo de archivo para escalabilidad y claridad, con etiquetas de texto accesibles.\",\n    \"Implementar los filtros de tipo como 'chips' seleccionables y el filtro de fecha como un selector de rango o agrupamiento por mes/año, preferiblemente en un modal o sección colapsable en móvil.\",\n    \"El botón fijo de retorno debe tener un z-index alto y un padding adecuado para no obstruir el contenido principal, anclado en la parte inferior de la pantalla.\",\n    \"Considerar un estado vacío claro para cuando no haya documentos que coincidan con los filtros aplicados.\"\n  ]\n}",
+      "provider": "gemini"
+    }
+  ]
+}

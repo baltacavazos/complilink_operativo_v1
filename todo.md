@@ -1248,3 +1248,7 @@
 - [ ] Nueva mejora en /auditar: rediseñar la interfaz del archivo digital para que sea sumamente intuitiva y fácil de entender
 - [ ] Nueva mejora en /auditar: consultar a ChatGPT, Grok y Gemini la mejor estructura de acceso y comprensión antes de implementar
 - [ ] Nueva mejora en /auditar: revalidar con TypeScript, Vitest y flujo principal la nueva experiencia del archivo digital
+- [x] Ronda 8: añadir identificación visual clara en cada tarjeta del archivo digital con miniatura o tipología de archivo en /auditar.
+- [x] Ronda 8: incorporar filtros simples por tipo y fecha dentro del archivo digital en /auditar.
+- [x] Ronda 8: crear una acción fija en móvil para volver rápidamente al expediente digital en /auditar.
+- [x] Ronda 8: validar las tres mejoras del archivo digital con TypeScript y Vitest.

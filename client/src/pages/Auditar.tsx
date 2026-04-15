@@ -767,6 +767,7 @@ type DossierHistoryEntry = {
 };
 
 type DossierHistoryFilter = "all" | "document" | "response" | "summary";
+type ArchiveDateFilter = "all" | "last_30_days" | "this_year" | "older";
 
 type MobileOnboardingStep = {
   step: string;
@@ -1386,6 +1387,87 @@ function formatDate(value?: Date | string | null) {
         dateStyle: "medium",
         timeStyle: "short",
       });
+}
+
+function getArchiveFileExtensionLabel(fileName: string) {
+  const extension = fileName.split(".").pop()?.trim().toUpperCase() ?? "";
+  if (!extension || extension === fileName.trim().toUpperCase()) {
+    return "DOC";
+  }
+  return extension.slice(0, 4);
+}
+
+function getArchiveDocumentVisual(documentType?: string | null) {
+  switch (documentType) {
+    case "payroll_receipt":
+      return {
+        shortLabel: "NOM",
+        tileClasses: "border-emerald-100 bg-emerald-50 text-emerald-700",
+        badgeClasses: "bg-emerald-100 text-emerald-800",
+      };
+    case "cfdi":
+      return {
+        shortLabel: "SAT",
+        tileClasses: "border-sky-100 bg-sky-50 text-sky-700",
+        badgeClasses: "bg-sky-100 text-sky-800",
+      };
+    case "imss":
+      return {
+        shortLabel: "IMSS",
+        tileClasses: "border-indigo-100 bg-indigo-50 text-indigo-700",
+        badgeClasses: "bg-indigo-100 text-indigo-800",
+      };
+    case "contract":
+      return {
+        shortLabel: "LAB",
+        tileClasses: "border-amber-100 bg-amber-50 text-amber-700",
+        badgeClasses: "bg-amber-100 text-amber-800",
+      };
+    case "settlement":
+      return {
+        shortLabel: "FIN",
+        tileClasses: "border-rose-100 bg-rose-50 text-rose-700",
+        badgeClasses: "bg-rose-100 text-rose-800",
+      };
+    default:
+      return {
+        shortLabel: "EXP",
+        tileClasses: "border-slate-200 bg-slate-100 text-slate-700",
+        badgeClasses: "bg-slate-200 text-slate-800",
+      };
+  }
+}
+
+function matchesArchiveDateFilter(
+  value: Date | string | null | undefined,
+  filter: ArchiveDateFilter
+) {
+  if (filter === "all") {
+    return true;
+  }
+
+  if (!value) {
+    return false;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return false;
+  }
+
+  const now = new Date();
+  if (filter === "last_30_days") {
+    const threshold = new Date(now);
+    threshold.setDate(threshold.getDate() - 30);
+    return date >= threshold;
+  }
+
+  const currentYear = now.getFullYear();
+  if (filter === "this_year") {
+    return date.getFullYear() === currentYear;
+  }
+
+  return date.getFullYear() < currentYear;
 }
 
 function fileToBase64(file: File) {
@@ -3023,6 +3105,9 @@ export default function Auditar() {
   const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
     null
   );
+  const [archiveTypeFilter, setArchiveTypeFilter] = useState<string>("all");
+  const [archiveDateFilter, setArchiveDateFilter] =
+    useState<ArchiveDateFilter>("all");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
@@ -3483,7 +3568,46 @@ export default function Auditar() {
     [documents]
   );
   const latestArchiveDocument = recentDocuments[0] ?? null;
+  const archiveTypeOptions = useMemo(
+    () => [
+      { value: "all", label: "Todos" },
+      ...Array.from(
+        new Set(
+          (recentDocuments
+            .map(item => item.documentType)
+            .filter(Boolean) as Array<
+            NonNullable<(typeof recentDocuments)[number]["documentType"]>
+          >)
+        )
+      ).map(value => ({
+        value,
+        label: getSimpleDocumentTypeLabel(value),
+      })),
+    ],
+    [recentDocuments]
+  );
+  const filteredArchiveDocuments = useMemo(
+    () =>
+      recentDocuments.filter(document => {
+        const matchesType =
+          archiveTypeFilter === "all" ||
+          document.documentType === archiveTypeFilter;
+        const matchesDate = matchesArchiveDateFilter(
+          document.createdAt,
+          archiveDateFilter
+        );
+        return matchesType && matchesDate;
+      }),
+    [archiveDateFilter, archiveTypeFilter, recentDocuments]
+  );
+  const archiveHasActiveFilters =
+    archiveTypeFilter !== "all" || archiveDateFilter !== "all";
   const pricingExperience = getAuditapatronPricingExperience(documents.length);
+
+  useEffect(() => {
+    setArchiveTypeFilter("all");
+    setArchiveDateFilter("all");
+  }, [currentCaseScopeKey]);
 
   useEffect(() => {
     if (
@@ -9695,14 +9819,86 @@ export default function Auditar() {
                   </div>
                 </div>
 
+                <div className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        Filtrar por tipo o fecha
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        Encuentra más rápido lo que necesitas sin perder el orden
+                        de tu expediente.
+                      </p>
+                    </div>
+                    <p className="text-sm font-medium text-slate-500">
+                      Mostrando {filteredArchiveDocuments.length} de {documents.length} documento
+                      {documents.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      {archiveTypeOptions.map(option => {
+                        const active = archiveTypeFilter === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setArchiveTypeFilter(option.value)}
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                              active
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-950"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "all", label: "Cualquier fecha" },
+                        { value: "last_30_days", label: "Últimos 30 días" },
+                        { value: "this_year", label: "Este año" },
+                        { value: "older", label: "Años anteriores" },
+                      ].map(option => {
+                        const active = archiveDateFilter === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() =>
+                              setArchiveDateFilter(option.value as ArchiveDateFilter)
+                            }
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                              active
+                                ? "bg-teal-600 text-white shadow-sm hover:bg-teal-600"
+                                : "border border-teal-100 bg-white text-teal-700 hover:border-teal-200 hover:text-teal-900"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mt-6 space-y-4">
                   {documents.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                       Aún no tienes documentos en este expediente. Puedes
                       empezar con el archivo que tengas más a la mano.
                     </div>
+                  ) : filteredArchiveDocuments.length === 0 ? (
+                    <div className="rounded-[1.3rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                      No encontramos documentos con este filtro. Cambia el tipo o
+                      la fecha para volver a ver todo tu expediente.
+                    </div>
                   ) : (
-                    documents.map(document => {
+                    filteredArchiveDocuments.map(document => {
                       const readiness = getDocumentReadiness(
                         document.classificationConfidence
                       );
@@ -9715,29 +9911,51 @@ export default function Auditar() {
                       const heliosDocument = heliosDocumentSnapshotById.get(
                         document.documentId
                       );
+                      const archiveVisual = getArchiveDocumentVisual(
+                        document.documentType
+                      );
+                      const documentTypeLabel =
+                        heliosDocument?.canonicalLabel ??
+                        getSimpleDocumentTypeLabel(document.documentType);
+                      const fileExtensionLabel = getArchiveFileExtensionLabel(
+                        document.originalName
+                      );
                       return (
                         <article
                           key={document.documentId}
                           className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4"
                         >
                           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                            <div>
-                              <p className="font-semibold text-slate-950">
-                                {document.originalName}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-600">
-                                Tipo sugerido:{" "}
-                                {heliosDocument?.canonicalLabel ??
-                                  getSimpleDocumentTypeLabel(
-                                    document.documentType
-                                  )}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-500">
-                                Incorporado el {formatDate(document.createdAt)}
-                              </p>
+                            <div className="flex gap-4">
+                              <div
+                                className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-[1.25rem] border text-center ${archiveVisual.tileClasses}`}
+                              >
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+                                  {fileExtensionLabel}
+                                </span>
+                                <span className="mt-1 text-sm font-semibold">
+                                  {archiveVisual.shortLabel}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-slate-950">
+                                  {document.originalName}
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-slate-600">
+                                  {documentTypeLabel}
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-slate-500">
+                                  Incorporado el {formatDate(document.createdAt)}
+                                </p>
+                              </div>
                             </div>
 
                             <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                              <span
+                                className={`rounded-full px-3 py-1 ${archiveVisual.badgeClasses}`}
+                              >
+                                {documentTypeLabel}
+                              </span>
                               <span
                                 className={`rounded-full px-3 py-1 ${readiness.classes}`}
                               >
@@ -9917,6 +10135,22 @@ export default function Auditar() {
                     })
                   )}
                 </div>
+              </div>
+            ) : null}
+
+            {documents.length > 0 && viewportSegment === "mobile" ? (
+              <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 sm:hidden">
+                <Button
+                  type="button"
+                  data-testid="auditar-mobile-archive-return"
+                  className="pointer-events-auto h-12 rounded-full bg-slate-950 px-5 text-white shadow-[0_18px_45px_rgba(15,23,42,0.22)] hover:bg-slate-900"
+                  onClick={() => void scrollToDigitalArchive("section_header")}
+                >
+                  <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                  {archiveHasActiveFilters
+                    ? "Volver al expediente filtrado"
+                    : "Volver al expediente"}
+                </Button>
               </div>
             ) : null}
               </div>
