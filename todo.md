@@ -1270,6 +1270,9 @@
 - [x] Cierre V1 crítico: validar con pruebas backend y de rutas que la restricción por usuario no rompa el flujo normal ni el bypass CEO.
 - [x] Cierre V1 crítico: detectar si un usuario normal sube un documento que parece pertenecer a otra persona y notificarle cordialmente, con fecha y hora, que su expediente está limitado a una sola persona.
 - [x] Cierre V1 crítico: consensuar el mejor punto de aplicación de esa notificación para que bloquee el uso incorrecto sin confundir al usuario ni romper el flujo legítimo.
-- [ ] Cierre V1 visual: auditar con visión tri-IA ligera la claridad del Home y `/acceso` sin tocar la lógica crítica ya validada.
-- [ ] Cierre V1 visual: ajustar microcopy, jerarquía visual y claridad de CTA en Home y `/acceso`.
-- [ ] Cierre V1 visual: validar la ronda final con TypeScript, Vitest y revisión de estado del proyecto.
+- [x] Cierre V1 visual: auditar con visión tri-IA ligera la claridad del Home y `/acceso` sin tocar la lógica crítica ya validada.
+- [x] Cierre V1 visual: ajustar microcopy, jerarquía visual y claridad de CTA en Home y `/acceso`.
+- [x] Cierre V1 visual: validar la ronda final con TypeScript, Vitest y revisión de estado del proyecto.
+- [x] Post-V1: reemplazar la ruta técnica visible en /acceso por una etiqueta humana del destino de retorno.
+- [x] Post-V1: añadir o reforzar cobertura de pruebas para el bloqueo por expediente único cuando el documento pertenece a otra persona.
+- [x] Post-V1: compactar ligeramente el primer scroll móvil de Home para acercar antes el ejemplo de resultado.

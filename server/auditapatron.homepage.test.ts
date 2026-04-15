@@ -87,10 +87,10 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("keeps the first homepage block mobile-first and exposes the audit CTA early", () => {
-    expect(homeSource).toContain("pb-7 pt-5 sm:pb-12 sm:pt-12 lg:pt-16");
+    expect(homeSource).toContain("pb-5 pt-4 sm:pb-12 sm:pt-12 lg:pt-16");
     expect(homeSource).toContain("Sube 1 documento y entiende qué revisar");
     expect(homeSource).toContain("order-3 mt-5 hidden w-full max-w-xl");
-    expect(homeSource).toContain("order-2 mt-4 flex w-full max-w-sm");
+    expect(homeSource).toContain("order-2 mt-3 flex w-full max-w-sm");
     expect(homeSource).toContain("goToAuditFlow({");
     expect(homeSource).toContain("Ver cómo se ve el reporte");
   });

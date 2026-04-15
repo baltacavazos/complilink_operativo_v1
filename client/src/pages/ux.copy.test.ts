@@ -118,7 +118,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
     expect(source).toContain("Luego vuelves a");
+    expect(source).toContain("function getReturnToLabel");
+    expect(source).toContain('return "tu auditoría"');
+    expect(source).toContain('return "la consola ejecutiva"');
+    expect(source).toContain('return "el inicio"');
+    expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).toContain("Usa el correo con el que quieres entrar hoy.");
+    expect(source).toContain("Después vuelves directo a ");
     expect(source).toContain("Recibir código");
     expect(source).toContain("Enviando código...");
     expect(source).toContain("Estamos enviando tu código.");

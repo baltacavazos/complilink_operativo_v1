@@ -905,7 +905,7 @@ function HeroSection() {
     <section
       ref={heroSectionRef}
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-7 pt-5 sm:pb-12 sm:pt-12 lg:pt-16"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-5 pt-4 sm:pb-12 sm:pt-12 lg:pt-16"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
@@ -933,14 +933,14 @@ function HeroSection() {
           </h1>
 
           <p
-            className="motion-enter-soft mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
+            className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
             Verás de inmediato qué archivo subiste, qué hallazgo principal apareció y qué conviene revisar primero.
           </p>
 
           <p
-            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
+            className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
             Empieza con el recibo, contrato o CFDI que ya tienes a la mano. AuditaPatron lo lee, te devuelve un resultado claro desde el primer intento y te muestra el siguiente paso sin llenarte de pantallas.
@@ -983,7 +983,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft order-2 mt-4 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
+            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -1006,7 +1006,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-4 grid w-full max-w-3xl gap-3 sm:grid-cols-3"
+            className="motion-enter-soft mt-3 grid w-full max-w-3xl gap-3 sm:grid-cols-3"
             style={{ ["--motion-delay" as string]: "330ms" }}
           >
             {[
@@ -1038,7 +1038,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="motion-enter-soft mt-4 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-4 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
+            className="motion-enter-soft mt-3 w-full max-w-xl rounded-[1.5rem] border border-slate-200 bg-white/92 p-4 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lo que hace simple esta experiencia</p>

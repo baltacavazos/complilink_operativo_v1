@@ -891,7 +891,7 @@ describe("appRouter case workflows", () => {
         consentStatus: "pending",
         sourceChannel: "manual",
       }),
-    ).rejects.toThrow(/expediente digital está vinculado a una sola persona/i);
+    ).rejects.toThrow(/expediente digital está vinculado a una sola persona[\s\S]*parece pertenecer a alguien distinto[\s\S]*cuenta correcta/i);
 
     expect(db.addDocumentRecord).not.toHaveBeenCalled();
   });
@@ -918,7 +918,7 @@ describe("appRouter case workflows", () => {
         textHint: "Trabajador: Juan Pérez\nEmpresa: Empresa Alterna SA de CV",
         sourceChannel: "manual",
       }),
-    ).rejects.toThrow(/expediente digital está vinculado a una sola persona/i);
+    ).rejects.toThrow(/expediente digital está vinculado a una sola persona[\s\S]*parece pertenecer a alguien distinto[\s\S]*cuenta correcta/i);
 
     expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
   });

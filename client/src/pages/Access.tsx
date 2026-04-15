@@ -27,6 +27,22 @@ function getReturnToFromSearch() {
   return returnTo;
 }
 
+function getReturnToLabel(returnTo: string) {
+  if (returnTo.startsWith("/auditar")) {
+    return "tu auditoría";
+  }
+
+  if (returnTo.startsWith("/ceo")) {
+    return "la consola ejecutiva";
+  }
+
+  if (returnTo === "/" || returnTo.startsWith("/#")) {
+    return "el inicio";
+  }
+
+  return "la pantalla que dejaste abierta";
+}
+
 function getAccessErrorFromSearch() {
   if (typeof window === "undefined") return null;
 
@@ -113,6 +129,7 @@ function getFriendlyAuthMessage(parsed: ParsedAuthMessage) {
 
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
+  const returnToLabel = useMemo(() => getReturnToLabel(returnTo), [returnTo]);
   const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
   const { loading, user } = useAuth();
@@ -240,7 +257,7 @@ export default function Access() {
           </a>
 
           <p className="px-1 text-xs font-medium text-slate-500">
-            Luego vuelves a <strong className="break-all text-slate-700">{returnTo}</strong>. Después de entrar, volverás directo a esa misma ruta.
+            Luego vuelves a <strong className="text-slate-700">{returnToLabel}</strong>. Después de entrar, volverás directo ahí.
           </p>
         </div>
 
@@ -259,7 +276,7 @@ export default function Access() {
                 Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Después vuelves directo a tu expediente o auditoría. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
+                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Después vuelves directo a {returnToLabel}. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
               </p>
             </div>
 
