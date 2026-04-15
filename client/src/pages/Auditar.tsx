@@ -7750,47 +7750,56 @@ export default function Auditar() {
                 )
               ) : (
                 <div className="mt-4 space-y-4">
-                  <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="max-w-3xl">
-                        <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
-                            Documento guardado
-                          </span>
-                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                            {getSimpleDocumentTypeLabel(
-                              lastUpload.classification.documentType
-                            )}
-                          </span>
-                          <span
-                            className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}
-                          >
-                            {lastUploadReadiness.label}
-                          </span>
-                        </div>
-                        <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
-                          {lastUploadResultHeadline}
+                  <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
+                        Documento analizado
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        {getSimpleDocumentTypeLabel(
+                          lastUpload.classification.documentType
+                        )}
+                      </span>
+                      <span
+                        className={`rounded-full px-3 py-1 ${lastUploadReadiness.classes}`}
+                      >
+                        {lastUploadReadiness.label}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                      <div className="rounded-[1.25rem] border border-white/80 bg-white/92 p-4 shadow-sm sm:p-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Veredicto rápido
+                        </p>
+                        <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
+                          {uploadInsight?.label ?? lastUploadResultHeadline}
                         </h3>
                         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-[0.98rem]">
                           {lastUploadResultLead}
                         </p>
+
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                              Qué sí vimos
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-slate-700">
+                              {uploadInsight?.contribution ?? lastUploadResultHeadline}
+                            </p>
+                          </div>
+                          <div className="rounded-[1rem] border border-amber-100 bg-amber-50 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
+                              Qué conviene hacer ahora
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-amber-950">
+                              {lastUploadNextStepSummary}
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 text-sm leading-7 text-slate-700 shadow-sm lg:max-w-sm">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Lo que sigue ahora
-                        </p>
-                        <p className="mt-2 font-semibold text-slate-950">
-                          Un siguiente paso claro, sin rodeos
-                        </p>
-                        <p className="mt-2 text-sm leading-7 text-slate-600">
-                          {lastUploadNextStepSummary}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 grid gap-3 xl:grid-cols-[1.12fr_0.88fr]">
-                      <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                      <div className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4 shadow-sm sm:p-5">
                         <div className="flex items-start gap-3">
                           <Sparkles
                             className="mt-1 h-5 w-5 shrink-0 text-teal-700"
@@ -7798,25 +7807,21 @@ export default function Auditar() {
                           />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-                              Resultado inmediato
+                              Siguiente paso
                             </p>
-                            <p className="mt-2 font-semibold text-teal-950">
-                              {uploadInsight?.label ?? lastUploadResultHeadline}
+                            <p className="mt-2 text-lg font-semibold text-teal-950">
+                              {primaryLastUploadShortcut
+                                ? primaryLastUploadShortcut.label
+                                : "Abrir asistente laboral"}
                             </p>
                             <p className="mt-2 text-sm leading-7 text-teal-900">
-                              {uploadInsight?.contribution ?? lastUploadNextStepSummary}
+                              {primaryLastUploadShortcut
+                                ? primaryLastUploadShortcut.description
+                                : "Si quieres profundizar, aquí te explicamos este resultado y te ayudamos a elegir el siguiente documento útil."}
                             </p>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Lo que sigue ahora
-                        </p>
-                        <p className="mt-2 font-semibold text-slate-950">
-                          {lastUploadNextStepSummary}
-                        </p>
                         <Button
                           type="button"
                           className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
@@ -7835,38 +7840,12 @@ export default function Auditar() {
                             : "Abrir asistente laboral"}
                           <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                         </Button>
-                        <p className="mt-2 text-xs leading-5 text-slate-600">
-                          {primaryLastUploadShortcut
-                            ? primaryLastUploadShortcut.description
-                            : "Si quieres profundizar, el asistente te explica este resultado y te ayuda a elegir el siguiente documento útil."}
+
+                        <p className="mt-3 text-xs leading-5 text-teal-900/80">
+                          Si quieres confirmar cómo llegamos a este resultado, abajo puedes abrir el detalle completo del documento.
                         </p>
                       </div>
                     </div>
-
-                    {secondaryLastUploadShortcuts.length ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {secondaryLastUploadShortcuts.slice(0, 2).map(shortcut => (
-                          <button
-                            key={shortcut.id}
-                            type="button"
-                            onClick={() =>
-                              handleContextualShortcut(
-                                shortcut,
-                                lastUpload.classification.documentType,
-                                "confirmed"
-                              )
-                            }
-                            className="rounded-full border border-white/80 bg-white px-4 py-2 text-left text-xs font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-slate-950"
-                          >
-                            {shortcut.label}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <p className="mt-4 text-xs leading-5 text-slate-500">
-                      Debajo dejamos solo la profundidad opcional. Primero ves el resultado; después decides si quieres abrir detalle, historial o comparación.
-                    </p>
                   </div>
 
                   <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">

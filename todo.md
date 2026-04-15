@@ -1206,3 +1206,11 @@
 - [x] Diagnosticar por qué tras subir el documento no aparece un resultado inmediato, compacto y sorprendente para el usuario
 - [x] Rediseñar el estado post-análisis de /auditar para que entregue primero un resumen corto, claro y accionable antes de cualquier detalle secundario
 - [x] Revalidar con pruebas y revisión visual el flujo real subir documento → análisis → resultado compacto en /auditar
+- [x] Comparar las auditorías independientes de Grok, ChatGPT y Gemini sobre el paso posterior a la subida del documento en /auditar
+- [x] Sintetizar un consenso priorizado de UX para el resultado post-subida sin volver a inflar la pantalla móvil
+- [x] Aplicar en /auditar los ajustes aprobados derivados de las tres auditorías externas
+- [x] Revalidar con pruebas y revisión visual el flujo ajustado según el consenso externo
+- [x] Convertir el resultado post-upload de /auditar en una sola tarjeta de veredicto con documento detectado, hallazgo principal, gravedad y siguiente paso
+- [x] Dejar un único CTA principal en el post-upload y esconder acciones secundarias para reducir fatiga de decisión
+- [x] Separar visualmente el análisis del documento actual del estado general del expediente dentro de /auditar
+- [x] Eliminar o esconder lenguaje técnico-operativo y módulos secundarios en el primer contacto post-upload
