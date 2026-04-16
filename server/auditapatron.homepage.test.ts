@@ -129,4 +129,14 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(heliosSheetSource).toContain("Resumen automático del expediente");
     expect(heliosSheetSource).toContain("Volver al expediente");
   });
+
+  it("keeps the post-upload state lighter by surfacing a compact result summary before secondary modules", () => {
+    expect(auditFlowSource).toContain("const shouldCompactPostUploadExperience =");
+    expect(auditFlowSource).toContain("Último resultado");
+    expect(auditFlowSource).toContain("Ver resultado completo");
+    expect(auditFlowSource).toContain("Subir otro documento");
+    expect(auditFlowSource).toContain("condensedDossierTargets");
+    expect(auditFlowSource).toContain("condensedPriorityUploadGuides");
+    expect(auditFlowSource).toContain("Los detalles completos quedan abajo");
+  });
 });

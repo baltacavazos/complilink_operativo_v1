@@ -87,7 +87,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Expediente en");
     expect(source).toContain("Siguiente útil: ${effectiveRecommendedTarget.label}. Lo puedes subir justo debajo.");
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
-    expect(source).toContain('className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"');
+    expect(source).toContain('hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6');
+    expect(source).toContain('shouldCompactPostUploadExperience ? "border-slate-100 bg-slate-50/70" : ""');
     expect(source).toContain('Sube tu primer archivo y recibe una lectura útil al momento.');
     expect(source).toContain('Elegir cómo subir el documento');
     expect(source).toContain('En un solo paso puedes tomar foto o elegir un archivo');

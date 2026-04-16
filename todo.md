@@ -318,6 +318,10 @@
 - [x] Contrastar con ChatGPT, Grok y Gemini la mejor experiencia de escaneo, captura, corrección y validación documental antes de implementar
 - [x] Presentar para aprobación un flujo de escaneo casi sin fricción, usable por personas con muy baja alfabetización digital, antes de ejecutar cambios
 - [x] Persistir entre dispositivos el contexto de `/auditar` del usuario autenticado para que retome su expediente desde cualquier sesión
+- [x] Reducir la densidad visible inicial de la pantalla post-subida en /auditar dejando el primer scroll centrado en veredicto, síntesis y CTA principal
+- [x] Colapsar o resumir módulos secundarios del expediente y recomendaciones en la pantalla post-subida para acortar el recorrido total
+- [x] Reforzar la dominancia visual del CTA principal y bajar el peso de CTAs secundarios en desktop y móvil
+- [x] Validar con pruebas y capturas reproducibles que la pantalla post-subida quedó más clara y ligera
 - [x] Preseleccionar explícitamente el tipo documental recomendado dentro del flujo de carga para reducir fricción y ambigüedad
 - [x] Añadir una opción visible para reabrir el onboarding informativo desde `/auditar` sin interrumpir el flujo principal
 - [x] Diseñar e implementar captura/escaneo documental asistido por IA con validación automática, guía visual y fricción mínima para usuarios con muy baja alfabetización digital

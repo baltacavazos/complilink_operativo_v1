@@ -4357,6 +4357,14 @@ export default function Auditar() {
     mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
   const isFirstDocumentFlow =
     documents.length === 0 && !pendingDraft && !lastUpload;
+  const shouldCompactPostUploadExperience =
+    Boolean(lastUpload) && !pendingDraft && !selectedFile;
+  const condensedDossierTargets = shouldCompactPostUploadExperience
+    ? dossierTargets.slice(0, 2)
+    : dossierTargets;
+  const condensedPriorityUploadGuides = shouldCompactPostUploadExperience
+    ? visiblePriorityUploadGuides.slice(0, 2)
+    : visiblePriorityUploadGuides;
   const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
   const activeCaptureMode =
     selectedCaptureMode ??
@@ -6286,20 +6294,85 @@ export default function Auditar() {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
+            {shouldCompactPostUploadExperience && lastUpload ? (
+              <div className="rounded-[1.55rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] p-4 shadow-sm sm:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                      <span className="rounded-full bg-white px-3 py-1 text-teal-800">
+                        Último resultado
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                        {getSimpleDocumentTypeLabel(
+                          lastUpload.classification.documentType
+                        )}
+                      </span>
+                      <span
+                        className={`rounded-full px-3 py-1 ${lastUploadVerdict.classes}`}
+                      >
+                        {lastUploadVerdict.shortLabel}
+                      </span>
+                    </div>
+                    <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
+                      {lastUploadResultHeadline}
+                    </h2>
+                    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
+                      {lastUploadResultLead}
+                    </p>
+                  </div>
+                  <div className="flex w-full flex-col gap-2 lg:max-w-sm">
+                    <Button
+                      type="button"
+                      className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900 sm:h-12"
+                      onClick={handlePrimaryVerdictCta}
+                    >
+                      {primaryLastUploadShortcut
+                        ? primaryLastUploadShortcut.label
+                        : "Abrir asistente laboral"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 sm:h-12"
+                      onClick={() =>
+                        verdictPanelRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        })
+                      }
+                    >
+                      Ver resultado completo
+                    </Button>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Primero mira tu veredicto y el siguiente paso. Si después quieres
+                  seguir subiendo documentos, el bloque de carga queda justo debajo.
+                </p>
+              </div>
+            ) : null}
+
             <div className="rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6">
               <div className="grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
-                    Empieza aquí
+                    {shouldCompactPostUploadExperience
+                      ? "Sigue fortaleciendo tu expediente"
+                      : "Empieza aquí"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
-                    Sube tu primer archivo y recibe una lectura útil al momento.
+                    {shouldCompactPostUploadExperience
+                      ? "Si quieres subir otro archivo, aquí puedes hacerlo en un paso."
+                      : "Sube tu primer archivo y recibe una lectura útil al momento."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
-                    Sube el archivo y te devolvemos qué entendimos, qué hallazgo
-                    pesa más y qué conviene revisar después.
+                    {shouldCompactPostUploadExperience
+                      ? "Tu resultado principal ya quedó arriba. Este bloque solo te sirve para seguir fortaleciendo el expediente con otro documento cuando lo necesites."
+                      : "Sube el archivo y te devolvemos qué entendimos, qué hallazgo pesa más y qué conviene revisar después."}
                   </p>
-                  <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-3">
+                  <div
+                    className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                  >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
                         Privacidad activa
@@ -6326,7 +6399,9 @@ export default function Auditar() {
                     </article>
                   </div>
 
-                  <div className="mt-4 hidden gap-3 sm:grid sm:grid-cols-3">
+                  <div
+                    className={`mt-4 hidden gap-3 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                  >
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                         Recibes
@@ -6371,16 +6446,21 @@ export default function Auditar() {
                     >
                       {selectedFile
                         ? "Cambiar documento"
-                        : "Elegir cómo subir el documento"}
+                        : shouldCompactPostUploadExperience
+                          ? "Subir otro documento"
+                          : "Elegir cómo subir el documento"}
                     </Button>
                     <p className="text-xs leading-5 text-slate-500 sm:text-sm">
-                      En un solo paso puedes tomar foto o elegir un archivo
-                      guardado.
+                      {shouldCompactPostUploadExperience
+                        ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
+                        : "En un solo paso puedes tomar foto o elegir un archivo guardado."}
                     </p>
                   </div>
                 </div>
 
-                <div className="hidden gap-3 sm:grid">
+                <div
+                  className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
                     <p className="text-sm font-semibold text-slate-950">
                       Qué pasa con tu archivo
@@ -6403,29 +6483,26 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6">
+            <div
+              className={`hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6 ${shouldCompactPostUploadExperience ? "border-slate-100 bg-slate-50/70" : ""}`}
+            >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Así va tu expediente laboral
+                    {shouldCompactPostUploadExperience
+                      ? "Resumen rápido del expediente"
+                      : "Así va tu expediente laboral"}
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Hoy tu expediente laboral va en:{" "}
+                    {shouldCompactPostUploadExperience
+                      ? "Tu expediente sigue tomando forma"
+                      : "Hoy tu expediente laboral va en:"}{" "}
                     {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    Ya tienes {documents.length} documento
-                    {documents.length === 1 ? "" : "s"} cargado
-                    {documents.length === 1 ? "" : "s"},{" "}
-                    {dossierStatus.completed} de {dossierStatus.total} tipos
-                    útiles y un indicador vivo que se ajusta con señales reales
-                    del expediente. La siguiente mejor acción es simple:{" "}
-                    {selectedFile
-                      ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente"
-                      : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}
-                    . {socialSecuritySummary}{" "}
-                    {heliosExpediente?.summary ??
-                      "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}
+                    {shouldCompactPostUploadExperience
+                      ? `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"} y ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles cubiertos. Si sigues hoy, prioriza ${uploadPrimaryActionLabel.toLowerCase()}.`
+                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
                   </p>
                 </div>
 
@@ -6496,7 +6573,7 @@ export default function Auditar() {
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {dossierTargets.map(item => {
+                {condensedDossierTargets.map(item => {
                   const progress = dossierTypeProgress.find(
                     entry => entry.type === item.type
                   );
@@ -6575,14 +6652,15 @@ export default function Auditar() {
                       Documentos que más enriquecen tu expediente laboral
                     </p>
                     <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Si vas a subir algo más, empieza por los archivos con más
-                      contexto.
+                      {shouldCompactPostUploadExperience
+                        ? "Si vas a subir algo más, empieza por esto."
+                        : "Si vas a subir algo más, empieza por los archivos con más contexto."}
                     </h3>
                   </div>
                   <p className="max-w-xl text-sm leading-6 text-slate-600">
-                    Estos suelen ser de los documentos más útiles para darte una
-                    lectura más completa y dejar tu expediente mejor respaldado
-                    con el tiempo.
+                    {shouldCompactPostUploadExperience
+                      ? "Te dejamos solo las recomendaciones con más valor inmediato para no saturarte después del resultado."
+                      : "Estos suelen ser de los documentos más útiles para darte una lectura más completa y dejar tu expediente mejor respaldado con el tiempo."}
                   </p>
                 </div>
 
@@ -6607,7 +6685,7 @@ export default function Auditar() {
                 </div>
 
                 <div className="mt-4 grid gap-3 xl:grid-cols-2">
-                  {visiblePriorityUploadGuides.map(item => {
+                  {condensedPriorityUploadGuides.map(item => {
                     const isPresent = presentTypes.has(item.type);
                     const isFocused =
                       item.type === selectedRecommendedTargetType;
@@ -6666,6 +6744,14 @@ export default function Auditar() {
                     );
                   })}
                 </div>
+                {shouldCompactPostUploadExperience &&
+                visiblePriorityUploadGuides.length >
+                  condensedPriorityUploadGuides.length ? (
+                  <p className="mt-3 text-xs leading-5 text-slate-500">
+                    Hay {visiblePriorityUploadGuides.length - condensedPriorityUploadGuides.length} sugerencia
+                    {visiblePriorityUploadGuides.length - condensedPriorityUploadGuides.length === 1 ? "" : "s"} más dentro del expediente cuando quieras profundizar.
+                  </p>
+                ) : null}
               </div>
 
               <div
@@ -8792,7 +8878,7 @@ export default function Auditar() {
                           </Button>
 
                           <p className="mt-3 text-xs leading-5 text-slate-500">
-                            Si quieres profundizar, abajo puedes abrir solo los detalles completos.
+                            Los detalles completos quedan abajo, solo para cuando quieras profundizar.
                           </p>
                         </div>
                       </div>
@@ -8843,7 +8929,7 @@ export default function Auditar() {
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                            className={`h-11 rounded-full ${shouldCompactPostUploadExperience ? "border-transparent bg-transparent px-0 text-slate-500 shadow-none hover:bg-transparent hover:text-slate-700" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"}`}
                             onClick={() => scrollToDigitalArchive("result_panel")}
                           >
                             Ver todo mi archivo
