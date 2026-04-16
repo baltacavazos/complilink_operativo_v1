@@ -132,14 +132,13 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("keeps the post-upload state lighter by surfacing a compact result summary before secondary modules", () => {
     expect(auditFlowSource).toContain("const shouldCompactPostUploadExperience =");
-    expect(auditFlowSource).toContain("Resultado listo");
+    expect(auditFlowSource).toContain("Documento incorporado");
     expect(auditFlowSource).toContain("lastUploadResultHeadline");
     expect(auditFlowSource).toContain("Subir otro documento");
     expect(auditFlowSource).toContain("condensedDossierTargets");
     expect(auditFlowSource).toContain("condensedPriorityUploadGuides");
-    expect(auditFlowSource).toContain("Tu último archivo ya fue incorporado.");
-    expect(auditFlowSource).toContain("Abajo tienes el veredicto y el siguiente paso.");
-    expect(auditFlowSource).toContain("Primero mira el veredicto y el siguiente paso.");
+    expect(auditFlowSource).toContain("Documento incorporado");
+    expect(auditFlowSource).toContain("lastUploadVerdict.label");
   });
 
   it("reduces mobile post-upload noise by hiding the harness from the first viewport and shrinking secondary surfaces", () => {

@@ -3835,6 +3835,9 @@ export default function Auditar() {
       total: dossierTargets.length,
     };
   }, [presentTypes]);
+  const mobileDossierStageLabel = (
+    heliosExpediente?.stageLabel ?? dossierStatus.label
+  ).replace(/^Con\s+/i, "");
   const socialSecurityCoveragePercent =
     effectiveSocialSecurityValidation?.coverageScore ?? dossierStatus.percent;
   const socialSecurityStatusLabel =
@@ -5945,48 +5948,43 @@ export default function Auditar() {
         ) : null}
         <div
           ref={heroCardRef}
-          className={`rounded-[1.8rem] border border-slate-900 bg-slate-950 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left ${shouldCompactPostUploadExperience ? "px-4 py-4 sm:px-5 sm:py-5" : "px-5 py-5"}`}
+          className={shouldCompactPostUploadExperience
+            ? "mb-2 text-left"
+            : "rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left"}
         >
           <div>
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
-              Volver al inicio
-            </a>
-            <div className={`flex items-center justify-center sm:justify-start ${shouldCompactPostUploadExperience ? "mt-3" : "mt-4"}`}>
-              <AuditaPatronLogoWordmark
-                surface="dark"
-                className="inline-flex max-w-full"
-                imageClassName={shouldCompactPostUploadExperience
-                  ? "h-auto w-full max-w-[126px] object-contain sm:w-auto sm:max-w-[220px]"
-                  : "h-auto w-full max-w-[180px] object-contain sm:w-auto sm:max-w-[290px]"}
-                subtitleClassName={shouldCompactPostUploadExperience
-                  ? "hidden text-[0.72rem] tracking-[0.12em] sm:block sm:text-[0.86rem]"
-                  : "text-[0.78rem] tracking-[0.14em] sm:text-[0.92rem]"}
-              />
-            </div>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
-              {shouldCompactPostUploadExperience ? "Resultado listo" : "Tu revisión"}
-            </p>
+            {shouldCompactPostUploadExperience ? null : (
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
+                <span>Volver al inicio</span>
+              </a>
+            )}
+            {shouldCompactPostUploadExperience ? null : (
+              <div className="mt-4 flex items-center justify-center sm:justify-start">
+                <AuditaPatronLogoWordmark
+                  surface="dark"
+                  className="inline-flex max-w-full"
+                  imageClassName="h-auto w-full max-w-[180px] object-contain sm:w-auto sm:max-w-[290px]"
+                  subtitleClassName="text-[0.78rem] tracking-[0.14em] sm:text-[0.92rem]"
+                />
+              </div>
+            )}
+            {shouldCompactPostUploadExperience ? null : (
+              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
+                Tu revisión
+              </p>
+            )}
 
-            <h1 className={`mt-2 font-semibold tracking-[-0.04em] text-white ${shouldCompactPostUploadExperience ? "text-[1.7rem] leading-[1.02] sm:text-[2.15rem]" : "text-3xl sm:text-4xl"}`}>
-              {shouldCompactPostUploadExperience
-                ? "Resultado listo para revisar"
-                : "Sube tu documento. Te diremos qué es, qué encontramos y qué sigue."}
-            </h1>
-            <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "mt-2" : "mt-2"}`}>
-              {shouldCompactPostUploadExperience ? (
-                <>
-                  <span className="sm:hidden">
-                    Tu último archivo ya fue incorporado. Abajo tienes el veredicto y el siguiente paso.
-                  </span>
-                  <span className="hidden sm:inline">
-                    Tu último archivo ya fue incorporado. Abajo tienes el veredicto y el siguiente paso.
-                  </span>
-                </>
-              ) : (
+            {shouldCompactPostUploadExperience ? null : (
+              <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
+                Sube tu documento. Te diremos qué es, qué encontramos y qué sigue.
+              </h1>
+            )}
+            <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
+              {shouldCompactPostUploadExperience ? null : (
                 <>
                   <span className="sm:hidden">
                     Lo analizamos al momento y te lo explicamos sin vueltas antes de
@@ -6321,46 +6319,70 @@ export default function Auditar() {
           </DrawerContent>
         </Drawer>
 
-        <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <section className="space-y-6">
+        <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
+          <section className={shouldCompactPostUploadExperience ? "flex min-h-[42vh] w-full flex-col items-center justify-center space-y-2 rounded-[2.2rem] bg-slate-50 px-2 py-3" : "space-y-6"}>
             {shouldCompactPostUploadExperience && lastUpload ? (
-              <div className="rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] px-4 py-3 shadow-sm sm:rounded-[1.55rem] sm:p-5">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="w-full max-w-none self-center rounded-[2.1rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-7 py-8 shadow-[0_10px_28px_-22px_rgba(16,185,129,0.18)] sm:rounded-[2.2rem] sm:px-10 sm:py-9">
+                <div className={`flex flex-col gap-3 ${shouldCompactPostUploadExperience ? "" : "lg:flex-row lg:items-center lg:justify-between"}`}>
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${lastUploadVerdict.classes}`}
-                      >
-                        Veredicto principal: {lastUploadVerdict.label}
-                      </span>
-                      <p className="text-xs font-medium text-slate-500">
-                        {getSimpleDocumentTypeLabel(
-                          lastUpload.classification.documentType
-                        )} ya incorporado
-                      </p>
+                    {shouldCompactPostUploadExperience ? null : (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${lastUploadVerdict.classes}`}
+                        >
+                          {lastUploadVerdict.label}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 sm:mt-3">
+                      <CheckCircle2 className="h-10 w-10 shrink-0 text-emerald-700" strokeWidth={2.1} />
+                      <h2 className={`font-semibold tracking-[-0.055em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[3.1rem] leading-[0.87]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
+                        {shouldCompactPostUploadExperience
+                          ? `${getSimpleDocumentTypeLabel(lastUpload.classification.documentType)} confirmado`
+                          : lastUploadVerdict.label}
+                      </h2>
                     </div>
-                    <h2 className="mt-2 text-[1.35rem] font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
-                      {lastUploadResultHeadline}
-                    </h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700 sm:mt-3 sm:text-base sm:leading-6">
-                      {lastUploadResultLead}
-                    </p>
+                    {shouldCompactPostUploadExperience ? (
+                      <p className="mt-1 text-center text-[1.62rem] font-semibold leading-snug text-slate-800">
+                        Ya está en tu expediente.
+                      </p>
+                    ) : null}
+                    {shouldCompactPostUploadExperience ? null : (
+                      <p className={`mt-2 font-semibold text-emerald-900 ${shouldCompactPostUploadExperience ? "text-base tracking-[-0.01em]" : "text-[13px] uppercase tracking-[0.16em] text-slate-500 sm:mt-3 sm:text-xs"}`}>
+                        {lastUploadResultHeadline}
+                      </p>
+                    )}
+                    {shouldCompactPostUploadExperience ? null : (
+                      <p className={`mt-2 max-w-3xl text-slate-700 ${shouldCompactPostUploadExperience ? "text-[1.08rem] font-semibold leading-[1.65rem]" : "text-sm leading-5 sm:mt-3 sm:text-base sm:leading-6"}`}>
+                        {lastUploadResultLead}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex w-full flex-col gap-2 lg:max-w-sm">
+                  <div className={`flex w-full flex-col gap-2 ${shouldCompactPostUploadExperience ? "items-center" : "lg:max-w-sm"}`}>
                     <Button
                       type="button"
-                      className="h-12 rounded-2xl bg-slate-950 px-5 text-base font-semibold text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.65)] hover:bg-slate-900 sm:h-14 sm:text-[1.02rem]"
+                      className={`rounded-[2rem] font-semibold text-white shadow-[0_46px_96px_-20px_rgba(16,185,129,0.46)] transition-all sm:h-14 sm:text-[1.08rem] ${shouldCompactPostUploadExperience ? "mx-auto flex h-auto min-h-[6.6rem] w-full max-w-[24rem] items-center justify-center gap-3 rounded-[1.8rem] border-2 border-emerald-700 bg-emerald-700 px-7 py-5 text-center text-[1.92rem] leading-tight tracking-[-0.03em] shadow-[0_26px_60px_-24px_rgba(5,150,105,0.52)] hover:bg-emerald-600" : "h-13 bg-slate-950 px-5 text-[1.02rem] hover:bg-slate-900"}`}
                       onClick={handlePrimaryVerdictCta}
                     >
-                      {primaryLastUploadShortcut
-                        ? primaryLastUploadShortcut.label
-                        : "Abrir asistente laboral"}
+                      {shouldCompactPostUploadExperience ? <ArrowRight className="h-7 w-7 shrink-0" strokeWidth={2.5} /> : null}
+                      {shouldCompactPostUploadExperience
+                        ? "Comparar nómina y CFDI"
+                        : primaryLastUploadShortcut
+                          ? primaryLastUploadShortcut.label
+                          : "Abrir asistente laboral"}
                     </Button>
+                    {shouldCompactPostUploadExperience ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+                        onClick={() => void scrollToDigitalArchive("result_panel")}
+                      >
+                        <FolderOpen className="h-4 w-4" strokeWidth={2} />
+                        Ir a mi expediente
+                      </button>
+                    ) : null}
                   </div>
                 </div>
-                <p className="mt-2 text-[11px] leading-4 text-slate-500 sm:mt-3 sm:text-xs sm:leading-5">
-                  Primero mira el veredicto y el siguiente paso.
-                </p>
               </div>
             ) : null}
 
@@ -6490,7 +6512,7 @@ export default function Auditar() {
 
                   <div className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
                     <Button
-                      className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900 sm:h-12"
+                      className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950 px-6 text-[1.02rem] font-semibold text-white shadow-[0_18px_36px_-24px_rgba(15,23,42,0.46)] transition hover:bg-slate-900 sm:mx-0 sm:h-12 sm:max-w-none sm:rounded-2xl sm:px-4 sm:text-base sm:shadow-none"
                       onClick={() => setUploadSourceOpen(true)}
                     >
                       {selectedFile
@@ -6499,7 +6521,7 @@ export default function Auditar() {
                           ? "Subir otro documento"
                           : "Elegir cómo subir el documento"}
                     </Button>
-                    <p className="text-xs leading-5 text-slate-500 sm:text-sm">
+                    <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
                         : "En un solo paso puedes tomar foto o elegir un archivo guardado."}
@@ -7171,8 +7193,7 @@ export default function Auditar() {
             <div className="sm:hidden rounded-[1.3rem] border border-slate-200 bg-white px-3.5 py-3 shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Expediente en{" "}
-                  {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                  Expediente en {mobileDossierStageLabel}
                 </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
                   {dossierStatus.completed}/{dossierStatus.total}
@@ -7321,7 +7342,7 @@ export default function Auditar() {
 
               <div
                 ref={uploadSectionRef}
-                className="mt-6 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-5"
+                className="mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
@@ -7521,8 +7542,8 @@ export default function Auditar() {
                 {pendingDraft ? (
                   <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm sm:hidden">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                           Documento cargado
                         </p>
                         <p className="mt-1 truncate text-sm font-semibold text-slate-950">
@@ -7573,12 +7594,12 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-2 sm:hidden">
+                  <div className="mt-4 space-y-2.5 sm:hidden">
                     <Button
-                      className={`h-12 w-full rounded-2xl text-white transition-all duration-200 ${
+                      className={`mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200 ${
                         shouldCompactMobileUploadEntry
                           ? "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"
-                          : "bg-slate-900 hover:bg-slate-950"
+                          : "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"
                       }`}
                       disabled={isAutoAnalyzingSelectedFile}
                       onClick={openPreferredPicker}
@@ -7594,7 +7615,7 @@ export default function Auditar() {
                             : uploadPrimaryActionLabel}
                     </Button>
                     <div className="space-y-3">
-                      <p className="text-xs leading-5 text-slate-500">
+                      <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
                           ? "Estamos preparando tu vista previa."
                           : shouldCompactMobileUploadEntry
@@ -7630,7 +7651,7 @@ export default function Auditar() {
                         <div className="rounded-[1rem] border border-dashed border-teal-200 bg-white/80 px-3 py-3">
                           <button
                             type="button"
-                            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-teal-50 text-sm font-semibold text-teal-900 transition hover:bg-teal-100"
+                            className="mx-auto inline-flex h-10 w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.2rem] border border-teal-200 bg-teal-50 text-sm font-semibold text-teal-900 transition hover:bg-teal-100"
                             disabled={isAutoAnalyzingSelectedFile}
                             onClick={() => setUploadSourceOpen(true)}
                           >
@@ -7638,7 +7659,7 @@ export default function Auditar() {
                               ? "Cambiar documento"
                               : "Elegir cámara o archivo"}
                           </button>
-                          <p className="mt-2 text-xs leading-5 text-slate-500">
+                          <p className="mx-auto mt-2 max-w-[22rem] text-center text-xs leading-5 text-slate-500">
                             Al tocar aquí eliges si quieres tomar foto o subir
                             un archivo guardado.
                           </p>

@@ -40,7 +40,7 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain(
       '"bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"',
     );
-    expect(auditarSource).toContain('"bg-slate-900 hover:bg-slate-950"');
+    expect(auditarSource).toContain('"bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"');
     expect(auditarSource).toContain('"Toma foto para empezar"');
     expect(auditarSource).toContain('"Elige archivo para empezar"');
   });
@@ -60,6 +60,21 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("auditar_mobile_verdict_viewed");
     expect(auditarSource).toContain("auditar_mobile_verdict_cta_clicked");
     expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
+  });
+
+  it("equilibra el primer viewport con CTA consistente y salida secundaria discreta", () => {
+    expect(auditarSource).toContain('"flex min-h-[42vh] w-full flex-col items-center justify-center space-y-2 rounded-[2.2rem] bg-slate-50 px-2 py-3"');
+    expect(auditarSource).toContain('"text-[3.1rem] leading-[0.87]"');
+    expect(auditarSource).toContain('"w-full max-w-none self-center rounded-[2.1rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-7 py-8 shadow-[0_10px_28px_-22px_rgba(16,185,129,0.18)] sm:rounded-[2.2rem] sm:px-10 sm:py-9"');
+    expect(auditarSource).toContain('"flex items-center gap-4 sm:mt-3"');
+    expect(auditarSource).toContain('"h-10 w-10 shrink-0 text-emerald-700"');
+    expect(auditarSource).toContain('"mt-1 text-center text-[1.62rem] font-semibold leading-snug text-slate-800"');
+    expect(auditarSource).toContain('Ya está en tu expediente.');
+    expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[6.6rem] w-full max-w-[24rem] items-center justify-center gap-3 rounded-[1.8rem] border-2 border-emerald-700 bg-emerald-700 px-7 py-5 text-center text-[1.92rem] leading-tight tracking-[-0.03em] shadow-[0_26px_60px_-24px_rgba(5,150,105,0.52)] hover:bg-emerald-600"');
+    expect(auditarSource).toContain('"Comparar nómina y CFDI"');
+    expect(auditarSource).toContain('"inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"');
+    expect(auditarSource).toContain('scrollToDigitalArchive("result_panel")');
+    expect(auditarSource).toContain('Ir a mi expediente');
   });
 });
 

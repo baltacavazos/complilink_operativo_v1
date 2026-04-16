@@ -1,0 +1,194 @@
+{
+  "generated_at": "2026-04-16T15:36:12.703489+00:00",
+  "context": {
+    "project_name": "complilink_operativo_v1",
+    "brand": "AuditaPatron",
+    "screen": "auditar mobile preview after alignment fix",
+    "goal": "Detectar visualmente todo lo que no encaja en la pantalla móvil antes de una ronda unificada de corrección.",
+    "image_path": "/home/ubuntu/complilink_operativo_v1/tmp/auditar_mobile_after_alignment_fix.png"
+  },
+  "models": {
+    "chatgpt": {
+      "available": true,
+      "raw": "{\n  \"score_0_to_10\": 4,\n  \"general_verdict\": \"Pantalla muy vacía y con problemas de alineación y jerarquía visual, el botón oscuro/azul no aparece visible, lo que genera confusión y sensación de incompleto.\",\n  \"primary_visual_problem\": \"Falta de presencia y alineación del botón oscuro/azul, además de un espaciado vertical excesivo y jerarquía poco clara.\",\n  \"detected_issues\": [\n    {\n      \"area\": \"Botón oscuro/azul\",\n      \"severity\": \"high\",\n      \"problem\": \"El botón no es visible ni está alineado, parece descuadrado o ausente en la pantalla móvil.\",\n      \"why_it_feels_off\": \"El usuario no puede interactuar ni identificar claramente la acción principal, lo que genera frustración y desconfianza.\",\n      \"recommended_fix\": \"Asegurar que el botón esté visible, con un ancho adecuado al móvil, centrado horizontalmente y con márgenes consistentes respecto a otros elementos.\"\n    },\n    {\n      \"area\": \"Jerarquía visual y espaciado\",\n      \"severity\": \"medium\",\n      \"problem\": \"El texto 'Preparando tu espacio de revisión...' está muy arriba y no hay otros elementos que equilibren la pantalla.\",\n      \"why_it_feels_off\": \"La pantalla se siente vacía y sin foco, lo que puede generar incertidumbre en el usuario sobre qué hacer o esperar.\",\n      \"recommended_fix\": \"Reducir el espacio superior, centrar verticalmente el contenido o agregar un indicador visual (como un spinner o barra de progreso) para dar contexto.\"\n    },\n    {\n      \"area\": \"Logo y elementos gráficos\",\n      \"severity\": \"low\",\n      \"problem\": \"El logo está muy pequeño y separado del texto principal, lo que reduce su impacto y reconocimiento.\",\n      \"why_it_feels_off\": \"El logo no aporta a la jerarquía visual ni a la confianza, parece un elemento decorativo sin peso.\",\n      \"recommended_fix\": \"Aumentar ligeramente el tamaño del logo y acercarlo al texto para crear una unidad visual clara.\"\n    }\n  ],\n  \"what_to_keep\": [\n    \"El texto claro y directo 'Preparando tu espacio de revisión...'\",\n    \"El uso de colores sobrios y fondo claro que genera sensación de limpieza\"\n  ],\n  \"single_best_iteration\": {\n    \"summary\": \"Mejorar visibilidad y alineación del botón oscuro/azul, centrar contenido y ajustar espaciados para balancear la pantalla.\",\n    \"changes\": [\n      \"Hacer visible y ancho adecuado el botón oscuro/azul, centrado horizontalmente.\",\n      \"Reducir el espacio superior para que el texto no quede tan pegado al tope.\",\n      \"Agregar un indicador visual de carga para dar contexto al mensaje.\",\n      \"Aumentar tamaño del logo y acercarlo al texto para mejorar jerarquía.\",\n      \"Ajustar márgenes y padding para mantener ritmo visual consistente.\"\n    ]\n  },\n  \"button_assessment\": {\n    \"top_button\": \"No visible ni alineado, lo que genera confusión.\",\n    \"lower_button\": \"No aparece en la pantalla, falta total de referencia.\",\n    \"relationship_between_them\": \"No se puede evaluar por ausencia del botón oscuro/azul y falta de otros botones.\"\n  },\n  \"mobile_balance_rule\": \"En móvil, el contenido debe estar centrado vertical y horizontalmente, con botones claramente visibles y con márgenes consistentes para facilitar la interacción con el pulgar.\",\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "score_0_to_10": 4,
+        "general_verdict": "Pantalla muy vacía y con problemas de alineación y jerarquía visual, el botón oscuro/azul no aparece visible, lo que genera confusión y sensación de incompleto.",
+        "primary_visual_problem": "Falta de presencia y alineación del botón oscuro/azul, además de un espaciado vertical excesivo y jerarquía poco clara.",
+        "detected_issues": [
+          {
+            "area": "Botón oscuro/azul",
+            "severity": "high",
+            "problem": "El botón no es visible ni está alineado, parece descuadrado o ausente en la pantalla móvil.",
+            "why_it_feels_off": "El usuario no puede interactuar ni identificar claramente la acción principal, lo que genera frustración y desconfianza.",
+            "recommended_fix": "Asegurar que el botón esté visible, con un ancho adecuado al móvil, centrado horizontalmente y con márgenes consistentes respecto a otros elementos."
+          },
+          {
+            "area": "Jerarquía visual y espaciado",
+            "severity": "medium",
+            "problem": "El texto 'Preparando tu espacio de revisión...' está muy arriba y no hay otros elementos que equilibren la pantalla.",
+            "why_it_feels_off": "La pantalla se siente vacía y sin foco, lo que puede generar incertidumbre en el usuario sobre qué hacer o esperar.",
+            "recommended_fix": "Reducir el espacio superior, centrar verticalmente el contenido o agregar un indicador visual (como un spinner o barra de progreso) para dar contexto."
+          },
+          {
+            "area": "Logo y elementos gráficos",
+            "severity": "low",
+            "problem": "El logo está muy pequeño y separado del texto principal, lo que reduce su impacto y reconocimiento.",
+            "why_it_feels_off": "El logo no aporta a la jerarquía visual ni a la confianza, parece un elemento decorativo sin peso.",
+            "recommended_fix": "Aumentar ligeramente el tamaño del logo y acercarlo al texto para crear una unidad visual clara."
+          }
+        ],
+        "what_to_keep": [
+          "El texto claro y directo 'Preparando tu espacio de revisión...'",
+          "El uso de colores sobrios y fondo claro que genera sensación de limpieza"
+        ],
+        "single_best_iteration": {
+          "summary": "Mejorar visibilidad y alineación del botón oscuro/azul, centrar contenido y ajustar espaciados para balancear la pantalla.",
+          "changes": [
+            "Hacer visible y ancho adecuado el botón oscuro/azul, centrado horizontalmente.",
+            "Reducir el espacio superior para que el texto no quede tan pegado al tope.",
+            "Agregar un indicador visual de carga para dar contexto al mensaje.",
+            "Aumentar tamaño del logo y acercarlo al texto para mejorar jerarquía.",
+            "Ajustar márgenes y padding para mantener ritmo visual consistente."
+          ]
+        },
+        "button_assessment": {
+          "top_button": "No visible ni alineado, lo que genera confusión.",
+          "lower_button": "No aparece en la pantalla, falta total de referencia.",
+          "relationship_between_them": "No se puede evaluar por ausencia del botón oscuro/azul y falta de otros botones."
+        },
+        "mobile_balance_rule": "En móvil, el contenido debe estar centrado vertical y horizontalmente, con botones claramente visibles y con márgenes consistentes para facilitar la interacción con el pulgar.",
+        "confidence_0_to_100": 95
+      }
+    },
+    "grok": {
+      "available": true,
+      "raw": "{\n  \"score_0_to_10\": 4,\n  \"general_verdict\": \"Interfaz con problemas de alineación y espaciado que reduce la confianza visual\",\n  \"primary_visual_problem\": \"Botón descuadrado y texto desalineado en header\",\n  \"detected_issues\": [\n    {\n      \"area\": \"Header superior\",\n      \"severity\": \"high\",\n      \"problem\": \"Elementos superpuestos y desalineados (ON, AUDITAPATRON, ícono de búsqueda)\",\n      \"why_it_feels_off\": \"Crea confusión visual y rompe la jerarquía, haciendo que parezca un diseño no pulido\",\n      \"recommended_fix\": \"Alinear horizontalmente con padding consistente y eliminar superposiciones\"\n    },\n    {\n      \"area\": \"Texto principal\",\n      \"severity\": \"high\",\n      \"problem\": \"Texto 'Preparando tu espacio de revision...' desalineado y con espaciado vertical irregular\",\n      \"why_it_feels_off\": \"Genera ritmo visual extraño, como si el contenido flotara sin anclaje\",\n      \"recommended_fix\": \"Centrar el texto con márgenes fijos (ej. 24px top/bottom) y fuente uniforme\"\n    },\n    {\n      \"area\": \"Botón oscuro/azul\",\n      \"severity\": \"high\",\n      \"problem\": \"Botón se ve descuadrado con bordes irregulares en móvil\",\n      \"why_it_feels_off\": \"Rompe la sensación de interfaz limpia y confiable, destacando como elemento defectuoso\",\n      \"recommended_fix\": \"Ajustar ancho al 90% de la pantalla con bordes redondeados uniformes (8px) y padding simétrico\"\n    },\n    {\n      \"area\": \"Espaciado general\",\n      \"severity\": \"medium\",\n      \"problem\": \"Espacios verticales excesivos y vacíos en la parte inferior\",\n      \"why_it_feels_off\": \"Da una sensación de desbalance, como si la pantalla no estuviera optimizada para móvil\",\n      \"recommended_fix\": \"Reducir márgenes inferiores y agregar un footer sutil para cerrar la vista\"\n    },\n    {\n      \"area\": \"Jerarquía visual\",\n      \"severity\": \"medium\",\n      \"problem\": \"Falta de contraste y tamaño consistente entre header y cuerpo\",\n      \"why_it_feels_off\": \"El usuario no sabe dónde enfocar primero, reduciendo la claridad para trabajadores\",\n      \"recommended_fix\": \"Aumentar tamaño de fuente en título principal y usar negrita para jerarquía\"\n    }\n  ],\n  \"what_to_keep\": [\"El color azul confiable en elementos clave\", \"La simplicidad general del layout de carga\"],\n  \"single_best_iteration\": {\n    \"summary\": \"Versión corregida con alineación centrada y botones pulidos para mayor confianza\",\n    \"changes\": [\n      \"Realinea header en fila horizontal con iconos espaciados\",\n      \"Centra y uniformiza el texto principal con espaciado de 16px entre líneas\",\n      \"Corrige botón a forma rectangular completa con ancho responsive\",\n      \"Reduce espacios vacíos agregando un indicador de progreso sutil abajo\",\n      \"Aplica padding consistente de 16px en todos los bordes para balance móvil\"\n    ]\n  },\n  \"button_assessment\": {\n    \"top_button\": \"No visible, pero header actúa como botón implícito desalineado\",\n    \"lower_button\": \"Botón oscuro/azul descuadrado, principal call-to-action defectuoso\",\n    \"relationship_between_them\": \"Falta conexión visual; el inferior compite sin jerarquía clara\"\n  },\n  \"mobile_balance_rule\": \"Mantener 60% contenido centrado, 20% header, 20% footer para evitar desbalance vertical\",\n  \"confidence_0_to_100\": 92\n}",
+      "parsed": {
+        "score_0_to_10": 4,
+        "general_verdict": "Interfaz con problemas de alineación y espaciado que reduce la confianza visual",
+        "primary_visual_problem": "Botón descuadrado y texto desalineado en header",
+        "detected_issues": [
+          {
+            "area": "Header superior",
+            "severity": "high",
+            "problem": "Elementos superpuestos y desalineados (ON, AUDITAPATRON, ícono de búsqueda)",
+            "why_it_feels_off": "Crea confusión visual y rompe la jerarquía, haciendo que parezca un diseño no pulido",
+            "recommended_fix": "Alinear horizontalmente con padding consistente y eliminar superposiciones"
+          },
+          {
+            "area": "Texto principal",
+            "severity": "high",
+            "problem": "Texto 'Preparando tu espacio de revision...' desalineado y con espaciado vertical irregular",
+            "why_it_feels_off": "Genera ritmo visual extraño, como si el contenido flotara sin anclaje",
+            "recommended_fix": "Centrar el texto con márgenes fijos (ej. 24px top/bottom) y fuente uniforme"
+          },
+          {
+            "area": "Botón oscuro/azul",
+            "severity": "high",
+            "problem": "Botón se ve descuadrado con bordes irregulares en móvil",
+            "why_it_feels_off": "Rompe la sensación de interfaz limpia y confiable, destacando como elemento defectuoso",
+            "recommended_fix": "Ajustar ancho al 90% de la pantalla con bordes redondeados uniformes (8px) y padding simétrico"
+          },
+          {
+            "area": "Espaciado general",
+            "severity": "medium",
+            "problem": "Espacios verticales excesivos y vacíos en la parte inferior",
+            "why_it_feels_off": "Da una sensación de desbalance, como si la pantalla no estuviera optimizada para móvil",
+            "recommended_fix": "Reducir márgenes inferiores y agregar un footer sutil para cerrar la vista"
+          },
+          {
+            "area": "Jerarquía visual",
+            "severity": "medium",
+            "problem": "Falta de contraste y tamaño consistente entre header y cuerpo",
+            "why_it_feels_off": "El usuario no sabe dónde enfocar primero, reduciendo la claridad para trabajadores",
+            "recommended_fix": "Aumentar tamaño de fuente en título principal y usar negrita para jerarquía"
+          }
+        ],
+        "what_to_keep": [
+          "El color azul confiable en elementos clave",
+          "La simplicidad general del layout de carga"
+        ],
+        "single_best_iteration": {
+          "summary": "Versión corregida con alineación centrada y botones pulidos para mayor confianza",
+          "changes": [
+            "Realinea header en fila horizontal con iconos espaciados",
+            "Centra y uniformiza el texto principal con espaciado de 16px entre líneas",
+            "Corrige botón a forma rectangular completa con ancho responsive",
+            "Reduce espacios vacíos agregando un indicador de progreso sutil abajo",
+            "Aplica padding consistente de 16px en todos los bordes para balance móvil"
+          ]
+        },
+        "button_assessment": {
+          "top_button": "No visible, pero header actúa como botón implícito desalineado",
+          "lower_button": "Botón oscuro/azul descuadrado, principal call-to-action defectuoso",
+          "relationship_between_them": "Falta conexión visual; el inferior compite sin jerarquía clara"
+        },
+        "mobile_balance_rule": "Mantener 60% contenido centrado, 20% header, 20% footer para evitar desbalance vertical",
+        "confidence_0_to_100": 92
+      }
+    },
+    "gemini": {
+      "available": true,
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"score_0_to_10\": 6,\n  \"general_verdict\": \"Diseño limpio pero con inconsistencias sutiles que afectan la percepción de pulcritud y confianza.\",\n  \"primary_visual_problem\": \"Desbalance vertical de la tarjeta y falta de consistencia en el logo.\",\n  \"detected_issues\": [\n    {\n      \"area\": \"Logo (Iconografía)\",\n      \"severity\": \"medium\",\n      \"problem\": \"Inconsistencia en los iconos de la lupa del logo.\",\n      \"why_it_feels_off\": \"Las dos lupas que flanquean el texto 'AUDITAPATRON' no son idénticas en estilo ni tamaño, y la de la derecha se superpone ligeramente con la 'N'. Esto rompe la simetría y la sensación de un diseño de marca pulido y profesional, afectando la confianza.\",\n      \"recommended_fix\": \"Unificar el estilo y tamaño de ambas lupas, asegurando que no haya superposiciones y que el espaciado sea consistente. Considerar usar una sola lupa o un diseño más integrado.\"\n    },\n    {\n      \"area\": \"Espaciado y Alineación (Dentro de la tarjeta)\",\n      \"severity\": \"medium\",\n      \"problem\": \"Padding vertical inconsistente dentro de la tarjeta.\",\n      \"why_it_feels_off\": \"El espacio superior entre el borde de la tarjeta y el logo parece mayor que el espacio inferior entre el texto y el borde. Esto hace que el contenido se sienta 'hundido' o desequilibrado verticalmente dentro de su contenedor.\",\n      \"recommended_fix\": \"Ajustar el padding vertical para que sea simétrico o visualmente equilibrado, centrando el bloque de contenido (logo + texto) dentro de la tarjeta.\"\n    },\n    {\n      \"area\": \"Balance General (Posicionamiento de la tarjeta)\",\n      \"severity\": \"medium\",\n      \"problem\": \"La tarjeta está posicionada muy arriba en la pantalla.\",\n      \"why_it_feels_off\": \"Deja un espacio vacío excesivamente grande en la parte inferior de la pantalla, lo que puede hacer que la interfaz se sienta deshabitada o incompleta, especialmente en un dispositivo móvil donde el pulgar suele operar en la parte inferior. Rompe la sensación de una interfaz 'centrada' y anclada.\",\n      \"recommended_fix\": \"Bajar ligeramente la tarjeta para que ocupe una posición más central o visualmente equilibrada en la pantalla, reduciendo el vacío inferior.\"\n    },\n    {\n      \"area\": \"Tipografía y Flujo de Lectura\",\n      \"severity\": \"low\",\n      \"problem\": \"Salto de línea abrupto en el mensaje principal.\",\n      \"why_it_feels_off\": \"El mensaje 'Preparando tu espacio de revisión...' se corta de forma que 'revisión...' queda en una línea separada. Aunque funcional, el corte podría ser más natural para mejorar el ritmo de lectura y la estética.\",\n      \"recommended_fix\": \"Evaluar si el tamaño de fuente o el ancho del contenedor permiten un salto de línea más armónico (ej. 'Preparando tu\\nespacio de revisión...') o ajustar el ancho para una distribución más natural.\"\n    }\n  ],\n  \"what_to_keep\": [\n    \"La simplicidad general del diseño.\",\n    \"El uso de la tarjeta blanca como contenedor principal.\",\n    \"La tipografía clara y legible para el mensaje principal.\"\n  ],\n  \"single_best_iteration\": {\n    \"summary\": \"Optimizar el balance visual y la consistencia de marca para una mayor confianza.\",\n    \"changes\": [\n      \"Unificar el diseño y espaciado de los iconos de lupa en el logo.\",\n      \"Centrar verticalmente el contenido (logo + texto) dentro de la tarjeta.\",\n      \"Mover la tarjeta ligeramente hacia abajo para un mejor balance en la pantalla.\",\n      \"Optimizar el salto de línea del mensaje 'Preparando tu espacio de revisión...'.\",\n      \"Asegurar que el espaciado horizontal del contenido dentro de la tarjeta sea consistente.\"\n    ]\n  },\n  \"button_assessment\": {\n    \"top_button\": \"No hay botones visibles en esta pantalla de carga.\",\n    \"lower_button\": \"No hay botones visibles en esta pantalla de carga.\",\n    \"relationship_between_them\": \"N/A. La ausencia de botones en esta pantalla de carga es esperada. Sin embargo, el reporte de botones descuadrados en otras pantallas sugiere una auditoría general de componentes de UI para asegurar consistencia y alineación en toda la aplicación.\"\n  },\n  \"mobile_balance_rule\": \"Para una interfaz móvil confiable, el contenido principal debe sentirse anclado y accesible, evitando grandes vacíos que sugieran incompletitud o inestabilidad. El balance vertical es clave para la comodidad del pulgar y la percepción de estabilidad y pulcritud.\",\n  \"confidence_0_to_100\": 95\n}",
+      "parsed": {
+        "score_0_to_10": 6,
+        "general_verdict": "Diseño limpio pero con inconsistencias sutiles que afectan la percepción de pulcritud y confianza.",
+        "primary_visual_problem": "Desbalance vertical de la tarjeta y falta de consistencia en el logo.",
+        "detected_issues": [
+          {
+            "area": "Logo (Iconografía)",
+            "severity": "medium",
+            "problem": "Inconsistencia en los iconos de la lupa del logo.",
+            "why_it_feels_off": "Las dos lupas que flanquean el texto 'AUDITAPATRON' no son idénticas en estilo ni tamaño, y la de la derecha se superpone ligeramente con la 'N'. Esto rompe la simetría y la sensación de un diseño de marca pulido y profesional, afectando la confianza.",
+            "recommended_fix": "Unificar el estilo y tamaño de ambas lupas, asegurando que no haya superposiciones y que el espaciado sea consistente. Considerar usar una sola lupa o un diseño más integrado."
+          },
+          {
+            "area": "Espaciado y Alineación (Dentro de la tarjeta)",
+            "severity": "medium",
+            "problem": "Padding vertical inconsistente dentro de la tarjeta.",
+            "why_it_feels_off": "El espacio superior entre el borde de la tarjeta y el logo parece mayor que el espacio inferior entre el texto y el borde. Esto hace que el contenido se sienta 'hundido' o desequilibrado verticalmente dentro de su contenedor.",
+            "recommended_fix": "Ajustar el padding vertical para que sea simétrico o visualmente equilibrado, centrando el bloque de contenido (logo + texto) dentro de la tarjeta."
+          },
+          {
+            "area": "Balance General (Posicionamiento de la tarjeta)",
+            "severity": "medium",
+            "problem": "La tarjeta está posicionada muy arriba en la pantalla.",
+            "why_it_feels_off": "Deja un espacio vacío excesivamente grande en la parte inferior de la pantalla, lo que puede hacer que la interfaz se sienta deshabitada o incompleta, especialmente en un dispositivo móvil donde el pulgar suele operar en la parte inferior. Rompe la sensación de una interfaz 'centrada' y anclada.",
+            "recommended_fix": "Bajar ligeramente la tarjeta para que ocupe una posición más central o visualmente equilibrada en la pantalla, reduciendo el vacío inferior."
+          },
+          {
+            "area": "Tipografía y Flujo de Lectura",
+            "severity": "low",
+            "problem": "Salto de línea abrupto en el mensaje principal.",
+            "why_it_feels_off": "El mensaje 'Preparando tu espacio de revisión...' se corta de forma que 'revisión...' queda en una línea separada. Aunque funcional, el corte podría ser más natural para mejorar el ritmo de lectura y la estética.",
+            "recommended_fix": "Evaluar si el tamaño de fuente o el ancho del contenedor permiten un salto de línea más armónico (ej. 'Preparando tu\nespacio de revisión...') o ajustar el ancho para una distribución más natural."
+          }
+        ],
+        "what_to_keep": [
+          "La simplicidad general del diseño.",
+          "El uso de la tarjeta blanca como contenedor principal.",
+          "La tipografía clara y legible para el mensaje principal."
+        ],
+        "single_best_iteration": {
+          "summary": "Optimizar el balance visual y la consistencia de marca para una mayor confianza.",
+          "changes": [
+            "Unificar el diseño y espaciado de los iconos de lupa en el logo.",
+            "Centrar verticalmente el contenido (logo + texto) dentro de la tarjeta.",
+            "Mover la tarjeta ligeramente hacia abajo para un mejor balance en la pantalla.",
+            "Optimizar el salto de línea del mensaje 'Preparando tu espacio de revisión...'.",
+            "Asegurar que el espaciado horizontal del contenido dentro de la tarjeta sea consistente."
+          ]
+        },
+        "button_assessment": {
+          "top_button": "No hay botones visibles en esta pantalla de carga.",
+          "lower_button": "No hay botones visibles en esta pantalla de carga.",
+          "relationship_between_them": "N/A. La ausencia de botones en esta pantalla de carga es esperada. Sin embargo, el reporte de botones descuadrados en otras pantallas sugiere una auditoría general de componentes de UI para asegurar consistencia y alineación en toda la aplicación."
+        },
+        "mobile_balance_rule": "Para una interfaz móvil confiable, el contenido principal debe sentirse anclado y accesible, evitando grandes vacíos que sugieran incompletitud o inestabilidad. El balance vertical es clave para la comodidad del pulgar y la percepción de estabilidad y pulcritud.",
+        "confidence_0_to_100": 95
+      }
+    }
+  }
+}

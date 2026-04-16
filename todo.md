@@ -1309,3 +1309,14 @@
 - [x] Ronda 6 hacia 9/10: mover la acción de subir otro documento más abajo o dentro de un detalle secundario para evitar distracción temprana
 - [x] Ronda 6 hacia 9/10: simplificar todavía más el lenguaje visible del primer scroll post-subida con etiquetas más cortas y menos texto técnico
 - [x] Ronda 6 hacia 9/10: recapturar y volver a auditar con ChatGPT, Grok y Gemini tras la simplificación radical por revelación progresiva
+- [ ] Ronda adicional hacia 9/10: reducir todavía más la altura del hero post-upload móvil para adelantar el veredicto y el CTA en pantallas pequeñas
+- [ ] Ronda adicional hacia 9/10: limpiar el copy residual del primer viewport para que solo sobrevivan estado, veredicto y siguiente paso
+- [ ] Ronda adicional hacia 9/10: reforzar visualmente la acción principal y volver a auditar con ChatGPT, Grok y Gemini hasta acercarse al 9/10
+- [ ] Empuje final hacia 9/10: aumentar todavía más la prominencia táctil del CTA del post-upload compacto
+- [ ] Empuje final hacia 9/10: reducir la sensación de vacío alrededor de la tarjeta principal sin reintroducir ruido visual
+- [ ] Empuje final hacia 9/10: volver a contrastar la captura con ChatGPT, Grok y Gemini hasta subir la nota mínima
+- [ ] Micro-ronda 9 en /auditar móvil post-upload: equilibrar el primer viewport, unificar el tono del CTA y añadir una salida secundaria discreta sin romper la jerarquía principal.
+- [ ] Micro-ronda 10 en /auditar móvil post-upload: revertir el último refuerzo visual, recentrar mejor la tarjeta en el viewport y reducir la sensación de vacío sin añadir peso innecesario.
+- [ ] Micro-ronda 11 en /auditar móvil post-upload: añadir una salida secundaria mínima al expediente o actividad bajo el CTA para reducir el vacío vertical sin romper la jerarquía principal.
+- [x] Auditoría visual integral de la pantalla móvil actual de /auditar para detectar botones descuadrados, desbalances de espaciado, problemas de alineación y jerarquía inconsistente.
+- [x] Ronda unificada de corrección móvil en /auditar para alinear CTAs, ajustar anchos y paddings, y eliminar elementos que no encajen visualmente en la pantalla.
