@@ -84,6 +84,8 @@ describe("digital archive access", () => {
     expect(auditarSource).toContain(
       "Ver resumen del expediente y documentos sugeridos",
     );
+    expect(auditarSource).toContain("shouldCompactPostUploadExperience ? \"hidden rounded-[1.25rem]");
+    expect(auditarSource).toContain("Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.");
   });
 
   it("añade apertura segura del documento y CTA clara por tarjeta", () => {

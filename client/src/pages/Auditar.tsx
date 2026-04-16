@@ -5945,7 +5945,7 @@ export default function Auditar() {
         ) : null}
         <div
           ref={heroCardRef}
-          className="rounded-[1.8rem] border border-slate-900 bg-slate-950 px-5 py-5 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left"
+          className={`rounded-[1.8rem] border border-slate-900 bg-slate-950 text-center text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:flex sm:items-center sm:justify-between sm:text-left ${shouldCompactPostUploadExperience ? "px-4 py-4 sm:px-5 sm:py-5" : "px-5 py-5"}`}
         >
           <div>
             <a
@@ -5955,45 +5955,66 @@ export default function Auditar() {
               <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
               Volver al inicio
             </a>
-            <div className="mt-4 flex items-center justify-center sm:justify-start">
+            <div className={`flex items-center justify-center sm:justify-start ${shouldCompactPostUploadExperience ? "mt-3" : "mt-4"}`}>
               <AuditaPatronLogoWordmark
                 surface="dark"
                 className="inline-flex max-w-full"
-                imageClassName="h-auto w-full max-w-[180px] object-contain sm:w-auto sm:max-w-[290px]"
-                subtitleClassName="text-[0.78rem] tracking-[0.14em] sm:text-[0.92rem]"
+                imageClassName={shouldCompactPostUploadExperience
+                  ? "h-auto w-full max-w-[126px] object-contain sm:w-auto sm:max-w-[220px]"
+                  : "h-auto w-full max-w-[180px] object-contain sm:w-auto sm:max-w-[290px]"}
+                subtitleClassName={shouldCompactPostUploadExperience
+                  ? "hidden text-[0.72rem] tracking-[0.12em] sm:block sm:text-[0.86rem]"
+                  : "text-[0.78rem] tracking-[0.14em] sm:text-[0.92rem]"}
               />
             </div>
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
-              Tu revisión
+              {shouldCompactPostUploadExperience ? "Resultado listo" : "Tu revisión"}
             </p>
 
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-              Sube tu documento. Te diremos qué es, qué encontramos y qué sigue.
+            <h1 className={`mt-2 font-semibold tracking-[-0.04em] text-white ${shouldCompactPostUploadExperience ? "text-[1.7rem] leading-[1.02] sm:text-[2.15rem]" : "text-3xl sm:text-4xl"}`}>
+              {shouldCompactPostUploadExperience
+                ? "Resultado listo para revisar"
+                : "Sube tu documento. Te diremos qué es, qué encontramos y qué sigue."}
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-              <span className="sm:hidden">
-                Lo analizamos al momento y te lo explicamos sin vueltas antes de
-                guardarlo.
-              </span>
-              <span className="hidden sm:inline">
-                Sube el archivo y te devolvemos una lectura clara: qué documento
-                parece ser, qué ya se entendió y cuál sería el siguiente paso
-                útil.
-              </span>
+            <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "mt-2" : "mt-2"}`}>
+              {shouldCompactPostUploadExperience ? (
+                <>
+                  <span className="sm:hidden">
+                    Tu último archivo ya fue incorporado. Abajo tienes el veredicto y el siguiente paso.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Tu último archivo ya fue incorporado. Abajo tienes el veredicto y el siguiente paso.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="sm:hidden">
+                    Lo analizamos al momento y te lo explicamos sin vueltas antes de
+                    guardarlo.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Sube el archivo y te devolvemos una lectura clara: qué documento
+                    parece ser, qué ya se entendió y cuál sería el siguiente paso
+                    útil.
+                  </span>
+                </>
+              )}
             </p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
-              <ShieldCheck
-                className="h-3.5 w-3.5 text-teal-300"
-                strokeWidth={1.8}
-              />
-              Archivo protegido y usado solo para tu auditoría
-            </div>
+            {!shouldCompactPostUploadExperience ? (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
+                <ShieldCheck
+                  className="h-3.5 w-3.5 text-teal-300"
+                  strokeWidth={1.8}
+                />
+                Archivo protegido y usado solo para tu auditoría
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
             <Button
               variant="outline"
-              className="hidden rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25 sm:inline-flex"
+              className={shouldCompactPostUploadExperience ? "hidden" : "hidden rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25 sm:inline-flex"}
               onClick={() => {
                 void handleRevalidateSocialSecurity();
               }}
@@ -6024,14 +6045,18 @@ export default function Auditar() {
                 Ir al formulario
               </Button>
             ) : null}
-            <span className="text-xs font-medium text-slate-300 sm:hidden">
-              El formulario para subir tu archivo está justo abajo.
-            </span>
-            <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
-              {showHeroJumpCta
-                ? "Úsalo solo si quieres bajar directo al formulario."
-                : remoteViewStateSyncLabel}
-            </span>
+            {shouldCompactPostUploadExperience ? null : (
+              <>
+                <span className="text-xs font-medium text-slate-300 sm:hidden">
+                  El formulario para subir tu archivo está justo abajo.
+                </span>
+                <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
+                  {showHeroJumpCta
+                    ? "Úsalo solo si quieres bajar directo al formulario."
+                    : remoteViewStateSyncLabel}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -6094,17 +6119,21 @@ export default function Auditar() {
 
         {postUploadHarnessMode ? (
           <section
-            className="mt-6 rounded-[1.5rem] border border-dashed border-teal-300 bg-teal-50/80 p-4 shadow-sm"
+            className={shouldCompactPostUploadExperience
+              ? "hidden"
+              : "mt-4 rounded-[1.5rem] border border-dashed border-teal-300 bg-teal-50/80 p-4 shadow-sm"}
             data-testid="post-upload-harness"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">
-              Modo de prueba del veredicto post-upload
-            </p>
-            <p className="mt-2 text-sm leading-6 text-teal-950">
-              Esta vista deja un resultado móvil simulado para validar el
-              revelado, el semáforo y el CTA principal sin depender de login ni
-              de una subida real.
-            </p>
+            <div className={`flex gap-2 ${shouldCompactPostUploadExperience ? "items-center justify-between" : "flex-col"}`}>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">
+                Modo de prueba del veredicto post-upload
+              </p>
+              <p className={`text-teal-950 ${shouldCompactPostUploadExperience ? "text-xs leading-5" : "mt-2 text-sm leading-6"}`}>
+                {shouldCompactPostUploadExperience
+                  ? "Vista simulada para revisar el veredicto sin login ni subida real."
+                  : "Esta vista deja un resultado móvil simulado para validar el revelado, el semáforo y el CTA principal sin depender de login ni de una subida real."}
+              </p>
+            </div>
           </section>
         ) : null}
 
@@ -6295,65 +6324,85 @@ export default function Auditar() {
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="space-y-6">
             {shouldCompactPostUploadExperience && lastUpload ? (
-              <div className="rounded-[1.55rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] p-4 shadow-sm sm:p-5">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] px-4 py-3 shadow-sm sm:rounded-[1.55rem] sm:p-5">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-white px-3 py-1 text-teal-800">
-                        Último resultado
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${lastUploadVerdict.classes}`}
+                      >
+                        Veredicto principal: {lastUploadVerdict.label}
                       </span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                      <p className="text-xs font-medium text-slate-500">
                         {getSimpleDocumentTypeLabel(
                           lastUpload.classification.documentType
-                        )}
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 ${lastUploadVerdict.classes}`}
-                      >
-                        {lastUploadVerdict.shortLabel}
-                      </span>
+                        )} ya incorporado
+                      </p>
                     </div>
-                    <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
+                    <h2 className="mt-2 text-[1.35rem] font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                       {lastUploadResultHeadline}
                     </h2>
-                    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700 sm:text-base">
+                    <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700 sm:mt-3 sm:text-base sm:leading-6">
                       {lastUploadResultLead}
                     </p>
                   </div>
                   <div className="flex w-full flex-col gap-2 lg:max-w-sm">
                     <Button
                       type="button"
-                      className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900 sm:h-12"
+                      className="h-12 rounded-2xl bg-slate-950 px-5 text-base font-semibold text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.65)] hover:bg-slate-900 sm:h-14 sm:text-[1.02rem]"
                       onClick={handlePrimaryVerdictCta}
                     >
                       {primaryLastUploadShortcut
                         ? primaryLastUploadShortcut.label
                         : "Abrir asistente laboral"}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-11 rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 sm:h-12"
-                      onClick={() =>
-                        verdictPanelRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        })
-                      }
-                    >
-                      Ver resultado completo
-                    </Button>
                   </div>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Primero mira tu veredicto y el siguiente paso. Si después quieres
-                  seguir subiendo documentos, el bloque de carga queda justo debajo.
+                <p className="mt-2 text-[11px] leading-4 text-slate-500 sm:mt-3 sm:text-xs sm:leading-5">
+                  Primero mira el veredicto y el siguiente paso.
                 </p>
               </div>
             ) : null}
 
-            <div className="rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6">
-              <div className="grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start">
+            <div className={shouldCompactPostUploadExperience ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
+              {shouldCompactPostUploadExperience ? (
+                <details className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 shadow-sm sm:hidden">
+                  <summary className="flex list-none items-center justify-between gap-3 text-left">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+                        Opcional después del veredicto
+                      </p>
+                      <p className="mt-1 text-base font-semibold tracking-[-0.03em] text-slate-950">
+                        Subir otro documento cuando lo necesites
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-900">
+                      Opcional
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">
+                    Tu resultado principal ya quedó arriba. Abre este bloque solo si quieres fortalecer tu expediente con otra pieza útil.
+                  </p>
+                  {selectedRecommendedTargetType &&
+                  effectiveRecommendedTarget ? (
+                    <div className="mt-3 rounded-[1rem] border border-sky-100 bg-sky-50 px-3 py-2 text-[13px] leading-5 text-sky-950">
+                      Hoy conviene empezar por <strong>{effectiveRecommendedTarget.label.toLowerCase()}</strong>.
+                    </div>
+                  ) : null}
+                  <div className="mt-4 grid gap-2.5">
+                    <Button
+                      className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900"
+                      onClick={() => setUploadSourceOpen(true)}
+                    >
+                      {selectedFile ? "Cambiar documento" : "Subir otro documento"}
+                    </Button>
+                    <p className="text-xs leading-5 text-slate-500">
+                      Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil.
+                    </p>
+                  </div>
+                </details>
+              ) : null}
+              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience ? "hidden sm:grid" : ""}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
@@ -6484,7 +6533,7 @@ export default function Auditar() {
             </div>
 
             <div
-              className={`hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6 ${shouldCompactPostUploadExperience ? "border-slate-100 bg-slate-50/70" : ""}`}
+              className={shouldCompactPostUploadExperience ? "hidden" : "hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -7136,7 +7185,7 @@ export default function Auditar() {
               </p>
             </div>
 
-            <div className="motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className={shouldCompactPostUploadExperience ? "hidden" : "motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -8762,7 +8811,7 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className={shouldCompactPostUploadExperience ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Tu último documento
               </p>
@@ -8806,7 +8855,7 @@ export default function Auditar() {
                 )
               ) : (
                 <div className="mt-4 space-y-4">
-                  {showResultReveal ? (
+                  {showResultReveal && !shouldCompactPostUploadExperience ? (
                     <div
                       data-testid="auditar-result-reveal"
                       className="overflow-hidden rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.98),_rgba(255,255,255,0.98))] p-4 shadow-sm transition-all duration-500 ease-out"
@@ -8990,10 +9039,29 @@ export default function Auditar() {
                           <p className="mt-3 text-xs leading-5 text-slate-500">
                             Los detalles completos quedan abajo, solo para cuando quieras profundizar.
                           </p>
+
+                          {shouldCompactPostUploadExperience ? (
+                            <div className="mt-3 rounded-[0.95rem] border border-slate-200 bg-white px-3 py-3 sm:hidden">
+                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                Mi archivo digital
+                              </p>
+                              <p className="mt-1 text-sm leading-5 text-slate-700">
+                                Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.
+                              </p>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="mt-3 h-10 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                onClick={() => scrollToDigitalArchive("result_panel")}
+                              >
+                                Ver todo mi archivo
+                              </Button>
+                            </div>
+                          ) : null}
                         </div>
                       </div>
 
-                      <div className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:p-5">
+                      <div className={shouldCompactPostUploadExperience ? "hidden rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:block sm:p-5" : "rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:p-5"}>
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
@@ -9778,12 +9846,13 @@ export default function Auditar() {
                     </div>
                   ) : null}
               </details>
+
             </div>
           )}
           </div>
 
           {(timelineEntries.length > 0 || documents.length > 0) ? (
-            <details className="group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <details className={shouldCompactPostUploadExperience ? "hidden" : "group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -10381,7 +10450,7 @@ export default function Auditar() {
           ) : null}
         </section>
 
-          <aside className="hidden space-y-6 xl:block">
+          <aside className={shouldCompactPostUploadExperience ? "hidden" : "hidden space-y-6 xl:block"}>
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Expediente laboral seleccionado
@@ -11518,7 +11587,7 @@ export default function Auditar() {
         </DrawerContent>
       </Drawer>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden">
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
           {shouldShowInlineLegalConsent ? (
             <div className="mb-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-3.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">

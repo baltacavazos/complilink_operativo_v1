@@ -1296,3 +1296,16 @@
 - [x] Reforzar aún más la dominancia del CTA principal en post-subida y bajar el peso de acciones secundarias en móvil y desktop
 - [x] Validar con Vitest que la simplificación post-subida conserva el flujo crítico y las expectativas de copy principales
 - [x] Recapturar la versión implementada y volver a pedir calificación a ChatGPT, Grok y Gemini para comparar si la nota subió
+- [ ] Iteración autónoma hacia 9/10: reducir drásticamente la altura del hero post-subida en móvil para que el veredicto aparezca antes
+- [ ] Iteración autónoma hacia 9/10: retirar o contextualizar la barra fija inferior una vez que ya existe veredicto post-subida
+- [x] Iteración autónoma hacia 9/10: ocultar o reubicar el bloque de modo de prueba fuera del primer viewport del harness post-subida
+- [x] Iteración autónoma hacia 9/10: simplificar aún más el lenguaje y las acciones visibles del primer scroll post-subida en móvil
+- [x] Iteración autónoma hacia 9/10: volver a auditar con ChatGPT, Grok y Gemini después de cada ronda relevante hasta alcanzar consenso mínimo de 9/10 o identificar un límite claro
+- [x] Ronda 5 hacia 9/10: reducir de forma drástica el branding dentro del hero móvil post-subida para que el veredicto y el CTA principal entren antes en viewport
+- [x] Ronda 5 hacia 9/10: ocultar o mover el banner de modo de prueba fuera del arranque visible del flujo post-subida
+- [x] Ronda 5 hacia 9/10: separar mejor el bloque de resultado principal del bloque para subir otro documento para evitar redundancia inmediata
+- [x] Ronda 5 hacia 9/10: volver a capturar y reauditar con ChatGPT, Grok y Gemini después de la nueva simplificación móvil
+- [x] Ronda 6 hacia 9/10: colapsar o sacar del flujo principal los paneles y tablas que aparecen demasiado pronto después del veredicto post-subida
+- [x] Ronda 6 hacia 9/10: mover la acción de subir otro documento más abajo o dentro de un detalle secundario para evitar distracción temprana
+- [x] Ronda 6 hacia 9/10: simplificar todavía más el lenguaje visible del primer scroll post-subida con etiquetas más cortas y menos texto técnico
+- [x] Ronda 6 hacia 9/10: recapturar y volver a auditar con ChatGPT, Grok y Gemini tras la simplificación radical por revelación progresiva

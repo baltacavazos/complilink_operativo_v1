@@ -132,11 +132,31 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("keeps the post-upload state lighter by surfacing a compact result summary before secondary modules", () => {
     expect(auditFlowSource).toContain("const shouldCompactPostUploadExperience =");
-    expect(auditFlowSource).toContain("Último resultado");
-    expect(auditFlowSource).toContain("Ver resultado completo");
+    expect(auditFlowSource).toContain("Resultado listo");
+    expect(auditFlowSource).toContain("lastUploadResultHeadline");
     expect(auditFlowSource).toContain("Subir otro documento");
     expect(auditFlowSource).toContain("condensedDossierTargets");
     expect(auditFlowSource).toContain("condensedPriorityUploadGuides");
-    expect(auditFlowSource).toContain("Los detalles completos quedan abajo");
+    expect(auditFlowSource).toContain("Tu último archivo ya fue incorporado.");
+    expect(auditFlowSource).toContain("Abajo tienes el veredicto y el siguiente paso.");
+    expect(auditFlowSource).toContain("Primero mira el veredicto y el siguiente paso.");
+  });
+
+  it("reduces mobile post-upload noise by hiding the harness from the first viewport and shrinking secondary surfaces", () => {
+    expect(auditFlowSource).toContain(
+      'className={shouldCompactPostUploadExperience\n              ? "hidden"',
+    );
+    expect(auditFlowSource).toContain(
+      'shouldCompactPostUploadExperience ? "hidden" : ""',
+    );
+    expect(auditFlowSource).toContain(
+      'shouldCompactPostUploadExperience ? "hidden rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:block sm:p-5"',
+    );
+    expect(auditFlowSource).toContain(
+      "Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.",
+    );
+    expect(auditFlowSource).not.toContain(
+      "Tu siguiente paso principal está justo abajo.",
+    );
   });
 });
