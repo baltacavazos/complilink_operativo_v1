@@ -1279,3 +1279,10 @@
 - [x] Post-V1 extra: hacer más visual el destino de retorno en /acceso con contexto humano además del texto actual.
 - [x] Post-V1 extra: reforzar la validación visible o técnica del bloqueo por expediente único para cubrir mejor la experiencia del usuario.
 - [x] Post-V1 extra: compactar también el segundo bloque móvil de Home para sostener un ritmo más ágil en celular.
+- [x] Auditoría UX post-subida: revisar por qué la interfaz después de subir un documento se siente confusa, cargada de textos y poco engaging.
+- [x] Auditoría UX post-subida: contrastar hallazgos de Grok, Gemini, ChatGPT y Manus sobre claridad visual, utilidad de la información y visibilidad de los siguientes pasos.
+- [x] Auditoría UX post-subida: producir un diagnóstico claro con prioridades de simplificación antes de proponer cambios de implementación.
+- [x] Simplificación post-subida: rediseñar la primera vista para mostrar solo resultado inmediato, hallazgos clave y un siguiente paso dominante.
+- [x] Simplificación post-subida: colapsar, degradar o mover fuera del primer viewport los módulos secundarios, explicativos o redundantes.
+- [x] Simplificación post-subida: reordenar la jerarquía visual para que la información útil sea visible y el flujo se sienta claro y engaging.
+- [x] Simplificación post-subida: validar con pruebas y revisión funcional que el rediseño conserve la lógica crítica del expediente.

@@ -8667,7 +8667,7 @@ export default function Auditar() {
                       </span>
                     </div>
 
-                    <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                    <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                       <div className="rounded-[1.25rem] border border-white/80 bg-white/92 p-4 shadow-sm sm:p-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                           Lo importante primero
@@ -8679,143 +8679,179 @@ export default function Auditar() {
                           {lastUploadResultLead}
                         </p>
 
-                        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              Documento
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-slate-950">
-                              {getSimpleDocumentTypeLabel(
-                                lastUpload.classification.documentType
-                              )}
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-slate-700">
-                              {uploadInsight?.contribution ??
-                                "Ya quedó integrado para darte una primera lectura útil dentro del expediente."}
-                            </p>
-                          </div>
-                          <div
-                            className={`rounded-[1rem] p-4 ${lastUploadVerdict.panelClasses}`}
+                        <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                            {getSimpleDocumentTypeLabel(
+                              lastUpload.classification.documentType
+                            )}
+                          </span>
+                          <span
+                            className={`rounded-full px-3 py-1 ${lastUploadVerdict.classes}`}
                           >
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              Estado
+                            {lastUploadVerdict.shortLabel}
+                          </span>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-800">
+                            Expediente actualizado
+                          </span>
+                        </div>
+
+                        <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50/80 p-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                                Lo más útil ahora
+                              </p>
+                              <p className="mt-2 text-sm leading-6 text-teal-950">
+                                Qué ya está claro, qué pide atención y qué te conviene hacer a continuación.
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
+                              Máximo 3 puntos
+                            </span>
+                          </div>
+
+                          <div className="mt-3 space-y-2">
+                            {(visibleSimpleExplanation.length
+                              ? visibleSimpleExplanation.slice(0, 3).map((item, index) => ({
+                                  id: `${item.label}-${index}`,
+                                  label: item.label,
+                                  summary:
+                                    warmVisibleNamingCopy(item.summary) ?? item.summary,
+                                  tone: item.tone,
+                                }))
+                              : [
+                                  {
+                                    id: "result-contribution",
+                                    label: "Qué aporta",
+                                    summary:
+                                      uploadInsight?.contribution ??
+                                      "Ya quedó integrado para darte una primera lectura útil dentro del expediente.",
+                                    tone: "support" as const,
+                                  },
+                                  {
+                                    id: "result-next-step",
+                                    label: "Haz esto ahora",
+                                    summary: lastUploadNextStepSummary,
+                                    tone: "attention" as const,
+                                  },
+                                ]).map(item => (
+                              <div
+                                key={item.id}
+                                className={`rounded-[0.95rem] border px-3 py-3 ${
+                                  item.tone === "attention"
+                                    ? "border-amber-200 bg-white text-amber-950"
+                                    : item.tone === "support"
+                                      ? "border-emerald-200 bg-white text-emerald-950"
+                                      : "border-cyan-200 bg-white text-cyan-950"
+                                }`}
+                              >
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                  {item.label}
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-slate-900">
+                                  {item.summary}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex items-start gap-3">
+                            <Sparkles
+                              className="mt-1 h-5 w-5 shrink-0 text-teal-700"
+                              strokeWidth={1.8}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+                                Acción principal
+                              </p>
+                              <p className="mt-2 text-lg font-semibold text-slate-950">
+                                {primaryLastUploadShortcut
+                                  ? primaryLastUploadShortcut.label
+                                  : "Abrir asistente laboral"}
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-slate-700">
+                                {primaryLastUploadShortcut
+                                  ? primaryLastUploadShortcut.description
+                                  : "Si quieres profundizar, aquí te explicamos este resultado y te ayudamos a elegir el siguiente documento útil."}
+                              </p>
+                            </div>
+                          </div>
+
+                          <Button
+                            data-testid="auditar-primary-verdict-cta"
+                            type="button"
+                            className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
+                            onClick={handlePrimaryVerdictCta}
+                          >
+                            {primaryLastUploadShortcut
+                              ? primaryLastUploadShortcut.label
+                              : "Abrir asistente laboral"}
+                            <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
+                          </Button>
+
+                          <p className="mt-3 text-xs leading-5 text-slate-500">
+                            Si quieres profundizar, abajo puedes abrir solo los detalles completos.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:p-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                              Mi archivo digital
                             </p>
-                            <p className="mt-2 text-sm font-semibold text-slate-950">
-                              {lastUploadVerdict.shortLabel}
-                            </p>
+                            <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                              Tu expediente ya quedó guardado y lo puedes abrir cuando quieras
+                            </h3>
                             <p className="mt-2 text-sm leading-6 text-slate-700">
-                              {lastUploadVerdict.description}
+                              Tu último archivo ya está dentro del expediente. Si quieres seguir, puedes abrirlo o saltar al archivo completo.
                             </p>
                           </div>
-                          <div className="rounded-[1rem] border border-amber-100 bg-amber-50 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
-                              Haz esto ahora
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-amber-950">
-                              {lastUploadNextStepSummary}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-[1.25rem] border border-teal-100 bg-teal-50 p-4 shadow-sm sm:p-5">
-                        <div className="flex items-start gap-3">
-                          <Sparkles
-                            className="mt-1 h-5 w-5 shrink-0 text-teal-700"
-                            strokeWidth={1.8}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-                              Acción principal
-                            </p>
-                            <p className="mt-2 text-lg font-semibold text-teal-950">
-                              {primaryLastUploadShortcut
-                                ? primaryLastUploadShortcut.label
-                                : "Abrir asistente laboral"}
-                            </p>
-                            <p className="mt-2 text-sm leading-7 text-teal-900">
-                              {primaryLastUploadShortcut
-                                ? primaryLastUploadShortcut.description
-                                : "Si quieres profundizar, aquí te explicamos este resultado y te ayudamos a elegir el siguiente documento útil."}
-                            </p>
+                          <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+                            {documents.length} documento
+                            {documents.length === 1 ? "" : "s"}
                           </div>
                         </div>
 
-                        <Button
-                          data-testid="auditar-primary-verdict-cta"
-                          type="button"
-                          className="mt-4 h-12 w-full justify-between rounded-full bg-slate-950 text-white hover:bg-slate-900"
-                          onClick={handlePrimaryVerdictCta}
-                        >
-                          {primaryLastUploadShortcut
-                            ? primaryLastUploadShortcut.label
-                            : "Abrir asistente laboral"}
-                          <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
-                        </Button>
+                        <div className="mt-4 rounded-[1rem] border border-white/80 bg-white/90 p-3 text-sm leading-6 text-slate-700 shadow-sm">
+                          <p className="font-semibold text-slate-950">
+                            Último archivo guardado
+                          </p>
+                          <p className="mt-1 break-words text-slate-700">
+                            {latestArchiveDocument?.originalName ??
+                              "Tu expediente ya tiene documentos disponibles."}
+                          </p>
+                        </div>
 
-                        <p className="mt-3 text-xs leading-5 text-teal-900/80">
-                          Debajo puedes abrir el detalle completo solo si quieres ver cómo llegamos a este resultado.
-                        </p>
+                        <div className="mt-4 grid gap-3">
+                          <Button
+                            type="button"
+                            className="h-11 rounded-full bg-slate-950 px-5 text-white hover:bg-slate-900"
+                            disabled={Boolean(openingDocumentId)}
+                            onClick={() => void handleDigitalArchiveQuickAction()}
+                          >
+                            <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                            {openingDocumentId === latestArchiveDocument?.documentId
+                              ? "Abriendo documento..."
+                              : latestArchiveDocument
+                                ? "Ver último documento"
+                                : "Abrir archivo digital"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                            onClick={() => scrollToDigitalArchive("result_panel")}
+                          >
+                            Ver todo mi archivo
+                          </Button>
+                        </div>
                       </div>
-                  </div>
+                    </div>
                 </div>
-
-                {documents.length > 0 ? (
-                  <div className="rounded-[1.35rem] border border-sky-100 bg-[linear-gradient(135deg,_rgba(239,246,255,0.96),_rgba(255,255,255,0.98))] p-4 shadow-sm sm:p-5">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
-                          Mi archivo digital
-                        </p>
-                        <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
-                          Tu expediente ya quedó guardado y lo puedes abrir cuando quieras
-                        </h3>
-                        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">
-                          Cada documento que confirmas se queda ordenado aquí.
-                          Puedes abrir el último de inmediato o bajar a ver todo tu
-                          archivo digital sin perder el hilo de esta revisión.
-                        </p>
-                      </div>
-                      <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-                        {documents.length} documento
-                        {documents.length === 1 ? "" : "s"}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-                      <div className="rounded-[1rem] border border-white/80 bg-white/90 p-3 text-sm leading-6 text-slate-700 shadow-sm">
-                        <p className="font-semibold text-slate-950">
-                          Último archivo guardado
-                        </p>
-                        <p className="mt-1 break-words text-slate-700">
-                          {latestArchiveDocument?.originalName ??
-                            "Tu expediente ya tiene documentos disponibles."}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        className="h-11 rounded-full bg-slate-950 px-5 text-white hover:bg-slate-900"
-                        disabled={Boolean(openingDocumentId)}
-                        onClick={() => void handleDigitalArchiveQuickAction()}
-                      >
-                        <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                        {openingDocumentId === latestArchiveDocument?.documentId
-                          ? "Abriendo documento..."
-                          : latestArchiveDocument
-                            ? "Ver último documento"
-                            : "Abrir archivo digital"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-11 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                        onClick={() => scrollToDigitalArchive("result_panel")}
-                      >
-                        Ver todo mi archivo
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
 
                   <details className="group rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
 
@@ -9024,13 +9060,9 @@ export default function Auditar() {
                           <span
                             className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}
                           >
-                            {
-                              getHeliosRiskCopy(lastHeliosOpinion.riskLevel)
-                                .label
-                            }
+                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
                           </span>
-                          {typeof lastHeliosOpinion.confidenceScore ===
-                          "number" ? (
+                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                               Confianza {lastHeliosOpinion.confidenceScore}%
                             </span>
@@ -9041,10 +9073,15 @@ export default function Auditar() {
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr,0.95fr]">
+                      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                         <div className="space-y-4">
-                          <div className={`rounded-[1rem] border p-4 ${lastUploadSeverityNarrative.panelClasses}`} data-testid="auditar-severity-summary">
-                            <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${lastUploadSeverityNarrative.eyebrowClasses}`}>
+                          <div
+                            className={`rounded-[1rem] border p-4 ${lastUploadSeverityNarrative.panelClasses}`}
+                            data-testid="auditar-severity-summary"
+                          >
+                            <p
+                              className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${lastUploadSeverityNarrative.eyebrowClasses}`}
+                            >
                               {lastUploadSeverityNarrative.eyebrow}
                             </p>
                             <p className="mt-2 text-base font-semibold text-slate-950">
@@ -9055,282 +9092,111 @@ export default function Auditar() {
                             </p>
                           </div>
 
-                          {visibleSimpleExplanation.length ? (
-                            <div className="rounded-[1rem] border border-cyan-100 bg-cyan-50/70 p-4" data-testid="auditar-simple-explanation">
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <p className="text-sm font-semibold text-cyan-950">
-                                      En simple
-                                    </p>
-                                    <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-800" data-testid="auditar-explanation-variant">
-                                      {explanationVariantCopy.badge}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-sm leading-6 text-cyan-900">
-                                    {explanationVariantCopy.intro}
+                          <div
+                            className="rounded-[1rem] border border-cyan-100 bg-cyan-50/70 p-4"
+                            data-testid="auditar-simple-explanation"
+                          >
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className="text-sm font-semibold text-cyan-950">
+                                    En simple
                                   </p>
-                                </div>
-                                {visibleSignalsChecked.length ? (
-                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800">
-                                    {visibleSignalsChecked.length} señales revisadas
+                                  <span
+                                    className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-800"
+                                    data-testid="auditar-explanation-variant"
+                                  >
+                                    {explanationVariantCopy.badge}
                                   </span>
-                                ) : null}
-                              </div>
-
-                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                {visibleSimpleExplanation.map(
-                                  (item, index) => (
-                                    <div
-                                      key={`${item.label}-${index}`}
-                                      className={`rounded-[0.95rem] border p-3 ${
-                                        item.tone === "attention"
-                                          ? "border-amber-200 bg-amber-50"
-                                          : item.tone === "support"
-                                            ? "border-emerald-200 bg-white"
-                                            : "border-cyan-200 bg-white"
-                                      }`}
-                                    >
-                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                        {item.label}
-                                      </p>
-                                      <p className="mt-2 text-sm leading-6 text-slate-900">
-                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
-                                      </p>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-
-                              {visibleSignalsChecked.length ? (
-                                <div className="mt-3 flex flex-wrap gap-2" data-testid="auditar-signals-checked">
-                                  {visibleSignalsChecked.map(item => (
-                                    <span
-                                      key={item}
-                                      className="rounded-full border border-cyan-200 bg-white px-3 py-1 text-[11px] font-semibold text-cyan-900"
-                                    >
-                                      {warmVisibleNamingCopy(item) ?? item}
-                                    </span>
-                                  ))}
                                 </div>
+                                <p className="mt-1 text-sm leading-6 text-cyan-900">
+                                  {explanationVariantCopy.intro}
+                                </p>
+                              </div>
+                              {visibleSignalsChecked.length ? (
+                                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800">
+                                  {visibleSignalsChecked.length} señales revisadas
+                                </span>
                               ) : null}
                             </div>
-                          ) : null}
 
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4" data-testid="auditar-discrepancies-panel">
-                              <p className="text-sm font-semibold text-amber-950">
-                                Posibles discrepancias
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-amber-900">
-                                Aquí separamos lo que sí podría no cuadrar de lo que todavía solo hace falta confirmar.
-                              </p>
-                              {visibleDiscrepancyItems.length ? (
-                                <div className="mt-3 space-y-2">
-                                  {visibleDiscrepancyItems.map((item, index) => (
-                                    <div key={`${item.label}-${index}`} className="rounded-[0.95rem] border border-amber-200 bg-white/80 p-3">
-                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800">
-                                        {item.label}
-                                      </p>
-                                      <p className="mt-2 text-sm leading-6 text-slate-900">
-                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="mt-3 text-sm leading-6 text-amber-950">
-                                  Por ahora no vemos una discrepancia fuerte solo con este archivo.
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4" data-testid="auditar-pending-panel">
-                              <p className="text-sm font-semibold text-slate-950">
-                                Lo que todavía falta confirmar
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-700">
-                                Esto no significa problema. Solo indica lo que ayudaría a cerrar mejor la lectura.
-                              </p>
-                              {visiblePendingItems.length ? (
-                                <div className="mt-3 space-y-2">
-                                  {visiblePendingItems.map((item, index) => (
-                                    <div key={`${item.label}-${index}`} className="rounded-[0.95rem] border border-slate-200 bg-white p-3">
-                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                        {item.label}
-                                      </p>
-                                      <p className="mt-2 text-sm leading-6 text-slate-900">
-                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="mt-3 text-sm leading-6 text-slate-700">
-                                  Con lo disponible, Helios ya agotó esta parte y por ahora no dejó pendientes visibles.
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
-                            <p className="text-sm font-semibold text-slate-950">
-                              Lo más importante que encontramos
-                            </p>
-                            {lastHeliosOpinion.resultCard?.keyFindings
-                              ?.length ? (
-                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                {lastHeliosOpinion.resultCard.keyFindings.map(
-                                  (item, index) => (
-                                    <div
-                                      key={`${item.label}-${item.value}-${index}`}
-                                      className={`rounded-[0.95rem] border p-3 ${
-                                        item.tone === "attention"
-                                          ? "border-amber-200 bg-amber-50"
-                                          : item.tone === "support"
-                                            ? "border-emerald-200 bg-emerald-50"
-                                            : "border-slate-200 bg-white"
-                                      }`}
-                                    >
-                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                        {item.label}
-                                      </p>
-                                      <p className="mt-2 text-sm font-medium leading-6 text-slate-900">
-                                        {warmVisibleNamingCopy(item.value) ??
-                                          item.value}
-                                      </p>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            ) : (
-                              <p className="mt-3 text-sm leading-7 text-slate-700">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.summary
-                                ) ??
-                                  "Este documento ya aporta una primera lectura útil a tu expediente."}
-                              </p>
-                            )}
-                          </div>
-
-                          {comparisonHighlightCards.length === 2 ? (
-                            <div className="rounded-[1rem] border border-violet-100 bg-violet-50 p-4">
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
-                                  <p className="text-sm font-semibold text-violet-950">
-                                    Compara hallazgos entre documentos
+                            <div className="mt-3 space-y-2">
+                              {(visibleSimpleExplanation.length
+                                ? visibleSimpleExplanation.slice(0, 3)
+                                : [
+                                    {
+                                      label: "Qué aporta",
+                                      summary:
+                                        warmVisibleNamingCopy(
+                                          lastHeliosOpinion.summary
+                                        ) ??
+                                        "Este documento ya aporta una primera lectura útil a tu expediente.",
+                                      tone: "support" as const,
+                                    },
+                                  ]).map((item, index) => (
+                                <div
+                                  key={`${item.label}-${index}`}
+                                  className={`rounded-[0.95rem] border p-3 ${
+                                    item.tone === "attention"
+                                      ? "border-amber-200 bg-amber-50"
+                                      : item.tone === "support"
+                                        ? "border-emerald-200 bg-white"
+                                        : "border-cyan-200 bg-white"
+                                  }`}
+                                >
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                    {item.label}
                                   </p>
-                                  <p className="mt-1 text-sm leading-7 text-violet-900">
-                                    Así se ve lo más importante del documento
-                                    actual frente a otro archivo del mismo
-                                    expediente, sin salir de esta vista.
+                                  <p className="mt-2 text-sm leading-6 text-slate-900">
+                                    {warmVisibleNamingCopy(item.summary) ?? item.summary}
                                   </p>
                                 </div>
-                                {comparisonSuggestedLabel ? (
-                                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800">
-                                    {comparisonSuggestedLabel}
-                                  </span>
-                                ) : null}
-                              </div>
+                              ))}
+                            </div>
 
-                              <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                                {comparisonHighlightCards.map(card => (
-                                  <article
-                                    key={card.id}
-                                    className="rounded-[1rem] border border-white/80 bg-white p-4 shadow-sm"
+                            {visibleSignalsChecked.length ? (
+                              <div
+                                className="mt-3 flex flex-wrap gap-2"
+                                data-testid="auditar-signals-checked"
+                              >
+                                {visibleSignalsChecked.slice(0, 6).map(item => (
+                                  <span
+                                    key={item}
+                                    className="rounded-full border border-cyan-200 bg-white px-3 py-1 text-[11px] font-semibold text-cyan-900"
                                   >
-                                    <p className="text-sm font-semibold text-slate-950">
-                                      {card.title}
-                                    </p>
-                                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">
-                                      {card.subtitle}
-                                    </p>
-                                    <p className="mt-3 text-sm leading-6 text-slate-700">
-                                      {card.summary}
-                                    </p>
-                                    {card.findings.length ? (
-                                      <div className="mt-3 space-y-2">
-                                        {card.findings.map((item, index) => (
-                                          <div
-                                            key={`${card.id}-${item.label}-${index}`}
-                                            className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3"
-                                          >
-                                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                              {item.label}
-                                            </p>
-                                            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
-                                              {warmVisibleNamingCopy(
-                                                item.value
-                                              ) ?? item.value}
-                                            </p>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <p className="mt-3 text-sm leading-6 text-slate-600">
-                                        Todavía no hay hallazgos comparables
-                                        visibles para este documento.
-                                      </p>
-                                    )}
-                                  </article>
+                                    {warmVisibleNamingCopy(item) ?? item}
+                                  </span>
                                 ))}
                               </div>
-                            </div>
-                          ) : null}
+                            ) : null}
+                          </div>
 
-                          <div className="grid gap-4 lg:grid-cols-2">
-                            <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
-                              <p className="text-sm font-semibold text-teal-950">
+                          <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
+                            <p className="text-sm font-semibold text-teal-950">
+                              {warmVisibleNamingCopy(
+                                lastHeliosOpinion.resultCard?.nextStepLabel
+                              ) ?? "Siguiente paso sugerido"}
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-teal-900">
+                              {warmVisibleNamingCopy(
+                                lastHeliosOpinion.resultCard?.nextStepSummary ??
+                                  lastHeliosOpinion.recommendedNextStep
+                              ) ??
+                                "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
+                            </p>
+                            <div className="mt-3 rounded-[0.95rem] border border-emerald-200 bg-white p-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
                                 {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard?.nextStepLabel
-                                ) ?? "Siguiente paso sugerido"}
-                              </p>
-                              <p className="mt-2 text-sm leading-7 text-teal-900">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard
-                                    ?.nextStepSummary ??
-                                    lastHeliosOpinion.recommendedNextStep
-                                ) ??
-                                  "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
-                              </p>
-                            </div>
-
-                            <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4">
-                              <p className="text-sm font-semibold text-emerald-950">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard
-                                    ?.dossierUpdateLabel
+                                  lastHeliosOpinion.resultCard?.dossierUpdateLabel
                                 ) ?? "Tu expediente ya se actualizó"}
                               </p>
-                              <p className="mt-2 text-sm leading-7 text-emerald-900">
+                              <p className="mt-1 text-sm leading-6 text-slate-800">
                                 {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard
-                                    ?.dossierUpdateSummary
+                                  lastHeliosOpinion.resultCard?.dossierUpdateSummary
                                 ) ??
                                   "Este documento ya quedó guardado dentro de tu expediente laboral para futuras comparaciones y respuestas."}
                               </p>
                             </div>
-                          </div>
-
-                          <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
-                            <p className="text-sm font-semibold text-amber-950">
-                              Qué sigue siendo preliminar
-                            </p>
-                            {lastHeliosOpinion.uncertainties?.length ? (
-                              <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
-                                {lastHeliosOpinion.uncertainties.map(item => (
-                                  <p key={item}>
-                                    • {warmVisibleNamingCopy(item)}
-                                  </p>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="mt-2 text-sm leading-7 text-amber-900">
-                                Esta lectura todavía conviene contrastarla con
-                                más hechos y documentos antes de cerrar
-                                conclusiones.
-                              </p>
-                            )}
                           </div>
                         </div>
 
@@ -9354,8 +9220,7 @@ export default function Auditar() {
                               />
                             </div>
 
-                            {lastHeliosOpinion.resultCard?.suggestedQuestions
-                              ?.length ||
+                            {lastHeliosOpinion.resultCard?.suggestedQuestions?.length ||
                             heliosCopilotSuggestedPrompts.length ? (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {(
@@ -9384,42 +9249,321 @@ export default function Auditar() {
                               onClick={() => openHeliosCopilot()}
                             >
                               Abrir asistente laboral
-                              <ArrowRight
-                                className="h-4 w-4"
-                                strokeWidth={1.9}
-                              />
+                              <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                             </Button>
                           </div>
 
+                          <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                            <p className="text-sm font-semibold text-amber-950">
+                              Qué sigue siendo preliminar
+                            </p>
+                            {lastHeliosOpinion.uncertainties?.length ? (
+                              <div className="mt-2 space-y-2 text-sm leading-6 text-amber-950">
+                                {lastHeliosOpinion.uncertainties.slice(0, 3).map(item => (
+                                  <p key={item}>• {warmVisibleNamingCopy(item)}</p>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="mt-2 text-sm leading-7 text-amber-900">
+                                Esta lectura todavía conviene contrastarla con más hechos y documentos antes de cerrar conclusiones.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <details className="group mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-950">
+                              Ver cómo se obtuvo este resultado
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              Aquí dejamos solo los detalles, comparaciones y notas que sirven para profundizar sin saturar la vista principal.
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                            Abrir detalle
+                          </span>
+                        </summary>
+
+                        <div className="mt-4 space-y-4">
+                          {lastUpload?.engineDispatch?.status === "sent" ? (
+                            <div className="rounded-[1rem] border border-sky-200 bg-sky-50 p-4 text-sm leading-7 text-sky-950">
+                              <div className="flex items-start gap-3">
+                                <RefreshCw
+                                  className="mt-1 h-5 w-5 shrink-0 text-sky-700"
+                                  strokeWidth={1.8}
+                                />
+                                <div>
+                                  <p className="font-semibold">
+                                    Seguimos esperando la respuesta automática
+                                  </p>
+                                  <p className="mt-1">
+                                    Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div
+                              className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4"
+                              data-testid="auditar-discrepancies-panel"
+                            >
+                              <p className="text-sm font-semibold text-amber-950">
+                                Posibles discrepancias
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-amber-900">
+                                Aquí separamos lo que sí podría no cuadrar de lo que todavía solo hace falta confirmar.
+                              </p>
+                              {visibleDiscrepancyItems.length ? (
+                                <div className="mt-3 space-y-2">
+                                  {visibleDiscrepancyItems.map((item, index) => (
+                                    <div
+                                      key={`${item.label}-${index}`}
+                                      className="rounded-[0.95rem] border border-amber-200 bg-white/80 p-3"
+                                    >
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="mt-3 text-sm leading-6 text-amber-950">
+                                  Por ahora no vemos una discrepancia fuerte solo con este archivo.
+                                </p>
+                              )}
+                            </div>
+
+                            <div
+                              className="rounded-[1rem] border border-slate-200 bg-white p-4"
+                              data-testid="auditar-pending-panel"
+                            >
+                              <p className="text-sm font-semibold text-slate-950">
+                                Lo que todavía falta confirmar
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-700">
+                                Esto no significa problema. Solo indica lo que ayudaría a cerrar mejor la lectura.
+                              </p>
+                              {visiblePendingItems.length ? (
+                                <div className="mt-3 space-y-2">
+                                  {visiblePendingItems.map((item, index) => (
+                                    <div
+                                      key={`${item.label}-${index}`}
+                                      className="rounded-[0.95rem] border border-slate-200 bg-slate-50 p-3"
+                                    >
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                        {item.label}
+                                      </p>
+                                      <p className="mt-2 text-sm leading-6 text-slate-900">
+                                        {warmVisibleNamingCopy(item.summary) ?? item.summary}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="mt-3 text-sm leading-6 text-slate-700">
+                                  Con lo disponible, Helios ya agotó esta parte y por ahora no dejó pendientes visibles.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {comparisonHighlightCards.length === 2 ? (
+                            <details className="group rounded-[1rem] border border-violet-100 bg-violet-50 p-4">
+                              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold text-violet-950">
+                                    Compara hallazgos entre documentos
+                                  </p>
+                                  <p className="mt-1 text-sm leading-6 text-violet-900">
+                                    Abre este bloque solo si quieres contrastar este archivo con otro del expediente.
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800">
+                                  {comparisonSuggestedLabel ?? "Abrir comparación"}
+                                </span>
+                              </summary>
+
+                              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                                {comparisonHighlightCards.map(card => (
+                                  <article
+                                    key={card.id}
+                                    className="rounded-[1rem] border border-white/80 bg-white p-4 shadow-sm"
+                                  >
+                                    <p className="text-sm font-semibold text-slate-950">
+                                      {card.title}
+                                    </p>
+                                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700">
+                                      {card.subtitle}
+                                    </p>
+                                    <p className="mt-3 text-sm leading-6 text-slate-700">
+                                      {card.summary}
+                                    </p>
+                                    {card.findings.length ? (
+                                      <div className="mt-3 space-y-2">
+                                        {card.findings.map((item, index) => (
+                                          <div
+                                            key={`${card.id}-${item.label}-${index}`}
+                                            className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3"
+                                          >
+                                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                              {item.label}
+                                            </p>
+                                            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
+                                              {warmVisibleNamingCopy(item.value) ?? item.value}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                                        Todavía no hay hallazgos comparables visibles para este documento.
+                                      </p>
+                                    )}
+                                  </article>
+                                ))}
+                              </div>
+                            </details>
+                          ) : null}
+
+                          <div className="grid gap-4 lg:grid-cols-2">
+                            <div className="rounded-[1rem] border border-emerald-100 bg-emerald-50 p-4">
+                              <div className="flex items-center justify-between gap-4">
+                                <p className="font-semibold text-emerald-950">
+                                  Datos claros
+                                </p>
+                                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
+                                  {confirmedEntries.length} dato
+                                  {confirmedEntries.length === 1 ? "" : "s"}
+                                </span>
+                              </div>
+
+                              {confirmedEntries.length === 0 ? (
+                                <p className="mt-3 text-sm leading-7 text-emerald-900">
+                                  Aquí aparecerá lo que ya se ve con claridad en este documento.
+                                </p>
+                              ) : (
+                                <div className="mt-4 space-y-3">
+                                  {confirmedEntries.map(([key, value]) => (
+                                    <div key={key} className="rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                        {getAnalysisFieldLabel(key)}
+                                      </p>
+                                      <p className="mt-1 text-sm leading-6 text-slate-800">
+                                        {formatAnalysisValue(key, value)}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                              <div className="flex items-center justify-between gap-4">
+                                <p className="font-semibold text-amber-950">
+                                  Datos a revisar
+                                </p>
+                                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                                  {estimatedEntries.length} dato
+                                  {estimatedEntries.length === 1 ? "" : "s"}
+                                </span>
+                              </div>
+
+                              <p className="mt-3 text-sm leading-7 text-amber-900">
+                                Tómalos como orientación inicial. Pueden ayudar, pero todavía conviene confirmarlos con más contexto.
+                              </p>
+
+                              <div className="mt-4 rounded-[1rem] border border-amber-200 bg-white p-3">
+                                <button
+                                  type="button"
+                                  className="flex w-full items-start gap-3 text-left"
+                                  onClick={() =>
+                                    setEstimatedAcknowledged(value => !value)
+                                  }
+                                >
+                                  <CheckCircle2
+                                    className={`mt-0.5 h-5 w-5 shrink-0 ${estimatedAcknowledged ? "text-emerald-600" : "text-amber-600"}`}
+                                    strokeWidth={1.8}
+                                  />
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-950">
+                                      Entiendo que esto sigue en revisión
+                                    </p>
+                                    <p className="mt-1 text-xs leading-6 text-slate-600">
+                                      {estimatedAcknowledged
+                                        ? "Perfecto. Esto queda como orientación útil, no como cierre definitivo."
+                                        : "Márcalo cuando tengas claro que esta parte sigue siendo orientación inicial."}
+                                    </p>
+                                  </div>
+                                </button>
+                              </div>
+
+                              {estimatedEntries.length === 0 ? (
+                                <p className="mt-3 text-sm leading-7 text-amber-900">
+                                  Por ahora no hay estimaciones adicionales que mostrar.
+                                </p>
+                              ) : (
+                                <div className="mt-4 space-y-3">
+                                  {estimatedEntries.map(([key, value]) => (
+                                    <div key={key} className="rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                        {getAnalysisFieldLabel(key)}
+                                      </p>
+                                      <p className="mt-1 text-sm leading-6 text-slate-800">
+                                        {formatAnalysisValue(key, value)}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
                           {lastHeliosOpinion.legalOpinion ? (
-                            <div className="rounded-[1rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                            <div className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                               <p className="text-sm font-semibold text-slate-950">
                                 Lectura ampliada
                               </p>
                               <p className="mt-2">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.legalOpinion
-                                )}
+                                {warmVisibleNamingCopy(lastHeliosOpinion.legalOpinion)}
                               </p>
                             </div>
                           ) : null}
+
+                          {guardrails.length > 0 ? (
+                            <div className="rounded-[1rem] border border-slate-200 bg-white p-4">
+                              <p className="font-semibold text-slate-950">
+                                Antes de tomar decisiones
+                              </p>
+                              <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
+                                {guardrails.map(item => (
+                                  <p key={item}>• {item}</p>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                            <span>
+                              Generado: {formatDate(lastHeliosOpinion.generatedAt)}
+                            </span>
+                            {lastHeliosOpinion.disclaimer ? (
+                              <span className="max-w-3xl leading-6">
+                                {lastHeliosOpinion.disclaimer}
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                        <span>
-                          Generado: {formatDate(lastHeliosOpinion.generatedAt)}
-                        </span>
-                        {lastHeliosOpinion.disclaimer ? (
-                          <span className="max-w-3xl leading-6">
-                            {lastHeliosOpinion.disclaimer}
-                          </span>
-                        ) : null}
-                      </div>
+                      </details>
                     </div>
-                  ) : null}
-
-                  {lastUpload?.engineDispatch?.status === "sent" ? (
+                  ) : lastUpload?.engineDispatch?.status === "sent" ? (
                     <div className="rounded-[1.3rem] border border-sky-200 bg-sky-50 p-4 text-sm leading-7 text-sky-950">
                       <div className="flex items-start gap-3">
                         <RefreshCw
@@ -9431,126 +9575,9 @@ export default function Auditar() {
                             Seguimos esperando la respuesta automática
                           </p>
                           <p className="mt-1">
-                            Este documento ya entró a revisión automática. Aquí
-                            verás si la respuesta ya llegó, mientras sigue
-                            guardado y disponible dentro de tu expediente
-                            digital.
+                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-emerald-950">
-                          Datos claros
-                        </p>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
-                          {confirmedEntries.length} dato
-                          {confirmedEntries.length === 1 ? "" : "s"}
-                        </span>
-                      </div>
-
-                      {confirmedEntries.length === 0 ? (
-                        <p className="mt-3 text-sm leading-7 text-emerald-900">
-                          Aquí aparecerá lo que ya se ve con claridad en este
-                          documento.
-                        </p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {confirmedEntries.map(([key, value]) => (
-                            <div
-                              key={key}
-                              className="rounded-[1rem] bg-white p-3"
-                            >
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
-                                {getAnalysisFieldLabel(key)}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">
-                                {formatAnalysisValue(key, value)}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="rounded-[1.3rem] border border-amber-200 bg-amber-50 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-amber-950">
-                          Datos a revisar
-                        </p>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
-                          {estimatedEntries.length} dato
-                          {estimatedEntries.length === 1 ? "" : "s"}
-                        </span>
-                      </div>
-
-                      <p className="mt-3 text-sm leading-7 text-amber-900">
-                        Tómalos como orientación inicial. Pueden ayudar, pero
-                        todavía conviene confirmarlos con más contexto.
-                      </p>
-
-                      <div className="mt-4 rounded-[1rem] border border-amber-200 bg-white p-3">
-                        <button
-                          type="button"
-                          className="flex w-full items-start gap-3 text-left"
-                          onClick={() =>
-                            setEstimatedAcknowledged(value => !value)
-                          }
-                        >
-                          <CheckCircle2
-                            className={`mt-0.5 h-5 w-5 shrink-0 ${estimatedAcknowledged ? "text-emerald-600" : "text-amber-600"}`}
-                            strokeWidth={1.8}
-                          />
-                          <div>
-                            <p className="text-sm font-semibold text-slate-950">
-                              Entiendo que esto sigue en revisión
-                            </p>
-                            <p className="mt-1 text-xs leading-6 text-slate-600">
-                              {estimatedAcknowledged
-                                ? "Perfecto. Esto queda como orientación útil, no como cierre definitivo."
-                                : "Márcalo cuando tengas claro que esta parte sigue siendo orientación inicial."}
-                            </p>
-                          </div>
-                        </button>
-                      </div>
-
-                      {estimatedEntries.length === 0 ? (
-                        <p className="mt-3 text-sm leading-7 text-amber-900">
-                          Por ahora no hay estimaciones adicionales que mostrar.
-                        </p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {estimatedEntries.map(([key, value]) => (
-                            <div
-                              key={key}
-                              className="rounded-[1rem] bg-white p-3"
-                            >
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
-                                {getAnalysisFieldLabel(key)}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">
-                                {formatAnalysisValue(key, value)}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {guardrails.length > 0 ? (
-                    <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4">
-                      <p className="font-semibold text-slate-950">
-                        Antes de tomar decisiones
-                      </p>
-                      <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
-                        {guardrails.map(item => (
-                          <p key={item}>• {item}</p>
-                        ))}
                       </div>
                     </div>
                   ) : null}
