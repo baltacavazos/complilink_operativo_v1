@@ -81,6 +81,9 @@ describe("digital archive access", () => {
     );
     expect(auditarSource).toContain('id="mi-archivo-digital"');
     expect(auditarSource).toContain("Ver todo mi archivo");
+    expect(auditarSource).toContain(
+      "Ver resumen del expediente y documentos sugeridos",
+    );
   });
 
   it("añade apertura segura del documento y CTA clara por tarjeta", () => {

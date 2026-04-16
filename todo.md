@@ -1290,3 +1290,9 @@
 - [x] Simplificación post-subida: colapsar, degradar o mover fuera del primer viewport los módulos secundarios, explicativos o redundantes.
 - [x] Simplificación post-subida: reordenar la jerarquía visual para que la información útil sea visible y el flujo se sienta claro y engaging.
 - [x] Simplificación post-subida: validar con pruebas y revisión funcional que el rediseño conserve la lógica crítica del expediente.
+- [x] Repetir la revisión comparativa con ChatGPT, Grok y Gemini sobre la versión actualizada de la pantalla post-subida en /auditar para obtener la nueva calificación y detectar mejoras pendientes
+- [x] Reducir de nuevo la longitud visible post-subida en /auditar moviendo más módulos secundarios a detalles bajo demanda
+- [x] Eliminar o consolidar repeticiones del flujo de subida y del resultado post-subida que todavía compiten con el veredicto principal
+- [x] Reforzar aún más la dominancia del CTA principal en post-subida y bajar el peso de acciones secundarias en móvil y desktop
+- [x] Validar con Vitest que la simplificación post-subida conserva el flujo crítico y las expectativas de copy principales
+- [x] Recapturar la versión implementada y volver a pedir calificación a ChatGPT, Grok y Gemini para comparar si la nota subió

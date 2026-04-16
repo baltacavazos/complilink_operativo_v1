@@ -6540,6 +6540,115 @@ export default function Auditar() {
                 </div>
               </div>
 
+              {shouldCompactPostUploadExperience ? (
+                <details className="group mt-5 rounded-[1.35rem] border border-slate-200 bg-white p-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Ver resumen del expediente y documentos sugeridos
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        Dejamos aquí el progreso y las recomendaciones para que no compitan con tu resultado principal.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      Abrir detalle
+                    </span>
+                  </summary>
+
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                        <span>Claridad actual del expediente</span>
+                        <span>{socialSecurityCoveragePercent}%</span>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                          style={{ width: `${socialSecurityCoveragePercent}%` }}
+                        />
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        {socialSecurityLastCheckLabel}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {condensedDossierTargets.map(item => {
+                        const progress = dossierTypeProgress.find(
+                          entry => entry.type === item.type
+                        );
+                        const isSelectedRecommendation =
+                          item.type === selectedRecommendedTargetType;
+
+                        return (
+                          <article
+                            key={item.type}
+                            className={`rounded-[1.2rem] border p-4 ${
+                              isSelectedRecommendation
+                                ? "border-teal-200 bg-teal-50"
+                                : "border-slate-200 bg-white"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="font-semibold text-slate-900">
+                                {item.label}
+                              </p>
+                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                {progress?.percent ?? 0}%
+                              </span>
+                            </div>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">
+                              {progress?.supportingCopy ?? item.benefit}
+                            </p>
+                          </article>
+                        );
+                      })}
+                    </div>
+
+                    {condensedPriorityUploadGuides[0] ? (
+                      <article className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                              Documento sugerido
+                            </p>
+                            <p className="mt-2 font-semibold text-slate-950">
+                              {condensedPriorityUploadGuides[0].title}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
+                            {presentTypes.has(condensedPriorityUploadGuides[0].type)
+                              ? "Ya lo tienes"
+                              : "Siguiente mejor paso"}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-slate-700">
+                          {condensedPriorityUploadGuides[0].summary}
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="mt-4 h-11 rounded-full border-teal-200 bg-white text-teal-900 hover:bg-teal-100"
+                          onClick={() => focusRecommendedUpload(condensedPriorityUploadGuides[0].type)}
+                        >
+                          Subir este documento
+                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                        </Button>
+                      </article>
+                    ) : null}
+
+                    {visiblePriorityUploadGuides.length >
+                    condensedPriorityUploadGuides.length ? (
+                      <p className="text-xs leading-5 text-slate-500">
+                        Hay {visiblePriorityUploadGuides.length - condensedPriorityUploadGuides.length} sugerencia
+                        {visiblePriorityUploadGuides.length - condensedPriorityUploadGuides.length === 1 ? "" : "s"} más dentro del expediente cuando quieras profundizar.
+                      </p>
+                    ) : null}
+                  </div>
+                </details>
+              ) : null}
+
+              <div className={shouldCompactPostUploadExperience ? "hidden" : ""}>
               <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
@@ -6753,6 +6862,7 @@ export default function Auditar() {
                   </p>
                 ) : null}
               </div>
+            </div>
 
               <div
                 className={`mt-5 rounded-[1.45rem] border p-4 sm:p-5 ${
