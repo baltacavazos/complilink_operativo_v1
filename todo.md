@@ -1320,3 +1320,6 @@
 - [ ] Micro-ronda 11 en /auditar móvil post-upload: añadir una salida secundaria mínima al expediente o actividad bajo el CTA para reducir el vacío vertical sin romper la jerarquía principal.
 - [x] Auditoría visual integral de la pantalla móvil actual de /auditar para detectar botones descuadrados, desbalances de espaciado, problemas de alineación y jerarquía inconsistente.
 - [x] Ronda unificada de corrección móvil en /auditar para alinear CTAs, ajustar anchos y paddings, y eliminar elementos que no encajen visualmente en la pantalla.
+- [x] Crear respaldo total en Dropbox de absolutamente todos los archivos relacionados con complilink_operativo_v1, incluyendo código, pruebas, reportes, capturas, temporales y artefactos auxiliares.
+- [x] Verificar la subida del respaldo completo en Dropbox y documentar la ruta final del paquete generado.
+- [x] Actualizar la credencial de Dropbox expirada para completar la subida del respaldo total ya empaquetado.
