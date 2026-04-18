@@ -150,8 +150,8 @@ function getDetectedWorkerName(preliminaryAnalysis: {
   estimatedData?: Record<string, unknown> | null;
 }) {
   return (
-    getRecordStringValue(preliminaryAnalysis.confirmedData, "workerName") ??
-    getRecordStringValue(preliminaryAnalysis.estimatedData, "workerName") ??
+    getRecordStringValue(preliminaryAnalysis.confirmedData ?? {}, "workerName") ??
+    getRecordStringValue(preliminaryAnalysis.estimatedData ?? {}, "workerName") ??
     null
   );
 }

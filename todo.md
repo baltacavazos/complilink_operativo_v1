@@ -1323,3 +1323,5 @@
 - [x] Crear respaldo total en Dropbox de absolutamente todos los archivos relacionados con complilink_operativo_v1, incluyendo código, pruebas, reportes, capturas, temporales y artefactos auxiliares.
 - [x] Verificar la subida del respaldo completo en Dropbox y documentar la ruta final del paquete generado.
 - [x] Actualizar la credencial de Dropbox expirada para completar la subida del respaldo total ya empaquetado.
+- [x] Añadir un script de restauración desde Dropbox dentro de complilink_operativo_v1 para recuperar respaldos completos de forma operativa.
+- [x] Corregir los 2 errores TypeScript pendientes en server/routers.ts y revalidar la compilación.
