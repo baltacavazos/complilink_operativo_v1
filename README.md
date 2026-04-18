@@ -102,8 +102,22 @@ En este checkpoint se reforzó la claridad operativa del flujo de **`/auditar`**
 
 ## Política de respaldo operativo
 
-A partir de este punto, cada milestone importante debe generar un respaldo con un **ZIP completo del proyecto** y con documentación operativa suficiente para recuperación. El ZIP debe contener, como mínimo, `README.md`, `CONFIGURACION.md` y `ARQUITECTURA.md`. Además, cada corrida de respaldo genera un **snapshot breve de confirmación** con fecha, contenido incluido y referencia al respaldo anterior. Todo debe enviarse a **`/Backups/AuditaPatron/`** en Dropbox, manteniendo únicamente los **últimos cinco respaldos** cuando el total exceda ese límite.
+A partir de este punto, cada milestone importante debe generar un respaldo con un **paquete completo del proyecto** y con documentación operativa suficiente para recuperación. El paquete debe contener, como mínimo, `README.md`, `CONFIGURACION.md` y `ARQUITECTURA.md`. Además, cada corrida de respaldo genera un **manifiesto de confirmación** con fecha, contenido incluido y referencia al respaldo anterior. El destino operativo vigente en Dropbox es **`/AuditaPatron/backups/complilink_operativo_v1/`**, y cada backup debe quedar agrupado en su propia subcarpeta fechada para facilitar restauraciones selectivas.
+
+## Flujo operativo de backup y restauración
+
+El proyecto ya dispone de dos scripts Python pensados para operación real con Dropbox. `scripts/dropbox_full_backup_upload.py` sube el paquete y su manifiesto a una carpeta remota concreta. `scripts/dropbox_full_backup_restore.py` permite restaurar un respaldo completo o parcial con un flujo más guiado: puede recibir una carpeta remota exacta, una subcarpeta de backup por nombre o, si no se le indica ninguna, tomar automáticamente el respaldo más reciente dentro del root configurado.
+
+| Operación | Comando de ejemplo | Resultado esperado |
+| --- | --- | --- |
+| Subir backup completo | `python3 scripts/dropbox_full_backup_upload.py /AuditaPatron/backups/complilink_operativo_v1/2026-04-18_full /home/ubuntu/project_backups/complilink_operativo_v1_full_backup_20260418_025522.tar.gz /home/ubuntu/project_backups/complilink_operativo_v1_full_backup_20260418_025522_manifest.txt` | Sube paquete y manifiesto, y devuelve JSON con cuenta, carpeta remota y revisiones |
+| Restaurar el backup más reciente | `python3 scripts/dropbox_full_backup_restore.py` | Descarga el respaldo más reciente dentro de `/AuditaPatron/backups/complilink_operativo_v1` hacia `~/dropbox_restores/<backup>` |
+| Restaurar un backup específico con extracción automática | `python3 scripts/dropbox_full_backup_restore.py --backup-name 2026-04-18_full --destination-dir /tmp/restore_audita` | Descarga el respaldo indicado y extrae automáticamente cualquier `.tar.gz` descargado |
+| Validar solo el manifiesto | `python3 scripts/dropbox_full_backup_restore.py --backup-name 2026-04-18_full --pattern manifest --destination-dir /tmp/restore_check` | Descarga una muestra ligera para verificación operativa sin restaurar todo el paquete |
+| Previsualizar sin descargar | `python3 scripts/dropbox_full_backup_restore.py --backup-name 2026-04-18_full --dry-run` | Devuelve JSON con la carpeta elegida y los archivos previstos sin escribir en disco |
+
+La restauración usa por defecto `--extract-mode auto`, de modo que cualquier archivo `.tar.gz` descargado se expande en una carpeta hermana dentro del destino local. Si se necesita conservar solo el archivo comprimido, puede usarse `--extract-mode never`. Cuando el operador necesite una ruta explícita, `--destination-dir` tiene prioridad sobre el argumento posicional y deja la restauración en la carpeta exacta indicada.
 
 ## Estado vigente del respaldo en Dropbox
 
-El flujo de backup ya quedó corregido para excluir artefactos regenerables y evitar que la carpeta local de respaldos se empaquete dentro del propio ZIP. El último resultado verificado dejó constancia de un respaldo exitoso en **`/Backups/AuditaPatron/`**, con un ZIP compacto y snapshot documental asociado. A partir de ahora, el cierre operativo de Dropbox se considera utilizable para milestones reales del proyecto.
+El flujo de backup ya quedó verificado con una subida real a **`/AuditaPatron/backups/complilink_operativo_v1/2026-04-18_full`** y con una restauración ligera del manifiesto usando la credencial actualizada de Dropbox. A partir de ahora, el circuito de backup y restauración se considera utilizable para hitos reales del proyecto, siempre que `DROPBOX_API_KEY` mantenga permisos de lectura y escritura de archivos.

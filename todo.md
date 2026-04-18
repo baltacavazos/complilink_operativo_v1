@@ -1325,3 +1325,5 @@
 - [x] Actualizar la credencial de Dropbox expirada para completar la subida del respaldo total ya empaquetado.
 - [x] Añadir un script de restauración desde Dropbox dentro de complilink_operativo_v1 para recuperar respaldos completos de forma operativa.
 - [x] Corregir los 2 errores TypeScript pendientes en server/routers.ts y revalidar la compilación.
+- [x] Añadir una restauración desde Dropbox más guiada, con extracción automática del .tar.gz y destino configurable de forma operativa.
+- [x] Documentar en el README del proyecto el flujo completo de backup y restauración con ejemplos reales de uso.
