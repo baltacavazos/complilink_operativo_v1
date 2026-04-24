@@ -256,12 +256,9 @@ export default function Access() {
             <span className="truncate">Volver al inicio</span>
           </a>
 
-          <p className="px-1 text-xs font-medium text-slate-500">
-            Luego vuelves a <strong className="text-slate-700">{returnToLabel}</strong>. Después de entrar, volverás directo ahí.
-          </p>
           <div className="ml-1 inline-flex w-fit items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 shadow-sm">
             <ArrowRight className="h-4 w-4 shrink-0 text-teal-700" />
-            <span>Después de entrar: {returnToLabel}</span>
+            <span>Vuelves a: {returnToLabel}</span>
           </div>
         </div>
 
@@ -280,7 +277,7 @@ export default function Access() {
                 Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo y te mandamos un código de 6 dígitos para entrar. Después vuelves directo a {returnToLabel}. Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.
+                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo a {returnToLabel}.
               </p>
             </div>
 
@@ -324,9 +321,6 @@ export default function Access() {
                     placeholder="nombre@empresa.com"
                     className="h-12 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                   />
-                  <p className="text-xs leading-5 text-slate-500">
-                    Usa el correo con el que quieres entrar hoy.
-                  </p>
                 </div>
 
                 <Button

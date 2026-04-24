@@ -1,5 +1,19 @@
 # Project TODO
 
+- [x] Ajustar el harness post-upload de /auditar para que la prueba móvil E2E valide el estado compacto real o exponga un modo visible de prueba coherente.
+- [x] Alinear la prueba E2E del gate legal con el copy real del countdown de reintento en /auditar.
+- [x] Actualizar la prueba E2E del acceso CEO por código al formulario simplificado y al aviso actual del buzón de respaldo en /acceso.
+- [x] Verificar la lógica stale de exportes CEO y alinear el selector o comportamiento esperado del botón de actualización.
+- [x] Localizar el reemplazo actual de ceo-pending-visible-pill y estabilizar la prueba E2E del regreso contextual CEO ↔ expediente.
+- [x] Generar el build de producción y medir los chunks principales para detectar el peso real del bundle inicial.
+- [x] Contrastar con ChatGPT, Grok y Gemini las mejores oportunidades de reducción del bundle sin degradar la experiencia.
+- [x] Aplicar code splitting o lazy loading en rutas o superficies pesadas priorizando /auditar y /acceso si concentran carga inicial innecesaria.
+- [x] Revalidar el impacto del bundle tras las optimizaciones con nueva medición de build.
+- [x] Contrastar con ChatGPT, Grok y Gemini la simplificación más segura de los primeros pasos en /auditar y /acceso.
+- [x] Reducir fricción inicial en /auditar manteniendo la jerarquía móvil y el camino principal de carga documental.
+- [x] Clarificar /acceso para que el flujo de correo se entienda y avance con menos fricción desde el primer vistazo.
+- [x] Revalidar las simplificaciones de /auditar y /acceso con pruebas enfocadas antes de la validación final completa.
+
 - [x] Ronda ligera V1: reforzar el resultado visible en el hero de Home sin tocar CTAs ni la estructura de 3 pasos.
 - [x] Ronda ligera V1: aclarar en /acceso la promesa del código por correo y el retorno directo al expediente/auditoría.
 - [x] Ronda ligera V1: afinar en /auditar el mensaje cordial de bloqueo para explicar con más claridad el límite de un expediente por usuario y el siguiente paso.
@@ -1329,3 +1343,6 @@
 - [x] Documentar en el README del proyecto el flujo completo de backup y restauración con ejemplos reales de uso.
 - [x] Ejecutar una revisión integral de la plataforma para evaluar si está lista para pruebas masivas, cubriendo estabilidad técnica, cobertura actual, flujos críticos, UX móvil/escritorio y bloqueadores operativos.
 - [x] Contrastar la revisión integral con OpenAI, Grok y Gemini para obtener un dictamen multi-IA sobre readiness, riesgos y prioridades antes de escalar pruebas.
+- [ ] Estabilizar Playwright e instalar los navegadores requeridos para ejecutar la cobertura E2E crítica de la plataforma.
+- [ ] Reducir el peso del bundle principal y revisar la estrategia de partición de código para mejorar performance previa a pruebas masivas.
+- [ ] Simplificar el primer flujo de /auditar y clarificar la entrada de /acceso para disminuir fricción en onboarding antes de pruebas masivas.

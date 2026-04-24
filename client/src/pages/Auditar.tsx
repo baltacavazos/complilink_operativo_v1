@@ -6044,18 +6044,13 @@ export default function Auditar() {
               </Button>
             ) : null}
             {shouldCompactPostUploadExperience ? null : (
-              <>
-                <span className="text-xs font-medium text-slate-300 sm:hidden">
-                  El formulario para subir tu archivo está justo abajo.
-                </span>
-                <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
-                  {showHeroJumpCta
-                    ? "Úsalo solo si quieres bajar directo al formulario."
-                    : remoteViewStateSyncLabel}
-                </span>
-              </>
+              <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
+                {showHeroJumpCta
+                  ? "Úsalo solo si quieres bajar directo al formulario."
+                  : remoteViewStateSyncLabel}
+              </span>
             )}
-          </div>
+   </div>
         </div>
 
         {bootstrapMutation.isPending ? (
@@ -6429,17 +6424,17 @@ export default function Auditar() {
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Sigue fortaleciendo tu expediente"
-                      : "Empieza aquí"}
+                      : "Sube tu documento"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
                       ? "Si quieres subir otro archivo, aquí puedes hacerlo en un paso."
-                      : "Sube tu primer archivo y recibe una lectura útil al momento."}
+                      : "Sube tu primer archivo y recibe una lectura clara al momento."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Tu resultado principal ya quedó arriba. Este bloque solo te sirve para seguir fortaleciendo el expediente con otro documento cuando lo necesites."
-                      : "Sube el archivo y te devolvemos qué entendimos, qué hallazgo pesa más y qué conviene revisar después."}
+                      : "Te diremos qué documento es, qué ya entendimos y qué conviene revisar después."}
                   </p>
                   <div
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
@@ -6519,12 +6514,12 @@ export default function Auditar() {
                         ? "Cambiar documento"
                         : shouldCompactPostUploadExperience
                           ? "Subir otro documento"
-                          : "Elegir cómo subir el documento"}
+                          : "Subir documento ahora"}
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
-                        : "En un solo paso puedes tomar foto o elegir un archivo guardado."}
+                        : "Toma foto o elige un archivo guardado en un solo paso."}
                     </p>
                   </div>
                 </div>

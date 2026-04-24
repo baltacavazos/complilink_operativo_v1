@@ -17,11 +17,11 @@ test.describe("Gate legal de /auditar", () => {
     await expect(page.getByTestId("legal-gate-metric-conflicts")).toHaveText("1");
     await expect(page.getByTestId("legal-gate-metric-status")).toContainText("Conflicto de lock detectado");
     await expect(page.getByTestId("legal-gate-retry-button")).toBeDisabled();
-    await expect(page.getByTestId("legal-gate-retry-countdown")).toContainText("Reintento habilitado en");
+    await expect(page.getByTestId("legal-gate-retry-countdown")).toContainText("Disponible nuevamente en");
     await expect(page.getByTestId("legal-gate-metric-timer")).toContainText("Temporizador de reintento activo");
 
     await expect(page.getByTestId("legal-gate-retry-button")).toBeEnabled({ timeout: 8_000 });
-    await expect(page.getByTestId("legal-gate-retry-button")).toContainText("Reintentar aceptación");
+    await expect(page.getByTestId("legal-gate-retry-button")).toContainText("Reintentar autorización");
 
     await page.getByTestId("legal-gate-retry-button").click();
 

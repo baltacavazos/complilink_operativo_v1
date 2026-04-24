@@ -79,8 +79,8 @@ test.describe("Exportes CEO", () => {
     await expect(page.getByText("Modo CEO maestro")).toBeVisible();
     await expect(page.getByRole("button", { name: /exportar csv/i })).toBeDisabled();
     await expect(page.getByRole("button", { name: /reporte pdf/i })).toBeDisabled();
-    await expect(page.getByRole("button", { name: /actualizar/i })).toBeEnabled();
-    await expect(page.getByText(/última actualización/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Actualizar$/i })).toBeEnabled();
+    await expect(page.getByText(/actualizada hace/i).first()).toBeVisible();
   });
 
   test("permite reintentar la carga del snapshot CEO después de un fallo transitorio", async ({ page }) => {

@@ -50,17 +50,18 @@ test.describe("Acceso CEO por código de correo", () => {
     const seededOwner = await seedOwnerEmailCode(page);
     const ownerEmail = seededOwner.email;
 
-    await page.getByLabel("Correo corporativo").fill(ownerEmail);
-    await page.getByLabel("Nombre visible (opcional)").fill("CEO E2E");
+    await page.waitForTimeout(2_200);
+    await page.getByLabel("Correo").fill(ownerEmail);
     await page.getByRole("button", { name: "Recibir código" }).click();
 
-    await expect(page.getByText("buzón de respaldo registrado")).toBeVisible();
-    await expect(page.getByLabel("Correo verificado")).toHaveValue(ownerEmail);
+    await expect(page.getByText(/^Código enviado (al buzón de respaldo|a) /i)).toBeVisible();
+    await expect(page.getByText("Código enviado", { exact: true })).toBeVisible();
+    await expect(page.getByText(ownerEmail)).toBeVisible();
 
-    await seedOwnerEmailCode(page, ownerEmail);
+    const verificationSeed = await seedOwnerEmailCode(page, ownerEmail);
 
-    await page.getByLabel("Código de seis dígitos").fill("111111");
-    await page.getByRole("button", { name: "Validar e iniciar sesión" }).click();
+    await page.getByLabel("Código de 6 dígitos").fill(verificationSeed.code);
+    await page.getByRole("button", { name: "Entrar" }).click();
 
     await page.waitForURL("**/ceo");
     await expect(page.getByText("Vista activa: CEO maestro")).toBeVisible();

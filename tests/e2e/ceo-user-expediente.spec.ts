@@ -73,7 +73,7 @@ test.describe("Flujo crítico CEO ↔ vista usuario ↔ expediente", () => {
     await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Familia guardrail");
     await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Severidad high");
     await expect(page.getByTestId("ceo-retry-visible-pill")).toBeVisible();
-    await expect(page.getByTestId("ceo-pending-visible-pill")).toBeVisible();
+    await expect(page.getByTestId("ceo-retry-visible-pill")).toContainText("pendientes");
     await expect(page.getByTestId("ceo-contextual-return-button")).toBeVisible();
 
     await page.getByTestId("ceo-contextual-return-button").click();
