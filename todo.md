@@ -1327,3 +1327,5 @@
 - [x] Corregir los 2 errores TypeScript pendientes en server/routers.ts y revalidar la compilación.
 - [x] Añadir una restauración desde Dropbox más guiada, con extracción automática del .tar.gz y destino configurable de forma operativa.
 - [x] Documentar en el README del proyecto el flujo completo de backup y restauración con ejemplos reales de uso.
+- [x] Ejecutar una revisión integral de la plataforma para evaluar si está lista para pruebas masivas, cubriendo estabilidad técnica, cobertura actual, flujos críticos, UX móvil/escritorio y bloqueadores operativos.
+- [x] Contrastar la revisión integral con OpenAI, Grok y Gemini para obtener un dictamen multi-IA sobre readiness, riesgos y prioridades antes de escalar pruebas.

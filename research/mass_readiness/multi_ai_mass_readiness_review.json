@@ -1,0 +1,124 @@
+{
+  "openai": {
+    "model_name": "AuditaPatron",
+    "verdict": "NOT_READY_FOR_CONTROLLED_MASS_TEST",
+    "overall_score": 65,
+    "executive_summary": "La plataforma AuditaPatron presenta una base técnica estable con build de producción aprobado y buena cobertura de pruebas unitarias, pero con advertencias de performance por bundles grandes y fallos en pruebas e2e por infraestructura. La cobertura automatizada es parcial y requiere corrección de escenarios e2e. El onboarding es claro en propuesta de valor pero presenta alta densidad y competencia visual en flujos críticos, lo que puede generar confusión en usuarios masivos. Los flujos críticos funcionan pero con riesgos de carga cognitiva y fricción en la navegación, especialmente en la pantalla /auditar y el asistente laboral. El riesgo operativo es medio-alto debido a fricciones en aceptación legal, caídas en confirmación documental y alertas críticas operativas. Se recomienda mejorar la claridad y simplificación del onboarding, corregir fallos e2e y resolver la aceptación legal para avanzar a pruebas masivas controladas.",
+    "blockers": [
+      "Falta de aceptación legal completa para habilitar subida documental y seguimiento automático.",
+      "Fallas en pruebas e2e con 16 escenarios fallidos, aunque parcialmente atribuibles a infraestructura.",
+      "Caída del 75% en el flujo preview → confirmación documental, afectando la continuidad operativa."
+    ],
+    "high_risks": [
+      "Advertencia grave de performance por bundles JS muy grandes que pueden afectar tiempos de carga bajo tráfico elevado.",
+      "Alta densidad y competencia visual en flujos críticos (/auditar y asistente laboral) que pueden generar confusión y dispersión en usuarios masivos.",
+      "Alertas críticas operativas y rechazos repetidos en casos activos que indican fricción y riesgo en la operación."
+    ],
+    "medium_risks": [
+      "Falta de claridad en transición entre landing /acceso y sesión autenticada, con mezcla de contenido comercial y operativo.",
+      "Limitación explícita del modo CEO para dispositivos móviles, restringiendo pruebas en ese canal.",
+      "Baja tasa de confirmación tras preview documental (25%), lo que puede indicar problemas de usabilidad o confianza."
+    ],
+    "minor_observations": [
+      "Repetición de CTAs 'Auditar ahora' en varios puntos, sugiriendo presión comercial y redundancia.",
+      "Botón principal en /auditar visualmente ajustado, requiere revisión para consistencia móvil.",
+      "Navegación de regreso en asistente laboral no confirmada, requiere validación adicional."
+    ],
+    "dimension_scores": {
+      "technical_stability": 75,
+      "automated_coverage": 60,
+      "onboarding_clarity": 65,
+      "critical_flows": 60,
+      "operational_readiness": 65
+    },
+    "priority_actions": [
+      "Completar y validar la aceptación legal para habilitar la subida documental y seguimiento automático.",
+      "Corregir y estabilizar las pruebas e2e para asegurar cobertura confiable y detectar fallos reales de producto.",
+      "Simplificar y priorizar la interfaz de onboarding y flujos críticos para reducir carga cognitiva y mejorar la tasa de confirmación documental."
+    ],
+    "evidence_gaps": [
+      "No hay evidencia concluyente sobre comportamiento de navegación de regreso en asistente laboral.",
+      "Falta información sobre pruebas de carga o stress para validar impacto de bundles grandes en tráfico real.",
+      "No se dispone de métricas de experiencia móvil más allá de la limitación declarada en modo CEO."
+    ]
+  },
+  "grok": {
+    "model_name": "AuditorSeniorQA",
+    "verdict": "NOT_READY_FOR_CONTROLLED_MASS_TEST",
+    "overall_score": 50,
+    "executive_summary": "La plataforma demuestra estabilidad técnica básica y flujos funcionales, pero enfrenta desafíos significativos en performance, cobertura automatizada incompleta y claridad de onboarding, lo que aumenta el riesgo operativo para pruebas masivas controladas. Huecos en la validación de pruebas e2e y densidad de contenido son preocupaciones clave.",
+    "blockers": [
+      "Fallas en pruebas e2e de Playwright debido a infraestructura local, lo que impide una validación concluyente de la lógica del producto.",
+      "Advertencia grave de performance con bundles grandes (e.g., index-OqoVz7Dk.js de ~3.7 MB), potencialmente causando problemas en tráfico elevado."
+    ],
+    "high_risks": [
+      "Alta densidad de contenido en /auditar y el asistente laboral, lo que podría elevar la carga cognitiva y confundir a usuarios nuevos durante pruebas masivas."
+    ],
+    "medium_risks": [
+      "Dashboard CEO optimizado principalmente para escritorio, limitando su usabilidad en dispositivos móviles durante pruebas controladas."
+    ],
+    "minor_observations": [
+      "Repetición de llamadas a acción como 'Auditar ahora' en home y acceso, lo que sugiere redundancia pero no impacta funcionalidad crítica."
+    ],
+    "dimension_scores": {
+      "technical_stability": 60,
+      "automated_coverage": 40,
+      "onboarding_clarity": 50,
+      "critical_flows": 55,
+      "operational_readiness": 45
+    },
+    "priority_actions": [
+      "Resolver fallos en infraestructura de Playwright para ejecutar y validar escenarios e2e correctamente.",
+      "Optimizar bundles de performance para reducir tamaños y mitigar riesgos en tráfico elevado.",
+      "Simplificar la interfaz en flujos como /auditar para reducir densidad de contenido y mejorar claridad de onboarding."
+    ],
+    "evidence_gaps": [
+      "Falta de pruebas concluyentes de Playwright sobre la lógica del producto debido a fallos de infraestructura local.",
+      "No se menciona evidencia de cobertura automatizada en escenarios de alto tráfico o estrés."
+    ]
+  },
+  "gemini": {
+    "model_name": "AuditaPatron Readiness Assessment",
+    "verdict": "NOT_READY_FOR_CONTROLLED_MASS_TEST",
+    "overall_score": 45,
+    "executive_summary": "La plataforma presenta serios problemas de estabilidad técnica debido a bundles de gran tamaño y múltiples chunks, lo que impacta negativamente el rendimiento. La cobertura automatizada es insuficiente, con un alto número de escenarios E2E fallidos y la falta de pruebas concluyentes en Playwright. El onboarding es confuso y denso, especialmente en la sección /auditar y el asistente laboral, lo que eleva la carga cognitiva. Los flujos críticos, como el acceso y la subida de documentos, carecen de claridad y presentan redundancia de CTAs. El riesgo operativo es alto debido a la complejidad de la consola CEO y la falta de claridad en la transición de acceso a sesión autenticada. Se requiere una intervención significativa antes de considerar pruebas masivas.",
+    "blockers": [
+      "El bundle principal y múltiples chunks superan los 500 kB, lo que indica un grave problema de rendimiento que podría colapsar bajo tráfico masivo.",
+      "8 escenarios E2E fallidos en Playwright, aunque se atribuye parcialmente a infraestructura local, indica una falta de robustez en las pruebas automatizadas."
+    ],
+    "high_risks": [
+      "La sección /auditar presenta una alta densidad de contenido y competencia entre acciones, lo que puede generar confusión y errores en usuarios nuevos durante pruebas masivas.",
+      "El flujo de acceso no es claro, aterrizando en una vista tipo landing en lugar de un login dedicado, y la transición entre descubrimiento, acceso y primer archivo subido es confusa.",
+      "La consola CEO está sobrecargada de información y acciones, lo que dificulta su uso para usuarios internos menos entrenados y presenta un riesgo de errores humanos.",
+      "La navegación de regreso desde el asistente laboral no quedó claramente confirmada, lo que sugiere un posible problema de usabilidad y continuidad del flujo."
+    ],
+    "medium_risks": [
+      "La repetición de CTAs 'Auditar ahora' en la home y la página de acceso sugiere redundancia y puede diluir la intención del usuario.",
+      "La vista del asistente laboral está muy cargada, con múltiples elementos conviviendo en el mismo panel, lo que puede dificultar la orientación inicial.",
+      "La lectura de la consola CEO está claramente optimizada para escritorio, con limitaciones explícitas en móvil, lo que podría ser un problema si se espera uso en diversos dispositivos.",
+      "La plataforma no deja totalmente nítido dónde empieza una sesión autenticada frente a dónde solo se navega contenido público, lo que puede generar confusión en el usuario."
+    ],
+    "minor_observations": [
+      "El botón principal inferior del bloque izquierdo en /auditar se percibe visualmente ajustado al ancho del contenedor y debe revisarse en móvil.",
+      "La home comunica bien la propuesta de valor y mantiene una jerarquía visual clara en desktop."
+    ],
+    "dimension_scores": {
+      "technical_stability": 30,
+      "automated_coverage": 40,
+      "onboarding_clarity": 40,
+      "critical_flows": 45,
+      "operational_readiness": 50
+    },
+    "priority_actions": [
+      "Optimizar el tamaño de los bundles y chunks de JavaScript para mejorar drásticamente los tiempos de carga y la estabilidad técnica bajo carga.",
+      "Investigar y corregir los 8 escenarios E2E fallidos en Playwright, asegurando la estabilidad de la infraestructura de pruebas y la lógica del producto.",
+      "Rediseñar la interfaz de usuario de la sección /auditar y el asistente laboral para reducir la densidad de información, mejorar la jerarquía visual y simplificar la navegación, priorizando la claridad del onboarding."
+    ],
+    "evidence_gaps": [
+      "Falta de evidencia sobre la corrección de la infraestructura local que causó fallos en Playwright.",
+      "No hay información sobre pruebas de carga o estrés para validar el comportamiento de la plataforma con bundles de gran tamaño.",
+      "No se ha validado la navegación de regreso desde el asistente laboral en un entorno interactivo.",
+      "No hay métricas claras sobre la tasa de abandono o éxito en el flujo de acceso y subida de documentos."
+    ]
+  }
+}
