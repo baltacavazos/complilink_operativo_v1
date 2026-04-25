@@ -21,8 +21,8 @@ test.describe("home pública", () => {
       expect(bodyText).not.toContain(phrase);
     }
 
-    expect(bodyText).toContain("Tu recibo de nómina");
-    expect(bodyText).toContain("puede tener señales raras.");
-    expect(bodyText).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(bodyText).toContain("¿Tu recibo de nómina está bien o hay algo raro?");
+    expect(bodyText).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(bodyText).toContain("Tu jefe nunca se enterará.");
   });
 });

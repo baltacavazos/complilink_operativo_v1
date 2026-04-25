@@ -54,7 +54,9 @@ test.describe("Acceso CEO por código de correo", () => {
     await page.getByLabel("Correo").fill(ownerEmail);
     await page.getByRole("button", { name: "Recibir código" }).click();
 
-    await expect(page.getByText(/^Código enviado (al buzón de respaldo|a) /i)).toBeVisible();
+    await expect(
+      page.getByText(/Código enviado al buzón de respaldo/i).or(page.getByText(/^Código enviado a /i)),
+    ).toBeVisible();
     await expect(page.getByText("Código enviado", { exact: true })).toBeVisible();
     await expect(page.getByText(ownerEmail)).toBeVisible();
 

@@ -1372,3 +1372,15 @@
 - [x] Hacer /auditar más directa: módulo de subida arriba, microcopy mínimo y foco explícito en recibo de nómina como primer caso de uso.
 - [x] Renombrar en la semántica visible la superficie privada hacia una narrativa tipo “Mi Expediente de Defensa”, sin cambiar todavía rutas internas ni arquitectura.
 - [x] Revalidar las pruebas afectadas por los nuevos CTAs, hero, privacidad y semántica visible del área privada antes del checkpoint.
+- [ ] Contrastar con ChatGPT, Grok y Gemini la nueva síntesis externa que propone hero emocional en forma de pregunta, privacidad radical pública, CTA único y flujo pre-registro.
+- [ ] Evaluar el impacto de permitir subida pre-login desde Home para mostrar un hallazgo parcial antes del registro.
+- [ ] Evaluar la viabilidad de convertir /auditar en una pantalla de acción pura con stepper mínimo y explicación debajo.
+- [ ] Revisar la Home para acercarla a una estructura máxima de 6-7 bloques y mover el ejemplo con monto al primer scroll.
+- [ ] Evaluar quick wins del nuevo sprint: contador de documentos auditados hoy, copy “Empieza con una foto” y CTA secundario alterno.
+- [ ] Consultar al usuario con una propuesta de implementación por fases antes de tocar el flujo pre-registro, OCR/cámara directa o cambios estructurales.
+- [x] Reescribir el hero de Home al copy exacto: “¿Tu recibo de nómina está bien o hay algo raro?” con subtítulo masivo orientado a foto o PDF.
+- [x] Reforzar la privacidad pública con el copy humano radical exacto y promesa visible de borrado/control desde Home y puntos clave del flujo.
+- [x] Añadir debajo del CTA principal el hint “Empieza con una foto. No necesitas reunir todo.”.
+- [x] Recortar Home a una estructura visible más cercana a 6-7 bloques y subir el ejemplo con monto al primer scroll.
+- [x] Convertir /auditar en una pantalla más pura de acción con stepper mínimo arriba y explicación secundaria debajo.
+- [x] Alinear pruebas de Home y /auditar con el Lote A y revalidar con Vitest y Playwright.

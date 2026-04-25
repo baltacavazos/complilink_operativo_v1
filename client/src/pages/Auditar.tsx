@@ -6424,17 +6424,17 @@ export default function Auditar() {
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Sigue fortaleciendo tu expediente"
-                      : "Empieza por tu recibo"}
+                      : "Sube tu recibo → IA analiza → siguiente paso"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
                       ? "Si quieres subir otro archivo, aquí puedes hacerlo en un paso."
-                      : "Sube tu recibo de nómina y recibe una lectura clara al momento."}
+                      : "Sube tu recibo y ve primero si hay algo raro."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Tu resultado principal ya quedó arriba. Este bloque solo te sirve para seguir fortaleciendo el expediente con otro documento cuando lo necesites."
-                      : "Te diremos qué señal vimos, qué ya entendimos y qué conviene revisar después. Si no tienes recibo, también sirve CFDI, contrato o soporte laboral."}
+                      : "Empieza con una foto o PDF. Primero mostramos la señal principal, luego el semáforo y al final el siguiente documento útil para seguir."}
                   </p>
                   <div
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
@@ -6444,7 +6444,7 @@ export default function Auditar() {
                         Privacidad radical
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Nadie de tu empresa puede ver lo que subes en este flujo.
+                        Tu jefe nunca se enterará de esta revisión inicial y tu empresa no puede ver lo que subes aquí.
                       </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -6460,7 +6460,7 @@ export default function Auditar() {
                         Borrado visible
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Puedes pedir eliminación y mantener control claro sobre lo que conservas.
+                        Tus documentos son tuyos y puedes pedir borrado cuando lo necesites.
                       </p>
                     </article>
                   </div>
@@ -6470,26 +6470,26 @@ export default function Auditar() {
                   >
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Recibes
+                        Paso 1
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Lectura inicial clara
+                        Sube tu recibo
                       </p>
                     </article>
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Se guarda
+                        Paso 2
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Dentro de tu expediente
+                        IA analiza
                       </p>
                     </article>
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Siguiente paso
+                        Paso 3
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Documento recomendado
+                        Semáforo y siguiente paso
                       </p>
                     </article>
                   </div>
@@ -6519,7 +6519,7 @@ export default function Auditar() {
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
-                        : "Toma foto o sube PDF/XML en un solo paso. Si no tienes recibo, puedes empezar con otro documento laboral útil."}
+                        : "Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara."}
                     </p>
                   </div>
                 </div>

@@ -915,35 +915,28 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            Tu recibo puede revelar señales raras
+            Sube una foto o PDF y revisa tu pago
           </div>
 
           <h1
             className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
-            <span className="block sm:hidden">
-              Tu recibo de nómina
-              <span className="mt-1 block text-amber-700">puede tener señales raras.</span>
-            </span>
-            <span className="hidden sm:block">
-              Tu recibo de nómina
-              <span className="block text-amber-700">puede tener señales raras.</span>
-            </span>
+            ¿Tu recibo de nómina está bien o hay algo raro?
           </h1>
 
           <p
             className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-Revísalo gratis hoy y ve si hay señales raras en tu pago, tus deducciones o tu CFDI.
+Sube una foto o PDF y en minutos te decimos si te están pagando menos, reportando mal o faltando algo.
           </p>
 
           <p
             className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-Empieza con tu recibo de nómina más reciente. Si no lo tienes a la mano, también sirve CFDI o contrato. AuditaPatron lo lee, te marca señales raras y te dice qué revisar primero sin llenarte de pantallas.
+Empieza con un solo documento. Primero ves la señal principal, luego el siguiente paso útil y solo después decides si quieres guardar algo en tu expediente.
           </p>
 
           <div
@@ -1000,9 +993,14 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <p className="text-sm leading-6 text-slate-600">
-Entras, subes tu recibo o un archivo similar y ves un resultado claro. Lo demás aparece después, solo si te ayuda.
-            </p>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold leading-6 text-slate-700">
+                  Empieza con una foto. No necesitas reunir todo.
+                </p>
+                <p className="text-sm leading-6 text-slate-600">
+                  Si no tienes recibo a la mano, también sirve PDF, XML o una imagen clara del documento que sí tengas.
+                </p>
+              </div>
           </div>
 
           <div
@@ -1071,8 +1069,11 @@ Entras, subes tu recibo o un archivo similar y ves un resultado claro. Lo demás
 Ejemplo del resultado que recibes
                   </p>
                   <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-	Esto verás apenas subas tu documento.
+		Esto verás apenas subas tu documento.
 
+                  </p>
+                  <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
+                    Ejemplo anónimo: posible diferencia estimada de $3,240 MXN.
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
@@ -1080,7 +1081,7 @@ Ejemplo del resultado que recibes
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-	Primero ves lo esencial: qué documento entendimos, qué señal apareció y qué te conviene hacer después.
+		Primero ves lo esencial: qué documento entendimos, qué señal apareció, un monto estimado si aplica y qué te conviene hacer después.
 
               </p>
 
@@ -1265,10 +1266,10 @@ function QuickTrustSection() {
               Privacidad radical y control visible
             </div>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.35rem]">
-              Nadie de tu empresa puede ver lo que subes.
+              Tu jefe nunca se enterará.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
-              Tu archivo entra a un espacio privado para revisión laboral. Primero ves el borrador, decides si se guarda y mantienes control visible sobre lo que compartes.
+              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Primero ves el borrador, decides si se guarda y mantienes el control visible sobre tu expediente privado.
             </p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -1294,11 +1295,11 @@ function QuickTrustSection() {
               },
               {
                 title: "Borrado visible",
-                body: "Puedes solicitar eliminación y mantener trazabilidad clara sobre lo que decidiste conservar.",
+                body: "Puedes borrar o pedir eliminación de tus documentos cuando lo necesites y mantener control sobre lo que decides conservar.",
               },
               {
                 title: "Sin exposición interna",
-                body: "La revisión está diseñada para que tu empresa no vea el documento que subes en este flujo.",
+                body: "Este flujo está pensado para que tu empresa no vea el documento que subes mientras haces la revisión inicial.",
               },
             ].map((item) => (
               <article
@@ -2280,9 +2281,9 @@ export default function Home() {
       <div className="hidden sm:block">
         <SectionDivider />
         <HowItWorksSection />
-        <SectionDivider />
-        <DossierSection />
       </div>
+      <SectionDivider />
+      <DossierSection />
       <SectionDivider />
       <CopilotPreviewSection />
       <SectionDivider />
