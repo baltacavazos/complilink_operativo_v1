@@ -33,7 +33,7 @@ function getReturnToLabel(returnTo: string) {
   }
 
   if (returnTo.startsWith("/ceo")) {
-    return "tu panel privado";
+    return "tu expediente privado";
   }
 
   if (returnTo === "/" || returnTo.startsWith("/#")) {

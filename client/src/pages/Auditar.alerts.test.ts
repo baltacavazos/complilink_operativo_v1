@@ -396,7 +396,7 @@ describe("getUploadCompactGuardrails", () => {
   it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
     expect(getUploadCompactGuardrails()).toEqual({
       fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
-      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
+      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.",
     });
   });
 });

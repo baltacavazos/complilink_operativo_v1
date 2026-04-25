@@ -476,7 +476,7 @@ function getSectionLabel(section: SectionKey) {
   if (section === "alertas") return "Alertas";
   if (section === "accesos") return "Accesos";
   if (section === "documentos") return "Documentos";
-  return "Resumen CEO";
+  return "Resumen privado";
 }
 
 export default function CeoDashboard() {
@@ -854,7 +854,7 @@ export default function CeoDashboard() {
   }, [bridgeOverview.rows, bridgeSmokeStatus]);
   const bridgeExportPayload = useMemo<CeoCustomExportPayload>(
     () => ({
-      title: "Reporte ejecutivo CEO · Bridge operativo",
+      title: "Reporte privado · Bridge operativo",
       summaryRows: [
         ["Expedientes trazados", formatNumber(bridgeOverview.summary.trackedDocuments)],
         ["Conformes", formatNumber(bridgeOverview.summary.healthy)],
@@ -984,7 +984,7 @@ export default function CeoDashboard() {
     () => [
       {
         icon: LayoutDashboard,
-        label: "Resumen CEO",
+        label: "Resumen privado",
         path: contextualOverviewPath,
         badge: globalSummary ? formatNumber(globalSummary.activeCases) : undefined,
       },
@@ -1857,8 +1857,8 @@ export default function CeoDashboard() {
 
   return (
     <DashboardLayout
-      title="Dashboard CEO"
-      subtitle="Centro de mando ejecutivo para AuditaPatron"
+      title="Mi Expediente de Defensa"
+      subtitle="Panel privado del owner autorizado para AuditaPatron"
       navigation={navigation}
       headerActions={
         <>
@@ -1924,10 +1924,10 @@ export default function CeoDashboard() {
             <div className="max-w-3xl space-y-3">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso restringido</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                Este panel maestro sólo está disponible para el owner autorizado.
+                Este expediente privado sólo está disponible para el owner autorizado.
               </h2>
               <p className="text-base leading-7 text-slate-700">
-                Tu sesión está autenticada, pero no coincide con la identidad maestra autorizada para esta superficie. Si este acceso debe revisarse, confirma primero la identidad del owner y después valida permisos internos.
+                Tu sesión está autenticada, pero no coincide con la identidad maestra autorizada para esta superficie privada. Si este acceso debe revisarse, confirma primero la identidad del owner y después valida permisos internos.
               </p>
             </div>
           </div>
@@ -1961,7 +1961,7 @@ export default function CeoDashboard() {
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start">
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Consola ejecutiva</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Panel privado del owner</p>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
                     Lo crítico primero para decidir rápido.
                   </h2>

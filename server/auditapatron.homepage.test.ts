@@ -12,10 +12,10 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
     expect(pricingSource).toContain("Prueba gratis y con claridad desde el inicio");
     expect(pricingSource).toContain("Puedes seguir usando la auditoría y tu expediente sin pagar ni desbloquear nada por obligación.");
-    expect(homeSource).toContain("Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.");
-    expect(homeSource).toContain("Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.");
-    expect(homeSource).toContain("Subir mi documento gratis");
-    expect(homeSource).not.toContain("Subir mi primer documento");
+    expect(homeSource).toContain("Detecta diferencias de pago, deducciones extrañas y pistas que conviene revisar primero.");
+    expect(homeSource).toContain("Recibes una lectura clara, el siguiente documento útil y control sobre tu expediente desde el primer intento.");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
+    expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
   });
 
@@ -24,8 +24,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Sube tu documento y AuditaPatron lo recibe");
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
-    expect(homeSource).toContain("Sube tu documento ahora.");
-    expect(homeSource).toContain("Sube desde tu celular y recibe claridad útil desde el inicio.");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
+    expect(homeSource).toContain("Revísalo gratis hoy y ve si hay señales raras en tu pago, tus deducciones o tu CFDI.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
@@ -33,8 +33,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
     expect(homeSource).toContain("Más contexto con cada archivo.");
     expect(homeSource).toContain("Privacidad y control visibles.");
-    expect(homeSource).toContain("Subir mi documento gratis");
-    expect(homeSource).toContain("Sube tu documento gratis");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
+    expect(homeSource).toContain("Leer aviso de privacidad");
     expect(homeSource).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
@@ -42,12 +42,12 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
-    expect(homeSource).toContain("Ver cómo se ve mi reporte");
+    expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Caso anónimo 01");
     expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
-    expect(homeSource).toContain("Tu privacidad es parte del producto");
-    expect(homeSource).toContain("Tus documentos se resguardan para darte claridad, calma y control");
+    expect(homeSource).toContain("Privacidad radical y control visible");
+    expect(homeSource).toContain("Tu archivo entra a un espacio privado para revisión laboral.");
     expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
     expect(homeSource).toContain("Tu expediente en crecimiento");
@@ -72,7 +72,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Sube tu primer archivo y recibe una lectura clara al momento.");
+    expect(auditFlowSource).toContain("Sube tu recibo de nómina y recibe una lectura clara al momento.");
     expect(auditFlowSource).toContain("Sube un documento y revisa el borrador");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
@@ -89,11 +89,11 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("keeps the first homepage block mobile-first and exposes the audit CTA early", () => {
     expect(homeSource).toContain("pb-5 pt-4 sm:pb-12 sm:pt-12 lg:pt-16");
-    expect(homeSource).toContain("Sube 1 documento y entiende qué revisar");
+    expect(homeSource).toContain("Tu recibo puede revelar señales raras");
     expect(homeSource).toContain("order-3 mt-5 hidden w-full max-w-xl");
     expect(homeSource).toContain("order-2 mt-3 flex w-full max-w-sm");
     expect(homeSource).toContain("goToAuditFlow({");
-    expect(homeSource).toContain("Ver cómo se ve el reporte");
+    expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("mt-2.5 w-full max-w-xl rounded-[1.45rem]");
     expect(homeSource).toContain("rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm");
   });
@@ -114,7 +114,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("keeps the first mobile upload touchpoint guided, automatic and connected to the expediente flow", () => {
     expect(auditFlowSource).toContain("COMPACT_UPLOAD_GUARDRAILS");
-    expect(auditFlowSource).toContain("Subir mi documento gratis");
+    expect(auditFlowSource).toContain("Revisar mi recibo gratis");
     expect(auditFlowSource).toContain("Toma foto para empezar");
     expect(auditFlowSource).toContain("Elige archivo para empezar");
     expect(auditFlowSource).toContain("PDF, XML, JPG, PNG o WEBP · máximo 12 MB.");

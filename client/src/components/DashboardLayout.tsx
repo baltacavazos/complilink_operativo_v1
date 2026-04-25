@@ -83,7 +83,7 @@ export default function DashboardLayout({
               <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-border/70 object-contain p-1 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.42)]" />
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                  AuditaPatron · Consola operativa
+                  AuditaPatron · Área privada
                 </p>
                 <h1 className="text-2xl font-semibold tracking-tight">Acceso seguro y unificado</h1>
               </div>
@@ -91,7 +91,7 @@ export default function DashboardLayout({
             <p className="text-base leading-7 text-muted-foreground">
               Esta plataforma protege expedientes laborales multi-tenant con trazabilidad integral por
               <strong className="text-foreground"> tenant_id</strong>, <strong className="text-foreground">case_id</strong> y <strong className="text-foreground">trace_id</strong>.
-              Inicia sesión con Manus, Google o un código enviado por correo para abrir el tablero ejecutivo, gestionar casos y operar el intake documental seguro.
+              Inicia sesión con Manus, Google o un código enviado por correo para abrir el panel privado del owner, gestionar casos y operar el intake documental seguro.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
@@ -237,7 +237,7 @@ function DashboardLayoutContent({
                     <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
                   </div>
                   <div className="rounded-2xl border border-sidebar-border/70 bg-background/70 px-3 py-3 text-xs leading-5 text-muted-foreground">
-                    Estación de mando para expedientes laborales, visibilidad documental y auditoría integral.
+                    Espacio privado para expedientes laborales, visibilidad documental y auditoría integral.
                   </div>
                 </div>
               ) : null}
@@ -341,7 +341,7 @@ function DashboardLayoutContent({
                         : "bg-emerald-100 text-emerald-800",
                     )}
                   >
-                    {isViewingAsUser ? "Vista usuario demo" : "Modo CEO maestro"}
+                    {isViewingAsUser ? "Vista usuario demo" : "Modo owner autorizado"}
                   </Badge>
                   <Button
                     variant="outline"
@@ -368,7 +368,7 @@ function DashboardLayoutContent({
                     ) : (
                       <UserRound className="mr-2 h-4 w-4" />
                     )}
-                    {isViewingAsUser ? "Volver a CEO" : "Ver como usuario"}
+                    {isViewingAsUser ? "Volver al panel privado" : "Ver como usuario"}
                   </Button>
                 </>
               ) : null}

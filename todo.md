@@ -1358,3 +1358,17 @@
 - [x] Reforzar la promesa explícita de confidencialidad/anonato en Home y /auditar con copy de alta confianza y bajo riesgo.
 - [x] Añadir un resumen humano previo a los textos legales para reducir intimidación sin tocar el contenido jurídico base.
 - [x] Revalidar con pruebas la experiencia pública y la restricción de acceso a la superficie CEO.
+- [x] Contrastar con ChatGPT, Grok y Gemini el nuevo sprint externo que propone CTA “Revisar mi recibo gratis”, hero más visceral, privacidad radical y simplificación extrema de Home y /auditar.
+- [x] Evaluar si conviene volver público y más prominente el aviso de privacidad desde hero, footer y /auditar sin romper el flujo actual.
+- [x] Evaluar el impacto de cambiar el CTA dominante de la fase conservadora a “Revisar mi recibo gratis” en Home, /auditar y pruebas.
+- [x] Evaluar si conviene reescribir el hero para enfocarlo totalmente en recibo de nómina y señales raras como wedge principal.
+- [x] Evaluar el riesgo de renombrar semánticamente la superficie privada /ceo hacia “Mi Expediente de Defensa” o “Mi Botón de Pánico Laboral”.
+- [x] Evaluar quick wins propuestos: explicación mínima en /auditar, promesa de borrado visible, modo oscuro por defecto y botón flotante de cierre rápido.
+- [x] Consultar al usuario con una propuesta de implementación por fases antes de tocar cambios estructurales de alto riesgo como escáner pre-login, WhatsApp o renombre profundo del dashboard.
+- [x] Reescribir el hero de Home al enfoque visceral de recibo de nómina con H1 y subtítulo orientados a señales raras y pago correcto.
+- [x] Cambiar los CTAs públicos dominantes de la fase ampliada a “Revisar mi recibo gratis” y dejar el secundario como “Ver ejemplo de resultado”.
+- [x] Añadir un bloque visual prominente de privacidad radical con promesa explícita de borrado visible desde Home y reforzar enlace claro a /legal/privacidad.
+- [x] Recortar el copy de Home para acercarlo a una estructura más corta y emocional sin romper las secciones que hoy sostienen la comprensión.
+- [x] Hacer /auditar más directa: módulo de subida arriba, microcopy mínimo y foco explícito en recibo de nómina como primer caso de uso.
+- [x] Renombrar en la semántica visible la superficie privada hacia una narrativa tipo “Mi Expediente de Defensa”, sin cambiar todavía rutas internas ni arquitectura.
+- [x] Revalidar las pruebas afectadas por los nuevos CTAs, hero, privacidad y semántica visible del área privada antes del checkpoint.

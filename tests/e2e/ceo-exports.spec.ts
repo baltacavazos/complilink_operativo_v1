@@ -42,7 +42,7 @@ test.describe("Exportes CEO", () => {
     await loginAsOwner(page);
 
     await page.goto("/ceo");
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
 
     const csvDownloadPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: /exportar csv/i }).click();
@@ -76,7 +76,7 @@ test.describe("Exportes CEO", () => {
     });
 
     await page.goto("/ceo");
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
     await expect(page.getByRole("button", { name: /exportar csv/i })).toBeDisabled();
     await expect(page.getByRole("button", { name: /reporte pdf/i })).toBeDisabled();
     await expect(page.getByRole("button", { name: /^Actualizar$/i })).toBeEnabled();
@@ -139,7 +139,7 @@ test.describe("Exportes CEO", () => {
     });
 
     await page.goto("/ceo");
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
 
     const csvDownloadPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: /exportar csv/i }).click();
@@ -162,7 +162,7 @@ test.describe("Exportes CEO", () => {
     });
 
     await page.goto("/ceo/bridge");
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
     await expect(page.getByTestId("bridge-smoke-alert-summary")).toBeVisible();
     await expect(page.getByTestId("bridge-smoke-alert-badge")).toBeVisible();
     await expect(page.getByTestId("bridge-smoke-threshold-badge")).toContainText(/umbral/i);

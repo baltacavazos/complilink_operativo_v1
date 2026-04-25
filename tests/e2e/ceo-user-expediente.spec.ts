@@ -30,7 +30,7 @@ test.describe("Flujo crítico CEO ↔ vista usuario ↔ expediente", () => {
 
     await page.goto("/ceo");
     await expect(page).toHaveURL(/\/ceo$/);
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
 
     await page.getByRole("button", { name: /ver como usuario/i }).click();
 
@@ -48,10 +48,10 @@ test.describe("Flujo crítico CEO ↔ vista usuario ↔ expediente", () => {
     await expect(page).toHaveURL(/\/auditar$/);
     await expect(page.getByText("Estás viendo la plataforma como usuario normal")).toBeVisible();
 
-    await page.getByRole("button", { name: /salir de la demo y volver al ceo/i }).click();
+    await page.getByRole("button", { name: /salir de la demo y volver al (ceo|panel privado)/i }).click();
 
     await expect(page).toHaveURL(/\/ceo$/);
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
 
     await expect
       .poll(() =>
@@ -82,7 +82,7 @@ test.describe("Flujo crítico CEO ↔ vista usuario ↔ expediente", () => {
     await expect(page).toHaveURL(/legalCaseId=CASE-42/);
     await expect(page).toHaveURL(/legalAuditFamily=guardrail/);
     await expect(page).toHaveURL(/legalAuditSeverity=high/);
-    await expect(page.getByText("Modo CEO maestro")).toBeVisible();
+    await expect(page.getByText("Modo owner autorizado")).toBeVisible();
     await expect(page.getByTestId("ceo-context-summary-pill")).toContainText("Tenant tenant-demo");
   });
 });

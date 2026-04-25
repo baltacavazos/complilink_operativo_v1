@@ -153,12 +153,12 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
     "Formatos compatibles: PDF, XML, JPG, PNG o WEBP. Límite real: 12 MB por archivo.",
   privacyRules:
-    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. El proceso mantiene señales visibles de seguridad y control.",
+    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. Nadie de tu empresa puede ver lo que subes y puedes pedir borrado cuando lo necesites.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
   fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
-  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas.",
+  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.",
 };
 
 const UPLOAD_HELP_DISCLOSURE_SUMMARY =
@@ -6424,27 +6424,27 @@ export default function Auditar() {
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Sigue fortaleciendo tu expediente"
-                      : "Sube tu documento"}
+                      : "Empieza por tu recibo"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
                       ? "Si quieres subir otro archivo, aquí puedes hacerlo en un paso."
-                      : "Sube tu primer archivo y recibe una lectura clara al momento."}
+                      : "Sube tu recibo de nómina y recibe una lectura clara al momento."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Tu resultado principal ya quedó arriba. Este bloque solo te sirve para seguir fortaleciendo el expediente con otro documento cuando lo necesites."
-                      : "Te diremos qué documento es, qué ya entendimos y qué conviene revisar después."}
+                      : "Te diremos qué señal vimos, qué ya entendimos y qué conviene revisar después. Si no tienes recibo, también sirve CFDI, contrato o soporte laboral."}
                   </p>
                   <div
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
                   >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
-                        Confidencialidad activa
+                        Privacidad radical
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tus datos se usan solo dentro de esta auditoría.
+                        Nadie de tu empresa puede ver lo que subes en este flujo.
                       </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -6457,10 +6457,10 @@ export default function Auditar() {
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
-                        Siguiente paso claro
+                        Borrado visible
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Después de subirlo te diremos exactamente qué sigue.
+                        Puedes pedir eliminación y mantener control claro sobre lo que conservas.
                       </p>
                     </article>
                   </div>
@@ -6514,12 +6514,12 @@ export default function Auditar() {
                         ? "Cambiar documento"
                         : shouldCompactPostUploadExperience
                           ? "Subir otro documento"
-                          : "Subir documento ahora"}
+                          : "Revisar mi recibo gratis"}
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
-                        : "Toma foto o elige un archivo guardado en un solo paso."}
+                        : "Toma foto o sube PDF/XML en un solo paso. Si no tienes recibo, puedes empezar con otro documento laboral útil."}
                     </p>
                   </div>
                 </div>
@@ -6528,22 +6528,20 @@ export default function Auditar() {
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
                 >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-950">
-                      Qué pasa con tu archivo
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Se resguarda dentro del expediente y alimenta la
-                      comparación progresiva con el resto de tus piezas.
-                    </p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Qué pasa con tu archivo
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        Se revisa dentro de un espacio privado, no se integra sin tu confirmación y luego alimenta la comparación progresiva con el resto de tus piezas.
+                      </p>
                   </article>
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-950">
-                      Cómo seguir después
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Si ya lo tienes listo, súbelo ahora. Si dudas, la
-                      sugerencia activa te marca el siguiente documento útil.
-                    </p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        Cómo seguir después
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el siguiente documento útil sin obligarte a reunir todo desde el inicio.
+                      </p>
                   </article>
                 </div>
               </div>

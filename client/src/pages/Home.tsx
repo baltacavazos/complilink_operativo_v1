@@ -237,28 +237,28 @@ const guidedFaqOptions = [
 
 const heroCopyVariants = {
   alert: {
-    tabLabel: "Alerta y control",
-    eyebrowMobile: "Alerta laboral temprana",
-    eyebrowDesktop: "Alerta laboral temprana",
-    titleLead: "Podrías estar perdiendo dinero o derechos",
-    titleAccent: "y ni siquiera lo sabes.",
-    supportLine: "Revísalo hoy y toma control de tu historial laboral.",
+    tabLabel: "Pago y señales",
+    eyebrowMobile: "Revisión urgente de nómina",
+    eyebrowDesktop: "Revisión urgente de nómina",
+    titleLead: "Tu recibo de nómina",
+    titleAccent: "puede revelar señales raras.",
+    supportLine: "Revísalo gratis antes de que el problema crezca.",
     body:
-      "Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.",
-    ctaPrimary: "Subir mi documento gratis",
-    ctaSecondary: "Ver cómo se ve mi reporte",
+      "Detecta diferencias de pago, deducciones extrañas y pistas que conviene revisar primero.",
+    ctaPrimary: "Revisar mi recibo gratis",
+    ctaSecondary: "Ver ejemplo de resultado",
   },
   control: {
-    tabLabel: "Control inmediato",
-    eyebrowMobile: "Control y claridad desde tu primer archivo",
-    eyebrowDesktop: "Control y claridad desde tu primer archivo",
-    titleLead: "Revisa hoy tu historial laboral",
-    titleAccent: "y actúa con más control.",
-    supportLine: "Empieza con el documento que ya tienes a la mano.",
+    tabLabel: "Revisar primero",
+    eyebrowMobile: "Empieza por tu recibo más reciente",
+    eyebrowDesktop: "Empieza por tu recibo más reciente",
+    titleLead: "Sube tu recibo",
+    titleAccent: "y ve qué salta primero.",
+    supportLine: "Empieza con un archivo cotidiano, sin tecnicismos.",
     body:
-      "Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.",
-    ctaPrimary: "Subir mi documento gratis",
-    ctaSecondary: "Ver cómo se ve mi reporte",
+      "Recibes una lectura clara, el siguiente documento útil y control sobre tu expediente desde el primer intento.",
+    ctaPrimary: "Revisar mi recibo gratis",
+    ctaSecondary: "Ver ejemplo de resultado",
   },
 } as const;
 
@@ -477,7 +477,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Subir mi documento gratis";
+const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -915,7 +915,7 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            Sube 1 documento y entiende qué revisar
+            Tu recibo puede revelar señales raras
           </div>
 
           <h1
@@ -923,12 +923,12 @@ function HeroSection() {
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             <span className="block sm:hidden">
-              Sube un documento
-              <span className="mt-1 block text-amber-700">y te decimos qué sigue.</span>
+              Tu recibo de nómina
+              <span className="mt-1 block text-amber-700">puede tener señales raras.</span>
             </span>
             <span className="hidden sm:block">
-              Sube un documento
-              <span className="block text-amber-700">y te decimos qué sigue.</span>
+              Tu recibo de nómina
+              <span className="block text-amber-700">puede tener señales raras.</span>
             </span>
           </h1>
 
@@ -936,14 +936,14 @@ function HeroSection() {
             className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-            Verás de inmediato qué archivo subiste, qué hallazgo principal apareció y qué conviene revisar primero.
+Revísalo gratis hoy y ve si hay señales raras en tu pago, tus deducciones o tu CFDI.
           </p>
 
           <p
             className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-            Empieza con el recibo, contrato o CFDI que ya tienes a la mano. AuditaPatron lo lee, te devuelve un resultado claro desde el primer intento y te muestra el siguiente paso sin llenarte de pantallas.
+Empieza con tu recibo de nómina más reciente. Si no lo tienes a la mano, también sirve CFDI o contrato. AuditaPatron lo lee, te marca señales raras y te dice qué revisar primero sin llenarte de pantallas.
           </p>
 
           <div
@@ -953,15 +953,15 @@ function HeroSection() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Si no sabes cuál subir primero
+                  Si no sabes con qué empezar
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-700">
-                  Empieza con cualquier archivo que ya tengas. Si quieres ir a lo seguro, aquí te mostramos una opción útil para arrancar sin pensar demasiado.
+Empieza por el archivo que más rápido suele revelar diferencias: un recibo reciente o un CFDI del mismo periodo.
                 </p>
               </div>
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                Un archivo basta para empezar
-              </span>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                  Empieza por un solo recibo
+                </span>
             </div>
 
             <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4">
@@ -997,11 +997,11 @@ function HeroSection() {
                 })
               }
             >
-              Quiero revisar mi documento
+              {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
               <p className="text-sm leading-6 text-slate-600">
-              Entras, subes un archivo y ves un resultado claro. Lo demás aparece después, solo si hace falta.
+Entras, subes tu recibo o un archivo similar y ves un resultado claro. Lo demás aparece después, solo si te ayuda.
             </p>
           </div>
 
@@ -1256,21 +1256,61 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
 
 function QuickTrustSection() {
   return (
-    <section className="border-y border-teal-100/80 bg-[#dbeeee] py-3.5 sm:bg-[#e6f2f1]">
-      <div className="container mx-auto grid gap-3 sm:grid-cols-3">
-        {[
-              "Auditoría documental clara desde el primer archivo.",
-                "Nadie de tu empresa puede ver lo que subes. Tu información se resguarda y permanece disponible para ti 24/7.",
-              "Privacidad visible, lenguaje simple y siguientes pasos concretos.",
-
-        ].map((item) => (
-          <div
-            key={item}
-            className="rounded-[1.3rem] border border-slate-200 bg-white/88 px-4 py-3 text-sm font-medium text-slate-700"
-          >
-            {item}
+    <section id="privacidad" className="border-y border-teal-100/80 bg-[#dbeeee] py-8 sm:bg-[#e6f2f1] sm:py-10">
+      <div className="container mx-auto max-w-6xl">
+        <div className="grid gap-5 rounded-[2rem] border border-teal-100 bg-white/94 p-5 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.32)] sm:p-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+              <Lock className="h-4 w-4" strokeWidth={1.8} />
+              Privacidad radical y control visible
+            </div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.35rem]">
+              Nadie de tu empresa puede ver lo que subes.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
+              Tu archivo entra a un espacio privado para revisión laboral. Primero ves el borrador, decides si se guarda y mantienes control visible sobre lo que compartes.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
+                {PRIMARY_CTA_LABEL}
+                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50"
+                onClick={() => {
+                  window.location.href = "/legal/privacidad";
+                }}
+              >
+                Leer aviso de privacidad
+              </Button>
+            </div>
           </div>
-        ))}
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {[
+              {
+                title: "Primero revisas",
+                body: "Nada se integra al expediente hasta que ves el borrador y confirmas con calma.",
+              },
+              {
+                title: "Borrado visible",
+                body: "Puedes solicitar eliminación y mantener trazabilidad clara sobre lo que decidiste conservar.",
+              },
+              {
+                title: "Sin exposición interna",
+                body: "La revisión está diseñada para que tu empresa no vea el documento que subes en este flujo.",
+              },
+            ].map((item) => (
+              <article
+                key={item.title}
+                className="rounded-[1.3rem] border border-slate-200 bg-slate-50/90 px-4 py-4 text-sm text-slate-700 shadow-sm"
+              >
+                <p className="font-semibold text-slate-950">{item.title}</p>
+                <p className="mt-2 leading-6">{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -2158,7 +2198,7 @@ function FinalCtaSection() {
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                 onClick={() => scrollToId("ejemplo-reporte")}
               >
-                Ver cómo se ve el reporte
+                Ver ejemplo de resultado
               </Button>
             </div>
 
