@@ -13,7 +13,7 @@ test.describe("home pública", () => {
   test("mantiene copy comercial y bloquea frases internas o residuales", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("button", { name: "Auditar ahora" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Subir mi documento gratis" }).first()).toBeVisible();
 
     const bodyText = await page.locator("body").innerText();
 

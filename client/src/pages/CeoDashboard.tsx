@@ -1915,7 +1915,7 @@ export default function CeoDashboard() {
         </>
       }
     >
-      {!isAdmin ? (
+      {!isAdmin || (!baseSnapshotQuery.isLoading && !baseSnapshotQuery.isError && !isMasterUser) ? (
         <section className="rounded-[2rem] border border-amber-200 bg-amber-50/90 p-8 shadow-[0_24px_70px_-34px_rgba(146,64,14,0.18)]">
           <div className="flex flex-wrap items-start gap-4">
             <div className="rounded-2xl bg-white p-3 text-amber-700 shadow-sm">
@@ -1924,12 +1924,10 @@ export default function CeoDashboard() {
             <div className="max-w-3xl space-y-3">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso restringido</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                Esta consola ejecutiva sólo está disponible para perfiles administradores.
+                Este panel maestro sólo está disponible para el owner autorizado.
               </h2>
               <p className="text-base leading-7 text-slate-700">
-                Tu sesión está autenticada, pero no tiene permisos para visualizar el tablero global del CEO. Si este
-                acceso debe habilitarse, actualiza el rol del usuario a <strong>admin</strong> desde la administración
-                interna.
+                Tu sesión está autenticada, pero no coincide con la identidad maestra autorizada para esta superficie. Si este acceso debe revisarse, confirma primero la identidad del owner y después valida permisos internos.
               </p>
             </div>
           </div>

@@ -33,8 +33,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Entrar con mi asistente");
     expect(source).not.toContain("Abrir mi expediente");
     expect(source).not.toContain("Tus derechos laborales,");
-    expect(source).toContain('const PRIMARY_CTA_LABEL = "Auditar ahora"');
-    expect(source).toContain("Auditar ahora");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Subir mi documento gratis"');
+    expect(source).toContain("Subir mi documento gratis");
     expect(source).toContain("Ya entendí mejor qué revisar primero.");
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Caso anónimo 01");
@@ -120,18 +120,18 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain("Acceso simple");
     expect(source).toContain("Entrar con correo");
-    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y entra.");
+    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo a ");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
     expect(source).not.toContain("Luego vuelves a");
     expect(source).toContain("function getReturnToLabel");
     expect(source).toContain('return "tu auditoría"');
-    expect(source).toContain('return "la consola ejecutiva"');
+    expect(source).toContain('return "tu panel privado"');
     expect(source).toContain('return "el inicio"');
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
-    expect(source).toContain("Después vuelves directo a ");
+    expect(source).toContain("sin perder tu avance.");
     expect(source).not.toContain("Después de entrar: ");
     expect(source).toContain("Vuelves a: ");
     expect(source).toContain("Recibir código");
@@ -168,6 +168,7 @@ describe("copy visible de la experiencia", () => {
   it("mantiene el marco legal visible sin referencias intimidantes", () => {
     const source = readPage("LegalDocuments");
 
+    expect(source).toContain("Resumen humano antes del texto completo");
     expect(source).toContain("acompañamiento laboral dentro de la plataforma");
     expect(source).not.toContain("AuditaPatron y Helios");
   });

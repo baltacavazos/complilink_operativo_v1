@@ -33,7 +33,7 @@ function getReturnToLabel(returnTo: string) {
   }
 
   if (returnTo.startsWith("/ceo")) {
-    return "la consola ejecutiva";
+    return "tu panel privado";
   }
 
   if (returnTo === "/" || returnTo.startsWith("/#")) {
@@ -277,7 +277,7 @@ export default function Access() {
                 Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo a {returnToLabel}.
+                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo a {returnToLabel} sin perder tu avance.
               </p>
             </div>
 

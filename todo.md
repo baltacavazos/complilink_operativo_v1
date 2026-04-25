@@ -1346,3 +1346,15 @@
 - [ ] Estabilizar Playwright e instalar los navegadores requeridos para ejecutar la cobertura E2E crítica de la plataforma.
 - [ ] Reducir el peso del bundle principal y revisar la estrategia de partición de código para mejorar performance previa a pruebas masivas.
 - [ ] Simplificar el primer flujo de /auditar y clarificar la entrada de /acceso para disminuir fricción en onboarding antes de pruebas masivas.
+- [x] Preparar un prompt reutilizable para auditoría comparativa con 3 IAs externas y consolidación de consenso sobre la experiencia pública y el dashboard.
+- [ ] Analizar el reporte externo de rediseño y contrastar sus prioridades críticas con el estado actual de Home, /acceso, /auditar y las rutas del dashboard.
+- [ ] Contrastar con ChatGPT, Grok y Gemini si conviene implementar primero las 3 prioridades críticas y los 7 quick wins sugeridos.
+- [ ] Evaluar el impacto de hacer pública y más visible la privacidad desde Home, footer y /auditar.
+- [ ] Evaluar si conviene reemplazar el hero actual por la propuesta enfocada en trabajador y CTA único “Subir mi documento gratis”.
+- [ ] Evaluar el riesgo de quitar o renombrar todas las referencias públicas al dashboard ejecutivo para evitar confusión de rol.
+- [ ] Consultar al usuario con una propuesta de implementación por fases antes de tocar código.
+- [x] Blindar la semántica y visibilidad de /ceo para que funcione como superficie exclusiva de owner/admin sin referencias públicas residuales.
+- [x] Unificar el CTA principal público hacia “Subir mi documento gratis” en Home y puntos clave del flujo.
+- [x] Reforzar la promesa explícita de confidencialidad/anonato en Home y /auditar con copy de alta confianza y bajo riesgo.
+- [x] Añadir un resumen humano previo a los textos legales para reducir intimidación sin tocar el contenido jurídico base.
+- [x] Revalidar con pruebas la experiencia pública y la restricción de acceso a la superficie CEO.

@@ -170,6 +170,12 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
                 Consulta aquí la versión completa de nuestros documentos legales actualizados. Están escritos en español y forman parte del uso regular de AuditaPatron y de tu experiencia de acompañamiento laboral dentro de la plataforma.
               </p>
+              <div className="mt-4 max-w-3xl rounded-[1.25rem] border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-200 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)]">
+                <p className="font-semibold text-white">Resumen humano antes del texto completo</p>
+                <p className="mt-2">
+                  Aquí puedes revisar con calma qué datos usamos, cómo protegemos tu expediente y cuáles son las reglas básicas del servicio antes de entrar al documento completo.
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-semibold sm:justify-end">
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-white">{document.version}</span>
@@ -213,7 +219,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
 
         <footer className="mt-8 border-t border-slate-200 pt-5 text-xs leading-6 text-slate-500">
           <p>
-            Este documento forma parte del marco legal visible de AuditaPatron. Si necesitas apoyo para ejercer derechos ARCO,
+            Este documento forma parte del marco legal visible de AuditaPatron. Primero puedes leer el resumen humano y después, si lo necesitas, revisar el texto completo. Si necesitas apoyo para ejercer derechos ARCO,
             solicitar revocación o aclarar una versión legal, contáctanos en{" "}
             <a className="font-medium text-slate-700 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>
               {LEGAL_CONTACT_EMAIL}

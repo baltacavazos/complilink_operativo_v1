@@ -33,6 +33,6 @@ describe("V1 release scope safeguards", () => {
     expect(ceoSource).toContain('useAuth({ redirectOnUnauthenticated: true, redirectPath: "/ceo" })');
     expect(ceoSource).toContain('const isAdmin = user?.role === "admin";');
     expect(ceoSource).toContain("Acceso restringido");
-    expect(ceoSource).toContain("Esta consola ejecutiva sólo está disponible para perfiles administradores.");
+    expect(ceoSource).toContain("Este panel maestro sólo está disponible para el owner autorizado.");
   });
 });

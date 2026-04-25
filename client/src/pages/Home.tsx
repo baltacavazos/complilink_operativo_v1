@@ -245,7 +245,7 @@ const heroCopyVariants = {
     supportLine: "Revísalo hoy y toma control de tu historial laboral.",
     body:
       "Detecta señales en nómina, CFDI y documentos clave para entender qué revisar primero.",
-    ctaPrimary: "Subir mi primer documento",
+    ctaPrimary: "Subir mi documento gratis",
     ctaSecondary: "Ver cómo se ve mi reporte",
   },
   control: {
@@ -257,7 +257,7 @@ const heroCopyVariants = {
     supportLine: "Empieza con el documento que ya tienes a la mano.",
     body:
       "Ordena tus archivos y te orienta sobre el siguiente documento útil desde el primer paso.",
-    ctaPrimary: "Ir a mi primera auditoría",
+    ctaPrimary: "Subir mi documento gratis",
     ctaSecondary: "Ver cómo se ve mi reporte",
   },
 } as const;
@@ -477,7 +477,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Auditar ahora";
+const PRIMARY_CTA_LABEL = "Subir mi documento gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -1221,10 +1221,10 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                    Continúa con tu primera auditoría
+                    Sube tu documento gratis
                   </p>
                   <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Empieza con {activePrediagnostic.document.toLowerCase()} y convierte tu primera duda en un resultado visible, con explicación y evidencia desde el primer intento.
+                    Empieza con {activePrediagnostic.document.toLowerCase()} y recibe una primera lectura clara, confidencial y visible desde el primer intento.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1244,7 +1244,7 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Entra aquí para subir ese archivo y recibir tu primera lectura útil antes de pasar a comparaciones o preguntas más avanzadas. Primero va la parte gratuita; si después quieres avanzar con mayor respaldo, esa opción aparecerá dentro de tu expediente y solo si te hace sentido.
+                Entra aquí para subir ese archivo gratis y recibir una primera lectura útil. Tu revisión se mantiene confidencial y el siguiente paso aparece dentro de tu expediente solo si te hace sentido.
               </p>
             </button>
           </div>
@@ -1260,7 +1260,7 @@ function QuickTrustSection() {
       <div className="container mx-auto grid gap-3 sm:grid-cols-3">
         {[
               "Auditoría documental clara desde el primer archivo.",
-              "Tu información se resguarda y permanece disponible para ti 24/7.",
+                "Nadie de tu empresa puede ver lo que subes. Tu información se resguarda y permanece disponible para ti 24/7.",
               "Privacidad visible, lenguaje simple y siguientes pasos concretos.",
 
         ].map((item) => (
@@ -1965,9 +1965,9 @@ function MobilePriorityPathSection() {
     {
       id: "privacidad",
       eyebrow: "Privacidad visible",
-      title: "Tus documentos se resguardan para darte claridad y calma",
+      title: "Tus documentos se resguardan para darte claridad, calma y control",
       description:
-        "La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma más progresiva para no saturarte antes de iniciar tu revisión.",
+        "Tu empresa no ve lo que subes. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
       bullets: [
         "Puedes volver a tu expediente cuando lo necesites.",
         "Las explicaciones priorizan tranquilidad y control.",

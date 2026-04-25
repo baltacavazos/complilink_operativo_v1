@@ -2749,7 +2749,7 @@ function buildHeliosComparisonCopy(params: {
         "Mientras más documentos útiles subas, más contexto habrá para distinguir cambios reales de simples huecos de información.",
       cta: params.nextTarget
         ? `Subir ${params.nextTarget.label.toLowerCase()}`
-        : "Subir mi primer documento",
+        : "Subir mi documento gratis",
     } as const;
   }
 
@@ -6164,7 +6164,7 @@ export default function Auditar() {
               <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[21rem]">
                 <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700">
                   <p className="font-semibold text-slate-950">
-                    Cobertura legal
+                            Cobertura legal y privacidad
                   </p>
                   <p className="mt-2">
                     {acceptedLegalDocumentsCount} de{" "}
@@ -6441,7 +6441,7 @@ export default function Auditar() {
                   >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
-                        Privacidad activa
+                        Confidencialidad activa
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
                         Tus datos se usan solo dentro de esta auditoría.
@@ -7881,8 +7881,8 @@ export default function Auditar() {
                   className="h-4 w-4 shrink-0 text-teal-700"
                   strokeWidth={1.8}
                 />
-                <span className="font-semibold">Privacidad activa.</span>
-                <span>Tú revisas antes de guardar.</span>
+                <span className="font-semibold">Confidencialidad activa.</span>
+                <span>Nadie de tu empresa ve lo que subes.</span>
                 <span className="hidden sm:inline text-teal-400">•</span>
                 <span>Si algo falla, puedes reintentar.</span>
               </div>
@@ -8522,8 +8522,7 @@ export default function Auditar() {
                               documento.
                             </p>
                             <p className="mt-1 text-sm leading-6 text-slate-600">
-                              Así protegemos tu expediente y dejamos constancia
-                              de la versión legal vigente en el mismo paso.
+                              Así protegemos tu expediente, reforzamos la confidencialidad y dejamos constancia de la versión legal vigente en el mismo paso.
                             </p>
                           </div>
                           <button
@@ -8719,8 +8718,7 @@ export default function Auditar() {
                         Tu autorización se registra junto con este documento.
                       </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
-                        Así protegemos tu expediente y dejamos constancia de la
-                        versión legal vigente en el mismo paso.
+                         Así protegemos tu expediente, reforzamos la confidencialidad y dejamos constancia de la versión legal vigente en el mismo paso.
                       </p>
                     </div>
                     <button
