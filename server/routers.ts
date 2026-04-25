@@ -29,6 +29,7 @@ import {
   getDashboardForUser,
   getCeoDashboardSnapshot,
   getCeoMasterMetrics,
+  getHeliosPublicActivityCount,
   getSystemSnapshot,
   getVisibleDocumentForUser,
   grantCaseAccess,
@@ -97,6 +98,12 @@ import {
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { buildHeliosOpinionContract } from "./heliosIntegrationService";
+import {
+  buildGuestPreviewOpinion,
+  buildPublicHeliosHomeExamples,
+  createGuestPreviewToken,
+  readGuestPreviewToken,
+} from "./heliosPublicExperience";
 import {
   HELIOS_CONTEXT_NOTE,
   LEGAL_ACCEPTANCE_VERSION,
@@ -1909,6 +1916,31 @@ export const appRouter = router({
       } as const;
     }),
   }),
+  landing: router({
+    heliosHome: publicProcedure.query(async () => {
+      const examples = buildPublicHeliosHomeExamples();
+      try {
+        const activity = await getHeliosPublicActivityCount();
+        return {
+          examples,
+          publicActivity: {
+            documentsReviewedToday: activity.documentsReviewed,
+            measuredFrom: activity.measuredFrom.toISOString(),
+            label: "Documentos revisados por Helios en las últimas 24 horas",
+          },
+        };
+      } catch {
+        return {
+          examples,
+          publicActivity: {
+            documentsReviewedToday: 0,
+            measuredFrom: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+            label: "Documentos revisados por Helios en las últimas 24 horas",
+          },
+        };
+      }
+    }),
+  }),
   workspace: router({
     bootstrap: protectedProcedure.mutation(async ({ ctx }) => {
       const tenant = await ensureTenantForUser({
@@ -1938,6 +1970,62 @@ export const appRouter = router({
     }),
     snapshot: protectedProcedure.query(async ({ ctx }) => {
       return getSystemSnapshot(ctx.user.id);
+    }),
+    homeSnapshot: protectedProcedure.query(async ({ ctx }) => {
+      const tenants = await listTenantsForUser(ctx.user.id);
+      const primaryTenant = tenants[0] ?? null;
+
+      if (!primaryTenant) {
+        return {
+          tenantId: null,
+          latestCase: null,
+        };
+      }
+
+      const cases = await listCasesForUser({
+        userId: ctx.user.id,
+        tenantId: primaryTenant.tenantId,
+      });
+      const latestCase = cases[0] ?? null;
+
+      if (!latestCase) {
+        return {
+          tenantId: primaryTenant.tenantId,
+          latestCase: null,
+        };
+      }
+
+      const detail = await getCaseDetailForUser({
+        userId: ctx.user.id,
+        tenantId: primaryTenant.tenantId,
+        caseId: latestCase.caseId,
+      });
+      const documents = await listVisibleDocuments({
+        userId: ctx.user.id,
+        tenantId: primaryTenant.tenantId,
+        caseId: latestCase.caseId,
+      });
+      const documentsWithOpinion = documents.filter((item) => Boolean(asObjectRecord(item.heliosOpinion))).length;
+      const heliosExpedienteState = getHeliosExpedienteStage({
+        caseStatus: detail.case.status,
+        documentsCount: documents.length,
+        documentsWithOpinion,
+        closedAt: detail.case.closedAt,
+      });
+
+      return {
+        tenantId: primaryTenant.tenantId,
+        latestCase: {
+          caseId: detail.case.caseId,
+          title: detail.case.title,
+          employeeName: detail.case.employeeName,
+          stage: heliosExpedienteState.stage,
+          stageLabel: heliosExpedienteState.stageLabel,
+          summary: heliosExpedienteState.summary,
+          documentsCount: documents.length,
+          documentsWithOpinion,
+        },
+      };
     }),
   }),
   tenants: router({
@@ -3139,6 +3227,374 @@ export const appRouter = router({
 
         return updatedCase;
       }),
+    guestAnalyzeDocument: publicProcedure
+      .input(
+        z.object({
+          fileName: z.string().min(1),
+          mimeType: z.string().min(3),
+          base64Content: z.string().min(20),
+          textHint: z.string().max(500).optional(),
+          expectedDocumentType: auditarTargetTypeSchema.optional(),
+          captureMode: auditarCaptureModeSchema.optional(),
+          sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        const { safeFileName } = validateAuditarUploadMetadata({
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+        });
+        const binary = decodeBase64File(input.base64Content);
+        const sha256 = computeSha256(binary);
+        const guestPreviewId = buildDraftId().replace(/^DRF-/, "GST-");
+        const traceId = buildTraceId("guest-home", guestPreviewId);
+        const { storageKey, uploaded, classification, scanAssistance, preliminaryAnalysis } =
+          await prepareAuditarDocumentPipeline({
+            tenantId: "guest-home",
+            caseId: guestPreviewId,
+            storageEntityId: guestPreviewId,
+            fileName: safeFileName,
+            mimeType: input.mimeType,
+            binary,
+            expectedDocumentType: input.expectedDocumentType,
+            textHint: input.textHint,
+          });
+        const previewOpinion = buildGuestPreviewOpinion({
+          guestPreviewId,
+          traceId,
+          fileName: safeFileName,
+          classification,
+          preliminaryAnalysis,
+        });
+        const createdAt = new Date().toISOString();
+        const guestPreviewToken = createGuestPreviewToken({
+          guestPreviewId,
+          traceId,
+          createdAt,
+          fileName: safeFileName,
+          mimeType: input.mimeType,
+          sizeBytes: binary.byteLength,
+          sha256,
+          storageKey,
+          storageUrl: uploaded.url,
+          expectedDocumentType: input.expectedDocumentType ?? null,
+          captureMode: input.captureMode ?? null,
+          sourceChannel: input.sourceChannel,
+          classification,
+          preliminaryAnalysis,
+          scanAssistance,
+          previewOpinion,
+        });
+
+        return {
+          guestPreviewId,
+          guestPreviewToken,
+          createdAt,
+          preview: {
+            ...buildDraftPreviewPayload({
+              draftId: guestPreviewId,
+              fileName: safeFileName,
+              mimeType: input.mimeType,
+              sizeBytes: binary.byteLength,
+              sha256,
+              storageKey,
+              storageUrl: uploaded.url,
+              textHint: input.textHint ?? null,
+              expectedDocumentType: input.expectedDocumentType ?? null,
+              captureMode: input.captureMode ?? null,
+              sourceChannel: input.sourceChannel,
+              classification,
+              preliminaryAnalysis,
+              scanAssistance,
+              createdAt,
+            }),
+            guestPreviewToken,
+          },
+          heliosOpinion: previewOpinion,
+        };
+      }),
+    claimGuestPreview: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string().min(3),
+          caseId: z.string().min(3),
+          guestPreviewToken: z.string().min(40),
+          visibility: documentVisibilitySchema.default("case_team"),
+          consentStatus: documentConsentStatusSchema.default("pending"),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        await assertCaseWriteAccess(ctx.user.id, input.tenantId, input.caseId);
+
+        const payload = readGuestPreviewToken(input.guestPreviewToken);
+        const detail = await getCaseDetailForUser({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const documentId = buildDocumentId();
+        const processedAt = new Date(payload.previewOpinion.generatedAt || Date.now());
+        const classification = payload.classification;
+        const preliminaryAnalysis = payload.preliminaryAnalysis;
+        const scanAssistance = payload.scanAssistance;
+        const safeFileName = sanitizeFileName(payload.fileName).trim();
+
+        await addDocumentRecord({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          originalName: safeFileName,
+          mimeType: payload.mimeType,
+          sizeBytes: payload.sizeBytes,
+          storageKey: payload.storageKey,
+          storageUrl: payload.storageUrl,
+          sha256: payload.sha256,
+          documentType: classification.documentType,
+          sourceChannel: payload.sourceChannel,
+          integrityStatus: "verified",
+          consentStatus: input.consentStatus,
+          visibility: input.visibility,
+          classificationConfidence: classification.classificationConfidence,
+          processedAt,
+        });
+
+        await updateDocumentPostProcessing({
+          documentId,
+          documentType: classification.documentType,
+          classificationConfidence: classification.classificationConfidence,
+          integrityStatus: "verified",
+          processedAt,
+          consentStatus: input.consentStatus,
+        });
+
+        const documentContract = buildCanonicalDocumentContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          documentType: classification.documentType,
+          sha256: payload.sha256,
+          storageKey: payload.storageKey,
+          storageUrl: payload.storageUrl,
+          visibility: input.visibility,
+          consentStatus: input.consentStatus,
+          classificationConfidence: classification.classificationConfidence,
+          originalName: safeFileName,
+          mimeType: payload.mimeType,
+          sizeBytes: payload.sizeBytes,
+        });
+
+        await addCaseEvents([
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_uploaded",
+            title: "Documento guardado desde vista previa",
+            description: `${safeFileName} se guardó en el expediente después de una lectura temporal de Helios.`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              guest_preview_id: payload.guestPreviewId,
+              sha256: payload.sha256,
+              visibility: input.visibility,
+              classification_confidence: classification.classificationConfidence,
+              capture_mode: payload.captureMode,
+              expected_document_type: payload.expectedDocumentType,
+              scan_assistance: scanAssistance,
+            }),
+            eventAt: new Date(),
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            actorUserId: ctx.user.id,
+            eventType: "document_classified",
+            title: "Documento clasificado desde vista previa",
+            description: `Clasificación automática preliminar: ${classification.normalizedDocType}.`,
+            metadata: JSON.stringify({
+              document_id: documentId,
+              guest_preview_id: payload.guestPreviewId,
+              reasons: classification.reasons,
+              normalized_doc_type: classification.normalizedDocType,
+              processing_profile: classification.processingProfile,
+              review_recommendation: classification.reviewRecommendation,
+            }),
+            eventAt: new Date(),
+          },
+        ]);
+
+        if (input.consentStatus === "pending") {
+          await addOperationalAlert({
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            severity: "warning",
+            category: "missing_consent",
+            title: "Documento con consentimiento pendiente",
+            description: `${safeFileName} requiere cierre de consentimiento o base legal explícita.`,
+            status: "open",
+            raisedAt: new Date(),
+          });
+        }
+
+        const contractsToPersist: Parameters<typeof upsertCanonicalContracts>[0] = [
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "document",
+            schemaVersion: "v1",
+            payload: JSON.stringify(documentContract),
+            status: "ready",
+          },
+          {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            traceId: detail.case.traceId,
+            contractType: "classification",
+            schemaVersion: "v1",
+            payload: JSON.stringify({
+              documentId,
+              guestPreviewId: payload.guestPreviewId,
+              classification,
+              preliminaryAnalysis,
+              confirmedData: preliminaryAnalysis.confirmedData,
+              estimatedData: preliminaryAnalysis.estimatedData,
+              extractionTargets: preliminaryAnalysis.extractionTargets,
+              generatedAt: processedAt.toISOString(),
+            }),
+            status: "ready",
+          },
+        ];
+
+        const caseContract = buildCanonicalCaseContract({
+          tenantId: detail.case.tenantId,
+          caseId: detail.case.caseId,
+          traceId: detail.case.traceId,
+          title: detail.case.title,
+          status: detail.case.status,
+          priority: detail.case.priority,
+          employeeName: detail.case.employeeName,
+          employerEntity: detail.case.employerEntity,
+          summary: detail.case.summary,
+        });
+
+        const sharedEngineEnvelope = buildSharedEngineEnvelope({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          caseContract,
+          documentContracts: [documentContract],
+        });
+
+        contractsToPersist.push({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "shared_engine",
+          schemaVersion: "v1",
+          payload: JSON.stringify(sharedEngineEnvelope),
+          status: "ready",
+        });
+
+        const heliosOpinionContract = buildHeliosOpinionContract({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          documentId,
+          documentType: classification.documentType,
+          documentName: safeFileName,
+          jurisdiction: detail.case.jurisdiction,
+          caseTitle: detail.case.title,
+          preliminaryAnalysis: {
+            confirmedData: preliminaryAnalysis.confirmedData,
+            estimatedData: preliminaryAnalysis.estimatedData,
+            guardrails: preliminaryAnalysis.guardrails,
+          },
+        });
+
+        contractsToPersist.push({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_v1",
+          payload: JSON.stringify(heliosOpinionContract),
+          status: "ready",
+        });
+
+        await upsertCanonicalContracts(contractsToPersist);
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title: "Helios preparó una opinión inicial",
+          description: heliosOpinionContract.opinion.summary,
+          metadata: JSON.stringify({
+            engine: "helios",
+            document_id: documentId,
+            guest_preview_id: payload.guestPreviewId,
+            risk_level: heliosOpinionContract.opinion.riskLevel,
+            confidence_score: heliosOpinionContract.opinion.confidenceScore,
+            generated_at: heliosOpinionContract.opinion.generatedAt,
+          }),
+          eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
+        });
+
+        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+          caseContract,
+          documentContract,
+          sharedEngineEnvelope,
+          sourceUserId: ctx.user.id,
+          uploadedAt: processedAt,
+          caseId: input.caseId,
+          docType: classification.documentType,
+          metadata: {
+            source: "guest_preview_claim",
+            document_name: safeFileName,
+            guest_preview_id: payload.guestPreviewId,
+          },
+        });
+
+        await createAuditLog({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          entityType: "document",
+          entityId: documentId,
+          action: "document.guest_preview_claimed",
+          afterState: {
+            guestPreviewId: payload.guestPreviewId,
+            documentId,
+            engineDispatch,
+            heliosOpinion: heliosOpinionContract.opinion,
+          },
+        });
+
+        return {
+          documentId,
+          document: {
+            documentId,
+            originalName: safeFileName,
+            mimeType: payload.mimeType,
+            sizeBytes: payload.sizeBytes,
+            documentType: classification.documentType,
+            storageUrl: payload.storageUrl,
+          },
+          classification,
+          preliminaryAnalysis,
+          scanAssistance,
+          heliosOpinion: heliosOpinionContract.opinion,
+          engineDispatch,
+        };
+      }),
     analyzeDocumentDraft: protectedProcedure
       .input(
         z.object({
@@ -3515,7 +3971,6 @@ export const appRouter = router({
               preliminaryAnalysis,
               confirmedData: preliminaryAnalysis.confirmedData,
               estimatedData: preliminaryAnalysis.estimatedData,
-              structuredExtraction: preliminaryAnalysis.structuredExtraction,
               extractionTargets: preliminaryAnalysis.extractionTargets,
               manualOverrides,
               generatedAt: processedAt.toISOString(),
@@ -4025,7 +4480,6 @@ export const appRouter = router({
               preliminaryAnalysis,
               confirmedData: preliminaryAnalysis.confirmedData,
               estimatedData: preliminaryAnalysis.estimatedData,
-              structuredExtraction: preliminaryAnalysis.structuredExtraction,
               extractionTargets: preliminaryAnalysis.extractionTargets,
               generatedAt: processedAt.toISOString(),
             }),

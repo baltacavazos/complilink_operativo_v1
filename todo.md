@@ -1384,3 +1384,12 @@
 - [x] Recortar Home a una estructura visible más cercana a 6-7 bloques y subir el ejemplo con monto al primer scroll.
 - [x] Convertir /auditar en una pantalla más pura de acción con stepper mínimo arriba y explicación secundaria debajo.
 - [x] Alinear pruebas de Home y /auditar con el Lote A y revalidar con Vitest y Playwright.
+- [ ] Revisar el nuevo adjunto del usuario y mapear cada recomendación contra capacidades, flujos y evidencia actual proveniente de Helios.
+- [ ] Definir una propuesta por fases basada solo en información de Helios antes de ejecutar cualquier cambio nuevo.
+- [ ] Presentar al usuario la priorización resultante y pedir aprobación previa para cualquier cambio estructural o de riesgo medio-alto.
+- [x] Contrastar con ChatGPT, Grok y Gemini la implementación Helios-first de las tres líneas aprobadas: copy/resultados reales en Home, pre-registro desde Home y contador público derivado de actividad real de Helios.
+- [x] Mapear qué salidas reales de Helios ya existen y pueden reutilizarse de forma visible en Home y en el resultado inmediato sin inventar copy genérico.
+- [x] Implementar ejemplos y microcopy Helios-first en Home y en el resultado inmediato usando hallazgo, explicación simple y siguiente paso reales del expediente o documento.
+- [x] Diseñar e implementar el flujo pre-registro desde Home para subir un documento, mostrar lectura parcial de Helios y pedir correo solo para guardar el expediente.
+- [x] Implementar un contador público basado en actividad real de Helios sin exponer datos sensibles ni romper rendimiento.
+- [x] Actualizar pruebas Vitest y E2E afectadas por la nueva ronda Helios-first y revalidar el proyecto antes del checkpoint.

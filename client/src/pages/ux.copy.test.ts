@@ -47,6 +47,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Si no sabes con qué empezar");
     expect(source).toContain("Empieza por el archivo que más rápido suele revelar diferencias");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(source).toContain('id="helios-desde-home"');
+    expect(source).toContain("Helios desde la Home");
+    expect(source).toContain("Sube un archivo aquí y ve primero lo que Helios sí entiende.");
+    expect(source).toContain("Vista previa temporal Helios-first");
+    expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(source).toContain("Guardar en mi expediente por correo");
+    expect(source).toContain("El correo sólo se usa cuando decides guardar el expediente");
+    expect(source).toContain("audipatron_home_primary_cta_redirected_to_guest_preview");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Fortalece expediente con contexto.");

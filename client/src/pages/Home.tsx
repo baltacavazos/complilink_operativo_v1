@@ -5,12 +5,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
 import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
   FileSearch,
+  Loader2,
   Lock,
   Menu,
   Shield,
@@ -64,6 +67,104 @@ type SocialProofItem = {
   supportingDetail: string;
   verification: string;
 };
+
+type LandingHeliosExample = {
+  id: string;
+  badge: string;
+  documentLabel: string;
+  title: string;
+  summary: string;
+  nextStep: string;
+  primaryConcern: string;
+};
+
+type StoredHomeGuestPreview = {
+  guestPreviewId: string;
+  guestPreviewToken: string;
+  createdAt: string;
+  preview: {
+    previewAsset: {
+      fileName: string;
+      mimeType: string;
+      sizeBytes: number;
+      sha256: string;
+      storageUrl: string;
+      captureMode?: string | null;
+      expectedDocumentType?: string | null;
+    };
+    classification: {
+      documentType: string;
+      normalizedDocType: string;
+      classificationConfidence?: number;
+      displayName?: string;
+    };
+    preliminaryAnalysis: {
+      confirmedData: Record<string, unknown>;
+      estimatedData: Record<string, unknown>;
+      extractionTargets: string[];
+      guardrails: string[];
+    };
+    scanAssistance?: {
+      friendlyHeadline?: string;
+      userGuidance?: string;
+      readiness?: string;
+    };
+  };
+  heliosOpinion: {
+    summary: string;
+    recommendedNextStep?: string | null;
+    confidenceScore?: number | null;
+    resultCard?: {
+      headline?: string | null;
+      nextStepSummary?: string | null;
+    };
+    legalHighlights?: {
+      primaryConcern?: string | null;
+    };
+  };
+};
+
+const HOME_GUEST_PREVIEW_STORAGE_KEY = "auditapatron_home_guest_preview_v1";
+const HOME_GUEST_PREVIEW_RETURN_TO = "/?resume=guest-preview";
+
+function fileToBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      const [, base64Content = ""] = result.split(",");
+      resolve(base64Content);
+    };
+    reader.onerror = () => reject(new Error("No pudimos leer el archivo seleccionado."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function readStoredHomeGuestPreview() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(HOME_GUEST_PREVIEW_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredHomeGuestPreview) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!preview) {
+    window.sessionStorage.removeItem(HOME_GUEST_PREVIEW_STORAGE_KEY);
+    return;
+  }
+
+  window.sessionStorage.setItem(HOME_GUEST_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
+}
 
 const navLinks = [
   { href: "#como-funciona", label: "Cómo funciona" },
@@ -981,14 +1082,20 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
           >
             <Button
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
-              onClick={() =>
-                goToAuditFlow({
+              onClick={() => {
+                trackEvent("audipatron_home_primary_cta_redirected_to_guest_preview", {
                   entry_point: "hero_primary",
                   hero_variant: selectedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                   cta_label: activeHeroVariant.ctaPrimary,
-                })
-              }
+                });
+                trackFunnelStep("home_primary_cta_redirected_to_guest_preview", {
+                  entry_point: "hero_primary",
+                  hero_variant: selectedHeroVariant,
+                  prediagnostic: selectedHeroPrediagnostic,
+                });
+                scrollToId("helios-desde-home");
+              }}
             >
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -1209,14 +1316,15 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
 
             <button
               type="button"
-              onClick={() =>
-                goToAuditFlow({
+              onClick={() => {
+                trackEvent("audipatron_home_sidebar_cta_redirected_to_guest_preview", {
                   entry_point: "hero_sidebar",
                   hero_variant: selectedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                   cta_label: "Siguiente paso sugerido",
-                })
-              }
+                });
+                scrollToId("helios-desde-home");
+              }}
               className="mt-5 block w-full rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-4 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
             >
               <div className="flex items-start justify-between gap-3">
@@ -1248,6 +1356,324 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
                 Entra aquí para subir ese archivo gratis y recibir una primera lectura útil. Tu revisión se mantiene confidencial y el siguiente paso aparece dentro de tu expediente solo si te hace sentido.
               </p>
             </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeliosFirstEntrySection() {
+  const auth = useAuth();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const landingQuery = trpc.landing.heliosHome.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+  const bootstrapMutation = trpc.workspace.bootstrap.useMutation();
+  const homeSnapshotQuery = trpc.workspace.homeSnapshot.useQuery(undefined, {
+    enabled: auth.isAuthenticated,
+    refetchOnWindowFocus: false,
+  });
+  const guestAnalyzeMutation = trpc.cases.guestAnalyzeDocument.useMutation();
+  const createCaseMutation = trpc.cases.create.useMutation();
+  const claimGuestPreviewMutation = trpc.cases.claimGuestPreview.useMutation();
+  const [guestPreview, setGuestPreview] = useState<StoredHomeGuestPreview | null>(() => readStoredHomeGuestPreview());
+  const [guestError, setGuestError] = useState<string | null>(null);
+  const [resumeAttempted, setResumeAttempted] = useState(false);
+
+  const publicExamples = (landingQuery.data?.examples ?? []) as LandingHeliosExample[];
+  const featuredExample = publicExamples[0] ?? null;
+  const publicActivity = landingQuery.data?.publicActivity;
+  const latestCase = homeSnapshotQuery.data?.latestCase ?? null;
+  const tenantId = bootstrapMutation.data?.tenant?.tenantId ?? homeSnapshotQuery.data?.tenantId ?? null;
+  const isSavingPreview = createCaseMutation.isPending || claimGuestPreviewMutation.isPending;
+
+  useEffect(() => {
+    writeStoredHomeGuestPreview(guestPreview);
+  }, [guestPreview]);
+
+  useEffect(() => {
+    if (!auth.isAuthenticated || bootstrapMutation.isPending || bootstrapMutation.data || bootstrapMutation.error) {
+      return;
+    }
+
+    bootstrapMutation.mutate();
+  }, [auth.isAuthenticated, bootstrapMutation.data, bootstrapMutation.error, bootstrapMutation.isPending, bootstrapMutation]);
+
+  async function persistGuestPreview(source: "manual" | "resume") {
+    if (!guestPreview || !tenantId) {
+      return;
+    }
+
+    setGuestError(null);
+    const normalizedTitle =
+      guestPreview.preview.classification.displayName ??
+      guestPreview.preview.classification.normalizedDocType ??
+      guestPreview.preview.classification.documentType ??
+      "documento";
+
+    const createdCase = await createCaseMutation.mutateAsync({
+      tenantId,
+      title: `Revisión inicial · ${normalizedTitle}`,
+      summary: guestPreview.heliosOpinion.summary,
+      status: "intake",
+      priority: "medium",
+    });
+
+    await claimGuestPreviewMutation.mutateAsync({
+      tenantId,
+      caseId: createdCase.caseId,
+      guestPreviewToken: guestPreview.guestPreviewToken,
+    });
+
+    trackEvent("audipatron_home_guest_preview_saved", {
+      source,
+      case_id: createdCase.caseId,
+      tenant_id: tenantId,
+      document_type: guestPreview.preview.classification.documentType,
+    });
+
+    setGuestPreview(null);
+    writeStoredHomeGuestPreview(null);
+    window.location.href = "/auditar";
+  }
+
+  useEffect(() => {
+    if (!auth.isAuthenticated || !guestPreview || !tenantId || resumeAttempted) {
+      return;
+    }
+
+    setResumeAttempted(true);
+    void persistGuestPreview("resume").catch((error: unknown) => {
+      setGuestError(error instanceof Error ? error.message : "No pudimos guardar la vista previa dentro de tu expediente.");
+    });
+  }, [auth.isAuthenticated, guestPreview, resumeAttempted, tenantId]);
+
+  async function handleFileSelection(event: { currentTarget: HTMLInputElement }) {
+    const file = event.currentTarget.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setGuestError(null);
+    setResumeAttempted(false);
+
+    try {
+      const base64Content = await fileToBase64(file);
+      const result = await guestAnalyzeMutation.mutateAsync({
+        fileName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        base64Content,
+        sourceChannel: "manual",
+      });
+
+      const nextPreview: StoredHomeGuestPreview = {
+        guestPreviewId: result.guestPreviewId,
+        guestPreviewToken: result.guestPreviewToken,
+        createdAt: result.createdAt,
+        preview: result.preview,
+        heliosOpinion: result.heliosOpinion,
+      };
+
+      setGuestPreview(nextPreview);
+      trackEvent("audipatron_home_guest_preview_ready", {
+        document_type: result.preview.classification.documentType,
+        confidence: result.heliosOpinion.confidenceScore ?? null,
+      });
+    } catch (error) {
+      setGuestError(error instanceof Error ? error.message : "No pudimos leer ese archivo en este momento.");
+    } finally {
+      event.currentTarget.value = "";
+    }
+  }
+
+  function handleGuestUploadClick() {
+    setGuestError(null);
+    fileInputRef.current?.click();
+  }
+
+  function handleLoginToSave() {
+    if (typeof window !== "undefined") {
+      writeStoredHomeGuestPreview(guestPreview);
+      window.location.href = `/acceso?returnTo=${encodeURIComponent(HOME_GUEST_PREVIEW_RETURN_TO)}`;
+    }
+  }
+
+  return (
+    <section id="helios-desde-home" className="bg-white py-12 sm:py-14">
+      <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+            <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+            Helios desde la Home
+          </div>
+          <h2 className="mt-4 max-w-[14ch] text-[2rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:text-[2.65rem]">
+            Sube un archivo aquí y ve primero lo que Helios sí entiende.
+          </h2>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
+            La lectura inicial sale desde Helios. Si después quieres guardar todo en tu expediente, entonces sí te pedimos correo para proteger el acceso y continuar dentro de tu cuenta.
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
+              {publicActivity?.documentsReviewedToday ?? 0} documentos revisados por Helios en las últimas 24 horas
+            </span>
+            {latestCase?.stageLabel ? (
+              <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900">
+                Tu expediente actual va en: {latestCase.stageLabel}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f6fbfa_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)] sm:p-6">
+            <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.xml,.jpg,.jpeg,.png,.webp" onChange={handleFileSelection} />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                  Vista previa temporal Helios-first
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  Empieza con una foto. No necesitas reunir todo. Si este primer resultado te sirve, lo guardamos después dentro de tu expediente.
+                </p>
+              </div>
+              <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
+                {guestAnalyzeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" strokeWidth={1.8} />}
+                {guestPreview ? "Cambiar documento" : "Empezar con una foto o PDF"}
+              </Button>
+            </div>
+
+            {guestError ? (
+              <div className="mt-4 rounded-[1.15rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+                {guestError}
+              </div>
+            ) : null}
+
+            {guestPreview ? (
+              <div className="mt-5 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+                <div className="rounded-[1.35rem] border border-teal-100 bg-white p-4 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                      {guestPreview.preview.classification.normalizedDocType}
+                    </span>
+                    {typeof guestPreview.heliosOpinion.confidenceScore === "number" ? (
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                        Confianza {guestPreview.heliosOpinion.confidenceScore}%
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-3 text-xl font-semibold leading-8 tracking-[-0.03em] text-slate-950">
+                    {guestPreview.heliosOpinion.resultCard?.headline ?? guestPreview.heliosOpinion.summary}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{guestPreview.heliosOpinion.summary}</p>
+                  <div className="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Qué detectó primero Helios</p>
+                    <p className="mt-2 text-sm leading-6 text-amber-950">
+                      {guestPreview.heliosOpinion.legalHighlights?.primaryConcern ?? "Helios ya detectó una señal principal útil para empezar a revisar este documento."}
+                    </p>
+                  </div>
+                  <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Siguiente paso sugerido</p>
+                    <p className="mt-2 text-sm leading-6 text-emerald-950">
+                      {guestPreview.heliosOpinion.resultCard?.nextStepSummary ?? guestPreview.heliosOpinion.recommendedNextStep ?? "Helios ya dejó un siguiente paso útil para continuar con más contexto."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Qué pasa después</p>
+                  <div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">
+                    <p>
+                      {guestPreview.preview.scanAssistance?.friendlyHeadline ?? "Tu archivo ya quedó leído para esta vista previa temporal."}
+                    </p>
+                    <p>
+                      {guestPreview.preview.scanAssistance?.userGuidance ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla dentro de tu expediente con acceso por correo."}
+                    </p>
+                  </div>
+                  <div className="mt-5 flex flex-col gap-3">
+                    {auth.isAuthenticated ? (
+                      <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={() => void persistGuestPreview("manual")} disabled={isSavingPreview}>
+                        {isSavingPreview ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Guardar ahora en mi expediente
+                      </Button>
+                    ) : (
+                      <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={handleLoginToSave}>
+                        Guardar en mi expediente por correo
+                      </Button>
+                    )}
+                    <p className="text-xs leading-5 text-slate-500">
+                      Primero ves la lectura. El correo sólo se usa cuando decides guardar el expediente y seguir desde tu cuenta.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {(publicExamples.length ? publicExamples : [
+                  {
+                    id: "fallback-payroll",
+                    badge: "Lectura Helios · recibo de nómina",
+                    documentLabel: "Recibo de nómina",
+                    title: "Helios prioriza primero una señal clara de pago o deducción.",
+                    summary: "Con un solo documento ya puede devolver una lectura breve y útil para arrancar.",
+                    nextStep: "Después sugiere qué archivo complementa mejor el expediente.",
+                    primaryConcern: "Señal inicial lista para revisarse con palabras simples.",
+                  },
+                ]).slice(0, 3).map((example) => (
+                  <article key={example.id} className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{example.badge}</p>
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-950">{example.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{example.summary}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Siguiente paso</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-700">{example.nextStep}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <article className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Salida pública derivada de Helios</p>
+            <h3 className="mt-3 text-[1.5rem] font-semibold leading-8 tracking-[-0.04em] text-slate-950">
+              {featuredExample?.title ?? "Helios prepara ejemplos visibles con la misma estructura que usa al leer documentos reales."}
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              {featuredExample?.summary ?? "Aquí verás el tipo de resumen, señal principal y siguiente paso que Helios suele construir desde el primer documento."}
+            </p>
+            <div className="mt-4 rounded-[1.2rem] border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible de ejemplo</p>
+              <p className="mt-2 text-sm leading-6 text-amber-950">
+                {featuredExample?.primaryConcern ?? "Helios vuelve visible una preocupación principal antes de pedir más contexto."}
+              </p>
+            </div>
+            <div className="mt-4 rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Qué te sugeriría hacer después</p>
+              <p className="mt-2 text-sm leading-6 text-emerald-950">
+                {featuredExample?.nextStep ?? "Helios aterriza el siguiente documento útil para fortalecer la lectura del expediente."}
+              </p>
+            </div>
+          </article>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
+                {latestCase?.stageLabel ? `Tu expediente va en ${latestCase.stageLabel}.` : "Tu Home puede reanudar y guardar la vista previa dentro de tu expediente."}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal y la guardamos dentro de tu cuenta sin pedirte volver a subir el archivo."}
+              </p>
+            </article>
+            <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Por qué este flujo existe</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
+                Primero recibes valor y después decides si quieres conservarlo en tu expediente.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                La Home deja ver la lectura inicial de Helios. El acceso por correo entra sólo cuando quieres guardar, proteger y continuar con más contexto.
+              </p>
+            </article>
           </div>
         </div>
       </div>
@@ -2276,6 +2702,7 @@ export default function Home() {
     <main className="audita-home min-h-screen bg-[#f9fcfb] font-sans text-slate-950">
       <SiteHeader />
       <HeroSection />
+      <HeliosFirstEntrySection />
       <QuickTrustSection />
       <MobilePriorityPathSection />
       <div className="hidden sm:block">

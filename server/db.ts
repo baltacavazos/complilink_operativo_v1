@@ -948,6 +948,29 @@ export async function listCanonicalContractsByType(params: {
     .orderBy(desc(canonicalContracts.createdAt));
 }
 
+export async function getHeliosPublicActivityCount(params?: { since?: Date }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const since = params?.since ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const rows = await db
+    .select({ total: count(canonicalContracts.id) })
+    .from(canonicalContracts)
+    .where(
+      and(
+        eq(canonicalContracts.contractType, "audit"),
+        eq(canonicalContracts.schemaVersion, "helios_v1"),
+        eq(canonicalContracts.status, "ready"),
+        gte(canonicalContracts.createdAt, since),
+      ),
+    );
+
+  return {
+    documentsReviewed: Number(rows[0]?.total ?? 0),
+    measuredFrom: since,
+  };
+}
+
 export async function findAuditLogEntry(params: {
   tenantId: string;
   caseId: string;
