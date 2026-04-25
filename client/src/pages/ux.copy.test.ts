@@ -42,6 +42,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
+    expect(source).toContain("Bóveda laboral privada");
+    expect(source).toContain("Tu primer hallazgo también puede convertirse en tu archivo laboral.");
+    expect(source).toContain("Crear mi bóveda laboral");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Si no sabes con qué empezar");
     expect(source).toContain("Empieza por el archivo que más rápido suele revelar diferencias");
@@ -77,6 +80,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('id="privacidad"');
+    expect(source).toContain('id="boveda"');
+    expect(source).toContain('Guárdalo en tu bóveda y sigue con más contexto');
   });
 
   it("oculta referencias visibles al motor interno en Auditar y usa una variante cálida", () => {
@@ -118,6 +123,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Mensajes listos para usar');
     expect(source).toContain('Mensaje diplomático para RH');
     expect(source).toContain('Texto corto para WhatsApp');
+    expect(source).toContain('Protege este hallazgo');
+    expect(source).toContain('Guardar este hallazgo en mi bóveda');
+    expect(source).toContain('Tu bóveda laboral ya empezó');
+    expect(source).toContain('Ver mi bóveda');
+    expect(source).toContain('Preguntar al asesor');
     expect(source).toContain('navigator.clipboard?.writeText(quickRhMessage)');
     expect(source).toContain('navigator.clipboard?.writeText(quickWhatsappMessage)');
     expect(source).toContain('Paso 1');

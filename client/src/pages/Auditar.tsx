@@ -9437,6 +9437,58 @@ export default function Auditar() {
                               </div>
                             </div>
 
+                            <div className="mt-4 rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-4 py-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                                    Protege este hallazgo
+                                  </p>
+                                  <p className="mt-2 text-base font-semibold text-slate-950">
+                                    Si esta señal te importa, guárdala en tu bóveda laboral.
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-teal-800">
+                                  Evidencia lista para guardar
+                                </span>
+                              </div>
+                              <p className="mt-3 text-sm leading-6 text-slate-700">
+                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma o sumar otros documentos.
+                              </p>
+                              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                                <Button
+                                  type="button"
+                                  className="rounded-full bg-slate-950 px-5 text-white hover:bg-slate-900"
+                                  onClick={() => {
+                                    trackEvent("vault_cta_clicked_calculator", {
+                                      location: "auditar_quick_calculator",
+                                      hasDifference: quickDifferenceAmount !== null && quickDifferenceAmount !== 0,
+                                      hasHistory: heliosCalculatorHistory.length > 0,
+                                    });
+                                    document.getElementById("mi-archivo-digital")?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    });
+                                  }}
+                                >
+                                  Guardar este hallazgo en mi bóveda
+                                  <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
+                                  onClick={() => {
+                                    trackEvent("vault_secondary_cta_clicked", {
+                                      location: "auditar_quick_calculator",
+                                    });
+                                    openPreferredPicker();
+                                  }}
+                                >
+                                  Ver qué más conviene subir
+                                </Button>
+                              </div>
+                            </div>
+
                             <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-4">
                               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                                 Mensajes listos para usar
@@ -9475,6 +9527,71 @@ export default function Auditar() {
                                   </div>
                                   <p className="mt-3 text-sm leading-6 text-slate-700">{quickWhatsappMessage}</p>
                                 </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 rounded-[0.95rem] border border-violet-200 bg-violet-50/70 px-4 py-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-800">
+                                    Tu bóveda laboral ya empezó
+                                  </p>
+                                  <p className="mt-2 text-base font-semibold text-slate-950">
+                                    Este documento ya puede formar parte de tu archivo privado.
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-violet-800">
+                                  Continúa con más contexto
+                                </span>
+                              </div>
+                              <p className="mt-3 text-sm leading-6 text-slate-700">
+                                Desde aquí puedes seguir subiendo documentos, guardar este hallazgo y preguntarle al asesor con más contexto sobre lo que ya apareció.
+                              </p>
+                              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                                <Button
+                                  type="button"
+                                  className="rounded-full bg-violet-700 px-5 text-white hover:bg-violet-800"
+                                  onClick={() => {
+                                    trackEvent("vault_view_requested", {
+                                      location: "auditar_post_upload_microstate",
+                                    });
+                                    document.getElementById("mi-archivo-digital")?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    });
+                                  }}
+                                >
+                                  <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                                  Ver mi bóveda
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full border-violet-200 bg-white px-5 text-violet-900 hover:bg-violet-100"
+                                  onClick={() => {
+                                    trackEvent("vault_advisor_clicked", {
+                                      location: "auditar_post_upload_microstate",
+                                    });
+                                    openHeliosCopilot("Explícame con palabras simples qué ya detectaste en este documento, qué conviene guardar y qué archivo me ayudaría a fortalecer mi bóveda laboral.");
+                                  }}
+                                >
+                                  <Sparkles className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                                  Preguntar al asesor
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
+                                  onClick={() => {
+                                    trackEvent("vault_upload_more_clicked", {
+                                      location: "auditar_post_upload_microstate",
+                                    });
+                                    openPreferredPicker();
+                                  }}
+                                >
+                                  <FileUp className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                                  Subir otro documento
+                                </Button>
                               </div>
                             </div>
 

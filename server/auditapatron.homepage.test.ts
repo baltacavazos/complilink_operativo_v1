@@ -21,9 +21,9 @@ describe("Auditapatron homepage and audit flow content", () => {
 
 
   it("keeps the educational journey in 3 steps and routes the main CTA to the audit workspace", () => {
-    expect(homeSource).toContain("Sube tu documento y AuditaPatron lo recibe");
-    expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
-    expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
+    expect(homeSource).toContain("Sube el primer documento útil");
+    expect(homeSource).toContain("Detecta señales y te las explica claro");
+    expect(homeSource).toContain("Guárdalo en tu bóveda y sigue con más contexto");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
@@ -33,6 +33,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
     expect(homeSource).toContain("Más contexto con cada archivo.");
     expect(homeSource).toContain("Privacidad y control visibles.");
+    expect(homeSource).toContain("Bóveda laboral privada");
+    expect(homeSource).toContain("Tu primer hallazgo también puede convertirse en tu archivo laboral.");
+    expect(homeSource).toContain("Crear mi bóveda laboral");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Leer aviso de privacidad");
     expect(homeSource).toContain("Nadie de tu empresa puede ver lo que subes.");
@@ -44,6 +47,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
     expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("Guía rápida para empezar");
+    expect(homeSource).toContain("Además, el asesor puede responder con base en tus propios documentos, no con ejemplos genéricos.");
     expect(homeSource).toContain("Caso anónimo 01");
     expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
     expect(homeSource).toContain("Privacidad visible y humana");
@@ -83,6 +87,10 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Cruce automático más reciente");
     expect(auditFlowSource).toContain("Histórico comparable por periodo");
     expect(auditFlowSource).toContain("Qué significa jurídicamente");
+    expect(auditFlowSource).toContain("Protege este hallazgo");
+    expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
+    expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
+    expect(auditFlowSource).toContain("Ver mi bóveda");
     expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");
     expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
     expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");

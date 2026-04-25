@@ -1721,42 +1721,45 @@ function QuickTrustSection() {
 
 function ConfidenceMagicSection() {
   return (
-    <section className="bg-[#edf7f6] py-12 sm:bg-[#f7fbfb] sm:py-14">
+    <section id="boveda" className="bg-[#edf7f6] py-12 sm:bg-[#f7fbfb] sm:py-14">
       <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f7f7_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-              Una experiencia simple y confiable
+              Bóveda laboral privada
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Tus documentos dejan de vivir en folders sueltos y empiezan a trabajar a tu favor.
+              Tu primer hallazgo también puede convertirse en tu archivo laboral.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Tú solo subes lo que ya tienes. AuditaPatron recibe la información, analiza documentos y señales laborales, los convierte en un expediente digital disponible 24/7 y te devuelve resultados, comparaciones y siguientes pasos para que sepas qué revisar con calma.
+              No revises un documento y luego lo pierdas en WhatsApp, correo o carpetas sueltas. Con AuditaPatron puedes guardar recibos, CFDI, contratos y otros soportes en una bóveda privada para entender qué ya cuadra, qué falta y qué conviene revisar después.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
+              Además, el asesor puede responder con base en tus propios documentos, no con ejemplos genéricos.
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {[
               {
-                title: "Subes una pieza útil y AuditaPatron la resguarda",
+                title: "Orden en un solo lugar",
                 description:
-                  "Recibos, CFDI, contratos, soportes IMSS, constancias de Infonavit y evidencia dejan de vivir en folders separados y empiezan a ordenarse en un mismo lugar.",
-                detail: "Todo queda dentro de tu expediente digital, disponible 24/7 para revisar, descargar y volver a usar cuando lo necesites.",
+                  "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar un expediente fácil de consultar.",
+                detail: "Tú decides qué conservar, qué revisar después y qué quieres tener disponible cuando necesites respaldo.",
                 icon: Upload,
               },
               {
-                title: "AuditaPatron conecta el contexto del expediente",
+                title: "Contexto entre documentos",
                 description:
-                  "Conecta fechas, pagos, documentos relacionados y señales de IMSS e Infonavit para encontrar qué ya está claro y qué todavía conviene tomar con cautela.",
-                detail: "No promete certezas automáticas: organiza señales útiles y te ayuda a interpretar mejor la información visible.",
+                  "AuditaPatron entiende qué tipo de documento subiste y cómo se relaciona con los demás.",
+                detail: "Así puede decirte qué coincide, qué falta y qué conviene contrastar antes de firmar o reclamar algo.",
                 icon: FileSearch,
               },
               {
-                title: "Recibes resultados y guía laboral útil",
+                title: "Asesor con tus datos reales",
                 description:
-                  "Ves qué se confirmó, qué parece estimado y cuál puede ser el siguiente documento o paso más útil para fortalecer tu respaldo.",
-                detail: "La persona usuaria solo sube, revisa y avanza; AuditaPatron analiza, almacena y sigue enriqueciendo el expediente por detrás sin sumar complejidad.",
+                  "Puedes preguntar qué significa un descuento, qué documento te falta o si tu nómina coincide con tu CFDI.",
+                detail: "La orientación deja de ser abstracta porque empieza a apoyarse en tu propio expediente laboral.",
                 icon: ShieldCheck,
               },
             ].map((item) => {
@@ -1779,8 +1782,36 @@ function ConfidenceMagicSection() {
             })}
           </div>
 
-          <div className="mt-6 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-            El valor real no es solo guardar archivos. El valor está en que AuditaPatron obtiene, ordena, analiza y resguarda la información para devolverte una guía que te ayuda a entender tu situación, incluyendo señales útiles sobre IMSS e Infonavit, sin dejar de tener todo en un solo lugar.
+          <div className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="max-w-2xl text-sm leading-7 text-teal-950">
+              La bóveda no sustituye la revisión inicial. La vuelve acumulativa: guardas, ordenas y sigues entendiendo tu historia laboral con más contexto y más calma.
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900"
+                onClick={() => goToAuditFlow({ placement: "vault_section_primary" })}
+              >
+                Crear mi bóveda laboral
+                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50"
+                onClick={() => goToAuditFlow({ placement: "vault_section_secondary" })}
+              >
+                Revisar mi recibo primero
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white/80 px-4 py-4 text-sm leading-6 text-slate-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+              <Lock className="h-4 w-4" strokeWidth={1.8} />
+              Tú mantienes el control
+            </div>
+            <p className="mt-3">
+              Nadie de tu empresa puede ver lo que subes. Tú decides qué guardar y puedes pedir eliminación cuando lo necesites.
+            </p>
           </div>
         </div>
       </div>
@@ -1904,18 +1935,18 @@ function HowItWorksSection() {
           {[
             {
               number: "01",
-              title: "Sube lo que ya tienes",
+              title: "Sube el primer documento útil",
               description: "Puedes empezar con un recibo, CFDI, contrato u otro documento laboral útil sin preparar nada antes.",
             },
             {
               number: "02",
-              title: "AuditaPatron entiende lo importante",
-              description: "Ordena señales, separa lo confirmado de lo estimado y te explica con claridad dónde conviene poner atención, incluso frente a IMSS e Infonavit.",
+              title: "Detecta señales y te las explica claro",
+              description: "AuditaPatron detecta señales, separa lo confirmado de lo estimado y te dice qué conviene revisar primero.",
             },
             {
               number: "03",
-              title: "Recibes resultados útiles para avanzar",
-              description: "Cada documento adicional puede dar más contexto, ayudarte a entender mejor tu caso y sugerirte el siguiente paso más útil.",
+              title: "Guárdalo en tu bóveda y sigue con más contexto",
+              description: "Si te sirve el hallazgo, puedes guardarlo en tu bóveda laboral privada, seguir subiendo documentos y preguntarle al asesor con más contexto.",
             },
           ].map((item) => (
             <article
@@ -2599,9 +2630,9 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
-                onClick={() => scrollToId("ejemplo-reporte")}
+                onClick={() => goToAuditFlow({ placement: "final_cta_secondary_vault" })}
               >
-                Ver ejemplo de resultado
+                Crear mi bóveda laboral
               </Button>
             </div>
 
@@ -2679,6 +2710,9 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
+      <SectionDivider />
+      <ConfidenceMagicSection />
+      <SectionDivider />
       <QuickTrustSection />
       <SectionDivider />
       <HowItWorksSection />

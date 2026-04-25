@@ -1429,3 +1429,13 @@
 - [ ] Mejorar el feedback inmediato de OCR/carga para que el usuario vea que la foto fue recibida y está siendo leída.
 - [x] Evaluar y aplicar un modo oscuro de discreción por defecto si puede integrarse sin romper accesibilidad ni lo ya validado.
 - [x] Evaluar el bloque estructural del adjunto e implementar el mayor alcance compatible posible en esta misma ronda.
+- [x] Sintetizar las recomendaciones de Bóveda Digital de Evidencia / Bóveda Laboral para la landing de AuditaPatron y definir su posicionamiento exacto frente al hero actual.
+- [x] Contrastar con ChatGPT, Grok y Gemini la mejor estrategia de conversión, jerarquía visual y momento de activación de la Bóveda en landing y post-hallazgo.
+- [x] Preparar un plan de implementación por fases para la Bóveda Digital de Evidencia, incluyendo landing, CTA post-hallazgo, integración con asesor virtual, seguridad y guardrails.
+- [x] Aterrizar Fase 1 de la Bóveda Laboral a nivel de copy exacto para Home, incluyendo badge discreto, nueva sección y ajuste de Cómo funciona.
+- [x] Aterrizar Fase 2 de la Bóveda Laboral a nivel de flujo y copy exacto para /auditar, incluyendo CTA post-hallazgo, estado 'Tu bóveda ya empezó' y acciones visibles.
+- [x] Mapear los archivos, contratos de datos, telemetría y pruebas que tocaría la implementación de Fase 1 y Fase 2 antes de ejecutar cambios.
+- [x] Implementar en Home una capa conservadora de Bóveda Laboral con sección dedicada, ajuste del bloque Cómo funciona y CTA secundario sin romper el hero actual.
+- [x] Implementar en /auditar un CTA contextual de Bóveda Laboral debajo del hallazgo/calculadora y un microestado 'Tu bóveda laboral ya empezó'.
+- [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de implementación conservadora de la Bóveda Laboral antes de tocar código.
+- [x] Actualizar y ejecutar las pruebas de copy y journey afectadas por la introducción de la Bóveda Laboral en Home y /auditar.
