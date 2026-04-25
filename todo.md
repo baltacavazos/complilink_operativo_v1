@@ -1456,3 +1456,7 @@
 - [x] Localizar y eliminar menciones públicas de “Helios” en Home, Auditar y demás superficies visibles del producto.
 - [x] Unificar el copy público para que el chat y la ayuda usen “Asesor laboral” y los bloques automáticos usen “Inteligencia laboral” cuando corresponda.
 - [x] Actualizar y ejecutar las pruebas de copy y journey afectadas por la limpieza del naming público.
+- [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de la ronda de consistencia de copy para microcopys, ayudas y textos visibles secundarios.
+- [x] Localizar y ajustar microcopys, ayudas contextuales, mensajes visibles y textos secundarios que aún no usen de forma consistente Asesor laboral e inteligencia laboral.
+- [x] Unificar el nuevo naming en ayudas contextuales, estados de apoyo y cualquier superficie visible adicional sin tocar contratos internos de backend.
+- [x] Actualizar y ejecutar las pruebas afectadas por esta nueva ronda de consistencia pública.

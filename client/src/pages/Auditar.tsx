@@ -5097,7 +5097,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       setLegalGateError(
         buildLegalGateErrorState(
-          "Antes de usar tu asistente laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
+          "Antes de usar tu asesor laboral, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
           "validation"
         )
       );
@@ -5105,7 +5105,7 @@ export default function Auditar() {
         appendHeliosCopilotMessage(current, {
           role: "assistant",
           content:
-            "Antes de abrir tu asistente laboral, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
+            "Antes de abrir tu asesor laboral, acepta primero el Aviso de Privacidad y los Términos vigentes de AuditaPatron para dejar constancia versionada en tu expediente.",
         })
       );
       return;
@@ -5505,7 +5505,7 @@ export default function Auditar() {
         caseId: selectedCaseId,
         documentType: lastUpload.classification.documentType,
         viewportSegment,
-        ctaLabel: primaryLastUploadShortcut?.label ?? "Abrir asistente laboral",
+        ctaLabel: primaryLastUploadShortcut?.label ?? "Abrir asesor laboral",
         ctaAction: primaryLastUploadShortcut?.action ?? "assistant",
         explanationVariant,
         severityLabel: lastUploadSeverityNarrative.eyebrow,
@@ -6633,7 +6633,7 @@ export default function Auditar() {
                         ? "Comparar nómina y CFDI"
                         : primaryLastUploadShortcut
                           ? primaryLastUploadShortcut.label
-                          : "Abrir asistente laboral"}
+                          : "Abrir asesor laboral"}
                     </Button>
                     {shouldCompactPostUploadExperience ? (
                       <button
@@ -9692,7 +9692,7 @@ export default function Auditar() {
                               <p className="mt-2 text-lg font-semibold text-slate-950">
                                 {primaryLastUploadShortcut
                                   ? primaryLastUploadShortcut.label
-                                  : "Abrir asistente laboral"}
+                                  : "Abrir asesor laboral"}
                               </p>
                               <p className="mt-2 text-sm leading-7 text-slate-700">
                                 {primaryLastUploadShortcut
@@ -9710,7 +9710,7 @@ export default function Auditar() {
                           >
                             {primaryLastUploadShortcut
                               ? primaryLastUploadShortcut.label
-                              : "Abrir asistente laboral"}
+                              : "Abrir asesor laboral"}
                             <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                           </Button>
 
@@ -10190,7 +10190,7 @@ export default function Auditar() {
                               className="mt-4 w-full justify-between rounded-full bg-sky-900 text-white hover:bg-sky-800"
                               onClick={() => openHeliosCopilot()}
                             >
-                              Abrir asistente laboral
+                              Abrir asesor laboral
                               <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                             </Button>
                           </div>
@@ -11077,7 +11077,7 @@ export default function Auditar() {
                             </p>
                             <p className="mt-1">
                               {warmVisibleNamingCopy(heliosDocument?.summary) ??
-                                "Tu asistente laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
+                                "Tu asesor laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
                             </p>
                           </div>
 
@@ -11310,7 +11310,7 @@ export default function Auditar() {
                         onClick={() => openHeliosCopilot()}
                         disabled={!selectedCaseId || legalGateRequired}
                       >
-                        Abrir tu asistente laboral
+                        Abrir tu asesor laboral
                       </Button>
                       <Button
                         type="button"
@@ -11464,7 +11464,7 @@ export default function Auditar() {
                     >
                       {legalAcceptance?.isAccepted
                         ? `Tu expediente ya registra la aceptación del paquete legal ${legalAcceptance.legalVersion}.`
-                        : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y tu asistente laboral.`}
+                        : `Todavía faltan ${legalPendingDocuments.length || LEGAL_DOCUMENTS.length} documentos por aceptar para habilitar por completo tu expediente y tu asesor laboral.`}
                     </p>
                   </div>
                   <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">

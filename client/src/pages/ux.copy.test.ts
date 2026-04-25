@@ -94,7 +94,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Carga inmediata");
     expect(source).toContain("Sube tu recibo de nómina");
     expect(source).toContain("Lectura visible");
-    expect(source).toContain("tu asistente laboral");
+    expect(source).toContain("tu asesor laboral");
     expect(source).toContain("expediente laboral");
     expect(source).toContain("Expediente en");
     expect(source).toContain("mobileDossierStageLabel");
@@ -203,7 +203,7 @@ describe("copy visible de la experiencia", () => {
     const source = readComponent("components/HeliosCopilotSheet.tsx");
 
     expect(source).toContain("Tu asesor laboral ya leyó lo visible de tu expediente");
-    expect(source).toContain("Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de lo visible en tu expediente");
+    expect(source).toContain("Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de tus documentos visibles");
     expect(source).toContain("Tu asesor laboral ya tiene suficiente contexto para empezar");
     expect(source).not.toContain("Copiloto laboral de Helios");
   });

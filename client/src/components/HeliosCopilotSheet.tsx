@@ -85,8 +85,8 @@ export function HeliosCopilotSheet({
               </p>
               {summary ? <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{summary}</p> : null}
               <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">Basado en el expediente visible</span>
-                <span className="rounded-full bg-white px-3 py-1 text-slate-700 dark:bg-slate-900 dark:text-slate-200">Puede resumir, explicar y priorizar</span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">Basado en tus documentos visibles</span>
+                <span className="rounded-full bg-white px-3 py-1 text-slate-700 dark:bg-slate-900 dark:text-slate-200">Tu asesor laboral puede resumir, explicar y priorizar</span>
                 {typeof confidenceScore === "number" ? (
                   <span className="rounded-full bg-teal-50 px-3 py-1 text-teal-800 dark:bg-teal-400/14 dark:text-teal-100">Confianza orientativa {confidenceScore}%</span>
                 ) : null}
@@ -173,7 +173,7 @@ export function HeliosCopilotSheet({
                 isLoading={isLoading}
                 className="h-full border-slate-200 shadow-none dark:border-white/10"
                 height="100%"
-                placeholder="Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de lo visible en tu expediente"
+                placeholder="Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de tus documentos visibles"
                 emptyStateMessage="Tu asesor laboral ya tiene suficiente contexto para empezar: puede resumirte el expediente, traducir lo complejo y decirte qué conviene revisar o subir primero."
                 suggestedPrompts={[]}
               />
@@ -183,7 +183,7 @@ export function HeliosCopilotSheet({
           <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/90 sm:px-6">
             <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
               {disclaimer ??
-                "Esta respuesta se basa en los documentos visibles del expediente y en lecturas preliminares. No sustituye a un abogado ni constituye asesoría legal vinculante."}
+                "Esta orientación se basa en los documentos visibles de tu expediente y en una lectura preliminar. No sustituye a un abogado ni constituye asesoría legal vinculante."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button

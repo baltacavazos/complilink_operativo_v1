@@ -1822,13 +1822,13 @@ function CopilotPreviewSection() {
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Asistente laboral impulsado por AuditaPatron
+            Asesor laboral de AuditaPatron
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Una capa extra para hacer preguntas rápidas sobre tu expediente.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro del expediente.
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asesor laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro del expediente.
           </p>
           <p className="mt-4 inline-flex max-w-xl rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm font-medium text-teal-900 shadow-sm">
             Aquí te acompañamos paso a paso para cuidar tus derechos laborales.
@@ -1848,7 +1848,7 @@ function CopilotPreviewSection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
-            El asistente laboral es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
+            El asesor laboral es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
