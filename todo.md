@@ -1439,3 +1439,16 @@
 - [x] Implementar en /auditar un CTA contextual de Bóveda Laboral debajo del hallazgo/calculadora y un microestado 'Tu bóveda laboral ya empezó'.
 - [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de implementación conservadora de la Bóveda Laboral antes de tocar código.
 - [x] Actualizar y ejecutar las pruebas de copy y journey afectadas por la introducción de la Bóveda Laboral en Home y /auditar.
+- [x] Analizar las nuevas recomendaciones adjuntas sobre simplificación del Home, Bóveda Laboral, OCR, asesor y privacidad para extraer un consenso operativo.
+- [x] Contrastar con ChatGPT, Grok y Gemini las recomendaciones recientes para priorizar mejoras de conversión, onboarding, OCR y retención.
+- [x] Preparar un plan priorizado de siguientes mejoras para AuditaPatrón, separando quick wins, siguiente sprint y apuestas estructurales.
+- [x] Podar el Home para dejar la estructura mínima acordada y retirar secciones o capas que hoy compiten con el gancho principal.
+- [x] Eliminar del frente público cualquier lenguaje interno o técnico y unificar la terminología visible hacia Bóveda Laboral.
+- [x] Simplificar el ejemplo de resultado del Home para que muestre solo el valor esencial sin scores, variantes ni metaexplicaciones.
+- [x] Mejorar el feedback de carga/OCR en /auditar con mensajes progresivos visibles sobre lo que el sistema está leyendo.
+- [x] Ajustar el onboarding para permitir la primera lectura sin exigir registro y pedir el correo al momento de guardar en la Bóveda Laboral.
+- [x] Actualizar y ejecutar las pruebas de copy y journey afectadas por la simplificación del Home, el nuevo feedback OCR y el ajuste de onboarding.
+- [x] Definir y hacer visible un resumen real de la Bóveda Laboral dentro de /auditar con contador, estado y acceso principal.
+- [x] Añadir una vista o panel dedicado de Bóveda Laboral para consultar documentos protegidos con filtros simples por tipo y fecha.
+- [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de este siguiente bloque de continuidad de la Bóveda Laboral antes de tocar código.
+- [x] Actualizar y ejecutar las pruebas afectadas por la nueva superficie de Bóveda Laboral y sus accesos.

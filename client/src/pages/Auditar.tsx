@@ -198,15 +198,15 @@ export function getHumanUploadProgressMessages(
   switch (stepKey) {
     case "analyze":
       return [
-        "Leyendo los detalles...",
-        "Buscando señales importantes...",
-        "Preparando tu veredicto...",
+        "Estamos leyendo tu documento con cuidado...",
+        "Revisando periodos, montos y conceptos visibles...",
+        "Preparando una lectura clara para ti...",
       ];
     case "save":
       return [
         "Protegiendo tu documento...",
-        "Integrándolo al expediente...",
-        "Dejando listo el resultado...",
+        "Guardándolo dentro de tu bóveda laboral...",
+        "Dejando listo tu siguiente paso...",
       ];
     default:
       return [];
@@ -485,9 +485,9 @@ export function buildUploadProgressState(params: {
   if (isConfirmingDraft) {
     return {
       eyebrow: "Guardado en curso",
-      title: "Estamos integrando tu documento al expediente",
+      title: "Estamos guardando tu documento en la bóveda laboral",
       description:
-        "No necesitas repetir la carga. En cuanto termine, verás el resultado y el siguiente paso sugerido.",
+        "No necesitas repetir la carga. En cuanto termine, verás el resultado, el hallazgo guardado y el siguiente paso sugerido.",
       progress: 92,
       toneClasses: "border-teal-200 bg-teal-50 text-teal-950",
       barClasses: "bg-teal-600",
@@ -503,7 +503,7 @@ export function buildUploadProgressState(params: {
       eyebrow: "Vista previa lista",
       title: "Tu documento ya quedó listo para revisión",
       description:
-        "Todavía no se guarda en el expediente: primero revisas lo leído y después confirmas si quieres integrarlo.",
+        "Todavía no se guarda en tu bóveda laboral: primero revisas lo leído y después confirmas si quieres conservarlo.",
       progress: 100,
       toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
       barClasses: "bg-sky-600",
@@ -516,9 +516,9 @@ export function buildUploadProgressState(params: {
   if (isAnalyzingDraft) {
     return {
       eyebrow: "Análisis en curso",
-      title: "Estamos leyendo tu archivo y preparando el borrador",
+      title: "Estamos leyendo tu archivo y preparando la primera lectura",
       description:
-        "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que mantengas el control.",
+        "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que veas qué documento llegó y qué señal encontramos.",
       progress: 72,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       barClasses: "bg-amber-500",
@@ -532,9 +532,9 @@ export function buildUploadProgressState(params: {
   if (selectedFile) {
     return {
       eyebrow: "Archivo listo",
-      title: "Documento preparado para borrador automático",
+      title: "Documento preparado para una primera lectura automática",
       description:
-        "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin un paso manual adicional antes del guardado final.",
+        "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin pasos extra antes de decidir si quieres guardarlo.",
       progress: 38,
       toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
       barClasses: "bg-emerald-500",
@@ -548,7 +548,7 @@ export function buildUploadProgressState(params: {
     eyebrow: "Control del documento",
     title: "Elige un PDF, XML o una imagen clara para empezar",
     description:
-      "Primero preparas el borrador, luego revisas la lectura y sólo al final decides si quieres guardar el documento en tu expediente.",
+      "Primero recibes la lectura. Sólo al final decides si quieres guardar el documento en tu bóveda laboral.",
     progress: 12,
     toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
     barClasses: "bg-slate-400",
@@ -6117,33 +6117,36 @@ export default function Auditar() {
                 Revisión rápida, clara y privada
               </div>
               <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Sube tu archivo
+                Empieza sin correo
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.
+                Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Sólo te pediremos correo si decides guardar ese hallazgo en tu bóveda laboral.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Button
                   className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
                   onClick={() => {
-                    trackFunnelStep("auditar_login_clicked", {
+                    trackFunnelStep("auditar_guest_entry_clicked", {
                       source: "auditar_guard",
                     });
-                    window.location.href = getLoginUrl();
+                    window.location.href = "/#lectura-gratis";
                   }}
                 >
-                  Subir archivo
+                  Empezar lectura gratis
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
                   variant="outline"
                   className="h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
                   onClick={() => {
-                    window.location.href = "/";
+                    trackFunnelStep("auditar_login_clicked", {
+                      source: "auditar_guard_secondary",
+                    });
+                    window.location.href = getLoginUrl();
                   }}
                 >
-                  Volver al inicio
+                  Entrar para guardar en mi bóveda
                 </Button>
               </div>
             </div>
@@ -6155,8 +6158,8 @@ export default function Auditar() {
               <div className="mt-4 space-y-3">
                 {[
                   "Subes foto, PDF o XML desde tu celular o computadora.",
-                  "Te mostramos qué documento detectamos y la señal principal.",
-                  "Si hace falta otro soporte, te decimos cuál conviene subir después.",
+                  "Te mostramos qué documento detectamos, qué señal apareció y qué significa en palabras simples.",
+                  "Si decides guardarlo en tu bóveda laboral, ahí sí activas el acceso por correo.",
                 ].map(item => (
                   <div
                     key={item}
@@ -10741,20 +10744,21 @@ export default function Auditar() {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                      Mi archivo digital
+                      Bóveda Laboral
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Aquí están tus documentos guardados
+                      Aquí están tus documentos protegidos
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                      Este es tu expediente digital. Puedes abrir cualquier
+                      Esta es tu bóveda laboral visible. Puedes abrir cualquier
                       documento, volver a revisarlo y seguir fortaleciendo tu caso
                       sin perderte entre bloques largos.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    <div className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-800">
                       {documents.length} documento
+                      {documents.length === 1 ? "" : "s"} protegido
                       {documents.length === 1 ? "" : "s"}
                     </div>
                     {latestArchiveDocument ? (
@@ -10782,15 +10786,101 @@ export default function Auditar() {
                   </div>
                 </div>
 
+                <div className="mt-6 rounded-[1.4rem] border border-violet-100 bg-violet-50/70 p-4 sm:p-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-800">
+                        Resumen visible de tu bóveda
+                      </p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                        Tu respaldo ya tiene una base real
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+                        Aquí ves cuántos documentos ya quedaron protegidos, cuál fue el último archivo incorporado y cómo entrar rápido a tu bóveda sin salir de la auditoría.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                      <Button
+                        type="button"
+                        className="rounded-full bg-violet-700 px-5 text-white hover:bg-violet-800"
+                        disabled={Boolean(openingDocumentId)}
+                        onClick={() => void handleDigitalArchiveQuickAction()}
+                      >
+                        <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                        {openingDocumentId === latestArchiveDocument?.documentId
+                          ? "Abriendo documento..."
+                          : "Abrir mi bóveda"}
+                      </Button>
+                      {archiveHasActiveFilters ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full border-violet-200 bg-white px-5 text-violet-900 hover:bg-violet-100"
+                          onClick={() => {
+                            setArchiveTypeFilter("all");
+                            setArchiveDateFilter("all");
+                          }}
+                        >
+                          Limpiar filtros
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-3">
+                    <div className="rounded-[1.1rem] border border-white/80 bg-white/90 p-4 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-700">
+                        Documentos protegidos
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold text-slate-950">
+                        {documents.length}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {documents.length === 1
+                          ? "Ya tienes una pieza útil resguardada dentro de tu bóveda laboral."
+                          : "Tu bóveda laboral ya tiene varias piezas listas para volver a consultarse."}
+                      </p>
+                    </div>
+                    <div className="rounded-[1.1rem] border border-white/80 bg-white/90 p-4 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-700">
+                        Estado actual
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">
+                        {heliosDocumentsCount > 0
+                          ? "Con lectura visible"
+                          : "Protegida y creciendo"}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {heliosDocumentsCount > 0
+                          ? `Ya hay lectura visible en ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para darte más contexto.`
+                          : "Todavía no hay lectura visible en documentos confirmados, pero la bóveda ya está lista para seguir creciendo."}
+                      </p>
+                    </div>
+                    <div className="rounded-[1.1rem] border border-white/80 bg-white/90 p-4 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-700">
+                        Último documento
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">
+                        {latestArchiveDocument?.originalName ?? "Aún no hay documento reciente"}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {latestArchiveDocument
+                          ? `Se agregó el ${formatDate(latestArchiveDocument.createdAt)} y puedes abrirlo desde aquí cuando lo necesites.`
+                          : "En cuanto confirmes el primer documento, aquí verás la referencia más reciente."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">
-                        Filtrar por tipo o fecha
+                        Filtrar tu bóveda por tipo o fecha
                       </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
                         Encuentra más rápido lo que necesitas sin perder el orden
-                        de tu expediente.
+                        de tu bóveda laboral.
                       </p>
                     </div>
                     <p className="text-sm font-medium text-slate-500">
@@ -10852,13 +10942,13 @@ export default function Auditar() {
                 <div className="mt-6 space-y-4">
                   {documents.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      Aún no tienes documentos en este expediente. Puedes
+                      Aún no tienes documentos en tu bóveda laboral. Puedes
                       empezar con el archivo que tengas más a la mano.
                     </div>
                   ) : filteredArchiveDocuments.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                       No encontramos documentos con este filtro. Cambia el tipo o
-                      la fecha para volver a ver todo tu expediente.
+                      la fecha para volver a ver toda tu bóveda laboral.
                     </div>
                   ) : (
                     filteredArchiveDocuments.map(document => {

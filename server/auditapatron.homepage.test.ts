@@ -29,13 +29,13 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
-    expect(homeSource).toContain("Fortalece expediente con contexto.");
-    expect(homeSource).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
-    expect(homeSource).toContain("Más contexto con cada archivo.");
+    expect(homeSource).toContain("Guardar solo si te sirve.");
+    expect(homeSource).toContain("Primero ves la lectura. Si te ayuda, guardas el documento y el hallazgo dentro de tu Bóveda Laboral para volver a ellos cuando lo necesites.");
+    expect(homeSource).toContain("Guardas solo lo útil.");
     expect(homeSource).toContain("Privacidad y control visibles.");
     expect(homeSource).toContain("Bóveda laboral privada");
     expect(homeSource).toContain("Tu primer hallazgo también puede convertirse en tu archivo laboral.");
-    expect(homeSource).toContain("Crear mi bóveda laboral");
+    expect(homeSource).toContain("Entender la bóveda laboral");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Leer aviso de privacidad");
     expect(homeSource).toContain("Nadie de tu empresa puede ver lo que subes.");
@@ -78,7 +78,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
+    expect(auditFlowSource).toContain("Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Sólo te pediremos correo si decides guardar ese hallazgo en tu bóveda laboral.");
     expect(auditFlowSource).toContain("Carga inmediata");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
@@ -91,6 +91,11 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
     expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
     expect(auditFlowSource).toContain("Ver mi bóveda");
+    expect(auditFlowSource).toContain("Bóveda Laboral");
+    expect(auditFlowSource).toContain("Aquí están tus documentos protegidos");
+    expect(auditFlowSource).toContain("Resumen visible de tu bóveda");
+    expect(auditFlowSource).toContain("Abrir mi bóveda");
+    expect(auditFlowSource).toContain("Filtrar tu bóveda por tipo o fecha");
     expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");
     expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
     expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");
@@ -114,7 +119,7 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {
-    expect(homeSource).toContain('{ href: "#helios-desde-home", label: "Subir recibo" }');
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Subir documento" }');
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
     expect(homeSource).toContain('const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];');

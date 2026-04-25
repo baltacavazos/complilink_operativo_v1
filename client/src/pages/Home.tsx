@@ -167,7 +167,7 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#helios-desde-home", label: "Subir recibo" },
+  { href: "#lectura-gratis", label: "Subir documento" },
   { href: "#privacidad", label: "Privacidad" },
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#preguntas", label: "Preguntas" },
@@ -194,11 +194,11 @@ const tourSteps: TourStep[] = [
   },
   {
     id: "proteges",
-    title: "Tu expediente se fortalece con AuditaPatron",
-    summary: "Fortalece expediente con contexto.",
+    title: "Guardas lo importante en tu Bóveda Laboral",
+    summary: "Guardar solo si te sirve.",
     description:
-      "Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.",
-    bullets: ["Más contexto con cada archivo.", "Privacidad y control visibles."],
+      "Primero ves la lectura. Si te ayuda, guardas el documento y el hallazgo dentro de tu Bóveda Laboral para volver a ellos cuando lo necesites.",
+    bullets: ["Guardas solo lo útil.", "Privacidad y control visibles."],
     icon: ShieldCheck,
   },
 ];
@@ -275,13 +275,13 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
   },
   {
     step: "02",
-    title: "AuditaPatron lo analiza y lo guarda en tu expediente",
-    description: "Después de subirlo, AuditaPatron ordena el archivo en un solo lugar para que no termine perdido entre folders o chats.",
+    title: "Primero ves la lectura y después decides",
+    description: "Después de subirlo, ves qué documento detectamos, qué señal apareció y cuál es el siguiente paso útil sin abrir cuenta antes de tiempo.",
   },
   {
     step: "03",
-    title: "Recibes resultados útiles y los conservas",
-    description: "Ves qué se entendió, qué conviene revisar y mantienes tus documentos y resultados disponibles 24/7 cuando vuelvas a necesitarlos.",
+    title: "Guárdalo en tu Bóveda Laboral si te sirve",
+    description: "Si quieres conservar el documento y el hallazgo, entonces sí lo pasas a tu Bóveda Laboral para volver a verlo cuando lo necesites.",
   },
 ];
 
@@ -1077,7 +1077,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                   hero_variant: selectedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                 });
-                scrollToId("helios-desde-home");
+                scrollToId("lectura-gratis");
               }}
             >
               {PRIMARY_CTA_LABEL}
@@ -1299,7 +1299,7 @@ Ejemplo del resultado que recibes
                   prediagnostic: selectedHeroPrediagnostic,
                   cta_label: "Siguiente paso sugerido",
                 });
-                scrollToId("helios-desde-home");
+                scrollToId("lectura-gratis");
               }}
               className="mt-5 block w-full rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-4 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
             >
@@ -1322,10 +1322,7 @@ Ejemplo del resultado que recibes
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Variante activa: {activeHeroVariant.tabLabel}
-                </span>
-                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Recomendación: {activePrediagnostic.badge}
+                  Documento sugerido: {activePrediagnostic.badge}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
@@ -1476,23 +1473,23 @@ function HeliosFirstEntrySection() {
   }
 
   return (
-    <section id="helios-desde-home" className="bg-white py-12 sm:py-14">
+    <section id="lectura-gratis" className="bg-white py-12 sm:py-14">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            Helios desde la Home
+            Primera lectura sin correo
           </div>
           <h2 className="mt-4 max-w-[14ch] text-[2rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:text-[2.65rem]">
-            Sube un archivo aquí y ve primero lo que Helios sí entiende.
+            Sube un archivo y recibe una primera lectura clara.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
-            La lectura inicial sale desde Helios. Si después quieres guardar todo en tu expediente, entonces sí te pedimos correo para proteger el acceso y continuar dentro de tu cuenta.
+            Primero ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Si quieres guardar ese hallazgo en tu Bóveda Laboral, ahí sí te pedimos correo.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
-              {publicActivity?.documentsReviewedToday ?? 0} documentos revisados por Helios en las últimas 24 horas
+              {publicActivity?.documentsReviewedToday ?? 0} documentos revisados en las últimas 24 horas
             </span>
             {latestCase?.stageLabel ? (
               <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900">
@@ -1506,10 +1503,10 @@ function HeliosFirstEntrySection() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Vista previa temporal Helios-first
+                  Primera lectura sin correo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Empieza con una foto. No necesitas reunir todo. Si este primer resultado te sirve, lo guardamos después dentro de tu expediente.
+                  Empieza con una foto. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después dentro de tu Bóveda Laboral.
                 </p>
               </div>
               <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
@@ -1542,9 +1539,9 @@ function HeliosFirstEntrySection() {
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700">{guestPreview.heliosOpinion.summary}</p>
                   <div className="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50 px-4 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Qué detectó primero Helios</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal encontrada</p>
                     <p className="mt-2 text-sm leading-6 text-amber-950">
-                      {guestPreview.heliosOpinion.legalHighlights?.primaryConcern ?? "Helios ya detectó una señal principal útil para empezar a revisar este documento."}
+                      {guestPreview.heliosOpinion.legalHighlights?.primaryConcern ?? "Ya detectamos una señal principal útil para empezar a revisar este documento."}
                     </p>
                   </div>
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
@@ -1556,28 +1553,28 @@ function HeliosFirstEntrySection() {
                 </div>
 
                 <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Qué pasa después</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cómo guardarlo si te sirve</p>
                   <div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">
                     <p>
-                      {guestPreview.preview.scanAssistance?.friendlyHeadline ?? "Tu archivo ya quedó leído para esta vista previa temporal."}
+                      {guestPreview.preview.scanAssistance?.friendlyHeadline ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
                     </p>
                     <p>
-                      {guestPreview.preview.scanAssistance?.userGuidance ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla dentro de tu expediente con acceso por correo."}
+                      {guestPreview.preview.scanAssistance?.userGuidance ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla dentro de tu Bóveda Laboral con acceso por correo."}
                     </p>
                   </div>
                   <div className="mt-5 flex flex-col gap-3">
                     {auth.isAuthenticated ? (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={() => void persistGuestPreview("manual")} disabled={isSavingPreview}>
                         {isSavingPreview ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Guardar ahora en mi expediente
+                        Guardar ahora en mi bóveda laboral
                       </Button>
                     ) : (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={handleLoginToSave}>
-                        Guardar en mi expediente por correo
+                        Guardar en mi bóveda por correo
                       </Button>
                     )}
                     <p className="text-xs leading-5 text-slate-500">
-                      Primero ves la lectura. El correo sólo se usa cuando decides guardar el expediente y seguir desde tu cuenta.
+                      Primero ves la lectura. El correo sólo se usa cuando decides guardar el hallazgo y seguir dentro de tu bóveda.
                     </p>
                   </div>
                 </div>
@@ -1587,11 +1584,11 @@ function HeliosFirstEntrySection() {
                 {(publicExamples.length ? publicExamples : [
                   {
                     id: "fallback-payroll",
-                    badge: "Lectura Helios · recibo de nómina",
+                    badge: "Ejemplo de primera lectura · recibo de nómina",
                     documentLabel: "Recibo de nómina",
-                    title: "Helios prioriza primero una señal clara de pago o deducción.",
-                    summary: "Con un solo documento ya puede devolver una lectura breve y útil para arrancar.",
-                    nextStep: "Después sugiere qué archivo complementa mejor el expediente.",
+                    title: "Un recibo ya puede revelar una señal clara de pago o deducción.",
+                    summary: "Con un solo documento puedes obtener una lectura breve y útil para empezar.",
+                    nextStep: "Después te sugerimos qué archivo complementa mejor tu bóveda laboral.",
                     primaryConcern: "Señal inicial lista para revisarse con palabras simples.",
                   },
                 ]).slice(0, 3).map((example) => (
@@ -1610,23 +1607,23 @@ function HeliosFirstEntrySection() {
 
         <div className="space-y-4">
           <article className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Salida pública derivada de Helios</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Ejemplo de lectura</p>
             <h3 className="mt-3 text-[1.5rem] font-semibold leading-8 tracking-[-0.04em] text-slate-950">
-              {featuredExample?.title ?? "Helios prepara ejemplos visibles con la misma estructura que usa al leer documentos reales."}
+              {featuredExample?.title ?? "Así se ve una primera lectura real antes de guardar nada."}
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-700">
-              {featuredExample?.summary ?? "Aquí verás el tipo de resumen, señal principal y siguiente paso que Helios suele construir desde el primer documento."}
+              {featuredExample?.summary ?? "Aquí verás el tipo de resumen, señal principal y siguiente paso que suele aparecer desde el primer documento."}
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible de ejemplo</p>
               <p className="mt-2 text-sm leading-6 text-amber-950">
-                {featuredExample?.primaryConcern ?? "Helios vuelve visible una preocupación principal antes de pedir más contexto."}
+                {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
               </p>
             </div>
             <div className="mt-4 rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Qué te sugeriría hacer después</p>
               <p className="mt-2 text-sm leading-6 text-emerald-950">
-                {featuredExample?.nextStep ?? "Helios aterriza el siguiente documento útil para fortalecer la lectura del expediente."}
+                {featuredExample?.nextStep ?? "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
               </p>
             </div>
           </article>
@@ -1635,7 +1632,7 @@ function HeliosFirstEntrySection() {
             <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
-                {latestCase?.stageLabel ? `Tu expediente va en ${latestCase.stageLabel}.` : "Tu Home puede reanudar y guardar la vista previa dentro de tu expediente."}
+                {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, podemos retomar tu lectura y guardarla dentro de tu bóveda."}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal y la guardamos dentro de tu cuenta sin pedirte volver a subir el archivo."}
@@ -1644,10 +1641,10 @@ function HeliosFirstEntrySection() {
             <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Por qué este flujo existe</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
-                Primero recibes valor y después decides si quieres conservarlo en tu expediente.
+                Primero recibes valor y después decides si quieres conservarlo en tu bóveda laboral.
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                La Home deja ver la lectura inicial de Helios. El acceso por correo entra sólo cuando quieres guardar, proteger y continuar con más contexto.
+                La Home deja ver una primera lectura clara. El acceso por correo entra sólo cuando quieres guardar, proteger y continuar con más contexto.
               </p>
             </article>
           </div>
@@ -1744,7 +1741,7 @@ function ConfidenceMagicSection() {
               {
                 title: "Orden en un solo lugar",
                 description:
-                  "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar un expediente fácil de consultar.",
+                  "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar una bóveda laboral fácil de consultar.",
                 detail: "Tú decides qué conservar, qué revisar después y qué quieres tener disponible cuando necesites respaldo.",
                 icon: Upload,
               },
@@ -1759,7 +1756,7 @@ function ConfidenceMagicSection() {
                 title: "Asesor con tus datos reales",
                 description:
                   "Puedes preguntar qué significa un descuento, qué documento te falta o si tu nómina coincide con tu CFDI.",
-                detail: "La orientación deja de ser abstracta porque empieza a apoyarse en tu propio expediente laboral.",
+                detail: "La orientación deja de ser abstracta porque empieza a apoyarse en tu propia bóveda laboral.",
                 icon: ShieldCheck,
               },
             ].map((item) => {
@@ -2056,7 +2053,7 @@ function PriorityDocumentsSection() {
             Documentos que más pueden ayudarte
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Si quieres darle más valor a tu expediente, empieza por los archivos con más contexto.
+            Si quieres darle más valor a tu bóveda laboral, empieza por los archivos con más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             No todos los documentos aportan lo mismo. Si todavía no los has subido, estos suelen ser de los primeros archivos que más conviene reunir para darle a AuditaPatron mejor contexto, ordenar tu caso y hacer que el expediente te devuelva una lectura más completa.
@@ -2630,9 +2627,9 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
-                onClick={() => goToAuditFlow({ placement: "final_cta_secondary_vault" })}
+                onClick={() => scrollToId("boveda")}
               >
-                Crear mi bóveda laboral
+                Entender la bóveda laboral
               </Button>
             </div>
 
@@ -2678,8 +2675,8 @@ function SiteFooter() {
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona
           </a>
-          <a href="#expediente" className="transition-colors hover:text-slate-900">
-            Tu expediente
+          <a href="#boveda" className="transition-colors hover:text-slate-900">
+            Bóveda Laboral
           </a>
           <a href="#privacidad" className="transition-colors hover:text-slate-900">
             Privacidad

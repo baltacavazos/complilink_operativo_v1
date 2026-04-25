@@ -115,7 +115,8 @@ export function buildGuestPreviewOpinion(params: {
     documentType: params.classification.documentType,
     documentName: params.fileName,
     jurisdiction: "México",
-    caseTitle: "Vista previa temporal Helios",
+      caseTitle: "Primera lectura temporal",
+
     preliminaryAnalysis: {
       confirmedData: params.preliminaryAnalysis.confirmedData,
       estimatedData: params.preliminaryAnalysis.estimatedData,
@@ -128,19 +129,19 @@ export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {
   const scenarios = [
     {
       id: "public-payroll",
-      badge: "Lectura Helios · recibo de nómina",
+      badge: "Ejemplo de primera lectura · recibo de nómina",
       fileName: "recibo_nomina_abril.pdf",
       mimeType: "application/pdf",
     },
     {
       id: "public-cfdi",
-      badge: "Lectura Helios · CFDI de nómina",
+      badge: "Ejemplo de primera lectura · CFDI de nómina",
       fileName: "cfdi_nomina_marzo.xml",
       mimeType: "application/xml",
     },
     {
       id: "public-contract",
-      badge: "Lectura Helios · contrato laboral",
+      badge: "Ejemplo de primera lectura · contrato laboral",
       fileName: "contrato_laboral_ingreso.pdf",
       mimeType: "application/pdf",
     },
@@ -164,7 +165,7 @@ export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {
       documentType: classification.documentType,
       documentName: scenario.fileName,
       jurisdiction: "México",
-      caseTitle: "Ejemplo público Helios",
+      caseTitle: "Ejemplo público de lectura",
       preliminaryAnalysis: {
         confirmedData: preliminaryAnalysis.confirmedData,
         estimatedData: preliminaryAnalysis.estimatedData,
@@ -183,7 +184,7 @@ export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {
       documentLabel: documentState.canonicalLabel,
       title: opinion.resultCard?.headline ?? opinion.summary,
       summary: opinion.summary,
-      nextStep: opinion.resultCard?.nextStepSummary ?? opinion.recommendedNextStep ?? "Continúa con el siguiente documento útil sugerido por Helios.",
+      nextStep: opinion.resultCard?.nextStepSummary ?? opinion.recommendedNextStep ?? "Continúa con el siguiente documento útil sugerido para tu bóveda laboral.",
       primaryConcern: opinion.legalHighlights?.primaryConcern ?? opinion.summary,
     };
   });
