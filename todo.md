@@ -1452,3 +1452,7 @@
 - [x] Añadir una vista o panel dedicado de Bóveda Laboral para consultar documentos protegidos con filtros simples por tipo y fecha.
 - [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de este siguiente bloque de continuidad de la Bóveda Laboral antes de tocar código.
 - [x] Actualizar y ejecutar las pruebas afectadas por la nueva superficie de Bóveda Laboral y sus accesos.
+- [x] Revalidar con ChatGPT, Grok y Gemini la convención exacta para sustituir “Helios” por “Asesor laboral” e “Inteligencia laboral” en el frente público.
+- [x] Localizar y eliminar menciones públicas de “Helios” en Home, Auditar y demás superficies visibles del producto.
+- [x] Unificar el copy público para que el chat y la ayuda usen “Asesor laboral” y los bloques automáticos usen “Inteligencia laboral” cuando corresponda.
+- [x] Actualizar y ejecutar las pruebas de copy y journey afectadas por la limpieza del naming público.

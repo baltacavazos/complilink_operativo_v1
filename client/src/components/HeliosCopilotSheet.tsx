@@ -70,7 +70,7 @@ export function HeliosCopilotSheet({
               </div>
               <div className="min-w-0">
                 <SheetTitle className="text-lg tracking-[-0.02em] text-slate-950 dark:text-slate-50">
-                  Helios ya leyó lo visible de tu expediente
+                  Tu asesor laboral ya leyó lo visible de tu expediente
                 </SheetTitle>
                 <SheetDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   Puedes preguntarle algo puntual o dejar que te resuma primero lo importante, lo incierto y el siguiente paso más útil con base en tus documentos integrados.
@@ -173,8 +173,8 @@ export function HeliosCopilotSheet({
                 isLoading={isLoading}
                 className="h-full border-slate-200 shadow-none dark:border-white/10"
                 height="100%"
-                placeholder="Escribe tu duda o toca un atajo. Helios ya parte de lo visible en tu expediente"
-                emptyStateMessage="Helios ya tiene suficiente contexto para empezar: puede resumirte el expediente, traducir lo complejo y decirte qué conviene revisar o subir primero."
+                placeholder="Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de lo visible en tu expediente"
+                emptyStateMessage="Tu asesor laboral ya tiene suficiente contexto para empezar: puede resumirte el expediente, traducir lo complejo y decirte qué conviene revisar o subir primero."
                 suggestedPrompts={[]}
               />
             </div>

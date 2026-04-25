@@ -145,7 +145,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Siguiente paso sugerido");
     expect(auditFlowSource).toContain("La revisión preliminar empieza sola en cuanto termina la carga");
     expect(auditFlowSource).toContain("Volver al expediente");
-    expect(heliosSheetSource).toContain("Helios ya leyó lo visible de tu expediente");
+    expect(heliosSheetSource).toContain("Tu asesor laboral ya leyó lo visible de tu expediente");
     expect(heliosSheetSource).toContain("Atajos para avanzar sin pensar demasiado");
     expect(heliosSheetSource).toContain("Resumen automático del expediente");
     expect(heliosSheetSource).toContain("Volver al expediente");

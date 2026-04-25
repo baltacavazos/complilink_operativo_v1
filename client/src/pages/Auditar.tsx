@@ -799,17 +799,21 @@ function warmVisibleNamingCopy(value?: string | null) {
   if (!value) return value ?? null;
 
   return value
-    .replaceAll("copiloto Helios", "asistente laboral")
-    .replaceAll("Copiloto Helios", "Asistente laboral")
-    .replaceAll("copiloto laboral", "asistente laboral")
-    .replaceAll("Copiloto laboral", "Asistente laboral")
+    .replaceAll("copiloto Helios", "asesor laboral")
+    .replaceAll("Copiloto Helios", "Asesor laboral")
+    .replaceAll("copiloto laboral", "asesor laboral")
+    .replaceAll("Copiloto laboral", "Asesor laboral")
+    .replaceAll("asistente laboral", "asesor laboral")
+    .replaceAll("Asistente laboral", "Asesor laboral")
     .replaceAll("Expediente Helios", "expediente laboral")
     .replaceAll("expediente Helios", "expediente laboral")
     .replaceAll("HeliosDocumento", "documento")
     .replaceAll("Estado de Helios", "estado del expediente")
     .replaceAll("Etapa Helios", "etapa del expediente")
     .replaceAll("Tipo Helios", "tipo sugerido")
-    .replaceAll("Helios", "tu asistente laboral");
+    .replaceAll("motor Helios", "inteligencia laboral")
+    .replaceAll("Motor Helios", "Inteligencia laboral")
+    .replaceAll("Helios", "la inteligencia laboral");
 }
 
 function parseQuickCalculatorAmount(value: unknown) {
@@ -1752,7 +1756,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
         eyebrow: "Sin alerta fuerte",
         title: "Por ahora no vemos una señal grave",
         description:
-          "Con lo que Helios ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
+          "Con lo que la inteligencia laboral ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
         panelClasses: "border-emerald-200 bg-emerald-50",
         eyebrowClasses: "text-emerald-800",
       } as const;
@@ -1761,7 +1765,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
         eyebrow: "Lectura inicial",
         title: "Ya hay una primera lectura útil",
         description:
-          "Helios ya revisó lo disponible y ordenó lo más importante para que sepas qué sí entendimos y qué falta confirmar.",
+          "La inteligencia laboral ya revisó lo disponible y ordenó lo más importante para que sepas qué sí entendimos y qué falta confirmar.",
         panelClasses: "border-slate-200 bg-slate-50",
         eyebrowClasses: "text-slate-700",
       } as const;
@@ -1947,7 +1951,7 @@ function getDocumentContextualShortcuts(
           id: "payroll-ask-deductions",
           label: "Explicar deducciones clave",
           description:
-            "Helios te resume descuentos, pagos y señales llamativas en palabras simples.",
+            "Tu asesor laboral te resume descuentos, pagos y señales llamativas en palabras simples.",
           action: "assistant",
           prompt:
             "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
@@ -1967,7 +1971,7 @@ function getDocumentContextualShortcuts(
           id: "cfdi-ask-compare",
           label: "Pedir comparación rápida",
           description:
-            "Helios puede decirte qué revisar entre el CFDI y tu nómina.",
+            "Tu asesor laboral puede decirte qué revisar entre el CFDI y tu nómina.",
           action: "assistant",
           prompt:
             "Dime qué conviene comparar entre este CFDI y un recibo de nómina del mismo periodo.",
@@ -1987,7 +1991,7 @@ function getDocumentContextualShortcuts(
           id: "contract-ask-clauses",
           label: "Resumir cláusulas importantes",
           description:
-            "Helios te señala lo que vale la pena contrastar después con nómina o CFDI.",
+            "Tu asesor laboral te señala lo que vale la pena contrastar después con nómina o CFDI.",
           action: "assistant",
           prompt:
             "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
@@ -2007,7 +2011,7 @@ function getDocumentContextualShortcuts(
           id: "imss-ask-gaps",
           label: "Explicar movimientos relevantes",
           description:
-            "Helios puede traducir altas, bajas o huecos a lenguaje más claro.",
+            "Tu asesor laboral puede traducir altas, bajas o huecos a lenguaje más claro.",
           action: "assistant",
           prompt:
             "Explícame qué movimientos o huecos relevantes ves en este soporte IMSS y cómo compararlos con mis nóminas.",
@@ -2027,7 +2031,7 @@ function getDocumentContextualShortcuts(
           id: "evidence-ask-context",
           label: "Pedir lectura contextual",
           description:
-            "Helios puede decirte cómo se conecta esta evidencia con el resto del expediente.",
+            "Tu asesor laboral puede decirte cómo se conecta esta evidencia con el resto del expediente.",
           action: "assistant",
           prompt:
             "Explícame cómo se conecta esta evidencia con mi expediente y qué documento base conviene subir después.",
@@ -2047,7 +2051,7 @@ function getDocumentContextualShortcuts(
           id: "generic-ask-next-step",
           label: "Pedir siguiente paso claro",
           description:
-            "Helios puede orientar qué conviene revisar o subir a continuación.",
+            "Tu asesor laboral puede orientarte sobre qué conviene revisar o subir a continuación.",
           action: "assistant",
           prompt:
             "Dime cuál sería el siguiente paso más útil para este documento y por qué.",

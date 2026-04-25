@@ -1547,7 +1547,7 @@ function HeliosFirstEntrySection() {
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Siguiente paso sugerido</p>
                     <p className="mt-2 text-sm leading-6 text-emerald-950">
-                      {guestPreview.heliosOpinion.resultCard?.nextStepSummary ?? guestPreview.heliosOpinion.recommendedNextStep ?? "Helios ya dejó un siguiente paso útil para continuar con más contexto."}
+                      {guestPreview.heliosOpinion.resultCard?.nextStepSummary ?? guestPreview.heliosOpinion.recommendedNextStep ?? "Ya tienes un siguiente paso útil para continuar con más contexto."}
                     </p>
                   </div>
                 </div>
