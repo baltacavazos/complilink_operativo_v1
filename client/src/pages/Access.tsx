@@ -37,7 +37,7 @@ function getReturnToLabel(returnTo: string) {
   }
 
   if (returnTo === "/" || returnTo.startsWith("/#")) {
-    return "el inicio";
+    return "inicio";
   }
 
   return "la pantalla que dejaste abierta";
@@ -258,7 +258,7 @@ export default function Access() {
 
           <div className="ml-1 inline-flex w-fit items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 shadow-sm">
             <ArrowRight className="h-4 w-4 shrink-0 text-teal-700" />
-            <span>Vuelves a: {returnToLabel}</span>
+            <span>Vuelves al {returnToLabel}</span>
           </div>
         </div>
 
@@ -277,7 +277,7 @@ export default function Access() {
                 Entrar con correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo a {returnToLabel} sin perder tu avance.
+                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo al {returnToLabel} sin perder tu avance.
               </p>
             </div>
 

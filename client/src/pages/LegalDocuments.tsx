@@ -191,6 +191,20 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                   </p>
                 </div>
               ) : null}
+              {slug === "terminos" ? (
+                <div className="mt-4 max-w-3xl rounded-[1.45rem] border border-amber-200 bg-[linear-gradient(135deg,_rgba(255,251,235,0.96),_rgba(255,255,255,0.98))] p-5 text-sm leading-6 text-slate-800 shadow-[0_22px_46px_-30px_rgba(245,158,11,0.25)] sm:p-6 sm:text-base sm:leading-7">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800 shadow-sm">
+                    <Lock className="h-4 w-4" strokeWidth={1.8} />
+                    Resumen humano de uso de datos
+                  </div>
+                  <p className="mt-4 text-lg font-semibold leading-8 text-slate-950 sm:text-[1.35rem] sm:leading-9">
+                    Tus documentos originales se usan para darte el servicio. Los datos anonimizados o agregados pueden ayudarnos a mejorar el producto sin identificarte razonablemente.
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                    Los términos distinguen entre documentos originales, datos anonimizados y obras derivadas para que puedas leer con más claridad qué se usa para operar tu expediente y qué solo alimenta analítica o mejora de producto.
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-semibold sm:justify-end">
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-white">{document.version}</span>

@@ -812,6 +812,39 @@ function warmVisibleNamingCopy(value?: string | null) {
     .replaceAll("Helios", "tu asistente laboral");
 }
 
+function parseQuickCalculatorAmount(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.replace(/[^0-9,.-]/g, "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const lastComma = normalized.lastIndexOf(",");
+  const lastDot = normalized.lastIndexOf(".");
+  const sanitized =
+    lastComma > lastDot
+      ? normalized.replace(/\./g, "").replace(",", ".")
+      : normalized.replace(/,/g, "");
+  const parsed = Number.parseFloat(sanitized);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatQuickCalculatorAmount(value: number) {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 type StructuredExtractionView = {
   headline: string;
   summary: string;
@@ -4219,6 +4252,85 @@ export default function Auditar() {
     ) ??
     uploadInsight?.nextSuggestion ??
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
+  const quickCalculatorSeedAmount = useMemo(() => {
+    const confirmedData = lastUpload?.preliminaryAnalysis?.confirmedData as
+      | Record<string, unknown>
+      | undefined;
+    const estimatedData = lastUpload?.preliminaryAnalysis?.estimatedData as
+      | Record<string, unknown>
+      | undefined;
+
+    return (
+      parseQuickCalculatorAmount(confirmedData?.neto) ??
+      parseQuickCalculatorAmount(confirmedData?.salario) ??
+      parseQuickCalculatorAmount(estimatedData?.apparentAmount) ??
+      null
+    );
+  }, [lastUpload]);
+  const quickCalculatorPeriodHint = useMemo(() => {
+    const estimatedData = lastUpload?.preliminaryAnalysis?.estimatedData as
+      | Record<string, unknown>
+      | undefined;
+    const visiblePeriod = estimatedData?.period;
+
+    return typeof visiblePeriod === "string" && visiblePeriod.trim().length
+      ? visiblePeriod.trim()
+      : null;
+  }, [lastUpload]);
+  const [quickPayrollAmount, setQuickPayrollAmount] = useState("");
+  const [quickCfdiAmount, setQuickCfdiAmount] = useState("");
+  const quickCalculatorSeedKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!lastUpload) {
+      return;
+    }
+
+    const seedKey = [
+      lastUpload.draftId ?? "confirmed",
+      lastUpload.classification.documentType,
+      quickCalculatorSeedAmount ?? "no-amount",
+    ].join("::");
+
+    if (quickCalculatorSeedKeyRef.current === seedKey) {
+      return;
+    }
+
+    quickCalculatorSeedKeyRef.current = seedKey;
+    const seededAmount =
+      quickCalculatorSeedAmount !== null
+        ? quickCalculatorSeedAmount.toFixed(2)
+        : "";
+
+    if (lastUpload.classification.documentType === "payroll_receipt") {
+      setQuickPayrollAmount(seededAmount);
+      setQuickCfdiAmount("");
+      return;
+    }
+
+    if (lastUpload.classification.documentType === "cfdi") {
+      setQuickCfdiAmount(seededAmount);
+      setQuickPayrollAmount("");
+      return;
+    }
+
+    setQuickPayrollAmount(seededAmount);
+    setQuickCfdiAmount("");
+  }, [lastUpload, quickCalculatorSeedAmount]);
+  const quickPayrollNumeric = parseQuickCalculatorAmount(quickPayrollAmount);
+  const quickCfdiNumeric = parseQuickCalculatorAmount(quickCfdiAmount);
+  const quickDifferenceAmount =
+    quickPayrollNumeric !== null && quickCfdiNumeric !== null
+      ? quickPayrollNumeric - quickCfdiNumeric
+      : null;
+  const quickDifferenceAbsolute =
+    quickDifferenceAmount !== null ? Math.abs(quickDifferenceAmount) : null;
+  const showQuickDifferenceCalculator = Boolean(
+    lastUpload &&
+      ((lastUpload.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined)
+        ?.benefitEstimationReady ||
+        lastUpload.classification.documentType === "payroll_receipt" ||
+        lastUpload.classification.documentType === "cfdi")
+  );
   const [showResultReveal, setShowResultReveal] = useState(false);
   const lastRevealedUploadIdRef = useRef<string | null>(null);
   const verdictPanelRef = useRef<HTMLDivElement | null>(null);
@@ -5852,12 +5964,11 @@ export default function Auditar() {
                 Hecho para trabajadores, sin lenguaje complicado
               </div>
               <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Tus derechos laborales, claros y protegidos
+                Sube tu recibo de nómina
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                AuditaPatron recibe tu documento, lo analiza, lo resguarda y te
-                devuelve resultados útiles. Además, aquí podrás revisar con más
-                claridad señales sobre IMSS e Infonavit sin pasos confusos.
+                Usa una foto, PDF o archivo. AuditaPatron te dirá qué documento
+                recibió, qué señal encontró y qué conviene revisar después.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -5870,7 +5981,7 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Auditar mis documentos
+                  Subir archivo
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                 </Button>
                 <Button
@@ -5891,9 +6002,9 @@ export default function Auditar() {
               </p>
               <div className="mt-4 space-y-3">
                 {[
-                  "Ve rápido cómo va creciendo tu expediente.",
-                  "Sube documentos y deja que AuditaPatron los procese.",
-                  "Distingue lo confirmado de lo estimado, incluyendo señales de IMSS e Infonavit.",
+                  "Sube tu recibo de nómina desde foto, PDF o XML.",
+                  "Verás qué documento recibimos, qué señal apareció y qué conviene revisar después.",
+                  "También puedes subir CFDI, contrato o soporte IMSS/Infonavit.",
                 ].map(item => (
                   <div
                     key={item}
@@ -5974,26 +6085,25 @@ export default function Auditar() {
             )}
             {shouldCompactPostUploadExperience ? null : (
               <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
-                Tu revisión
+                Carga inmediata
               </p>
             )}
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                Sube tu documento. Te diremos qué es, qué encontramos y qué sigue.
+                Sube tu recibo de nómina
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
               {shouldCompactPostUploadExperience ? null : (
                 <>
                   <span className="sm:hidden">
-                    Lo analizamos al momento y te lo explicamos sin vueltas antes de
-                    guardarlo.
+                    Usa una foto, PDF o archivo. Te diremos qué documento recibió,
+                    qué señal encontró y qué conviene revisar después.
                   </span>
                   <span className="hidden sm:inline">
-                    Sube el archivo y te devolvemos una lectura clara: qué documento
-                    parece ser, qué ya se entendió y cuál sería el siguiente paso
-                    útil.
+                    Usa una foto, PDF o archivo. AuditaPatron te dirá qué documento
+                    recibió, qué señal encontró y qué conviene revisar después.
                   </span>
                 </>
               )}
@@ -7202,16 +7312,17 @@ export default function Auditar() {
             <div className={shouldCompactPostUploadExperience ? "hidden" : "motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Sube tu documento
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                    Sube el documento y mira el resultado
-                  </h2>
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                      Sube tu recibo de nómina
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                      Sube tu archivo y mira el resultado
+                    </h2>
+
                 </div>
-                <p className="max-w-lg text-sm leading-6 text-slate-600">
-                  Se analiza solo. Enseguida te mostramos qué documento parece
-                  ser, qué encontramos y qué significa antes de guardarlo.
+                  <p className="max-w-lg text-sm leading-6 text-slate-600">
+                    Enseguida te mostramos qué documento recibimos, qué señal apareció y qué conviene revisar después antes de guardarlo.
+
                 </p>
               </div>
 
@@ -9012,6 +9123,89 @@ export default function Auditar() {
                             ))}
                           </div>
                         </div>
+
+                        {showQuickDifferenceCalculator ? (
+                          <div className="mt-4 rounded-[1rem] border border-amber-200 bg-amber-50/80 p-4">
+                            <div className="flex items-start gap-3">
+                              <FileSearch className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
+                                  Calculadora rápida
+                                </p>
+                                <p className="mt-2 text-lg font-semibold text-slate-950">
+                                  Compara tu nómina contra tu CFDI
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                  Usamos el monto visible detectado en este documento como punto de partida y dejamos el cálculo exacto en una capa determinística. La interpretación sigue siendo preliminar.
+                                </p>
+                                {quickCalculatorPeriodHint ? (
+                                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-900">
+                                    Periodo visible: {quickCalculatorPeriodHint}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                              <label className="rounded-[0.95rem] border border-white/90 bg-white p-3">
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Monto en recibo
+                                </span>
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  step="0.01"
+                                  min="0"
+                                  value={quickPayrollAmount}
+                                  onChange={event => setQuickPayrollAmount(event.target.value)}
+                                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-200"
+                                  placeholder="0.00"
+                                />
+                              </label>
+                              <label className="rounded-[0.95rem] border border-white/90 bg-white p-3">
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Monto en CFDI
+                                </span>
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  step="0.01"
+                                  min="0"
+                                  value={quickCfdiAmount}
+                                  onChange={event => setQuickCfdiAmount(event.target.value)}
+                                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-200"
+                                  placeholder="0.00"
+                                />
+                              </label>
+                            </div>
+
+                            {quickDifferenceAmount !== null && quickDifferenceAbsolute !== null ? (
+                              <div className="mt-4 rounded-[0.95rem] border border-amber-200 bg-white px-4 py-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                                  Diferencia estimada
+                                </p>
+                                <p className="mt-2 text-xl font-semibold text-slate-950">
+                                  {formatQuickCalculatorAmount(quickDifferenceAbsolute)}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                  {quickDifferenceAmount === 0
+                                    ? "Por ahora ambos montos coinciden. Aun así conviene revisar periodo y conceptos del mismo mes."
+                                    : quickDifferenceAmount > 0
+                                      ? `Tu recibo muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del CFDI capturado.`
+                                      : `Tu CFDI muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del recibo capturado.`}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="mt-4 text-sm leading-6 text-slate-700">
+                                Completa ambos montos para ver una diferencia rápida antes de seguir con la comparación documental.
+                              </p>
+                            )}
+
+                            <p className="mt-3 text-xs leading-5 text-slate-600">
+                              Sirve para una revisión inicial. Para cerrar mejor la lectura, todavía conviene comparar periodo y conceptos del mismo mes.
+                            </p>
+                          </div>
+                        ) : null}
 
                         <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
                           <div className="flex items-start gap-3">

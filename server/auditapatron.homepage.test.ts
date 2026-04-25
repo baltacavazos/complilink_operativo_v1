@@ -12,8 +12,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
     expect(pricingSource).toContain("Prueba gratis y con claridad desde el inicio");
     expect(pricingSource).toContain("Puedes seguir usando la auditoría y tu expediente sin pagar ni desbloquear nada por obligación.");
-    expect(homeSource).toContain("Detecta diferencias de pago, deducciones extrañas y pistas que conviene revisar primero.");
-    expect(homeSource).toContain("Recibes una lectura clara, el siguiente documento útil y control sobre tu expediente desde el primer intento.");
+    expect(homeSource).toContain("Tu recibo de nómina puede tener señales raras.");
+    expect(homeSource).toContain("Súbelo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
@@ -25,7 +25,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
     expect(homeSource).toContain("Revisar mi recibo gratis");
-    expect(homeSource).toContain("Sube una foto o PDF y en minutos te decimos si te deben dinero y te damos el mensaje listo para reclamar.");
+    expect(homeSource).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
@@ -66,16 +66,20 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {
     expect(auditFlowSource).toContain("Hecho para trabajadores, sin lenguaje complicado");
-    expect(auditFlowSource).toContain("AuditaPatron recibe tu documento, lo analiza, lo resguarda");
+    expect(auditFlowSource).toContain("Sube tu recibo de nómina");
+    expect(auditFlowSource).toContain("qué documento recibió");
+    expect(auditFlowSource).toContain("qué señal encontró y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Así va tu expediente laboral");
     expect(auditFlowSource).toContain("Cruce IMSS e Infonavit hoy");
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después.");
-    expect(auditFlowSource).toContain("Sube un documento y revisa el borrador");
+    expect(auditFlowSource).toContain("Enseguida te mostramos qué documento recibimos, qué señal apareció y qué conviene revisar después antes de guardarlo.");
+    expect(auditFlowSource).toContain("Sube tu archivo y mira el resultado");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
+    expect(auditFlowSource).toContain("Calculadora rápida");
+    expect(auditFlowSource).toContain("Compara tu nómina contra tu CFDI");
     expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");
     expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
     expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");

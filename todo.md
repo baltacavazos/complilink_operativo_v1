@@ -1399,3 +1399,13 @@
 - [x] Reforzar /auditar como pantalla de acción pura con módulo de carga arriba y explicación mínima antes de opciones secundarias.
 - [x] Humanizar el ejemplo de resultado sustituyendo etiquetas abstractas por señales y siguientes pasos concretos.
 - [x] Validar que los cambios nuevos no rompan el flujo Helios-first ya implementado, Home, Auditar, legal y acceso.
+- [x] Contrastar con ChatGPT, Grok y Gemini el corte de implementación de las recomendaciones del adjunto y la primera calculadora para minimizar fricción sin romper la base actual.
+- [x] Corregir el hero de Home para eliminar duplicaciones visibles y alinear el copy exacto recomendado.
+- [x] Reducir aún más el Home al recorrido mínimo recomendado, manteniendo CTA principal, ejemplo de resultado, privacidad, 3 pasos, FAQ corto y CTA final.
+- [x] Convertir /auditar en una pantalla de carga inmediata con copy mínimo y CTA principal de subida arriba del fold.
+- [x] Humanizar el ejemplo de resultado con etiquetas reales de documento, señal, significado y siguiente paso.
+- [x] Corregir el copy de /acceso para que el retorno al inicio se lea natural y pulido.
+- [x] Revisar y suavizar la cláusula de licencia de datos en términos para reducir riesgo reputacional sin romper la cobertura legal.
+- [x] Definir e implementar una primera calculadora orquestada por Helios con cálculo numérico verificable y UX compatible con el flujo actual.
+- [x] Actualizar pruebas afectadas por Home, Auditar, Acceso, términos y calculadora, y revalidar antes del checkpoint.
+- [ ] Evolucionar la calculadora rápida actual hacia una orquestación más profunda por Helios en backend, manteniendo el cálculo numérico determinístico y auditable.

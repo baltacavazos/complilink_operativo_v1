@@ -149,9 +149,9 @@ AuditaPatron facilita organización documental, análisis asistido, resúmenes, 
 
 ## 4. Licencia sobre datos y contenidos
 
-La persona usuaria conserva, en principio, la titularidad que legalmente le corresponda sobre los datos originales que cargue a la plataforma. Sin embargo, al usar AuditaPatron concede a ${LEGAL_CONTROLLER_NAME} una licencia **no exclusiva, mundial, perpetua, irrevocable, transferible, sublicenciable y libre de regalías** para alojar, reproducir, analizar, adaptar, transformar, ordenar, compilar, comunicar, explotar y utilizar los Datos de la Plataforma en la medida necesaria o conveniente para operar, mantener, auditar, asegurar, mejorar y expandir el servicio, desarrollar nuevas funcionalidades, entrenar y evaluar modelos de IA, generar Datos Agregados y Datos Anonimizados, así como alimentar el Ecosistema CVZ.
+La persona usuaria conserva, en principio, la titularidad que legalmente le corresponda sobre los documentos y datos originales que cargue a la plataforma. Al usar AuditaPatron concede a ${LEGAL_CONTROLLER_NAME} una licencia **no exclusiva, mundial y libre de regalías**, limitada a lo necesario para alojar, reproducir, organizar, analizar, resguardar y transformar los Datos de la Plataforma con el fin de operar, mantener, auditar, asegurar y mejorar el servicio contratado. En el caso de documentos originales y datos identificables, esta licencia se usará únicamente mientras resulte necesaria para prestar el servicio, atender obligaciones legales, prevenir fraude, defender reclamaciones o conservar evidencia mínima de trazabilidad.
 
-La licencia antes referida incluye la facultad de generar **Obras Derivadas**, mismas que serán titularidad exclusiva de ${LEGAL_CONTROLLER_NAME} o de sus licenciantes, sin obligación de pago adicional a la persona usuaria. La conservación de titularidad sobre los datos originales no limita la amplitud de la licencia aquí otorgada.
+${LEGAL_CONTROLLER_NAME} podrá generar **Obras Derivadas**, métricas, scores, taxonomías y mejoras de producto a partir de Datos Agregados o Datos Anonimizados, o bien de procesos internos necesarios para la operación del servicio. Dichas Obras Derivadas serán titularidad exclusiva de ${LEGAL_CONTROLLER_NAME} o de sus licenciantes, sin obligación de pago adicional a la persona usuaria y sin afectar la titularidad que corresponda sobre los documentos originales.
 
 ## 5. Propiedad intelectual
 
@@ -159,7 +159,7 @@ La plataforma, su código, arquitectura, interfaces, procesos, marcas, nombres c
 
 ## 6. Datos agregados, anonimizados y ecosistema
 
-La persona usuaria reconoce que ${LEGAL_CONTROLLER_NAME} podrá usar Datos Agregados y Datos Anonimizados sin restricción, de forma perpetua e irrevocable, para fines lícitos relacionados con analítica, benchmarking, investigación, comercialización de insights agregados, entrenamiento de IA, mejora continua, interoperabilidad y desarrollo del Ecosistema CVZ.
+La persona usuaria reconoce que ${LEGAL_CONTROLLER_NAME} podrá usar Datos Agregados y Datos Anonimizados de forma amplia y por tiempo indefinido, siempre que ya no identifiquen razonablemente a una persona física, para fines lícitos relacionados con analítica, benchmarking, investigación, entrenamiento y evaluación de IA, mejora continua, interoperabilidad y desarrollo del Ecosistema CVZ.
 
 ## 7. Obligaciones de la persona usuaria
 

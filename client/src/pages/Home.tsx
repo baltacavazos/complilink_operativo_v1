@@ -342,10 +342,10 @@ const heroCopyVariants = {
     eyebrowMobile: "Revisión urgente de nómina",
     eyebrowDesktop: "Revisión urgente de nómina",
     titleLead: "Tu recibo de nómina",
-    titleAccent: "puede revelar señales raras.",
-    supportLine: "Revísalo gratis antes de que el problema crezca.",
+    titleAccent: "puede tener señales raras.",
+    supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
     body:
-      "Detecta diferencias de pago, deducciones extrañas y pistas que conviene revisar primero.",
+      "Entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
@@ -353,11 +353,11 @@ const heroCopyVariants = {
     tabLabel: "Revisar primero",
     eyebrowMobile: "Empieza por tu recibo más reciente",
     eyebrowDesktop: "Empieza por tu recibo más reciente",
-    titleLead: "Sube tu recibo",
-    titleAccent: "y ve qué salta primero.",
-    supportLine: "Empieza con un archivo cotidiano, sin tecnicismos.",
+    titleLead: "Tu recibo de nómina",
+    titleAccent: "puede tener señales raras.",
+    supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
     body:
-      "Recibes una lectura clara, el siguiente documento útil y control sobre tu expediente desde el primer intento.",
+      "Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
@@ -389,7 +389,7 @@ const heroVariantReadiness = {
 const heroFindingSlides = [
   {
     id: "nomina-cfdi",
-    badge: "Hallazgo laboral frecuente 01",
+    badge: "Caso ejemplo · nómina contra CFDI",
     title: "Tu nómina y tu CFDI podrían no coincidir en el mismo periodo.",
     description:
       "Un primer cruce entre ambos suele destapar diferencias de conceptos, montos o fechas sin pedirte todo el expediente desde el inicio.",
@@ -398,7 +398,7 @@ const heroFindingSlides = [
   },
   {
     id: "deducciones-irregulares",
-    badge: "Hallazgo laboral frecuente 02",
+    badge: "Caso ejemplo · cambios entre recibos",
     title: "Algunas deducciones cambian de un mes a otro sin que se note a simple vista.",
     description:
       "Comparar dos o tres recibos seguidos ayuda a ver si el patrón cambió, desde cuándo pasó y en qué concepto conviene detenerse primero.",
@@ -407,7 +407,7 @@ const heroFindingSlides = [
   },
   {
     id: "laguna-contractual",
-    badge: "Hallazgo laboral frecuente 03",
+    badge: "Caso ejemplo · contrato contra comprobantes",
     title: "Tu contrato y lo que hoy aparece en tus comprobantes podrían no contar la misma historia.",
     description:
       "Ese contraste suele revelar diferencias de puesto, jornada, salario o esquema de pago que vale la pena mirar con calma.",
@@ -419,21 +419,21 @@ const heroFindingSlides = [
 const reportDemoStates: ReportDemoState[] = [
   {
     id: "documento-recibido",
-    label: "Documento entendido",
-    badge: "Archivo listo para revisar",
-    summary: "AuditaPatron reconoce el archivo y conserva el periodo para no perder contexto.",
+    label: "Documento detectado",
+    badge: "Recibo de nómina",
+    summary: "Detectamos un recibo de nómina y conservamos el periodo para revisar mejor lo que sigue.",
   },
   {
     id: "hallazgo-preliminar",
-    label: "Señal detectada",
-    badge: "Posible diferencia encontrada",
-    summary: "Se cruza la información útil y aparece una señal concreta para revisar sin adelantar conclusiones.",
+    label: "Señal encontrada",
+    badge: "Posible diferencia contra CFDI",
+    summary: "Aparece una diferencia posible contra el CFDI y ya sabes qué vale la pena revisar primero.",
   },
   {
     id: "siguiente-paso",
-    label: "Qué revisar después",
-    badge: "Documento sugerido para seguir",
-    summary: "La plataforma aterriza cuál es el siguiente documento que más valor puede aportar al expediente.",
+    label: "Qué significa",
+    badge: "Monto, periodo y conceptos",
+    summary: "Conviene comparar monto, periodo y conceptos antes de sacar una conclusión.",
   },
 ];
 
@@ -764,42 +764,42 @@ function HeroSection() {
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
-        title: "Documento recibido y listo para cruzarse",
-        description: `AuditaPatron identifica ${activeFinding.suggestedDocument.toLowerCase()} como la pieza que abre esta revisión y conserva ese contexto dentro del expediente actual.`,
-        focusLabel: "Qué ya quedó registrado",
-        focusValue: "Archivo reconocido, periodo visible y base lista para seguir contrastando.",
+        title: "Documento detectado: Recibo de nómina",
+        description: "Reconocemos el tipo de documento y conservamos el periodo para que la siguiente revisión tenga más contexto.",
+        focusLabel: "Qué significa",
+        focusValue: "Ya sabemos con qué documento empezar y podemos usarlo como base para revisar pagos, deducciones o CFDI.",
         focusClass: "border-slate-200 bg-slate-50/90 text-slate-800",
-        secondaryLabel: "Por qué este estado importa",
-        secondaryValue: "Te deja empezar con una señal real sin pedir todo el expediente desde el primer minuto.",
+        secondaryLabel: "Siguiente paso",
+        secondaryValue: "Si tienes el CFDI del mismo mes, suele ser el mejor cruce para confirmar o descartar la diferencia inicial.",
         secondaryClass: "border-slate-200 bg-white text-slate-700",
-        progressLabel: "Nivel de preparación del expediente",
+        progressLabel: "Nivel de claridad inicial",
       };
     }
 
     if (selectedReportDemoState === "siguiente-paso") {
       return {
-        title: "Siguiente documento útil para fortalecer la lectura",
-        description: `Después de esta señal, AuditaPatron te sugiere continuar con ${activeFinding.suggestedDocument.toLowerCase()} para confirmar, comparar o ampliar el contexto sin perder continuidad.`,
-        focusLabel: "Acción sugerida después de la demo",
-        focusValue: "Subir el documento recomendado dentro de /auditar y dejar que la siguiente lectura se alimente del mismo caso.",
+        title: "Qué significa: conviene comparar monto, periodo y conceptos",
+        description: "Todavía no estamos cerrando una conclusión. Primero te mostramos el cruce más útil para validar si la diferencia realmente existe.",
+        focusLabel: "Siguiente paso",
+        focusValue: "Sube el CFDI del mismo mes para contrastar monto, periodo y conceptos contra tu recibo.",
         focusClass: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
         secondaryLabel: "Qué ganarías al continuar",
         secondaryValue: activeFinding.impact,
         secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
-        progressLabel: "Nivel de avance sugerido tras este hallazgo",
+        progressLabel: "Nivel de avance sugerido",
       };
     }
 
     return {
-      title: activeFinding.title,
-      description: activeFinding.description,
-      focusLabel: "Evidencia documental sugerida",
-      focusValue: activeFinding.suggestedDocument,
+      title: "Señal encontrada: Posible diferencia contra CFDI",
+      description: "Aparece una diferencia posible que conviene revisar con calma antes de convertirla en conclusión o reclamo.",
+      focusLabel: "Qué significa",
+      focusValue: "Puede haber diferencias de monto, periodo o conceptos entre lo pagado y lo timbrado.",
       focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
-      secondaryLabel: "Qué te ayuda a decidir",
-      secondaryValue: activeFinding.impact,
+      secondaryLabel: "Siguiente paso",
+      secondaryValue: "Sube el CFDI del mismo mes para confirmar si ambos documentos cuentan la misma historia.",
       secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
-      progressLabel: "Nivel de claridad inicial del expediente",
+      progressLabel: "Nivel de claridad inicial",
     };
   }, [activeFinding, selectedReportDemoState]);
 
@@ -1006,21 +1006,21 @@ function HeroSection() {
             className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
-            ¿Tu recibo de nómina está bien o hay algo raro?
+            Tu recibo de nómina puede tener señales raras.
           </h1>
 
           <p
             className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-Sube una foto o PDF y en minutos te decimos si te deben dinero y te damos el mensaje listo para reclamar.
+Súbelo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.
           </p>
 
           <p
             className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-Empieza con una foto. Primero ves qué documento recibimos, qué señal apareció y qué conviene revisar después.
+Puedes empezar con una foto o PDF. No necesitas reunir todo.
           </p>
 
           <div
@@ -1162,7 +1162,8 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
 Ejemplo del resultado que recibes
                   </p>
                   <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-		Esto verás apenas subas tu documento.
+			Esto verás apenas subas tu recibo.
+
 
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
@@ -1174,7 +1175,8 @@ Ejemplo del resultado que recibes
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-		Primero ves lo esencial: qué documento entendimos, qué señal apareció, un monto estimado si aplica y qué te conviene hacer después.
+			Primero ves lo esencial: qué documento detectamos, qué señal apareció, qué significa y qué te conviene hacer después.
+
 
               </p>
 
@@ -1201,7 +1203,8 @@ Ejemplo del resultado que recibes
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-Así se ve la experiencia: documento recibido, hallazgo principal y siguiente paso sugerido.
+	Se siente como un resultado real: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
+
               </p>
 
               <div className="mt-4 rounded-[1.05rem] border border-teal-100 bg-white/90 px-4 py-3 shadow-sm">
@@ -1283,21 +1286,8 @@ Así se ve la experiencia: documento recibido, hallazgo principal y siguiente pa
               </div>
             </div>
 
-            <div className="mt-5 space-y-3">
-              {[
-                "Empiezas con un solo archivo, desde celular o computadora.",
-                "Recibes una auditoría clara con hallazgos, evidencia y siguiente paso.",
-                "Tus documentos quedan resguardados en un expediente disponible para ti 24/7.",
-              ].map((item, index) => (
-                <div
-                  key={item}
-                  className="motion-enter-soft flex gap-3 rounded-[1.3rem] border border-slate-200 bg-white/96 p-4 shadow-[0_20px_44px_-34px_rgba(15,23,42,0.34)] transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.38)]"
-                  style={{ ["--motion-delay" as string]: `${420 + index * 80}ms` }}
-                >
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" strokeWidth={1.8} />
-                  <p className="text-sm leading-6 text-slate-700">{item}</p>
-                </div>
-              ))}
+            <div className="mt-5 rounded-[1.3rem] border border-slate-200 bg-white/96 p-4 text-sm leading-6 text-slate-700 shadow-[0_20px_44px_-34px_rgba(15,23,42,0.34)]">
+              Empiezas con un solo archivo, ves una lectura clara y decides después si quieres seguir fortaleciendo tu expediente.
             </div>
 
             <button
