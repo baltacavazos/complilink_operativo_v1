@@ -106,8 +106,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256 y control de borrado visibles.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Sube tu recibo de nómina');
-    expect(source).toContain('Calculadora rápida');
+    expect(source).toContain('Calculadora guiada');
     expect(source).toContain('Compara tu nómina contra tu CFDI');
+    expect(source).toContain('Cruce automático más reciente');
+    expect(source).toContain('Histórico comparable por periodo');
+    expect(source).toContain('Qué significa jurídicamente');
     expect(source).toContain('Diferencia estimada');
     expect(source).toContain('Paso 1');
     expect(source).toContain('Señal encontrada');

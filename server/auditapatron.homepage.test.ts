@@ -78,8 +78,11 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Sube tu archivo y mira el resultado");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
-    expect(auditFlowSource).toContain("Calculadora rápida");
+    expect(auditFlowSource).toContain("Calculadora guiada");
     expect(auditFlowSource).toContain("Compara tu nómina contra tu CFDI");
+    expect(auditFlowSource).toContain("Cruce automático más reciente");
+    expect(auditFlowSource).toContain("Histórico comparable por periodo");
+    expect(auditFlowSource).toContain("Qué significa jurídicamente");
     expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");
     expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
     expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");

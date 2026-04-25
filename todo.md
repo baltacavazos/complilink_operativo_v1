@@ -1409,3 +1409,8 @@
 - [x] Definir e implementar una primera calculadora orquestada por Helios con cálculo numérico verificable y UX compatible con el flujo actual.
 - [x] Actualizar pruebas afectadas por Home, Auditar, Acceso, términos y calculadora, y revalidar antes del checkpoint.
 - [ ] Evolucionar la calculadora rápida actual hacia una orquestación más profunda por Helios en backend, manteniendo el cálculo numérico determinístico y auditable.
+- [x] Contrastar con ChatGPT, Grok y Gemini la evolución segura de la calculadora rápida actual hacia una orquestación mayor con Helios y persistencia comparable por periodo.
+- [x] Definir una capa mínima de backend para que Helios alimente una calculadora más profunda sin perder cálculo determinístico y auditable.
+- [x] Añadir histórico comparable por periodo para visualizar variaciones mensuales útiles dentro del flujo de auditoría.
+- [x] Incorporar una explicación legal accionable debajo del resultado de la calculadora, basada en el contexto documental ya disponible.
+- [x] Actualizar y ejecutar pruebas afectadas por la evolución de calculadora, histórico y explicación legal antes del siguiente checkpoint.

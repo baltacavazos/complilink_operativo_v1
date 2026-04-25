@@ -4252,7 +4252,13 @@ export default function Auditar() {
     ) ??
     uploadInsight?.nextSuggestion ??
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
-  const quickCalculatorSeedAmount = useMemo(() => {
+  const heliosCalculatorSnapshot = caseDetailQuery.data?.heliosCalculator ?? null;
+  const heliosCalculatorLatestComparison =
+    heliosCalculatorSnapshot?.latestComparison ?? null;
+  const heliosCalculatorHistory = heliosCalculatorSnapshot?.history ?? [];
+  const heliosCalculatorLegalExplanation =
+    heliosCalculatorSnapshot?.legalExplanation ?? null;
+  const quickCalculatorFallbackAmount = useMemo(() => {
     const confirmedData = lastUpload?.preliminaryAnalysis?.confirmedData as
       | Record<string, unknown>
       | undefined;
@@ -4268,6 +4274,13 @@ export default function Auditar() {
     );
   }, [lastUpload]);
   const quickCalculatorPeriodHint = useMemo(() => {
+    if (
+      typeof heliosCalculatorLatestComparison?.periodLabel === "string" &&
+      heliosCalculatorLatestComparison.periodLabel.trim().length
+    ) {
+      return heliosCalculatorLatestComparison.periodLabel.trim();
+    }
+
     const estimatedData = lastUpload?.preliminaryAnalysis?.estimatedData as
       | Record<string, unknown>
       | undefined;
@@ -4276,11 +4289,39 @@ export default function Auditar() {
     return typeof visiblePeriod === "string" && visiblePeriod.trim().length
       ? visiblePeriod.trim()
       : null;
-  }, [lastUpload]);
+  }, [heliosCalculatorLatestComparison, lastUpload]);
   const [quickPayrollAmount, setQuickPayrollAmount] = useState("");
   const [quickCfdiAmount, setQuickCfdiAmount] = useState("");
   const quickCalculatorSeedKeyRef = useRef<string | null>(null);
   useEffect(() => {
+    if (heliosCalculatorLatestComparison) {
+      const seedKey = [
+        "server",
+        heliosCalculatorLatestComparison.periodKey,
+        heliosCalculatorLatestComparison.payrollAmount ?? "no-payroll",
+        heliosCalculatorLatestComparison.cfdiAmount ?? "no-cfdi",
+      ].join("::");
+
+      if (quickCalculatorSeedKeyRef.current === seedKey) {
+        return;
+      }
+
+      quickCalculatorSeedKeyRef.current = seedKey;
+      setQuickPayrollAmount(
+        heliosCalculatorLatestComparison.payrollAmount !== null &&
+          heliosCalculatorLatestComparison.payrollAmount !== undefined
+          ? heliosCalculatorLatestComparison.payrollAmount.toFixed(2)
+          : ""
+      );
+      setQuickCfdiAmount(
+        heliosCalculatorLatestComparison.cfdiAmount !== null &&
+          heliosCalculatorLatestComparison.cfdiAmount !== undefined
+          ? heliosCalculatorLatestComparison.cfdiAmount.toFixed(2)
+          : ""
+      );
+      return;
+    }
+
     if (!lastUpload) {
       return;
     }
@@ -4288,7 +4329,7 @@ export default function Auditar() {
     const seedKey = [
       lastUpload.draftId ?? "confirmed",
       lastUpload.classification.documentType,
-      quickCalculatorSeedAmount ?? "no-amount",
+      quickCalculatorFallbackAmount ?? "no-amount",
     ].join("::");
 
     if (quickCalculatorSeedKeyRef.current === seedKey) {
@@ -4297,8 +4338,8 @@ export default function Auditar() {
 
     quickCalculatorSeedKeyRef.current = seedKey;
     const seededAmount =
-      quickCalculatorSeedAmount !== null
-        ? quickCalculatorSeedAmount.toFixed(2)
+      quickCalculatorFallbackAmount !== null
+        ? quickCalculatorFallbackAmount.toFixed(2)
         : "";
 
     if (lastUpload.classification.documentType === "payroll_receipt") {
@@ -4315,7 +4356,11 @@ export default function Auditar() {
 
     setQuickPayrollAmount(seededAmount);
     setQuickCfdiAmount("");
-  }, [lastUpload, quickCalculatorSeedAmount]);
+  }, [
+    heliosCalculatorLatestComparison,
+    lastUpload,
+    quickCalculatorFallbackAmount,
+  ]);
   const quickPayrollNumeric = parseQuickCalculatorAmount(quickPayrollAmount);
   const quickCfdiNumeric = parseQuickCalculatorAmount(quickCfdiAmount);
   const quickDifferenceAmount =
@@ -4325,11 +4370,13 @@ export default function Auditar() {
   const quickDifferenceAbsolute =
     quickDifferenceAmount !== null ? Math.abs(quickDifferenceAmount) : null;
   const showQuickDifferenceCalculator = Boolean(
-    lastUpload &&
-      ((lastUpload.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined)
-        ?.benefitEstimationReady ||
-        lastUpload.classification.documentType === "payroll_receipt" ||
-        lastUpload.classification.documentType === "cfdi")
+    (heliosCalculatorSnapshot && heliosCalculatorSnapshot.status !== "empty") ||
+      (lastUpload &&
+        ((lastUpload.preliminaryAnalysis?.confirmedData as
+          | Record<string, unknown>
+          | undefined)?.benefitEstimationReady ||
+          lastUpload.classification.documentType === "payroll_receipt" ||
+          lastUpload.classification.documentType === "cfdi"))
   );
   const [showResultReveal, setShowResultReveal] = useState(false);
   const lastRevealedUploadIdRef = useRef<string | null>(null);
@@ -9130,13 +9177,13 @@ export default function Auditar() {
                               <FileSearch className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
                               <div className="min-w-0 flex-1">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
-                                  Calculadora rápida
+                                  Calculadora guiada
                                 </p>
                                 <p className="mt-2 text-lg font-semibold text-slate-950">
                                   Compara tu nómina contra tu CFDI
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                                  Usamos el monto visible detectado en este documento como punto de partida y dejamos el cálculo exacto en una capa determinística. La interpretación sigue siendo preliminar.
+                                  Tomamos los montos visibles del expediente para preparar un cruce por periodo y dejamos la diferencia en una capa determinística y auditable. Puedes ajustar los montos manualmente si quieres validar otro escenario.
                                 </p>
                                 {quickCalculatorPeriodHint ? (
                                   <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-900">
@@ -9145,6 +9192,23 @@ export default function Auditar() {
                                 ) : null}
                               </div>
                             </div>
+
+                            {heliosCalculatorLatestComparison ? (
+                              <div className="mt-4 rounded-[0.95rem] border border-amber-200 bg-white px-4 py-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                                  Cruce automático más reciente
+                                </p>
+                                <p className="mt-2 text-base font-semibold text-slate-950">
+                                  {heliosCalculatorLatestComparison.periodLabel}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                  {heliosCalculatorLatestComparison.summary}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">
+                                  Siguiente paso sugerido: {heliosCalculatorLatestComparison.recommendedNextStep}
+                                </p>
+                              </div>
+                            ) : null}
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2">
                               <label className="rounded-[0.95rem] border border-white/90 bg-white p-3">
@@ -9200,6 +9264,77 @@ export default function Auditar() {
                                 Completa ambos montos para ver una diferencia rápida antes de seguir con la comparación documental.
                               </p>
                             )}
+
+                            {heliosCalculatorHistory.length > 0 ? (
+                              <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Histórico comparable por periodo
+                                </p>
+                                <div className="mt-3 space-y-3">
+                                  {heliosCalculatorHistory.slice(0, 4).map(item => (
+                                    <div
+                                      key={item.periodKey}
+                                      className="rounded-[0.85rem] border border-slate-200 bg-slate-50 px-3 py-3"
+                                    >
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <p className="text-sm font-semibold text-slate-950">
+                                          {item.periodLabel}
+                                        </p>
+                                        <p className="text-xs font-medium text-slate-500">
+                                          {item.direction === "incomplete"
+                                            ? "Comparación incompleta"
+                                            : item.direction === "equal"
+                                              ? "Sin diferencia visible"
+                                              : "Diferencia visible"}
+                                        </p>
+                                      </div>
+                                      <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+                                        <p>
+                                          Nómina: {item.payrollAmount !== null && item.payrollAmount !== undefined
+                                            ? formatQuickCalculatorAmount(item.payrollAmount)
+                                            : "Falta documento"}
+                                        </p>
+                                        <p>
+                                          CFDI: {item.cfdiAmount !== null && item.cfdiAmount !== undefined
+                                            ? formatQuickCalculatorAmount(item.cfdiAmount)
+                                            : "Falta documento"}
+                                        </p>
+                                        <p>
+                                          Diferencia: {item.differenceAmount !== null && item.differenceAmount !== undefined
+                                            ? formatQuickCalculatorAmount(Math.abs(item.differenceAmount))
+                                            : "Pendiente"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
+
+                            {heliosCalculatorLegalExplanation ? (
+                              <div className="mt-4 rounded-[0.95rem] border border-cyan-200 bg-cyan-50/70 px-4 py-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">
+                                  Qué significa jurídicamente
+                                </p>
+                                <p className="mt-2 text-base font-semibold text-slate-950">
+                                  {heliosCalculatorLegalExplanation.headline}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                  {heliosCalculatorLegalExplanation.summary}
+                                </p>
+                                <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                                  {heliosCalculatorLegalExplanation.actionItems.map(item => (
+                                    <li key={item} className="flex gap-2">
+                                      <span className="mt-[0.45rem] h-1.5 w-1.5 rounded-full bg-cyan-700" />
+                                      <span>{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                                <p className="mt-3 text-xs leading-5 text-slate-600">
+                                  {heliosCalculatorLegalExplanation.disclaimer}
+                                </p>
+                              </div>
+                            ) : null}
 
                             <p className="mt-3 text-xs leading-5 text-slate-600">
                               Sirve para una revisión inicial. Para cerrar mejor la lectura, todavía conviene comparar periodo y conceptos del mismo mes.

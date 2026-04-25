@@ -104,6 +104,7 @@ import {
   createGuestPreviewToken,
   readGuestPreviewToken,
 } from "./heliosPublicExperience";
+import { buildHeliosCalculatorSnapshot } from "./heliosCalculatorService";
 import {
   HELIOS_CONTEXT_NOTE,
   LEGAL_ACCEPTANCE_VERSION,
@@ -2793,6 +2794,15 @@ export const appRouter = router({
             hasOpinion: Boolean(heliosOpinion),
           };
         });
+        const heliosCalculator = buildHeliosCalculatorSnapshot(
+          documents.map((document) => ({
+            documentId: document.documentId,
+            originalName: document.originalName,
+            documentType: document.documentType,
+            createdAt: document.createdAt,
+            heliosOpinion: document.heliosOpinion,
+          }))
+        );
         const socialSecurityValidation = buildSocialSecurityValidationSummary({
           documents,
           events: detail.events,
@@ -2822,6 +2832,7 @@ export const appRouter = router({
             documentsWithOpinion: heliosDocumentsCount,
           },
           heliosDocuments,
+          heliosCalculator,
           socialSecurityValidation,
         };
       }),
