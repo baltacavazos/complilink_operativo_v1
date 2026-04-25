@@ -274,10 +274,10 @@ export default function Access() {
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[14ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Entrar con correo
+                Continúa con tu correo
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo al {returnToLabel} sin perder tu avance.
+                Escribe tu correo, recibe un código de 6 dígitos y sigue donde te quedaste. Después vuelves directo al {returnToLabel} sin perder tu avance.
               </p>
             </div>
 

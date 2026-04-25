@@ -12,8 +12,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
     expect(pricingSource).toContain("Prueba gratis y con claridad desde el inicio");
     expect(pricingSource).toContain("Puedes seguir usando la auditoría y tu expediente sin pagar ni desbloquear nada por obligación.");
-    expect(homeSource).toContain("Tu recibo de nómina puede tener señales raras.");
-    expect(homeSource).toContain("Súbelo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.");
+    expect(homeSource).toContain("Tu recibo puede revelar señales raras.");
+    expect(homeSource).toContain("Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
@@ -65,7 +65,7 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {
-    expect(auditFlowSource).toContain("Hecho para trabajadores, sin lenguaje complicado");
+    expect(auditFlowSource).toContain("Lectura visible");
     expect(auditFlowSource).toContain("Sube tu recibo de nómina");
     expect(auditFlowSource).toContain("qué documento recibió");
     expect(auditFlowSource).toContain("qué señal encontró y qué conviene revisar después.");
@@ -74,8 +74,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Enseguida te mostramos qué documento recibimos, qué señal apareció y qué conviene revisar después antes de guardarlo.");
-    expect(auditFlowSource).toContain("Sube tu archivo y mira el resultado");
+    expect(auditFlowSource).toContain("Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
+    expect(auditFlowSource).toContain("Carga inmediata");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).toContain("Calculadora guiada");

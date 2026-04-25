@@ -1006,21 +1006,21 @@ function HeroSection() {
             className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
-            Tu recibo de nómina puede tener señales raras.
+            Tu recibo puede revelar señales raras.
           </h1>
 
           <p
-            className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
+            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 sm:text-[1.02rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-Súbelo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.
+Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.
           </p>
 
           <p
             className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-Puedes empezar con una foto o PDF. No necesitas reunir todo.
+Empieza con una foto o PDF. No necesitas reunir todo.
           </p>
 
           <div

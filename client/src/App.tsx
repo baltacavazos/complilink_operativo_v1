@@ -50,10 +50,24 @@ function RouteLoadingFallback() {
   );
 }
 
+function QuickExitButton() {
+  return (
+    <a
+      href="https://news.google.com/"
+      className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/92 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_50px_-24px_rgba(2,6,23,0.95)] transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-400"
+      aria-label="Salida rápida"
+      title="Salida rápida"
+    >
+      Salida rápida
+    </a>
+  );
+}
+
 function Router() {
   return (
     <>
       <DemoViewGuard />
+      <QuickExitButton />
       <Suspense fallback={<RouteLoadingFallback />}>
         <Switch>
           <Route path={"/"} component={Home} />
@@ -77,7 +91,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
+      <ThemeProvider defaultTheme="dark" switchable>
         <TooltipProvider>
           <Toaster />
           <Router />

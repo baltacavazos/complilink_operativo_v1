@@ -23,7 +23,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('tabLabel: "Pago y señales"');
     expect(source).toContain('tabLabel: "Revisar primero"');
     expect(source).toContain("Sube una foto o PDF y revisa tu pago");
-    expect(source).toContain("Tu recibo de nómina puede tener señales raras.");
+    expect(source).toContain("Tu recibo puede revelar señales raras.");
     expect(source).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
     expect(source).toContain("Revisión urgente de nómina");
@@ -112,6 +112,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Histórico comparable por periodo');
     expect(source).toContain('Qué significa jurídicamente');
     expect(source).toContain('Diferencia estimada');
+    expect(source).toContain('Calculadora visual rápida');
+    expect(source).toContain('Así se ve el cruce de montos del periodo activo');
+    expect(source).toContain('Semáforo laboral');
+    expect(source).toContain('Mensajes listos para usar');
+    expect(source).toContain('Mensaje diplomático para RH');
+    expect(source).toContain('Texto corto para WhatsApp');
+    expect(source).toContain('navigator.clipboard?.writeText(quickRhMessage)');
+    expect(source).toContain('navigator.clipboard?.writeText(quickWhatsappMessage)');
     expect(source).toContain('Paso 1');
     expect(source).toContain('Señal encontrada');
     expect(source).toContain('Qué revisar después');
@@ -137,8 +145,8 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Acceso simple");
-    expect(source).toContain("Entrar con correo");
-    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y entra. Después vuelves directo al ");
+    expect(source).toContain("Continúa con tu correo");
+    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y sigue donde te quedaste. Después vuelves directo al ");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
@@ -193,10 +201,12 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("AuditaPatron y Helios");
   });
 
-  it("mantiene el tema base en claro sin interruptor global", () => {
+  it("mantiene el modo oscuro por defecto con salida rápida global", () => {
     const appSource = fs.readFileSync(path.resolve(import.meta.dirname, "../App.tsx"), "utf8");
 
-    expect(appSource).toContain('<ThemeProvider defaultTheme="light">');
-    expect(appSource).not.toContain('<ThemeProvider defaultTheme="light" switchable');
+    expect(appSource).toContain('<ThemeProvider defaultTheme="dark" switchable>');
+    expect(appSource).toContain('function QuickExitButton()');
+    expect(appSource).toContain('aria-label="Salida rápida"');
+    expect(appSource).toContain('href="https://news.google.com/"');
   });
 });

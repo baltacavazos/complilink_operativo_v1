@@ -1408,9 +1408,24 @@
 - [x] Revisar y suavizar la cláusula de licencia de datos en términos para reducir riesgo reputacional sin romper la cobertura legal.
 - [x] Definir e implementar una primera calculadora orquestada por Helios con cálculo numérico verificable y UX compatible con el flujo actual.
 - [x] Actualizar pruebas afectadas por Home, Auditar, Acceso, términos y calculadora, y revalidar antes del checkpoint.
-- [ ] Evolucionar la calculadora rápida actual hacia una orquestación más profunda por Helios en backend, manteniendo el cálculo numérico determinístico y auditable.
+- [x] Evolucionar la calculadora rápida actual hacia una orquestación más profunda por Helios en backend, manteniendo el cálculo numérico determinístico y auditable.
 - [x] Contrastar con ChatGPT, Grok y Gemini la evolución segura de la calculadora rápida actual hacia una orquestación mayor con Helios y persistencia comparable por periodo.
 - [x] Definir una capa mínima de backend para que Helios alimente una calculadora más profunda sin perder cálculo determinístico y auditable.
 - [x] Añadir histórico comparable por periodo para visualizar variaciones mensuales útiles dentro del flujo de auditoría.
 - [x] Incorporar una explicación legal accionable debajo del resultado de la calculadora, basada en el contexto documental ya disponible.
 - [x] Actualizar y ejecutar pruebas afectadas por la evolución de calculadora, histórico y explicación legal antes del siguiente checkpoint.
+- [x] Contrastar con ChatGPT, Grok y Gemini el alcance ejecutable del adjunto, separando fixes críticos inmediatos de mejoras de impacto mayor para no romper la experiencia actual.
+- [x] Corregir el hero para dejar una sola promesa visible y eliminar cualquier duplicado o repetición residual.
+- [x] Reforzar /auditar como pantalla de acción pura con carga arriba del fold y explicación mínima antes de módulos secundarios.
+- [x] Reducir el Home al recorrido mínimo consensuado, moviendo elementos secundarios al post-upload cuando corresponda.
+- [x] Humanizar el ejemplo de resultado con el copy exacto de documento detectado, señal encontrada, qué significa y siguiente paso.
+- [x] Corregir el copy fino de /acceso señalado en el adjunto.
+- [x] Evaluar e implementar el siguiente bloque seguro de mejoras post-hallazgo del adjunto sin introducir regresiones en la base actual.
+- [x] Actualizar y ejecutar pruebas afectadas por la nueva ronda antes del siguiente checkpoint.
+- [x] Implementar generador post-hallazgo de mensajes diplomáticos para RH y texto listo para WhatsApp usando el contexto documental ya visible.
+- [x] Evolucionar la calculadora actual a una versión visual con comparativas más dolorosas y comprensibles para el usuario.
+- [x] Incorporar semáforo y checklist de salud laboral para mostrar nivel de protección y documentos faltantes.
+- [x] Añadir botón de cierre rápido o pánico con salida discreta desde superficies sensibles.
+- [ ] Mejorar el feedback inmediato de OCR/carga para que el usuario vea que la foto fue recibida y está siendo leída.
+- [x] Evaluar y aplicar un modo oscuro de discreción por defecto si puede integrarse sin romper accesibilidad ni lo ya validado.
+- [x] Evaluar el bloque estructural del adjunto e implementar el mayor alcance compatible posible en esta misma ronda.

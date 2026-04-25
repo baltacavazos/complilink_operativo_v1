@@ -4378,6 +4378,112 @@ export default function Auditar() {
           lastUpload.classification.documentType === "payroll_receipt" ||
           lastUpload.classification.documentType === "cfdi"))
   );
+  const quickDifferenceRelative =
+    quickDifferenceAbsolute !== null &&
+    quickCfdiNumeric !== null &&
+    quickCfdiNumeric > 0
+      ? quickDifferenceAbsolute / quickCfdiNumeric
+      : null;
+  const quickComparisonVisualMax = Math.max(
+    quickPayrollNumeric ?? 0,
+    quickCfdiNumeric ?? 0,
+    1
+  );
+  const quickPayrollVisualWidth = `${Math.max(
+    12,
+    Math.round(((quickPayrollNumeric ?? 0) / quickComparisonVisualMax) * 100)
+  )}%`;
+  const quickCfdiVisualWidth = `${Math.max(
+    12,
+    Math.round(((quickCfdiNumeric ?? 0) / quickComparisonVisualMax) * 100)
+  )}%`;
+  const quickLaborHealthSignal =
+    quickDifferenceAmount === null || quickDifferenceAbsolute === null
+      ? {
+          badge: "Semáforo en preparación",
+          headline: "Faltan dos montos para medir el riesgo visible",
+          supportingText:
+            "En cuanto tengas nómina y CFDI del mismo periodo, te diremos si el cruce se ve sano, si requiere atención o si ya amerita revisión prioritaria.",
+          progress: 34,
+          toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
+          barClasses: "bg-amber-500",
+          checklist: [
+            "Sube o captura los dos montos del mismo periodo.",
+            "Confirma que la fecha corresponda al mismo mes.",
+            "Revisa después conceptos y deducciones.",
+          ],
+        }
+      : quickDifferenceAmount === 0
+        ? {
+            badge: "Semáforo laboral: bajo",
+            headline: "Por monto no se ve una diferencia inmediata",
+            supportingText:
+              "La lectura inicial luce estable en este periodo, pero todavía conviene revisar conceptos, fechas y deducciones para cerrar bien la comparación.",
+            progress: 82,
+            toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
+            barClasses: "bg-emerald-500",
+            checklist: [
+              "Comparar periodo y concepto del mismo mes.",
+              "Guardar este cruce como referencia sana.",
+              "Subir otro mes si quieres ver tendencia.",
+            ],
+          }
+        : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.15
+          ? {
+              badge: "Semáforo laboral: alto",
+              headline: "La diferencia ya merece revisión prioritaria",
+              supportingText:
+                "La separación entre nómina y CFDI ya es suficientemente visible como para pedir contexto, conservar evidencia y preparar una aclaración con calma.",
+              progress: 24,
+              toneClasses: "border-rose-200 bg-rose-50 text-rose-950",
+              barClasses: "bg-rose-500",
+              checklist: [
+                "Guardar el recibo y el CFDI del mismo periodo.",
+                "Pedir explicación por escrito antes de discutirlo en persona.",
+                "Revisar si se repite en otros meses.",
+              ],
+            }
+          : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.05
+            ? {
+                badge: "Semáforo laboral: medio",
+                headline: "Hay una diferencia visible que conviene aclarar",
+                supportingText:
+                  "No implica por sí sola un incumplimiento definitivo, pero sí una señal suficiente para comparar conceptos y dejar registro de la aclaración.",
+                progress: 51,
+                toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
+                barClasses: "bg-amber-500",
+                checklist: [
+                  "Contrastar monto, fecha y concepto.",
+                  "Guardar captura o PDF del CFDI del mismo mes.",
+                  "Preparar una pregunta neutral para RH.",
+                ],
+              }
+            : {
+                badge: "Semáforo laboral: atención",
+                headline: "La diferencia luce pequeña, pero ya deja una señal útil",
+                supportingText:
+                  "Puede bastar una aclaración simple, sobre todo si el concepto o la fecha no coinciden exactamente con el periodo revisado.",
+                progress: 66,
+                toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
+                barClasses: "bg-sky-500",
+                checklist: [
+                  "Verificar si ambos archivos son del mismo periodo.",
+                  "Revisar si hubo ajuste o pago extraordinario.",
+                  "Guardar este cruce para no perder contexto.",
+                ],
+              };
+  const quickScriptPeriodLabel =
+    quickCalculatorPeriodHint ??
+    heliosCalculatorLatestComparison?.periodLabel ??
+    "el mismo periodo";
+  const quickRhMessage =
+    quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
+      ? `Hola, me gustaría aclarar una diferencia que detecté al revisar mi recibo y el CFDI de ${quickScriptPeriodLabel}. Veo una variación aproximada de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} y quisiera confirmar si corresponde a monto, fecha o concepto. ¿Me ayudan a revisarlo por favor?`
+      : `Hola, quiero revisar si mi recibo y el CFDI corresponden correctamente a ${quickScriptPeriodLabel}. ¿Me pueden ayudar a confirmar monto, fecha y concepto, por favor?`;
+  const quickWhatsappMessage =
+    quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
+      ? `Detecté una posible diferencia de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} entre mi nómina y el CFDI de ${quickScriptPeriodLabel}. ¿Podemos revisar si corresponde a monto, fecha o concepto?`
+      : `Quiero confirmar si mi nómina y mi CFDI de ${quickScriptPeriodLabel} coinciden en monto, fecha y concepto. ¿Me ayudas a revisarlo?`;
   const [showResultReveal, setShowResultReveal] = useState(false);
   const lastRevealedUploadIdRef = useRef<string | null>(null);
   const verdictPanelRef = useRef<HTMLDivElement | null>(null);
@@ -6008,14 +6114,13 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                Hecho para trabajadores, sin lenguaje complicado
+                Revisión rápida, clara y privada
               </div>
               <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Sube tu recibo de nómina
+                Sube tu archivo
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Usa una foto, PDF o archivo. AuditaPatron te dirá qué documento
-                recibió, qué señal encontró y qué conviene revisar después.
+                Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -6038,20 +6143,20 @@ export default function Auditar() {
                     window.location.href = "/";
                   }}
                 >
-                  Ver primero cómo funciona
+                  Volver al inicio
                 </Button>
               </div>
             </div>
 
             <div className="mx-auto w-full max-w-xl rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                Qué verás aquí
+                Lo que pasa en cuanto subes
               </p>
               <div className="mt-4 space-y-3">
                 {[
-                  "Sube tu recibo de nómina desde foto, PDF o XML.",
-                  "Verás qué documento recibimos, qué señal apareció y qué conviene revisar después.",
-                  "También puedes subir CFDI, contrato o soporte IMSS/Infonavit.",
+                  "Subes foto, PDF o XML desde tu celular o computadora.",
+                  "Te mostramos qué documento detectamos y la señal principal.",
+                  "Si hace falta otro soporte, te decimos cuál conviene subir después.",
                 ].map(item => (
                   <div
                     key={item}
@@ -7360,15 +7465,15 @@ export default function Auditar() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                      Sube tu recibo de nómina
+                      Sube tu archivo
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Sube tu archivo y mira el resultado
+                      Sube tu archivo y mira la lectura inicial
                     </h2>
 
                 </div>
                   <p className="max-w-lg text-sm leading-6 text-slate-600">
-                    Enseguida te mostramos qué documento recibimos, qué señal apareció y qué conviene revisar después antes de guardarlo.
+                    Primero te mostramos qué documento detectamos, qué señal apareció y qué paso conviene seguir antes de guardarlo.
 
                 </p>
               </div>
@@ -9264,6 +9369,114 @@ export default function Auditar() {
                                 Completa ambos montos para ver una diferencia rápida antes de seguir con la comparación documental.
                               </p>
                             )}
+
+                            <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                    Calculadora visual rápida
+                                  </p>
+                                  <p className="mt-2 text-base font-semibold text-slate-950">
+                                    Así se ve el cruce de montos del periodo activo
+                                  </p>
+                                </div>
+                                {quickCalculatorPeriodHint ? (
+                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                    {quickCalculatorPeriodHint}
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className="mt-4 space-y-4">
+                                <div>
+                                  <div className="flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
+                                    <span>Nómina</span>
+                                    <span>{quickPayrollNumeric !== null ? formatQuickCalculatorAmount(quickPayrollNumeric) : "Pendiente"}</span>
+                                  </div>
+                                  <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+                                    <div className="h-full rounded-full bg-teal-500" style={{ width: quickPayrollVisualWidth }} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
+                                    <span>CFDI</span>
+                                    <span>{quickCfdiNumeric !== null ? formatQuickCalculatorAmount(quickCfdiNumeric) : "Pendiente"}</span>
+                                  </div>
+                                  <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+                                    <div className="h-full rounded-full bg-violet-500" style={{ width: quickCfdiVisualWidth }} />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className={`mt-4 rounded-[0.95rem] border px-4 py-4 ${quickLaborHealthSignal.toneClasses}`}>
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">
+                                    {quickLaborHealthSignal.badge}
+                                  </p>
+                                  <p className="mt-2 text-base font-semibold text-slate-950">
+                                    {quickLaborHealthSignal.headline}
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700">
+                                  Protección estimada {quickLaborHealthSignal.progress}%
+                                </span>
+                              </div>
+                              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/70">
+                                <div className={`h-full rounded-full ${quickLaborHealthSignal.barClasses}`} style={{ width: `${quickLaborHealthSignal.progress}%` }} />
+                              </div>
+                              <p className="mt-3 text-sm leading-6 text-slate-700">
+                                {quickLaborHealthSignal.supportingText}
+                              </p>
+                              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                                {quickLaborHealthSignal.checklist.map(item => (
+                                  <div key={item} className="rounded-[0.85rem] border border-white/80 bg-white/80 px-3 py-3 text-sm leading-6 text-slate-700">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-4">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                Mensajes listos para usar
+                              </p>
+                              <p className="mt-2 text-base font-semibold text-slate-950">
+                                Si quieres avanzar sin confrontarte, aquí tienes dos borradores
+                              </p>
+                              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                                <div className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <p className="text-sm font-semibold text-slate-950">Mensaje diplomático para RH</p>
+                                    <button
+                                      type="button"
+                                      className="text-xs font-semibold text-teal-700 transition hover:text-teal-900"
+                                      onClick={() => {
+                                        void navigator.clipboard?.writeText(quickRhMessage);
+                                      }}
+                                    >
+                                      Copiar
+                                    </button>
+                                  </div>
+                                  <p className="mt-3 text-sm leading-6 text-slate-700">{quickRhMessage}</p>
+                                </div>
+                                <div className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <p className="text-sm font-semibold text-slate-950">Texto corto para WhatsApp</p>
+                                    <button
+                                      type="button"
+                                      className="text-xs font-semibold text-teal-700 transition hover:text-teal-900"
+                                      onClick={() => {
+                                        void navigator.clipboard?.writeText(quickWhatsappMessage);
+                                      }}
+                                    >
+                                      Copiar
+                                    </button>
+                                  </div>
+                                  <p className="mt-3 text-sm leading-6 text-slate-700">{quickWhatsappMessage}</p>
+                                </div>
+                              </div>
+                            </div>
 
                             {heliosCalculatorHistory.length > 0 ? (
                               <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-3">
