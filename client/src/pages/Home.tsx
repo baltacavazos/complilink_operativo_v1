@@ -167,9 +167,9 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
+  { href: "#helios-desde-home", label: "Subir recibo" },
+  { href: "#privacidad", label: "Privacidad" },
   { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#expediente", label: "Tu expediente" },
-  { href: "#copiloto", label: "Asistente" },
   { href: "#preguntas", label: "Preguntas" },
 ];
 
@@ -419,20 +419,20 @@ const heroFindingSlides = [
 const reportDemoStates: ReportDemoState[] = [
   {
     id: "documento-recibido",
-    label: "Documento recibido",
-    badge: "Estado real 01",
+    label: "Documento entendido",
+    badge: "Archivo listo para revisar",
     summary: "AuditaPatron reconoce el archivo y conserva el periodo para no perder contexto.",
   },
   {
     id: "hallazgo-preliminar",
-    label: "Hallazgo preliminar",
-    badge: "Estado real 02",
+    label: "Señal detectada",
+    badge: "Posible diferencia encontrada",
     summary: "Se cruza la información útil y aparece una señal concreta para revisar sin adelantar conclusiones.",
   },
   {
     id: "siguiente-paso",
-    label: "Siguiente paso sugerido",
-    badge: "Estado real 03",
+    label: "Qué revisar después",
+    badge: "Documento sugerido para seguir",
     summary: "La plataforma aterriza cuál es el siguiente documento que más valor puede aportar al expediente.",
   },
 ];
@@ -654,13 +654,6 @@ function SiteHeader() {
             Entrar
           </Button>
           <Button
-            variant="outline"
-            className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
-            onClick={() => scrollToId("expediente")}
-          >
-            Ver tu expediente
-          </Button>
-          <Button
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
             onClick={goToAuditFlow}
           >
@@ -738,16 +731,6 @@ function SiteHeader() {
                 }}
               >
                 Entrar
-              </Button>
-              <Button
-                variant="outline"
-                className="motion-hover-lift h-11 rounded-full border-slate-200 bg-white text-slate-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 active:scale-[0.99]"
-                onClick={() => {
-                  setOpen(false);
-                  scrollToId("expediente");
-                }}
-              >
-                Ver tu expediente
               </Button>
               <Button
                 className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
@@ -1030,14 +1013,14 @@ function HeroSection() {
             className="motion-enter-soft mt-3 max-w-xl text-sm font-semibold uppercase tracking-[0.12em] text-amber-700 sm:text-[0.95rem]"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
-Sube una foto o PDF y en minutos te decimos si te están pagando menos, reportando mal o faltando algo.
+Sube una foto o PDF y en minutos te decimos si te deben dinero y te damos el mensaje listo para reclamar.
           </p>
 
           <p
             className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
-Empieza con un solo documento. Primero ves la señal principal, luego el siguiente paso útil y solo después decides si quieres guardar algo en tu expediente.
+Empieza con una foto. Primero ves qué documento recibimos, qué señal apareció y qué conviene revisar después.
           </p>
 
           <div
@@ -1100,12 +1083,15 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <p className="text-sm font-semibold leading-6 text-slate-700">
                   Empieza con una foto. No necesitas reunir todo.
                 </p>
                 <p className="text-sm leading-6 text-slate-600">
                   Si no tienes recibo a la mano, también sirve PDF, XML o una imagen clara del documento que sí tengas.
+                </p>
+                <p className="text-xs font-medium leading-5 text-teal-800">
+                  Cifrado AES-256 y control de borrado visibles desde el inicio.
                 </p>
               </div>
           </div>
@@ -1689,13 +1675,13 @@ function QuickTrustSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
-              Privacidad radical y control visible
+              Privacidad visible y humana
             </div>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.35rem]">
-              Tu jefe nunca se enterará.
+              Nadie de tu empresa puede ver lo que subes.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
-              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Primero ves el borrador, decides si se guarda y mantienes el control visible sobre tu expediente privado.
+              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Cumplimos LFPDPPP y reforzamos el resguardo con cifrado AES-256 para piezas sensibles dentro del servicio.
             </p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -1716,16 +1702,16 @@ function QuickTrustSection() {
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {[
               {
-                title: "Primero revisas",
-                body: "Nada se integra al expediente hasta que ves el borrador y confirmas con calma.",
+                title: "Tu control primero",
+                body: "Nada se integra al expediente hasta que ves el borrador y decides con calma si quieres guardarlo.",
               },
               {
                 title: "Borrado visible",
                 body: "Puedes borrar o pedir eliminación de tus documentos cuando lo necesites y mantener control sobre lo que decides conservar.",
               },
               {
-                title: "Sin exposición interna",
-                body: "Este flujo está pensado para que tu empresa no vea el documento que subes mientras haces la revisión inicial.",
+                title: "Cifrado AES-256",
+                body: "Reforzamos el resguardo de piezas sensibles y mantenemos una ruta pública para que leas el aviso completo cuando quieras.",
               },
             ].map((item) => (
               <article
@@ -2704,15 +2690,8 @@ export default function Home() {
       <HeroSection />
       <HeliosFirstEntrySection />
       <QuickTrustSection />
-      <MobilePriorityPathSection />
-      <div className="hidden sm:block">
-        <SectionDivider />
-        <HowItWorksSection />
-      </div>
       <SectionDivider />
-      <DossierSection />
-      <SectionDivider />
-      <CopilotPreviewSection />
+      <HowItWorksSection />
       <SectionDivider />
       <FAQSection />
       <SectionDivider />

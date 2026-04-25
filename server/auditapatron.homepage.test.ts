@@ -25,7 +25,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("AuditaPatron te devuelve hallazgos claros");
     expect(homeSource).toContain("Tu expediente se fortalece con AuditaPatron");
     expect(homeSource).toContain("Revisar mi recibo gratis");
-    expect(homeSource).toContain("Sube una foto o PDF y en minutos te decimos si te están pagando menos, reportando mal o faltando algo.");
+    expect(homeSource).toContain("Sube una foto o PDF y en minutos te decimos si te deben dinero y te damos el mensaje listo para reclamar.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
@@ -35,7 +35,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Privacidad y control visibles.");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Leer aviso de privacidad");
-    expect(homeSource).toContain("Tu jefe nunca se enterará.");
+    expect(homeSource).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
   });
@@ -46,12 +46,12 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Caso anónimo 01");
     expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
-    expect(homeSource).toContain("Privacidad radical y control visible");
+    expect(homeSource).toContain("Privacidad visible y humana");
     expect(homeSource).toContain("Tus documentos son tuyos. Puedes borrarlos cuando quieras.");
     expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
-    expect(homeSource).toContain("Tu expediente en crecimiento");
-    expect(homeSource).toContain("Tus documentos se convierten en expediente con más contexto para ordenar y comparar resultados.");
+    expect(homeSource).not.toContain("<DossierSection />");
+    expect(homeSource).not.toContain("<CopilotPreviewSection />");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
   });
@@ -72,7 +72,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Claridad actual del expediente");
     expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
     expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Sube tu recibo y ve primero si hay algo raro.");
+    expect(auditFlowSource).toContain("Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Sube un documento y revisa el borrador");
     expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
@@ -99,13 +99,13 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {
+    expect(homeSource).toContain('{ href: "#helios-desde-home", label: "Subir recibo" }');
+    expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
-    expect(homeSource).toContain('{ href: "#expediente", label: "Tu expediente" }');
-    expect(homeSource).toContain('{ href: "#copiloto", label: "Asistente" }');
     expect(homeSource).toContain('const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];');
     expect(homeSource).toContain('const sectionMatch = document.querySelector<HTMLElement>(`section#${CSS.escape(candidateId)}`);');
     expect(homeSource).toContain('window.history.replaceState(null, "", `#${id}`)');
-    expect(homeSource).toContain('<CopilotPreviewSection />');
+    expect(homeSource).not.toContain('<CopilotPreviewSection />');
     expect(homeSource).toContain('id: "ruta-movil-como-funciona"');
     expect(homeSource).toContain('id: "ruta-movil-expediente"');
     expect(homeSource).not.toContain('id: "como-funciona",\n      eyebrow: "Qué pasa cuando empiezas"');

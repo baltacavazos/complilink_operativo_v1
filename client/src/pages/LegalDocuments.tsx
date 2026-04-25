@@ -6,6 +6,7 @@ import {
   type LegalDocumentDefinition,
   type LegalDocumentSlug,
 } from "@shared/legal";
+import { Lock } from "lucide-react";
 
 type MarkdownBlock =
   | { type: "h1"; content: string }
@@ -176,6 +177,20 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                   Aquí puedes revisar con calma qué datos usamos, cómo protegemos tu expediente y cuáles son las reglas básicas del servicio antes de entrar al documento completo.
                 </p>
               </div>
+              {slug === "privacidad" ? (
+                <div className="mt-4 max-w-3xl rounded-[1.45rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-5 text-sm leading-6 text-slate-800 shadow-[0_22px_46px_-30px_rgba(20,184,166,0.35)] sm:p-6 sm:text-base sm:leading-7">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
+                    <Lock className="h-4 w-4" strokeWidth={1.8} />
+                    Privacidad visible y pública
+                  </div>
+                  <p className="mt-4 text-lg font-semibold leading-8 text-slate-950 sm:text-[1.35rem] sm:leading-9">
+                    Nadie de tu empresa puede ver lo que subes. Tus documentos son tuyos. Puedes borrarlos cuando quieras.
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                    Este aviso carga sin login para que puedas leerlo antes de usar la plataforma. Operamos bajo LFPDPPP y reforzamos el resguardo con cifrado AES-256 para piezas sensibles del servicio.
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-semibold sm:justify-end">
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-white">{document.version}</span>
@@ -206,10 +221,10 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
             Términos de Uso
           </a>
           <a
-            href="/auditar"
+            href="/"
             className="rounded-full border border-teal-200 bg-teal-50 px-4 py-2 font-medium text-teal-800 transition hover:border-teal-300 hover:bg-teal-100"
           >
-            Ir a tu expediente
+            Revisar mi recibo gratis
           </a>
         </div>
 

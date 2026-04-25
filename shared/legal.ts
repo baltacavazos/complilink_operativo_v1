@@ -76,11 +76,13 @@ const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 
 **Correo de contacto para privacidad:** ${LEGAL_CONTACT_EMAIL}
 
+> Nadie de tu empresa puede ver lo que subes aquí. Tus documentos son tuyos, puedes pedir borrado cuando quieras y reforzamos el resguardo con controles de cifrado AES-256 para piezas sensibles del servicio, conforme a la LFPDPPP.
+
 ${LEGAL_CONTROLLER_NAME}, en su carácter de responsable del tratamiento de datos personales, pone a disposición de las personas usuarias de AuditaPatron el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México.
 
 ## 1. Plataforma y alcance
 
-AuditaPatron es una plataforma orientada a la auditoría laboral, la organización del expediente digital de la persona trabajadora y la entrega de orientación automatizada mediante Helios, un copiloto legal de apoyo. El tratamiento de datos comprende la recolección, uso, almacenamiento, organización, análisis, resguardo, consulta, supresión, anonimización y, en su caso, transferencia permitida por la ley.
+AuditaPatron es una plataforma orientada a la auditoría laboral, la organización del expediente digital de la persona trabajadora y la entrega de orientación automatizada para entender mejor su situación documental. El tratamiento de datos comprende la recolección, uso, almacenamiento, organización, análisis, resguardo, consulta, supresión, anonimización y, en su caso, transferencia permitida por la ley.
 
 ## 2. Datos personales que podemos recabar
 
@@ -90,7 +92,7 @@ AuditaPatron **no recaba datos biométricos** como parte ordinaria de su operaci
 
 ## 3. Finalidades primarias
 
-Tratamos los datos personales para finalidades necesarias para la prestación del servicio, incluyendo verificar cumplimiento laboral, fiscal y de seguridad social; autenticar la identidad de la persona usuaria; administrar accesos; recibir, clasificar y ordenar documentos; generar reportes y tableros; mantener el expediente digital; analizar documentos con herramientas de inteligencia artificial; devolver hallazgos, comparaciones, alertas o recomendaciones operativas; documentar evidencias de consentimiento y auditoría; así como brindar orientación laboral automatizada a través de Helios dentro del ecosistema AuditaPatron y CompliLink.
+Tratamos los datos personales para finalidades necesarias para la prestación del servicio, incluyendo verificar cumplimiento laboral, fiscal y de seguridad social; autenticar la identidad de la persona usuaria; administrar accesos; recibir, clasificar y ordenar documentos; generar reportes y tableros; mantener el expediente digital; analizar documentos con herramientas de inteligencia artificial; devolver hallazgos, comparaciones, alertas o recomendaciones operativas; y documentar evidencias de consentimiento y auditoría dentro del servicio AuditaPatron.
 
 ## 4. Finalidades secundarias y mecanismo de oposición
 

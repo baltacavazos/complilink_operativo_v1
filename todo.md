@@ -1393,3 +1393,9 @@
 - [x] Diseñar e implementar el flujo pre-registro desde Home para subir un documento, mostrar lectura parcial de Helios y pedir correo solo para guardar el expediente.
 - [x] Implementar un contador público basado en actividad real de Helios sin exponer datos sensibles ni romper rendimiento.
 - [x] Actualizar pruebas Vitest y E2E afectadas por la nueva ronda Helios-first y revalidar el proyecto antes del checkpoint.
+- [x] Contrastar con ChatGPT, Grok y Gemini el sprint solicitado en el adjunto y definir el corte más seguro para implementar sin regresiones.
+- [x] Hacer público y humano el Aviso de Privacidad en /legal/privacidad, verificando que cargue sin login.
+- [x] Compactar la Home hacia una estructura más corta con CTA dominante, upload visible y bloques avanzados reducidos o movidos fuera del primer recorrido.
+- [x] Reforzar /auditar como pantalla de acción pura con módulo de carga arriba y explicación mínima antes de opciones secundarias.
+- [x] Humanizar el ejemplo de resultado sustituyendo etiquetas abstractas por señales y siguientes pasos concretos.
+- [x] Validar que los cambios nuevos no rompan el flujo Helios-first ya implementado, Home, Auditar, legal y acceso.

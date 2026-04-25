@@ -24,10 +24,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('tabLabel: "Revisar primero"');
     expect(source).toContain("Sube una foto o PDF y revisa tu pago");
     expect(source).toContain("¿Tu recibo de nómina está bien o hay algo raro?");
-    expect(source).toContain("Sube una foto o PDF y en minutos te decimos si te están pagando menos, reportando mal o faltando algo.");
-    expect(source).toContain("Empieza con un solo documento.");
+    expect(source).toContain("Sube una foto o PDF y en minutos te decimos si te deben dinero y te damos el mensaje listo para reclamar.");
+    expect(source).toContain("Empieza con una foto. Primero ves qué documento recibimos, qué señal apareció y qué conviene revisar después.");
     expect(source).toContain("Revisión urgente de nómina");
-    expect(source).toContain('label: "Asistente"');
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");
     expect(source).not.toContain("Entrar con mi asistente");
@@ -39,8 +38,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Caso anónimo 01");
     expect(source).toContain("Señal verificada en pruebas de comprensión");
-    expect(source).toContain("Privacidad radical y control visible");
-    expect(source).toContain("Tu jefe nunca se enterará.");
+    expect(source).toContain("Privacidad visible y humana");
+    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
     expect(source).toContain("Guía rápida para empezar");
@@ -68,17 +67,15 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Esto verás apenas subas tu documento.");
     expect(source).toContain("Ejemplo anónimo: posible diferencia estimada de $3,240 MXN.");
     expect(source).toContain("Primero ves lo esencial: qué documento entendimos, qué señal apareció, un monto estimado si aplica y qué te conviene hacer después.");
-    expect(source).toContain("Estado real 02");
+    expect(source).toContain("Posible diferencia encontrada");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#dbeeee]');
     expect(source).toContain('bg-[#eef6f5]');
     expect(source).toContain('bg-[#eaf5f3]');
-    expect(source).toContain("function MobilePriorityPathSection");
-    expect(source).toContain("Ruta móvil priorizada");
-    expect(source).toContain("Primero decides si quieres empezar; lo demás aparece cuando te sirve.");
-    expect(source).toContain('className="hidden sm:block"');
+    expect(source).not.toContain("<MobilePriorityPathSection />");
+    expect(source).not.toContain("<DossierSection />");
+    expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
-    expect(source).toContain('id="expediente"');
     expect(source).toContain('id="privacidad"');
   });
 
@@ -101,16 +98,16 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6');
     expect(source).toContain('mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5');
-    expect(source).toContain('Sube tu recibo y ve primero si hay algo raro.');
+    expect(source).toContain('Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después.');
     expect(source).toContain('Revisar mi recibo gratis');
     expect(source).toContain('mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950');
     expect(source).toContain('mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500');
-    expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara.');
+    expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256 y control de borrado visibles.');
     expect(source).toContain('Elegir cámara o archivo');
-    expect(source).toContain('Sube tu recibo → IA analiza → siguiente paso');
+    expect(source).toContain('Sube tu recibo de nómina');
     expect(source).toContain('Paso 1');
-    expect(source).toContain('IA analiza');
-    expect(source).toContain('Semáforo y siguiente paso');
+    expect(source).toContain('Señal encontrada');
+    expect(source).toContain('Qué revisar después');
     expect(source).toContain('mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white');
     expect(source).toContain('mx-auto inline-flex h-10 w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.2rem]');
     expect(source).toContain('El borrador se abre aquí mismo.');
@@ -184,6 +181,8 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain("Resumen humano antes del texto completo");
     expect(source).toContain("acompañamiento laboral dentro de la plataforma");
+    expect(source).toContain("Privacidad visible y pública");
+    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).not.toContain("AuditaPatron y Helios");
   });
 
