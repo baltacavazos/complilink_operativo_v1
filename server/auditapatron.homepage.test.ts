@@ -85,7 +85,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Confirmar y guardar documento");
     expect(auditFlowSource).toContain("Calculadora guiada");
     expect(auditFlowSource).toContain("Compara tu nómina contra tu CFDI");
-    expect(auditFlowSource).toContain("Cruce automático más reciente");
+    expect(auditFlowSource).toContain("Comparación rápida entre periodos");
     expect(auditFlowSource).toContain("Periodo a comparar");
     expect(auditFlowSource).toContain("Histórico comparable por periodo");
     expect(auditFlowSource).toContain("Qué significa jurídicamente");
@@ -93,12 +93,15 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Tu nivel de protección legal");
     expect(auditFlowSource).toContain("Asegurar la siguiente pieza");
     expect(auditFlowSource).toContain("Exportar hallazgo en PDF");
+    expect(auditFlowSource).toContain("Reporte de hallazgo laboral");
     expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
     expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
     expect(auditFlowSource).toContain("Ver mi bóveda");
     expect(auditFlowSource).toContain("Bóveda Laboral");
     expect(auditFlowSource).toContain("Aquí están tus documentos protegidos");
     expect(auditFlowSource).toContain("Resumen visible de tu bóveda");
+    expect(auditFlowSource).toContain("Exportaciones recientes");
+    expect(auditFlowSource).toContain("Tus PDFs quedan a la mano en este equipo");
     expect(auditFlowSource).toContain("Abrir mi bóveda");
     expect(auditFlowSource).toContain("Filtrar tu bóveda por tipo o fecha");
     expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");

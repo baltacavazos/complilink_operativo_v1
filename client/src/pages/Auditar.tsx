@@ -3146,6 +3146,40 @@ export default function Auditar() {
   const [archiveTypeFilter, setArchiveTypeFilter] = useState<string>("all");
   const [archiveDateFilter, setArchiveDateFilter] =
     useState<ArchiveDateFilter>("all");
+  const [quickExportHistory, setQuickExportHistory] = useState<
+    Array<{
+      id: string;
+      exportedAt: string;
+      periodLabel: string;
+      differenceLabel: string;
+      narrative: string;
+      healthBadge: string;
+      healthHeadline: string;
+      protectionProgress: number;
+      supportingText: string;
+      checklist: string[];
+      documentLabel: string;
+      summary: string;
+    }>
+  >(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    try {
+      const storedValue = window.localStorage.getItem(
+        "auditapatron.quick-export-history.v1"
+      );
+      if (!storedValue) {
+        return [];
+      }
+
+      const parsed = JSON.parse(storedValue);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
@@ -3178,6 +3212,16 @@ export default function Auditar() {
   const documentSelectionStartedAtRef = useRef<number | null>(null);
   const previewReviewStartedAtRef = useRef<number | null>(null);
   const firstDossierShortcutCountRef = useRef(0);
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      "auditapatron.quick-export-history.v1",
+      JSON.stringify(quickExportHistory.slice(0, 6))
+    );
+  }, [quickExportHistory]);
   const legalGateHarnessMode = useMemo(() => {
     if (typeof window === "undefined") {
       return false;
@@ -4276,6 +4320,21 @@ export default function Auditar() {
       ) ?? null,
     [quickCalculatorSelectableHistory, selectedQuickCalculatorPeriodKey]
   );
+  const quickComparisonReferenceItem = useMemo(() => {
+    if (!heliosCalculatorLatestComparison) {
+      return null;
+    }
+
+    if (
+      selectedQuickCalculatorHistoryItem &&
+      selectedQuickCalculatorHistoryItem.periodKey ===
+        heliosCalculatorLatestComparison.periodKey
+    ) {
+      return null;
+    }
+
+    return heliosCalculatorLatestComparison;
+  }, [heliosCalculatorLatestComparison, selectedQuickCalculatorHistoryItem]);
   const quickCalculatorFallbackAmount = useMemo(() => {
     const confirmedData = lastUpload?.preliminaryAnalysis?.confirmedData as
       | Record<string, unknown>
@@ -4567,7 +4626,112 @@ export default function Auditar() {
           ? `Tu recibo muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del CFDI capturado.`
           : `Tu CFDI muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del recibo capturado.`
         : "Completa ambos montos para ver una diferencia rápida antes de seguir con la comparación documental.";
-  const exportQuickHallazgoPdf = () => {
+  const quickSideBySideComparisons = useMemo(() => {
+    const cards = [] as Array<{
+      key: string;
+      eyebrow: string;
+      title: string;
+      summary: string;
+      nextStep: string;
+      payrollLabel: string;
+      cfdiLabel: string;
+      differenceLabel: string;
+    }>;
+
+    if (selectedQuickCalculatorHistoryItem) {
+      cards.push({
+        key: `selected-${selectedQuickCalculatorHistoryItem.periodKey}`,
+        eyebrow: "Periodo que elegiste",
+        title: selectedQuickCalculatorHistoryItem.periodLabel,
+        summary: selectedQuickCalculatorHistoryItem.summary,
+        nextStep: selectedQuickCalculatorHistoryItem.recommendedNextStep,
+        payrollLabel:
+          selectedQuickCalculatorHistoryItem.payrollAmount !== null &&
+          selectedQuickCalculatorHistoryItem.payrollAmount !== undefined
+            ? formatQuickCalculatorAmount(selectedQuickCalculatorHistoryItem.payrollAmount)
+            : "Pendiente",
+        cfdiLabel:
+          selectedQuickCalculatorHistoryItem.cfdiAmount !== null &&
+          selectedQuickCalculatorHistoryItem.cfdiAmount !== undefined
+            ? formatQuickCalculatorAmount(selectedQuickCalculatorHistoryItem.cfdiAmount)
+            : "Pendiente",
+        differenceLabel:
+          selectedQuickCalculatorHistoryItem.differenceAmount !== null &&
+          selectedQuickCalculatorHistoryItem.differenceAmount !== undefined
+            ? formatQuickCalculatorAmount(
+                Math.abs(selectedQuickCalculatorHistoryItem.differenceAmount)
+              )
+            : "Pendiente",
+      });
+    }
+
+    if (quickComparisonReferenceItem) {
+      cards.push({
+        key: `reference-${quickComparisonReferenceItem.periodKey}`,
+        eyebrow: "Referencia más reciente",
+        title: quickComparisonReferenceItem.periodLabel,
+        summary: quickComparisonReferenceItem.summary,
+        nextStep: quickComparisonReferenceItem.recommendedNextStep,
+        payrollLabel:
+          quickComparisonReferenceItem.payrollAmount !== null &&
+          quickComparisonReferenceItem.payrollAmount !== undefined
+            ? formatQuickCalculatorAmount(quickComparisonReferenceItem.payrollAmount)
+            : "Pendiente",
+        cfdiLabel:
+          quickComparisonReferenceItem.cfdiAmount !== null &&
+          quickComparisonReferenceItem.cfdiAmount !== undefined
+            ? formatQuickCalculatorAmount(quickComparisonReferenceItem.cfdiAmount)
+            : "Pendiente",
+        differenceLabel:
+          quickComparisonReferenceItem.differenceAmount !== null &&
+          quickComparisonReferenceItem.differenceAmount !== undefined
+            ? formatQuickCalculatorAmount(
+                Math.abs(quickComparisonReferenceItem.differenceAmount)
+              )
+            : "Pendiente",
+      });
+    }
+
+    return cards;
+  }, [selectedQuickCalculatorHistoryItem, quickComparisonReferenceItem]);
+  const buildQuickHallazgoExportSnapshot = () => ({
+    id: [quickScriptPeriodLabel, new Date().toISOString()].join("::"),
+    exportedAt: new Date().toISOString(),
+    periodLabel: quickScriptPeriodLabel,
+    differenceLabel:
+      quickDifferenceAbsolute !== null
+        ? formatQuickCalculatorAmount(quickDifferenceAbsolute)
+        : "Pendiente",
+    narrative: quickDifferenceNarrative,
+    healthBadge: quickLaborHealthSignal.badge,
+    healthHeadline: quickLaborHealthSignal.headline,
+    protectionProgress: quickLaborHealthSignal.progress,
+    supportingText: quickLaborHealthSignal.supportingText,
+    checklist: quickLaborHealthSignal.checklist,
+    documentLabel:
+      latestArchiveDocument?.originalName ??
+      (lastUpload
+        ? getSimpleDocumentTypeLabel(lastUpload.classification.documentType)
+        : "Documento auditado"),
+    summary: lastUpload?.preliminaryAnalysis.summary ?? quickDifferenceNarrative,
+  });
+  const downloadQuickHallazgoPdf = (
+    snapshot: {
+      id: string;
+      exportedAt: string;
+      periodLabel: string;
+      differenceLabel: string;
+      narrative: string;
+      healthBadge: string;
+      healthHeadline: string;
+      protectionProgress: number;
+      supportingText: string;
+      checklist: string[];
+      documentLabel: string;
+      summary: string;
+    },
+    options?: { persist?: boolean; location?: string }
+  ) => {
     const pdf = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -4577,11 +4741,11 @@ export default function Auditar() {
 
     const writeBlock = (
       text: string,
-      options?: { size?: number; weight?: "normal" | "bold"; gap?: number }
+      blockOptions?: { size?: number; weight?: "normal" | "bold"; gap?: number }
     ) => {
-      const size = options?.size ?? 11;
-      const weight = options?.weight ?? "normal";
-      const gap = options?.gap ?? 16;
+      const size = blockOptions?.size ?? 11;
+      const weight = blockOptions?.weight ?? "normal";
+      const gap = blockOptions?.gap ?? 16;
       const lineHeight = Math.max(14, Math.round(size * 1.45));
       const lines = pdf.splitTextToSize(text, maxWidth);
       const requiredHeight = lines.length * lineHeight + gap;
@@ -4597,43 +4761,99 @@ export default function Auditar() {
       y += lines.length * lineHeight + gap;
     };
 
-    writeBlock("AuditaPatrón · Hallazgo visible", { size: 19, weight: "bold", gap: 18 });
-    writeBlock(`Periodo activo: ${quickScriptPeriodLabel}`, { size: 11, weight: "bold", gap: 12 });
-    writeBlock(`Diferencia estimada visible: ${quickDifferenceAbsolute !== null ? formatQuickCalculatorAmount(quickDifferenceAbsolute) : "Pendiente"}`, { size: 11, weight: "bold", gap: 10 });
-    writeBlock(quickDifferenceNarrative, { gap: 12 });
-    writeBlock(`${quickLaborHealthSignal.badge} · ${quickLaborHealthSignal.headline}`, {
-      size: 12,
-      weight: "bold",
-      gap: 10,
-    });
-    writeBlock(`Protección estimada: ${quickLaborHealthSignal.progress}%`, {
+    writeBlock("AuditaPatrón", { size: 14, weight: "bold", gap: 18 });
+    writeBlock("Reporte de hallazgo laboral", { size: 22, weight: "bold", gap: 14 });
+    writeBlock(`Documento base: ${snapshot.documentLabel}`, {
       size: 11,
       weight: "bold",
       gap: 10,
     });
-    writeBlock(quickLaborHealthSignal.supportingText, { gap: 12 });
-    writeBlock("Checklist accionable", { size: 12, weight: "bold", gap: 10 });
-    quickLaborHealthSignal.checklist.forEach((item, index) => {
-      writeBlock(`${index + 1}. ${item}`, { gap: 8 });
+    writeBlock(`Periodo auditado: ${snapshot.periodLabel}`, {
+      size: 11,
+      weight: "bold",
+      gap: 10,
     });
     writeBlock(
-      "Privacidad y resguardo: este PDF resume solo el hallazgo visible en pantalla y su checklist actual. Si quieres proteger mejor la evidencia, guárdalo también en tu Bóveda Laboral.",
+      `Exportado el ${formatDate(snapshot.exportedAt)} con el hallazgo visible y el checklist accionable que aparecían en pantalla.`,
+      { gap: 14 }
+    );
+    writeBlock("Resumen ejecutivo", { size: 12, weight: "bold", gap: 10 });
+    writeBlock(snapshot.summary, { gap: 12 });
+    writeBlock(`Diferencia visible: ${snapshot.differenceLabel}`, {
+      size: 11,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(
+      `${snapshot.healthBadge} · ${snapshot.healthHeadline} · Protección estimada ${snapshot.protectionProgress}%`,
+      { size: 11, weight: "bold", gap: 10 }
+    );
+    writeBlock(
+      "Privacidad y resguardo: este PDF condensa solo el hallazgo visible y está pensado para conservar una referencia simple dentro de tu expediente.",
       { size: 10, gap: 0 }
     );
 
-    const safePeriod = quickScriptPeriodLabel
+    pdf.addPage();
+    y = 54;
+    writeBlock("Detalle del hallazgo visible", { size: 18, weight: "bold", gap: 18 });
+    writeBlock(`Periodo activo: ${snapshot.periodLabel}`, {
+      size: 11,
+      weight: "bold",
+      gap: 12,
+    });
+    writeBlock(`Diferencia estimada visible: ${snapshot.differenceLabel}`, {
+      size: 11,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(snapshot.narrative, { gap: 12 });
+    writeBlock(`${snapshot.healthBadge} · ${snapshot.healthHeadline}`, {
+      size: 12,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(`Protección estimada: ${snapshot.protectionProgress}%`, {
+      size: 11,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(snapshot.supportingText, { gap: 12 });
+    writeBlock("Checklist accionable", { size: 12, weight: "bold", gap: 10 });
+    snapshot.checklist.forEach((item, index) => {
+      writeBlock(`${index + 1}. ${item}`, { gap: 8 });
+    });
+    writeBlock(
+      "Privacidad y resguardo: si quieres fortalecer mejor la evidencia, guarda también este PDF junto con tus documentos clave dentro de tu Bóveda Laboral.",
+      { size: 10, gap: 0 }
+    );
+
+    const safePeriod = snapshot.periodLabel
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "periodo-activo";
 
-    trackEvent("quick_hallazgo_pdf_exported", {
-      location: "auditar_quick_calculator",
-      period: quickScriptPeriodLabel,
-      hasDifference: quickDifferenceAmount !== null && quickDifferenceAmount !== 0,
-    });
+    if (options?.location) {
+      trackEvent("quick_hallazgo_pdf_exported", {
+        location: options.location,
+        period: snapshot.periodLabel,
+        hasDifference: snapshot.differenceLabel !== "Pendiente",
+      });
+    }
+
+    if (options?.persist !== false) {
+      setQuickExportHistory(current =>
+        [snapshot, ...current.filter(item => item.id !== snapshot.id)].slice(0, 6)
+      );
+    }
+
     pdf.save(`auditapatron-hallazgo-${safePeriod}.pdf`);
+  };
+  const exportQuickHallazgoPdf = () => {
+    downloadQuickHallazgoPdf(buildQuickHallazgoExportSnapshot(), {
+      location: "auditar_quick_calculator",
+    });
   };
   const quickRhMessage =
     quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
@@ -9484,20 +9704,52 @@ export default function Auditar() {
                               </label>
                             ) : null}
 
-                            {heliosCalculatorLatestComparison ? (
-                              <div className="mt-4 rounded-[0.95rem] border border-amber-200 bg-white px-4 py-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
-                                  Cruce automático más reciente
+                            {quickSideBySideComparisons.length > 0 ? (
+                              <div className="mt-4 rounded-[0.95rem] border border-amber-200 bg-white px-4 py-4">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                                      Comparación rápida entre periodos
+                                    </p>
+                                    <p className="mt-2 text-base font-semibold text-slate-950">
+                                      Mira el periodo elegido junto a la referencia más reciente
+                                    </p>
+                                  </div>
+                                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">
+                                    {quickSideBySideComparisons.length === 1 ? "1 periodo visible" : "2 periodos visibles"}
+                                  </span>
+                                </div>
+                                <p className="mt-3 text-sm leading-6 text-slate-700">
+                                  Si eliges otro periodo del histórico, aquí verás ambos cortes uno junto al otro sin cambiar de pantalla ni perder el contexto.
                                 </p>
-                                <p className="mt-2 text-base font-semibold text-slate-950">
-                                  {heliosCalculatorLatestComparison.periodLabel}
-                                </p>
-                                <p className="mt-2 text-sm leading-6 text-slate-700">
-                                  {heliosCalculatorLatestComparison.summary}
-                                </p>
-                                <p className="mt-2 text-sm leading-6 text-slate-600">
-                                  Siguiente paso sugerido: {heliosCalculatorLatestComparison.recommendedNextStep}
-                                </p>
+                                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                                  {quickSideBySideComparisons.map(card => (
+                                    <div key={card.key} className="rounded-[0.95rem] border border-slate-200 bg-slate-50 p-4">
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                        {card.eyebrow}
+                                      </p>
+                                      <p className="mt-2 text-base font-semibold text-slate-950">{card.title}</p>
+                                      <p className="mt-3 text-sm leading-6 text-slate-700">{card.summary}</p>
+                                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                                        <div className="rounded-[0.85rem] border border-white bg-white px-3 py-3">
+                                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Nómina</p>
+                                          <p className="mt-2 text-sm font-semibold text-slate-950">{card.payrollLabel}</p>
+                                        </div>
+                                        <div className="rounded-[0.85rem] border border-white bg-white px-3 py-3">
+                                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">CFDI</p>
+                                          <p className="mt-2 text-sm font-semibold text-slate-950">{card.cfdiLabel}</p>
+                                        </div>
+                                        <div className="rounded-[0.85rem] border border-white bg-white px-3 py-3">
+                                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Diferencia</p>
+                                          <p className="mt-2 text-sm font-semibold text-slate-950">{card.differenceLabel}</p>
+                                        </div>
+                                      </div>
+                                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                                        Siguiente paso sugerido: {card.nextStep}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             ) : null}
 
@@ -11063,6 +11315,72 @@ export default function Auditar() {
                         </Button>
                       ) : null}
                     </div>
+                  </div>
+
+                  <div className="mt-4 rounded-[1.1rem] border border-white/80 bg-white/90 p-4 shadow-sm">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-700">
+                          Exportaciones recientes
+                        </p>
+                        <p className="mt-2 text-base font-semibold text-slate-950">
+                          Tus PDFs quedan a la mano en este equipo
+                        </p>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                          Cada vez que exportas el hallazgo, guardamos una referencia simple aquí para que puedas volver a descargarla sin buscar entre menús. Esto no reemplaza tus documentos protegidos: solo te ayuda a ubicar rápido tus reportes.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800 shadow-sm">
+                        {quickExportHistory.length} exportación{quickExportHistory.length === 1 ? "" : "es"}
+                      </span>
+                    </div>
+
+                    {quickExportHistory.length > 0 ? (
+                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                        {quickExportHistory.slice(0, 4).map(item => (
+                          <div key={item.id} className="rounded-[1rem] border border-violet-100 bg-violet-50/70 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-800">
+                                  {item.periodLabel}
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-slate-950">
+                                  {item.documentLabel}
+                                </p>
+                              </div>
+                              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                                {item.differenceLabel}
+                              </span>
+                            </div>
+                            <p className="mt-3 text-sm leading-6 text-slate-700">
+                              {item.healthBadge} · {item.healthHeadline}
+                            </p>
+                            <p className="mt-1 text-xs leading-6 text-slate-500">
+                              Exportado el {formatDate(item.exportedAt)}
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full border-violet-200 bg-white px-4 text-violet-900 hover:bg-violet-100"
+                                onClick={() =>
+                                  downloadQuickHallazgoPdf(item, {
+                                    persist: false,
+                                    location: "auditar_digital_archive_export_history",
+                                  })
+                                }
+                              >
+                                Descargar de nuevo
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-[1rem] border border-dashed border-violet-200 bg-white/80 p-4 text-sm leading-6 text-slate-600">
+                        Cuando exportes tu primer PDF del hallazgo, aquí aparecerá para volver a descargarlo sin vueltas.
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-4 grid gap-3 md:grid-cols-3">

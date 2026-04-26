@@ -114,7 +114,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Asegura tu recibo de nómina');
     expect(source).toContain('Calculadora guiada');
     expect(source).toContain('Compara tu nómina contra tu CFDI');
-    expect(source).toContain('Cruce automático más reciente');
+    expect(source).toContain('Comparación rápida entre periodos');
     expect(source).toContain('Periodo a comparar');
     expect(source).toContain('Histórico comparable por periodo');
     expect(source).toContain('Qué significa jurídicamente');
@@ -129,6 +129,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Asegurar la siguiente pieza');
     expect(source).toContain('Protege este hallazgo');
     expect(source).toContain('Exportar hallazgo en PDF');
+    expect(source).toContain('Reporte de hallazgo laboral');
     expect(source).toContain('Guardar este hallazgo en mi bóveda');
     expect(source).toContain('Tu bóveda laboral ya empezó');
     expect(source).toContain('Ver mi bóveda');
@@ -137,6 +138,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Aquí están tus documentos protegidos');
     expect(source).toContain('Resumen visible de tu bóveda');
     expect(source).toContain('Tu respaldo ya tiene una base real');
+    expect(source).toContain('Exportaciones recientes');
+    expect(source).toContain('Tus PDFs quedan a la mano en este equipo');
     expect(source).toContain('Documentos protegidos');
     expect(source).toContain('Abrir mi bóveda');
     expect(source).toContain('Filtrar tu bóveda por tipo o fecha');

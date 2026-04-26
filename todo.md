@@ -1476,3 +1476,6 @@
 - [x] Implementar selector manual de periodo en la calculadora para que el usuario pueda elegir y comparar un periodo específico sin depender solo del corte activo.
 - [x] Exportar en PDF el hallazgo visible y el checklist accionable con wording público consistente y útil para compartir o conservar.
 - [x] Extender el lenguaje de confianza, privacidad y resguardo visible a correos y mensajes transaccionales del producto.
+- [x] Implementar comparación lado a lado entre dos periodos en la calculadora con una interacción simple, visible y sin ambigüedades.
+- [x] Añadir una carátula clara al PDF exportado con resumen ejecutivo fácil de entender, periodo, diferencia y contexto visible.
+- [x] Incorporar un historial descargable de exportaciones dentro de la Bóveda Laboral con etiquetas claras y sin pasos confusos.
