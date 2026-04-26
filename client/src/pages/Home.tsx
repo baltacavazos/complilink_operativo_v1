@@ -167,7 +167,7 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#lectura-gratis", label: "Subir documento" },
+  { href: "#lectura-gratis", label: "Asegurar evidencia" },
   { href: "#privacidad", label: "Privacidad" },
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#preguntas", label: "Preguntas" },
@@ -176,10 +176,10 @@ const navLinks = [
 const tourSteps: TourStep[] = [
   {
     id: "sube",
-    title: "Sube tu documento y AuditaPatron lo recibe",
-    summary: "Sube tu documento ahora.",
+    title: "Asegura el documento que ya tienes y AuditaPatron lo recibe",
+    summary: "Asegura tu primer documento.",
     description:
-      "Sube desde tu celular y recibe claridad útil desde el inicio.",
+      "Asegura desde tu celular el documento que ya tienes y recibe claridad útil desde el inicio.",
     bullets: ["Desde tu celular"],
     icon: Upload,
   },
@@ -1091,7 +1091,13 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                   Si no tienes recibo a la mano, también sirve PDF, XML o una imagen clara del documento que sí tengas.
                 </p>
                 <p className="text-xs font-medium leading-5 text-teal-800">
-                  Cifrado AES-256 y control de borrado visibles desde el inicio.
+                  Cifrado AES-256, control de borrado visible y resguardo serio desde el inicio.
+                </p>
+                <p className="text-xs leading-5 text-slate-500">
+                  Diseñado con un nivel de cuidado comparable al que esperas de un servicio bancario digital.
+                </p>
+                <p className="inline-flex w-fit rounded-full border border-teal-100 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                  Criterios laborales vigentes 2026
                 </p>
               </div>
           </div>
@@ -1103,7 +1109,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
             {[
               {
                 eyebrow: "Paso 1",
-                title: "Sube el archivo que ya tienes",
+                title: "Asegura el documento que ya tienes",
                 detail: "No necesitas juntar todo para empezar a entender tu situación.",
               },
               {
@@ -1668,7 +1674,7 @@ function QuickTrustSection() {
               Nadie de tu empresa puede ver lo que subes.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
-              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Cumplimos LFPDPPP y reforzamos el resguardo con cifrado AES-256 para piezas sensibles dentro del servicio.
+              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Cumplimos LFPDPPP y reforzamos el resguardo con cifrado AES-256 y una capa de seguridad pensada con un nivel de cuidado comparable al de un servicio bancario digital para piezas sensibles dentro del servicio.
             </p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -1698,7 +1704,7 @@ function QuickTrustSection() {
               },
               {
                 title: "Cifrado AES-256",
-                body: "Reforzamos el resguardo de piezas sensibles y mantenemos una ruta pública para que leas el aviso completo cuando quieras.",
+                body: "Reforzamos el resguardo de piezas sensibles con cifrado AES-256 y una capa de seguridad pensada con nivel de cuidado bancario, además de una ruta pública para que leas el aviso completo cuando quieras.",
               },
             ].map((item) => (
               <article

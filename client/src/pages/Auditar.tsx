@@ -2041,7 +2041,7 @@ function getDocumentContextualShortcuts(
       return [
         {
           id: "generic-upload-companion",
-          label: "Subir documento complementario",
+          label: "Asegurar evidencia complementaria",
           description:
             "Agregar nómina, CFDI o contrato suele dar más contexto a la lectura inicial.",
           action: "upload",
@@ -4482,12 +4482,12 @@ export default function Auditar() {
     "el mismo periodo";
   const quickRhMessage =
     quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
-      ? `Hola, me gustaría aclarar una diferencia que detecté al revisar mi recibo y el CFDI de ${quickScriptPeriodLabel}. Veo una variación aproximada de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} y quisiera confirmar si corresponde a monto, fecha o concepto. ¿Me ayudan a revisarlo por favor?`
-      : `Hola, quiero revisar si mi recibo y el CFDI corresponden correctamente a ${quickScriptPeriodLabel}. ¿Me pueden ayudar a confirmar monto, fecha y concepto, por favor?`;
+      ? `Hola, al revisar mi recibo y el CFDI de ${quickScriptPeriodLabel} detecté una diferencia aproximada de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)}. ¿Me ayudan por favor a revisar si corresponde a monto, fecha o concepto y a compartirme por escrito el desglose correcto?`
+      : `Hola, quiero revisar si mi recibo y el CFDI de ${quickScriptPeriodLabel} corresponden correctamente. ¿Me ayudan por favor a confirmar por escrito monto, fecha y concepto?`;
   const quickWhatsappMessage =
     quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
-      ? `Detecté una posible diferencia de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} entre mi nómina y el CFDI de ${quickScriptPeriodLabel}. ¿Podemos revisar si corresponde a monto, fecha o concepto?`
-      : `Quiero confirmar si mi nómina y mi CFDI de ${quickScriptPeriodLabel} coinciden en monto, fecha y concepto. ¿Me ayudas a revisarlo?`;
+      ? `Hola. Detecté una posible diferencia de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} entre mi nómina y el CFDI de ${quickScriptPeriodLabel}. ¿Me ayudas a revisarlo y a confirmarme por escrito si hubo ajuste en monto, fecha o concepto?`
+      : `Hola. Quiero confirmar si mi nómina y mi CFDI de ${quickScriptPeriodLabel} coinciden en monto, fecha y concepto. ¿Me ayudas a revisarlo y a dejármelo por escrito?`;
   const [showResultReveal, setShowResultReveal] = useState(false);
   const lastRevealedUploadIdRef = useRef<string | null>(null);
   const verdictPanelRef = useRef<HTMLDivElement | null>(null);
@@ -6693,7 +6693,7 @@ export default function Auditar() {
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Sigue fortaleciendo tu expediente"
-                      : "Sube tu recibo de nómina"}
+                        : "Asegura tu recibo de nómina"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
@@ -6729,7 +6729,7 @@ export default function Auditar() {
                         Borrado visible
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tus documentos son tuyos y puedes pedir borrado cuando lo necesites.
+                        Tus documentos son tuyos, puedes pedir borrado cuando lo necesites y reforzamos su resguardo con un nivel de cuidado comparable al de una banca digital.
                       </p>
                     </article>
                   </div>
@@ -6782,13 +6782,13 @@ export default function Auditar() {
                       {selectedFile
                         ? "Cambiar documento"
                         : shouldCompactPostUploadExperience
-                          ? "Subir otro documento"
+                          ? "Asegurar otra evidencia"
                           : "Revisar mi recibo gratis"}
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
-                        : "Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256 y control de borrado visibles."}
+                        : "Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado."}
                     </p>
                   </div>
                 </div>
@@ -9496,17 +9496,62 @@ export default function Auditar() {
                               </div>
                             </div>
 
+                            <div className="mt-4 rounded-[0.95rem] border border-sky-200 bg-sky-50/75 px-4 py-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-800">
+                                    Tu nivel de protección legal
+                                  </p>
+                                  <p className="mt-2 text-base font-semibold text-slate-950">
+                                    Hoy tu protección va en {dossierStatus.percent}%.
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-800">
+                                  {heliosExpediente?.stageLabel ?? dossierStatus.label}
+                                </span>
+                              </div>
+                              <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white/90 shadow-inner">
+                                <div
+                                  className="h-full rounded-full bg-sky-600 transition-all duration-500"
+                                  style={{ width: `${dossierStatus.percent}%` }}
+                                />
+                              </div>
+                              <p className="mt-3 text-sm leading-6 text-slate-700">
+                                Ya cubres {dossierStatus.completed} de {dossierStatus.total} piezas clave del expediente.
+                                {selectedRecommendedTargetType && effectiveRecommendedTarget
+                                  ? ` Si aseguras ${effectiveRecommendedTarget.label.toLowerCase()}, tu bóveda quedará más fuerte para reclamar con más contexto.`
+                                  : " Tu bóveda ya tiene una base útil para reclamar con más contexto."}
+                              </p>
+                              {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
+                                <button
+                                  type="button"
+                                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-sky-900 shadow-sm transition hover:bg-sky-100"
+                                  onClick={() =>
+                                    focusRecommendedUpload(
+                                      effectiveRecommendedTarget.type
+                                    )
+                                  }
+                                >
+                                  Asegurar la siguiente pieza
+                                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
+                                </button>
+                              ) : null}
+                            </div>
+
                             <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-4">
                               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                Mensajes listos para usar
+                                Mensajes listos para actuar
                               </p>
                               <p className="mt-2 text-base font-semibold text-slate-950">
-                                Si quieres avanzar sin confrontarte, aquí tienes dos borradores
+                                Si quieres avanzar con firmeza y dejar constancia, aquí tienes dos borradores listos
                               </p>
                               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                                 <div className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
                                   <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-semibold text-slate-950">Mensaje diplomático para RH</p>
+                                    <div>
+                                      <p className="text-sm font-semibold text-slate-950">Mensaje diplomático para RH</p>
+                                      <p className="mt-1 text-xs leading-5 text-slate-500">Úsalo para abrir la revisión y pedir respuesta por escrito.</p>
+                                    </div>
                                     <button
                                       type="button"
                                       className="text-xs font-semibold text-teal-700 transition hover:text-teal-900"
@@ -9521,7 +9566,10 @@ export default function Auditar() {
                                 </div>
                                 <div className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
                                   <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-semibold text-slate-950">Texto corto para WhatsApp</p>
+                                    <div>
+                                      <p className="text-sm font-semibold text-slate-950">Texto corto para WhatsApp</p>
+                                      <p className="mt-1 text-xs leading-5 text-slate-500">Sirve para pedir confirmación rápida sin perder constancia.</p>
+                                    </div>
                                     <button
                                       type="button"
                                       className="text-xs font-semibold text-teal-700 transition hover:text-teal-900"

@@ -52,6 +52,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
     expect(homeSource).toContain("Privacidad visible y humana");
     expect(homeSource).toContain("Tus documentos son tuyos. Puedes borrarlos cuando quieras.");
+    expect(homeSource).toContain("nivel de cuidado comparable al de un servicio bancario digital");
     expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
     expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
     expect(homeSource).not.toContain("<DossierSection />");
@@ -70,7 +71,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {
     expect(auditFlowSource).toContain("Lectura visible");
-    expect(auditFlowSource).toContain("Sube tu recibo de nómina");
+    expect(auditFlowSource).toContain("Asegura tu recibo de nómina");
     expect(auditFlowSource).toContain("qué documento recibió");
     expect(auditFlowSource).toContain("qué señal encontró y qué conviene revisar después.");
     expect(auditFlowSource).toContain("Así va tu expediente laboral");
@@ -88,6 +89,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Histórico comparable por periodo");
     expect(auditFlowSource).toContain("Qué significa jurídicamente");
     expect(auditFlowSource).toContain("Protege este hallazgo");
+    expect(auditFlowSource).toContain("Tu nivel de protección legal");
+    expect(auditFlowSource).toContain("Asegurar la siguiente pieza");
     expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
     expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
     expect(auditFlowSource).toContain("Ver mi bóveda");
@@ -119,7 +122,7 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {
-    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Subir documento" }');
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Asegurar evidencia" }');
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
     expect(homeSource).toContain('const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];');

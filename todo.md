@@ -1460,3 +1460,16 @@
 - [x] Localizar y ajustar microcopys, ayudas contextuales, mensajes visibles y textos secundarios que aún no usen de forma consistente Asesor laboral e inteligencia laboral.
 - [x] Unificar el nuevo naming en ayudas contextuales, estados de apoyo y cualquier superficie visible adicional sin tocar contratos internos de backend.
 - [x] Actualizar y ejecutar las pruebas afectadas por esta nueva ronda de consistencia pública.
+- [x] Contrastar el nuevo dictamen adjunto con el estado real de AuditaPatrón para separar mejoras ya implementadas, mejoras parciales y mejoras nuevas.
+- [x] Revalidar con ChatGPT, Grok y Gemini qué corte conservador conviene ejecutar ahora a partir del nuevo dictamen de producto.
+- [x] Evaluar si conviene renombrar públicamente la Bóveda Laboral hacia una variante tipo “Caja Fuerte de Evidencia” o mantener la convención actual ya validada.
+- [x] Evaluar un modo discreto real para ocultar la naturaleza laboral de la interfaz sin romper la salida rápida ya implementada.
+- [x] Diseñar una barra de progreso de protección legal que incentive subir documentos faltantes a la Bóveda.
+- [x] Reforzar la capa accionable del hallazgo con scripts o mensajes listos más visibles para hablar con RH o jefatura.
+- [x] Evaluar un sello visible de actualización legal anual sin introducir promesas regulatorias imprecisas.
+- [x] Evaluar una capa futura de alertas proactivas o vigía para cambios legales relevantes según documentos resguardados.
+- [x] Actualizar pruebas y validaciones según el bloque de mejoras que finalmente se apruebe para implementación.
+- [x] Implementar una barra de protección legal visible que incentive completar la Bóveda Laboral con documentos faltantes.
+- [x] Reforzar los mensajes listos para reclamar dentro del hallazgo para que sean más accionables y útiles frente a RH o jefatura.
+- [x] Aplicar quick wins de confianza en la interfaz, incluyendo microcopy tipo “Asegurar evidencia”, sello visible de actualización legal y refuerzo claro de privacidad.
+- [x] Hacer más visible en Home y /auditar el mensaje de seguridad con encriptación y resguardo de nivel bancario, sin introducir promesas técnicas no sustentadas.

@@ -52,6 +52,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('id="lectura-gratis"');
     expect(source).toContain("Primera lectura sin correo");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después dentro de tu Bóveda Laboral.");
+    expect(source).toContain("Criterios laborales vigentes 2026");
     expect(source).toContain("Primera lectura sin correo");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
     expect(source).toContain("Guardar en mi bóveda por correo");
@@ -92,7 +93,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("ThemeToggle");
     expect(source).toContain("function warmVisibleNamingCopy");
     expect(source).toContain("Carga inmediata");
-    expect(source).toContain("Sube tu recibo de nómina");
+    expect(source).toContain("Asegura tu recibo de nómina");
     expect(source).toContain("Lectura visible");
     expect(source).toContain("tu asesor laboral");
     expect(source).toContain("expediente laboral");
@@ -108,9 +109,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Revisar mi recibo gratis');
     expect(source).toContain('mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950');
     expect(source).toContain('mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500');
-    expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256 y control de borrado visibles.');
+    expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.');
     expect(source).toContain('Elegir cámara o archivo');
-    expect(source).toContain('Sube tu recibo de nómina');
+    expect(source).toContain('Asegura tu recibo de nómina');
     expect(source).toContain('Calculadora guiada');
     expect(source).toContain('Compara tu nómina contra tu CFDI');
     expect(source).toContain('Cruce automático más reciente');
@@ -120,9 +121,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Calculadora visual rápida');
     expect(source).toContain('Así se ve el cruce de montos del periodo activo');
     expect(source).toContain('Semáforo laboral');
-    expect(source).toContain('Mensajes listos para usar');
+    expect(source).toContain('Mensajes listos para actuar');
     expect(source).toContain('Mensaje diplomático para RH');
     expect(source).toContain('Texto corto para WhatsApp');
+    expect(source).toContain('Tu nivel de protección legal');
+    expect(source).toContain('Asegurar la siguiente pieza');
     expect(source).toContain('Protege este hallazgo');
     expect(source).toContain('Guardar este hallazgo en mi bóveda');
     expect(source).toContain('Tu bóveda laboral ya empezó');
