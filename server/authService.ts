@@ -346,8 +346,8 @@ async function sendEmailCodeWithResend(params: { email: string; code: string }) 
   await sendEmailWithResend({
     to: [params.email],
     subject: "Tu código de acceso a CompliLink",
-    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>CompliLink</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p></div>`,
-    text: `Tu código de acceso a CompliLink es ${params.code}. Expira en 10 minutos.`,
+    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>CompliLink</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p><p style="margin-top:18px;color:#475569">Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.</p></div>`,
+    text: `Tu código de acceso a CompliLink es ${params.code}. Expira en 10 minutos. Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.`,
   });
 }
 

@@ -48,6 +48,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { jsPDF } from "jspdf";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
   LEGAL_CONTACT_EMAIL,
@@ -4262,6 +4263,19 @@ export default function Auditar() {
   const heliosCalculatorHistory = heliosCalculatorSnapshot?.history ?? [];
   const heliosCalculatorLegalExplanation =
     heliosCalculatorSnapshot?.legalExplanation ?? null;
+  const quickCalculatorSelectableHistory = useMemo(
+    () => heliosCalculatorHistory.filter(item => Boolean(item.periodKey)),
+    [heliosCalculatorHistory]
+  );
+  const [selectedQuickCalculatorPeriodKey, setSelectedQuickCalculatorPeriodKey] =
+    useState("");
+  const selectedQuickCalculatorHistoryItem = useMemo(
+    () =>
+      quickCalculatorSelectableHistory.find(
+        item => item.periodKey === selectedQuickCalculatorPeriodKey
+      ) ?? null,
+    [quickCalculatorSelectableHistory, selectedQuickCalculatorPeriodKey]
+  );
   const quickCalculatorFallbackAmount = useMemo(() => {
     const confirmedData = lastUpload?.preliminaryAnalysis?.confirmedData as
       | Record<string, unknown>
@@ -4279,6 +4293,13 @@ export default function Auditar() {
   }, [lastUpload]);
   const quickCalculatorPeriodHint = useMemo(() => {
     if (
+      typeof selectedQuickCalculatorHistoryItem?.periodLabel === "string" &&
+      selectedQuickCalculatorHistoryItem.periodLabel.trim().length
+    ) {
+      return selectedQuickCalculatorHistoryItem.periodLabel.trim();
+    }
+
+    if (
       typeof heliosCalculatorLatestComparison?.periodLabel === "string" &&
       heliosCalculatorLatestComparison.periodLabel.trim().length
     ) {
@@ -4293,11 +4314,68 @@ export default function Auditar() {
     return typeof visiblePeriod === "string" && visiblePeriod.trim().length
       ? visiblePeriod.trim()
       : null;
-  }, [heliosCalculatorLatestComparison, lastUpload]);
+  }, [selectedQuickCalculatorHistoryItem, heliosCalculatorLatestComparison, lastUpload]);
   const [quickPayrollAmount, setQuickPayrollAmount] = useState("");
   const [quickCfdiAmount, setQuickCfdiAmount] = useState("");
   const quickCalculatorSeedKeyRef = useRef<string | null>(null);
   useEffect(() => {
+    if (!quickCalculatorSelectableHistory.length) {
+      if (selectedQuickCalculatorPeriodKey) {
+        setSelectedQuickCalculatorPeriodKey("");
+      }
+      return;
+    }
+
+    const preferredPeriodKey =
+      heliosCalculatorLatestComparison?.periodKey &&
+      quickCalculatorSelectableHistory.some(
+        item => item.periodKey === heliosCalculatorLatestComparison.periodKey
+      )
+        ? heliosCalculatorLatestComparison.periodKey
+        : quickCalculatorSelectableHistory[0]?.periodKey ?? "";
+
+    if (
+      !selectedQuickCalculatorPeriodKey ||
+      !quickCalculatorSelectableHistory.some(
+        item => item.periodKey === selectedQuickCalculatorPeriodKey
+      )
+    ) {
+      setSelectedQuickCalculatorPeriodKey(preferredPeriodKey);
+    }
+  }, [
+    heliosCalculatorLatestComparison,
+    quickCalculatorSelectableHistory,
+    selectedQuickCalculatorPeriodKey,
+  ]);
+  useEffect(() => {
+    if (selectedQuickCalculatorHistoryItem) {
+      const seedKey = [
+        "selected",
+        selectedQuickCalculatorHistoryItem.periodKey,
+        selectedQuickCalculatorHistoryItem.payrollAmount ?? "no-payroll",
+        selectedQuickCalculatorHistoryItem.cfdiAmount ?? "no-cfdi",
+      ].join("::");
+
+      if (quickCalculatorSeedKeyRef.current === seedKey) {
+        return;
+      }
+
+      quickCalculatorSeedKeyRef.current = seedKey;
+      setQuickPayrollAmount(
+        selectedQuickCalculatorHistoryItem.payrollAmount !== null &&
+          selectedQuickCalculatorHistoryItem.payrollAmount !== undefined
+          ? selectedQuickCalculatorHistoryItem.payrollAmount.toFixed(2)
+          : ""
+      );
+      setQuickCfdiAmount(
+        selectedQuickCalculatorHistoryItem.cfdiAmount !== null &&
+          selectedQuickCalculatorHistoryItem.cfdiAmount !== undefined
+          ? selectedQuickCalculatorHistoryItem.cfdiAmount.toFixed(2)
+          : ""
+      );
+      return;
+    }
+
     if (heliosCalculatorLatestComparison) {
       const seedKey = [
         "server",
@@ -4364,6 +4442,7 @@ export default function Auditar() {
     heliosCalculatorLatestComparison,
     lastUpload,
     quickCalculatorFallbackAmount,
+    selectedQuickCalculatorHistoryItem,
   ]);
   const quickPayrollNumeric = parseQuickCalculatorAmount(quickPayrollAmount);
   const quickCfdiNumeric = parseQuickCalculatorAmount(quickCfdiAmount);
@@ -4480,6 +4559,82 @@ export default function Auditar() {
     quickCalculatorPeriodHint ??
     heliosCalculatorLatestComparison?.periodLabel ??
     "el mismo periodo";
+  const quickDifferenceNarrative =
+    quickDifferenceAmount === 0
+      ? "Por ahora ambos montos coinciden. Aun así conviene revisar periodo y conceptos del mismo mes."
+      : quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
+        ? quickDifferenceAmount > 0
+          ? `Tu recibo muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del CFDI capturado.`
+          : `Tu CFDI muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del recibo capturado.`
+        : "Completa ambos montos para ver una diferencia rápida antes de seguir con la comparación documental.";
+  const exportQuickHallazgoPdf = () => {
+    const pdf = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 48;
+    const maxWidth = pageWidth - margin * 2;
+    let y = 54;
+
+    const writeBlock = (
+      text: string,
+      options?: { size?: number; weight?: "normal" | "bold"; gap?: number }
+    ) => {
+      const size = options?.size ?? 11;
+      const weight = options?.weight ?? "normal";
+      const gap = options?.gap ?? 16;
+      const lineHeight = Math.max(14, Math.round(size * 1.45));
+      const lines = pdf.splitTextToSize(text, maxWidth);
+      const requiredHeight = lines.length * lineHeight + gap;
+
+      if (y + requiredHeight > pageHeight - 48) {
+        pdf.addPage();
+        y = 54;
+      }
+
+      pdf.setFont("helvetica", weight);
+      pdf.setFontSize(size);
+      pdf.text(lines, margin, y);
+      y += lines.length * lineHeight + gap;
+    };
+
+    writeBlock("AuditaPatrón · Hallazgo visible", { size: 19, weight: "bold", gap: 18 });
+    writeBlock(`Periodo activo: ${quickScriptPeriodLabel}`, { size: 11, weight: "bold", gap: 12 });
+    writeBlock(`Diferencia estimada visible: ${quickDifferenceAbsolute !== null ? formatQuickCalculatorAmount(quickDifferenceAbsolute) : "Pendiente"}`, { size: 11, weight: "bold", gap: 10 });
+    writeBlock(quickDifferenceNarrative, { gap: 12 });
+    writeBlock(`${quickLaborHealthSignal.badge} · ${quickLaborHealthSignal.headline}`, {
+      size: 12,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(`Protección estimada: ${quickLaborHealthSignal.progress}%`, {
+      size: 11,
+      weight: "bold",
+      gap: 10,
+    });
+    writeBlock(quickLaborHealthSignal.supportingText, { gap: 12 });
+    writeBlock("Checklist accionable", { size: 12, weight: "bold", gap: 10 });
+    quickLaborHealthSignal.checklist.forEach((item, index) => {
+      writeBlock(`${index + 1}. ${item}`, { gap: 8 });
+    });
+    writeBlock(
+      "Privacidad y resguardo: este PDF resume solo el hallazgo visible en pantalla y su checklist actual. Si quieres proteger mejor la evidencia, guárdalo también en tu Bóveda Laboral.",
+      { size: 10, gap: 0 }
+    );
+
+    const safePeriod = quickScriptPeriodLabel
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "periodo-activo";
+
+    trackEvent("quick_hallazgo_pdf_exported", {
+      location: "auditar_quick_calculator",
+      period: quickScriptPeriodLabel,
+      hasDifference: quickDifferenceAmount !== null && quickDifferenceAmount !== 0,
+    });
+    pdf.save(`auditapatron-hallazgo-${safePeriod}.pdf`);
+  };
   const quickRhMessage =
     quickDifferenceAmount !== null && quickDifferenceAbsolute !== null
       ? `Hola, al revisar mi recibo y el CFDI de ${quickScriptPeriodLabel} detecté una diferencia aproximada de ${formatQuickCalculatorAmount(quickDifferenceAbsolute)}. ¿Me ayudan por favor a revisar si corresponde a monto, fecha o concepto y a compartirme por escrito el desglose correcto?`
@@ -9305,6 +9460,30 @@ export default function Auditar() {
                               </div>
                             </div>
 
+                            {quickCalculatorSelectableHistory.length > 0 ? (
+                              <label className="mt-4 block rounded-[0.95rem] border border-amber-200 bg-white px-4 py-3">
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                                  Periodo a comparar
+                                </span>
+                                <select
+                                  value={selectedQuickCalculatorPeriodKey}
+                                  onChange={event =>
+                                    setSelectedQuickCalculatorPeriodKey(event.target.value)
+                                  }
+                                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-200"
+                                >
+                                  {quickCalculatorSelectableHistory.map(item => (
+                                    <option key={item.periodKey} value={item.periodKey}>
+                                      {item.periodLabel}
+                                    </option>
+                                  ))}
+                                </select>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">
+                                  Elige un periodo del histórico y, si quieres, luego ajusta los montos manualmente para validar otro escenario.
+                                </p>
+                              </label>
+                            ) : null}
+
                             {heliosCalculatorLatestComparison ? (
                               <div className="mt-4 rounded-[0.95rem] border border-amber-200 bg-white px-4 py-3">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
@@ -9364,11 +9543,7 @@ export default function Auditar() {
                                   {formatQuickCalculatorAmount(quickDifferenceAbsolute)}
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                                  {quickDifferenceAmount === 0
-                                    ? "Por ahora ambos montos coinciden. Aun así conviene revisar periodo y conceptos del mismo mes."
-                                    : quickDifferenceAmount > 0
-                                      ? `Tu recibo muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del CFDI capturado.`
-                                      : `Tu CFDI muestra ${formatQuickCalculatorAmount(quickDifferenceAbsolute)} por encima del recibo capturado.`}
+                                  {quickDifferenceNarrative}
                                 </p>
                               </div>
                             ) : (
@@ -9461,7 +9636,7 @@ export default function Auditar() {
                               <p className="mt-3 text-sm leading-6 text-slate-700">
                                 Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma o sumar otros documentos.
                               </p>
-                              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
                                   type="button"
                                   className="rounded-full bg-slate-950 px-5 text-white hover:bg-slate-900"
@@ -9479,6 +9654,14 @@ export default function Auditar() {
                                 >
                                   Guardar este hallazgo en mi bóveda
                                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
+                                  onClick={exportQuickHallazgoPdf}
+                                >
+                                  Exportar hallazgo en PDF
                                 </Button>
                                 <Button
                                   type="button"
@@ -9583,6 +9766,9 @@ export default function Auditar() {
                                   <p className="mt-3 text-sm leading-6 text-slate-700">{quickWhatsappMessage}</p>
                                 </div>
                               </div>
+                              <p className="mt-3 text-xs leading-5 text-slate-500">
+                                Si te responden por correo o WhatsApp, guarda también esa respuesta en tu Bóveda Laboral para no perder el contexto del hallazgo.
+                              </p>
                             </div>
 
                             <div className="mt-4 rounded-[0.95rem] border border-violet-200 bg-violet-50/70 px-4 py-4">

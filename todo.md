@@ -1473,3 +1473,6 @@
 - [x] Reforzar los mensajes listos para reclamar dentro del hallazgo para que sean más accionables y útiles frente a RH o jefatura.
 - [x] Aplicar quick wins de confianza en la interfaz, incluyendo microcopy tipo “Asegurar evidencia”, sello visible de actualización legal y refuerzo claro de privacidad.
 - [x] Hacer más visible en Home y /auditar el mensaje de seguridad con encriptación y resguardo de nivel bancario, sin introducir promesas técnicas no sustentadas.
+- [x] Implementar selector manual de periodo en la calculadora para que el usuario pueda elegir y comparar un periodo específico sin depender solo del corte activo.
+- [x] Exportar en PDF el hallazgo visible y el checklist accionable con wording público consistente y útil para compartir o conservar.
+- [x] Extender el lenguaje de confianza, privacidad y resguardo visible a correos y mensajes transaccionales del producto.

@@ -86,11 +86,13 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(auditFlowSource).toContain("Calculadora guiada");
     expect(auditFlowSource).toContain("Compara tu nómina contra tu CFDI");
     expect(auditFlowSource).toContain("Cruce automático más reciente");
+    expect(auditFlowSource).toContain("Periodo a comparar");
     expect(auditFlowSource).toContain("Histórico comparable por periodo");
     expect(auditFlowSource).toContain("Qué significa jurídicamente");
     expect(auditFlowSource).toContain("Protege este hallazgo");
     expect(auditFlowSource).toContain("Tu nivel de protección legal");
     expect(auditFlowSource).toContain("Asegurar la siguiente pieza");
+    expect(auditFlowSource).toContain("Exportar hallazgo en PDF");
     expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
     expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
     expect(auditFlowSource).toContain("Ver mi bóveda");

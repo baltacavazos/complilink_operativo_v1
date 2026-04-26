@@ -115,6 +115,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Calculadora guiada');
     expect(source).toContain('Compara tu nómina contra tu CFDI');
     expect(source).toContain('Cruce automático más reciente');
+    expect(source).toContain('Periodo a comparar');
     expect(source).toContain('Histórico comparable por periodo');
     expect(source).toContain('Qué significa jurídicamente');
     expect(source).toContain('Diferencia estimada');
@@ -127,6 +128,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Tu nivel de protección legal');
     expect(source).toContain('Asegurar la siguiente pieza');
     expect(source).toContain('Protege este hallazgo');
+    expect(source).toContain('Exportar hallazgo en PDF');
     expect(source).toContain('Guardar este hallazgo en mi bóveda');
     expect(source).toContain('Tu bóveda laboral ya empezó');
     expect(source).toContain('Ver mi bóveda');
@@ -140,6 +142,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Filtrar tu bóveda por tipo o fecha');
     expect(source).toContain('navigator.clipboard?.writeText(quickRhMessage)');
     expect(source).toContain('navigator.clipboard?.writeText(quickWhatsappMessage)');
+    expect(source).toContain('Si te responden por correo o WhatsApp, guarda también esa respuesta en tu Bóveda Laboral para no perder el contexto del hallazgo.');
     expect(source).toContain('Paso 1');
     expect(source).toContain('Señal encontrada');
     expect(source).toContain('Qué revisar después');
