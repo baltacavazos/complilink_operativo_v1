@@ -2139,15 +2139,23 @@ export const appRouter = router({
                 latestActivity: masterMetrics.latestActivity,
               }
             : null,
+          viewerPermissions: {
+            isMasterUser: isMasterCeoUser(ctx.user),
+            canIssueOperationalInstructions: true,
+            canRequestSystemLevelInstructions: isMasterCeoUser(ctx.user),
+            sensitiveActionsRequireConfirmation: true,
+            degradationRule:
+              "Si una instrucción rebasa la vista visible, los permisos o el carril seguro, Helios debe degradar la respuesta a modo consulta y explicarlo sin simular ejecución.",
+          },
         };
         const suggestedPrompts = [
-          "Resume lo más crítico que debo atender hoy como CEO.",
-          "Dime qué riesgo laboral y qué riesgo operativo pesan más ahorita.",
-          "Con este snapshot, qué instrucciones darías al equipo en el siguiente bloque de una hora.",
-          "Explícame qué debo vigilar antes de volver a ver la app como usuario normal.",
+          "Prioridades del día: dime qué urge mover hoy en alertas, accesos y documentos visibles.",
+          "Riesgo patronal y pericial: separa qué está confirmado, qué infieres y qué falta verificar hoy.",
+          "Prepara una instrucción operativa para el equipo sobre la vista visible; si requiere algo sensible, déjala sujeta a confirmación.",
+          "Antes de volver a la app como usuario normal, dime qué debo vigilar y qué no está autorizado mover desde aquí.",
         ];
-        const fallbackAnswer = `Ya abrí Helios en modo CEO. Hoy veo ${snapshot.summary.activeCases} expedientes activos, ${snapshot.summary.openAlerts} alertas abiertas y ${snapshot.summary.pendingDocuments} documentos pendientes en la vista ${sectionLabel}. Si quieres, te resumo prioridades, riesgos o la instrucción operativa más útil para el siguiente bloque.`;
-        const disclaimer = `Helios conserva su criterio jurídico laboral y aquí suma contexto operativo visible del sistema para el owner autorizado. Si algo no aparece en el snapshot o en documentos visibles, lo dirá de frente.`;
+        const fallbackAnswer = `1) Confirmado: Hoy veo ${snapshot.summary.activeCases} expedientes activos, ${snapshot.summary.openAlerts} alertas abiertas y ${snapshot.summary.pendingDocuments} documentos pendientes en la vista ${sectionLabel}.\n2) Inferido: La presión operativa visible está concentrada en los frentes con alertas abiertas y documentos pendientes.\n3) Pendiente por confirmar: No tengo aquí respuestas fuera del snapshot, permisos extra ni hechos no trazados en documentos visibles.\n4) Lectura jurídico-laboral: Helios conserva su criterio laboral y puede explicar el riesgo visible sin prometer resultados ni inventar autoridad externa.\n5) Instrucción operativa sugerida (requiere confirmación si es sensible): prioriza el frente visible más urgente, confirma evidencia y deja trazada la siguiente orden antes de ejecutar cualquier cambio seguro.`;
+        const disclaimer = `Helios conserva su criterio jurídico laboral y aquí suma contexto operativo visible del sistema para el owner autorizado. Si algo no aparece en el snapshot o en documentos visibles, lo dirá de frente; si una instrucción rebasa permisos o carril seguro, degradará la respuesta a modo consulta y marcará que requiere confirmación.`;
         const historyItems = [
           {
             id: `ceo-snapshot-${snapshot.generatedAt}`,
@@ -2168,6 +2176,12 @@ export const appRouter = router({
             label: "Contexto que Helios sí está leyendo",
             detail: `Resumen ejecutivo, alertas, accesos, documentos recientes y bridge en la sección ${sectionLabel}.`,
           },
+          {
+            id: "ceo-guardrails",
+            label: "Permisos y carril seguro del modo CEO",
+            detail:
+              "Las acciones sensibles no se ejecutan desde la respuesta del chat: Helios primero las devuelve como propuesta sujeta a confirmación visual y, si falta permiso o trazabilidad, baja a modo consulta.",
+          },
         ];
 
         let answer = fallbackAnswer;
@@ -2178,11 +2192,11 @@ export const appRouter = router({
               {
                 role: "system",
                 content:
-                  "Eres Helios, la misma interfaz central de AuditaPatron para México. Para usuarios normales operas como abogado laboral de bolsillo. Cuando la persona usuaria autenticada es el CEO, mantienes ese mismo criterio jurídico y además traduces el estado operativo del sistema para priorizar decisiones. Responde siempre en español claro, breve y accionable. No inventes hechos, no prometas resultados, no afirmes conexiones o monitoreos que no aparezcan en el contexto y separa con nitidez lo jurídico, lo operativo y lo que falta confirmar.",
+                  "Eres Helios, la misma interfaz central de AuditaPatron para México. Para usuarios normales operas como abogado laboral de bolsillo. Cuando la persona usuaria autenticada es el CEO, mantienes ese mismo criterio jurídico y además traduces el estado operativo del sistema para priorizar decisiones. Responde siempre en español claro, breve y accionable. No inventes hechos, no prometas resultados, no afirmes conexiones o monitoreos que no aparezcan en el contexto. Separa con nitidez lo confirmado, lo inferido y lo pendiente. Nunca conviertas una sugerencia en ejecución real. Si la instrucción rebasa permisos, snapshot visible o carril seguro, degrada a modo consulta y dilo expresamente. Si la petición toca una acción sensible, formúlala como propuesta sujeta a confirmación de dos pasos.",
               },
               {
                 role: "user",
-                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${HELIOS_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cuatro bloques breves: 1) lectura ejecutiva, 2) lectura jurídica/laboral, 3) instrucción operativa sugerida, 4) qué falta confirmar si aplica.`,
+                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${HELIOS_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cinco bloques breves y con esos títulos exactos: 1) Confirmado, 2) Inferido, 3) Pendiente por confirmar, 4) Lectura jurídico-laboral, 5) Instrucción operativa sugerida. Si la instrucción implicaría una acción sensible o no autorizada, en el bloque 5 aclara que requiere confirmación o que Helios baja a modo consulta.`,
               },
             ],
           });
@@ -2214,7 +2228,7 @@ export const appRouter = router({
 
         return {
           answer,
-          summary: `Modo CEO activo sobre ${input.tenantId ? "un tenant filtrado" : "la vista global"} · ${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas.`,
+          summary: `Modo CEO activo sobre ${input.tenantId ? "un tenant filtrado" : "la vista global"} · ${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas · Helios separa confirmado, inferido y pendiente antes de sugerir algo operativo.`,
           disclaimer,
           confidenceScore: 94,
           suggestedPrompts,

@@ -524,6 +524,7 @@ export default function CeoDashboard() {
   const [showExpandedAuditFeed, setShowExpandedAuditFeed] = useState(false);
   const [isHeliosSheetOpen, setIsHeliosSheetOpen] = useState(false);
   const [heliosMessages, setHeliosMessages] = useState<HeliosCopilotMessage[]>([]);
+  const [pendingHeliosConfirmationPrompt, setPendingHeliosConfirmationPrompt] = useState<string | null>(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -717,11 +718,12 @@ export default function CeoDashboard() {
   const heliosScopeCaseId = filters.caseId !== "all" ? filters.caseId : undefined;
   const ceoHeliosSummary = `Modo CEO activo · ${snapshotData?.summary.activeCases ?? 0} expedientes activos · ${snapshotData?.summary.openAlerts ?? 0} alertas abiertas · ${snapshotData?.summary.pendingDocuments ?? 0} documentos pendientes.`;
   const ceoHeliosSuggestedPrompts = ceoHeliosMutation.data?.suggestedPrompts ?? [
-    "Resume lo más crítico que debo atender hoy como CEO.",
-    "Dime qué riesgo laboral y qué riesgo operativo pesan más ahorita.",
-    "Con este snapshot, qué instrucciones darías al equipo en el siguiente bloque de una hora.",
-    "Explícame qué debo vigilar antes de volver a ver la app como usuario normal.",
+    "Prioridades del día: dime qué urge mover hoy en alertas, accesos y documentos visibles.",
+    "Riesgo patronal y pericial: separa qué está confirmado, qué infieres y qué falta verificar hoy.",
+    "Prepara una instrucción operativa para el equipo sobre la vista visible; si requiere algo sensible, déjala sujeta a confirmación.",
+    "Antes de volver a la app como usuario normal, dime qué debo vigilar y qué no está autorizado mover desde aquí.",
   ];
+  const requiresHeliosCeoConfirmation = (prompt: string) => /instrucción operativa|ordena|autoriza|ejecuta|activa|desactiva|cambia|ajusta/i.test(prompt);
   const openHeliosForCeo = () => {
     setHeliosMessages((current) => {
       if (current.length > 0) return current;
@@ -729,15 +731,13 @@ export default function CeoDashboard() {
         {
           role: "assistant",
           content:
-            "Helios ya está en modo CEO. Conserva toda la lectura jurídica laboral del expediente y además puede ayudarte a traducir alertas, accesos, documentos y prioridades operativas del sistema visible.",
+            "Helios ya está en modo CEO. Conserva toda la lectura jurídica laboral del expediente y además puede ayudarte a traducir alertas, accesos, documentos y prioridades operativas del sistema visible. Si algo implica una acción sensible, primero te lo devolverá como propuesta sujeta a confirmación visible y, si falta permiso o trazabilidad, bajará a modo consulta.",
         },
       ];
     });
     setIsHeliosSheetOpen(true);
   };
-  const handleSendHeliosCeoMessage = async (content: string) => {
-    const trimmed = content.trim();
-    if (!trimmed || ceoHeliosMutation.isPending) return;
+  const dispatchHeliosCeoMessage = async (trimmed: string) => {
     const userMessage: HeliosCopilotMessage = {
       role: "user",
       content: trimmed,
@@ -768,6 +768,21 @@ export default function CeoDashboard() {
         },
       ]);
     }
+  };
+  const handleSendHeliosCeoMessage = async (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || ceoHeliosMutation.isPending) return;
+    if (requiresHeliosCeoConfirmation(trimmed)) {
+      setPendingHeliosConfirmationPrompt(trimmed);
+      return;
+    }
+    await dispatchHeliosCeoMessage(trimmed);
+  };
+  const handleConfirmHeliosCeoMessage = async () => {
+    if (!pendingHeliosConfirmationPrompt || ceoHeliosMutation.isPending) return;
+    const prompt = pendingHeliosConfirmationPrompt;
+    setPendingHeliosConfirmationPrompt(null);
+    await dispatchHeliosCeoMessage(prompt);
   };
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
@@ -2059,6 +2074,10 @@ export default function CeoDashboard() {
                     <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Helios conserva su abogado laboral de bolsillo</Badge>
                     <Badge className="rounded-full border border-teal-200/20 bg-teal-400/15 px-3 py-1 text-teal-50 hover:bg-teal-400/15">CEO suma instrucciones operativas y de sistema</Badge>
                     <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Ver como usuario normal sigue a un clic</Badge>
+                    <Badge className="rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1 text-amber-50 hover:bg-amber-300/15">Acciones sensibles piden confirmación visible</Badge>
+                  </div>
+                  <div className="rounded-[1.2rem] border border-amber-200/25 bg-slate-950/20 px-4 py-3 text-sm leading-6 text-slate-100/88">
+                    <strong className="text-white">Carril seguro del chat CEO:</strong> Helios debe separar lo confirmado, lo inferido y lo pendiente. Si le pides una acción sensible, primero la deja como propuesta sujeta a confirmación; si algo no está autorizado o no aparece trazado, baja a modo consulta.
                   </div>
 
               </div>
@@ -4475,11 +4494,38 @@ export default function CeoDashboard() {
         </div>
       )}
       <AlertDialog
+        open={Boolean(pendingHeliosConfirmationPrompt)}
+        onOpenChange={(open) => {
+          if (!open) setPendingHeliosConfirmationPrompt(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar consulta sensible a Helios</AlertDialogTitle>
+            <AlertDialogDescription>
+              Helios no ejecutará cambios desde esta respuesta. Primero devolverá una propuesta trazable, separando lo confirmado, lo inferido y lo pendiente. Si el pedido rebasa permisos o carril seguro, degradará a modo consulta.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {pendingHeliosConfirmationPrompt ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-6 text-slate-700">
+              <p>
+                <strong className="text-slate-950">Consulta a confirmar:</strong> {pendingHeliosConfirmationPrompt}
+              </p>
+              <p className="mt-2 text-slate-600">La respuesta saldrá con confirmación visible antes de cualquier siguiente paso sensible.</p>
+            </div>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleConfirmHeliosCeoMessage()}>
+              Confirmar consulta CEO
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
         open={Boolean(pendingExecutiveAction)}
         onOpenChange={(open) => {
-          if (!open && !isConfirmingExecutiveAction) {
-            setPendingExecutiveAction(null);
-          }
+          if (!open) setPendingExecutiveAction(null);
         }}
       >
         <AlertDialogContent>
@@ -4550,22 +4596,22 @@ export default function CeoDashboard() {
         supportingDocuments={ceoHeliosMutation.data?.supportingDocuments}
         uiCopy={{
           eyebrow: "Helios · modo CEO activo",
-          title: "Dame una instrucción y Helios te responde con lectura jurídica y capa operativa.",
+          title: "Dame una instrucción y Helios te responde separando lo confirmado, lo inferido y lo pendiente.",
           description:
-            "Aquí conservas la misma inteligencia laboral de Helios y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola.",
-          documentBadge: "Basado en snapshot ejecutivo, alertas y documentos visibles",
-          capabilityBadge: "Puede priorizar riesgos, explicar contexto legal y sugerir instrucciones operativas",
+            "Aquí conservas la misma inteligencia laboral de Helios y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola. Si una petición es sensible, Helios la deja primero como propuesta sujeta a confirmación.",
+          documentBadge: "Basado en snapshot ejecutivo, alertas, permisos y documentos visibles",
+          capabilityBadge: "Puede priorizar riesgos, explicar contexto legal, degradar por permisos y sugerir instrucciones operativas seguras",
           quickHighlights: [
-            "Qué urge mover hoy",
-            "Qué riesgo laboral pesa más",
-            "Qué instrucción dar al equipo ahora",
+            "Qué está confirmado ahora",
+            "Qué riesgo patronal pesa más",
+            "Qué instrucción requiere confirmación",
           ],
           promptsHeading: "Atajos ejecutivos de Helios",
           historyHeading: "Contexto ejecutivo disponible",
           supportingHeading: "Lo que Helios sí está leyendo",
-          placeholder: "Pide una prioridad, una lectura jurídica o una instrucción operativa para el sistema visible",
+          placeholder: "Pide una prioridad, una lectura jurídica o una instrucción operativa; Helios te dirá qué requiere confirmación",
           emptyStateMessage:
-            "Helios ya está listo en modo CEO: conserva todo su criterio laboral y puede traducir el estado operativo visible de la plataforma en prioridades claras.",
+            "Helios ya está listo en modo CEO: conserva todo su criterio laboral, marca lo confirmado frente a lo pendiente y baja a modo consulta si algo no está autorizado o trazado.",
           closeLabel: "Volver al modo CEO",
         }}
       />

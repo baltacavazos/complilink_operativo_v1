@@ -211,6 +211,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Helios conserva su abogado laboral de bolsillo");
     expect(source).toContain("CEO suma instrucciones operativas y de sistema");
     expect(source).toContain("Ver como usuario normal sigue a un clic");
+    expect(source).toContain("Acciones sensibles piden confirmación visible");
+    expect(source).toContain("Carril seguro del chat CEO");
+    expect(source).toContain("lo confirmado, lo inferido y lo pendiente");
     expect(source).toContain("Mi Expediente de Defensa");
     expect(source).toContain("Panel privado del owner autorizado para AuditaPatron");
     expect(source).toContain("Este expediente privado sólo está disponible para el owner autorizado.");

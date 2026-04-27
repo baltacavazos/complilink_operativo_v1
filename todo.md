@@ -1490,3 +1490,12 @@
 - [x] Preservar en el modo normal a Helios como abogado laboral de bolsillo con máxima sapiencia jurídica laboral y guía práctica sobre el expediente del usuario.
 - [x] Añadir en modo CEO una capa adicional dentro de Helios para instrucciones operativas y de sistema, sin romper la experiencia base del asistente.
 - [x] Definir visualmente cómo distinguir las capacidades extra del CEO dentro de la misma interfaz Helios sin volver confusa la conversación.
+- [x] Analizar el PDF técnico del chat CEO conectado al mismo Helios de CompliLink y compararlo contra la implementación actual en AuditaPatrón.
+- [x] Revalidar con ChatGPT, Grok y Gemini el corte exacto de cambios que conviene ejecutar a partir del nuevo documento técnico.
+- [x] Confirmar al usuario, en lenguaje simple, qué quedó claro del PDF y qué bloque exacto se propone implementar antes de tocar código.
+- [x] Implementar solo el bloque aprobado del nuevo diseño técnico del chat CEO y actualizar pruebas y validaciones.
+- [x] Endurecer el prompt maestro de Helios CEO para separar siempre lo confirmado, lo inferido y lo pendiente.
+- [x] Hacer visible en la UI CEO la confirmación de dos pasos para acciones sensibles sin abrir acciones reales no soportadas.
+- [x] Ajustar las quick actions de Helios CEO a lenguaje patronal, pericial y operativo de Auditapatrón.
+- [x] Reforzar la degradación por permisos y el mensaje claro cuando algo no esté autorizado o trazado en Helios.
+- [x] Actualizar pruebas focalizadas del modo CEO y Helios unificado para cubrir el nuevo cierre técnico.

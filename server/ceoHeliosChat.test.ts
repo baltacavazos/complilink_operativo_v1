@@ -279,7 +279,7 @@ describe("ceoHeliosChat", () => {
         {
           message: {
             content:
-              "1) Lectura ejecutiva: prioriza Balt Demo.\n2) Lectura jurídica/laboral: el recibo sugiere revisar pagos omitidos.\n3) Instrucción operativa sugerida: confirma evidencia y asigna seguimiento hoy.\n4) Falta confirmar: respuesta del área responsable.",
+              "1) Confirmado: Balt Demo concentra la alerta visible más delicada.\n2) Inferido: la combinación de alerta crítica y documento pendiente presiona el frente patronal.\n3) Pendiente por confirmar: falta respuesta del área responsable.\n4) Lectura jurídico-laboral: el recibo sugiere revisar pagos omitidos.\n5) Instrucción operativa sugerida (requiere confirmación): confirma evidencia y asigna seguimiento hoy.",
           },
         },
       ],
@@ -323,15 +323,18 @@ describe("ceoHeliosChat", () => {
         action: "dashboard.ceo.helios_chat",
       }),
     );
-    expect(result.answer).toContain("Lectura ejecutiva");
-    expect(result.disclaimer).toContain("contexto operativo visible del sistema");
-    expect(result.summary).toContain("Modo CEO activo");
-    expect(result.suggestedPrompts).toContain("Resume lo más crítico que debo atender hoy como CEO.");
+    expect(result.answer).toContain("Confirmado");
+    expect(result.disclaimer).toContain("degradará la respuesta a modo consulta");
+    expect(result.summary).toContain("Helios separa confirmado, inferido y pendiente");
+    expect(result.suggestedPrompts).toContain("Prioridades del día: dime qué urge mover hoy en alertas, accesos y documentos visibles.");
     expect(result.historyItems[0]).toMatchObject({
       title: "Snapshot ejecutivo activo",
     });
     expect(result.supportingDocuments[0]).toMatchObject({
       label: "Contexto que Helios sí está leyendo",
+    });
+    expect(result.supportingDocuments[1]).toMatchObject({
+      label: "Permisos y carril seguro del modo CEO",
     });
   });
 
@@ -344,8 +347,9 @@ describe("ceoHeliosChat", () => {
       section: "alertas",
     });
 
-    expect(result.answer).toContain("Ya abrí Helios en modo CEO");
+    expect(result.answer).toContain("1) Confirmado");
     expect(result.answer).toContain("alertas abiertas");
+    expect(result.answer).toContain("requiere confirmación");
     expect(dbMocks.createAuditLog).toHaveBeenCalledTimes(1);
   });
 });
