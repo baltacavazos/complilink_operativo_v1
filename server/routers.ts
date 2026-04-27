@@ -2064,6 +2064,164 @@ export const appRouter = router({
 
       return getCeoMasterMetrics();
     }),
+    ceoHeliosChat: adminProcedure
+      .input(
+        z.object({
+          prompt: z.string().trim().min(3).max(3000),
+          section: ceoConsoleSectionSchema.optional(),
+          tenantId: z.string().min(3).optional(),
+          caseId: z.string().min(3).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const auditTenantId = await resolveCeoAuditTenantId({
+          user: ctx.user,
+          tenantId: input.tenantId,
+        });
+        const snapshot = await getCeoDashboardSnapshot({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const bridgeSmokeStatus = readLatestBridgeSmokeStatus();
+        const masterMetrics = isMasterCeoUser(ctx.user) ? await getCeoMasterMetrics() : null;
+        const sectionLabel = input.section ?? "resumen";
+        const scopeSummary = {
+          section: sectionLabel,
+          tenantId: input.tenantId ?? null,
+          caseId: input.caseId ?? null,
+          generatedAt: snapshot.generatedAt,
+          summary: snapshot.summary,
+          recentCases: snapshot.recentCases.slice(0, 4).map((item) => ({
+            caseId: item.caseId,
+            title: item.title,
+            tenantName: item.tenantName,
+            status: item.status,
+            priority: item.priority,
+            lastActivityAt: item.lastActivityAt,
+          })),
+          recentAlerts: snapshot.recentAlerts.slice(0, 5).map((item) => ({
+            id: item.id,
+            title: item.title,
+            severity: item.severity,
+            status: item.status,
+            tenantName: item.tenantName,
+            caseTitle: item.caseTitle,
+            raisedAt: item.raisedAt,
+          })),
+          recentMemberships: snapshot.recentMemberships.slice(0, 4).map((item) => ({
+            id: item.id,
+            tenantName: item.tenantName,
+            userName: item.userName,
+            userEmail: item.userEmail,
+            status: item.status,
+            role: item.role,
+          })),
+          recentDocuments: snapshot.recentDocuments.slice(0, 4).map((item) => ({
+            documentId: item.documentId,
+            tenantName: item.tenantName,
+            caseTitle: item.caseTitle,
+            originalName: item.originalName,
+            integrityStatus: item.integrityStatus,
+            documentType: item.documentType,
+          })),
+          bridgeSmoke: {
+            visualState: bridgeSmokeStatus.alerting.visualState,
+            statusLabel: bridgeSmokeStatus.alerting.statusLabel,
+            threshold: bridgeSmokeStatus.alerting.threshold,
+            criticalCount: bridgeSmokeStatus.summary.failedRuns,
+            warningCount: bridgeSmokeStatus.summary.errorRuns,
+            pendingCount: bridgeSmokeStatus.summary.last24Hours,
+          },
+          masterMetrics: masterMetrics
+            ? {
+                summary: masterMetrics.summary,
+                last7Days: masterMetrics.last7Days,
+                latestActivity: masterMetrics.latestActivity,
+              }
+            : null,
+        };
+        const suggestedPrompts = [
+          "Resume lo más crítico que debo atender hoy como CEO.",
+          "Dime qué riesgo laboral y qué riesgo operativo pesan más ahorita.",
+          "Con este snapshot, qué instrucciones darías al equipo en el siguiente bloque de una hora.",
+          "Explícame qué debo vigilar antes de volver a ver la app como usuario normal.",
+        ];
+        const fallbackAnswer = `Ya abrí Helios en modo CEO. Hoy veo ${snapshot.summary.activeCases} expedientes activos, ${snapshot.summary.openAlerts} alertas abiertas y ${snapshot.summary.pendingDocuments} documentos pendientes en la vista ${sectionLabel}. Si quieres, te resumo prioridades, riesgos o la instrucción operativa más útil para el siguiente bloque.`;
+        const disclaimer = `Helios conserva su criterio jurídico laboral y aquí suma contexto operativo visible del sistema para el owner autorizado. Si algo no aparece en el snapshot o en documentos visibles, lo dirá de frente.`;
+        const historyItems = [
+          {
+            id: `ceo-snapshot-${snapshot.generatedAt}`,
+            title: "Snapshot ejecutivo activo",
+            detail: `${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas · ${snapshot.summary.pendingDocuments} documentos pendientes.`,
+            timestampLabel: snapshot.generatedAt.toISOString(),
+          },
+          {
+            id: `ceo-bridge-${bridgeSmokeStatus.testedAt ?? Date.now()}`,
+            title: "Bridge y monitoreo operativo",
+            detail: `${bridgeSmokeStatus.alerting.statusLabel} · ${bridgeSmokeStatus.summary.failedRuns} fallas acumuladas · ${bridgeSmokeStatus.summary.consecutiveFailures} fallas consecutivas.`,
+            timestampLabel: bridgeSmokeStatus.testedAt,
+          },
+        ];
+        const supportingDocuments = [
+          {
+            id: "ceo-scope",
+            label: "Contexto que Helios sí está leyendo",
+            detail: `Resumen ejecutivo, alertas, accesos, documentos recientes y bridge en la sección ${sectionLabel}.`,
+          },
+        ];
+
+        let answer = fallbackAnswer;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Eres Helios, la misma interfaz central de AuditaPatron para México. Para usuarios normales operas como abogado laboral de bolsillo. Cuando la persona usuaria autenticada es el CEO, mantienes ese mismo criterio jurídico y además traduces el estado operativo del sistema para priorizar decisiones. Responde siempre en español claro, breve y accionable. No inventes hechos, no prometas resultados, no afirmes conexiones o monitoreos que no aparezcan en el contexto y separa con nitidez lo jurídico, lo operativo y lo que falta confirmar.",
+              },
+              {
+                role: "user",
+                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${HELIOS_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cuatro bloques breves: 1) lectura ejecutiva, 2) lectura jurídica/laboral, 3) instrucción operativa sugerida, 4) qué falta confirmar si aplica.`,
+              },
+            ],
+          });
+
+          const candidate = readLlmMessageText(response.choices[0]?.message.content).trim();
+          if (candidate) {
+            answer = candidate;
+          }
+        } catch {
+          answer = fallbackAnswer;
+        }
+
+        await createAuditLog({
+          tenantId: auditTenantId,
+          caseId: null,
+          traceId: buildTraceId(auditTenantId, `CEO-HELIOS-${Date.now()}`),
+          actorUserId: ctx.user.id,
+          entityType: "system",
+          entityId: `helios:${sectionLabel}`,
+          action: "dashboard.ceo.helios_chat",
+          afterState: {
+            prompt: input.prompt,
+            section: sectionLabel,
+            tenantId: input.tenantId ?? null,
+            caseId: input.caseId ?? null,
+            snapshotGeneratedAt: snapshot.generatedAt,
+          },
+        });
+
+        return {
+          answer,
+          summary: `Modo CEO activo sobre ${input.tenantId ? "un tenant filtrado" : "la vista global"} · ${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas.`,
+          disclaimer,
+          confidenceScore: 94,
+          suggestedPrompts,
+          historyItems,
+          supportingDocuments,
+        };
+      }),
     ceoBridgeSmokeStatus: adminProcedure.query(async () => {
       return readLatestBridgeSmokeStatus();
     }),

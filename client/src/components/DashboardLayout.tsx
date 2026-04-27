@@ -289,7 +289,7 @@ function DashboardLayoutContent({
                     <p className="truncate text-xs text-muted-foreground">{realUser?.email || user?.email || "Sesión protegida"}</p>
                     {canToggleUserView ? (
                       <p className="truncate text-[11px] font-medium text-sidebar-foreground/70">
-                        {isViewingAsUser ? "Vista activa: usuario normal" : "Vista activa: CEO maestro"}
+                        {isViewingAsUser ? "Vista activa: usuario normal" : "Vista activa: modo CEO"}
                       </p>
                     ) : null}
                   </div>
@@ -338,10 +338,10 @@ function DashboardLayoutContent({
                       "hidden rounded-full px-3 py-1 text-[11px] font-semibold md:inline-flex",
                       isViewingAsUser
                         ? "bg-amber-100 text-amber-800"
-                        : "bg-emerald-100 text-emerald-800",
+                        : "bg-teal-100 text-teal-900",
                     )}
                   >
-                    {isViewingAsUser ? "Vista usuario demo" : "Modo owner autorizado"}
+                    {isViewingAsUser ? "Vista usuario normal" : "Modo CEO activo"}
                   </Badge>
                   <Button
                     variant="outline"
@@ -368,7 +368,7 @@ function DashboardLayoutContent({
                     ) : (
                       <UserRound className="mr-2 h-4 w-4" />
                     )}
-                    {isViewingAsUser ? "Volver al panel privado" : "Ver como usuario"}
+                    {isViewingAsUser ? "Volver a modo CEO" : "Ver como usuario normal"}
                   </Button>
                 </>
               ) : null}

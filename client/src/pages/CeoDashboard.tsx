@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavigationItem } from "@/components/DashboardLayout";
+import { HeliosCopilotSheet, type HeliosCopilotMessage } from "@/components/HeliosCopilotSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
@@ -84,6 +85,7 @@ import {
   Search,
   Send,
   ShieldCheck,
+  Sparkles,
   ShieldX,
   Siren,
   UsersRound,
@@ -520,6 +522,8 @@ export default function CeoDashboard() {
   const [bridgeScheduleTimezoneDraft, setBridgeScheduleTimezoneDraft] = useState("America/Mexico_City");
   const [bridgeScheduleActiveDraft, setBridgeScheduleActiveDraft] = useState(true);
   const [showExpandedAuditFeed, setShowExpandedAuditFeed] = useState(false);
+  const [isHeliosSheetOpen, setIsHeliosSheetOpen] = useState(false);
+  const [heliosMessages, setHeliosMessages] = useState<HeliosCopilotMessage[]>([]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -647,6 +651,7 @@ export default function CeoDashboard() {
   const recordExportAuditMutation = trpc.dashboard.ceoRecordExportAudit.useMutation();
   const emailBridgeExportMutation = trpc.dashboard.ceoEmailBridgeExport.useMutation();
   const bridgeSmokeThresholdMutation = trpc.dashboard.ceoUpdateBridgeSmokeThreshold.useMutation();
+  const ceoHeliosMutation = trpc.dashboard.ceoHeliosChat.useMutation();
   const bridgePresetsQuery = trpc.dashboard.ceoListBridgePresets.useQuery(currentTenantScope ? { tenantId: currentTenantScope } : undefined, {
     enabled: isAdmin,
     retry: false,
@@ -708,6 +713,62 @@ export default function CeoDashboard() {
   const currentSectionExportGuardReason = exportGuardReason;
   const filterSelectClassName = "h-12 w-full rounded-[1.2rem] border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400";
   const diagnosticPillClassName = "rounded-full border border-current/15 bg-white/70 px-3 py-1";
+  const heliosScopeTenantId = filters.tenantId !== "all" ? filters.tenantId : undefined;
+  const heliosScopeCaseId = filters.caseId !== "all" ? filters.caseId : undefined;
+  const ceoHeliosSummary = `Modo CEO activo · ${snapshotData?.summary.activeCases ?? 0} expedientes activos · ${snapshotData?.summary.openAlerts ?? 0} alertas abiertas · ${snapshotData?.summary.pendingDocuments ?? 0} documentos pendientes.`;
+  const ceoHeliosSuggestedPrompts = ceoHeliosMutation.data?.suggestedPrompts ?? [
+    "Resume lo más crítico que debo atender hoy como CEO.",
+    "Dime qué riesgo laboral y qué riesgo operativo pesan más ahorita.",
+    "Con este snapshot, qué instrucciones darías al equipo en el siguiente bloque de una hora.",
+    "Explícame qué debo vigilar antes de volver a ver la app como usuario normal.",
+  ];
+  const openHeliosForCeo = () => {
+    setHeliosMessages((current) => {
+      if (current.length > 0) return current;
+      return [
+        {
+          role: "assistant",
+          content:
+            "Helios ya está en modo CEO. Conserva toda la lectura jurídica laboral del expediente y además puede ayudarte a traducir alertas, accesos, documentos y prioridades operativas del sistema visible.",
+        },
+      ];
+    });
+    setIsHeliosSheetOpen(true);
+  };
+  const handleSendHeliosCeoMessage = async (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || ceoHeliosMutation.isPending) return;
+    const userMessage: HeliosCopilotMessage = {
+      role: "user",
+      content: trimmed,
+    };
+    setHeliosMessages((current) => [...current, userMessage]);
+
+    try {
+      const result = await ceoHeliosMutation.mutateAsync({
+        prompt: trimmed,
+        section: currentSection,
+        tenantId: heliosScopeTenantId,
+        caseId: heliosScopeCaseId,
+      });
+      setHeliosMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: result.answer,
+        },
+      ]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No pude abrir la capa ejecutiva de Helios en este momento.";
+      setHeliosMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: message,
+        },
+      ]);
+    }
+  };
 
   const alertMutation = trpc.dashboard.ceoUpdateAlertStatus.useMutation();
   const membershipMutation = trpc.dashboard.ceoUpdateMembershipStatus.useMutation();
@@ -1862,6 +1923,10 @@ export default function CeoDashboard() {
       navigation={navigation}
       headerActions={
         <>
+          <Button className="rounded-full bg-slate-950 text-white hover:bg-slate-800" onClick={openHeliosForCeo}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Abrir Helios CEO
+          </Button>
           <Button
             variant="outline"
             className="rounded-full bg-white"
@@ -1960,36 +2025,42 @@ export default function CeoDashboard() {
           <section className="rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(15,118,110,0.92))] p-6 text-white shadow-[0_34px_90px_-42px_rgba(15,23,42,0.56)] xl:p-7">
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start">
               <div className="space-y-4">
-                <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Panel privado del owner</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
-                    Lo crítico primero para decidir rápido.
-                  </h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
-                    Revisa alertas, accesos y salud operativa desde una sola vista para priorizar acciones rápidas.
-                  </p>
-                </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Modo CEO · Helios unificado</p>
+                    <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
+                      Lo crítico primero para decidir, operar y volver a ver la app como usuario.
+                    </h2>
+                    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
+                      Aquí mantienes la misma interfaz Helios, con toda su lectura jurídica laboral, y además sumas contexto operativo del sistema, controles ejecutivos y la alternancia para inspeccionar la vista pública sin confusión.
+                    </p>
+                  </div>
 
-                <div className="grid gap-3 md:grid-cols-3">
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Supervisa</p>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                      Panorama arriba y detalle filtrado abajo, sin desorden.
-                    </p>
-                  </article>
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Decide</p>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                      Las acciones seguras siguen visibles para resolver rápido.
-                    </p>
-                  </article>
-                  <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Exporta</p>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                      Cierra la revisión sin salir de la consola.
-                    </p>
-                  </article>
-                </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Helios CEO</p>
+                      <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                        La misma interfaz central ahora puede leer el frente jurídico y el frente operativo al mismo tiempo.
+                      </p>
+                    </article>
+                    <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Controles CEO</p>
+                      <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                        Exportaciones, alertas, accesos y acciones seguras siguen visibles para decidir rápido.
+                      </p>
+                    </article>
+                    <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Vista espejo</p>
+                      <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
+                        Puedes saltar a la experiencia normal y volver al modo CEO sin perder contexto.
+                      </p>
+                    </article>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1 text-xs font-semibold">
+                    <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Helios conserva su abogado laboral de bolsillo</Badge>
+                    <Badge className="rounded-full border border-teal-200/20 bg-teal-400/15 px-3 py-1 text-teal-50 hover:bg-teal-400/15">CEO suma instrucciones operativas y de sistema</Badge>
+                    <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Ver como usuario normal sigue a un clic</Badge>
+                  </div>
+
               </div>
 
               <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 backdrop-blur">
@@ -4461,6 +4532,43 @@ export default function CeoDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <HeliosCopilotSheet
+        open={isHeliosSheetOpen}
+        onOpenChange={setIsHeliosSheetOpen}
+        onSendMessage={(content) => {
+          void handleSendHeliosCeoMessage(content);
+        }}
+        messages={heliosMessages}
+        isLoading={ceoHeliosMutation.isPending}
+        suggestedPrompts={ceoHeliosSuggestedPrompts}
+        caseTitle="Helios · modo CEO"
+        employeeName={snapshotData?.summary.activeCases ? `${formatNumber(snapshotData.summary.activeCases)} expedientes activos` : undefined}
+        confidenceScore={ceoHeliosMutation.data?.confidenceScore ?? 94}
+        disclaimer={ceoHeliosMutation.data?.disclaimer}
+        summary={ceoHeliosMutation.data?.summary ?? ceoHeliosSummary}
+        historyItems={ceoHeliosMutation.data?.historyItems}
+        supportingDocuments={ceoHeliosMutation.data?.supportingDocuments}
+        uiCopy={{
+          eyebrow: "Helios · modo CEO activo",
+          title: "Dame una instrucción y Helios te responde con lectura jurídica y capa operativa.",
+          description:
+            "Aquí conservas la misma inteligencia laboral de Helios y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola.",
+          documentBadge: "Basado en snapshot ejecutivo, alertas y documentos visibles",
+          capabilityBadge: "Puede priorizar riesgos, explicar contexto legal y sugerir instrucciones operativas",
+          quickHighlights: [
+            "Qué urge mover hoy",
+            "Qué riesgo laboral pesa más",
+            "Qué instrucción dar al equipo ahora",
+          ],
+          promptsHeading: "Atajos ejecutivos de Helios",
+          historyHeading: "Contexto ejecutivo disponible",
+          supportingHeading: "Lo que Helios sí está leyendo",
+          placeholder: "Pide una prioridad, una lectura jurídica o una instrucción operativa para el sistema visible",
+          emptyStateMessage:
+            "Helios ya está listo en modo CEO: conserva todo su criterio laboral y puede traducir el estado operativo visible de la plataforma en prioridades claras.",
+          closeLabel: "Volver al modo CEO",
+        }}
+      />
     </DashboardLayout>
   );
 }

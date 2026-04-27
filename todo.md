@@ -1479,3 +1479,14 @@
 - [x] Implementar comparación lado a lado entre dos periodos en la calculadora con una interacción simple, visible y sin ambigüedades.
 - [x] Añadir una carátula clara al PDF exportado con resumen ejecutivo fácil de entender, periodo, diferencia y contexto visible.
 - [x] Incorporar un historial descargable de exportaciones dentro de la Bóveda Laboral con etiquetas claras y sin pasos confusos.
+- [x] Consensuar con ChatGPT, Grok y Gemini la mejor definición visual y funcional del modo CEO en AuditaPatrón.
+- [x] Diseñar un distintivo visual claro para el modo CEO sin confundirlo con la vista de usuario normal.
+- [x] Definir e implementar los controles relevantes exclusivos del CEO dentro de una superficie separada y fácil de entender.
+- [x] Incorporar acceso irrestricto a Helios para el CEO con instrucciones directas y diferenciadas del flujo estándar.
+- [x] Implementar un cambio visible entre vista CEO y vista de usuario normal para inspeccionar la experiencia pública como la vería una persona nueva.
+- [x] Definir con claridad qué features son exclusivos del CEO y cómo se presentan sin contaminar la experiencia normal.
+- [x] Actualizar pruebas y validaciones para cubrir el modo CEO, la alternancia de vistas y el acceso directo a Helios.
+- [x] Mantener a Helios como una única interfaz visible tanto para usuario normal como para CEO, evitando marcas o asistentes paralelos.
+- [x] Preservar en el modo normal a Helios como abogado laboral de bolsillo con máxima sapiencia jurídica laboral y guía práctica sobre el expediente del usuario.
+- [x] Añadir en modo CEO una capa adicional dentro de Helios para instrucciones operativas y de sistema, sin romper la experiencia base del asistente.
+- [x] Definir visualmente cómo distinguir las capacidades extra del CEO dentro de la misma interfaz Helios sin volver confusa la conversación.
