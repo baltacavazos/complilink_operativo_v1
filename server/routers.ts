@@ -1711,25 +1711,101 @@ function buildSocialSecurityValidationSummary(params: {
   };
 }
 
+type HeliosCopilotConversationTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+function normalizeHeliosCopilotConversationHistory(history?: HeliosCopilotConversationTurn[]) {
+  return (history ?? [])
+    .filter((item): item is HeliosCopilotConversationTurn => {
+      return (
+        (item.role === "user" || item.role === "assistant") &&
+        typeof item.content === "string" &&
+        item.content.trim().length > 0
+      );
+    })
+    .map((item) => ({
+      role: item.role,
+      content: item.content.trim(),
+    }))
+    .slice(-6);
+}
+
+function inferHeliosMissingDocuments(params: {
+  documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
+}) {
+  const presentTypes = new Set(params.documents.map((document) => document.documentType));
+  const suggestions: Array<{ label: string; reason: string; prompt: string }> = [];
+
+  if (!presentTypes.has("contract")) {
+    suggestions.push({
+      label: "Contrato laboral o condiciones iniciales",
+      reason: "Ayuda a comparar lo pactado con lo que realmente ocurrió durante la relación laboral.",
+      prompt: "¿Te serviría más ver mi contrato laboral o condiciones iniciales?",
+    });
+  }
+
+  if (presentTypes.has("payroll_receipt") && !presentTypes.has("cfdi")) {
+    suggestions.push({
+      label: "CFDI del mismo periodo",
+      reason: "Sirve para contrastar lo timbrado fiscalmente contra lo que aparece en tu nómina.",
+      prompt: "¿Por qué me convendría subir el CFDI del mismo periodo?",
+    });
+  }
+
+  if (presentTypes.has("cfdi") && !presentTypes.has("payroll_receipt")) {
+    suggestions.push({
+      label: "Recibo de nómina del mismo periodo",
+      reason: "Ayuda a aterrizar pagos, descuentos y periodos para comparar lo fiscal con lo laboral.",
+      prompt: "¿Qué me puede aclarar subir la nómina del mismo periodo?",
+    });
+  }
+
+  if (!presentTypes.has("imss")) {
+    suggestions.push({
+      label: "Soporte IMSS",
+      reason: "Refuerza fechas, altas, bajas y señales de seguridad social que pueden mover la lectura del caso.",
+      prompt: "¿Necesito también un soporte IMSS para entender mejor mi caso?",
+    });
+  }
+
+  if (presentTypes.has("contract") && !presentTypes.has("evidence")) {
+    suggestions.push({
+      label: "Evidencia complementaria",
+      reason: "Mensajes, anexos o instrucciones pueden dar contexto práctico a lo pactado y a lo que sí pasó.",
+      prompt: "¿Qué evidencia complementaria te ayudaría a explicarme mejor mi caso?",
+    });
+  }
+
+  return suggestions.slice(0, 3);
+}
+
 function buildHeliosCopilotSuggestedPrompts(params: {
   opinion: Record<string, unknown> | null;
   documentsCount: number;
+  missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
   const prompts = [
-    "¿Cuáles son los riesgos principales de mi expediente?",
+    "¿Cuál es el riesgo principal que ves hoy en mi expediente?",
+    "Explícame mi situación actual con palabras simples.",
     "¿Qué paso práctico me conviene seguir ahora?",
   ];
 
   if (params.documentsCount > 0) {
-    prompts.push("Explícame el resumen de mi auditoría en palabras simples.");
+    prompts.push("Explícame esto como si me lo dijera un abogado laboral en corto.");
+  }
+
+  if (params.missingDocuments[0]?.prompt) {
+    prompts.push(params.missingDocuments[0].prompt);
   }
 
   if (getOptionalString(params.opinion?.recommendedNextStep)) {
     prompts.push("Explícame por qué recomiendas ese siguiente paso.");
   }
 
-  if (getOptionalStringList(params.opinion?.uncertainties).length > 0) {
-    prompts.push("¿Qué cosas todavía faltan confirmar en mis documentos?");
+  if (params.missingDocuments.length > 0 || getOptionalStringList(params.opinion?.uncertainties).length > 0) {
+    prompts.push("¿Qué cosas todavía faltan confirmar y qué documento ayudaría más?");
   }
 
   return Array.from(new Set(prompts)).slice(0, 4);
@@ -1738,6 +1814,8 @@ function buildHeliosCopilotSuggestedPrompts(params: {
 function buildHeliosCopilotContext(params: {
   detail: Awaited<ReturnType<typeof getCaseDetailForUser>>;
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
+  conversationHistory?: HeliosCopilotConversationTurn[];
+  missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
   const caseSummary = {
     title: params.detail.case.title,
@@ -1767,12 +1845,19 @@ function buildHeliosCopilotContext(params: {
     };
   });
 
+  const hasComplexSignals = documents.some((document) => {
+    return document.riskLevel === "high" || document.riskLevel === "critical";
+  });
+
   return JSON.stringify(
     {
       case: caseSummary,
       documents,
+      recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
+      missingDocuments: params.missingDocuments,
       guidance:
         "Responde solo con base en este expediente visible. Si algo no aparece aquí, dilo con claridad en vez de asumirlo.",
+      pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
     2,
@@ -1782,28 +1867,35 @@ function buildHeliosCopilotContext(params: {
 function buildHeliosCopilotFallbackAnswer(params: {
   opinion: Record<string, unknown> | null;
   documentsCount: number;
+  missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
   if (params.documentsCount === 0) {
-    return "Todavía no veo documentos integrados en este expediente. Si subes primero tu contrato, un recibo de nómina o un CFDI, podré darte una explicación más útil sobre riesgos, diferencias y siguientes pasos.";
+    return [
+      "1) Respuesta clara: Todavía no veo documentos integrados en este expediente, así que aún no te puedo orientar con la misma precisión que cuando ya existe respaldo visible.",
+      "2) Lo que sí se sabe: Tu expediente ya está listo para empezar a ordenarse en cuanto subas el primer documento útil.",
+      "3) Lo que falta confirmar: Si puedes, empieza con tu contrato, un recibo de nómina o un CFDI del mismo periodo para que la lectura tenga base real.",
+      "4) Siguiente paso útil: Sube primero el documento laboral que tengas más a la mano y después yo te digo qué otra pieza podría ayudarte más.",
+    ].join("\n\n");
   }
 
   const summary = getOptionalString(params.opinion?.summary);
   const nextStep = getOptionalString(params.opinion?.recommendedNextStep);
   const uncertainties = getOptionalStringList(params.opinion?.uncertainties);
+  const firstMissingDocument = params.missingDocuments[0];
 
-  const sections = [
-    summary ?? "Ya existe una lectura preliminar del expediente, pero todavía hace falta más contexto para responder con mayor precisión.",
-    nextStep ? `Siguiente paso sugerido: ${nextStep}` : null,
-    uncertainties.length > 0 ? `Todavía conviene confirmar: ${uncertainties.slice(0, 2).join("; ")}.` : null,
-  ].filter((item): item is string => Boolean(item));
-
-  return sections.join("\n\n");
+  return [
+    `1) Respuesta clara: ${summary ?? "Ya existe una lectura preliminar del expediente y sí puedo orientarte, aunque todavía faltan algunas piezas para darte una respuesta más cerrada."}`,
+    "2) Lo que sí se sabe: Ya hay documentos visibles que permiten una primera lectura laboral sobre tu situación actual.",
+    `3) Lo que falta confirmar: ${firstMissingDocument ? `${firstMissingDocument.label}. ${firstMissingDocument.reason}` : uncertainties.length > 0 ? uncertainties.slice(0, 2).join("; ") : "Todavía conviene contrastar algunos datos con más contexto documental."}`,
+    `4) Siguiente paso útil: ${nextStep ?? (firstMissingDocument ? `Si lo tienes a la mano, sube ${firstMissingDocument.label.toLowerCase()} para afinar la lectura y decirte mejor qué sigue.` : "Cuéntame qué punto te preocupa más y te lo explico con palabras más simples sobre lo que ya está visible.")}`,
+  ].join("\n\n");
 }
 
 function buildHeliosCopilotSupportingDocuments(params: {
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
+  missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
-  return [...params.documents]
+  const visibleDocuments = [...params.documents]
     .sort((left, right) => {
       const leftHasOpinion = Number(Boolean(asObjectRecord(left.heliosOpinion)));
       const rightHasOpinion = Number(Boolean(asObjectRecord(right.heliosOpinion)));
@@ -1814,7 +1906,7 @@ function buildHeliosCopilotSupportingDocuments(params: {
 
       return new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime();
     })
-    .slice(0, 3)
+    .slice(0, params.missingDocuments.length > 0 ? 2 : 3)
     .map((document) => {
       const opinion = asObjectRecord(document.heliosOpinion);
       const summary = getOptionalString(opinion?.summary);
@@ -1834,6 +1926,16 @@ function buildHeliosCopilotSupportingDocuments(params: {
           .join(" "),
       };
     });
+
+  if (params.missingDocuments[0]) {
+    visibleDocuments.push({
+      id: "missing-documents-hint",
+      label: "Documento que puede destrabar mejor tu caso",
+      detail: `${params.missingDocuments[0].label}. ${params.missingDocuments[0].reason}`,
+    });
+  }
+
+  return visibleDocuments;
 }
 
 export const appRouter = router({
@@ -3014,6 +3116,15 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           prompt: z.string().trim().min(3).max(2000),
+          conversationHistory: z
+            .array(
+              z.object({
+                role: z.enum(["user", "assistant"]),
+                content: z.string().trim().min(1).max(2000),
+              }),
+            )
+            .max(6)
+            .optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -3029,9 +3140,12 @@ export const appRouter = router({
         });
         const latestOpinion = asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
+        const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
+        const missingDocuments = inferHeliosMissingDocuments({ documents });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
           documentsCount: documents.length,
+          missingDocuments,
         });
         const disclaimer =
           getOptionalString(latestOpinion?.disclaimer) ??
@@ -3040,8 +3154,9 @@ export const appRouter = router({
         const fallbackAnswer = buildHeliosCopilotFallbackAnswer({
           opinion: latestOpinion,
           documentsCount: documents.length,
+          missingDocuments,
         });
-        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents });
+        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents, missingDocuments });
 
         let answer = fallbackAnswer;
 
@@ -3052,15 +3167,16 @@ export const appRouter = router({
                 {
                   role: "system",
                   content:
-                    "Eres Helios, el copiloto laboral de AuditaPatron para México. Responde siempre en español claro, práctico y breve. Usa únicamente el contexto del expediente proporcionado. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Reconoce derechos ARCO, revocación y límites del expediente digital cuando sea pertinente. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
+                    "Eres Helios, el abogado laboral de bolsillo de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
                 },
                 {
                   role: "user",
-                  content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents })}\n\nMarco operativo y legal:\n${HELIOS_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nMarco operativo y legal:\n${HELIOS_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
-                  }.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves: 1) respuesta clara, 2) lo que sí se sabe, 3) lo que falta confirmar si aplica, 4) siguiente paso útil.`,
+                  }.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves y con esos títulos exactos: 1) Respuesta clara, 2) Lo que sí se sabe, 3) Lo que falta confirmar, 4) Siguiente paso útil. Mantén un tono de abogado laboral cercano y pedagógico. Si mencionas un término legal importante, explícalo en una frase simple. Si detectas un documento faltante útil, di su nombre y por qué conviene subirlo.`,
+
                 },
               ],
             });
@@ -3086,6 +3202,8 @@ export const appRouter = router({
             prompt: input.prompt,
             sourceDocumentCount: documents.length,
             confidenceScore,
+            conversationHistory,
+            missingDocuments,
             suggestedPrompts,
             supportingDocuments,
           },
@@ -3097,6 +3215,7 @@ export const appRouter = router({
           confidenceScore,
           suggestedPrompts,
           supportingDocuments,
+          missingDocuments,
           sourceDocumentCount: documents.length,
         };
       }),

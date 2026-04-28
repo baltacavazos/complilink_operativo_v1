@@ -1174,6 +1174,84 @@ function appendHeliosCopilotMessage(
   return [...current, next].slice(-6);
 }
 
+function summarizeHeliosCopilotSnippet(content: string, maxLength = 120) {
+  const normalized = content.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
+function extractHeliosClearSnippet(content: string) {
+  const normalized = content.replace(/\r/g, "").trim();
+  const sectionMatch = normalized.match(
+    /(?:1\)\s*Respuesta clara:?|Respuesta clara:?)([\s\S]*?)(?:\n\s*(?:2\)\s*Lo que sí se sabe|Lo que sí se sabe:|3\)\s*Lo que falta confirmar|Lo que falta confirmar:|4\)\s*Siguiente paso útil|Siguiente paso útil:)|$)/i
+  );
+
+  if (sectionMatch?.[1]?.trim()) {
+    return summarizeHeliosCopilotSnippet(sectionMatch[1].trim());
+  }
+
+  return summarizeHeliosCopilotSnippet(normalized);
+}
+
+function buildHeliosCopilotConversationHistoryInput(params: {
+  current: HeliosCopilotMessage[];
+  nextPrompt: string;
+}) {
+  return [...params.current, { role: "user" as const, content: params.nextPrompt.trim() }]
+    .flatMap(message => {
+      if (
+        (message.role === "user" || message.role === "assistant") &&
+        typeof message.content === "string" &&
+        message.content.trim().length > 0
+      ) {
+        return [
+          {
+            role: message.role,
+            content: message.content.trim(),
+          } as const,
+        ];
+      }
+
+      return [];
+    })
+    .slice(-6);
+}
+
+function buildHeliosCopilotConversationHistoryItems(
+  messages: HeliosCopilotMessage[]
+) {
+  const pairs: Array<{ question: string; answer: string }> = [];
+  let pendingQuestion: string | null = null;
+
+  messages.forEach(message => {
+    if (message.role === "user") {
+      pendingQuestion = message.content;
+      return;
+    }
+
+    if (message.role === "assistant" && pendingQuestion) {
+      pairs.push({
+        question: pendingQuestion,
+        answer: message.content,
+      });
+      pendingQuestion = null;
+    }
+  });
+
+  return pairs.slice(-2).reverse().map((pair, index) => ({
+    id: `copilot-pair-${index}`,
+    title:
+      index === 0
+        ? "Último intercambio con tu asesor laboral"
+        : "Intercambio reciente anterior",
+    detail: `Tú: ${summarizeHeliosCopilotSnippet(pair.question, 90)} · Asesor: ${extractHeliosClearSnippet(pair.answer)}`,
+    timestampLabel: "Ahora",
+  }));
+}
+
 export function buildDossierTypeProgress(
   documentTypeCounts: Record<string, number>
 ) {
@@ -5494,6 +5572,10 @@ export default function Auditar() {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         prompt: content,
+        conversationHistory: buildHeliosCopilotConversationHistoryInput({
+          current: heliosCopilotMessages,
+          nextPrompt: content,
+        }),
       },
       {
         onSuccess: response => {
@@ -5510,7 +5592,7 @@ export default function Auditar() {
               role: "assistant",
               content:
                 error.message ||
-                "No pude responder en este momento. Puedes intentarlo otra vez o seguir fortaleciendo tu expediente con más documentos.",
+                "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí.",
             })
           );
         },
@@ -5611,23 +5693,12 @@ export default function Auditar() {
     [dossierHistoryEntries, historyFilter]
   );
   const heliosCopilotHistoryItems = useMemo(() => {
-    const recentConversation = heliosCopilotMessages
-      .filter(
-        message => message.role === "user" || message.role === "assistant"
-      )
-      .slice(-2)
-      .map((message, index) => ({
-        id: `copilot-${index}-${message.role}`,
-        title:
-          message.role === "user"
-            ? "Tu última pregunta al asistente"
-            : "Última respuesta del asistente",
-        detail: message.content,
-        timestampLabel: "Ahora",
-      }));
+    const recentConversation = buildHeliosCopilotConversationHistoryItems(
+      heliosCopilotMessages
+    );
 
     const recentDossierEntries = dossierHistoryEntries
-      .slice(0, recentConversation.length > 0 ? 2 : 3)
+      .slice(0, recentConversation.length > 0 ? 1 : 3)
       .map(entry => ({
         id: entry.id,
         title: entry.title,
@@ -11901,7 +11972,10 @@ export default function Auditar() {
                         visibleHeliosOpinion?.summary ?? null
                       )}
                       historyItems={heliosCopilotHistoryItems}
-                      supportingDocuments={heliosCopilotSupportingDocuments}
+                      supportingDocuments={
+                        heliosCopilotMutation.data?.supportingDocuments ??
+                        heliosCopilotSupportingDocuments
+                      }
                     />
                   </div>
                 </div>

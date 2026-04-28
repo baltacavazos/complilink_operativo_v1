@@ -569,27 +569,41 @@ describe("appRouter case workflows", () => {
       disclaimer: "Opinión preliminar asistida por sistema.",
       confidenceScore: 74,
       sourceDocumentCount: 1,
-      supportingDocuments: [
+      supportingDocuments: expect.arrayContaining([
         expect.objectContaining({
           id: "DOC-HEL-001",
           label: "contrato_demo.pdf",
         }),
-      ],
+        expect.objectContaining({
+          id: "missing-documents-hint",
+          label: "Documento que puede destrabar mejor tu caso",
+        }),
+      ]),
     });
     expect(result.answer).toContain("Respuesta clara");
     expect(result.suggestedPrompts.length).toBeGreaterThan(0);
     expect(result.supportingDocuments[0]?.detail).toContain("Lectura visible: Helios generó una lectura preliminar útil del contrato.");
+    expect(result.supportingDocuments[1]?.detail).toContain("Soporte IMSS");
     expect(db.createAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "balt-1",
         caseId: "CASE-BALT-1-DEMO001",
         action: "case.helios_copilot_chat",
         afterState: expect.objectContaining({
-          supportingDocuments: [
+          conversationHistory: [],
+          missingDocuments: expect.arrayContaining([
+            expect.objectContaining({
+              label: "Soporte IMSS",
+            }),
+          ]),
+          supportingDocuments: expect.arrayContaining([
             expect.objectContaining({
               id: "DOC-HEL-001",
             }),
-          ],
+            expect.objectContaining({
+              id: "missing-documents-hint",
+            }),
+          ]),
         }),
       }),
     );

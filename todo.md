@@ -1499,3 +1499,7 @@
 - [x] Ajustar las quick actions de Helios CEO a lenguaje patronal, pericial y operativo de Auditapatrón.
 - [x] Reforzar la degradación por permisos y el mensaje claro cuando algo no esté autorizado o trazado en Helios.
 - [x] Actualizar pruebas focalizadas del modo CEO y Helios unificado para cubrir el nuevo cierre técnico.
+- [x] Helios usuario normal: volver las respuestas más dialogadas, fluidas y adaptativas sin crear otra interfaz.
+- [x] Helios usuario normal: reforzar continuidad y memoria visible de la conversación dentro del mismo flujo.
+- [x] Helios usuario normal: hacer más pedagógicas las explicaciones en escenarios laborales complejos.
+- [x] Helios usuario normal: detectar de forma más proactiva documentos faltantes y sugerir qué conviene subir después.

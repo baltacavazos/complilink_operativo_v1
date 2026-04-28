@@ -74,22 +74,22 @@ export function HeliosCopilotSheet({
 }: HeliosCopilotSheetProps) {
   const copy = {
     eyebrow: "Helios · asesor laboral",
-    title: "Tu asesor laboral ya leyó lo visible de tu expediente",
+    title: "Tu asesor laboral ya entendió lo visible de tu expediente",
     description:
-      "Puedes preguntarle algo puntual o dejar que te resuma primero lo importante, lo incierto y el siguiente paso más útil con base en tus documentos integrados.",
+      "Cuéntale qué te preocupa y te responderá con una orientación clara, lo que ya se puede sostener, lo que falta confirmar y el siguiente paso más útil con base en tus documentos.",
     documentBadge: "Basado en tus documentos visibles",
-    capabilityBadge: "Tu asesor laboral puede resumir, explicar y priorizar",
+    capabilityBadge: "Puede explicar, conectar y señalar el documento útil que falte",
     quickHighlights: [
-      "Resumen automático del expediente",
-      "Qué hallazgo pesa más hoy",
-      "Qué conviene subir después",
+      "Te traduce lo complejo a lenguaje claro",
+      "Retoma tu contexto reciente sin sacarte del flujo",
+      "Te dice qué documento puede destrabar mejor tu caso",
     ],
-    promptsHeading: "Atajos para avanzar sin pensar demasiado",
-    historyHeading: "Historial breve de este expediente",
-    supportingHeading: "Sustento documental visible",
-    placeholder: "Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de tus documentos visibles",
+    promptsHeading: "Preguntas rápidas para seguir contigo",
+    historyHeading: "Continuidad reciente de tu caso",
+    supportingHeading: "Evidencia de tu caso",
+    placeholder: "Cuéntame qué pasó o qué te preocupa. Tu asesor laboral responde con base en tus documentos visibles",
     emptyStateMessage:
-      "Tu asesor laboral ya tiene suficiente contexto para empezar: puede resumirte el expediente, traducir lo complejo y decirte qué conviene revisar o subir primero.",
+      "Tu asesor laboral ya tiene contexto para empezar. Puede explicarte tu situación actual, decirte qué falta confirmar y señalar qué documento podría ayudarte más después.",
     closeLabel: "Volver al expediente",
     ...uiCopy,
   };

@@ -222,9 +222,11 @@ describe("copy visible de la experiencia", () => {
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {
     const source = readComponent("components/HeliosCopilotSheet.tsx");
 
-    expect(source).toContain("Tu asesor laboral ya leyó lo visible de tu expediente");
-    expect(source).toContain("Escribe tu duda o toca un atajo. Tu asesor laboral ya parte de tus documentos visibles");
-    expect(source).toContain("Tu asesor laboral ya tiene suficiente contexto para empezar");
+    expect(source).toContain("Tu asesor laboral ya entendió lo visible de tu expediente");
+    expect(source).toContain("Cuéntame qué pasó o qué te preocupa. Tu asesor laboral responde con base en tus documentos visibles");
+    expect(source).toContain("Tu asesor laboral ya tiene contexto para empezar");
+    expect(source).toContain("Continuidad reciente de tu caso");
+    expect(source).toContain("Evidencia de tu caso");
     expect(source).toContain("uiCopy");
     expect(source).not.toContain("Copiloto laboral de Helios");
   });
