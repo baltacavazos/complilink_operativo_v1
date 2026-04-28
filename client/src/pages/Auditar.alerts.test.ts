@@ -289,11 +289,15 @@ describe("sanitizePersistedAuditarViewState", () => {
         historyFilter: "response",
         mobileOnboardingIndex: 99,
         selectedRecommendedTargetType: "contract",
+        preferredCaptureMode: "camera",
+        preferredTone: "explained",
       }),
     ).toEqual({
       historyFilter: "response",
       mobileOnboardingIndex: 2,
       selectedRecommendedTargetType: "contract",
+      preferredCaptureMode: "camera",
+      preferredTone: "explained",
     });
   });
 
@@ -303,11 +307,15 @@ describe("sanitizePersistedAuditarViewState", () => {
         historyFilter: "invalid",
         mobileOnboardingIndex: -4,
         selectedRecommendedTargetType: "unknown",
+        preferredCaptureMode: "gallery",
+        preferredTone: "larga",
       }),
     ).toEqual({
       historyFilter: undefined,
       mobileOnboardingIndex: 0,
       selectedRecommendedTargetType: undefined,
+      preferredCaptureMode: undefined,
+      preferredTone: undefined,
     });
   });
 });

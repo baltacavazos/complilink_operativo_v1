@@ -1736,10 +1736,11 @@ function inferHeliosMissingDocuments(params: {
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
 }) {
   const presentTypes = new Set(params.documents.map((document) => document.documentType));
-  const suggestions: Array<{ label: string; reason: string; prompt: string }> = [];
+  const suggestions: Array<{ targetType: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence"; label: string; reason: string; prompt: string }> = [];
 
   if (!presentTypes.has("contract")) {
     suggestions.push({
+      targetType: "contract",
       label: "Contrato laboral o condiciones iniciales",
       reason: "Ayuda a comparar lo pactado con lo que realmente ocurrió durante la relación laboral.",
       prompt: "¿Te serviría más ver mi contrato laboral o condiciones iniciales?",
@@ -1748,6 +1749,7 @@ function inferHeliosMissingDocuments(params: {
 
   if (presentTypes.has("payroll_receipt") && !presentTypes.has("cfdi")) {
     suggestions.push({
+      targetType: "cfdi",
       label: "CFDI del mismo periodo",
       reason: "Sirve para contrastar lo timbrado fiscalmente contra lo que aparece en tu nómina.",
       prompt: "¿Por qué me convendría subir el CFDI del mismo periodo?",
@@ -1756,6 +1758,7 @@ function inferHeliosMissingDocuments(params: {
 
   if (presentTypes.has("cfdi") && !presentTypes.has("payroll_receipt")) {
     suggestions.push({
+      targetType: "payroll_receipt",
       label: "Recibo de nómina del mismo periodo",
       reason: "Ayuda a aterrizar pagos, descuentos y periodos para comparar lo fiscal con lo laboral.",
       prompt: "¿Qué me puede aclarar subir la nómina del mismo periodo?",
@@ -1764,6 +1767,7 @@ function inferHeliosMissingDocuments(params: {
 
   if (!presentTypes.has("imss")) {
     suggestions.push({
+      targetType: "imss",
       label: "Soporte IMSS",
       reason: "Refuerza fechas, altas, bajas y señales de seguridad social que pueden mover la lectura del caso.",
       prompt: "¿Necesito también un soporte IMSS para entender mejor mi caso?",
@@ -1772,6 +1776,7 @@ function inferHeliosMissingDocuments(params: {
 
   if (presentTypes.has("contract") && !presentTypes.has("evidence")) {
     suggestions.push({
+      targetType: "evidence",
       label: "Evidencia complementaria",
       reason: "Mensajes, anexos o instrucciones pueden dar contexto práctico a lo pactado y a lo que sí pasó.",
       prompt: "¿Qué evidencia complementaria te ayudaría a explicarme mejor mi caso?",
@@ -3116,6 +3121,7 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           prompt: z.string().trim().min(3).max(2000),
+          responseTone: z.enum(["brief", "explained"]).optional(),
           conversationHistory: z
             .array(
               z.object({
@@ -3141,6 +3147,7 @@ export const appRouter = router({
         const latestOpinion = asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
+        const responseTone = input.responseTone === "explained" ? "explained" : "brief";
         const missingDocuments = inferHeliosMissingDocuments({ documents });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
@@ -3167,7 +3174,7 @@ export const appRouter = router({
                 {
                   role: "system",
                   content:
-                    "Eres Helios, el abogado laboral de bolsillo de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
+                    "Eres Helios, el abogado laboral de bolsillo de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Si la preferencia visible es breve, responde con síntesis y sin rodeos. Si la preferencia visible es explicativa, agrega un poco más de contexto práctico y baja a lenguaje simple el punto legal importante. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
                 },
                 {
                   role: "user",
@@ -3175,7 +3182,7 @@ export const appRouter = router({
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
-                  }.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves y con esos títulos exactos: 1) Respuesta clara, 2) Lo que sí se sabe, 3) Lo que falta confirmar, 4) Siguiente paso útil. Mantén un tono de abogado laboral cercano y pedagógico. Si mencionas un término legal importante, explícalo en una frase simple. Si detectas un documento faltante útil, di su nombre y por qué conviene subirlo.`,
+                  }.\n- Preferencia visible de tono: ${responseTone === "explained" ? "más explicativo" : "breve"}.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves y con esos títulos exactos: 1) Respuesta clara, 2) Lo que sí se sabe, 3) Lo que falta confirmar, 4) Siguiente paso útil. Mantén un tono de abogado laboral cercano y pedagógico. Si mencionas un término legal importante, explícalo en una frase simple. Si detectas un documento faltante útil, di su nombre y por qué conviene subirlo. Adapta la extensión al tono visible: en modo breve usa 1 o 2 frases por bloque; en modo más explicativo puedes usar hasta 3 o 4 frases por bloque si ayudan a entender mejor el punto.`,
 
                 },
               ],
@@ -3200,6 +3207,7 @@ export const appRouter = router({
           action: "case.helios_copilot_chat",
           afterState: {
             prompt: input.prompt,
+            responseTone,
             sourceDocumentCount: documents.length,
             confidenceScore,
             conversationHistory,
@@ -3332,6 +3340,7 @@ export const appRouter = router({
             mobileOnboardingIndex: z.number().int().min(0).max(2).optional(),
             selectedRecommendedTargetType: auditarTargetTypeSchema.nullable().optional(),
             preferredCaptureMode: auditarCaptureModeSchema.nullable().optional(),
+            preferredTone: z.enum(["brief", "explained"]).optional(),
           }),
         }),
       )

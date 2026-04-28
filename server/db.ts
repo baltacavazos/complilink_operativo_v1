@@ -315,6 +315,7 @@ type AuditarViewStateRecord = {
   mobileOnboardingIndex?: number;
   selectedRecommendedTargetType?: "payroll_receipt" | "cfdi" | "contract" | "imss" | "evidence" | null;
   preferredCaptureMode?: "camera" | "file" | null;
+  preferredTone?: "brief" | "explained";
 };
 
 function normalizeAuditarViewState(value: unknown): AuditarViewStateRecord {
@@ -350,12 +351,17 @@ function normalizeAuditarViewState(value: unknown): AuditarViewStateRecord {
       : record.preferredCaptureMode === "camera" || record.preferredCaptureMode === "file"
         ? (record.preferredCaptureMode as AuditarViewStateRecord["preferredCaptureMode"])
         : undefined;
+  const preferredTone =
+    record.preferredTone === "brief" || record.preferredTone === "explained"
+      ? (record.preferredTone as AuditarViewStateRecord["preferredTone"])
+      : undefined;
 
   return {
     historyFilter,
     mobileOnboardingIndex,
     selectedRecommendedTargetType,
     preferredCaptureMode,
+    preferredTone,
   };
 }
 

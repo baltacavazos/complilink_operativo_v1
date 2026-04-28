@@ -552,6 +552,7 @@ describe("appRouter case workflows", () => {
       tenantId: "balt-1",
       caseId: "CASE-BALT-1-DEMO001",
       prompt: "¿Qué riesgo principal ves y qué documento conviene subir después?",
+      responseTone: "explained",
     });
 
     expect(db.getCaseDetailForUser).toHaveBeenCalledWith({
@@ -590,6 +591,7 @@ describe("appRouter case workflows", () => {
         caseId: "CASE-BALT-1-DEMO001",
         action: "case.helios_copilot_chat",
         afterState: expect.objectContaining({
+          responseTone: "explained",
           conversationHistory: [],
           missingDocuments: expect.arrayContaining([
             expect.objectContaining({

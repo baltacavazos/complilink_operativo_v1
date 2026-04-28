@@ -172,16 +172,27 @@ describe("copy visible de la experiencia", () => {
     const pageSource = readPage("Auditar");
 
     expect(componentSource).toContain("nextSuggestedDocument.title");
-    expect(componentSource).toContain("Subir este documento ahora");
+    expect(componentSource).toContain("Lo ya confirmado vs lo que este archivo aclararía");
+    expect(componentSource).toContain("Ya confirmado");
+    expect(componentSource).toContain("Lo que aclararía");
+    expect(componentSource).toContain("Cómo quieres que responda");
+    expect(componentSource).toContain("Más explicativo");
+    expect(componentSource).toContain("nextSuggestedDocument.ctaLabel");
+    expect(pageSource).toContain("Abrir cámara para subirlo");
+    expect(pageSource).toContain("Elegir archivo ahora");
     expect(componentSource).toContain("ArrowRight");
     expect(componentSource).toContain("suggestedPromptsContext");
     expect(componentSource).toContain("historyContext");
     expect(componentSource).toContain("nextSuggestedDocument");
-    expect(componentSource).toContain("onFocusSuggestedDocument");
-    expect(pageSource).toContain("Atajos sugeridos con base en tu");
-    expect(pageSource).toContain("Retomamos la última conversación guardada en este equipo para este expediente");
-    expect(pageSource).toContain("heliosCopilotNextSuggestedDocument");
+    expect(pageSource).toContain("getDocumentContextualShortcuts");
+    expect(pageSource).toContain("sanitizePersistedHeliosCopilotMessages");
+    expect(pageSource).toContain("heliosCopilotHistoryStorageKey");
+    expect(pageSource).toContain("preferredTone");
+    expect(pageSource).toContain("responseTone: preferredTone");
+    expect(pageSource).toContain("heliosCopilotSuggestedUploadMode === \"camera\"");
+    expect(pageSource).toContain("focusRecommendedUpload(");
   });
+
 
   it("refuerza la ruta principal en acceso con una sola vía clara por correo", () => {
     const source = readPage("Access");
@@ -243,6 +254,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Tu asesor laboral ya tiene contexto para empezar");
     expect(source).toContain("Continuidad reciente de tu caso");
     expect(source).toContain("Evidencia de tu caso");
+    expect(source).toContain("Cómo quieres que responda");
+    expect(source).toContain("Breve");
+    expect(source).toContain("Más explicativo");
     expect(source).toContain("uiCopy");
     expect(source).not.toContain("Copiloto laboral de Helios");
   });

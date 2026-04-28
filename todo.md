@@ -1506,3 +1506,6 @@
 - [x] Helios usuario normal: personalizar atajos según el tipo documental ya visible en el expediente.
 - [x] Helios usuario normal: mostrar una tarjeta visible que explique por qué conviene subir el siguiente documento sugerido.
 - [x] Helios usuario normal: añadir memoria corta por expediente para retomar la conversación entre sesiones sin romper el flujo.
+- [x] Helios usuario normal: convertir la sugerencia documental en una acción de un clic con entrada directa a cámara o archivo.
+- [x] Helios usuario normal: mostrar un contraste breve entre lo ya confirmado y lo que aclararía el siguiente documento sugerido.
+- [x] Helios usuario normal: guardar una preferencia de tono de respuesta para alternar entre una explicación breve y una explicación más desarrollada.

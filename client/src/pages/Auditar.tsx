@@ -8,6 +8,7 @@ import {
 import {
   HeliosCopilotSheet,
   type HeliosCopilotMessage,
+  type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
 import {
@@ -1067,6 +1068,7 @@ type AuditarPersistedViewState = {
   mobileOnboardingIndex?: number;
   selectedRecommendedTargetType?: DossierTarget["type"] | null;
   preferredCaptureMode?: AuditarCaptureMode | null;
+  preferredTone?: HeliosCopilotResponseTone;
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
@@ -1126,12 +1128,17 @@ export function sanitizePersistedAuditarViewState(
           record.preferredCaptureMode === "file"
         ? (record.preferredCaptureMode as AuditarCaptureMode)
         : undefined;
+  const preferredTone =
+    record.preferredTone === "brief" || record.preferredTone === "explained"
+      ? (record.preferredTone as HeliosCopilotResponseTone)
+      : undefined;
 
   return {
     historyFilter,
     mobileOnboardingIndex,
     selectedRecommendedTargetType,
     preferredCaptureMode,
+    preferredTone,
   };
 }
 
@@ -3201,6 +3208,8 @@ export default function Auditar() {
     useState<DossierTarget["type"] | null>(null);
   const [preferredCaptureMode, setPreferredCaptureMode] =
     useState<AuditarCaptureMode | null>(null);
+  const [preferredTone, setPreferredTone] =
+    useState<HeliosCopilotResponseTone>("brief");
   const [selectedCaptureMode, setSelectedCaptureMode] =
     useState<AuditarCaptureMode | null>(null);
   const [autoAnalyzeRequested, setAutoAnalyzeRequested] = useState(false);
@@ -3459,12 +3468,14 @@ export default function Auditar() {
           ? null
           : persistedState.preferredCaptureMode
       );
+      setPreferredTone(persistedState.preferredTone ?? "brief");
     } catch {
       window.localStorage.removeItem(auditarPersistenceKey);
       setHistoryFilter("all");
       setMobileOnboardingIndex(0);
       setSelectedRecommendedTargetType(null);
       setPreferredCaptureMode(null);
+      setPreferredTone("brief");
     } finally {
       setPersistenceReady(true);
     }
@@ -3486,6 +3497,7 @@ export default function Auditar() {
         mobileOnboardingIndex,
         selectedRecommendedTargetType,
         preferredCaptureMode,
+        preferredTone,
       })
     );
   }, [
@@ -3494,6 +3506,7 @@ export default function Auditar() {
     mobileOnboardingIndex,
     persistenceReady,
     preferredCaptureMode,
+    preferredTone,
     selectedRecommendedTargetType,
   ]);
 
@@ -3626,6 +3639,9 @@ export default function Auditar() {
     if (remoteState.preferredCaptureMode !== undefined) {
       setPreferredCaptureMode(remoteState.preferredCaptureMode);
     }
+    if (remoteState.preferredTone !== undefined) {
+      setPreferredTone(remoteState.preferredTone);
+    }
 
     syncedRemoteViewStateRef.current = JSON.stringify(remoteState);
     setRemoteViewStateReadyKey(currentCaseScopeKey);
@@ -3653,6 +3669,7 @@ export default function Auditar() {
       mobileOnboardingIndex,
       selectedRecommendedTargetType,
       preferredCaptureMode,
+      preferredTone,
     });
 
     if (syncedRemoteViewStateRef.current === serializedViewState) {
@@ -3669,6 +3686,7 @@ export default function Auditar() {
             mobileOnboardingIndex,
             selectedRecommendedTargetType,
             preferredCaptureMode,
+            preferredTone,
           },
         },
         {
@@ -3685,7 +3703,9 @@ export default function Auditar() {
     historyFilter,
     mobileOnboardingIndex,
     persistenceReady,
+    persistAuditarViewStateMutation,
     preferredCaptureMode,
+    preferredTone,
     remoteViewStateReadyKey,
     selectedCaseId,
     selectedRecommendedTargetType,
@@ -5088,15 +5108,43 @@ export default function Auditar() {
     presentTypes,
     opinion: lastHeliosOpinion,
   });
+  const heliosCopilotSuggestedUploadMode =
+    preferredCaptureMode ??
+    (documents.length === 0 && !pendingDraft && !lastUpload ? "camera" : "file");
   const heliosCopilotNextSuggestedDocument = useMemo(() => {
     const firstMissingDocument = heliosCopilotMutation.data?.missingDocuments?.[0];
+    const rawConfirmedSummary =
+      heliosCopilotMutation.data?.supportingDocuments?.[0]?.detail ??
+      heliosCopilotSupportingDocuments[0]?.detail ??
+      (typeof visibleHeliosOpinion?.summary === "string" &&
+      visibleHeliosOpinion.summary.trim().length > 0
+        ? visibleHeliosOpinion.summary.trim()
+        : null) ??
+      lastUpload?.preliminaryAnalysis?.summary ??
+      (documents.length > 0
+        ? `Ya hay ${documents.length} documento${documents.length === 1 ? "" : "s"} visible${documents.length === 1 ? "" : "s"} dentro del expediente.`
+        : "Ya existe una lectura inicial visible dentro del expediente.");
+    const confirmedSummary = rawConfirmedSummary.replace(/^Lectura visible:\s*/i, "");
+    const ctaLabel =
+      heliosCopilotSuggestedUploadMode === "camera"
+        ? "Abrir cámara para subirlo"
+        : "Elegir archivo ahora";
+    const actionHint =
+      heliosCopilotSuggestedUploadMode === "camera"
+        ? "Al tocar el botón abriremos la cámara para capturarlo al momento."
+        : "Al tocar el botón abriremos tu selector de archivos para subirlo sin salir del flujo.";
 
     if (firstMissingDocument) {
       return {
         title: "Documento que puede destrabar mejor tu caso",
         label: firstMissingDocument.label,
         reason: firstMissingDocument.reason,
-        ctaLabel: nextDocumentCopy.cta,
+        targetType: firstMissingDocument.targetType,
+        contrastTitle: "Lo ya confirmado y lo que este archivo aclararía",
+        confirmedSummary,
+        missingSummary: firstMissingDocument.reason,
+        actionHint,
+        ctaLabel,
       };
     }
 
@@ -5105,17 +5153,27 @@ export default function Auditar() {
         title: nextDocumentCopy.reasonTitle,
         label: effectiveRecommendedTarget.label,
         reason: nextDocumentCopy.reasonBody,
-        ctaLabel: nextDocumentCopy.cta,
+        targetType: effectiveRecommendedTarget.type,
+        contrastTitle: "Lo ya confirmado y lo que este archivo aclararía",
+        confirmedSummary,
+        missingSummary: nextDocumentCopy.reasonBody,
+        actionHint,
+        ctaLabel,
       };
     }
 
     return null;
   }, [
+    documents.length,
     effectiveRecommendedTarget,
     heliosCopilotMutation.data?.missingDocuments,
-    nextDocumentCopy.cta,
+    heliosCopilotMutation.data?.supportingDocuments,
+    heliosCopilotSupportingDocuments,
+    heliosCopilotSuggestedUploadMode,
+    lastUpload?.preliminaryAnalysis?.summary,
     nextDocumentCopy.reasonBody,
     nextDocumentCopy.reasonTitle,
+    visibleHeliosOpinion?.summary,
   ]);
 
   const missingPriorityUploadGuides = useMemo(
@@ -5620,6 +5678,7 @@ export default function Auditar() {
         tenantId: selectedTenantId,
         caseId: selectedCaseId,
         prompt: content,
+        responseTone: preferredTone,
         conversationHistory: buildHeliosCopilotConversationHistoryInput({
           current: heliosCopilotMessages,
           nextPrompt: content,
@@ -12033,9 +12092,15 @@ export default function Auditar() {
                   heliosCopilotSupportingDocuments
                 }
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
+                responseTone={preferredTone}
+                onResponseToneChange={setPreferredTone}
                 onFocusSuggestedDocument={() => {
                   setHeliosCopilotOpen(false);
-                  focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null);
+                  focusRecommendedUpload(
+                    heliosCopilotNextSuggestedDocument?.targetType ??
+                      effectiveRecommendedTarget?.type ??
+                      null
+                  );
                 }}
               />
             </div>
