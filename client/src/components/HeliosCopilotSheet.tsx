@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Clock3, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Clock3, FileText, Sparkles } from "lucide-react";
 
 export type HeliosCopilotMessage = AIChatMessage;
 
@@ -22,6 +22,13 @@ type HeliosCopilotSupportingDocument = {
   id: string;
   label: string;
   detail: string;
+};
+
+type HeliosCopilotNextSuggestedDocument = {
+  title: string;
+  label: string;
+  reason: string;
+  ctaLabel?: string | null;
 };
 
 export type HeliosCopilotSheetCopy = {
@@ -46,13 +53,17 @@ type HeliosCopilotSheetProps = {
   messages: HeliosCopilotMessage[];
   isLoading?: boolean;
   suggestedPrompts?: string[];
+  suggestedPromptsContext?: string | null;
   caseTitle?: string | null;
   employeeName?: string | null;
   confidenceScore?: number | null;
   disclaimer?: string | null;
   summary?: string | null;
   historyItems?: HeliosCopilotHistoryItem[];
+  historyContext?: string | null;
   supportingDocuments?: HeliosCopilotSupportingDocument[];
+  nextSuggestedDocument?: HeliosCopilotNextSuggestedDocument | null;
+  onFocusSuggestedDocument?: (() => void) | null;
   uiCopy?: HeliosCopilotSheetCopy;
 };
 
@@ -63,13 +74,17 @@ export function HeliosCopilotSheet({
   messages,
   isLoading = false,
   suggestedPrompts = [],
+  suggestedPromptsContext,
   caseTitle,
   employeeName,
   confidenceScore,
   disclaimer,
   summary,
   historyItems = [],
+  historyContext,
   supportingDocuments = [],
+  nextSuggestedDocument,
+  onFocusSuggestedDocument,
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const copy = {
@@ -145,6 +160,11 @@ export function HeliosCopilotSheet({
             {visibleSuggestedPrompts.length ? (
               <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/85">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">{copy.promptsHeading}</p>
+                {suggestedPromptsContext ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {suggestedPromptsContext}
+                  </p>
+                ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {visibleSuggestedPrompts.map((prompt) => (
                     <Button
@@ -169,6 +189,11 @@ export function HeliosCopilotSheet({
                   <Clock3 className="h-4 w-4 text-slate-500 dark:text-slate-400" strokeWidth={1.8} />
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">{copy.historyHeading}</p>
                 </div>
+                {historyContext ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {historyContext}
+                  </p>
+                ) : null}
                 <div className="mt-3 space-y-3">
                   {visibleHistoryItems.map((item) => (
                     <div key={item.id} className="rounded-[1rem] border border-white bg-white p-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/70">
@@ -183,6 +208,36 @@ export function HeliosCopilotSheet({
                       <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{item.detail}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            ) : null}
+
+            {nextSuggestedDocument ? (
+              <div className="mb-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/80 p-4 transition-colors duration-300 dark:border-emerald-400/20 dark:bg-emerald-400/10">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-emerald-700 dark:text-emerald-200" strokeWidth={1.8} />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-800 dark:text-emerald-100">
+                    {nextSuggestedDocument.title}
+                  </p>
+                </div>
+                <div className="mt-3 rounded-[1rem] border border-white/90 bg-white p-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/70">
+                  <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                    {nextSuggestedDocument.label}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {nextSuggestedDocument.reason}
+                  </p>
+                  {onFocusSuggestedDocument ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-3 rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100 dark:border-emerald-400/30 dark:bg-slate-950 dark:text-emerald-100 dark:hover:bg-slate-900"
+                      onClick={onFocusSuggestedDocument}
+                    >
+                      {nextSuggestedDocument.ctaLabel ?? "Subir este documento ahora"}
+                      <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             ) : null}

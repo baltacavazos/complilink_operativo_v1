@@ -1503,3 +1503,6 @@
 - [x] Helios usuario normal: reforzar continuidad y memoria visible de la conversación dentro del mismo flujo.
 - [x] Helios usuario normal: hacer más pedagógicas las explicaciones en escenarios laborales complejos.
 - [x] Helios usuario normal: detectar de forma más proactiva documentos faltantes y sugerir qué conviene subir después.
+- [x] Helios usuario normal: personalizar atajos según el tipo documental ya visible en el expediente.
+- [x] Helios usuario normal: mostrar una tarjeta visible que explique por qué conviene subir el siguiente documento sugerido.
+- [x] Helios usuario normal: añadir memoria corta por expediente para retomar la conversación entre sesiones sin romper el flujo.

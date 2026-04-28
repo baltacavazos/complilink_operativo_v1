@@ -3877,14 +3877,17 @@ export default function Auditar() {
     visibleHeliosOpinion?.resultCard?.assistantIntro,
     visibleHeliosOpinion?.summary,
   ]);
+  const heliosCopilotPromptContextDocumentType =
+    pendingDraft?.classification.documentType ??
+    lastUpload?.classification.documentType ??
+    documents[documents.length - 1]?.documentType ??
+    "";
   const heliosCopilotSuggestedPrompts = useMemo(() => {
     const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
     const cardPrompts =
       visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
     const contextualPrompts = getDocumentContextualShortcuts(
-      pendingDraft?.classification.documentType ??
-        lastUpload?.classification.documentType ??
-        ""
+      heliosCopilotPromptContextDocumentType
     )
       .map(item => item.prompt)
       .filter((item): item is string => Boolean(item));
@@ -3898,27 +3901,42 @@ export default function Auditar() {
       visibleHeliosOpinion?.uncertainties?.length
         ? "¿Qué puntos todavía faltan confirmar?"
         : "¿Qué documento me conviene subir después?",
-      "Resúmeme mi situación actual en pocas palabras.",
-    ].filter((item): item is string => Boolean(item));
+      "Explícame esto como si me lo dijera un abogado laboral en corto.",
+    ];
 
     return Array.from(
       new Set([
+        ...contextualPrompts,
         ...serverPrompts,
         ...cardPrompts,
-        ...contextualPrompts,
         ...localPrompts,
       ])
     ).slice(0, 4);
   }, [
+    documents,
     heliosCopilotMutation.data?.suggestedPrompts,
-    lastUpload?.classification.documentType,
-    pendingDraft?.classification.documentType,
+    heliosCopilotPromptContextDocumentType,
     visibleHeliosOpinion?.legalHighlights?.primaryConcern,
     visibleHeliosOpinion?.recommendedNextStep,
     visibleHeliosOpinion?.resultCard?.nextStepSummary,
     visibleHeliosOpinion?.resultCard?.suggestedQuestions,
     visibleHeliosOpinion?.uncertainties,
   ]);
+  const heliosCopilotSuggestedPromptsContext = useMemo(() => {
+    if (heliosCopilotPromptContextDocumentType) {
+      return `Atajos sugeridos con base en tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()} más reciente y en lo que ya está visible en este expediente.`;
+    }
+
+    return "Atajos sugeridos con base en lo que Helios ya puede sostener hoy dentro de tu expediente.";
+  }, [heliosCopilotPromptContextDocumentType]);
+  const heliosCopilotHistoryContext = useMemo(() => {
+    if (heliosCopilotMessages.length > 0) {
+      return "Retomamos la última conversación guardada en este equipo para este expediente, así no empiezas de cero cuando vuelves.";
+    }
+
+    return "Aquí verás la continuidad reciente entre lo que ya hablaste con Helios y los movimientos visibles de tu expediente.";
+  }, [heliosCopilotMessages.length]);
+
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
     () => [
       { role: "assistant", content: heliosCopilotIntro },
@@ -5068,8 +5086,38 @@ export default function Auditar() {
   const nextDocumentCopy = getPersonalizedNextDocumentCopy({
     nextTarget: effectiveRecommendedTarget ?? undefined,
     presentTypes,
-    opinion: visibleHeliosOpinion,
+    opinion: lastHeliosOpinion,
   });
+  const heliosCopilotNextSuggestedDocument = useMemo(() => {
+    const firstMissingDocument = heliosCopilotMutation.data?.missingDocuments?.[0];
+
+    if (firstMissingDocument) {
+      return {
+        title: "Documento que puede destrabar mejor tu caso",
+        label: firstMissingDocument.label,
+        reason: firstMissingDocument.reason,
+        ctaLabel: nextDocumentCopy.cta,
+      };
+    }
+
+    if (effectiveRecommendedTarget) {
+      return {
+        title: nextDocumentCopy.reasonTitle,
+        label: effectiveRecommendedTarget.label,
+        reason: nextDocumentCopy.reasonBody,
+        ctaLabel: nextDocumentCopy.cta,
+      };
+    }
+
+    return null;
+  }, [
+    effectiveRecommendedTarget,
+    heliosCopilotMutation.data?.missingDocuments,
+    nextDocumentCopy.cta,
+    nextDocumentCopy.reasonBody,
+    nextDocumentCopy.reasonTitle,
+  ]);
+
   const missingPriorityUploadGuides = useMemo(
     () => priorityUploadGuides.filter(item => !presentTypes.has(item.type)),
     [presentTypes]
@@ -11946,41 +11994,52 @@ export default function Auditar() {
                     </div>
                     <p className="mt-3 text-xs leading-6 text-teal-900">
                       Haz preguntas rápidas sobre riesgos, documentos faltantes
-                      o el siguiente paso útil con base en lo que ya se analizó,
-                      sin salir de tu expediente.
+                      o el siguiente paso útil con base en lo que ya se ve en tu
+                      expediente.
                     </p>
-                    <HeliosCopilotSheet
-                      open={heliosCopilotOpen}
-                      onOpenChange={setHeliosCopilotOpen}
-                      onSendMessage={handleHeliosCopilotSend}
-                      messages={heliosCopilotConversation}
-                      isLoading={heliosCopilotMutation.isPending}
-                      suggestedPrompts={heliosCopilotSuggestedPrompts}
-                      caseTitle={caseDetailQuery.data?.case.title}
-                      employeeName={caseDetailQuery.data?.case.employeeName}
-                      confidenceScore={
-                        heliosCopilotMutation.data?.confidenceScore ??
-                        visibleHeliosOpinion?.confidenceScore ??
-                        null
-                      }
-                      disclaimer={warmVisibleNamingCopy(
-                        heliosCopilotMutation.data?.disclaimer ??
-                          visibleHeliosOpinion?.disclaimer ??
-                          null
-                      )}
-                      summary={warmVisibleNamingCopy(
-                        visibleHeliosOpinion?.summary ?? null
-                      )}
-                      historyItems={heliosCopilotHistoryItems}
-                      supportingDocuments={
-                        heliosCopilotMutation.data?.supportingDocuments ??
-                        heliosCopilotSupportingDocuments
-                      }
-                    />
                   </div>
                 </div>
               </div>
+
+              <HeliosCopilotSheet
+                open={heliosCopilotOpen}
+                onOpenChange={setHeliosCopilotOpen}
+                onSendMessage={handleHeliosCopilotSend}
+                messages={heliosCopilotConversation}
+                isLoading={heliosCopilotMutation.isPending}
+                suggestedPrompts={heliosCopilotSuggestedPrompts}
+                suggestedPromptsContext={heliosCopilotSuggestedPromptsContext}
+                caseTitle={caseDetailQuery.data?.case.title}
+                employeeName={caseDetailQuery.data?.case.employeeName}
+                confidenceScore={
+                  heliosCopilotMutation.data?.confidenceScore ??
+                  visibleHeliosOpinion?.confidenceScore ??
+                  null
+                }
+                disclaimer={warmVisibleNamingCopy(
+                  heliosCopilotMutation.data?.disclaimer ??
+                    visibleHeliosOpinion?.disclaimer ??
+                    null
+                )}
+                summary={warmVisibleNamingCopy(
+                  heliosCopilotMutation.data?.answer ??
+                    visibleHeliosOpinion?.summary ??
+                    null
+                )}
+                historyItems={heliosCopilotHistoryItems}
+                historyContext={heliosCopilotHistoryContext}
+                supportingDocuments={
+                  heliosCopilotMutation.data?.supportingDocuments ??
+                  heliosCopilotSupportingDocuments
+                }
+                nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
+                onFocusSuggestedDocument={() => {
+                  setHeliosCopilotOpen(false);
+                  focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null);
+                }}
+              />
             </div>
+
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">

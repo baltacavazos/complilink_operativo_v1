@@ -167,6 +167,22 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain('mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4');
   });
 
+  it("refuerza el panel compartido de Helios con atajos contextuales, memoria corta visible y sugerencia documental accionable", () => {
+    const componentSource = readComponent("components/HeliosCopilotSheet.tsx");
+    const pageSource = readPage("Auditar");
+
+    expect(componentSource).toContain("nextSuggestedDocument.title");
+    expect(componentSource).toContain("Subir este documento ahora");
+    expect(componentSource).toContain("ArrowRight");
+    expect(componentSource).toContain("suggestedPromptsContext");
+    expect(componentSource).toContain("historyContext");
+    expect(componentSource).toContain("nextSuggestedDocument");
+    expect(componentSource).toContain("onFocusSuggestedDocument");
+    expect(pageSource).toContain("Atajos sugeridos con base en tu");
+    expect(pageSource).toContain("Retomamos la última conversación guardada en este equipo para este expediente");
+    expect(pageSource).toContain("heliosCopilotNextSuggestedDocument");
+  });
+
   it("refuerza la ruta principal en acceso con una sola vía clara por correo", () => {
     const source = readPage("Access");
 
