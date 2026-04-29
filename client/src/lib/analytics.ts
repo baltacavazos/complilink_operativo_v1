@@ -126,3 +126,79 @@ export function trackCeoExport(
     });
   }
 }
+
+export function trackCommercePaywallViewed(planTarget: string, triggerPoint: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_paywall_viewed", {
+    plan_target: planTarget,
+    trigger_point: triggerPoint,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_paywall_viewed", {
+    plan_target: planTarget,
+    trigger_point: triggerPoint,
+    ...payload,
+  });
+}
+
+export function trackCommerceUpgradeCTAClicked(planTarget: string, triggerPoint: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_upgrade_cta_clicked", {
+    plan_target: planTarget,
+    trigger_point: triggerPoint,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_upgrade_cta_clicked", {
+    plan_target: planTarget,
+    trigger_point: triggerPoint,
+    ...payload,
+  });
+}
+
+export function trackCommerceCheckoutStarted(productKey: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_checkout_started", {
+    product_key: productKey,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_checkout_started", {
+    product_key: productKey,
+    ...payload,
+  });
+}
+
+export function trackCommercePaymentSuccessful(productKey: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_payment_successful", {
+    product_key: productKey,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_payment_successful", {
+    product_key: productKey,
+    ...payload,
+  });
+}
+
+export function trackCommercePlanActivated(planName: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_plan_activated", {
+    plan_name: planName,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_plan_activated", {
+    plan_name: planName,
+    ...payload,
+  });
+}
+
+export function trackCommerceOneShotPurchased(productName: string, payload?: AnalyticsPayload) {
+  trackEvent("audipatron_commerce_one_shot_purchased", {
+    product_name: productName,
+    ...payload,
+  });
+
+  trackFunnelStep("commerce_one_shot_purchased", {
+    product_name: productName,
+    ...payload,
+  });
+}

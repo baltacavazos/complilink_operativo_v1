@@ -168,8 +168,17 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Planes mensuales');
     expect(source).toContain('Productos puntuales');
     expect(source).toContain('Gestionar suscripción y cobros');
-    expect(source).toContain('Checkout y cobro listos para operar.');
+    expect(source).toContain('Checkout listo en sandbox para validación.');
     expect(source).toContain('Elige seguir gratis o activar más profundidad cuando tu expediente lo necesite.');
+    expect(source).toContain('Siguiente recomendación comercial');
+    expect(source).toContain('Conversión de esta sesión');
+    expect(source).toContain('Vistas de planes');
+    expect(source).toContain('Clics de upgrade');
+    expect(source).toContain('Checkouts iniciados');
+    expect(source).toContain('Pagos detectados');
+    expect(source).toContain('Validación sandbox');
+    expect(source).toContain('Prueba técnica del checkout antes del cobro real');
+    expect(source).toContain('Tarjeta {commerceStatusQuery.data.environment.recommendedTestCard}');
     expect(source).not.toContain('mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4');
   });
 

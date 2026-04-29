@@ -60,6 +60,32 @@ function buildOrigin(originHeader?: string | null) {
   return "http://localhost:3000";
 }
 
+function buildCommerceEnvironmentStatus() {
+  if (!ENV.stripeSecretKey) {
+    return {
+      mode: "unavailable" as const,
+      isSandbox: false,
+      webhookReady: false,
+      checkoutReady: false,
+      recommendedTestCard: null,
+      validationHint: "La activación de Stripe sigue pendiente.",
+    };
+  }
+
+  const isSandbox = ENV.stripeSecretKey.startsWith("sk_test_");
+
+  return {
+    mode: isSandbox ? ("sandbox" as const) : ("live" as const),
+    isSandbox,
+    webhookReady: Boolean(ENV.stripeWebhookSecret),
+    checkoutReady: true,
+    recommendedTestCard: isSandbox ? "4242 4242 4242 4242" : null,
+    validationHint: isSandbox
+      ? "Puedes probar el circuito completo de checkout con la tarjeta 4242 4242 4242 4242 antes de activar cobro real."
+      : "Stripe ya está en modo live; conviene validar checkout, webhook y retorno con una compra controlada.",
+  };
+}
+
 async function findCustomerByEmail(actor: CommerceActor): Promise<CustomerSummary | null> {
   const stripe = getStripeClient();
   if (!stripe || !actor.email) {
@@ -201,6 +227,7 @@ export async function resolveCommerceStatus(actor: CommerceActor) {
   const stripe = getStripeClient();
   const hasStripe = Boolean(stripe);
   const adminBypass = actor.role === "admin";
+  const environment = buildCommerceEnvironmentStatus();
 
   if (!hasStripe) {
     const entitlements = buildCommerceEntitlements({ planKey: adminBypass ? "pro" : "free" });
@@ -213,6 +240,7 @@ export async function resolveCommerceStatus(actor: CommerceActor) {
       purchasedOneShots: [] as PurchasedOneShot[],
       canManageBilling: false,
       adminBypass,
+      environment,
     };
   }
 
@@ -234,6 +262,7 @@ export async function resolveCommerceStatus(actor: CommerceActor) {
     purchasedOneShots,
     canManageBilling: Boolean(customer?.id),
     adminBypass,
+    environment,
   };
 }
 

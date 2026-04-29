@@ -1518,3 +1518,6 @@
 - [x] Monetización: implementar planes, límites de uso y gating de funciones en backend y frontend.
 - [x] Monetización: añadir CTAs, pricing visible, experiencia de upgrade y productos de pago puntual.
 - [x] Monetización: actualizar pruebas focalizadas, validar el estado del proyecto y cerrar con checkpoint.
+- [x] Monetización: añadir un panel interno básico para medir vistas de paywall, aperturas de checkout, compras por plan y compras one-shot.
+- [x] Monetización: mostrar mensajes de upgrade contextuales según el límite real alcanzado por el usuario dentro del expediente.
+- [x] Monetización: dejar probado el flujo integral de checkout y actualización de acceso en sandbox para reducir riesgo antes de activar cobro real.

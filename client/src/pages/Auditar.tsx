@@ -12,6 +12,12 @@ import {
 } from "@/components/HeliosCopilotSheet";
 import { trpc } from "@/lib/trpc";
 import {
+  trackCommerceCheckoutStarted,
+  trackCommerceOneShotPurchased,
+  trackCommercePaymentSuccessful,
+  trackCommercePaywallViewed,
+  trackCommercePlanActivated,
+  trackCommerceUpgradeCTAClicked,
   trackEvent,
   trackFunnelStep,
   trackLegalGateEvent,
@@ -460,6 +466,159 @@ function resolveCommercePlanFromMessage(message: string): CommercePlanKey {
   }
 
   return "essential";
+}
+
+type CommerceTriggerPoint =
+  | "manual_drawer_open"
+  | "document_limit_blocked"
+  | "helios_multi_document_blocked"
+  | "revalidation_blocked"
+  | "plan_card"
+  | "one_shot_card"
+  | "checkout_return_success";
+
+type CommercePromptContext = {
+  title: string;
+  body: string;
+  targetPlan: CommercePlanKey;
+  triggerPoint: CommerceTriggerPoint;
+  productKey?: CommerceProductKey;
+};
+
+type CommerceSessionMetrics = {
+  paywallViews: number;
+  upgradeClicks: number;
+  checkoutStarts: number;
+  paymentSuccesses: number;
+};
+
+const INITIAL_COMMERCE_SESSION_METRICS: CommerceSessionMetrics = {
+  paywallViews: 0,
+  upgradeClicks: 0,
+  checkoutStarts: 0,
+  paymentSuccesses: 0,
+};
+
+function getCommercePlanLabel(planKey: CommercePlanKey) {
+  switch (planKey) {
+    case "pro":
+      return "Audita Pro";
+    case "essential":
+      return "Audita Esencial";
+    default:
+      return "Audita Gratis";
+  }
+}
+
+function getCommerceProductLabel(productKey: CommerceProductKey) {
+  switch (productKey) {
+    case "essential":
+      return "Audita Esencial";
+    case "pro":
+      return "Audita Pro";
+    case "informe_premium":
+      return "Informe Premium";
+    case "expediente_abogado":
+      return "Expediente para abogado";
+    default:
+      return "Audita Gratis";
+  }
+}
+
+function getCommerceTriggerLabel(triggerPoint: CommerceTriggerPoint) {
+  switch (triggerPoint) {
+    case "document_limit_blocked":
+      return "Bloqueo por límite de documentos";
+    case "helios_multi_document_blocked":
+      return "Bloqueo por lectura avanzada del expediente";
+    case "revalidation_blocked":
+      return "Bloqueo por revalidación avanzada";
+    case "one_shot_card":
+      return "Interés en producto puntual";
+    case "checkout_return_success":
+      return "Retorno exitoso desde Stripe";
+    case "plan_card":
+      return "Interés directo en un plan";
+    default:
+      return "Apertura manual del panel";
+  }
+}
+
+function buildManualCommercePromptContext(activePlanKey: CommercePlanKey): CommercePromptContext {
+  const targetPlan = activePlanKey === "free" ? "essential" : "pro";
+  const price = targetPlan === "essential" ? 79 : 199;
+
+  return {
+    title: "Elige solo cuando te ayude de verdad",
+    body:
+      targetPlan === "essential"
+        ? `Si ya vas a seguir armando tu expediente, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
+        : `Si ya necesitas memoria histórica, revalidaciones y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
+    targetPlan,
+    triggerPoint: "manual_drawer_open",
+    productKey: targetPlan,
+  };
+}
+
+function buildCommercePromptContext(params: {
+  message: string;
+  activePlanKey: CommercePlanKey;
+}): CommercePromptContext | null {
+  if (/Subir más de \d+ documentos/i.test(params.message)) {
+    return {
+      title: "Sigue cargando pruebas en este expediente",
+      body: `Ya llenaste el tramo gratuito del expediente. Audita Esencial cuesta ${formatCommercePriceMx(79)} al mes y te deja seguir subiendo documentos sin empezar de cero.`,
+      targetPlan: "essential",
+      triggerPoint: "document_limit_blocked",
+      productKey: "essential",
+    };
+  }
+
+  if (/Helios con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
+    const targetPlan = params.activePlanKey === "essential" ? "pro" : "essential";
+    const price = targetPlan === "pro" ? 199 : 79;
+
+    return {
+      title:
+        targetPlan === "pro"
+          ? "Activa la lectura más profunda del expediente"
+          : "Conecta más documentos en la misma conversación",
+      body:
+        targetPlan === "pro"
+          ? `Para una lectura más profunda con memoria histórica y seguimiento ampliado, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`
+          : `Para que tu asesor conecte varios documentos dentro de este mismo expediente, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`,
+      targetPlan,
+      triggerPoint: "helios_multi_document_blocked",
+      productKey: targetPlan,
+    };
+  }
+
+  if (/Revalidaciones IMSS e Infonavit/i.test(params.message)) {
+    return {
+      title: "Activa revalidaciones avanzadas",
+      body: `Las revalidaciones IMSS e Infonavit están disponibles desde Audita Pro por ${formatCommercePriceMx(199)} al mes. Si ya quieres esa validación más profunda, puedes activarlo aquí mismo.`,
+      targetPlan: "pro",
+      triggerPoint: "revalidation_blocked",
+      productKey: "pro",
+    };
+  }
+
+  return null;
+}
+
+function buildCommerceCheckoutToast(productKey: CommerceProductKey) {
+  switch (productKey) {
+    case "essential":
+      return `Te estamos llevando al checkout seguro de Audita Esencial por ${formatCommercePriceMx(79)} al mes.`;
+    case "pro":
+      return `Te estamos llevando al checkout seguro de Audita Pro por ${formatCommercePriceMx(199)} al mes.`;
+    case "informe_premium":
+      return `Te estamos llevando al checkout seguro de Informe Premium por ${formatCommercePriceMx(299)}.`;
+    case "expediente_abogado":
+      return `Te estamos llevando al checkout seguro de Expediente para abogado por ${formatCommercePriceMx(499)}.`;
+    default:
+      return "Te estamos llevando al checkout seguro.";
+  }
 }
 
 function isUnsupportedMobileImageFormat(file: File) {
@@ -3314,6 +3473,11 @@ export default function Auditar() {
     useState(false);
   const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] =
     useState(false);
+  const [commercePromptContext, setCommercePromptContext] =
+    useState<CommercePromptContext | null>(null);
+  const [commerceSessionMetrics, setCommerceSessionMetrics] = useState<CommerceSessionMetrics>(
+    INITIAL_COMMERCE_SESSION_METRICS
+  );
   const [showHeroJumpCta, setShowHeroJumpCta] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -3327,6 +3491,8 @@ export default function Auditar() {
   const documentSelectionStartedAtRef = useRef<number | null>(null);
   const previewReviewStartedAtRef = useRef<number | null>(null);
   const firstDossierShortcutCountRef = useRef(0);
+  const trackedCommercePaywallKeyRef = useRef("");
+  const trackedCommerceSuccessKeyRef = useRef("");
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -3356,6 +3522,29 @@ export default function Auditar() {
     );
   }, []);
   const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode;
+  const billingReturnState = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        status: null as string | null,
+        productKey: null as CommerceProductKey | null,
+      };
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const product = params.get("product");
+    const productKey =
+      product === "essential" ||
+      product === "pro" ||
+      product === "informe_premium" ||
+      product === "expediente_abogado"
+        ? (product as CommerceProductKey)
+        : null;
+
+    return {
+      status: params.get("billing"),
+      productKey,
+    };
+  }, []);
 
   useEffect(() => {
     if (!postUploadHarnessMode) {
@@ -3825,6 +4014,8 @@ export default function Auditar() {
     commerceStatusQuery.data?.activePlanKey ?? ("free" as CommercePlanKey);
   const activeCommercePlanName =
     commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis";
+  const visibleCommercePromptContext =
+    commercePromptContext ?? buildManualCommercePromptContext(activeCommercePlanKey);
   const commercePlans = useMemo(
     () =>
       commerceCatalog.plans.map(plan => ({
@@ -3846,17 +4037,68 @@ export default function Auditar() {
 
   const handleCommerceError = (error: unknown, fallback: string) => {
     const message = toFriendlyAuditarRuntimeMessage(error, fallback);
-    setSubmitError(message);
-    if (isCommerceUpgradeMessage(message)) {
+    const contextualPrompt = buildCommercePromptContext({
+      message,
+      activePlanKey: activeCommercePlanKey,
+    });
+    const visibleMessage = contextualPrompt?.body ?? message;
+
+    setSubmitError(visibleMessage);
+    if (contextualPrompt) {
+      setCommercePromptContext(contextualPrompt);
       setCasePreparationDrawerOpen(true);
-      sonnerToast(message);
+      sonnerToast(visibleMessage);
+      return visibleMessage;
     }
-    return message;
+    if (isCommerceUpgradeMessage(message)) {
+      setCommercePromptContext(buildManualCommercePromptContext(activeCommercePlanKey));
+      setCasePreparationDrawerOpen(true);
+      sonnerToast(visibleMessage);
+    }
+    return visibleMessage;
   };
 
   const handleCommerceCheckout = async (productKey: CommerceProductKey) => {
+    const triggerPoint: CommerceTriggerPoint =
+      productKey === "informe_premium" || productKey === "expediente_abogado"
+        ? "one_shot_card"
+        : commercePromptContext?.triggerPoint ?? "plan_card";
+
+    trackCommerceUpgradeCTAClicked(productKey, triggerPoint, {
+      current_plan_key: activeCommercePlanKey,
+      documents_in_case: documents.length,
+    });
+    setCommerceSessionMetrics(current => ({
+      ...current,
+      upgradeClicks: current.upgradeClicks + 1,
+    }));
+
+    if (productKey === "informe_premium" || productKey === "expediente_abogado") {
+      setCommercePromptContext({
+        title:
+          productKey === "informe_premium"
+            ? "Compra puntual para este expediente"
+            : "Prepara el paquete para compartir",
+        body:
+          productKey === "informe_premium"
+            ? `Si solo necesitas un entregable puntual, puedes comprar Informe Premium por ${formatCommercePriceMx(299)} sin cambiar de plan mensual.`
+            : `Si lo que necesitas es ordenar el caso para llevarlo con una abogada o abogado, puedes comprar este paquete por ${formatCommercePriceMx(499)} sin activar suscripción.`,
+        targetPlan: activeCommercePlanKey,
+        triggerPoint: "one_shot_card",
+        productKey,
+      });
+    }
+
     try {
       setSubmitError(null);
+      trackCommerceCheckoutStarted(productKey, {
+        current_plan_key: activeCommercePlanKey,
+        trigger_point: triggerPoint,
+      });
+      setCommerceSessionMetrics(current => ({
+        ...current,
+        checkoutStarts: current.checkoutStarts + 1,
+      }));
       const checkout = await createCommerceCheckoutMutation.mutateAsync({
         productKey,
       });
@@ -3865,7 +4107,7 @@ export default function Auditar() {
           "No se recibió un enlace válido de checkout para este producto."
         );
       }
-      sonnerToast("Te estamos llevando al checkout seguro.");
+      sonnerToast(buildCommerceCheckoutToast(productKey));
       if (typeof window !== "undefined") {
         window.open(checkout.url, "_blank", "noopener,noreferrer");
       }
@@ -3893,6 +4135,107 @@ export default function Auditar() {
       );
     }
   };
+
+  useEffect(() => {
+    if (!casePreparationDrawerOpen) {
+      trackedCommercePaywallKeyRef.current = "";
+      return;
+    }
+
+    const trackingKey = `${visibleCommercePromptContext.triggerPoint}:${visibleCommercePromptContext.targetPlan}:${documents.length}`;
+    if (trackedCommercePaywallKeyRef.current === trackingKey) {
+      return;
+    }
+
+    trackedCommercePaywallKeyRef.current = trackingKey;
+    trackCommercePaywallViewed(
+      visibleCommercePromptContext.targetPlan,
+      visibleCommercePromptContext.triggerPoint,
+      {
+        current_plan_key: activeCommercePlanKey,
+        documents_in_case: documents.length,
+      }
+    );
+    setCommerceSessionMetrics(current => ({
+      ...current,
+      paywallViews: current.paywallViews + 1,
+    }));
+  }, [
+    activeCommercePlanKey,
+    casePreparationDrawerOpen,
+    documents.length,
+    visibleCommercePromptContext.targetPlan,
+    visibleCommercePromptContext.triggerPoint,
+  ]);
+
+  useEffect(() => {
+    if (billingReturnState.status !== "success" || !billingReturnState.productKey) {
+      return;
+    }
+
+    const successKey = `${billingReturnState.productKey}:${activeCommercePlanKey}:${commerceStatusQuery.data?.purchasedOneShots?.length ?? 0}`;
+    if (trackedCommerceSuccessKeyRef.current === successKey) {
+      return;
+    }
+
+    trackedCommerceSuccessKeyRef.current = successKey;
+    setSubmitError(null);
+    setCasePreparationDrawerOpen(true);
+    setCommerceSessionMetrics(current => ({
+      ...current,
+      paymentSuccesses: current.paymentSuccesses + 1,
+    }));
+    trackCommercePaymentSuccessful(billingReturnState.productKey, {
+      active_plan_key: activeCommercePlanKey,
+      source: "stripe_return",
+    });
+
+    if (billingReturnState.productKey === "essential" || billingReturnState.productKey === "pro") {
+      const planName = getCommerceProductLabel(billingReturnState.productKey);
+      trackCommercePlanActivated(planName, {
+        active_plan_key: activeCommercePlanKey,
+        source: "stripe_return",
+      });
+      setCommercePromptContext({
+        title: "Pago detectado en sandbox",
+        body: `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`,
+        targetPlan: billingReturnState.productKey,
+        triggerPoint: "checkout_return_success",
+        productKey: billingReturnState.productKey,
+      });
+      sonnerToast(`Pago detectado. Validaremos ${planName} dentro de tu expediente.`);
+    } else {
+      const productName = getCommerceProductLabel(billingReturnState.productKey);
+      trackCommerceOneShotPurchased(productName, {
+        source: "stripe_return",
+      });
+      setCommercePromptContext({
+        title: "Pago puntual detectado",
+        body: `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`,
+        targetPlan: activeCommercePlanKey,
+        triggerPoint: "checkout_return_success",
+        productKey: billingReturnState.productKey,
+      });
+      sonnerToast(`${productName} regresó desde Stripe para validación.`);
+    }
+
+    void commerceStatusQuery.refetch();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      params.delete("billing");
+      params.delete("product");
+      const nextQuery = params.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", nextUrl);
+    }
+  }, [
+    activeCommercePlanKey,
+    billingReturnState.productKey,
+    billingReturnState.status,
+    commerceStatusQuery,
+    commerceStatusQuery.data?.purchasedOneShots?.length,
+  ]);
 
   useEffect(() => {
     setArchiveTypeFilter("all");
@@ -8091,10 +8434,16 @@ export default function Auditar() {
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[240px]">
-                      <Button
-                        className="h-11 rounded-full bg-slate-900 text-white hover:bg-slate-800"
-                        onClick={() => setCasePreparationDrawerOpen(true)}
-                      >
+                        <Button
+                          className="h-11 rounded-full bg-slate-900 text-white hover:bg-slate-800"
+                          onClick={() => {
+                            setCommercePromptContext(
+                              buildManualCommercePromptContext(activeCommercePlanKey)
+                            );
+                            setCasePreparationDrawerOpen(true);
+                          }}
+                        >
+
                         {pricingExperience.platform.primaryCtaLabel}
                         <Sparkles className="ml-2 h-4 w-4" strokeWidth={1.8} />
                       </Button>
@@ -13131,12 +13480,93 @@ export default function Auditar() {
                   <p className="font-semibold text-slate-950">Operación comercial</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.hasStripe
-                      ? "Checkout y cobro listos para operar."
+                      ? commerceStatusQuery.data?.environment?.isSandbox
+                        ? "Checkout listo en sandbox para validación."
+                        : "Checkout y cobro listos para operar."
                       : "La activación de cobro todavía está pendiente."}
                   </p>
                 </div>
               </div>
             </div>
+
+            <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+              <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                  Siguiente recomendación comercial
+                </p>
+                <p className="mt-2 text-base font-semibold text-slate-950">
+                  {visibleCommercePromptContext.title}
+                </p>
+                <p className="mt-2">{visibleCommercePromptContext.body}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                    Objetivo: {getCommercePlanLabel(visibleCommercePromptContext.targetPlan)}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                    {getCommerceTriggerLabel(visibleCommercePromptContext.triggerPoint)}
+                  </span>
+                </div>
+              </article>
+
+              <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Conversión de esta sesión
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-2xl font-semibold text-slate-950">{commerceSessionMetrics.paywallViews}</p>
+                    <p className="mt-1 text-xs text-slate-600">Vistas de planes</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-2xl font-semibold text-slate-950">{commerceSessionMetrics.upgradeClicks}</p>
+                    <p className="mt-1 text-xs text-slate-600">Clics de upgrade</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-2xl font-semibold text-slate-950">{commerceSessionMetrics.checkoutStarts}</p>
+                    <p className="mt-1 text-xs text-slate-600">Checkouts iniciados</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-2xl font-semibold text-slate-950">{commerceSessionMetrics.paymentSuccesses}</p>
+                    <p className="mt-1 text-xs text-slate-600">Pagos detectados</p>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                  Validación sandbox
+                </span>
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                  {commerceStatusQuery.data?.environment?.mode === "sandbox"
+                    ? "Modo prueba"
+                    : commerceStatusQuery.data?.environment?.mode === "live"
+                      ? "Modo live"
+                      : "Sin Stripe"}
+                </span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  Webhook {commerceStatusQuery.data?.environment?.webhookReady ? "listo" : "pendiente"}
+                </span>
+              </div>
+              <p className="mt-3 text-base font-semibold text-slate-950">
+                Prueba técnica del checkout antes del cobro real
+              </p>
+              <p className="mt-2">
+                {commerceStatusQuery.data?.environment?.validationHint ??
+                  "Primero configura Stripe para poder validar el circuito completo."}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                {commerceStatusQuery.data?.environment?.recommendedTestCard ? (
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                    Tarjeta {commerceStatusQuery.data.environment.recommendedTestCard}
+                  </span>
+                ) : null}
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                  Retorno esperado a /auditar con confirmación visible
+                </span>
+              </div>
+            </article>
 
             <div className="space-y-3">
               <div>
