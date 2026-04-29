@@ -164,6 +164,12 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('mt-3 grid grid-cols-2 gap-2 text-center');
     expect(source).toContain('sm:grid-cols-2 lg:grid-cols-3');
     expect(source).toContain('mt-4 grid gap-3 md:grid-cols-2');
+    expect(source).toContain('Plan actual');
+    expect(source).toContain('Planes mensuales');
+    expect(source).toContain('Productos puntuales');
+    expect(source).toContain('Gestionar suscripción y cobros');
+    expect(source).toContain('Checkout y cobro listos para operar.');
+    expect(source).toContain('Elige seguir gratis o activar más profundidad cuando tu expediente lo necesite.');
     expect(source).not.toContain('mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4');
   });
 

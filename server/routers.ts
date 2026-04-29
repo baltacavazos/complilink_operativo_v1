@@ -118,6 +118,13 @@ import {
   getLegalConsentLabel,
   type LegalConsentType,
 } from "@shared/legal";
+import { buildUpgradeMessage, type CommercePlanKey } from "@shared/commerce";
+import {
+  buildCommercialSnapshot,
+  createCommerceBillingPortalSession,
+  createCommerceCheckoutSession,
+  resolveCommerceStatus,
+} from "./stripeBilling";
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
 const casePrioritySchema = z.enum(CASE_PRIORITIES);
@@ -240,6 +247,9 @@ function readLatestBridgeSmokeStatus() {
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
+const commercePlanKeySchema = z.enum(["free", "essential", "pro"]);
+const commerceOneShotKeySchema = z.enum(["informe_premium", "expediente_abogado"]);
+const commerceProductKeySchema = z.union([commercePlanKeySchema, commerceOneShotKeySchema]);
 const auditarManualOverrideSchema = z.object({
   key: z.string().min(1).max(80),
   label: z.string().trim().min(1).max(120).optional(),
@@ -438,6 +448,29 @@ function acquireAuditarTransientDedup(params: {
 export function resetAuditarRuntimeGuardsForTests() {
   auditarRateWindowByKey.clear();
   auditarTransientDedupByKey.clear();
+}
+
+async function getUserCommerceStatus(user: { id: number; email?: string | null; name?: string | null; role?: string | null }) {
+  return resolveCommerceStatus({
+    id: user.id,
+    email: user.email ?? null,
+    name: user.name ?? null,
+    role: user.role ?? null,
+  });
+}
+
+function throwUpgradeRequired(params: {
+  featureLabel: string;
+  requiredPlan: CommercePlanKey;
+  currentPlan: CommercePlanKey;
+}) {
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message: `${buildUpgradeMessage({
+      featureLabel: params.featureLabel,
+      requiredPlan: params.requiredPlan,
+    })}||required_plan=${params.requiredPlan}||current_plan=${params.currentPlan}`,
+  });
 }
 
 type AuditarMutationAction = "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
@@ -2049,6 +2082,35 @@ export const appRouter = router({
       }
     }),
   }),
+  commerce: router({
+    catalog: publicProcedure.query(() => buildCommercialSnapshot()),
+    status: protectedProcedure.query(async ({ ctx }) => {
+      const status = await getUserCommerceStatus(ctx.user);
+      return {
+        ...status,
+        catalog: buildCommercialSnapshot(),
+      };
+    }),
+    createCheckout: protectedProcedure
+      .input(
+        z.object({
+          productKey: commerceProductKeySchema,
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        return createCommerceCheckoutSession({
+          actor: ctx.user,
+          originHeader: ctx.req.headers.origin,
+          productKey: input.productKey,
+        });
+      }),
+    createBillingPortal: protectedProcedure.mutation(async ({ ctx }) => {
+      return createCommerceBillingPortalSession({
+        actor: ctx.user,
+        originHeader: ctx.req.headers.origin,
+      });
+    }),
+  }),
   workspace: router({
     bootstrap: protectedProcedure.mutation(async ({ ctx }) => {
       const tenant = await ensureTenantForUser({
@@ -3148,6 +3210,14 @@ export const appRouter = router({
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
         const responseTone = input.responseTone === "explained" ? "explained" : "brief";
+        const commerceStatus = await getUserCommerceStatus(ctx.user);
+        if (documents.length > 1 && !commerceStatus.entitlements.canUseHeliosMultiDocument) {
+          throwUpgradeRequired({
+            featureLabel: "Helios con lectura de varios documentos del expediente",
+            requiredPlan: "essential",
+            currentPlan: commerceStatus.activePlanKey,
+          });
+        }
         const missingDocuments = inferHeliosMissingDocuments({ documents });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
@@ -3214,6 +3284,7 @@ export const appRouter = router({
             missingDocuments,
             suggestedPrompts,
             supportingDocuments,
+            commercePlanKey: commerceStatus.activePlanKey,
           },
         });
 
@@ -3225,6 +3296,7 @@ export const appRouter = router({
           supportingDocuments,
           missingDocuments,
           sourceDocumentCount: documents.length,
+          commercePlanKey: commerceStatus.activePlanKey,
         };
       }),
     revalidateSocialSecurity: protectedProcedure
@@ -3235,6 +3307,14 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        const commerceStatus = await getUserCommerceStatus(ctx.user);
+        if (!commerceStatus.entitlements.canUseRevalidations) {
+          throwUpgradeRequired({
+            featureLabel: "Revalidaciones IMSS e Infonavit",
+            requiredPlan: "pro",
+            currentPlan: commerceStatus.activePlanKey,
+          });
+        }
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
           tenantId: input.tenantId,
@@ -4097,6 +4177,19 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const currentDocuments = await listVisibleDocuments({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const commerceStatus = await getUserCommerceStatus(ctx.user);
+        if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
+          throwUpgradeRequired({
+            featureLabel: `Subir más de ${commerceStatus.entitlements.maxDocumentsPerCase} documentos en este expediente`,
+            requiredPlan: "essential",
+            currentPlan: commerceStatus.activePlanKey,
+          });
+        }
 
         const draft = await getAuditarDraftById({
           tenantId: input.tenantId,
@@ -4605,6 +4698,19 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        const currentDocuments = await listVisibleDocuments({
+          userId: ctx.user.id,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
+        const commerceStatus = await getUserCommerceStatus(ctx.user);
+        if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
+          throwUpgradeRequired({
+            featureLabel: `Subir más de ${commerceStatus.entitlements.maxDocumentsPerCase} documentos en este expediente`,
+            requiredPlan: "essential",
+            currentPlan: commerceStatus.activePlanKey,
+          });
+        }
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
         const { safeFileName } = validateAuditarUploadMetadata({

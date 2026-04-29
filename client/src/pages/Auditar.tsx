@@ -50,7 +50,13 @@ import {
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
+import { toast as sonnerToast } from "sonner";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
+import {
+  formatCommercePriceMx,
+  type CommercePlanKey,
+  type CommerceProductKey,
+} from "@shared/commerce";
 import {
   LEGAL_CONTACT_EMAIL,
   LEGAL_DOCUMENTS,
@@ -436,6 +442,24 @@ function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
     technicalFallback:
       "No pudimos completar esta parte del documento. Intenta repetir la captura o subir el archivo original.",
   });
+}
+
+function isCommerceUpgradeMessage(message: string) {
+  return /Audita Esencial|Audita Pro|desbloquearlo|parte gratuita/i.test(
+    message
+  );
+}
+
+function resolveCommercePlanFromMessage(message: string): CommercePlanKey {
+  if (/Audita Pro/i.test(message)) {
+    return "pro";
+  }
+
+  if (/Audita Esencial/i.test(message)) {
+    return "essential";
+  }
+
+  return "essential";
 }
 
 function isUnsupportedMobileImageFormat(file: File) {
@@ -3190,6 +3214,10 @@ export default function Auditar() {
     trpc.cases.revalidateSocialSecurity.useMutation();
   const acceptLegalPackageMutation =
     trpc.consent.acceptLegalPackage.useMutation();
+  const createCommerceCheckoutMutation =
+    trpc.commerce.createCheckout.useMutation();
+  const createCommerceBillingPortalMutation =
+    trpc.commerce.createBillingPortal.useMutation();
 
   const [bootstrapStarted, setBootstrapStarted] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -3606,6 +3634,10 @@ export default function Auditar() {
       refetchOnWindowFocus: false,
     }
   );
+  const commerceStatusQuery = trpc.commerce.status.useQuery(undefined, {
+    enabled: auth.isAuthenticated,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     setRemoteViewStateReadyKey(null);
@@ -3783,6 +3815,84 @@ export default function Auditar() {
   const archiveHasActiveFilters =
     archiveTypeFilter !== "all" || archiveDateFilter !== "all";
   const pricingExperience = getAuditapatronPricingExperience(documents.length);
+  const commerceCatalog =
+    commerceStatusQuery.data?.catalog ??
+    ({
+      plans: pricingExperience.platform.plans,
+      oneShots: pricingExperience.platform.oneShots,
+    } as const);
+  const activeCommercePlanKey =
+    commerceStatusQuery.data?.activePlanKey ?? ("free" as CommercePlanKey);
+  const activeCommercePlanName =
+    commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis";
+  const commercePlans = useMemo(
+    () =>
+      commerceCatalog.plans.map(plan => ({
+        ...plan,
+        displayPrice:
+          "formattedPrice" in plan ? plan.formattedPrice : plan.priceLabel,
+      })),
+    [commerceCatalog.plans]
+  );
+  const commerceOneShots = useMemo(
+    () =>
+      commerceCatalog.oneShots.map(product => ({
+        ...product,
+        displayPrice:
+          "formattedPrice" in product ? product.formattedPrice : product.priceLabel,
+      })),
+    [commerceCatalog.oneShots]
+  );
+
+  const handleCommerceError = (error: unknown, fallback: string) => {
+    const message = toFriendlyAuditarRuntimeMessage(error, fallback);
+    setSubmitError(message);
+    if (isCommerceUpgradeMessage(message)) {
+      setCasePreparationDrawerOpen(true);
+      sonnerToast(message);
+    }
+    return message;
+  };
+
+  const handleCommerceCheckout = async (productKey: CommerceProductKey) => {
+    try {
+      setSubmitError(null);
+      const checkout = await createCommerceCheckoutMutation.mutateAsync({
+        productKey,
+      });
+      if (!checkout.url) {
+        throw new Error(
+          "No se recibió un enlace válido de checkout para este producto."
+        );
+      }
+      sonnerToast("Te estamos llevando al checkout seguro.");
+      if (typeof window !== "undefined") {
+        window.open(checkout.url, "_blank", "noopener,noreferrer");
+      }
+      void commerceStatusQuery.refetch();
+    } catch (error) {
+      handleCommerceError(
+        error,
+        "No fue posible abrir el checkout en este momento."
+      );
+    }
+  };
+
+  const handleOpenBillingPortal = async () => {
+    try {
+      setSubmitError(null);
+      const portal = await createCommerceBillingPortalMutation.mutateAsync();
+      sonnerToast("Abrimos tu centro de facturación en una nueva pestaña.");
+      if (typeof window !== "undefined") {
+        window.open(portal.url, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      handleCommerceError(
+        error,
+        "No fue posible abrir la gestión de suscripción en este momento."
+      );
+    }
+  };
 
   useEffect(() => {
     setArchiveTypeFilter("all");
@@ -12981,55 +13091,188 @@ export default function Auditar() {
           <DrawerHeader className="text-left">
             <DrawerTitle>{pricingExperience.platform.title}</DrawerTitle>
             <DrawerDescription>
-              Esta opción aparece hasta que ya viste valor en tu expediente. Es
-              una mejora opcional para ordenar mejor tu siguiente paso; no
-              sustituye asesoría legal individual y no es necesaria para seguir
-              usando la parte gratuita.
+              {pricingExperience.platform.description}
             </DrawerDescription>
           </DrawerHeader>
-          <div className="space-y-3 px-4 pb-2">
+          <div className="space-y-4 px-4 pb-2">
             <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50/80 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
-                  Activación opcional
+                  Plan actual
+                </span>
+                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                  {activeCommercePlanName}
                 </span>
                 <span className="rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white">
                   {pricingExperience.platform.priceLabel}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                {pricingExperience.platform.description}
+                {pricingExperience.platform.reassurance}
               </p>
+              <div className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+                <div className="rounded-2xl bg-white/80 p-3">
+                  <p className="font-semibold text-slate-950">Documentos por expediente</p>
+                  <p className="mt-1">
+                    {commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? 3} activos con tu plan actual.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white/80 p-3">
+                  <p className="font-semibold text-slate-950">Modo Helios</p>
+                  <p className="mt-1">
+                    {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
+                      ? "Memoria histórica de expediente"
+                      : commerceStatusQuery.data?.entitlements.canUseHeliosMultiDocument
+                        ? "Multi-documento con continuidad"
+                        : "Básico sobre contexto inicial"}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white/80 p-3">
+                  <p className="font-semibold text-slate-950">Operación comercial</p>
+                  <p className="mt-1">
+                    {commerceStatusQuery.data?.hasStripe
+                      ? "Checkout y cobro listos para operar."
+                      : "La activación de cobro todavía está pendiente."}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">Qué recibirías</p>
-                <p className="mt-2">
-                  Un borrador inicial más ordenado con base en los documentos
-                  que ya reuniste y en el contexto visible de tu expediente.
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-950">Planes mensuales</p>
+                <p className="text-sm text-slate-600">
+                  Elige seguir gratis o activar más profundidad cuando tu expediente lo necesite.
                 </p>
-              </article>
-              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">Cuándo conviene</p>
-                <p className="mt-2">
-                  Cuando ya entendiste mejor tu caso y quieres llegar mejor
-                  preparado a una orientación, conciliación o siguiente paso
-                  formal.
-                </p>
-              </article>
-              <article className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">Qué no hace</p>
-                <p className="mt-2">
-                  No reemplaza a una autoridad, a una abogada o abogado, ni
-                  promete resultados. Solo organiza mejor lo que ya tienes.
-                </p>
-              </article>
+              </div>
+              <div className="grid gap-3">
+                {commercePlans.map(plan => {
+                  const isCurrentPlan = activeCommercePlanKey === plan.key;
+                  return (
+                    <article
+                      key={plan.key}
+                      className={`rounded-[1.1rem] border p-4 ${
+                        plan.highlighted
+                          ? "border-teal-300 bg-teal-50/70"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-base font-semibold text-slate-950">{plan.name}</p>
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                              {plan.badge}
+                            </span>
+                            {isCurrentPlan ? (
+                              <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                                Activo
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm text-slate-600">{plan.headline}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-base font-semibold text-slate-950">
+                            {plan.displayPrice}
+                          </p>
+                          <p className="text-xs text-slate-500">{plan.description}</p>
+                        </div>
+                      </div>
+                      <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                        {plan.featureBullets.map(feature => (
+                          <li key={feature} className="flex gap-2">
+                            <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-600" strokeWidth={1.8} />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button
+                          className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
+                          disabled={isCurrentPlan || createCommerceCheckoutMutation.isPending}
+                          onClick={() => handleCommerceCheckout(plan.key)}
+                        >
+                          {isCurrentPlan ? "Ya estás en este plan" : plan.ctaLabel}
+                        </Button>
+                        {plan.key === "free" ? (
+                          <Button
+                            variant="outline"
+                            className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            onClick={() =>
+                              focusRecommendedUpload(
+                                effectiveRecommendedTarget?.type ?? null
+                              )
+                            }
+                          >
+                            Seguir gratis en mi expediente
+                          </Button>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
-            <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-              {pricingExperience.platform.reassurance}
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-950">Productos puntuales</p>
+                <p className="text-sm text-slate-600">
+                  Útiles cuando no quieres una suscripción, sino un entregable concreto.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {commerceOneShots.map(product => {
+                  const alreadyPurchased = (commerceStatusQuery.data?.purchasedOneShots ?? []).some(
+                    item => item.key === product.key
+                  );
+                  return (
+                    <article
+                      key={product.key}
+                      className="rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-semibold text-slate-950">{product.name}</p>
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                          {product.badge}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-slate-600">{product.description}</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        {product.displayPrice} · {product.deliveryLabel}
+                      </p>
+                      <ul className="mt-3 space-y-2">
+                        {product.featureBullets.map(feature => (
+                          <li key={feature} className="flex gap-2">
+                            <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-600" strokeWidth={1.8} />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button
+                        className="mt-4 rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
+                        disabled={createCommerceCheckoutMutation.isPending}
+                        onClick={() => handleCommerceCheckout(product.key)}
+                      >
+                        {alreadyPurchased ? "Comprar otra vez" : product.ctaLabel}
+                      </Button>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <DrawerFooter>
+            {commerceStatusQuery.data?.canManageBilling ? (
+              <Button
+                variant="outline"
+                className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                onClick={handleOpenBillingPortal}
+              >
+                Gestionar suscripción y cobros
+              </Button>
+            ) : null}
             <DrawerClose asChild>
               <Button
                 variant="outline"

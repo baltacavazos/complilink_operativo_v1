@@ -12,6 +12,9 @@ export const ENV = {
   auditapatronEngineHmacSecret: process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
 };

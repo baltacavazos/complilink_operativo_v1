@@ -1509,3 +1509,12 @@
 - [x] Helios usuario normal: convertir la sugerencia documental en una acción de un clic con entrada directa a cámara o archivo.
 - [x] Helios usuario normal: mostrar un contraste breve entre lo ya confirmado y lo que aclararía el siguiente documento sugerido.
 - [x] Helios usuario normal: guardar una preferencia de tono de respuesta para alternar entre una explicación breve y una explicación más desarrollada.
+- [ ] Estrategia de monetización: inventariar todas las funcionalidades actuales de AuditaPatron y mapear cuáles deben permanecer gratis y cuáles conviene monetizar.
+- [ ] Estrategia de monetización: investigar el mercado mexicano, sensibilidad de precios y benchmarking de alternativas comparables.
+- [ ] Estrategia de monetización: ejecutar consenso entre ChatGPT, Grok y Gemini sobre modelo freemium, pricing y funciones premium clave.
+- [ ] Estrategia de monetización: sintetizar un plan final con paquetes, precios, funnel, upsells y roadmap de implementación.
+- [x] Monetización: consensuar con ChatGPT, Grok y Gemini el aterrizaje de planes, paywalls y triggers dentro del producto.
+- [x] Monetización: preparar la infraestructura comercial y de pagos para dejarla lista sin definir todavía la cuenta bancaria final.
+- [x] Monetización: implementar planes, límites de uso y gating de funciones en backend y frontend.
+- [x] Monetización: añadir CTAs, pricing visible, experiencia de upgrade y productos de pago puntual.
+- [x] Monetización: actualizar pruebas focalizadas, validar el estado del proyecto y cerrar con checkpoint.

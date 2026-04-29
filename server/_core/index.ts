@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
 import { startCeoBridgeScheduleWorker } from "../ceoBridgeAutomation";
+import { registerStripeWebhook } from "../stripeBilling";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +34,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  registerStripeWebhook(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({
     limit: "50mb",
