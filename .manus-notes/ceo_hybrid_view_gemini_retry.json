@@ -1,0 +1,41 @@
+{
+  "provider": "gemini",
+  "model": "gemini-2.5-flash",
+  "raw": "{\n  \"recommended_pattern\": \"Contextual Executive Overlay Menu\",\n  \"why\": [\n    \"Provides discreet, always-available access to executive actions from the operational view.\",\n    \"Minimizes context switching by initiating executive tasks without a full page redirect or 'mode' change.\",\n    \"Leverages existing /ceo/* routes, reducing implementation complexity and risk for a V1.1.\"\n  ],\n  \"ui_shape\": [\n    \"A small, persistent icon (e.g., a crown or gear) visible only to the CEO, ideally in a fixed corner (e.g., bottom-right).\",\n    \"Clicking the icon opens a compact, non-blocking overlay menu on top of the current /auditar view.\",\n    \"The overlay menu lists clear, descriptive links to the existing /ceo/* executive console routes.\"\n  ],\n  \"routing_strategy\": [\n    \"The CEO remains on /auditar as the primary base view.\",\n    \"Clicking a link within the executive overlay menu will perform a standard browser navigation to the corresponding /ceo/* route.\",\n    \"The overlay itself is dismissible, allowing the CEO to return to the full /auditar view without navigation.\"\n  ],\n  \"security_guardrails\": [\n    \"The executive UI element and overlay must be rendered only if the authenticated user has the 'CEO' role (backend check).\",\n    \"All /ceo/* routes must retain their existing, robust backend authorization checks, preventing access by non-CEO users.\",\n    \"The 'admin as user' simulation mode must explicitly *not* display this executive overlay, ensuring normal users (even simulated) do not see CEO actions.\"\n  ],\n  \"implementation_order\": [\n    \"1. Backend: Implement a simple API endpoint or extend current user context to expose the 'isCEO' role flag.\",\n    \"2. Frontend (UI Element): Create the persistent icon component, conditionally rendered based on 'isCEO' flag.\",\n    \"3. Frontend (Overlay Menu): Develop the overlay component, populating it with links to existing /ceo/* routes.\",\n    \"4. Frontend (Integration): Integrate the icon and overlay into the main /auditar layout, ensuring it doesn't interfere with existing elements.\",\n    \"5. Frontend (Simulation Mode): Update the 'admin as user' logic to explicitly hide this new executive UI element.\"\n  ],\n  \"avoid\": [\n    \"Embedding entire /ceo/* pages or complex executive dashboards directly within the /auditar view (high complexity, potential security risks).\",\n    \"Degrading or bypassing existing backend authorization for /ceo/* routes.\",\n    \"Making the executive UI element visible to any user without the explicit 'CEO' role, even if the routes are protected.\",\n    \"Over-engineering the overlay with interactive executive actions that require significant frontend state management or API calls beyond simple navigation.\"\n  ]\n}",
+  "parsed": {
+    "recommended_pattern": "Contextual Executive Overlay Menu",
+    "why": [
+      "Provides discreet, always-available access to executive actions from the operational view.",
+      "Minimizes context switching by initiating executive tasks without a full page redirect or 'mode' change.",
+      "Leverages existing /ceo/* routes, reducing implementation complexity and risk for a V1.1."
+    ],
+    "ui_shape": [
+      "A small, persistent icon (e.g., a crown or gear) visible only to the CEO, ideally in a fixed corner (e.g., bottom-right).",
+      "Clicking the icon opens a compact, non-blocking overlay menu on top of the current /auditar view.",
+      "The overlay menu lists clear, descriptive links to the existing /ceo/* executive console routes."
+    ],
+    "routing_strategy": [
+      "The CEO remains on /auditar as the primary base view.",
+      "Clicking a link within the executive overlay menu will perform a standard browser navigation to the corresponding /ceo/* route.",
+      "The overlay itself is dismissible, allowing the CEO to return to the full /auditar view without navigation."
+    ],
+    "security_guardrails": [
+      "The executive UI element and overlay must be rendered only if the authenticated user has the 'CEO' role (backend check).",
+      "All /ceo/* routes must retain their existing, robust backend authorization checks, preventing access by non-CEO users.",
+      "The 'admin as user' simulation mode must explicitly *not* display this executive overlay, ensuring normal users (even simulated) do not see CEO actions."
+    ],
+    "implementation_order": [
+      "1. Backend: Implement a simple API endpoint or extend current user context to expose the 'isCEO' role flag.",
+      "2. Frontend (UI Element): Create the persistent icon component, conditionally rendered based on 'isCEO' flag.",
+      "3. Frontend (Overlay Menu): Develop the overlay component, populating it with links to existing /ceo/* routes.",
+      "4. Frontend (Integration): Integrate the icon and overlay into the main /auditar layout, ensuring it doesn't interfere with existing elements.",
+      "5. Frontend (Simulation Mode): Update the 'admin as user' logic to explicitly hide this new executive UI element."
+    ],
+    "avoid": [
+      "Embedding entire /ceo/* pages or complex executive dashboards directly within the /auditar view (high complexity, potential security risks).",
+      "Degrading or bypassing existing backend authorization for /ceo/* routes.",
+      "Making the executive UI element visible to any user without the explicit 'CEO' role, even if the routes are protected.",
+      "Over-engineering the overlay with interactive executive actions that require significant frontend state management or API calls beyond simple navigation."
+    ]
+  }
+}

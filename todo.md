@@ -1540,4 +1540,8 @@
 - [x] Simplificación priorizada 3: contrastar con ChatGPT, Grok y Gemini la forma más segura de colapsar bitácora avanzada y bloques profundos de la portada CEO.
 - [x] Simplificación priorizada 3: esconder la bitácora avanzada de /ceo detrás de expansión controlada para que la lectura inicial sea más ejecutiva.
 - [x] Simplificación priorizada 3: colapsar otros bloques profundos o técnicos de la portada CEO que todavía compiten con las prioridades del día.
-- [ ] Simplificación priorizada 3: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Simplificación priorizada 3: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Experiencia híbrida CEO: contrastar con ChatGPT, Grok y Gemini la forma más segura de dejar la vista normal como base y abrir acciones CEO sin sacar al usuario del flujo principal.
+- [x] Experiencia híbrida CEO: rediseñar la navegación para que el CEO vea primero la interfaz normal y tenga una entrada visible pero discreta a sus herramientas ejecutivas.
+- [x] Experiencia híbrida CEO: ajustar el comportamiento de rutas y modo de vista para que el acceso CEO se sienta integrado y reversible.
+- [ ] Experiencia híbrida CEO: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.

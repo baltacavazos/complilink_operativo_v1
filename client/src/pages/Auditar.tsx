@@ -3475,6 +3475,7 @@ export default function Auditar() {
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
   const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] =
     useState(false);
+  const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
   const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] =
     useState(false);
   const [commercePromptContext, setCommercePromptContext] =
@@ -7229,34 +7230,90 @@ export default function Auditar() {
     );
   }
 
+  const navigateToCeoAction = (path: string) => {
+    setCeoActionsDrawerOpen(false);
+    if (auth.isViewingAsUser) {
+      auth.exitUserView();
+    }
+    window.location.href = path;
+  };
+
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
       <div className="container mx-auto max-w-6xl">
-        {auth.canToggleUserView && auth.isViewingAsUser ? (
-          <Alert className="mb-6 border-amber-200 bg-amber-50/95 text-amber-950 shadow-sm">
-            <AlertCircle className="h-4 w-4 text-amber-700" />
+        {auth.canToggleUserView ? (
+          <Alert
+            className={`mb-6 shadow-sm ${
+              auth.isViewingAsUser
+                ? "border-amber-200 bg-amber-50/95 text-amber-950"
+                : "border-teal-200 bg-teal-50/95 text-teal-950"
+            }`}
+          >
+            {auth.isViewingAsUser ? (
+              <AlertCircle className="h-4 w-4 text-amber-700" />
+            ) : (
+              <ShieldCheck className="h-4 w-4 text-teal-700" />
+            )}
             <AlertTitle>
-              Estás viendo la plataforma como usuario normal
+              {auth.isViewingAsUser
+                ? "Vista normal de usuario con acceso CEO"
+                : "Vista operativa base con acceso CEO"}
             </AlertTitle>
-            <AlertDescription className="mt-2 space-y-3 text-sm leading-6 text-amber-900">
+            <AlertDescription
+              className={`mt-2 space-y-3 text-sm leading-6 ${
+                auth.isViewingAsUser ? "text-amber-900" : "text-teal-900"
+              }`}
+            >
               <p>
-                Tu identidad real como <strong>CEO maestro</strong> sigue
-                intacta. Esta vista sólo oculta la consola ejecutiva para que
-                puedas hacer muestras con el mismo recorrido que vería un
-                usuario estándar.
+                {auth.isViewingAsUser ? (
+                  <>
+                    Tu identidad real como <strong>CEO maestro</strong> sigue
+                    intacta. Estás recorriendo la plataforma como un usuario
+                    normal, pero ahora puedes abrir tus acciones ejecutivas
+                    desde aquí sin perder el hilo.
+                  </>
+                ) : (
+                  <>
+                    Estás usando la misma vista operativa que vería un usuario en
+                    <strong> /auditar</strong>, con una entrada discreta para tus
+                    acciones CEO cuando necesites subir al nivel ejecutivo.
+                  </>
+                )}
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button
-                  variant="outline"
-                  className="rounded-full border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
-                  onClick={() => {
-                    auth.exitUserView();
-                    window.location.href = "/ceo";
-                  }}
+                  className={`rounded-full ${
+                    auth.isViewingAsUser
+                      ? "bg-amber-700 text-white hover:bg-amber-800"
+                      : "bg-teal-700 text-white hover:bg-teal-800"
+                  }`}
+                  onClick={() => setCeoActionsDrawerOpen(true)}
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  Salir de la demo y volver al CEO
+                  Abrir acciones CEO
                 </Button>
+                {auth.isViewingAsUser ? (
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                    onClick={() => {
+                      auth.exitUserView();
+                      window.location.href = "/ceo";
+                    }}
+                  >
+                    <ArrowRight className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                    Volver al tablero CEO
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-teal-300 bg-white text-teal-900 hover:bg-teal-100"
+                    onClick={() => auth.enterUserView()}
+                  >
+                    <AlertCircle className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                    Ver exactamente como usuario normal
+                  </Button>
+                )}
               </div>
             </AlertDescription>
           </Alert>
@@ -7622,6 +7679,93 @@ export default function Auditar() {
                   className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 >
                   Cerrar
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+
+        <Drawer
+          open={ceoActionsDrawerOpen}
+          onOpenChange={setCeoActionsDrawerOpen}
+        >
+          <DrawerContent>
+            <DrawerHeader className="text-left">
+              <DrawerTitle>Acciones CEO desde tu vista operativa</DrawerTitle>
+              <DrawerDescription>
+                Entra al resumen ejecutivo o a una vista específica del CEO sin
+                perder la claridad de que tu base diaria sigue siendo
+                <strong> /auditar</strong>. Si vienes en demo de usuario,
+                saldremos de esa simulación en cuanto abras una acción
+                ejecutiva.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="space-y-3 px-4 pb-2">
+              {[
+                {
+                  label: "Resumen ejecutivo",
+                  helper: "Prioridades del día, decisiones seguras y lectura general.",
+                  path: "/ceo",
+                },
+                {
+                  label: "Alertas CEO",
+                  helper: "Entrar directo a incidencias, focos rojos y seguimientos.",
+                  path: "/ceo/alertas",
+                },
+                {
+                  label: "Documentos CEO",
+                  helper: "Abrir la revisión ejecutiva de documentos y pendientes.",
+                  path: "/ceo/documentos",
+                },
+                {
+                  label: "Accesos CEO",
+                  helper: "Revisar membresías, vigencias y control operativo.",
+                  path: "/ceo/accesos",
+                },
+                {
+                  label: "Bridge operativo",
+                  helper: "Ir al puente técnico sólo cuando necesites profundidad.",
+                  path: "/ceo/bridge",
+                },
+              ].map(action => (
+                <Button
+                  key={action.path}
+                  variant="outline"
+                  className="h-auto w-full items-start justify-between rounded-[1.2rem] border-slate-200 bg-white px-4 py-4 text-left text-slate-900 hover:bg-slate-50"
+                  onClick={() => navigateToCeoAction(action.path)}
+                >
+                  <div className="pr-4">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {action.label}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                      {action.helper}
+                    </p>
+                  </div>
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" strokeWidth={1.8} />
+                </Button>
+              ))}
+            </div>
+            <DrawerFooter>
+              {auth.isViewingAsUser ? (
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                  onClick={() => {
+                    setCeoActionsDrawerOpen(false);
+                    auth.exitUserView();
+                    window.location.href = "/ceo";
+                  }}
+                >
+                  Salir de la demo y abrir tablero CEO
+                </Button>
+              ) : null}
+              <DrawerClose asChild>
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                >
+                  Seguir en mi vista operativa
                 </Button>
               </DrawerClose>
             </DrawerFooter>

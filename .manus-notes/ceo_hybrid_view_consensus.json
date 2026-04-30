@@ -1,0 +1,50 @@
+{
+  "prompt": "Contexto actual del producto:\n- Existe una ruta operativa principal de usuario en /auditar.\n- Existe una consola ejecutiva separada en /ceo y subrutas /ceo/*.\n- El administrador real puede activar un modo para verse como usuario normal.\n- En ese modo, el sistema redirige fuera de /ceo hacia /auditar.\n- El deseo de producto ahora es: mantener la vista de usuario normal como base para el CEO, pero darle una entrada visible y discreta a sus acciones ejecutivas, sin sentir que cambia de mundo cada vez.\n- No se debe degradar el perímetro real de seguridad: admin sigue siendo admin real; la simulación no debe abrir acciones CEO a usuarios normales.\n- Se prefiere un cambio mínimo viable, pragmático y reversible en frontend, con el menor riesgo de regresión posible.\n\nNecesito una respuesta breve y práctica, en JSON válido, con este esquema exacto:\n{\n  \"recommended_pattern\": \"...\",\n  \"why\": [\"...\", \"...\", \"...\"],\n  \"ui_shape\": [\"...\", \"...\", \"...\"],\n  \"routing_strategy\": [\"...\", \"...\", \"...\"],\n  \"security_guardrails\": [\"...\", \"...\", \"...\"],\n  \"implementation_order\": [\"...\", \"...\", \"...\"],\n  \"avoid\": [\"...\", \"...\", \"...\"]\n}\n\nDa una recomendación concreta para una V1.1 pragmática. Prioriza simplicidad, claridad de navegación y mínimo cambio estructural.",
+  "responses": [
+    {
+      "provider": "openai",
+      "raw": "{\n  \"recommended_pattern\": \"Inyectar un menú ejecutivo discreto y persistente dentro de la UI /auditar cuando el admin está en modo simulación, sin cambiar rutas base ni separar vistas.\",\n  \"why\": [\n    \"Mantiene la experiencia de usuario normal como base, evitando sensación de cambio de contexto.\",\n    \"Minimiza cambios en rutas y estructura frontend, reduciendo riesgos de regresión.\",\n    \"Permite acceso rápido y visible a acciones CEO sin exponerlas a usuarios normales.\"\n  ],\n  \"ui_shape\": [\n    \"Barra lateral o botón flotante discreto en /auditar visible solo para admin en modo simulación.\",\n    \"Al hacer clic, despliega menú con acciones ejecutivas limitadas y seguras.\",\n    \"No cambia el layout principal ni redirige fuera de /auditar.\"\n  ],\n  \"routing_strategy\": [\n    \"Mantener la ruta principal en /auditar para modo simulación.\",\n    \"Acciones ejecutivas se abren en modales o subcomponentes dentro de /auditar.\",\n    \"No usar rutas /ceo ni redirecciones para modo simulación.\"\n  ],\n  \"security_guardrails\": [\n    \"Verificar backend que solo admin real puede ejecutar acciones CEO, incluso desde modo simulación.\",\n    \"No exponer endpoints CEO a usuarios normales ni a modo simulación sin privilegios.\",\n    \"Validar en frontend y backend el estado de admin real para mostrar/permitir acciones.\"\n  ],\n  \"implementation_order\": [\n    \"Detectar modo simulación en frontend y mostrar menú ejecutivo discreto.\",\n    \"Implementar menú con acciones ejecutivas limitadas dentro de /auditar.\",\n    \"Agregar validaciones backend para asegurar permisos y evitar fugas.\"\n  ],\n  \"avoid\": [\n    \"Redirigir o cambiar rutas base fuera de /auditar en modo simulación.\",\n    \"Duplicar o mezclar interfaces completas de /ceo dentro de /auditar.\",\n    \"Exponer acciones CEO completas o sensibles sin control estricto.\"\n  ]\n}",
+      "parsed": {
+        "recommended_pattern": "Inyectar un menú ejecutivo discreto y persistente dentro de la UI /auditar cuando el admin está en modo simulación, sin cambiar rutas base ni separar vistas.",
+        "why": [
+          "Mantiene la experiencia de usuario normal como base, evitando sensación de cambio de contexto.",
+          "Minimiza cambios en rutas y estructura frontend, reduciendo riesgos de regresión.",
+          "Permite acceso rápido y visible a acciones CEO sin exponerlas a usuarios normales."
+        ],
+        "ui_shape": [
+          "Barra lateral o botón flotante discreto en /auditar visible solo para admin en modo simulación.",
+          "Al hacer clic, despliega menú con acciones ejecutivas limitadas y seguras.",
+          "No cambia el layout principal ni redirige fuera de /auditar."
+        ],
+        "routing_strategy": [
+          "Mantener la ruta principal en /auditar para modo simulación.",
+          "Acciones ejecutivas se abren en modales o subcomponentes dentro de /auditar.",
+          "No usar rutas /ceo ni redirecciones para modo simulación."
+        ],
+        "security_guardrails": [
+          "Verificar backend que solo admin real puede ejecutar acciones CEO, incluso desde modo simulación.",
+          "No exponer endpoints CEO a usuarios normales ni a modo simulación sin privilegios.",
+          "Validar en frontend y backend el estado de admin real para mostrar/permitir acciones."
+        ],
+        "implementation_order": [
+          "Detectar modo simulación en frontend y mostrar menú ejecutivo discreto.",
+          "Implementar menú con acciones ejecutivas limitadas dentro de /auditar.",
+          "Agregar validaciones backend para asegurar permisos y evitar fugas."
+        ],
+        "avoid": [
+          "Redirigir o cambiar rutas base fuera de /auditar en modo simulación.",
+          "Duplicar o mezclar interfaces completas de /ceo dentro de /auditar.",
+          "Exponer acciones CEO completas o sensibles sin control estricto."
+        ]
+      }
+    },
+    {
+      "provider": "grok",
+      "error": "SSLError: HTTPSConnectionPool(host='api.x.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLZeroReturnError(6, 'TLS/SSL connection has been closed (EOF) (_ssl.c:992)')))"
+    },
+    {
+      "provider": "gemini",
+      "error": "HTTPError: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyCFeOVgOBbKHuZwn0fFQaf0Hi4XaUhMFJk"
+    }
+  ]
+}
