@@ -1531,4 +1531,9 @@
 - [x] Simplificación priorizada: reestructurar /auditar con divulgación progresiva para separar inicio, expediente en progreso y herramientas avanzadas.
 - [x] Simplificación priorizada: modularizar la portada de /ceo para mostrar primero prioridades y dejar la profundidad detrás de navegación o expansión.
 - [x] Simplificación priorizada: unificar verbos visibles y acciones principales para reducir ambigüedad entre revisar, continuar, guardar y profundizar.
-- [ ] Simplificación priorizada: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Simplificación priorizada: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Simplificación priorizada 2: contrastar con ChatGPT, Grok y Gemini el orden más seguro para simplificar el post-upload, la navegación móvil y la portada CEO.
+- [x] Simplificación priorizada 2: reducir el post-upload de /auditar a un CTA dominante por estado y menos bloques compitiendo al mismo tiempo.
+- [x] Simplificación priorizada 2: convertir la navegación por capas de /auditar en una experiencia móvil más evidente y persistente.
+- [x] Simplificación priorizada 2: esconder mejor módulos técnicos o maestros de /ceo detrás de expansión explícita para que la lectura inicial sea más ejecutiva.
+- [x] Simplificación priorizada 2: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.

@@ -5661,6 +5661,34 @@ export default function Auditar() {
   const isSummaryWorkspaceSection = workspaceSection === "resumen";
   const isDossierWorkspaceSection = workspaceSection === "expediente";
   const isAdvancedWorkspaceSection = workspaceSection === "herramientas";
+  const workspaceSectionCards: Array<{
+    key: AuditarWorkspaceSection;
+    label: string;
+    title: string;
+    description: string;
+  }> = [
+    {
+      key: "resumen",
+      label: "Resumen",
+      title: "Sube, revisa y toma la siguiente decisión.",
+      description: "Ideal para empezar o volver rápido a lo importante.",
+    },
+    {
+      key: "expediente",
+      label: "Expediente",
+      title: "Progreso, faltantes y continuidad del caso.",
+      description: "Úsalo cuando quieras entender cómo va tu respaldo completo.",
+    },
+    {
+      key: "herramientas",
+      label: "Herramientas",
+      title: "Comparaciones y lectura más fina entre documentos.",
+      description: "Aquí dejamos lo avanzado para que no compita con el flujo principal.",
+    },
+  ];
+  const activeWorkspaceSectionCard =
+    workspaceSectionCards.find(item => item.key === workspaceSection) ??
+    workspaceSectionCards[0];
   const activeCaptureMode =
     selectedCaptureMode ??
     preferredCaptureMode ??
@@ -7607,64 +7635,44 @@ export default function Auditar() {
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Ordena la pantalla por capas
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:hidden">
+                  {activeWorkspaceSectionCard.label}
+                </h2>
+                <h2 className="mt-2 hidden text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:block">
                   Primero ve lo esencial. Luego entra al expediente o a herramientas más finas.
                 </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:hidden">
+                  {activeWorkspaceSectionCard.description}
+                </p>
+                <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-slate-600 sm:block sm:text-base">
                   Dejamos tres vistas simples para que no tengas todo abierto al mismo tiempo: resumen para actuar rápido, expediente para continuidad y herramientas para comparaciones más avanzadas.
                 </p>
               </div>
               <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-                {isSummaryWorkspaceSection
-                  ? "Vista activa: resumen"
-                  : isDossierWorkspaceSection
-                    ? "Vista activa: expediente"
-                    : "Vista activa: herramientas"}
+                Vista activa: {activeWorkspaceSectionCard.label.toLowerCase()}
               </span>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              <button
-                type="button"
-                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isSummaryWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
-                onClick={() => setWorkspaceSection("resumen")}
-              >
-                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isSummaryWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
-                  Resumen
-                </p>
-                <p className="mt-2 text-base font-semibold">Sube, revisa y toma la siguiente decisión.</p>
-                <p className={`mt-2 text-sm leading-6 ${isSummaryWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
-                  Ideal para empezar o volver rápido a lo importante.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isDossierWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
-                onClick={() => setWorkspaceSection("expediente")}
-              >
-                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isDossierWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
-                  Expediente
-                </p>
-                <p className="mt-2 text-base font-semibold">Progreso, faltantes y continuidad del caso.</p>
-                <p className={`mt-2 text-sm leading-6 ${isDossierWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
-                  Úsalo cuando quieras entender cómo va tu respaldo completo.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isAdvancedWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
-                onClick={() => setWorkspaceSection("herramientas")}
-              >
-                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isAdvancedWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
-                  Herramientas
-                </p>
-                <p className="mt-2 text-base font-semibold">Comparaciones y lectura más fina entre documentos.</p>
-                <p className={`mt-2 text-sm leading-6 ${isAdvancedWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
-                  Aquí dejamos lo avanzado para que no compita con el flujo principal.
-                </p>
-              </button>
+              {workspaceSectionCards.map(item => {
+                const isActive = workspaceSection === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isActive ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
+                    onClick={() => setWorkspaceSection(item.key)}
+                  >
+                    <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isActive ? "text-slate-300" : "text-slate-500"}`}>
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-base font-semibold">{item.title}</p>
+                    <p className={`mt-2 text-sm leading-6 ${isActive ? "text-slate-200" : "text-slate-600"}`}>
+                      {item.description}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </section>
         ) : null}
@@ -7716,11 +7724,16 @@ export default function Auditar() {
                     >
                       {shouldCompactPostUploadExperience ? <ArrowRight className="h-7 w-7 shrink-0" strokeWidth={2.5} /> : null}
                       {shouldCompactPostUploadExperience
-                        ? "Comparar nómina y CFDI"
+                        ? primaryLastUploadShortcut?.label ?? "Ver qué sigue"
                         : primaryLastUploadShortcut
                           ? primaryLastUploadShortcut.label
                           : "Abrir asesor laboral"}
                     </Button>
+                    {shouldCompactPostUploadExperience ? (
+                      <p className="max-w-[24rem] text-center text-sm leading-6 text-slate-600">
+                        Siguiente paso recomendado: {primaryLastUploadShortcut?.description ?? "revisar este resultado y decidir qué documento conviene conectar después."}
+                      </p>
+                    ) : null}
                     {shouldCompactPostUploadExperience ? (
                       <button
                         type="button"
@@ -7728,7 +7741,7 @@ export default function Auditar() {
                         onClick={() => void scrollToDigitalArchive("result_panel")}
                       >
                         <FolderOpen className="h-4 w-4" strokeWidth={2} />
-                        Ir a mi expediente
+                        Ver expediente completo
                       </button>
                     ) : null}
                   </div>
@@ -10331,7 +10344,9 @@ export default function Auditar() {
 
                           <div className="mt-3 space-y-2">
                             {(visibleSimpleExplanation.length
-                              ? visibleSimpleExplanation.slice(0, 3).map((item, index) => ({
+                              ? visibleSimpleExplanation
+                                  .slice(0, shouldCompactPostUploadExperience ? 2 : 3)
+                                  .map((item, index) => ({
                                   id: `${item.label}-${index}`,
                                   label: item.label,
                                   summary:
@@ -10375,7 +10390,7 @@ export default function Auditar() {
                           </div>
                         </div>
 
-                        {showQuickDifferenceCalculator ? (
+                        {showQuickDifferenceCalculator && !shouldCompactPostUploadExperience ? (
                           <div className="mt-4 rounded-[1rem] border border-amber-200 bg-amber-50/80 p-4">
                             <div className="flex items-start gap-3">
                               <FileSearch className="mt-1 h-5 w-5 shrink-0 text-amber-700" strokeWidth={1.8} />
@@ -13857,6 +13872,32 @@ export default function Auditar() {
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
+          {showWorkspaceSectionSelector ? (
+            <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
+              {workspaceSectionCards.map(item => {
+                const isActive = workspaceSection === item.key;
+                return (
+                  <button
+                    key={`mobile-nav-${item.key}`}
+                    type="button"
+                    className={`rounded-[0.95rem] px-3 py-2 text-left transition ${isActive ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700"}`}
+                    onClick={() => setWorkspaceSection(item.key)}
+                  >
+                    <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-slate-300" : "text-slate-400"}`}>
+                      {item.label}
+                    </p>
+                    <p className={`mt-1 text-xs leading-5 ${isActive ? "text-slate-100" : "text-slate-600"}`}>
+                      {item.key === "resumen"
+                        ? "Lo esencial"
+                        : item.key === "expediente"
+                          ? "Continuidad"
+                          : "Profundizar"}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
           {shouldShowInlineLegalConsent ? (
             <div className="mb-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-3.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               <div className="flex items-start justify-between gap-3">

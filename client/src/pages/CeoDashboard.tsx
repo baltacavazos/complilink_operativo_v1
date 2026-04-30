@@ -2041,43 +2041,37 @@ export default function CeoDashboard() {
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start">
               <div className="space-y-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Modo CEO · Helios unificado</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Modo CEO</p>
                     <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
-                      Lo crítico primero para decidir, operar y volver a ver la app como usuario.
+                      Prioridades del día y acciones seguras en una sola vista.
                     </h2>
                     <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
-                      Aquí mantienes la misma interfaz Helios, con toda su lectura jurídica laboral, y además sumas contexto operativo del sistema, controles ejecutivos y la alternancia para inspeccionar la vista pública sin confusión.
+                      Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda más abajo para cuando realmente haga falta.
                     </p>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-3">
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Helios CEO</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué ver primero</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        La misma interfaz central ahora puede leer el frente jurídico y el frente operativo al mismo tiempo.
+                        Alertas críticas, cuellos de botella documentales y accesos que siguen activos.
                       </p>
                     </article>
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Controles CEO</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué queda oculto</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        Exportaciones, alertas, accesos y acciones seguras siguen visibles para decidir rápido.
+                        Métricas maestras, trazabilidad profunda y controles técnicos solo cuando los abras.
                       </p>
                     </article>
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Vista espejo</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué puedes hacer</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        Puedes saltar a la experiencia normal y volver al modo CEO sin perder contexto.
+                        Decidir rápido, exportar cuando convenga y volver a la vista de usuario sin perder contexto.
                       </p>
                     </article>
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-1 text-xs font-semibold">
-                    <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Helios conserva su abogado laboral de bolsillo</Badge>
-                    <Badge className="rounded-full border border-teal-200/20 bg-teal-400/15 px-3 py-1 text-teal-50 hover:bg-teal-400/15">CEO suma instrucciones operativas y de sistema</Badge>
-                    <Badge className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white hover:bg-white/10">Ver como usuario normal sigue a un clic</Badge>
-                    <Badge className="rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1 text-amber-50 hover:bg-amber-300/15">Acciones sensibles piden confirmación visible</Badge>
                   </div>
                   <div className="rounded-[1.2rem] border border-amber-200/25 bg-slate-950/20 px-4 py-3 text-sm leading-6 text-slate-100/88">
-                    <strong className="text-white">Carril seguro del chat CEO:</strong> Helios debe separar lo confirmado, lo inferido y lo pendiente. Si le pides una acción sensible, primero la deja como propuesta sujeta a confirmación; si algo no está autorizado o no aparece trazado, baja a modo consulta.
+                    <strong className="text-white">Carril seguro del chat CEO:</strong> si pides una acción sensible, primero se devuelve como propuesta sujeta a confirmación visible.
                   </div>
 
               </div>
@@ -2334,45 +2328,48 @@ export default function CeoDashboard() {
 
           {isMasterUser ? (
             <section className="rounded-[1.8rem] border border-violet-200/70 bg-[linear-gradient(135deg,rgba(245,243,255,0.98),rgba(238,242,255,0.94))] p-5 shadow-[0_26px_80px_-44px_rgba(76,29,149,0.3)]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="max-w-3xl space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">Panel maestro</p>
-                  <h3 className="text-xl font-semibold tracking-tight text-slate-950">Métricas exclusivas del usuario dueño</h3>
-                  <p className="text-sm leading-6 text-slate-700">
-                    Este bloque concentra vistas ejecutivas, exportes y bloqueos de guardrails persistidos en la bitácora para el usuario maestro.
-                  </p>
-                </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-slate-700 shadow-sm">
-                  {masterMetricsQuery.isLoading ? "Cargando métricas maestras…" : `Corte ${formatDateTime(masterMetricsQuery.data?.generatedAt ?? null)}`}
-                </div>
-              </div>
-
-              {masterMetricsQuery.error ? (
-                <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                  {masterMetricsQuery.error.message}
-                </div>
-              ) : (
-                <>
-                  <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <KpiCard label="Vistas CEO" value={masterMetricsQuery.data?.summary.totalConsoleViews ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.consoleViews ?? 0)}`} />
-                    <KpiCard label="Guardrails bloqueados" value={masterMetricsQuery.data?.summary.totalGuardrailBlocks ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.guardrailBlocks ?? 0)}`} />
-                    <KpiCard label="Exportes trazados" value={masterMetricsQuery.data?.summary.totalExports ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.exports ?? 0)}`} />
-                    <KpiCard label="Actores únicos" value={masterMetricsQuery.data?.summary.uniqueActors ?? 0} helper="Usuarios administradores con interacción registrada" />
-                  </div>
-                  <div className="mt-4 rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Última actividad maestra</p>
-                    <p className="mt-2 leading-6 text-slate-700">
-                      Vista CEO: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.consoleViewedAt ?? null)}</strong>
-                      <span className="mx-2 text-slate-300">•</span>
-                      Bloqueo: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.guardrailBlockedAt ?? null)}</strong>
-                      <span className="mx-2 text-slate-300">•</span>
-                      Export: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.exportGeneratedAt ?? null)}</strong>
+              <details>
+                <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-4">
+                  <div className="max-w-3xl space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">Panel maestro</p>
+                    <h3 className="text-xl font-semibold tracking-tight text-slate-950">Métricas exclusivas del usuario dueño</h3>
+                    <p className="text-sm leading-6 text-slate-700">
+                      Este bloque queda colapsado por defecto para no competir con la lectura ejecutiva inicial.
                     </p>
                   </div>
-                </>
-              )}
+                  <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-slate-700 shadow-sm">
+                    {masterMetricsQuery.isLoading ? "Cargando métricas maestras…" : `Abrir detalle · corte ${formatDateTime(masterMetricsQuery.data?.generatedAt ?? null)}`}
+                  </div>
+                </summary>
+
+                {masterMetricsQuery.error ? (
+                  <div className="mt-4 rounded-[1.2rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    {masterMetricsQuery.error.message}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                      <KpiCard label="Vistas CEO" value={masterMetricsQuery.data?.summary.totalConsoleViews ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.consoleViews ?? 0)}`} />
+                      <KpiCard label="Guardrails bloqueados" value={masterMetricsQuery.data?.summary.totalGuardrailBlocks ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.guardrailBlocks ?? 0)}`} />
+                      <KpiCard label="Exportes trazados" value={masterMetricsQuery.data?.summary.totalExports ?? 0} helper={`Últimos 7 días: ${formatNumber(masterMetricsQuery.data?.last7Days.exports ?? 0)}`} />
+                      <KpiCard label="Actores únicos" value={masterMetricsQuery.data?.summary.uniqueActors ?? 0} helper="Usuarios administradores con interacción registrada" />
+                    </div>
+                    <div className="mt-4 rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm text-slate-700 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Última actividad maestra</p>
+                      <p className="mt-2 leading-6 text-slate-700">
+                        Vista CEO: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.consoleViewedAt ?? null)}</strong>
+                        <span className="mx-2 text-slate-300">•</span>
+                        Bloqueo: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.guardrailBlockedAt ?? null)}</strong>
+                        <span className="mx-2 text-slate-300">•</span>
+                        Exporte: <strong className="text-slate-950">{formatDateTime(masterMetricsQuery.data?.latestActivity.exportGeneratedAt ?? null)}</strong>
+                      </p>
+                    </div>
+                  </>
+                )}
+              </details>
             </section>
           ) : null}
+
 
           <section
             className={`rounded-[1.45rem] border px-4 py-4 text-sm leading-6 shadow-sm ${executiveActionsBlocked ? "border-amber-200 bg-amber-50/90 text-amber-950" : "border-emerald-200 bg-emerald-50/90 text-emerald-950"}`}

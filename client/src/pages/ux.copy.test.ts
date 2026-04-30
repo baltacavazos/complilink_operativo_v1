@@ -244,18 +244,15 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("CeoDashboard");
 
     expect(source).toContain('text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]');
-    expect(source).toContain("Modo CEO · Helios unificado");
-    expect(source).toContain("Lo crítico primero para decidir, operar y volver a ver la app como usuario.");
-    expect(source).toContain("Aquí mantienes la misma interfaz Helios, con toda su lectura jurídica laboral");
+    expect(source).toContain("Modo CEO");
+    expect(source).toContain("Prioridades del día y acciones seguras en una sola vista.");
+    expect(source).toContain("Empieza por alertas críticas, documentos pendientes y accesos vigentes.");
     expect(source).toContain("Abrir Helios CEO");
-    expect(source).toContain("Helios CEO");
-    expect(source).toContain("Vista espejo");
-    expect(source).toContain("Helios conserva su abogado laboral de bolsillo");
-    expect(source).toContain("CEO suma instrucciones operativas y de sistema");
-    expect(source).toContain("Ver como usuario normal sigue a un clic");
-    expect(source).toContain("Acciones sensibles piden confirmación visible");
+    expect(source).toContain("Qué ver primero");
+    expect(source).toContain("Qué queda oculto");
+    expect(source).toContain("Qué puedes hacer");
     expect(source).toContain("Carril seguro del chat CEO");
-    expect(source).toContain("lo confirmado, lo inferido y lo pendiente");
+    expect(source).toContain("propuesta sujeta a confirmación visible");
     expect(source).toContain("Mi Expediente de Defensa");
     expect(source).toContain("Panel privado del owner autorizado para AuditaPatron");
     expect(source).toContain("Este expediente privado sólo está disponible para el owner autorizado.");
