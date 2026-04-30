@@ -268,16 +268,16 @@ export default function Access() {
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div className="min-w-0">
                 <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
-                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Acceso simple</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Iniciar sesión</p>
               </div>
             </div>
 
             <div className="mt-6 space-y-3">
-              <h1 className="max-w-[14ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Continúa con tu correo
+              <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
+                Inicia sesión y vuelve a tu expediente
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y sigue donde te quedaste. Después vuelves directo al {returnToLabel} sin perder tu avance.
+                Esta pantalla solo sirve para entrar o continuar. Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel} sin perder tu avance.
               </p>
             </div>
 
@@ -394,7 +394,7 @@ export default function Access() {
                   disabled={verifyEmailCode.isPending || loading || code.trim().length < 6}
                 >
                   {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-Entrar
+Iniciar sesión
                 </Button>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
@@ -413,7 +413,7 @@ Entrar
                       });
                     }}
                   >
-                    {requestEmailCode.isPending ? "Enviando..." : emailCooldownActive ? `Reenviar en ${emailCooldownSecondsRemaining}s` : "Reenviar código"}
+                    {requestEmailCode.isPending ? "Enviando..." : emailCooldownActive ? `Reenviar en ${emailCooldownSecondsRemaining}s` : "Volver a enviar código"}
                   </button>
                 </div>
               </form>

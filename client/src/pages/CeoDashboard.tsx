@@ -478,7 +478,7 @@ function getSectionLabel(section: SectionKey) {
   if (section === "alertas") return "Alertas";
   if (section === "accesos") return "Accesos";
   if (section === "documentos") return "Documentos";
-  return "Resumen privado";
+  return "Resumen ejecutivo";
 }
 
 export default function CeoDashboard() {
@@ -1060,7 +1060,7 @@ export default function CeoDashboard() {
     () => [
       {
         icon: LayoutDashboard,
-        label: "Resumen privado",
+        label: "Resumen ejecutivo",
         path: contextualOverviewPath,
         badge: globalSummary ? formatNumber(globalSummary.activeCases) : undefined,
       },
@@ -2277,7 +2277,7 @@ export default function CeoDashboard() {
                     {formatNumber(globalSummary.openAlerts)} alertas abiertas y {formatNumber(globalSummary.activeCases)} casos activos bajo seguimiento.
                   </h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
-                    Empieza por el nivel de riesgo y la frescura del snapshot. Después baja a filtros y detalle sólo si necesitas aislar una organización, caso o actor concreto.
+                    Empieza por tres cosas: alertas críticas, documentos pendientes y accesos vigentes. El detalle fino queda abajo sólo para cuando realmente lo necesites.
                   </p>
                 </div>
                 <div className={`rounded-[1.2rem] border px-4 py-3 text-sm shadow-sm ${executiveActionsBlocked ? "border-amber-200 bg-amber-50 text-amber-950" : "border-emerald-200 bg-emerald-50 text-emerald-950"}`}>
@@ -2374,19 +2374,16 @@ export default function CeoDashboard() {
             </section>
           ) : null}
 
-          <div className="rounded-[1.4rem] border border-cyan-100 bg-cyan-50/80 px-4 py-3 text-sm leading-6 text-cyan-950">
-            Las tarjetas superiores muestran <strong>contexto global</strong>. Los listados, paneles laterales y contadores de secciones muestran la <strong>vista filtrada</strong> para evitar perder el panorama completo.
-          </div>
-
-          <div
-            className={`rounded-[1.4rem] border px-4 py-3 text-sm leading-6 ${executiveActionsBlocked ? "border-amber-200 bg-amber-50/90 text-amber-950" : "border-emerald-200 bg-emerald-50/90 text-emerald-950"}`}
+          <section
+            className={`rounded-[1.45rem] border px-4 py-4 text-sm leading-6 shadow-sm ${executiveActionsBlocked ? "border-amber-200 bg-amber-50/90 text-amber-950" : "border-emerald-200 bg-emerald-50/90 text-emerald-950"}`}
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em]">Frescura operativa</p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="max-w-3xl space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em]">Cómo leer esta consola hoy</p>
                 <p>
-                  <strong>{snapshotFreshnessLabel}.</strong> {executiveGuardrailDescription}
+                  <strong>{snapshotFreshnessLabel}.</strong> Empieza por la fila superior, luego revisa prioridades del día y baja al detalle sólo si necesitas aislar un tenant, caso o actor.
                 </p>
+                <p className="text-xs opacity-80">{executiveGuardrailDescription}</p>
               </div>
               <Button
                 variant="outline"
@@ -2423,11 +2420,11 @@ export default function CeoDashboard() {
                   }}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Volver al resumen
+                  Volver al panel principal
                 </Button>
               ) : null}
             </div>
-          </div>
+          </section>
 
           {currentSection === "resumen" ? (
             <>

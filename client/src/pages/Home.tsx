@@ -346,7 +346,7 @@ const heroCopyVariants = {
     supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
     body:
       "Entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
-    ctaPrimary: "Revisar mi recibo gratis",
+    ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
   control: {
@@ -358,7 +358,7 @@ const heroCopyVariants = {
     supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
     body:
       "Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.",
-    ctaPrimary: "Revisar mi recibo gratis",
+    ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
 } as const;
@@ -578,7 +578,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
+const PRIMARY_CTA_LABEL = "Empezar auditoría gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -651,7 +651,7 @@ function SiteHeader() {
               window.location.href = "/acceso?returnTo=/auditar";
             }}
           >
-            Entrar
+            Iniciar sesión
           </Button>
           <Button
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
@@ -692,7 +692,7 @@ function SiteHeader() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Entra directo a lo importante y muévete entre áreas sin perderte.
+                Entra para continuar tu expediente. Aquí dejamos una sola ruta principal para que empezar sea más claro.
               </p>
             </div>
 
@@ -730,7 +730,7 @@ function SiteHeader() {
                   window.location.href = "/acceso?returnTo=/auditar";
                 }}
               >
-                Entrar
+                Iniciar sesión
               </Button>
               <Button
                 className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
@@ -1729,16 +1729,16 @@ function ConfidenceMagicSection() {
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f7f7_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-              Bóveda laboral privada
+              Guarda y sigue después
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Tu primer hallazgo también puede convertirse en tu archivo laboral.
+              Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              No revises un documento y luego lo pierdas en WhatsApp, correo o carpetas sueltas. Con AuditaPatron puedes guardar recibos, CFDI, contratos y otros soportes en una bóveda privada para entender qué ya cuadra, qué falta y qué conviene revisar después.
+              AuditaPatron no te obliga a reunir todo desde el inicio. Puedes empezar con un recibo, un CFDI o un contrato, ver una lectura útil y después decidir qué más conservar dentro de tu expediente laboral.
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
-              Además, el asesor puede responder con base en tus propios documentos, no con ejemplos genéricos.
+              Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.
             </p>
           </div>
 
@@ -1787,23 +1787,19 @@ function ConfidenceMagicSection() {
 
           <div className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="max-w-2xl text-sm leading-7 text-teal-950">
-              La bóveda no sustituye la revisión inicial. La vuelve acumulativa: guardas, ordenas y sigues entendiendo tu historia laboral con más contexto y más calma.
+              El orden viene después del primer hallazgo. Empieza con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2 sm:items-end">
               <Button
                 className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900"
                 onClick={() => goToAuditFlow({ placement: "vault_section_primary" })}
               >
-                Crear mi bóveda laboral
+                {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
-              <Button
-                variant="outline"
-                className="rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50"
-                onClick={() => goToAuditFlow({ placement: "vault_section_secondary" })}
-              >
-                Revisar mi recibo primero
-              </Button>
+              <p className="text-sm text-teal-900/80">
+                Cuando quieras continuar o recuperar tu avance, entras con tu correo.
+              </p>
             </div>
           </div>
 

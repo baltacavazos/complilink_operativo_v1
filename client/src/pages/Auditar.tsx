@@ -98,6 +98,8 @@ type LegalGateMetricsState = {
   lastUpdatedAt: number | null;
 };
 
+type AuditarWorkspaceSection = "resumen" | "expediente" | "herramientas";
+
 const MAX_LEGAL_GATE_RETRIES = 3;
 const LEGAL_GATE_CONCURRENCY_RETRY_SECONDS = 4;
 const LEGAL_GATE_TRANSIENT_RETRY_SECONDS = 6;
@@ -3399,6 +3401,8 @@ export default function Auditar() {
     useState<HeliosCopilotResponseTone>("brief");
   const [selectedCaptureMode, setSelectedCaptureMode] =
     useState<AuditarCaptureMode | null>(null);
+  const [workspaceSection, setWorkspaceSection] =
+    useState<AuditarWorkspaceSection>("resumen");
   const [autoAnalyzeRequested, setAutoAnalyzeRequested] = useState(false);
   const [selectedComparisonLeftId, setSelectedComparisonLeftId] = useState("");
   const [selectedComparisonRightId, setSelectedComparisonRightId] =
@@ -5650,6 +5654,13 @@ export default function Auditar() {
     ? visiblePriorityUploadGuides.slice(0, 2)
     : visiblePriorityUploadGuides;
   const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
+  const hasDossierActivity =
+    documents.length > 0 || Boolean(lastUpload) || Boolean(pendingDraft);
+  const showWorkspaceSectionSelector =
+    hasDossierActivity && !selectedFile && !pendingDraft;
+  const isSummaryWorkspaceSection = workspaceSection === "resumen";
+  const isDossierWorkspaceSection = workspaceSection === "expediente";
+  const isAdvancedWorkspaceSection = workspaceSection === "herramientas";
   const activeCaptureMode =
     selectedCaptureMode ??
     preferredCaptureMode ??
@@ -7156,7 +7167,7 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Entrar para guardar en mi bóveda
+                  Iniciar sesión para guardar en mi expediente
                 </Button>
               </div>
             </div>
@@ -7589,6 +7600,75 @@ export default function Auditar() {
           </DrawerContent>
         </Drawer>
 
+        {showWorkspaceSectionSelector ? (
+          <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Ordena la pantalla por capas
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                  Primero ve lo esencial. Luego entra al expediente o a herramientas más finas.
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                  Dejamos tres vistas simples para que no tengas todo abierto al mismo tiempo: resumen para actuar rápido, expediente para continuidad y herramientas para comparaciones más avanzadas.
+                </p>
+              </div>
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+                {isSummaryWorkspaceSection
+                  ? "Vista activa: resumen"
+                  : isDossierWorkspaceSection
+                    ? "Vista activa: expediente"
+                    : "Vista activa: herramientas"}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <button
+                type="button"
+                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isSummaryWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
+                onClick={() => setWorkspaceSection("resumen")}
+              >
+                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isSummaryWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
+                  Resumen
+                </p>
+                <p className="mt-2 text-base font-semibold">Sube, revisa y toma la siguiente decisión.</p>
+                <p className={`mt-2 text-sm leading-6 ${isSummaryWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
+                  Ideal para empezar o volver rápido a lo importante.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isDossierWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
+                onClick={() => setWorkspaceSection("expediente")}
+              >
+                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isDossierWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
+                  Expediente
+                </p>
+                <p className="mt-2 text-base font-semibold">Progreso, faltantes y continuidad del caso.</p>
+                <p className={`mt-2 text-sm leading-6 ${isDossierWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
+                  Úsalo cuando quieras entender cómo va tu respaldo completo.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className={`rounded-[1.2rem] border px-4 py-4 text-left transition ${isAdvancedWorkspaceSection ? "border-slate-950 bg-slate-950 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 hover:bg-white"}`}
+                onClick={() => setWorkspaceSection("herramientas")}
+              >
+                <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isAdvancedWorkspaceSection ? "text-slate-300" : "text-slate-500"}`}>
+                  Herramientas
+                </p>
+                <p className="mt-2 text-base font-semibold">Comparaciones y lectura más fina entre documentos.</p>
+                <p className={`mt-2 text-sm leading-6 ${isAdvancedWorkspaceSection ? "text-slate-200" : "text-slate-600"}`}>
+                  Aquí dejamos lo avanzado para que no compita con el flujo principal.
+                </p>
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[42vh] w-full flex-col items-center justify-center space-y-2 rounded-[2.2rem] bg-slate-50 px-2 py-3" : "space-y-6"}>
             {shouldCompactPostUploadExperience && lastUpload ? (
@@ -7789,7 +7869,7 @@ export default function Auditar() {
                         ? "Cambiar documento"
                         : shouldCompactPostUploadExperience
                           ? "Asegurar otra evidencia"
-                          : "Revisar mi recibo gratis"}
+                          : "Elegir documento"}
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
@@ -7823,7 +7903,7 @@ export default function Auditar() {
             </div>
 
             <div
-              className={shouldCompactPostUploadExperience ? "hidden" : "hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"}
+              className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -7987,7 +8067,7 @@ export default function Auditar() {
                 </details>
               ) : null}
 
-              <div className={shouldCompactPostUploadExperience ? "hidden" : ""}>
+              <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : ""}>
               <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
@@ -8480,7 +8560,7 @@ export default function Auditar() {
               </p>
             </div>
 
-            <div className={shouldCompactPostUploadExperience ? "hidden" : "motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"}>
+            <div className={shouldCompactPostUploadExperience || (showWorkspaceSectionSelector && !isSummaryWorkspaceSection) ? "hidden" : "motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -10105,7 +10185,7 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className={shouldCompactPostUploadExperience ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
+            <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Tu último documento
               </p>
@@ -11653,7 +11733,7 @@ export default function Auditar() {
           </div>
 
           {(timelineEntries.length > 0 || documents.length > 0) ? (
-            <details className={shouldCompactPostUploadExperience ? "hidden" : "group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
+            <details className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -12404,7 +12484,7 @@ export default function Auditar() {
           ) : null}
         </section>
 
-          <aside className={shouldCompactPostUploadExperience ? "hidden" : "hidden space-y-6 xl:block"}>
+          <aside className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden space-y-6 xl:block"}>
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Expediente laboral seleccionado
@@ -12989,7 +13069,7 @@ export default function Auditar() {
               )}
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className={isAdvancedWorkspaceSection ? "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm" : "hidden"}>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Comparación guiada
               </p>

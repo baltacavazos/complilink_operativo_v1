@@ -1525,3 +1525,10 @@
 - [x] Auditoría integral: contrastar con ChatGPT, Grok y Gemini la estética global, consistencia visual y claridad percibida de toda la plataforma.
 - [x] Auditoría integral: identificar funciones repetidas, módulos redundantes y acciones prescindibles que hoy puedan confundir al usuario.
 - [x] Auditoría integral: sintetizar un plan priorizado para simplificar la experiencia completa y dejarla más intuitiva, limpia y autoexplicativa.
+- [x] Simplificación priorizada: contrastar con ChatGPT, Grok y Gemini el aterrizaje más seguro de la ronda de simplificación antes de modificar la interfaz.
+- [x] Simplificación priorizada: compactar landing para dejar una CTA principal más clara y reducir repetición conceptual de primera lectura, privacidad y bóveda.
+- [x] Simplificación priorizada: redefinir /acceso para que se perciba inequívocamente como continuar o iniciar sesión, sin ambigüedad frente a la landing.
+- [x] Simplificación priorizada: reestructurar /auditar con divulgación progresiva para separar inicio, expediente en progreso y herramientas avanzadas.
+- [x] Simplificación priorizada: modularizar la portada de /ceo para mostrar primero prioridades y dejar la profundidad detrás de navegación o expansión.
+- [x] Simplificación priorizada: unificar verbos visibles y acciones principales para reducir ambigüedad entre revisar, continuar, guardar y profundizar.
+- [ ] Simplificación priorizada: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.

@@ -32,8 +32,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Entrar con mi asistente");
     expect(source).not.toContain("Abrir mi expediente");
     expect(source).not.toContain("Tus derechos laborales,");
-    expect(source).toContain('const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis"');
-    expect(source).toContain("Revisar mi recibo gratis");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Empezar auditoría gratis"');
+    expect(source).toContain("Empezar auditoría gratis");
     expect(source).toContain("Ya entendí mejor qué revisar primero.");
     expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
     expect(source).toContain("Caso anónimo 01");
@@ -42,8 +42,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
-    expect(source).toContain("Bóveda laboral privada");
-    expect(source).toContain("Tu primer hallazgo también puede convertirse en tu archivo laboral.");
+    expect(source).toContain("Guarda y sigue después");
+    expect(source).toContain("Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.");
     expect(source).toContain("Entender la bóveda laboral");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Si no sabes con qué empezar");
@@ -55,13 +55,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Criterios laborales vigentes 2026");
     expect(source).toContain("Primera lectura sin correo");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
-    expect(source).toContain("Guardar en mi bóveda por correo");
-    expect(source).toContain("Primero ves la lectura. El correo sólo se usa cuando decides guardar el hallazgo y seguir dentro de tu bóveda.");
+    expect(source).toContain("Cuando quieras continuar o recuperar tu avance, entras con tu correo.");
+    expect(source).toContain("Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.");
     expect(source).toContain("audipatron_home_primary_cta_redirected_to_guest_preview");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Guardar solo si te sirve.");
-    expect(source).toContain("Primero ves la lectura. Si te ayuda, guardas el documento y el hallazgo dentro de tu Bóveda Laboral para volver a ellos cuando lo necesites.");
+    expect(source).toContain("El orden viene después del primer hallazgo. Empieza con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.");
     expect(source).toContain("Guardas solo lo útil.");
     expect(source).toContain("Privacidad y control visibles.");
     expect(source).toContain("Si no sabes con qué empezar");
@@ -106,7 +106,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5');
     expect(source).toContain('qué documento recibió');
     expect(source).toContain('qué señal encontró y qué conviene revisar después.');
-    expect(source).toContain('Revisar mi recibo gratis');
+    expect(source).toContain('Elegir documento');
     expect(source).toContain('mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950');
     expect(source).toContain('mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500');
     expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.');
@@ -212,9 +212,9 @@ describe("copy visible de la experiencia", () => {
   it("refuerza la ruta principal en acceso con una sola vía clara por correo", () => {
     const source = readPage("Access");
 
-    expect(source).toContain("Acceso simple");
-    expect(source).toContain("Continúa con tu correo");
-    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y sigue donde te quedaste. Después vuelves directo al ");
+    expect(source).toContain("Iniciar sesión");
+    expect(source).toContain("Inicia sesión y vuelve a tu expediente");
+    expect(source).toContain("Esta pantalla solo sirve para entrar o continuar. Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al ");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
@@ -232,8 +232,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Enviando código...");
     expect(source).toContain("Estamos enviando tu código.");
     expect(source).toContain("Código enviado");
-    expect(source).toContain("Entrar");
-    expect(source).toContain("Reenviar código");
+    expect(source).toContain("Iniciar sesión");
+    expect(source).toContain("Volver a enviar código");
     expect(source).toContain("Más opciones de acceso");
     expect(source).not.toContain("Si eres el CEO");
     expect(source).not.toContain("Tu acceso principal");
