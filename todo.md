@@ -1521,3 +1521,7 @@
 - [x] Monetización: añadir un panel interno básico para medir vistas de paywall, aperturas de checkout, compras por plan y compras one-shot.
 - [x] Monetización: mostrar mensajes de upgrade contextuales según el límite real alcanzado por el usuario dentro del expediente.
 - [x] Monetización: dejar probado el flujo integral de checkout y actualización de acceso en sandbox para reducir riesgo antes de activar cobro real.
+- [x] Auditoría integral: inventariar todas las superficies activas de la plataforma y mapear navegación, objetivos y fricciones por pantalla.
+- [x] Auditoría integral: contrastar con ChatGPT, Grok y Gemini la estética global, consistencia visual y claridad percibida de toda la plataforma.
+- [x] Auditoría integral: identificar funciones repetidas, módulos redundantes y acciones prescindibles que hoy puedan confundir al usuario.
+- [x] Auditoría integral: sintetizar un plan priorizado para simplificar la experiencia completa y dejarla más intuitiva, limpia y autoexplicativa.
