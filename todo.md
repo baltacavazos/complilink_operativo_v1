@@ -1537,3 +1537,7 @@
 - [x] Simplificación priorizada 2: convertir la navegación por capas de /auditar en una experiencia móvil más evidente y persistente.
 - [x] Simplificación priorizada 2: esconder mejor módulos técnicos o maestros de /ceo detrás de expansión explícita para que la lectura inicial sea más ejecutiva.
 - [x] Simplificación priorizada 2: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Simplificación priorizada 3: contrastar con ChatGPT, Grok y Gemini la forma más segura de colapsar bitácora avanzada y bloques profundos de la portada CEO.
+- [x] Simplificación priorizada 3: esconder la bitácora avanzada de /ceo detrás de expansión controlada para que la lectura inicial sea más ejecutiva.
+- [x] Simplificación priorizada 3: colapsar otros bloques profundos o técnicos de la portada CEO que todavía compiten con las prioridades del día.
+- [ ] Simplificación priorizada 3: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.

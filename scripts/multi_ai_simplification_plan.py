@@ -7,8 +7,8 @@ from pathlib import Path
 import requests
 
 BASE_DIR = Path('/home/ubuntu/complilink_operativo_v1')
-PROMPT_PATH = BASE_DIR / '.manus-notes' / 'simplificacion_priorizada_2_prompt.md'
-OUTPUT_PATH = BASE_DIR / '.manus-notes' / 'simplificacion_priorizada_2_multi_ia.json'
+PROMPT_PATH = BASE_DIR / '.manus-notes' / 'simplificacion_priorizada_3_prompt.md'
+OUTPUT_PATH = BASE_DIR / '.manus-notes' / 'simplificacion_priorizada_3_multi_ia.json'
 PROMPT = PROMPT_PATH.read_text(encoding='utf-8')
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

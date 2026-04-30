@@ -1,0 +1,144 @@
+{
+  "generated_at": "2026-04-30T04:05:11Z",
+  "openai": {
+    "ok": true,
+    "seconds": 5.57,
+    "parsed": {
+      "keep_visible_now": [
+        "Resumen ejecutivo",
+        "Alertas críticas",
+        "Documentos pendientes",
+        "Accesos vigentes"
+      ],
+      "collapse_next": [
+        "Bitácora operativa",
+        "Lecturas rápidas",
+        "Distribución",
+        "Otras superficies analíticas"
+      ],
+      "safe_micro_round": "Colapsar por defecto la bitácora operativa con un botón claro para 'Ver bitácora completa' justo debajo del resumen ejecutivo.",
+      "ux_risk": "Bajo. La bitácora es un bloque informativo secundario y su colapso no afecta accesos ni alertas críticas. El botón de expansión con copy claro minimiza la sensación de pérdida de control.",
+      "copy_labels": {
+        "collapsed_section": "Mostrar más detalles",
+        "expanded_section": "Ocultar detalles",
+        "bitacora_toggle": "Ver bitácora completa"
+      },
+      "why_this_order": "Mantener siempre visibles los elementos clave para la toma rápida de decisiones garantiza foco ejecutivo. Colapsar los bloques analíticos y operativos reduce la carga visual sin eliminar información, y usar etiquetas claras facilita la expansión intuitiva para usuarios no técnicos. La micro-ronda propuesta es de bajo riesgo, fácil de implementar y mejora significativamente la claridad y simplicidad."
+    }
+  },
+  "xai": {
+    "ok": true,
+    "seconds": 21.26,
+    "parsed": {
+      "keep_visible_now": [
+        "Resumen ejecutivo",
+        "Alertas críticas",
+        "Documentos pendientes",
+        "Accesos vigentes"
+      ],
+      "collapse_next": [
+        "Bitácora operativa (ocultar detrás de un botón expansible como 'Ver historial reciente')",
+        "Lecturas rápidas (colapsar en una sección expandible llamada 'Insights rápidos')",
+        "Distribución y superficies analíticas (agrupar y ocultar en un panel colapsado por defecto, accesible via 'Análisis detallado')"
+      ],
+      "safe_micro_round": "Colapsar primero la bitácora operativa por defecto, manteniendo un botón visible con etiqueta 'Mostrar bitácora' para expansión inmediata, ya que es un cambio mínimo de código (solo toggle de visibilidad) con alto impacto en reducción de carga visual inicial.",
+      "ux_risk": "Riesgo bajo: Posible percepción inicial de 'pérdida de información' si el botón de expansión no es intuitivo, pero mitigado con etiquetas claras en español. No rompe flujos existentes y preserva control aparente al mantener accesos directos a alertas y documentos.",
+      "copy_labels": {
+        "bitacora": "Ver bitácora operativa (últimos eventos)",
+        "lecturas": "Mostrar lecturas rápidas",
+        "analiticas": "Expandir análisis y distribución",
+        "general": "Usar iconos simples como flechas o '+' para expansión, con tooltips como 'Haz clic para más detalles' para guiar a usuarios no técnicos en México."
+      },
+      "why_this_order": "Priorizo colapsar bitácora primero porque compite directamente con prioridades diarias y su ocultamiento reduce profundidad visible sin afectar trazabilidad (fácil expansión). Luego, lecturas rápidas y analíticas, ya que son secundarias para decisiones rápidas, manteniendo el foco ejecutivo. Este orden minimiza riesgo, maximiza claridad y asegura control aparente con expansiones intuitivas."
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "seconds": 17.04,
+    "parsed": {
+      "keep_visible_now": [
+        "Resumen Ejecutivo (ya priorizado)",
+        "Alertas Críticas",
+        "Documentos Pendientes",
+        "Accesos Vigentes"
+      ],
+      "collapse_next": [
+        {
+          "block": "Bitácora Operativa",
+          "reason": "Contiene un alto volumen de detalle transaccional y eventos que, aunque importantes, compiten directamente con la necesidad de una visión ejecutiva rápida. Ocultarla reduce significativamente la carga cognitiva inicial."
+        },
+        {
+          "block": "Lecturas Rápidas",
+          "reason": "Aunque diseñadas para ser concisas, su presencia constante puede generar ruido visual y desviar la atención de las prioridades inmediatas. Son valiosas bajo demanda, no como elemento principal de la portada."
+        },
+        {
+          "block": "Distribución",
+          "reason": "Representa una superficie analítica específica. Su información es crucial, pero no siempre requiere visibilidad constante en la primera lectura de una portada ejecutiva. Puede ser explorada cuando se necesite profundizar en el rendimiento de canales."
+        },
+        {
+          "block": "Otras Superficies Analíticas",
+          "reason": "Por su propia definición, estos bloques ofrecen profundidad y análisis secundario. Deben ser accesibles, pero no dominar la pantalla inicial del CEO, que busca decisiones rápidas y no inmersión en datos."
+        }
+      ],
+      "safe_micro_round": {
+        "action": "Ocultar el bloque 'Bitácora Operativa' detrás de un control de expansión.",
+        "impact": "La 'Bitácora Operativa' es, por lo general, el bloque más denso y detallado. Su ocultamiento inmediato generará la mayor reducción de ruido visual y carga cognitiva en la portada, con un riesgo funcional mínimo ya que la información sigue siendo accesible. Este cambio refuerza instantáneamente la sensación de una portada más ejecutiva y directa."
+      },
+      "ux_risk": {
+        "mitigation_strategy": [
+          "**Indicador de Estado Colapsado:** Mostrar un resumen conciso o un contador de elementos nuevos/pendientes (ej. 'Bitácora: 3 nuevas entradas', 'Lecturas Rápidas: 1 nuevo insight') incluso cuando el bloque está colapsado. Esto asegura que el CEO sepa que la información existe y si hay algo relevante sin necesidad de expandir, manteniendo la sensación de control.",
+          "**Etiquetas Claras y Consistentes:** Utilizar un lenguaje sencillo y directo para los controles de expansión que sea intuitivo para un usuario no técnico (ver 'copy_labels').",
+          "**Ubicación Intuitiva del Control:** Colocar el botón/enlace de expansión de forma predecible y consistente (ej. en la esquina superior derecha del bloque colapsado o al final de un breve resumen).",
+          "**Transición Suave y Rápida:** Asegurar que la expansión y el colapso sean fluidos, rápidos y no impliquen recargas de página, para una experiencia sin fricciones.",
+          "**Acceso Directo a la Profundidad:** El control de expansión debe llevar directamente a la vista detallada o expandir el contenido in-situ, sin pasos intermedios ni navegación compleja."
+        ]
+      },
+      "copy_labels": [
+        {
+          "block": "Bitácora Operativa",
+          "labels": [
+            "Ver Bitácora Completa",
+            "Actividad Reciente (Expandir)",
+            "Detalle Operativo"
+          ]
+        },
+        {
+          "block": "Lecturas Rápidas",
+          "labels": [
+            "Explorar Insights",
+            "Análisis Rápido (Ver más)"
+          ]
+        },
+        {
+          "block": "Distribución",
+          "labels": [
+            "Ver Detalles de Distribución",
+            "Rendimiento de Canales"
+          ]
+        },
+        {
+          "block": "Otras Superficies Analíticas",
+          "labels": [
+            "Explorar Más Datos",
+            "Reportes Adicionales"
+          ]
+        },
+        {
+          "block": "General para expansión",
+          "labels": [
+            "Ver más...",
+            "Expandir",
+            "Mostrar detalles"
+          ]
+        }
+      ],
+      "why_this_order": [
+        "**Claridad Ejecutiva Prioritaria:** El objetivo principal es que el CEO pueda tomar decisiones rápidas. Mantener visible solo el resumen ejecutivo, alertas críticas, documentos pendientes y accesos vigentes asegura que la información más vital esté siempre al frente, minimizando distracciones.",
+        "**Reducción de Carga Cognitiva Máxima:** La 'Bitácora Operativa' es el primer candidato a colapsar porque su naturaleza detallada y transaccional es la que más compite con una visión de alto nivel. Su ocultamiento genera el mayor impacto en la reducción de ruido visual y mental.",
+        "**Progresión Lógica de Ocultamiento:** Tras la bitácora, se prioriza ocultar 'Lecturas Rápidas', 'Distribución' y 'Otras Superficies Analíticas'. Estos bloques, aunque útiles, ofrecen información de soporte o análisis secundario para la portada, y pueden ser accedidos cuando el CEO decida profundizar, sin saturar la vista inicial.",
+        "**Mantenimiento del Control Aparente:** La estrategia de mitigación de riesgo UX, que incluye indicadores de estado colapsado y etiquetas claras, es fundamental para que el CEO no sienta pérdida de control, sino una curación inteligente y eficiente de la información.",
+        "**Alineación con Restricciones:** Esta secuencia de cambios no introduce nuevas funciones ni rompe accesos existentes. Se enfoca en reubicar la información de manera estratégica para lograr un alto impacto visual y de claridad con cambios mínimos de código, favoreciendo una experiencia muy simple e intuitiva."
+      ]
+    }
+  }
+}

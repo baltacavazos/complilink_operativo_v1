@@ -2599,11 +2599,11 @@ export default function CeoDashboard() {
                   </article>
                 </div>
                 <div className="mt-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-                  <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                  <details className="group rounded-[1.4rem] border border-slate-200 bg-slate-50/70">
+                    <summary className="flex list-none cursor-pointer flex-wrap items-center justify-between gap-3 px-4 py-4 marker:content-none">
                       <div>
-                        <h4 className="text-base font-semibold text-slate-950">Eventos recientes</h4>
-                        <p className="text-sm text-slate-500">Ordenados desde la actividad más reciente del audit trail y segmentables sin salir del tablero.</p>
+                        <h4 className="text-base font-semibold text-slate-950">Bitácora operativa detallada</h4>
+                        <p className="text-sm text-slate-500">Expándela sólo cuando necesites eventos recientes, filtros rápidos y trazabilidad puntual.</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge className="rounded-full border border-white bg-white text-slate-700">
@@ -2625,8 +2625,9 @@ export default function CeoDashboard() {
                           </Button>
                         ) : null}
                       </div>
-                    </div>
-                    <div className="mt-4 space-y-4">
+                    </summary>
+                    <div className="border-t border-slate-200 px-4 pb-4 pt-4">
+                      <div className="space-y-4">
                       {filteredAuditTrail.length > 4 ? (
                         <p className="text-xs leading-5 text-slate-500">
                           {showExpandedAuditFeed
@@ -2728,6 +2729,7 @@ export default function CeoDashboard() {
                       </div>
                     </div>
                   </div>
+                  </details>
                   <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                     <div>
                         <h4 className="text-base font-semibold text-slate-950">Lectura rápida</h4>
@@ -3299,10 +3301,11 @@ export default function CeoDashboard() {
                           onClear={clearAllFilters}
                         />
                       )}
+                      </div>
                     </div>
-                  </div>
 
                   <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Expedientes recientes</p>
@@ -3373,10 +3376,29 @@ export default function CeoDashboard() {
                 </section>
 
                 <section className="space-y-6">
-                  <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Distribución</p>
-                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Señales operativas del momento</h3>
-                    <div className="mt-5 space-y-4">
+                  <details className="group rounded-[1.8rem] border border-white/70 bg-white/92 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
+                    <summary className="flex list-none cursor-pointer flex-wrap items-start justify-between gap-4 p-5 marker:content-none">
+                      <div className="max-w-3xl">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Distribución</p>
+                        <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Análisis detallado del momento</h3>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                          Casos por estatus y alertas por severidad quedan disponibles bajo demanda para no competir con las prioridades del día.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+                          {formatNumber((baseSnapshotQuery.data?.casesByStatus ?? []).length)} estatus visibles
+                        </Badge>
+                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 group-open:hidden">
+                          Ver análisis detallado
+                        </span>
+                        <span className="hidden items-center rounded-full border border-slate-200 bg-slate-900 px-3 py-1 text-sm font-medium text-white group-open:inline-flex">
+                          Ocultar análisis
+                        </span>
+                      </div>
+                    </summary>
+                    <div className="border-t border-slate-100 px-5 pb-5 pt-4">
+                      <div className="space-y-4">
                       <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
                         <div className="flex items-center gap-2 text-slate-950">
                           <Building2 className="h-4 w-4 text-teal-700" />
@@ -3418,6 +3440,7 @@ export default function CeoDashboard() {
                       </div>
                     </div>
                   </div>
+                  </details>
 
                   <div className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pendientes del CEO</p>
