@@ -1,0 +1,116 @@
+{
+  "prompt": "Contexto actual del producto:\n- Ya existe una experiencia híbrida inicial donde el CEO puede usar /auditar como vista base y abrir acciones ejecutivas de forma discreta.\n- Ahora se autorizó una segunda ronda con tres objetivos simultáneos:\n  1) añadir una pestaña o acceso fijo CEO en el header operativo;\n  2) guardar de forma persistente si el panel CEO debe abrirse o permanecer cerrado;\n  3) extender el mismo patrón híbrido a /acceso y a la home privada para que el comportamiento sea consistente.\n- El cambio debe ser mínimo viable, reversible y con el menor riesgo de regresión posible.\n- No se debe degradar la seguridad: solo admins reales ven y usan controles CEO.\n- Se prefiere reusar estado, componentes y patrones ya existentes, evitando infraestructura nueva si no es necesaria.\n\nDevuélveme JSON válido con este esquema exacto:\n{\n  \"recommended_pattern\": \"...\",\n  \"header_entry\": [\"...\", \"...\", \"...\"],\n  \"persistence_strategy\": [\"...\", \"...\", \"...\"],\n  \"surface_extension\": [\"...\", \"...\", \"...\"],\n  \"implementation_order\": [\"...\", \"...\", \"...\"],\n  \"risks\": [\"...\", \"...\", \"...\"],\n  \"avoid\": [\"...\", \"...\", \"...\"]\n}\n\nResponde para una V1.1 pragmática. Prioriza claridad de navegación, consistencia entre superficies y mínimo cambio estructural.",
+  "responses": [
+    {
+      "provider": "openai",
+      "raw": "{\n  \"recommended_pattern\": \"Extender el patrón híbrido existente del panel CEO en /auditar a /acceso y home privada, reutilizando el componente y estado actual, con un toggle persistente y acceso condicional basado en roles.\",\n  \"header_entry\": [\n    \"Añadir un botón o pestaña fija 'CEO' en el header operativo visible solo para admins reales.\",\n    \"El botón actúa como toggle para abrir/cerrar el panel CEO sin recargar la página.\",\n    \"Reusar el componente de toggle y estilos existentes para mantener consistencia visual.\"\n  ],\n  \"persistence_strategy\": [\n    \"Guardar el estado abierto/cerrado del panel CEO en localStorage para persistencia entre sesiones.\",\n    \"Sincronizar el estado con el estado global o contexto React existente para evitar inconsistencias.\",\n    \"No almacenar estado en backend para minimizar cambios y riesgos.\"\n  ],\n  \"surface_extension\": [\n    \"Integrar el mismo componente híbrido CEO en /acceso y home privada, respetando permisos.\",\n    \"Mantener el comportamiento idéntico al de /auditar para consistencia UX.\",\n    \"Evitar duplicar lógica creando un wrapper común si es necesario.\"\n  ],\n  \"implementation_order\": [\n    \"1. Añadir el botón CEO en el header con visibilidad condicional para admins.\",\n    \"2. Implementar persistencia local del estado abierto/cerrado del panel CEO.\",\n    \"3. Extender el componente híbrido CEO a /acceso y home privada reutilizando código.\"\n  ],\n  \"risks\": [\n    \"Posible inconsistencia de estado si no se sincroniza correctamente entre componentes.\",\n    \"Exposición accidental de controles CEO a usuarios no autorizados si la condición de visibilidad falla.\",\n    \"Regresión visual o funcional si el componente híbrido se modifica sin pruebas adecuadas.\"\n  ],\n  \"avoid\": [\n    \"No crear nueva infraestructura de backend para persistencia en esta versión.\",\n    \"No modificar rutas o estructura de navegación existentes para minimizar impacto.\",\n    \"No duplicar componentes o lógica, evitar código repetido para facilitar reversión.\"\n  ]\n}",
+      "parsed": {
+        "recommended_pattern": "Extender el patrón híbrido existente del panel CEO en /auditar a /acceso y home privada, reutilizando el componente y estado actual, con un toggle persistente y acceso condicional basado en roles.",
+        "header_entry": [
+          "Añadir un botón o pestaña fija 'CEO' en el header operativo visible solo para admins reales.",
+          "El botón actúa como toggle para abrir/cerrar el panel CEO sin recargar la página.",
+          "Reusar el componente de toggle y estilos existentes para mantener consistencia visual."
+        ],
+        "persistence_strategy": [
+          "Guardar el estado abierto/cerrado del panel CEO en localStorage para persistencia entre sesiones.",
+          "Sincronizar el estado con el estado global o contexto React existente para evitar inconsistencias.",
+          "No almacenar estado en backend para minimizar cambios y riesgos."
+        ],
+        "surface_extension": [
+          "Integrar el mismo componente híbrido CEO en /acceso y home privada, respetando permisos.",
+          "Mantener el comportamiento idéntico al de /auditar para consistencia UX.",
+          "Evitar duplicar lógica creando un wrapper común si es necesario."
+        ],
+        "implementation_order": [
+          "1. Añadir el botón CEO en el header con visibilidad condicional para admins.",
+          "2. Implementar persistencia local del estado abierto/cerrado del panel CEO.",
+          "3. Extender el componente híbrido CEO a /acceso y home privada reutilizando código."
+        ],
+        "risks": [
+          "Posible inconsistencia de estado si no se sincroniza correctamente entre componentes.",
+          "Exposición accidental de controles CEO a usuarios no autorizados si la condición de visibilidad falla.",
+          "Regresión visual o funcional si el componente híbrido se modifica sin pruebas adecuadas."
+        ],
+        "avoid": [
+          "No crear nueva infraestructura de backend para persistencia en esta versión.",
+          "No modificar rutas o estructura de navegación existentes para minimizar impacto.",
+          "No duplicar componentes o lógica, evitar código repetido para facilitar reversión."
+        ]
+      }
+    },
+    {
+      "provider": "grok",
+      "raw": "{\n  \"recommended_pattern\": \"Extender el patrón híbrido existente para el CEO, donde una vista base incluye un panel discreto y toggleable, reutilizando componentes actuales para mantener consistencia en navegación y acceso, con estado persistente solo para admins en header, /acceso y home privada.\",\n  \"header_entry\": [\n    \"Añadir un ícono o botón toggle en el header operativo que active el panel CEO, reutilizando el componente de panel existente.\",\n    \"Asegurar que el elemento sea visible y funcional solo para admins, verificando roles en el renderizado.\",\n    \"Mantener el diseño minimalista para no alterar la estructura general del header.\"\n  ],\n  \"persistence_strategy\": [\n    \"Usar localStorage para guardar el estado (abierto/cerrado) del panel CEO, reutilizando cualquier mecanismo de estado existente.\",\n    \"Implementar un key simple como 'ceoPanelState' y verificar su validez al cargar la página para mantener reversibilidad.\",\n    \"Asegurar que el estado se limpie o resetee en logout para no comprometer la seguridad.\"\n  ],\n  \"surface_extension\": [\n    \"Replicar el patrón en /acceso y home privada usando el mismo componente de panel y lógica de toggle.\",\n    \"Mantener consistencia al aplicar el mismo estado persistente y acceso condicional basado en roles de admin.\",\n    \"Verificar que el panel no altere el flujo principal de estas superficies, manteniendo la navegación clara.\"\n  ],\n  \"implementation_order\": [\n    \"1. Añadir y probar el acceso en el header para asegurar integración mínima.\",\n    \"2. Implementar la persistencia del estado para probar en una sola superficie primero.\",\n    \"3. Extender el patrón a /acceso y home privada, con pruebas de regresión en cada paso.\"\n  ],\n  \"risks\": [\n    \"Exposición accidental de controles CEO si la verificación de roles falla, potencialmente degradando la seguridad.\",\n    \"Regresiones en la navegación si el estado persistente no se maneja correctamente en diferentes sesiones o navegadores.\",\n    \"Sobrecarga de componentes existentes que podría afectar el rendimiento, aunque sea mínimo.\"\n  ],\n  \"avoid\": [\n    \"Evitar la creación de nueva infraestructura como bases de datos o componentes personalizados; reutilizar lo existente.\",\n    \"No alterar la lógica de seguridad principal para prevenir accesos no autorizados.\",\n    \"Evitar cambios estructurales en las vistas que podrían introducir complejidad innecesaria.\"\n  ]\n}",
+      "parsed": {
+        "recommended_pattern": "Extender el patrón híbrido existente para el CEO, donde una vista base incluye un panel discreto y toggleable, reutilizando componentes actuales para mantener consistencia en navegación y acceso, con estado persistente solo para admins en header, /acceso y home privada.",
+        "header_entry": [
+          "Añadir un ícono o botón toggle en el header operativo que active el panel CEO, reutilizando el componente de panel existente.",
+          "Asegurar que el elemento sea visible y funcional solo para admins, verificando roles en el renderizado.",
+          "Mantener el diseño minimalista para no alterar la estructura general del header."
+        ],
+        "persistence_strategy": [
+          "Usar localStorage para guardar el estado (abierto/cerrado) del panel CEO, reutilizando cualquier mecanismo de estado existente.",
+          "Implementar un key simple como 'ceoPanelState' y verificar su validez al cargar la página para mantener reversibilidad.",
+          "Asegurar que el estado se limpie o resetee en logout para no comprometer la seguridad."
+        ],
+        "surface_extension": [
+          "Replicar el patrón en /acceso y home privada usando el mismo componente de panel y lógica de toggle.",
+          "Mantener consistencia al aplicar el mismo estado persistente y acceso condicional basado en roles de admin.",
+          "Verificar que el panel no altere el flujo principal de estas superficies, manteniendo la navegación clara."
+        ],
+        "implementation_order": [
+          "1. Añadir y probar el acceso en el header para asegurar integración mínima.",
+          "2. Implementar la persistencia del estado para probar en una sola superficie primero.",
+          "3. Extender el patrón a /acceso y home privada, con pruebas de regresión en cada paso."
+        ],
+        "risks": [
+          "Exposición accidental de controles CEO si la verificación de roles falla, potencialmente degradando la seguridad.",
+          "Regresiones en la navegación si el estado persistente no se maneja correctamente en diferentes sesiones o navegadores.",
+          "Sobrecarga de componentes existentes que podría afectar el rendimiento, aunque sea mínimo."
+        ],
+        "avoid": [
+          "Evitar la creación de nueva infraestructura como bases de datos o componentes personalizados; reutilizar lo existente.",
+          "No alterar la lógica de seguridad principal para prevenir accesos no autorizados.",
+          "Evitar cambios estructurales en las vistas que podrían introducir complejidad innecesaria."
+        ]
+      }
+    },
+    {
+      "provider": "gemini",
+      "raw": "{\n  \"recommended_pattern\": \"Un 'Modo CEO' global y persistente, activable desde el header, que despliega un panel superpuesto con acciones ejecutivas. Este panel coexistirá con la vista base de cada superficie, manteniendo la experiencia híbrida.\",\n  \"header_entry\": [\n    \"Un botón/toggle distintivo en el header operativo (ej. 'Modo CEO' o un icono de corona/escudo).\",\n    \"Visible exclusivamente para usuarios con rol de administrador real, utilizando las comprobaciones de seguridad existentes.\",\n    \"Debe indicar visualmente si el 'Modo CEO' está activo o inactivo para proporcionar feedback inmediato al usuario.\"\n  ],\n  \"persistence_strategy\": [\n    \"Utilizar `localStorage` para guardar el estado (`abierto`/`cerrado`) del panel CEO.\",\n    \"La clave de `localStorage` debe ser específica por usuario (ej. `ceoPanelState_userId`) para respetar preferencias individuales y evitar conflictos.\",\n    \"El estado se cargará al inicializar la aplicación en cualquier superficie, aplicando la preferencia guardada para una experiencia consistente.\"\n  ],\n  \"surface_extension\": [\n    \"Reutilizar el componente o lógica del panel CEO existente en `/auditar` para evitar duplicación de código.\",\n    \"Integrar el mismo componente del panel CEO y su lógica de activación/desactivación en `/acceso` y la home privada.\",\n    \"Asegurar que el botón del header y el panel se comporten de manera idéntica y consistente en todas las superficies para una UX unificada.\"\n  ],\n  \"implementation_order\": [\n    \"1. Implementar el botón/toggle en el header y su lógica de visibilidad por rol, asegurando que solo admins lo vean.\",\n    \"2. Integrar la persistencia del estado del panel CEO usando `localStorage` y conectar el toggle a la apertura/cierre del panel en `/auditar` (donde ya existe la base).\",\n    \"3. Extender la integración del botón del header y el panel CEO a `/acceso` y la home privada, verificando la consistencia y funcionalidad en todas las superficies.\"\n  ],\n  \"risks\": [\n    \"**Seguridad:** Exposición accidental de controles CEO a usuarios no autorizados si la lógica de permisos no es robusta o se degrada durante la implementación.\",\n    \"**Regresión UI/UX:** Posibles conflictos de diseño o comportamiento en el header o en las superficies extendidas debido a la adición del nuevo elemento o cambios en componentes compartidos.\",\n    \"**Consistencia de Estado:** Fallos en la persistencia del estado del panel (ej. no se guarda, se carga incorrectamente) o inconsistencias entre diferentes pestañas/sesiones del navegador.\"\n  ],\n  \"avoid\": [\n    \"Desarrollo de nuevas APIs o infraestructura de backend para la persistencia del estado del panel; `localStorage` es suficiente para este requisito.\",\n    \"Introducción de nuevos frameworks o librerías de gestión de estado si no son estrictamente necesarios y ya existen patrones o librerías en uso.\",\n    \"Cambios estructurales profundos en el layout del header o en los componentes base que puedan generar efectos colaterales no deseados en otras partes de la aplicación.\"\n  ]\n}",
+      "parsed": {
+        "recommended_pattern": "Un 'Modo CEO' global y persistente, activable desde el header, que despliega un panel superpuesto con acciones ejecutivas. Este panel coexistirá con la vista base de cada superficie, manteniendo la experiencia híbrida.",
+        "header_entry": [
+          "Un botón/toggle distintivo en el header operativo (ej. 'Modo CEO' o un icono de corona/escudo).",
+          "Visible exclusivamente para usuarios con rol de administrador real, utilizando las comprobaciones de seguridad existentes.",
+          "Debe indicar visualmente si el 'Modo CEO' está activo o inactivo para proporcionar feedback inmediato al usuario."
+        ],
+        "persistence_strategy": [
+          "Utilizar `localStorage` para guardar el estado (`abierto`/`cerrado`) del panel CEO.",
+          "La clave de `localStorage` debe ser específica por usuario (ej. `ceoPanelState_userId`) para respetar preferencias individuales y evitar conflictos.",
+          "El estado se cargará al inicializar la aplicación en cualquier superficie, aplicando la preferencia guardada para una experiencia consistente."
+        ],
+        "surface_extension": [
+          "Reutilizar el componente o lógica del panel CEO existente en `/auditar` para evitar duplicación de código.",
+          "Integrar el mismo componente del panel CEO y su lógica de activación/desactivación en `/acceso` y la home privada.",
+          "Asegurar que el botón del header y el panel se comporten de manera idéntica y consistente en todas las superficies para una UX unificada."
+        ],
+        "implementation_order": [
+          "1. Implementar el botón/toggle en el header y su lógica de visibilidad por rol, asegurando que solo admins lo vean.",
+          "2. Integrar la persistencia del estado del panel CEO usando `localStorage` y conectar el toggle a la apertura/cierre del panel en `/auditar` (donde ya existe la base).",
+          "3. Extender la integración del botón del header y el panel CEO a `/acceso` y la home privada, verificando la consistencia y funcionalidad en todas las superficies."
+        ],
+        "risks": [
+          "**Seguridad:** Exposición accidental de controles CEO a usuarios no autorizados si la lógica de permisos no es robusta o se degrada durante la implementación.",
+          "**Regresión UI/UX:** Posibles conflictos de diseño o comportamiento en el header o en las superficies extendidas debido a la adición del nuevo elemento o cambios en componentes compartidos.",
+          "**Consistencia de Estado:** Fallos en la persistencia del estado del panel (ej. no se guarda, se carga incorrectamente) o inconsistencias entre diferentes pestañas/sesiones del navegador."
+        ],
+        "avoid": [
+          "Desarrollo de nuevas APIs o infraestructura de backend para la persistencia del estado del panel; `localStorage` es suficiente para este requisito.",
+          "Introducción de nuevos frameworks o librerías de gestión de estado si no son estrictamente necesarios y ya existen patrones o librerías en uso.",
+          "Cambios estructurales profundos en el layout del header o en los componentes base que puedan generar efectos colaterales no deseados en otras partes de la aplicación."
+        ]
+      }
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import {
   type HeliosCopilotMessage,
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
+import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { trpc } from "@/lib/trpc";
 import {
   trackCommerceCheckoutStarted,
@@ -70,6 +71,11 @@ import {
   LEGAL_VERSION,
   PRIVACY_CENTER_COPY,
 } from "@shared/legal";
+import {
+  getStableUserIdentifier,
+  readPersistedCeoPanelState,
+  writePersistedCeoPanelState,
+} from "@/lib/viewMode";
 
 type LegalGateErrorType = "validation" | "concurrency" | "transient" | "fatal";
 
@@ -3475,6 +3481,9 @@ export default function Auditar() {
   const [legalGateRetryCountdown, setLegalGateRetryCountdown] = useState(0);
   const [legalDocumentsDrawerOpen, setLegalDocumentsDrawerOpen] =
     useState(false);
+  const [ceoPanelPreferenceReady, setCeoPanelPreferenceReady] =
+    useState(false);
+  const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
   const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
   const [casePreparationDrawerOpen, setCasePreparationDrawerOpen] =
     useState(false);
@@ -3647,23 +3656,50 @@ export default function Auditar() {
     return () => window.clearInterval(countdownTimer);
   }, [legalGateError?.retryAvailableAt]);
 
+  const stableUserIdentifier = useMemo(
+    () => getStableUserIdentifier(auth.realUser ?? auth.user),
+    [auth.realUser, auth.user]
+  );
+
   const auditarPersistenceKey = useMemo(() => {
-    if (!auth.user) {
+    if (!stableUserIdentifier) {
       return null;
     }
 
-    const userRecord = auth.user as Record<string, unknown>;
-    const stableId = ["openId", "id", "userId", "email"].find(key => {
-      const value = userRecord[key];
-      return typeof value === "string" && value.trim().length > 0;
-    });
+    return `auditar-view-state:v1:${stableUserIdentifier}`;
+  }, [stableUserIdentifier]);
 
-    if (!stableId) {
-      return null;
+  useEffect(() => {
+    if (!auth.canToggleUserView) {
+      setCeoPanelPreferenceReady(false);
+      setCeoPanelPreferenceOpen(false);
+      setCeoActionsDrawerOpen(false);
+      return;
     }
 
-    return `auditar-view-state:v1:${String(userRecord[stableId])}`;
-  }, [auth.user]);
+    setCeoPanelPreferenceReady(false);
+    const persistedOpen = readPersistedCeoPanelState(auth.realUser ?? auth.user);
+    setCeoPanelPreferenceOpen(persistedOpen);
+    setCeoActionsDrawerOpen(persistedOpen);
+    setCeoPanelPreferenceReady(true);
+  }, [auth.canToggleUserView, auth.realUser, auth.user]);
+
+  useEffect(() => {
+    if (!ceoPanelPreferenceReady || !auth.canToggleUserView) {
+      return;
+    }
+
+    writePersistedCeoPanelState(
+      auth.realUser ?? auth.user,
+      ceoPanelPreferenceOpen
+    );
+  }, [
+    auth.canToggleUserView,
+    auth.realUser,
+    auth.user,
+    ceoPanelPreferenceOpen,
+    ceoPanelPreferenceReady,
+  ]);
 
   useEffect(() => {
     setPersistenceReady(false);
@@ -7230,12 +7266,9 @@ export default function Auditar() {
     );
   }
 
-  const navigateToCeoAction = (path: string) => {
-    setCeoActionsDrawerOpen(false);
-    if (auth.isViewingAsUser) {
-      auth.exitUserView();
-    }
-    window.location.href = path;
+  const setPersistedCeoPanelOpen = (nextOpen: boolean) => {
+    setCeoPanelPreferenceOpen(nextOpen);
+    setCeoActionsDrawerOpen(nextOpen);
   };
 
   return (
@@ -7287,7 +7320,7 @@ export default function Auditar() {
                       ? "bg-amber-700 text-white hover:bg-amber-800"
                       : "bg-teal-700 text-white hover:bg-teal-800"
                   }`}
-                  onClick={() => setCeoActionsDrawerOpen(true)}
+                  onClick={() => setPersistedCeoPanelOpen(true)}
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
                   Abrir acciones CEO
@@ -7381,6 +7414,27 @@ export default function Auditar() {
           </div>
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
+            {auth.canToggleUserView ? (
+              <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                <Button
+                  variant="outline"
+                  className={`rounded-full border px-4 text-sm font-semibold ${ceoActionsDrawerOpen ? "border-amber-300/70 bg-amber-400/15 text-amber-50 hover:bg-amber-400/25" : "border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25"}`}
+                  onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
+                  aria-pressed={ceoActionsDrawerOpen}
+                  data-testid="auditar-ceo-header-toggle"
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                  {ceoActionsDrawerOpen ? "Modo CEO activo" : "Modo CEO"}
+                </Button>
+                <span className="text-[11px] font-medium text-slate-300">
+                  {ceoActionsDrawerOpen
+                    ? "Tu panel ejecutivo quedó abierto para este usuario en este equipo."
+                    : auth.isViewingAsUser
+                      ? "Sigue siendo la vista normal de usuario con salida discreta al CEO."
+                      : "Abre acciones CEO sin salir del flujo operativo base."}
+                </span>
+              </div>
+            ) : null}
             <Button
               variant="outline"
               className={shouldCompactPostUploadExperience ? "hidden" : "hidden rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25 sm:inline-flex"}
@@ -7685,92 +7739,11 @@ export default function Auditar() {
           </DrawerContent>
         </Drawer>
 
-        <Drawer
+        <CeoPanelDrawer
           open={ceoActionsDrawerOpen}
-          onOpenChange={setCeoActionsDrawerOpen}
-        >
-          <DrawerContent>
-            <DrawerHeader className="text-left">
-              <DrawerTitle>Acciones CEO desde tu vista operativa</DrawerTitle>
-              <DrawerDescription>
-                Entra al resumen ejecutivo o a una vista específica del CEO sin
-                perder la claridad de que tu base diaria sigue siendo
-                <strong> /auditar</strong>. Si vienes en demo de usuario,
-                saldremos de esa simulación en cuanto abras una acción
-                ejecutiva.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="space-y-3 px-4 pb-2">
-              {[
-                {
-                  label: "Resumen ejecutivo",
-                  helper: "Prioridades del día, decisiones seguras y lectura general.",
-                  path: "/ceo",
-                },
-                {
-                  label: "Alertas CEO",
-                  helper: "Entrar directo a incidencias, focos rojos y seguimientos.",
-                  path: "/ceo/alertas",
-                },
-                {
-                  label: "Documentos CEO",
-                  helper: "Abrir la revisión ejecutiva de documentos y pendientes.",
-                  path: "/ceo/documentos",
-                },
-                {
-                  label: "Accesos CEO",
-                  helper: "Revisar membresías, vigencias y control operativo.",
-                  path: "/ceo/accesos",
-                },
-                {
-                  label: "Bridge operativo",
-                  helper: "Ir al puente técnico sólo cuando necesites profundidad.",
-                  path: "/ceo/bridge",
-                },
-              ].map(action => (
-                <Button
-                  key={action.path}
-                  variant="outline"
-                  className="h-auto w-full items-start justify-between rounded-[1.2rem] border-slate-200 bg-white px-4 py-4 text-left text-slate-900 hover:bg-slate-50"
-                  onClick={() => navigateToCeoAction(action.path)}
-                >
-                  <div className="pr-4">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {action.label}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
-                      {action.helper}
-                    </p>
-                  </div>
-                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" strokeWidth={1.8} />
-                </Button>
-              ))}
-            </div>
-            <DrawerFooter>
-              {auth.isViewingAsUser ? (
-                <Button
-                  variant="outline"
-                  className="rounded-2xl border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
-                  onClick={() => {
-                    setCeoActionsDrawerOpen(false);
-                    auth.exitUserView();
-                    window.location.href = "/ceo";
-                  }}
-                >
-                  Salir de la demo y abrir tablero CEO
-                </Button>
-              ) : null}
-              <DrawerClose asChild>
-                <Button
-                  variant="outline"
-                  className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                >
-                  Seguir en mi vista operativa
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+          onOpenChange={setPersistedCeoPanelOpen}
+          baseLabel="/auditar"
+        />
 
         {showWorkspaceSectionSelector ? (
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>

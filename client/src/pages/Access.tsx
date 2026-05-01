@@ -1,9 +1,15 @@
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Mail } from "lucide-react";
+import {
+  getStableUserIdentifier,
+  readPersistedCeoPanelState,
+  writePersistedCeoPanelState,
+} from "@/lib/viewMode";
+import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 
 const LAST_EMAIL_KEY = "auditapatron_last_login_email";
@@ -132,7 +138,8 @@ export default function Access() {
   const returnToLabel = useMemo(() => getReturnToLabel(returnTo), [returnTo]);
   const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
-  const { loading, user } = useAuth();
+  const auth = useAuth();
+  const { loading, user } = auth;
   const [rememberedEmail, setRememberedEmail] = useState(() => getStoredEmail());
   const [email, setEmail] = useState(() => getStoredEmail());
   const [code, setCode] = useState("");
@@ -142,7 +149,14 @@ export default function Access() {
   const [emailStep, setEmailStep] = useState<"request" | "verify">("request");
   const [emailCooldownUntil, setEmailCooldownUntil] = useState<number | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
+  const [ceoPanelPreferenceReady, setCeoPanelPreferenceReady] = useState(false);
+  const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
+  const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
   const accessErrorFromSearch = useMemo(() => getAccessErrorFromSearch(), []);
+  const stableUserIdentifier = useMemo(
+    () => getStableUserIdentifier(auth.realUser ?? auth.user),
+    [auth.realUser, auth.user]
+  );
 
   const googleStatusQuery = trpc.auth.googleStatus.useQuery();
   const requestEmailCode = trpc.auth.requestEmailCode.useMutation({
@@ -195,10 +209,43 @@ export default function Access() {
   });
 
   useEffect(() => {
-    if (!loading && user && typeof window !== "undefined") {
+    if (!loading && user && !auth.canToggleUserView && typeof window !== "undefined") {
       window.location.replace(returnTo);
     }
-  }, [loading, returnTo, user]);
+  }, [auth.canToggleUserView, loading, returnTo, user]);
+
+  useEffect(() => {
+    if (!auth.canToggleUserView || !stableUserIdentifier) {
+      setCeoPanelPreferenceReady(false);
+      setCeoPanelPreferenceOpen(false);
+      setCeoActionsDrawerOpen(false);
+      return;
+    }
+
+    setCeoPanelPreferenceReady(false);
+    const persistedOpen = readPersistedCeoPanelState(auth.realUser ?? auth.user);
+    setCeoPanelPreferenceOpen(persistedOpen);
+    setCeoActionsDrawerOpen(persistedOpen);
+    setCeoPanelPreferenceReady(true);
+  }, [auth.canToggleUserView, auth.realUser, auth.user, stableUserIdentifier]);
+
+  useEffect(() => {
+    if (!ceoPanelPreferenceReady || !auth.canToggleUserView || !stableUserIdentifier) {
+      return;
+    }
+
+    writePersistedCeoPanelState(
+      auth.realUser ?? auth.user,
+      ceoPanelPreferenceOpen
+    );
+  }, [
+    auth.canToggleUserView,
+    auth.realUser,
+    auth.user,
+    ceoPanelPreferenceOpen,
+    ceoPanelPreferenceReady,
+    stableUserIdentifier,
+  ]);
 
   useEffect(() => {
     if (!accessErrorFromSearch) return;
@@ -243,6 +290,84 @@ export default function Access() {
   const emailCooldownSecondsRemaining = emailCooldownUntil ? Math.max(0, Math.ceil((emailCooldownUntil - nowTs) / 1000)) : 0;
   const emailCooldownActive = emailCooldownSecondsRemaining > 0;
   const secondaryOptionsAvailable = Boolean((manusLoginAvailable && manusLoginUrl) || googleEnabled);
+
+  const setPersistedCeoPanelOpen = (nextOpen: boolean) => {
+    setCeoPanelPreferenceOpen(nextOpen);
+    setCeoActionsDrawerOpen(nextOpen);
+  };
+
+  if (auth.canToggleUserView && auth.isAuthenticated) {
+    return (
+      <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+        <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
+          <div className="mx-auto flex w-full max-w-md flex-col gap-3">
+            <a
+              href="/auditar"
+              className="inline-flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
+            >
+              <ArrowLeft className="h-4 w-4 shrink-0" />
+              <span className="truncate">Volver a /auditar</span>
+            </a>
+          </div>
+
+          <section className="mx-auto mt-4 flex w-full max-w-md flex-1 flex-col justify-center">
+            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.22)] sm:p-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
+                <div className="min-w-0">
+                  <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Acceso base con salida CEO</p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-[1.45rem] border border-teal-100 bg-teal-50/80 p-4 text-sm text-teal-950">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                      {auth.isViewingAsUser ? "Acceso normal con salida CEO" : "Acceso operativo con salida CEO"}
+                    </p>
+                    <p className="mt-2 leading-6">
+                      Tu sesión de administrador ya está activa. Conservamos esta pantalla como referencia del flujo base y te dejamos la misma salida ejecutiva discreta para no cambiar de mundo.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-3">
+                  <Button
+                    variant="outline"
+                    className={`rounded-full border ${ceoActionsDrawerOpen ? "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200" : "border-teal-300 bg-white text-teal-900 hover:bg-teal-100"}`}
+                    onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
+                    data-testid="access-ceo-header-toggle"
+                  >
+                    <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                    {ceoActionsDrawerOpen ? "Modo CEO activo" : "Modo CEO"}
+                  </Button>
+                  <Button
+                    className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
+                    onClick={() => {
+                      window.location.href = "/auditar";
+                    }}
+                  >
+                    Seguir en /auditar
+                  </Button>
+                  <p className="text-xs leading-5 text-teal-900/80">
+                    {ceoActionsDrawerOpen
+                      ? "La preferencia de apertura quedó guardada para este usuario en este equipo."
+                      : "Cuando quieras abrir el nivel ejecutivo, puedes hacerlo desde aquí sin romper la vista base."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <CeoPanelDrawer
+          open={ceoActionsDrawerOpen}
+          onOpenChange={setPersistedCeoPanelOpen}
+          baseLabel="/acceso"
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">

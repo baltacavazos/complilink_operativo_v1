@@ -1544,4 +1544,9 @@
 - [x] Experiencia híbrida CEO: contrastar con ChatGPT, Grok y Gemini la forma más segura de dejar la vista normal como base y abrir acciones CEO sin sacar al usuario del flujo principal.
 - [x] Experiencia híbrida CEO: rediseñar la navegación para que el CEO vea primero la interfaz normal y tenga una entrada visible pero discreta a sus herramientas ejecutivas.
 - [x] Experiencia híbrida CEO: ajustar el comportamiento de rutas y modo de vista para que el acceso CEO se sienta integrado y reversible.
-- [ ] Experiencia híbrida CEO: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Experiencia híbrida CEO: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Experiencia híbrida CEO 2: contrastar con ChatGPT, Grok y Gemini la forma más segura de integrar una pestaña fija CEO, persistencia de preferencia y extensión del patrón híbrido sin romper el flujo principal.
+- [x] Experiencia híbrida CEO 2: añadir una pestaña o acceso fijo de CEO en el header operativo de la vista principal para entrar a acciones ejecutivas sin salir del contexto de usuario.
+- [x] Experiencia híbrida CEO 2: guardar de forma persistente la preferencia del panel CEO abierto o cerrado para recordar el comportamiento entre sesiones.
+- [x] Experiencia híbrida CEO 2: extender el patrón híbrido a acceso y home privada para que el comportamiento ejecutivo sea consistente en las superficies clave.
+- [x] Experiencia híbrida CEO 2: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.

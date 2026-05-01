@@ -61,6 +61,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Guardar solo si te sirve.");
+    expect(source).toContain("Home privada con salida CEO");
+    expect(source).toContain("Home base con salida CEO");
+    expect(source).toContain("Modo CEO activo");
+    expect(source).toContain('data-testid="home-ceo-header-toggle"');
+    expect(source).toContain('baseLabel="la home privada"');
     expect(source).toContain("El orden viene después del primer hallazgo. Empieza con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.");
     expect(source).toContain("Guardas solo lo útil.");
     expect(source).toContain("Privacidad y control visibles.");
@@ -173,7 +178,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Vista normal de usuario con acceso CEO');
     expect(source).toContain('Vista operativa base con acceso CEO');
     expect(source).toContain('Abrir acciones CEO');
-    expect(source).toContain('Acciones CEO desde tu vista operativa');
+    expect(source).toContain('Modo CEO activo');
+    expect(source).toContain('data-testid="auditar-ceo-header-toggle"');
+    expect(source).toContain('baseLabel="/auditar"');
     expect(source).toContain('Ver exactamente como usuario normal');
     expect(source).toContain('Siguiente recomendación comercial');
     expect(source).toContain('Conversión de esta sesión');
@@ -240,6 +247,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Volver a enviar código");
     expect(source).toContain("Más opciones de acceso");
+    expect(source).toContain("Acceso base con salida CEO");
+    expect(source).toContain("Acceso normal con salida CEO");
+    expect(source).toContain('data-testid="access-ceo-header-toggle"');
+    expect(source).toContain('baseLabel="/acceso"');
     expect(source).not.toContain("Si eres el CEO");
     expect(source).not.toContain("Tu acceso principal");
     expect(source).not.toContain("Google sólo aparece cuando la configuración esté terminada.");

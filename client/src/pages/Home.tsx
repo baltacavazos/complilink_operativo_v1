@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -24,6 +25,11 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent, trackFunnelStep } from "@/lib/analytics";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
+import {
+  getStableUserIdentifier,
+  readPersistedCeoPanelState,
+  writePersistedCeoPanelState,
+} from "@/lib/viewMode";
 import { LEGAL_CONTACT_EMAIL, LEGAL_DOCUMENTS, LEGAL_VERSION, PRIVACY_CENTER_COPY } from "@shared/legal";
 
 type TourStep = {
@@ -1359,8 +1365,15 @@ function HeliosFirstEntrySection() {
   const [guestPreview, setGuestPreview] = useState<StoredHomeGuestPreview | null>(() => readStoredHomeGuestPreview());
   const [guestError, setGuestError] = useState<string | null>(null);
   const [resumeAttempted, setResumeAttempted] = useState(false);
+  const [ceoPanelPreferenceReady, setCeoPanelPreferenceReady] = useState(false);
+  const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
+  const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
 
   const publicExamples = (landingQuery.data?.examples ?? []) as LandingHeliosExample[];
+  const stableUserIdentifier = useMemo(
+    () => getStableUserIdentifier(auth.realUser ?? auth.user),
+    [auth.realUser, auth.user]
+  );
   const featuredExample = publicExamples[0] ?? null;
   const publicActivity = landingQuery.data?.publicActivity;
   const latestCase = homeSnapshotQuery.data?.latestCase ?? null;
@@ -1378,6 +1391,39 @@ function HeliosFirstEntrySection() {
 
     bootstrapMutation.mutate();
   }, [auth.isAuthenticated, bootstrapMutation.data, bootstrapMutation.error, bootstrapMutation.isPending, bootstrapMutation]);
+
+  useEffect(() => {
+    if (!auth.canToggleUserView || !stableUserIdentifier) {
+      setCeoPanelPreferenceReady(false);
+      setCeoPanelPreferenceOpen(false);
+      setCeoActionsDrawerOpen(false);
+      return;
+    }
+
+    setCeoPanelPreferenceReady(false);
+    const persistedOpen = readPersistedCeoPanelState(auth.realUser ?? auth.user);
+    setCeoPanelPreferenceOpen(persistedOpen);
+    setCeoActionsDrawerOpen(persistedOpen);
+    setCeoPanelPreferenceReady(true);
+  }, [auth.canToggleUserView, auth.realUser, auth.user, stableUserIdentifier]);
+
+  useEffect(() => {
+    if (!ceoPanelPreferenceReady || !auth.canToggleUserView || !stableUserIdentifier) {
+      return;
+    }
+
+    writePersistedCeoPanelState(
+      auth.realUser ?? auth.user,
+      ceoPanelPreferenceOpen
+    );
+  }, [
+    auth.canToggleUserView,
+    auth.realUser,
+    auth.user,
+    ceoPanelPreferenceOpen,
+    ceoPanelPreferenceReady,
+    stableUserIdentifier,
+  ]);
 
   async function persistGuestPreview(source: "manual" | "resume") {
     if (!guestPreview || !tenantId) {
@@ -1471,6 +1517,11 @@ function HeliosFirstEntrySection() {
     fileInputRef.current?.click();
   }
 
+  function setPersistedCeoPanelOpen(nextOpen: boolean) {
+    setCeoPanelPreferenceOpen(nextOpen);
+    setCeoActionsDrawerOpen(nextOpen);
+  }
+
   function handleLoginToSave() {
     if (typeof window !== "undefined") {
       writeStoredHomeGuestPreview(guestPreview);
@@ -1492,6 +1543,41 @@ function HeliosFirstEntrySection() {
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
             Primero ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Si quieres guardar ese hallazgo en tu Bóveda Laboral, ahí sí te pedimos correo.
           </p>
+
+          {auth.canToggleUserView ? (
+            <div className="mt-5 rounded-[1.45rem] border border-teal-100 bg-teal-50/80 p-4 text-sm text-teal-950 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                {auth.isViewingAsUser ? "Home privada con salida CEO" : "Home base con salida CEO"}
+              </p>
+              <p className="mt-2 leading-6">
+                Tu base sigue siendo la misma home privada que vería un usuario normal, pero desde aquí puedes abrir el nivel ejecutivo sin perder el hilo del expediente.
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  variant="outline"
+                  className={`rounded-full border ${ceoActionsDrawerOpen ? "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200" : "border-teal-300 bg-white text-teal-900 hover:bg-teal-100"}`}
+                  onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
+                  data-testid="home-ceo-header-toggle"
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                  {ceoActionsDrawerOpen ? "Modo CEO activo" : "Modo CEO"}
+                </Button>
+                <Button
+                  className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
+                  onClick={() => {
+                    window.location.href = "/auditar";
+                  }}
+                >
+                  Seguir en /auditar
+                </Button>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-teal-900/80">
+                {ceoActionsDrawerOpen
+                  ? "La apertura del panel quedó recordada para este usuario en este equipo."
+                  : "Cuando necesites subir al nivel ejecutivo, tendrás la misma salida discreta que en /auditar."}
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
@@ -1612,6 +1698,11 @@ function HeliosFirstEntrySection() {
         </div>
 
         <div className="space-y-4">
+          <CeoPanelDrawer
+            open={ceoActionsDrawerOpen}
+            onOpenChange={setPersistedCeoPanelOpen}
+            baseLabel="la home privada"
+          />
           <article className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Ejemplo de lectura</p>
             <h3 className="mt-3 text-[1.5rem] font-semibold leading-8 tracking-[-0.04em] text-slate-950">

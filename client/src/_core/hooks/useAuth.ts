@@ -1,5 +1,9 @@
 import { useViewMode } from "@/contexts/ViewModeContext";
-import { getEffectiveRole, isViewingAsUser as resolveIsViewingAsUser } from "@/lib/viewMode";
+import {
+  clearPersistedCeoPanelState,
+  getEffectiveRole,
+  isViewingAsUser as resolveIsViewingAsUser,
+} from "@/lib/viewMode";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
@@ -40,11 +44,12 @@ export function useAuth(options?: UseAuthOptions) {
       }
       throw error;
     } finally {
+      clearPersistedCeoPanelState(meQuery.data ?? null);
       setNativeView();
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }
-  }, [logoutMutation, setNativeView, utils]);
+  }, [logoutMutation, meQuery.data, setNativeView, utils]);
 
   useEffect(() => {
     if (meQuery.isLoading) return;
