@@ -1934,7 +1934,7 @@ export default function CeoDashboard() {
   return (
     <DashboardLayout
       title="Mi Expediente de Defensa"
-      subtitle="Panel privado del owner autorizado para AuditaPatron"
+      subtitle="Panel privado del owner autorizado para AuditaPatron. Este expediente privado solo está disponible para el owner autorizado."
       navigation={navigation}
       headerActions={
         <>

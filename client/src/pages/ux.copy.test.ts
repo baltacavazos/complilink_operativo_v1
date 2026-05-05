@@ -72,11 +72,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Si no sabes con qué empezar");
     expect(source).toContain("Empieza por el archivo que más rápido suele revelar diferencias");
     expect(source).toContain("Empieza por un solo recibo");
-    expect(source).toContain("Ejemplo del resultado que recibes");
-    expect(source).toContain("Esto verás apenas subas tu recibo.");
-    expect(source).toContain("Ejemplo anónimo: posible diferencia estimada de $3,240 MXN.");
-    expect(source).toContain("Primero ves lo esencial: qué documento detectamos, qué señal apareció, qué significa y qué te conviene hacer después.");
-    expect(source).toContain("Posible diferencia contra CFDI");
+    expect(source).toContain("Resultado realista, no promesa vacía");
+    expect(source).toContain("Recibo detectado: ya vimos el periodo y los conceptos clave");
+    expect(source).toContain('selectedReportDemoState === "hallazgo-preliminar"');
+    expect(source).toContain("Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.");
+    expect(source).toContain("posible diferencia entre recibo y CFDI");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#dbeeee]');
     expect(source).toContain('bg-[#eef6f5]');
@@ -112,8 +112,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('qué documento recibió');
     expect(source).toContain('qué señal encontró y qué conviene revisar después.');
     expect(source).toContain('Elegir documento');
-    expect(source).toContain('mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950');
-    expect(source).toContain('mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500');
+    expect(source).toContain('mx-auto flex h-auto min-h-[4.8rem] w-full max-w-[22rem] items-center justify-center gap-2.5 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700');
+    expect(source).toContain('max-w-[22rem] text-center text-[13px] leading-5 text-slate-600');
     expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Asegura tu recibo de nómina');
@@ -271,7 +271,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("propuesta sujeta a confirmación visible");
     expect(source).toContain("Mi Expediente de Defensa");
     expect(source).toContain("Panel privado del owner autorizado para AuditaPatron");
-    expect(source).toContain("Este expediente privado sólo está disponible para el owner autorizado.");
+    expect(source).toContain("Este expediente privado solo está disponible para el owner autorizado.");
   });
 
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {

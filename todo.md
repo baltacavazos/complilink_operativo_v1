@@ -1583,3 +1583,8 @@
 - [x] Ronda microcopy contextual: reforzar mensajes y ayudas según tipo de documento para que el valor recibido se entienda más rápido.
 - [x] Ronda transición cámara-borrador: pulir microinteracciones, continuidad visual y copy breve del flujo móvil inmediato.
 - [x] Ronda transición cámara-borrador: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.
+- [x] Ronda post-subida hero: auditar el primer viewport móvil del veredicto en /auditar para detectar altura residual, copy sobrante y jerarquía todavía inflada.
+- [x] Ronda post-subida hero: contrastar con ChatGPT, Grok y Gemini la compactación más segura del hero del veredicto y del CTA principal antes de editar.
+- [x] Ronda Home ejemplo: alinear el ejemplo de resultado de la portada con los nuevos títulos y microcopy contextual por tipo de documento.
+- [x] Ronda post-subida hero: reducir todavía más la altura visible del veredicto móvil sin perder claridad sobre hallazgo y siguiente paso.
+- [x] Ronda post-subida hero: revalidar con pruebas y revisión visual el flujo refinado y la Home actualizada antes del siguiente checkpoint.

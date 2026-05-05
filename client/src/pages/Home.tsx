@@ -771,8 +771,8 @@ function HeroSection() {
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
-        title: "Documento detectado: Recibo de nómina",
-        description: "Reconocemos el tipo de documento y conservamos el periodo para que la siguiente revisión tenga más contexto.",
+        title: "Recibo detectado: ya vimos el periodo y los conceptos clave",
+        description: "Detectamos tu recibo y guardamos el periodo para que el siguiente cruce tenga más contexto desde el inicio.",
         focusLabel: "Qué significa",
         focusValue: "Ya sabemos con qué documento empezar y podemos usarlo como base para revisar pagos, deducciones o CFDI.",
         focusClass: "border-slate-200 bg-slate-50/90 text-slate-800",
@@ -785,8 +785,8 @@ function HeroSection() {
 
     if (selectedReportDemoState === "siguiente-paso") {
       return {
-        title: "Qué significa: conviene comparar monto, periodo y conceptos",
-        description: "Todavía no estamos cerrando una conclusión. Primero te mostramos el cruce más útil para validar si la diferencia realmente existe.",
+        title: "Qué revisar primero: monto, periodo y conceptos",
+        description: "Todavía no cerramos una conclusión. Primero te mostramos el cruce más útil para confirmar si la diferencia realmente existe.",
         focusLabel: "Siguiente paso",
         focusValue: "Sube el CFDI del mismo mes para contrastar monto, periodo y conceptos contra tu recibo.",
         focusClass: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
@@ -798,8 +798,8 @@ function HeroSection() {
     }
 
     return {
-      title: "Señal encontrada: Posible diferencia contra CFDI",
-      description: "Aparece una diferencia posible que conviene revisar con calma antes de convertirla en conclusión o reclamo.",
+      title: "Señal encontrada: posible diferencia entre recibo y CFDI",
+      description: "Vemos una diferencia posible y te decimos cómo revisarla antes de sacar una conclusión.",
       focusLabel: "Qué significa",
       focusValue: "Puede haber diferencias de monto, periodo o conceptos entre lo pagado y lo timbrado.",
       focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
@@ -1173,15 +1173,17 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-Ejemplo del resultado que recibes
+Resultado realista, no promesa vacía
                   </p>
-                  <p className="mt-2 max-w-[15ch] text-[1.88rem] font-bold leading-[0.94] tracking-[-0.055em] text-slate-950 sm:text-[2.35rem]">
-			Esto verás apenas subas tu recibo.
-
-
+                  <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 sm:text-[2.2rem]">
+                    {activeReportDemoCopy.title}
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
-                    Ejemplo anónimo: posible diferencia estimada de $3,240 MXN.
+                    {selectedReportDemoState === "hallazgo-preliminar"
+                      ? "Ejemplo anónimo: posible diferencia estimada de $3,240 MXN."
+                      : selectedReportDemoState === "documento-recibido"
+                        ? "Ejemplo anónimo: recibo detectado y periodo conservado."
+                        : "Ejemplo anónimo: siguiente cruce sugerido para confirmar la señal."}
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
@@ -1189,9 +1191,7 @@ Ejemplo del resultado que recibes
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-			Primero ves lo esencial: qué documento detectamos, qué señal apareció, qué significa y qué te conviene hacer después.
-
-
+                {activeReportDemoCopy.description}
               </p>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -1217,8 +1217,7 @@ Ejemplo del resultado que recibes
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-	Se siente como un resultado real: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
-
+                Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
               </p>
 
               <div className="mt-4 rounded-[1.05rem] border border-teal-100 bg-white/90 px-4 py-3 shadow-sm">
