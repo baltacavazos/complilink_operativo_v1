@@ -1550,3 +1550,16 @@
 - [x] Experiencia híbrida CEO 2: guardar de forma persistente la preferencia del panel CEO abierto o cerrado para recordar el comportamiento entre sesiones.
 - [x] Experiencia híbrida CEO 2: extender el patrón híbrido a acceso y home privada para que el comportamiento ejecutivo sea consistente en las superficies clave.
 - [x] Experiencia híbrida CEO 2: actualizar pruebas, revalidar estado del proyecto y cerrar la ronda con checkpoint.
+- [x] Carta para Víctor: contrastar con Grok, ChatGPT y Gemini cómo explicar Auditapatrón en lenguaje cercano, institucional y no técnico.
+- [x] Carta para Víctor: resumir el entorno laboral actual en México y la problemática que Auditapatrón puede ayudar a resolver para trabajadores.
+- [x] Carta para Víctor: explicar de forma clara el valor agregado de la plataforma y las vías de monetización consideradas.
+- [x] Carta para Víctor: redactar una cuartilla final lista para compartir.
+- [x] Bug móvil Home Auditapatrón: reproducir el desborde horizontal y los solapes visibles en iPhone reportados por el usuario.
+- [x] Bug móvil Home Auditapatrón: corregir el layout responsive del hero, logo, CTAs y tarjetas para eliminar el descuadre.
+- [x] Bug móvil Home Auditapatrón: validar en viewport móvil realista que no haya scroll lateral ni overlays fuera de lugar.
+- [ ] Bug móvil Home Auditapatrón: entregar ajuste visual con estado validado.
+- [x] Auditoría integral UX/UI: revisar Home pública de Auditapatrón en móvil y escritorio para detectar desbordes, solapes, jerarquía rota y scroll lateral.
+- [x] Auditoría integral UX/UI: revisar /acceso en móvil y escritorio para detectar layouts rotos, CTAs ambiguas o bloques desalineados.
+- [ ] Auditoría integral UX/UI: revisar /auditar, home privada y superficies CEO en móvil y escritorio para detectar cualquier descuadre visual o fricción evidente.
+- [x] Auditoría integral UX/UI: contrastar con ChatGPT, Grok y Gemini las correcciones visuales y de claridad prioritarias antes de cerrar la ronda.
+- [x] Auditoría integral UX/UI: corregir los hallazgos priorizados y revalidar la experiencia completa con pruebas y revisión visual.

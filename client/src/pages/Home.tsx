@@ -620,16 +620,16 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
-      <div className="container mx-auto flex h-[4.55rem] max-w-[1380px] items-center justify-between gap-1.5 sm:h-[5rem] lg:gap-3">
+      <div className="container mx-auto flex h-[4.55rem] max-w-[1380px] items-center justify-between gap-2 sm:h-[5rem] lg:gap-3">
         <a
           href="#top"
           aria-label="Ir al inicio de AuditaPatron"
-          className="flex min-w-0 shrink-0 items-center pl-1 sm:pl-0 lg:max-w-[420px]"
+          className="flex min-w-0 max-w-[40vw] shrink items-center pl-1 sm:max-w-none sm:pl-0 lg:max-w-[420px]"
         >
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="!h-9 w-auto max-w-[min(56vw,18rem)] object-contain sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
+            imageClassName="!h-8 w-auto max-w-[min(34vw,7.8rem)] object-contain sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
           />
         </a>
 
@@ -668,12 +668,13 @@ function SiteHeader() {
           </Button>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
-            className="motion-hover-lift h-10 rounded-full bg-teal-400 px-4.5 text-[0.9rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99]"
+            className="motion-hover-lift h-10 min-w-0 max-w-[8rem] rounded-full bg-teal-400 px-2.5 text-[0.75rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
             onClick={goToAuditFlow}
           >
-            {PRIMARY_CTA_LABEL}
+            <span className="truncate sm:hidden">Empezar</span>
+            <span className="hidden sm:inline">{PRIMARY_CTA_LABEL}</span>
           </Button>
           <button
             type="button"
@@ -1001,11 +1002,12 @@ function HeroSection() {
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="motion-enter-soft inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] sm:px-4 sm:py-2 sm:text-xs"
+            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
-            <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-            Sube una foto o PDF y revisa tu pago
+            <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+            <span className="sm:hidden">Sube foto o PDF</span>
+            <span className="hidden sm:inline">Sube una foto o PDF y revisa tu pago</span>
           </div>
 
           <h1

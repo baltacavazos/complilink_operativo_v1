@@ -3274,7 +3274,7 @@ export default function CeoDashboard() {
                               </div>
                               <p className="text-sm text-slate-500">Actualizado: {formatDateTime(tenant.updatedAt)}</p>
                             </div>
-                            <div className="grid min-w-[280px] grid-cols-2 gap-3 text-sm text-slate-600 sm:grid-cols-4 lg:min-w-[360px]">
+                            <div className="grid min-w-0 grid-cols-2 gap-3 text-sm text-slate-600 sm:grid-cols-4 lg:min-w-[360px]">
                               <div className="rounded-2xl bg-white px-3 py-2">
                                 <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Casos</p>
                                 <strong className="text-base text-slate-950">{formatNumber(tenant.activeCases)}</strong>
@@ -3641,7 +3641,7 @@ export default function CeoDashboard() {
                         </div>
                         <div className="space-y-3">
                           <div className="flex flex-wrap items-end gap-3">
-                            <label className="min-w-[180px] flex-1">
+                            <label className="min-w-0 flex-1 sm:min-w-[180px]">
                               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Nuevo umbral</span>
                               <input
                                 data-testid="bridge-smoke-threshold-input"
@@ -4071,7 +4071,7 @@ export default function CeoDashboard() {
                               <p className="text-sm text-slate-600">{getBridgeSmokeHistoryContext(entry)}</p>
                               <p className="text-xs text-slate-500">{entry.testedAt ? formatDateTime(entry.testedAt) : "Fecha no disponible"}</p>
                             </div>
-                            <div className="min-w-[220px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                            <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[220px]">
                               <p><strong className="text-slate-950">Health:</strong> {entry.healthStatus ?? "—"}</p>
                               <p><strong className="text-slate-950">Webhook:</strong> {entry.webhookStatus ?? "—"}</p>
                               <p><strong className="text-slate-950">Verificado:</strong> {entry.verified === null ? "Sin dato" : entry.verified ? "Sí" : "No"}</p>
@@ -4206,7 +4206,7 @@ export default function CeoDashboard() {
                                 </div>
                               ) : null}
                             </div>
-                            <div className="min-w-[250px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                            <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[250px]">
                               <p><strong className="text-slate-950">Trace:</strong> {item.traceId || "Sin traza"}</p>
                               <p><strong className="text-slate-950">CompliLink ID:</strong> {item.compliLinkId || "Pendiente"}</p>
                               <p><strong className="text-slate-950">Dispatch:</strong> {formatDateTime(item.dispatchedAt)}</p>
@@ -4335,7 +4335,7 @@ export default function CeoDashboard() {
                             <h4 className="text-lg font-semibold text-slate-950">{alert.title}</h4>
                             <p className="max-w-3xl text-sm leading-6 text-slate-600">{alert.description || "Sin descripción adicional."}</p>
                           </div>
-                          <div className="min-w-[260px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                          <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[260px]">
                             <p><strong className="text-slate-950">Tenant:</strong> {alert.tenantName}</p>
                             <p><strong className="text-slate-950">Caso:</strong> {alert.caseTitle || alert.caseId || "Sin caso"}</p>
                             <p><strong className="text-slate-950">Trace ID:</strong> {alert.traceId || "Sin trace visible"}</p>
@@ -4412,7 +4412,7 @@ export default function CeoDashboard() {
                             ) : null}
                           </p>
                         </div>
-                        <div className="min-w-[260px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                        <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[260px]">
                           <p><strong className="text-slate-950">Creado:</strong> {formatDateTime(membership.createdAt)}</p>
                           <p><strong className="text-slate-950">Actualizado:</strong> {formatDateTime(membership.updatedAt)}</p>
                           <p><strong className="text-slate-950">Usuario ID:</strong> {membership.userId}</p>
@@ -4489,7 +4489,7 @@ export default function CeoDashboard() {
                             <strong className="text-slate-950">Consentimiento:</strong> {document.consentStatus}
                           </p>
                         </div>
-                        <div className="min-w-[280px] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                        <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[280px]">
                           <p><strong className="text-slate-950">Creado:</strong> {formatDateTime(document.createdAt)}</p>
                           <p><strong className="text-slate-950">Actualizado:</strong> {formatDateTime(document.updatedAt)}</p>
                           <p><strong className="text-slate-950">Supersede a:</strong> {document.supersededDocument?.originalName || document.supersedesDocumentId || "No aplica"}</p>

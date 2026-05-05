@@ -1,0 +1,66 @@
+{
+  "openai": {
+    "diagnostico": "Los problemas de desbordamiento y recorte en móvil se deben principalmente a un uso inadecuado de anchos máximos, paddings y flexbox sin restricciones explícitas para dispositivos pequeños, lo que provoca que elementos como el logo, wordmark, CTAs y textos se salgan del viewport o se recorten. Además, la estructura grid y contenedores con padding fijo sin ajustes responsivos contribuyen al desbordamiento horizontal.",
+    "fixes_prioritarios": [
+      "En el header móvil, limitar el max-width del logo usando unidades relativas y asegurar que la CTA derecha tenga un tamaño máximo y margen para no salirse del viewport.",
+      "En /auditar móvil, aplicar overflow-hidden o max-w-full a los contenedores del wordmark para evitar que se desborde hacia la derecha.",
+      "Reducir o ajustar el padding horizontal (px) en contenedores principales y CTAs en móvil para evitar recortes horizontales.",
+      "En los textos descriptivos y CTAs secundarios, usar max-w-full y evitar anchos fijos que superen el viewport móvil.",
+      "Revisar la tarjeta lateral para que tenga un max-width responsivo y no se vea comprometida por desbordes previos, usando w-full y max-w adaptativos."
+    ],
+    "cambios_tailwind_sugeridos": [
+      "Header: cambiar max-w-[min(56vw,18rem)] por max-w-[calc(100vw-4rem)] o similar para asegurar que el logo no exceda el viewport en móvil.",
+      "Agregar overflow-hidden y max-w-full a los contenedores del wordmark dentro del hero en /auditar.",
+      "Modificar padding horizontal de main y container en /auditar de px-4 a px-2 o usar sm:px-4 para reducir en móvil.",
+      "En CTAs, usar flex-wrap en lugar de flex-row fijo en móvil para que los botones no se salgan del viewport y ajustar px-7 a px-4 en móvil.",
+      "Para la tarjeta lateral, usar w-full max-w-full sm:max-w-xl para que en móvil ocupe todo el ancho disponible sin desbordar."
+    ],
+    "riesgos_al_corregir": [
+      "Reducir padding y max-width puede afectar la estética y espaciado en pantallas más grandes si no se aplican correctamente los breakpoints.",
+      "Cambiar flex-direction o flex-wrap puede alterar la disposición visual esperada en tabletas o escritorio si no se limita a móviles.",
+      "Agregar overflow-hidden puede ocultar contenido si no se verifica que no haya elementos importantes que se corten."
+    ],
+    "criterio_de_validacion": "En dispositivos iPhone móviles, verificar que el logo y wordmark no se corten ni desborden horizontalmente, que las CTAs sean completamente visibles sin scroll horizontal y que el texto descriptivo y tarjetas no se recorten ni comprometan el layout, manteniendo la integridad visual en escritorio sin cambios perceptibles."
+  },
+  "grok": {
+    "diagnostico": "Los problemas en mobile (iPhone) se deben a elementos con anchos fijos o máximos que no se adaptan correctamente a pantallas pequeñas, causando overflows y recortes en el header de home y el hero de /auditar. Esto incluye logos, CTAs y texto que exceden el viewport, posiblemente por clases como max-w-[320px] o px-4 sin ajustes responsivos adecuados, lo que afecta el flujo general sin impactar significativamente el escritorio.",
+    "fixes_prioritarios": [
+      "Ajustar los max-width de logos y elementos para usar valores relativos o breakpoints móviles, como sm:max-w-full.",
+      "Aplicar overflow-hidden o text-wrap a contenedores que se desborden, especialmente en hero y header.",
+      "Reducir padding y margins en mobile mediante clases como sm:px-2 para evitar recortes horizontales.",
+      "Garantizar que CTAs y texto se apilen verticalmente en mobile usando flex-col sm:flex-row.",
+      "Verificar y ajustar el contenedor principal para que sea full-width en mobile, como cambiando max-w-6xl a max-w-full sm:max-w-6xl."
+    ],
+    "cambios_tailwind_sugeridos": [
+      "En header de home: Cambiar el logo a 'max-w-full sm:max-w-[18rem]' para que se ajuste en mobile sin afectar escritorio.",
+      "En /auditar hero: Agregar 'sm:px-2' al contenedor principal para reducir padding en mobile mientras mantiene 'px-4' en escritorio.",
+      "Para logos en hero: Modificar a 'max-w-full sm:max-w-[320px] md:max-w-[388px]' para escalar progresivamente.",
+      "Para CTAs en /auditar: Añadir 'flex flex-col sm:flex-row overflow-hidden' para manejar desbordes y apilar en mobile.",
+      "En tarjetas afectadas: Agregar 'w-full max-w-full sm:max-w-xl overflow-hidden' para prevenir desbordes sin alterar anchos en escritorio."
+    ],
+    "riesgos_al_corregir": [
+      "Posible alteración del layout en escritorio si los cambios en max-width afectan breakpoints más grandes inadvertidamente.",
+      "Elementos podrían volverse demasiado compactos en tablets si no se calibran correctamente los nuevos valores responsivos.",
+      "Riesgo de introducir nuevos overflows en otros views si las clases overflow-hidden ocultan contenido importante inesperadamente."
+    ],
+    "criterio_de_validacion": "Probar en iPhone (usando herramientas de dev como Chrome DevTools en modo dispositivo o un dispositivo real) para asegurar que no haya recortes, desbordes o elementos fuera del viewport en home y /auditar, mientras se verifica que el layout en escritorio (mayor a 1024px) permanezca igual en términos de espaciado y alineación."
+  },
+  "gemini": {
+    "parse_error": "'candidates'",
+    "raw": {
+      "status_code": 503,
+      "body": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      }
+    }
+  },
+  "raw_meta": {
+    "openai_status": 200,
+    "grok_status": 200,
+    "gemini_status": 503
+  }
+}

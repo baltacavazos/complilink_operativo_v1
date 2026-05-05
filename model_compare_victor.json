@@ -1,0 +1,70 @@
+{
+  "openai": {
+    "enfoque_central": "Presentar Auditapatrón como una herramienta accesible y práctica que empodera a los trabajadores para entender y defender sus derechos laborales sin complicaciones técnicas.",
+    "como_definir_auditapatron": "Auditapatrón es una plataforma sencilla diseñada para que cualquier trabajador en México pueda revisar y entender sus documentos laborales, detectar posibles errores y prepararse mejor para cualquier trámite o reclamo.",
+    "como_explicar_ayuda_al_trabajador": "La plataforma acompaña al trabajador paso a paso, explicándole de manera clara qué significa cada documento, ayudándole a organizar su evidencia y dándole confianza para asesorarse o resolver conflictos antes de que se compliquen.",
+    "lectura_del_entorno_laboral_mexico": "En México, muchos trabajadores enfrentan incertidumbre y falta de información sobre sus derechos, lo que dificulta la defensa ante inconsistencias laborales y genera desconfianza hacia los procesos formales.",
+    "problema_publico_que_resuelve": "Auditapatrón combate la desinformación y la vulnerabilidad laboral al ofrecer orientación clara y preventiva, reduciendo riesgos de conflictos y promoviendo relaciones laborales más justas y transparentes.",
+    "vias_de_monetizacion": [
+      "Alianzas con sindicatos y organizaciones laborales para licencias institucionales",
+      "Servicios premium para asesorías personalizadas dentro de la plataforma",
+      "Convenios con empresas para capacitación y prevención de conflictos",
+      "Acceso a reportes y análisis de datos laborales para instituciones públicas"
+    ],
+    "tono_recomendado": "Cercano, institucional, claro y amigable, evitando tecnicismos y formalismos rígidos para conectar con la realidad del trabajador y la sensibilidad del funcionario.",
+    "frase_clave_para_abrir": "Querido Víctor, en un país donde la información laboral puede ser confusa, Auditapatrón llega para poner claridad y confianza en manos de quienes más lo necesitan: los trabajadores.",
+    "riesgos_de_redaccion": [
+      "Sonar demasiado técnico o lleno de jerga que aleje al lector",
+      "Usar un tono excesivamente formal que genere distancia",
+      "Presentar la plataforma como un software complicado o inaccesible"
+    ],
+    "recomendacion_estrategica_final": "Enfoca el mensaje en el impacto social y preventivo de Auditapatrón, resaltando cómo facilita la labor de las autoridades al empoderar a los trabajadores, y evitando venderlo como un producto tecnológico complejo."
+  },
+  "grok": {
+    "enfoque_central": "El enfoque central debe ser empoderar a los trabajadores mexicanos con herramientas simples y accesibles para revisar y entender sus derechos laborales, destacando cómo Auditapatrón contribuye a un entorno más justo y preventivo.",
+    "como_definir_auditapatron": "Auditapatrón es una herramienta práctica y sencilla, como un aliado cotidiano para los trabajadores, que les permite revisar sus documentos laborales de forma fácil y sin complicaciones.",
+    "como_explicar_ayuda_al_trabajador": "Explica que ayuda al trabajador a detectar inconsistencias en sus contratos, organizar evidencias de manera ordenada y entender qué significa cada documento, para que se sientan más preparados y seguros al buscar asesoría o resolver conflictos.",
+    "lectura_del_entorno_laboral_mexico": "En México, el entorno laboral es dinámico pero lleno de retos, como la informalidad y las inconsistencias en los contratos, donde muchos compañeros de trabajo no tienen acceso a información clara sobre sus derechos.",
+    "problema_publico_que_resuelve": "Resuelve el problema público de la falta de orientación para los trabajadores ante abusos laborales, evitando conflictos innecesarios y promoviendo una defensa preventiva en un país con alta rotación laboral.",
+    "vias_de_monetizacion": [
+      "Suscripciones premium para funciones avanzadas",
+      "Alianzas con sindicatos para acceso grupal",
+      "Servicios de consultoría personalizada",
+      "Contenido educativo patrocinado por empresas responsables"
+    ],
+    "tono_recomendado": "Cercano e institucional, como una plática amigable con un colega, usando lenguaje claro y cotidiano sin tecnicismos para que suene natural y relatable.",
+    "frase_clave_para_abrir": "Estimado Víctor, en el día a día de los trabajadores mexicanos, herramientas como Auditapatrón pueden ser el respaldo que tanto necesitamos para navegar los laberintos laborales.",
+    "riesgos_de_redaccion": [
+      "Sonar demasiado promocional y como una venta forzada",
+      "Usar términos legales que confundan en lugar de aclarar",
+      "No conectar emocionalmente con el destinatario, haciendo el mensaje impersonal"
+    ],
+    "recomendacion_estrategica_final": "Finalmente, recomienda que como autoridad laboral, apoyes iniciativas como Auditapatrón para fomentar la educación y prevención en el sector, fortaleciendo así la justicia social en México."
+  },
+  "gemini": {
+    "enfoque_central": "Posicionar Auditapatrón como un aliado estratégico para el empoderamiento del trabajador mexicano y la prevención de conflictos laborales, complementando la labor de las instituciones públicas.",
+    "como_definir_auditapatron": "Es una plataforma digital amigable, pensada para que cualquier trabajador en México pueda entender sus documentos laborales, detectar posibles inconsistencias y prepararse mejor para defender sus derechos, sin complicaciones.",
+    "como_explicar_ayuda_al_trabajador": "Ayuda al trabajador a 'poner en orden sus papeles', a entender qué significan, a saber si algo no cuadra y a tener toda su información lista y clara antes de buscar asesoría, conciliar o, si fuera necesario, reclamar. Es como tener una 'brújula' personal para sus derechos laborales.",
+    "lectura_del_entorno_laboral_mexico": "En México, muchos trabajadores se sienten perdidos o desinformados ante la complejidad de sus contratos, recibos o finiquitos. La asimetría de información es un reto constante, y la reforma laboral ha puesto un énfasis aún mayor en la conciliación y la prevención de litigios.",
+    "problema_publico_que_resuelve": "Resuelve la vulnerabilidad del trabajador por falta de información y claridad sobre sus derechos laborales, reduciendo la asimetría de información y contribuyendo a la prevención de conflictos que podrían saturar los sistemas de justicia laboral. Fomenta una cultura de la legalidad y la certeza.",
+    "vias_de_monetizacion": [
+      "Suscripciones premium para trabajadores que busquen funcionalidades avanzadas o soporte personalizado.",
+      "Acuerdos con sindicatos o asociaciones de trabajadores para ofrecer el servicio a sus agremiados.",
+      "Licencias para despachos de abogados o consultorías que deseen usar la herramienta como apoyo a sus clientes.",
+      "Generación de reportes agregados y anonimizados sobre tendencias laborales para instituciones o empresas (con fines de mejora de políticas)."
+    ],
+    "tono_recomendado": "Cercano, colaborativo, proactivo y empático. Un lenguaje coloquial pero respetuoso, que evite tecnicismos y se enfoque en el beneficio social y la colaboración institucional.",
+    "frase_clave_para_abrir": "Estimado Víctor, quiero compartirte una iniciativa que está haciendo una diferencia real para miles de trabajadores en nuestro país, y que creo que puede ser un gran complemento a la labor que realizan en la Secretaría.",
+    "riesgos_de_redaccion": [
+      "Sonar como un 'vendedor de software' o una empresa que busca un contrato gubernamental.",
+      "Utilizar lenguaje técnico legal o informático que aleje al funcionario.",
+      "Parecer que se critica la eficiencia o labor de las instituciones existentes, en lugar de buscar complementar."
+    ],
+    "recomendacion_estrategica_final": "La clave es presentar Auditapatrón como un socio estratégico para el bienestar del trabajador y la eficiencia del sistema laboral mexicano. Invita a Víctor a una demostración práctica y a una conversación sobre cómo esta herramienta puede potenciar los objetivos de su dependencia, no como un producto, sino como una solución de impacto social."
+  },
+  "raw_meta": {
+    "openai_status": 200,
+    "grok_status": 200,
+    "gemini_status": 200
+  }
+}

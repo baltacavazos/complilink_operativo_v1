@@ -54,11 +54,12 @@ function QuickExitButton() {
   return (
     <a
       href="https://news.google.com/"
-      className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/92 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_50px_-24px_rgba(2,6,23,0.95)] transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-400"
+      className="fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/92 px-3 py-2 text-[0.78rem] font-semibold text-white shadow-[0_18px_50px_-24px_rgba(2,6,23,0.95)] transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-400 sm:bottom-4 sm:right-4 sm:px-4 sm:py-3 sm:text-sm"
       aria-label="Salida rápida"
       title="Salida rápida"
     >
-      Salida rápida
+      <span className="sm:hidden">Salir</span>
+      <span className="hidden sm:inline">Salida rápida</span>
     </a>
   );
 }

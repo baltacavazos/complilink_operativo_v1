@@ -7175,7 +7175,7 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated && !auditarHarnessBypass) {
     return (
-      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-10 text-slate-950">
+      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -7192,26 +7192,26 @@ export default function Auditar() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] lg:grid-cols-[1fr_0.9fr] lg:p-8">
-            <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+          <div className="mt-5 grid gap-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
+            <div className="mx-auto flex max-w-full flex-col items-center text-center lg:mx-0 lg:max-w-2xl lg:items-start lg:text-left">
               <AuditaPatronLogo
-                className="inline-flex"
-                imageClassName="h-auto w-full max-w-[320px] object-contain sm:max-w-[388px] lg:max-w-[430px]"
+                className="inline-flex max-w-full justify-center lg:justify-start"
+                imageClassName="h-auto w-full max-w-[min(72vw,15rem)] object-contain sm:max-w-[320px] md:max-w-[388px] lg:max-w-[430px]"
               />
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
+              <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Revisión rápida, clara y privada
               </div>
-              <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
+              <h1 className="mt-5 max-w-[12ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
                 Empieza sin correo
               </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Sólo te pediremos correo si decides guardar ese hallazgo en tu bóveda laboral.
               </p>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+              <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
                 <Button
-                  className="h-12 rounded-full bg-teal-600 px-7 text-base text-white hover:bg-teal-700"
+                  className="h-auto min-h-12 w-full rounded-full bg-teal-600 px-5 py-3 text-sm leading-5 text-white hover:bg-teal-700 sm:h-12 sm:w-auto sm:px-7 sm:py-0 sm:text-base"
                   onClick={() => {
                     trackFunnelStep("auditar_guest_entry_clicked", {
                       source: "auditar_guard",
@@ -7220,11 +7220,11 @@ export default function Auditar() {
                   }}
                 >
                   Empezar lectura gratis
-                  <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                  <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
+                  className="h-auto min-h-12 w-full whitespace-normal rounded-full border-slate-200 bg-white px-5 py-3 text-sm leading-5 text-slate-700 hover:bg-slate-50 sm:h-12 sm:w-auto sm:px-7 sm:py-0 sm:text-base"
                   onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -7232,13 +7232,14 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Iniciar sesión para guardar en mi expediente
+                  <span className="sm:hidden">Iniciar sesión para guardar</span>
+                  <span className="hidden sm:inline">Iniciar sesión para guardar en mi expediente</span>
                 </Button>
               </div>
             </div>
 
-            <div className="mx-auto w-full max-w-xl rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+            <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
                 Lo que pasa en cuanto subes
               </p>
               <div className="mt-4 space-y-3">
@@ -7249,13 +7250,13 @@ export default function Auditar() {
                 ].map(item => (
                   <div
                     key={item}
-                    className="flex gap-3 rounded-[1.1rem] border border-white bg-white p-3.5"
+                    className="flex min-w-0 items-start gap-3 rounded-[1.1rem] border border-white bg-white p-3.5"
                   >
                     <CheckCircle2
                       className="mt-0.5 h-5 w-5 shrink-0 text-teal-700"
                       strokeWidth={1.8}
                     />
-                    <p className="text-sm leading-6 text-slate-700">{item}</p>
+                    <p className="min-w-0 text-sm leading-6 text-slate-700">{item}</p>
                   </div>
                 ))}
               </div>
