@@ -7195,18 +7195,19 @@ export default function Auditar() {
           <div className="mt-5 grid gap-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div className="mx-auto flex max-w-full flex-col items-center text-center lg:mx-0 lg:max-w-2xl lg:items-start lg:text-left">
               <AuditaPatronLogo
+                showTagline={false}
                 className="inline-flex max-w-full justify-center lg:justify-start"
-                imageClassName="h-auto w-full max-w-[min(72vw,15rem)] object-contain sm:max-w-[320px] md:max-w-[388px] lg:max-w-[430px]"
+                imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[300px] md:max-w-[388px] lg:max-w-[430px]"
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                Revisión rápida, clara y privada
+                Revisión rápida y privada
               </div>
               <h1 className="mt-5 max-w-[12ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Empieza sin correo
+                Comienza sin correo
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
-                Empieza con una foto, PDF o XML. Primero verás qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Sólo te pediremos correo si decides guardar ese hallazgo en tu bóveda laboral.
+                Sube una foto, PDF o XML. Verás el documento, la señal y el siguiente paso. Solo pediremos tu correo si decides guardarlo.
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -7219,12 +7220,12 @@ export default function Auditar() {
                     window.location.href = "/#lectura-gratis";
                   }}
                 >
-                  Empezar lectura gratis
+                  Empezar gratis
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-auto min-h-12 w-full whitespace-normal rounded-full border-slate-200 bg-white px-5 py-3 text-sm leading-5 text-slate-700 hover:bg-slate-50 sm:h-12 sm:w-auto sm:px-7 sm:py-0 sm:text-base"
+                  className="h-auto min-h-12 w-full whitespace-normal rounded-full border-slate-100 bg-slate-50/80 px-5 py-3 text-sm leading-5 text-slate-600 hover:bg-slate-100 sm:h-12 sm:w-auto sm:px-6 sm:py-0 sm:text-[0.95rem]"
                   onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -7232,8 +7233,8 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  <span className="sm:hidden">Iniciar sesión para guardar</span>
-                  <span className="hidden sm:inline">Iniciar sesión para guardar en mi expediente</span>
+                  <span className="sm:hidden">Guardar con mi cuenta</span>
+                  <span className="hidden sm:inline">Inicia sesión para guardar</span>
                 </Button>
               </div>
             </div>
@@ -8703,7 +8704,7 @@ export default function Auditar() {
 
                 </div>
                   <p className="max-w-lg text-sm leading-6 text-slate-600">
-                    Primero te mostramos qué documento detectamos, qué señal apareció y qué paso conviene seguir antes de guardarlo.
+                    Primero ves el documento, la señal y el siguiente paso antes de guardarlo.
 
                 </p>
               </div>

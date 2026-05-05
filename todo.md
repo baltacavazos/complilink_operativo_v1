@@ -1557,9 +1557,14 @@
 - [x] Bug móvil Home Auditapatrón: reproducir el desborde horizontal y los solapes visibles en iPhone reportados por el usuario.
 - [x] Bug móvil Home Auditapatrón: corregir el layout responsive del hero, logo, CTAs y tarjetas para eliminar el descuadre.
 - [x] Bug móvil Home Auditapatrón: validar en viewport móvil realista que no haya scroll lateral ni overlays fuera de lugar.
-- [ ] Bug móvil Home Auditapatrón: entregar ajuste visual con estado validado.
+- [x] Bug móvil Home Auditapatrón: entregar ajuste visual con estado validado.
 - [x] Auditoría integral UX/UI: revisar Home pública de Auditapatrón en móvil y escritorio para detectar desbordes, solapes, jerarquía rota y scroll lateral.
 - [x] Auditoría integral UX/UI: revisar /acceso en móvil y escritorio para detectar layouts rotos, CTAs ambiguas o bloques desalineados.
-- [ ] Auditoría integral UX/UI: revisar /auditar, home privada y superficies CEO en móvil y escritorio para detectar cualquier descuadre visual o fricción evidente.
+- [x] Auditoría integral UX/UI: revisar /auditar, home privada y superficies CEO en móvil y escritorio para detectar cualquier descuadre visual o fricción evidente.
 - [x] Auditoría integral UX/UI: contrastar con ChatGPT, Grok y Gemini las correcciones visuales y de claridad prioritarias antes de cerrar la ronda.
 - [x] Auditoría integral UX/UI: corregir los hallazgos priorizados y revalidar la experiencia completa con pruebas y revisión visual.
+- [x] Pulido final UX/UI: revisar vistas autenticadas reales en móvil y escritorio para detectar layouts rotos, sobrecarga visual o textos demasiado largos.
+- [x] Pulido final UX/UI: revisar la home privada y el dashboard CEO en móvil para detectar tarjetas, tablas o bloques con anchos mínimos que empujen el viewport.
+- [x] Pulido final UX/UI: contrastar con ChatGPT, Grok y Gemini qué copies, botones flotantes y microajustes visuales conviene simplificar antes del cierre.
+- [x] Pulido final UX/UI: ajustar copies largos, CTA secundarias y botones flotantes para que la experiencia móvil sea más limpia y menos apretada.
+- [x] Pulido final UX/UI: ejecutar una QA visual final con pruebas y dejar el estado listo para decisión de publicación.

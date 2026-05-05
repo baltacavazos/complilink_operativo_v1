@@ -2002,12 +2002,12 @@ export default function CeoDashboard() {
               <ShieldX className="h-6 w-6" />
             </div>
             <div className="max-w-3xl space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso restringido</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso limitado</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                Este expediente privado sólo está disponible para el owner autorizado.
+                Solo la cuenta autorizada puede ver este expediente.
               </h2>
               <p className="text-base leading-7 text-slate-700">
-                Tu sesión está autenticada, pero no coincide con la identidad maestra autorizada para esta superficie privada. Si este acceso debe revisarse, confirma primero la identidad del owner y después valida permisos internos.
+                Tu sesión está activa, pero no tiene permiso para entrar aquí. Si este acceso debe revisarse, confirma primero la cuenta autorizada y luego valida los permisos internos.
               </p>
             </div>
           </div>

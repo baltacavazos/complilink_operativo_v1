@@ -27,7 +27,8 @@ describe("responsive layout regression guards", () => {
     const auditarSource = readProjectFile("client", "src", "pages", "Auditar.tsx");
 
     expect(auditarSource).toContain('overflow-hidden rounded-[2rem]');
-    expect(auditarSource).toContain('max-w-[min(72vw,15rem)]');
+    expect(auditarSource).toContain('max-w-[min(62vw,13rem)]');
+    expect(auditarSource).toContain('showTagline={false}');
     expect(auditarSource).toContain('whitespace-normal rounded-full');
     expect(auditarSource).toContain('className="flex min-w-0 items-start gap-3');
   });

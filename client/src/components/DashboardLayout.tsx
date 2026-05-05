@@ -85,17 +85,15 @@ export default function DashboardLayout({
                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   AuditaPatron · Área privada
                 </p>
-                <h1 className="text-2xl font-semibold tracking-tight">Acceso seguro y unificado</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">Acceso seguro a tu cuenta</h1>
               </div>
             </div>
             <p className="text-base leading-7 text-muted-foreground">
-              Esta plataforma protege expedientes laborales multi-tenant con trazabilidad integral por
-              <strong className="text-foreground"> tenant_id</strong>, <strong className="text-foreground">case_id</strong> y <strong className="text-foreground">trace_id</strong>.
-              Inicia sesión con Manus, Google o un código enviado por correo para abrir el panel privado del owner, gestionar casos y operar el intake documental seguro.
+              Tu información laboral está protegida. Inicia sesión con Manus, Google o un código por correo para entrar a tu espacio privado y continuar con tus documentos y casos.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                Entorno diseñado para contexto corporativo mexicano, cumplimiento, auditoría defensible y acceso federado.
+                Diseñado para operación laboral en México, con control, privacidad y respaldo confiable.
               </div>
               <Button
                 size="lg"

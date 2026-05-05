@@ -1,0 +1,98 @@
+{
+  "chatgpt": {
+    "diagnosis": [
+      "Texto demasiado extenso en pantallas iniciales, genera saturación.",
+      "CTAs secundarios muy largos y con peso visual alto.",
+      "Lenguaje técnico y referencias internas confunden al usuario.",
+      "Falta de claridad y cercanía en mensajes de acceso y restricciones."
+    ],
+    "auditar": {
+      "pill": "Revisión rápida y privada",
+      "title": "Comienza sin correo",
+      "body": "Sube una foto, PDF o XML. Verás el documento, la señal y el siguiente paso. Pediremos tu correo solo si guardas el hallazgo.",
+      "primary_cta": "Leer gratis",
+      "secondary_cta": "Inicia sesión para guardar"
+    },
+    "private_access": {
+      "title": "Acceso seguro y privado",
+      "body": "Entra con Manus, Google o código por correo para gestionar tus documentos y casos con total seguridad.",
+      "supporting_box": "Diseñado para empresas mexicanas, cumplimiento y auditoría confiable.",
+      "primary_cta": "Iniciar sesión"
+    },
+    "ceo_restricted": {
+      "eyebrow": "Acceso limitado",
+      "title": "Solo autorizado puede ver este expediente",
+      "body": "Tu sesión está activa, pero no tienes permiso para esta área. Confirma la identidad autorizada y revisa permisos internos."
+    },
+    "extra_ui_notes": [
+      "Reducir tamaño y peso visual de CTAs secundarios usando texto más breve.",
+      "Usar espacios y tipografía para separar bloques y evitar saturación.",
+      "Priorizar mensajes claros y directos, evitando jerga técnica.",
+      "Mantener consistencia en tono cercano e institucional en todas las pantallas."
+    ]
+  },
+  "grok": {
+    "diagnosis": [
+      "Texto actual es largo y técnico, satura la pantalla móvil.",
+      "Incluye jargon interno que confunde al usuario.",
+      "CTAs secundarios pesan visualmente y distraen.",
+      "Párrafos densos reducen claridad y confianza."
+    ],
+    "auditar": {
+      "pill": "Revisión rápida y privada",
+      "title": "Empieza ahora",
+      "body": "Sube una foto, PDF o XML. Verás qué llegó, qué problema hay y el próximo paso. Solo pedimos correo si quieres guardar en tu bóveda.",
+      "primary_cta": "Empezar gratis",
+      "secondary_cta": "Iniciar sesión"
+    },
+    "private_access": {
+      "title": "Acceso seguro",
+      "body": "Protege tus expedientes laborales. Inicia sesión con Manus, Google o un código por correo para ver tu panel privado y gestionar documentos.",
+      "supporting_box": "Diseñado para empresas mexicanas, con cumplimiento y auditoría confiable.",
+      "primary_cta": "Iniciar sesión"
+    },
+    "ceo_restricted": {
+      "eyebrow": "Acceso restringido",
+      "title": "Solo para el dueño autorizado",
+      "body": "Estás autenticado, pero no eres el dueño de este expediente. Si necesitas acceso, confirma primero con el responsable."
+    },
+    "extra_ui_notes": [
+      "Usa íconos simples para CTAs secundarios.",
+      "Aumenta espacio blanco alrededor de títulos.",
+      "Haz pills en negrita con fondo sutil.",
+      "Reduce tamaño de fuente en párrafos para mobile."
+    ]
+  },
+  "gemini": {
+    "diagnosis": [
+      "Saturación verbal excesiva en párrafos y CTAs secundarias.",
+      "Uso de lenguaje técnico y jerga interna (ej. 'tenant_id', 'owner', 'federado').",
+      "Falta de claridad y cercanía en la descripción de beneficios y acciones.",
+      "CTAs secundarias con peso visual similar a las principales, generando ruido."
+    ],
+    "auditar": {
+      "pill": "Análisis rápido y seguro",
+      "title": "Audita al instante",
+      "body": "Sube tu documento (foto, PDF, XML). Recibe un análisis claro y el siguiente paso. Guarda tus hallazgos con tu correo.",
+      "primary_cta": "Auditar gratis",
+      "secondary_cta": "Acceder y guardar"
+    },
+    "private_access": {
+      "title": "Acceso seguro a tu cuenta",
+      "body": "Tu información laboral está protegida. Accede con Manus, Google o un código por correo para gestionar tus expedientes.",
+      "supporting_box": "Diseñado para empresas mexicanas: garantiza cumplimiento y auditorías.",
+      "primary_cta": "Iniciar sesión"
+    },
+    "ceo_restricted": {
+      "eyebrow": "Acceso restringido",
+      "title": "Este expediente privado solo está disponible para el titular autorizado.",
+      "body": "Tu sesión está activa, pero no tienes los permisos para ver este expediente. Si necesitas acceso, contacta al titular o al administrador."
+    },
+    "extra_ui_notes": [
+      "Usar estilo de botón secundario (ghost o texto) para 'Acceder y guardar' en la superficie de auditoría.",
+      "Implementar un área visual clara para 'Subir documento' (foto, PDF, XML) con iconos representativos.",
+      "Mostrar iconos distintivos para Manus, Google y el login por correo electrónico.",
+      "Usar un icono visual prominente (ej. candado) junto al mensaje de 'Acceso restringido'."
+    ]
+  }
+}
