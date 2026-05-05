@@ -1594,3 +1594,4 @@
 - [x] Ejecutar reauditoría comparada final con ChatGPT, Grok y Gemini para decidir si conviene publicar
 - [x] Actualizar la llave de Gemini y reejecutar el contraste tri-IA completo antes de aplicar los cambios finales de esta ronda
 - [x] Continuar esta ronda con consenso OpenAI + Grok mientras Gemini siga bloqueado por credencial inválida
+- [x] Micro-ronda final: reducir todavía más la altura visible del veredicto móvil en /auditar sin sacrificar claridad ni acción principal

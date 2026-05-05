@@ -7850,10 +7850,10 @@ export default function Auditar() {
         ) : null}
 
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
-          <section className={shouldCompactPostUploadExperience ? "flex min-h-[34vh] w-full flex-col items-center justify-center space-y-2 rounded-[2rem] bg-slate-50 px-1 py-2" : "space-y-6"}>
+          <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
             {shouldCompactPostUploadExperience && lastUpload ? (
-              <div className="w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-5 py-5 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
-                <div className={`flex flex-col gap-2.5 ${shouldCompactPostUploadExperience ? "" : "lg:flex-row lg:items-center lg:justify-between"}`}>
+              <div className="w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
+                <div className={`flex flex-col gap-2 ${shouldCompactPostUploadExperience ? "" : "lg:flex-row lg:items-center lg:justify-between"}`}>
                   <div className="min-w-0">
                     {shouldCompactPostUploadExperience ? null : (
                       <div className="flex flex-wrap items-center gap-3">
@@ -7864,16 +7864,16 @@ export default function Auditar() {
                         </span>
                       </div>
                     )}
-                    <div className="flex items-center gap-3 sm:mt-2">
+                    <div className="flex items-center gap-2.5 sm:mt-1">
                       <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
-                      <h2 className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[2.35rem] leading-[0.9] sm:text-[2.7rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
+                      <h2 className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[2.2rem] leading-[0.92] sm:text-[2.7rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
                         {shouldCompactPostUploadExperience
                           ? `${getSimpleDocumentTypeLabel(lastUpload.classification.documentType)} confirmado`
                           : lastUploadVerdict.label}
                       </h2>
                     </div>
                     {shouldCompactPostUploadExperience ? (
-                      <p className="mt-1 text-center text-[1.08rem] font-semibold leading-5 text-slate-800 sm:text-[1.2rem]">
+                      <p className="mt-0.5 text-center text-base font-semibold leading-5 text-slate-800 sm:text-[1.2rem]">
                         Ya quedó listo para revisar.
                       </p>
                     ) : null}
@@ -7888,10 +7888,10 @@ export default function Auditar() {
                       </p>
                     )}
                   </div>
-                  <div className={`flex w-full flex-col gap-1.5 ${shouldCompactPostUploadExperience ? "items-center" : "lg:max-w-sm"}`}>
+                  <div className={`flex w-full flex-col gap-1 ${shouldCompactPostUploadExperience ? "items-center" : "lg:max-w-sm"}`}>
                     <Button
                       type="button"
-                      className={`rounded-[2rem] font-semibold text-white shadow-[0_46px_96px_-20px_rgba(16,185,129,0.46)] transition-all sm:h-14 sm:text-[1.08rem] ${shouldCompactPostUploadExperience ? "mx-auto flex h-auto min-h-[4.8rem] w-full max-w-[22rem] items-center justify-center gap-2.5 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-5 py-3.5 text-center text-[1.34rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600" : "h-13 bg-slate-950 px-5 text-[1.02rem] hover:bg-slate-900"}`}
+                      className={`rounded-[2rem] font-semibold text-white shadow-[0_46px_96px_-20px_rgba(16,185,129,0.46)] transition-all sm:h-14 sm:text-[1.08rem] ${shouldCompactPostUploadExperience ? "mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600" : "h-13 bg-slate-950 px-5 text-[1.02rem] hover:bg-slate-900"}`}
                       onClick={handlePrimaryVerdictCta}
                     >
                       {shouldCompactPostUploadExperience ? <ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} /> : null}
@@ -7902,14 +7902,14 @@ export default function Auditar() {
                           : "Abrir asesor laboral"}
                     </Button>
                     {shouldCompactPostUploadExperience ? (
-                      <p className="max-w-[22rem] text-center text-[13px] leading-5 text-slate-600">
+                      <p className="max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600">
                         Sigue con: {primaryLastUploadShortcut?.description ?? "revisar este resultado y decidir qué documento conviene conectar después."} El borrador se abre aquí mismo.
                       </p>
                     ) : null}
                     {shouldCompactPostUploadExperience ? (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[13px] font-medium text-slate-500 transition hover:text-slate-700"
+                        className="inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-[12px] font-medium text-slate-500 transition hover:text-slate-700"
                         onClick={() => void scrollToDigitalArchive("result_panel")}
                       >
                         <FolderOpen className="h-4 w-4" strokeWidth={2} />

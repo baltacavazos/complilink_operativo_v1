@@ -1,0 +1,24 @@
+{
+  "openai": {
+    "status": 200,
+    "parsed": {
+      "provider_view": "El veredicto móvil post-upload en /auditar mantiene la claridad sobre la confirmación del documento, con la CTA principal intacta y sin errores de TypeScript. El diseño respeta las restricciones y las pruebas están todas en verde, lo que indica estabilidad y calidad. Sin embargo, el padding y los tamaños de texto podrían optimizarse ligeramente para mejorar la compacidad sin afectar la legibilidad ni la jerarquía visual.",
+      "is_compact_enough_now": false,
+      "publish_recommendation": "one_more_tiny_trim",
+      "main_reason": "Aunque el diseño es funcional y claro, hay margen para reducir espacios verticales y ajustar microcopy para ganar espacio sin perder claridad, lo que mejoraría la experiencia móvil en pantallas pequeñas.",
+      "single_remaining_risk": "Un pequeño exceso de padding y tamaño de texto puede generar scroll innecesario en dispositivos con pantallas muy pequeñas, afectando la percepción de compacidad."
+    },
+    "raw": "{\n  \"provider_view\": \"El veredicto móvil post-upload en /auditar mantiene la claridad sobre la confirmación del documento, con la CTA principal intacta y sin errores de TypeScript. El diseño respeta las restricciones y las pruebas están todas en verde, lo que indica estabilidad y calidad. Sin embargo, el padding y los tamaños de texto podrían optimizarse ligeramente para mejorar la compacidad sin afectar la legibilidad ni la jerarquía visual.\",\n  \"is_compact_enough_now\": false,\n  \"publish_recommendation\": \"one_more_tiny_trim\",\n  \"main_reason\": \"Aunque el diseño es funcional y claro, hay margen para reducir espacios verticales y ajustar microcopy para ganar espacio sin perder claridad, lo que mejoraría la experiencia móvil en pantallas pequeñas.\",\n  \"single_remaining_risk\": \"Un pequeño exceso de padding y tamaño de texto puede generar scroll innecesario en dispositivos con pantallas muy pequeñas, afectando la percepción de compacidad.\"\n}"
+  },
+  "xai": {
+    "status": 200,
+    "parsed": {
+      "provider_view": "El diseño actual es compacto y optimizado para dispositivos móviles, manteniendo la funcionalidad y estética sin elementos innecesarios.",
+      "is_compact_enough_now": true,
+      "publish_recommendation": "publish_now",
+      "main_reason": "Todas las pruebas focalizadas pasaron (61/61) y no se identificaron áreas de mejora significativas después de la micro-ronda.",
+      "single_remaining_risk": "Ningún riesgo restante identificado, ya que el documento está confirmado y no hay errores en TypeScript."
+    },
+    "raw": "{\n  \"provider_view\": \"El diseño actual es compacto y optimizado para dispositivos móviles, manteniendo la funcionalidad y estética sin elementos innecesarios.\",\n  \"is_compact_enough_now\": true,\n  \"publish_recommendation\": \"publish_now\",\n  \"main_reason\": \"Todas las pruebas focalizadas pasaron (61/61) y no se identificaron áreas de mejora significativas después de la micro-ronda.\",\n  \"single_remaining_risk\": \"Ningún riesgo restante identificado, ya que el documento está confirmado y no hay errores en TypeScript.\"\n}"
+  }
+}

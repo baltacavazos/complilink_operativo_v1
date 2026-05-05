@@ -112,8 +112,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('qué documento recibió');
     expect(source).toContain('qué señal encontró y qué conviene revisar después.');
     expect(source).toContain('Elegir documento');
-    expect(source).toContain('mx-auto flex h-auto min-h-[4.8rem] w-full max-w-[22rem] items-center justify-center gap-2.5 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700');
-    expect(source).toContain('max-w-[22rem] text-center text-[13px] leading-5 text-slate-600');
+    expect(source).toContain('mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700');
+    expect(source).toContain('max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600');
     expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Sube otro archivo si lo necesitas.');
