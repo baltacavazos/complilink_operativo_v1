@@ -1,0 +1,182 @@
+{
+  "openai": {
+    "diagnosis": "La transición actual carece de claridad y continuidad visual, con mensajes genéricos que no especifican el tipo de documento ni el valor inmediato para el usuario. La línea de estado es confusa y poco específica, lo que puede generar dudas sobre qué está pasando y qué esperar. El microcopy no conecta emocionalmente ni explica el beneficio concreto, afectando la confianza y fluidez en la experiencia móvil.",
+    "top_issues": [
+      "Mensajes de progreso poco específicos y genéricos.",
+      "Título del resultado no personalizado según tipo de documento.",
+      "Línea de estado confusa y sin jerarquía clara."
+    ],
+    "recommended_changes": [
+      {
+        "target": "progress_messages",
+        "change": "Simplificar y humanizar mensajes con foco en el beneficio inmediato, usando lenguaje cercano y claro.",
+        "why": "Mejora la comprensión rápida y genera confianza en dispositivos móviles con pantallas pequeñas."
+      },
+      {
+        "target": "result_reveal_copy",
+        "change": "Personalizar el título para cada tipo de documento y aclarar el valor que aporta el archivo recibido.",
+        "why": "Ayuda al usuario a entender qué documento se procesó y qué puede esperar, facilitando la continuidad."
+      },
+      {
+        "target": "status_line",
+        "change": "Unificar y simplificar la línea de estado para reflejar claramente el estado actual con nombre de archivo y tipo de documento detectado.",
+        "why": "Reduce confusión y mejora la jerarquía visual, haciendo la transición más fluida y confiable."
+      },
+      {
+        "target": "continuity_note",
+        "change": "Agregar microinteracciones ligeras como un cambio suave de texto y un ícono de carga sutil durante el análisis.",
+        "why": "Refuerza la sensación de proceso continuo sin agregar complejidad ni nuevas funciones."
+      }
+    ],
+    "microcopy": {
+      "progress_analyze_1": "Estamos revisando tu documento...",
+      "progress_analyze_2": "Buscando datos clave para ti...",
+      "progress_analyze_3": "Preparando tu resumen rápido...",
+      "progress_save_1": "Guardando tu archivo seguro...",
+      "progress_save_2": "Protegiendo tu información...",
+      "progress_save_3": "Casi listo para mostrarte todo...",
+      "result_title_payroll": "Recibo de nómina listo para tu revisión",
+      "result_title_cfdi": "CFDI listo para mostrarte detalles",
+      "result_title_contract": "Contrato listo para tu consulta",
+      "result_title_imss": "Soporte IMSS listo para analizar",
+      "result_description": "Ordenamos lo más útil para darte un veredicto claro antes del detalle completo.",
+      "status_received": "Documento recibido: {fileName}",
+      "status_analyzing": "Analizando {fileName}..."
+    },
+    "document_specific_notes": {
+      "payroll_receipt": "Este recibo ayuda a entender tus pagos y deducciones recientes.",
+      "cfdi": "Este CFDI aporta información fiscal para comparar con tus ingresos.",
+      "contract": "Este contrato muestra los términos iniciales de tu empleo.",
+      "imss": "Este soporte IMSS fortalece tu historial de seguridad social."
+    },
+    "microinteraction_notes": [
+      "Usar transición suave de texto en la línea de estado para indicar cambio de estado.",
+      "Incluir un ícono pequeño y animado de carga junto al mensaje de análisis para reforzar proceso activo."
+    ],
+    "confidence": "high"
+  },
+  "grok": {
+    "diagnosis": "La transición entre subir archivo y abrir borrador en AuditaPatrón es poco fluida, con microcopy genérico que no especifica el tipo de documento, lo que genera confusión. Recomendaciones mejoran la claridad, continuidad visual y mensajes para que usuarios mexicanos sientan confianza y valor inmediato, sin alterar funciones existentes.",
+    "top_issues": [
+      "Microcopy genérico que no detalla el tipo de documento detectado",
+      "Transición no fluida entre estados, afectando la continuidad",
+      "Falta de énfasis en el valor inmediato del documento para el usuario"
+    ],
+    "recommended_changes": [
+      {
+        "target": "progress_messages",
+        "change": "Actualizar mensajes de análisis y guardado para ser más directos y reconfortantes, enfocados en el proceso del usuario",
+        "why": "Mejora la percepción de fluidez en dispositivos móviles, reduciendo ansiedad y manteniendo al usuario informado durante transiciones"
+      },
+      {
+        "target": "result_reveal_copy",
+        "change": "Hacer el título más específico por tipo de documento, integrando el label directamente",
+        "why": "Aumenta la relevancia y rapidez de comprensión en pantallas pequeñas, haciendo la transición más confiable y personalizada"
+      },
+      {
+        "target": "upload_insight",
+        "change": "Refinar sugerencias para ser más breves y accionables, enlazando con el valor inmediato",
+        "why": "Facilita la continuidad visual al conectar el documento subido con el siguiente paso, mejorando la experiencia móvil sin sobrecargar al usuario"
+      },
+      {
+        "target": "status_line",
+        "change": "Simplificar la línea de estado para incluir el tipo de documento detectado",
+        "why": "Proporciona feedback inmediato y claro, asegurando que la transición se sienta continua y confiable en interfaces móviles"
+      },
+      {
+        "target": "continuity_note",
+        "change": "Agregar una nota visual sutil para enlazar etapas, como un ícono de flujo",
+        "why": "Mejora la jerarquía y microinteracciones ligeras, haciendo que el usuario perciba una experiencia más unificada y menos fragmentada"
+      }
+    ],
+    "microcopy": {
+      "progress_analyze_1": "Revisando lo esencial de tu documento...",
+      "progress_analyze_2": "Identificando lo clave para ti...",
+      "progress_analyze_3": "Preparando una vista rápida y útil...",
+      "progress_save_1": "Protegemos tu archivo con cuidado...",
+      "progress_save_2": "Guardándolo de manera segura para ti...",
+      "progress_save_3": "Todo listo para tu revisión...",
+      "result_title_payroll": "Recibo de nómina listo para ver",
+      "result_title_cfdi": "CFDI listo para revisar",
+      "result_title_contract": "Contrato listo para consultar",
+      "result_title_imss": "Soporte IMSS listo para analizar",
+      "result_description": "Ordenamos lo más útil para un veredicto simple y claro antes de los detalles.",
+      "status_received": "Documento recibido: tipo detectado y listo para el borrador.",
+      "status_analyzing": "Analizando tu archivo: pronto verás el resultado."
+    },
+    "document_specific_notes": {
+      "payroll_receipt": "Verifica tu salario y deducciones fácilmente.",
+      "cfdi": "Compara lo timbrado con lo que recibiste.",
+      "contract": "Revisa lo pactado en tu relación laboral.",
+      "imss": "Aclara tu historial de seguridad social."
+    },
+    "microinteraction_notes": [
+      "Usa transiciones suaves como fundidos para mantener la continuidad visual entre etapas.",
+      "Incluye indicadores de carga circulares para reforzar el estado de progreso sin distraer."
+    ],
+    "confidence": "high"
+  },
+  "gemini": {
+    "diagnosis": "La experiencia actual es funcional, pero la transición y el microcopy pueden ser más fluidos y específicos. Los mensajes de progreso son genéricos y el título del resultado no aprovecha la detección del tipo de documento. La línea de estado inferior es un poco densa. Mejorar estos puntos clave reducirá la fricción, aumentará la confianza y hará que el usuario sienta que la app entiende y valora su información de manera más proactiva.",
+    "top_issues": [
+      "Mensajes de progreso genéricos que no transmiten valor específico.",
+      "Título del resultado ('Documento listo para mostrar resultado') es poco específico y no aprovecha la detección del tipo de documento.",
+      "Línea de estado inferior (status line) es demasiado verbosa y mezcla diferentes estados de forma confusa.",
+      "Falta de una microinteracción clara que conecte la selección del archivo con el inicio del análisis, generando un 'vacío' en la continuidad."
+    ],
+    "recommended_changes": [
+      {
+        "target": "progress_messages",
+        "change": "Reemplazar los mensajes de progreso genéricos ('Analizando lo más importante...') por textos más directos y orientados al valor que se está extrayendo del documento, como 'Identificando datos clave...' o 'Preparando tu análisis rápido...'.",
+        "why": "Reduce la incertidumbre, hace el proceso más transparente y enfoca al usuario en el beneficio de la espera, mejorando la percepción de fluidez y confianza."
+      },
+      {
+        "target": "result_reveal_copy",
+        "change": "Modificar el 'eyebrow' de 'Archivo recibido' a 'Documento procesado' o similar, y el 'title' para que sea específico al tipo de documento detectado (ej. 'Recibo de Nómina listo para revisar'), eliminando la frase 'para mostrar resultado'.",
+        "why": "Confirma inmediatamente el tipo de documento y su estado de preparación, eliminando ambigüedad y reforzando la inteligencia de la app, lo que genera confianza y una sensación de personalización."
+      },
+      {
+        "target": "upload_insight",
+        "change": "Asegurar que el 'label' del 'upload_insight' sea consistente con el nuevo 'title' del 'result_reveal_copy' para el tipo de documento detectado, manteniendo la valiosa 'contribution' y 'nextSuggestion' que ya son específicas.",
+        "why": "Mantiene la coherencia en la terminología a lo largo de la experiencia y refuerza el reconocimiento del documento, guiando al usuario de forma más clara sobre el valor y los siguientes pasos."
+      },
+      {
+        "target": "status_line",
+        "change": "Simplificar la lógica de la línea de estado inferior para mostrar mensajes más concisos y específicos para cada fase: 'Documento recibido: [nombre]' al inicio, 'Analizando: [nombre]' durante el proceso, y 'Borrador listo para revisar' al finalizar, sin detalles de ajustes en esta línea.",
+        "why": "Reduce la carga cognitiva, proporciona feedback instantáneo y claro sobre el estado actual, y mejora la legibilidad en pantallas pequeñas, haciendo la interacción más directa y menos abrumadora."
+      },
+      {
+        "target": "continuity_note",
+        "change": "Implementar una microinteracción visual sutil (ej. un breve 'tick' o animación de carga muy rápida) justo después de seleccionar el archivo y antes de la transición a la pantalla de análisis, para indicar que la acción fue reconocida y el proceso ha iniciado.",
+        "why": "Crea una sensación de continuidad y respuesta inmediata, eliminando el 'vacío' entre la acción del usuario y el inicio del procesamiento, lo que mejora la percepción de fluidez y reduce la ansiedad."
+      }
+    ],
+    "microcopy": {
+      "progress_analyze_1": "Revisando tu documento...",
+      "progress_analyze_2": "Identificando datos clave...",
+      "progress_analyze_3": "Preparando tu análisis rápido...",
+      "progress_save_1": "Guardando tu archivo...",
+      "progress_save_2": "Asegurando tu información...",
+      "progress_save_3": "Listo para tu revisión...",
+      "result_title_payroll": "Recibo de Nómina listo para revisar",
+      "result_title_cfdi": "CFDI listo para revisar",
+      "result_title_contract": "Contrato listo para revisar",
+      "result_title_imss": "Soporte IMSS listo para revisar",
+      "result_description": "Hemos organizado lo más importante para que veas un resumen antes del detalle completo.",
+      "status_received": "Documento recibido: [nombre_archivo]",
+      "status_analyzing": "Analizando: [nombre_archivo]"
+    },
+    "document_specific_notes": {
+      "payroll_receipt": "Revisa percepciones y deducciones.",
+      "cfdi": "Contrasta lo timbrado con lo recibido.",
+      "contract": "Fija el punto de partida laboral.",
+      "imss": "Fortalece tu historial de seguridad social."
+    },
+    "microinteraction_notes": [
+      "Al seleccionar un archivo, mostrar una animación sutil de 'cargando' o un checkmark temporal sobre el ícono del archivo antes de la transición a la pantalla de análisis.",
+      "Durante el análisis, usar un spinner o barra de progreso indeterminada que cambie de color o forma ligeramente para indicar actividad sin dar una falsa sensación de tiempo.",
+      "Al revelar el borrador, una transición visual suave (ej. fade-in o slide-up) para la tarjeta de resultado, en lugar de un cambio abrupto."
+    ],
+    "confidence": "high"
+  }
+}

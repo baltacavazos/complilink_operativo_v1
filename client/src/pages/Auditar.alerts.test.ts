@@ -54,9 +54,9 @@ describe("compact mobile upload entry", () => {
   });
 
   it("inyecta progreso humano y tracking discreto del veredicto móvil en la cuarta ronda", () => {
-    expect(auditarSource).toContain("Analizando lo más importante...");
-    expect(auditarSource).toContain("Ubicando las señales clave...");
-    expect(auditarSource).toContain("Preparando tu revisión rápida...");
+    expect(auditarSource).toContain("Revisando tu documento...");
+    expect(auditarSource).toContain("Identificando datos clave...");
+    expect(auditarSource).toContain("Preparando tu análisis rápido...");
     expect(auditarSource).toContain("auditar_mobile_verdict_viewed");
     expect(auditarSource).toContain("auditar_mobile_verdict_cta_clicked");
     expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
@@ -469,9 +469,9 @@ describe("buildUploadProgressState", () => {
       etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
       humanMessages: [
-        "Protegiendo tu documento...",
-        "Guardándolo de forma segura...",
-        "Dejando listo el resultado...",
+        "Guardando tu archivo...",
+        "Asegurando tu información...",
+        "Listo para tu revisión...",
       ],
     });
   });
@@ -520,9 +520,9 @@ describe("buildUploadProgressState", () => {
       stageLabel: "Etapa 2 de 4 · Analizando contenido",
       stepKey: "analyze",
       humanMessages: [
-        "Analizando lo más importante...",
-        "Ubicando las señales clave...",
-        "Preparando tu revisión rápida...",
+        "Revisando tu documento...",
+        "Identificando datos clave...",
+        "Preparando tu análisis rápido...",
       ],
     });
 
@@ -546,14 +546,14 @@ describe("buildUploadProgressState", () => {
 describe("getHumanUploadProgressMessages", () => {
   it("devuelve mensajes breves y humanos para análisis y guardado sin alargar la pantalla", () => {
     expect(getHumanUploadProgressMessages("analyze")).toEqual([
-      "Analizando lo más importante...",
-      "Ubicando las señales clave...",
-      "Preparando tu revisión rápida...",
+      "Revisando tu documento...",
+      "Identificando datos clave...",
+      "Preparando tu análisis rápido...",
     ]);
     expect(getHumanUploadProgressMessages("save")).toEqual([
-      "Protegiendo tu documento...",
-      "Guardándolo de forma segura...",
-      "Dejando listo el resultado...",
+      "Guardando tu archivo...",
+      "Asegurando tu información...",
+      "Listo para tu revisión...",
     ]);
     expect(getHumanUploadProgressMessages("review")).toEqual([]);
   });

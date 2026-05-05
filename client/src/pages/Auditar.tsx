@@ -220,15 +220,15 @@ export function getHumanUploadProgressMessages(
   switch (stepKey) {
     case "analyze":
       return [
-        "Analizando lo más importante...",
-        "Ubicando las señales clave...",
-        "Preparando tu revisión rápida...",
+        "Revisando tu documento...",
+        "Identificando datos clave...",
+        "Preparando tu análisis rápido...",
       ];
     case "save":
       return [
-        "Protegiendo tu documento...",
-        "Guardándolo de forma segura...",
-        "Dejando listo el resultado...",
+        "Guardando tu archivo...",
+        "Asegurando tu información...",
+        "Listo para tu revisión...",
       ];
     default:
       return [];
@@ -1951,15 +1951,26 @@ function getDocumentVerdictState(confidence?: number | null) {
 }
 
 function getResultRevealCopy(documentType?: string | null) {
-  const documentLabel = documentType
-    ? getSimpleDocumentTypeLabel(documentType)
-    : "Documento";
+  const title = (() => {
+    switch (documentType) {
+      case "payroll_receipt":
+        return "Recibo de nómina listo para revisar";
+      case "cfdi":
+        return "CFDI listo para revisar";
+      case "contract":
+        return "Contrato listo para revisar";
+      case "imss":
+        return "Soporte IMSS listo para revisar";
+      default:
+        return `${documentType ? getSimpleDocumentTypeLabel(documentType) : "Documento"} listo para revisar`;
+    }
+  })();
 
   return {
-    eyebrow: "Archivo recibido",
-    title: `${documentLabel} listo para mostrar resultado`,
+    eyebrow: "Documento procesado",
+    title,
     description:
-      "Ordenamos primero lo más útil para enseñarte un veredicto simple antes del detalle completo.",
+      "Organizamos lo más importante para que veas primero lo esencial y luego el detalle completo.",
   } as const;
 }
 
@@ -2163,49 +2174,49 @@ function getUploadInsight(documentType: string): UploadInsight {
       return {
         label: "Recibo de nómina incorporado",
         contribution:
-          "Este archivo ayuda a revisar percepciones, deducciones y cambios entre pagos. Ya suma contexto útil para tu expediente.",
+          "Te ayuda a revisar pagos, deducciones y cambios recientes dentro de tu expediente.",
         nextSuggestion:
-          "Si también tienes tu CFDI o contrato, subirlo puede ayudarte a comparar mejor lo reportado con lo que realmente pasó.",
+          "Si subes el CFDI del mismo periodo, podrás contrastar mejor lo timbrado con lo recibido.",
       };
     case "cfdi":
       return {
         label: "CFDI incorporado",
         contribution:
-          "Este documento aporta una capa fiscal muy útil para contrastar lo timbrado con lo que recibiste o trabajaste.",
+          "Te ayuda a comparar lo timbrado con lo que realmente recibiste o trabajaste.",
         nextSuggestion:
-          "Si cuentas con recibos de nómina o soporte IMSS, agregarlos puede aclarar mejor diferencias o patrones.",
+          "Si también tienes recibos de nómina o soporte IMSS, pueden aclarar mejor diferencias o patrones.",
       };
     case "contract":
       return {
         label: "Contrato incorporado",
         contribution:
-          "Este archivo ayuda a fijar el punto de partida de la relación laboral y a entender mejor lo que se pactó desde el inicio.",
+          "Te ayuda a revisar lo pactado desde el inicio de tu relación laboral.",
         nextSuggestion:
-          "Subir recibos de nómina y CFDI puede ayudarte a comparar lo prometido con lo que sucedió en la práctica.",
+          "Si subes nómina o CFDI, podrás comparar mejor lo prometido con lo que pasó en la práctica.",
       };
     case "imss":
       return {
         label: "Soporte IMSS incorporado",
         contribution:
-          "Este documento fortalece el contexto de seguridad social y puede aclarar movimientos relevantes de tu historial laboral.",
+          "Te ayuda a ubicar movimientos relevantes de tu seguridad social.",
         nextSuggestion:
-          "Si también tienes contrato, recibos o CFDI, juntos pueden darte una visión laboral mucho más completa.",
+          "Si también tienes contrato, nómina o CFDI, juntos te darán una lectura más completa.",
       };
     case "evidence":
       return {
         label: "Evidencia complementaria incorporada",
         contribution:
-          "Este archivo ayuda a explicar contexto, instrucciones o fechas que pueden ser importantes para interpretar mejor tu caso.",
+          "Te ayuda a explicar contexto, instrucciones o fechas importantes para tu caso.",
         nextSuggestion:
-          "Si te falta contrato, nómina o CFDI, súbelos también para que esa evidencia tenga todavía más contexto.",
+          "Si te falta contrato, nómina o CFDI, súbelos también para dar más contexto al análisis.",
       };
     default:
       return {
         label: "Documento incorporado",
         contribution:
-          "Tu archivo ya forma parte del expediente y puede sumar contexto útil para una revisión más completa.",
+          "Tu archivo ya suma contexto útil para una revisión más clara.",
         nextSuggestion:
-          "Si sabes qué tipo de documento es, cuéntalo en la descripción o sube también recibos, CFDI o contrato para fortalecer mejor el análisis.",
+          "Si puedes, sube también nómina, CFDI o contrato para fortalecer mejor el análisis.",
       };
   }
 }
@@ -14096,21 +14107,19 @@ export default function Auditar() {
           </Button>
           {autoAdvanceFlash && !pendingDraft ? (
             <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
-              En cuanto termine, abrimos tu revisión rápida automáticamente.
+              En cuanto termine, abrimos tu borrador automáticamente.
             </p>
           ) : null}
 
           <div className="mt-2 flex items-center justify-between gap-3 text-xs leading-5 text-slate-500">
             <p className="min-w-0 flex-1 truncate">
               {pendingDraft
-                ? manualOverridePayload.length
-                  ? `Borrador listo: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} para revisar.`
-                  : `Borrador listo: ${pendingDraft.previewAsset.fileName}`
-                  : selectedFile
-                    ? isAutoAnalyzingSelectedFile
-                      ? `Analizando: ${selectedFile.name}`
-                      : `Documento recibido: ${selectedFile.name}`
-                    : "Primero elige tu documento desde el celular o tus archivos guardados."}
+                ? `${getSimpleDocumentTypeLabel(pendingDraft.classification.documentType)} listo para revisar`
+                : selectedFile
+                  ? isAutoAnalyzingSelectedFile
+                    ? `Analizando ${selectedFile.name}`
+                    : `Documento recibido: ${selectedFile.name}`
+                  : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
             {pendingDraft || selectedFile ? (
               <button

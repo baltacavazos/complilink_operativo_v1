@@ -1578,3 +1578,8 @@
 - [x] Ronda post-captura móvil: hacer más expresivo el feedback visual de análisis con progreso, microcopy y microinteracciones sin recargar la interfaz.
 - [x] Ronda post-captura móvil: reducir fricción y altura del primer viewport tras captura manteniendo claridad sobre qué está pasando y qué sigue.
 - [x] Ronda post-captura móvil: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.
+- [x] Ronda transición cámara-borrador: auditar el paso inmediato entre captura, recepción y apertura del borrador para detectar fricción visual o dudas de estado.
+- [x] Ronda transición cámara-borrador: contrastar con ChatGPT, Grok y Gemini la transición más fluida y clara sin agregar pasos ni complejidad.
+- [x] Ronda microcopy contextual: reforzar mensajes y ayudas según tipo de documento para que el valor recibido se entienda más rápido.
+- [x] Ronda transición cámara-borrador: pulir microinteracciones, continuidad visual y copy breve del flujo móvil inmediato.
+- [x] Ronda transición cámara-borrador: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.
