@@ -1592,6 +1592,38 @@ export function shouldAutoAnalyzeSelectedFile(params: {
   );
 }
 
+export function shouldHideUploadContextSelectors(params: {
+  isFirstDocumentFlow: boolean;
+  hasSelectedFile: boolean;
+  hasPendingDraft: boolean;
+  isAutoAnalyzing: boolean;
+  hasSelectedTenant: boolean;
+  hasSelectedCase: boolean;
+}) {
+  const {
+    isFirstDocumentFlow,
+    hasSelectedFile,
+    hasPendingDraft,
+    isAutoAnalyzing,
+    hasSelectedTenant,
+    hasSelectedCase,
+  } = params;
+
+  if (hasPendingDraft || isAutoAnalyzing) {
+    return true;
+  }
+
+  if (!hasSelectedFile) {
+    return false;
+  }
+
+  if (!isFirstDocumentFlow) {
+    return true;
+  }
+
+  return hasSelectedTenant && hasSelectedCase;
+}
+
 function getCaptureModeSupportCopy(
   value: AuditarCaptureMode | null | undefined
 ) {
@@ -5761,6 +5793,16 @@ export default function Auditar() {
     analyzeDraftMutation.isPending || confirmDraftMutation.isPending;
   const isAutoAnalyzingSelectedFile =
     analyzeDraftMutation.isPending && Boolean(selectedFile) && !pendingDraft;
+  const shouldHideUploadSelectors = shouldHideUploadContextSelectors({
+    isFirstDocumentFlow,
+    hasSelectedFile: Boolean(selectedFile),
+    hasPendingDraft: Boolean(pendingDraft),
+    isAutoAnalyzing: isAutoAnalyzingSelectedFile,
+    hasSelectedTenant: Boolean(selectedTenantId),
+    hasSelectedCase: Boolean(selectedCaseId),
+  });
+  const showCompactUploadContextHint =
+    shouldCompactMobileUploadEntry && !shouldHideUploadSelectors;
   const selectedFileValidationMessage = useMemo(
     () => validateDocumentUploadFile(selectedFile),
     [selectedFile]
@@ -7885,10 +7927,10 @@ export default function Auditar() {
                   <summary className="flex list-none items-center justify-between gap-3 text-left">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
-                        Opcional después del veredicto
+                        Opcional si sigues hoy
                       </p>
                       <p className="mt-1 text-base font-semibold tracking-[-0.03em] text-slate-950">
-                        Subir otro documento cuando lo necesites
+                        Sube otro archivo si lo necesitas.
                       </p>
                     </div>
                     <span className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-900">
@@ -7896,7 +7938,8 @@ export default function Auditar() {
                     </span>
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-700">
-                    Tu resultado principal ya quedó arriba. Abre este bloque solo si quieres fortalecer tu expediente con otra pieza útil.
+                    Tu resultado ya está arriba. Aquí puedes sumar otra pieza
+                    útil para fortalecer tu expediente.
                   </p>
                   {selectedRecommendedTargetType &&
                   effectiveRecommendedTarget ? (
@@ -7909,10 +7952,10 @@ export default function Auditar() {
                       className="h-11 rounded-2xl bg-slate-950 text-white hover:bg-slate-900"
                       onClick={() => setUploadSourceOpen(true)}
                     >
-                      {selectedFile ? "Cambiar documento" : "Subir otro documento"}
+                      {selectedFile ? "Cambiar documento" : "Agregar otro documento"}
                     </Button>
                     <p className="text-xs leading-5 text-slate-500">
-                      Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil.
+                      Elige un archivo o toma una foto para sumar una pieza útil.
                     </p>
                   </div>
                 </details>
@@ -7921,17 +7964,17 @@ export default function Auditar() {
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
-                      ? "Sigue fortaleciendo tu expediente"
+                      ? "Opcional si sigues hoy"
                         : "Asegura tu recibo de nómina"}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
-                      ? "Si quieres subir otro archivo, aquí puedes hacerlo en un paso."
+                      ? "Tu resultado ya está arriba. Aquí puedes agregar otro documento."
                       : "Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
-                      ? "Tu resultado principal ya quedó arriba. Este bloque solo te sirve para seguir fortaleciendo el expediente con otro documento cuando lo necesites."
+                      ? "Úsalo solo si quieres fortalecer tu expediente con otra pieza útil."
                       : "Empieza con una foto o PDF. Dejamos la acción principal arriba y los detalles debajo para que el primer paso sea más claro."}
                   </p>
                   <div
@@ -8011,12 +8054,12 @@ export default function Auditar() {
                       {selectedFile
                         ? "Cambiar documento"
                         : shouldCompactPostUploadExperience
-                          ? "Asegurar otra evidencia"
+                          ? "Agregar otro documento"
                           : "Elegir documento"}
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
-                        ? "Toma foto o elige un archivo guardado cuando quieras sumar otra pieza útil."
+                        ? "Elige un archivo o toma una foto cuando quieras sumar otra pieza útil."
                         : "Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado."}
                     </p>
                   </div>
@@ -8792,7 +8835,7 @@ export default function Auditar() {
               </div>
 
               <div
-                className={`mt-6 gap-4 md:grid-cols-2 ${shouldCompactMobileUploadEntry || pendingDraft || selectedFile || isAutoAnalyzingSelectedFile ? "hidden sm:grid" : "grid"}`}
+                className={`mt-6 gap-4 md:grid-cols-2 ${shouldHideUploadSelectors ? "hidden sm:grid" : "grid"}`}
               >
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">
@@ -8837,6 +8880,13 @@ export default function Auditar() {
                   </select>
                 </label>
               </div>
+
+              {showCompactUploadContextHint ? (
+                <p className="mt-3 text-xs leading-5 text-slate-500 sm:hidden">
+                  Primero confirma tu espacio y expediente. Después puedes tomar
+                  la foto o elegir el archivo.
+                </p>
+              ) : null}
 
               <div
                 ref={uploadSectionRef}

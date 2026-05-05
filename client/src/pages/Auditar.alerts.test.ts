@@ -28,6 +28,7 @@ import {
   sanitizePreviewText,
   sanitizeStructuredExtractionView,
   shouldAutoAnalyzeSelectedFile,
+  shouldHideUploadContextSelectors,
   validateDocumentUploadFile,
 } from "./Auditar";
 
@@ -51,6 +52,44 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("Documento recibido");
     expect(auditarSource).toContain("Lo estamos analizando. En breve verás tu borrador.");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
+  });
+
+  it("mantiene visibles los selectores del primer upload móvil hasta tener contexto suficiente", () => {
+    expect(auditarSource).toContain("shouldHideUploadContextSelectors");
+    expect(auditarSource).toContain("Primero confirma tu espacio y expediente.");
+
+    expect(
+      shouldHideUploadContextSelectors({
+        isFirstDocumentFlow: true,
+        hasSelectedFile: false,
+        hasPendingDraft: false,
+        isAutoAnalyzing: false,
+        hasSelectedTenant: false,
+        hasSelectedCase: false,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldHideUploadContextSelectors({
+        isFirstDocumentFlow: true,
+        hasSelectedFile: true,
+        hasPendingDraft: false,
+        isAutoAnalyzing: false,
+        hasSelectedTenant: false,
+        hasSelectedCase: false,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldHideUploadContextSelectors({
+        isFirstDocumentFlow: true,
+        hasSelectedFile: true,
+        hasPendingDraft: false,
+        isAutoAnalyzing: false,
+        hasSelectedTenant: true,
+        hasSelectedCase: true,
+      }),
+    ).toBe(true);
   });
 
   it("inyecta progreso humano y tracking discreto del veredicto móvil en la cuarta ronda", () => {

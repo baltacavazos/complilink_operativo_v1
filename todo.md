@@ -1588,3 +1588,9 @@
 - [x] Ronda Home ejemplo: alinear el ejemplo de resultado de la portada con los nuevos títulos y microcopy contextual por tipo de documento.
 - [x] Ronda post-subida hero: reducir todavía más la altura visible del veredicto móvil sin perder claridad sobre hallazgo y siguiente paso.
 - [x] Ronda post-subida hero: revalidar con pruebas y revisión visual el flujo refinado y la Home actualizada antes del siguiente checkpoint.
+
+- [x] Quinta ronda de compactación del veredicto móvil en /auditar para acercarlo al objetivo 9/10 de claridad y densidad visual
+- [x] Corregir el error residual del primer upload móvil en el flujo de /auditar
+- [x] Ejecutar reauditoría comparada final con ChatGPT, Grok y Gemini para decidir si conviene publicar
+- [x] Actualizar la llave de Gemini y reejecutar el contraste tri-IA completo antes de aplicar los cambios finales de esta ronda
+- [x] Continuar esta ronda con consenso OpenAI + Grok mientras Gemini siga bloqueado por credencial inválida

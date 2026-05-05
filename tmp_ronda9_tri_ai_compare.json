@@ -1,0 +1,115 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_ronda9_tri_ai_prompt.md",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"provider_view\": \"Optimización clara y segura para mejorar la experiencia móvil en Auditapatrón\",\n  \"post_upload_verdict\": {\n    \"diagnosis\": \"El bloque post-subida móvil contiene textos redundantes y un hero secundario que genera duplicidad de información, lo que puede confundir y alargar innecesariamente la experiencia.\",\n    \"priority\": \"high\",\n    \"recommended_change\": \"Eliminar el hero secundario y condensar el mensaje en un solo bloque claro y directo que informe al usuario que el resultado principal ya está visible y que puede subir otro documento si lo desea, usando un lenguaje sencillo y sin repetir conceptos.\",\n    \"replacement_copy\": {\n      \"title\": \"Tu resultado ya está arriba. ¿Quieres agregar otro documento?\",\n      \"body\": \"Suma más evidencia cuando lo necesites para fortalecer tu expediente. Solo toma una foto o elige un archivo guardado.\",\n      \"cta\": \"Agregar otro documento\",\n      \"hint\": \"Puedes subir más archivos en cualquier momento para mejorar tu caso.\"\n    }\n  },\n  \"first_upload_mobile_issue\": {\n    \"is_real_issue\": true,\n    \"root_cause\": \"Los selectores de 'Tu espacio' y 'Expediente' se ocultan en móvil antes de que selectedTenantId y selectedCaseId estén definidos, dejando al usuario sin contexto visible para elegir o confirmar el expediente, especialmente cuando ya seleccionó un archivo.\",\n    \"safe_fix\": \"No ocultar los selectores en móvil mientras selectedTenantId o selectedCaseId estén vacíos o mientras no haya archivo seleccionado. Mostrar siempre los selectores hasta que el usuario haya definido explícitamente el expediente y el espacio, para evitar confusión y errores en el flujo.\",\n    \"ux_copy_if_needed\": \"Selecciona tu espacio y expediente para continuar con la revisión.\"\n  },\n  \"implementation_notes\": [\n    \"Reemplazar el bloque post-subida móvil por un solo hero compacto sin duplicar mensajes.\",\n    \"Modificar la condición que oculta los selectores para que dependan explícitamente de la existencia de selectedTenantId y selectedCaseId, no solo de flags booleanos.\",\n    \"Mantener el tono cercano pero institucional, evitando jerga técnica y asegurando claridad en cada mensaje.\"\n  ],\n  \"publish_readiness\": {\n    \"score\": 9,\n    \"blocker\": \"Ajustar la visibilidad de selectores en primer upload para evitar pérdida de contexto y errores de usuario.\"\n  }\n}",
+      "parsed": {
+        "provider_view": "Optimización clara y segura para mejorar la experiencia móvil en Auditapatrón",
+        "post_upload_verdict": {
+          "diagnosis": "El bloque post-subida móvil contiene textos redundantes y un hero secundario que genera duplicidad de información, lo que puede confundir y alargar innecesariamente la experiencia.",
+          "priority": "high",
+          "recommended_change": "Eliminar el hero secundario y condensar el mensaje en un solo bloque claro y directo que informe al usuario que el resultado principal ya está visible y que puede subir otro documento si lo desea, usando un lenguaje sencillo y sin repetir conceptos.",
+          "replacement_copy": {
+            "title": "Tu resultado ya está arriba. ¿Quieres agregar otro documento?",
+            "body": "Suma más evidencia cuando lo necesites para fortalecer tu expediente. Solo toma una foto o elige un archivo guardado.",
+            "cta": "Agregar otro documento",
+            "hint": "Puedes subir más archivos en cualquier momento para mejorar tu caso."
+          }
+        },
+        "first_upload_mobile_issue": {
+          "is_real_issue": true,
+          "root_cause": "Los selectores de 'Tu espacio' y 'Expediente' se ocultan en móvil antes de que selectedTenantId y selectedCaseId estén definidos, dejando al usuario sin contexto visible para elegir o confirmar el expediente, especialmente cuando ya seleccionó un archivo.",
+          "safe_fix": "No ocultar los selectores en móvil mientras selectedTenantId o selectedCaseId estén vacíos o mientras no haya archivo seleccionado. Mostrar siempre los selectores hasta que el usuario haya definido explícitamente el expediente y el espacio, para evitar confusión y errores en el flujo.",
+          "ux_copy_if_needed": "Selecciona tu espacio y expediente para continuar con la revisión."
+        },
+        "implementation_notes": [
+          "Reemplazar el bloque post-subida móvil por un solo hero compacto sin duplicar mensajes.",
+          "Modificar la condición que oculta los selectores para que dependan explícitamente de la existencia de selectedTenantId y selectedCaseId, no solo de flags booleanos.",
+          "Mantener el tono cercano pero institucional, evitando jerga técnica y asegurando claridad en cada mensaje."
+        ],
+        "publish_readiness": {
+          "score": 9,
+          "blocker": "Ajustar la visibilidad de selectores en primer upload para evitar pérdida de contexto y errores de usuario."
+        }
+      }
+    },
+    "xai": {
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"provider_view\": \"Evaluación UX/UI para compactar el veredicto post-subida y corregir el flujo de primer upload en Auditapatrón, priorizando simplicidad y seguridad en móvil.\",\n  \"post_upload_verdict\": {\n    \"diagnosis\": \"El bloque post-subida presenta duplicación en textos y ayudas, como repeticiones sobre subir archivos, lo que aumenta la longitud innecesaria en móvil y reduce la claridad general.\",\n    \"priority\": \"high\",\n    \"recommended_change\": \"Compactar el contenido eliminando redundancias para mantener la esencia informativa sin extender el espacio, asegurando una experiencia fluida y cercana.\",\n    \"replacement_copy\": {\n      \"title\": \"Sube otro archivo si lo necesitas.\",\n      \"body\": \"Tu resultado principal ya está arriba; este espacio es para agregar más evidencias cuando quieras fortalecer tu expediente.\",\n      \"cta\": \"Asegurar otra evidencia\",\n      \"hint\": \"Elige un archivo o toma una foto para sumar una pieza útil.\"\n    }\n  },\n  \"first_upload_mobile_issue\": {\n    \"is_real_issue\": true,\n    \"root_cause\": \"Los selectores de 'Tu espacio' y 'Expediente' se ocultan prematuramente en condiciones como la selección inicial de archivo, dejando al usuario sin contexto visible antes de que se definan completamente selectedTenantId y selectedCaseId.\",\n    \"safe_fix\": \"Modificar la condición de ocultamiento para que los selectores permanezcan visibles hasta que se confirme la selección completa de tenant y case, usando una verificación explícita antes de aplicar 'hidden', sin alterar la lógica principal de autoanálisis.\",\n    \"ux_copy_if_needed\": \"Si falta contexto, mostrar un mensaje como: 'Primero, selecciona tu espacio y expediente para continuar de forma segura.'\"\n  },\n  \"implementation_notes\": [\n    \"Verificar y ajustar las condiciones de ocultamiento en el componente para evitar pérdida de contexto en el primer upload.\",\n    \"Probar el flujo en dispositivos móviles reales para asegurar que no haya fricciones inesperadas.\",\n    \"Actualizar el copy en todos los bloques para mantener un tono institucional y cercano, eliminando cualquier duplicación residual.\"\n  ],\n  \"publish_readiness\": {\n    \"score\": 8,\n    \"blocker\": \"El issue de selectores ocultos en el primer upload debe resolverse para evitar confusiones y garantizar una experiencia confiable.\"\n  }\n}",
+      "parsed": {
+        "provider_view": "Evaluación UX/UI para compactar el veredicto post-subida y corregir el flujo de primer upload en Auditapatrón, priorizando simplicidad y seguridad en móvil.",
+        "post_upload_verdict": {
+          "diagnosis": "El bloque post-subida presenta duplicación en textos y ayudas, como repeticiones sobre subir archivos, lo que aumenta la longitud innecesaria en móvil y reduce la claridad general.",
+          "priority": "high",
+          "recommended_change": "Compactar el contenido eliminando redundancias para mantener la esencia informativa sin extender el espacio, asegurando una experiencia fluida y cercana.",
+          "replacement_copy": {
+            "title": "Sube otro archivo si lo necesitas.",
+            "body": "Tu resultado principal ya está arriba; este espacio es para agregar más evidencias cuando quieras fortalecer tu expediente.",
+            "cta": "Asegurar otra evidencia",
+            "hint": "Elige un archivo o toma una foto para sumar una pieza útil."
+          }
+        },
+        "first_upload_mobile_issue": {
+          "is_real_issue": true,
+          "root_cause": "Los selectores de 'Tu espacio' y 'Expediente' se ocultan prematuramente en condiciones como la selección inicial de archivo, dejando al usuario sin contexto visible antes de que se definan completamente selectedTenantId y selectedCaseId.",
+          "safe_fix": "Modificar la condición de ocultamiento para que los selectores permanezcan visibles hasta que se confirme la selección completa de tenant y case, usando una verificación explícita antes de aplicar 'hidden', sin alterar la lógica principal de autoanálisis.",
+          "ux_copy_if_needed": "Si falta contexto, mostrar un mensaje como: 'Primero, selecciona tu espacio y expediente para continuar de forma segura.'"
+        },
+        "implementation_notes": [
+          "Verificar y ajustar las condiciones de ocultamiento en el componente para evitar pérdida de contexto en el primer upload.",
+          "Probar el flujo en dispositivos móviles reales para asegurar que no haya fricciones inesperadas.",
+          "Actualizar el copy en todos los bloques para mantener un tono institucional y cercano, eliminando cualquier duplicación residual."
+        ],
+        "publish_readiness": {
+          "score": 8,
+          "blocker": "El issue de selectores ocultos en el primer upload debe resolverse para evitar confusiones y garantizar una experiencia confiable."
+        }
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "error": {
+        "status": 403,
+        "body": "{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Your API key was reported as leaked. Please use another API key.\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n",
+        "model": "gemini-2.0-flash"
+      }
+    }
+  },
+  "summary": {
+    "parsed_providers": [
+      "openai",
+      "xai"
+    ],
+    "consensus": {
+      "first_upload_issue_real": true,
+      "candidate_title_options": [
+        "Tu resultado ya está arriba. ¿Quieres agregar otro documento?",
+        "Sube otro archivo si lo necesitas."
+      ],
+      "candidate_body_options": [
+        "Suma más evidencia cuando lo necesites para fortalecer tu expediente. Solo toma una foto o elige un archivo guardado.",
+        "Tu resultado principal ya está arriba; este espacio es para agregar más evidencias cuando quieras fortalecer tu expediente."
+      ],
+      "candidate_cta_options": [
+        "Agregar otro documento",
+        "Asegurar otra evidencia"
+      ],
+      "candidate_hint_options": [
+        "Puedes subir más archivos en cualquier momento para mejorar tu caso.",
+        "Elige un archivo o toma una foto para sumar una pieza útil."
+      ],
+      "candidate_safe_fixes": [
+        "No ocultar los selectores en móvil mientras selectedTenantId o selectedCaseId estén vacíos o mientras no haya archivo seleccionado. Mostrar siempre los selectores hasta que el usuario haya definido explícitamente el expediente y el espacio, para evitar confusión y errores en el flujo.",
+        "Modificar la condición de ocultamiento para que los selectores permanezcan visibles hasta que se confirme la selección completa de tenant y case, usando una verificación explícita antes de aplicar 'hidden', sin alterar la lógica principal de autoanálisis."
+      ],
+      "average_publish_score": 8.5,
+      "blockers": [
+        "Ajustar la visibilidad de selectores en primer upload para evitar pérdida de contexto y errores de usuario.",
+        "El issue de selectores ocultos en el primer upload debe resolverse para evitar confusiones y garantizar una experiencia confiable."
+      ]
+    }
+  }
+}

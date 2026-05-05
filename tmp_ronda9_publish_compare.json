@@ -1,0 +1,72 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_ronda9_publish_prompt.md",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"provider_view\": \"Los cambios implementados abordan de manera efectiva los riesgos principales detectados en la experiencia móvil del flujo de subida inicial y el bloque opcional posterior al veredicto. La lógica para mantener visibles los selectores de espacio y expediente hasta tener contexto suficiente es clara y evita confusión. La ayuda visible aporta claridad sin recargar el viewport. La compactación del bloque post-veredicto elimina redundancias y mantiene un tono cercano pero institucional, alineado con el objetivo de simplicidad y confianza. Las pruebas focalizadas en verde respaldan la estabilidad de estos cambios específicos.\",\n  \"mobile_upload_fix\": {\n    \"assessment\": \"La solución aplicada para el primer upload móvil es adecuada y resuelve el riesgo de ocultación prematura de los selectores. La lógica condicional es explícita y el helper visible guía al usuario de forma clara, evitando errores o incertidumbre en la selección del espacio y expediente.\",\n    \"publish_blocker\": false,\n    \"reason\": \"No se identifican riesgos remanentes significativos en esta área que justifiquen bloquear la publicación. La experiencia es confiable y simple, cumpliendo con las restricciones de no recargar el viewport ni generar scroll lateral.\"\n  },\n  \"post_verdict_compaction\": {\n    \"assessment\": \"El bloque opcional posterior al veredicto móvil está bien compactado y comunica de forma clara y directa la posibilidad de subir otro documento. El lenguaje es cercano pero institucional, sin redundancias ni sobrecarga visual, lo que mejora la experiencia sin perder funcionalidad.\",\n    \"publish_blocker\": false,\n    \"reason\": \"La compactación elimina la redundancia previa y mantiene la claridad necesaria para que el usuario entienda la acción disponible, sin afectar negativamente la usabilidad.\"\n  },\n  \"overall_publish_readiness\": {\n    \"score\": 9,\n    \"recommendation\": \"publish_now\",\n    \"reason\": \"Los cambios realizados abordan los riesgos críticos detectados en esta ronda para la experiencia móvil en /auditar. La solución es sólida, el tono es adecuado y las pruebas focalizadas están en verde. No se identifican micro-riesgos que justifiquen posponer la publicación desde la perspectiva UX móvil.\"\n  },\n  \"next_best_action\": \"Proceder con la publicación de esta versión móvil en /auditar, monitoreando métricas de uso y feedback para detectar posibles ajustes menores en futuras iteraciones.\"\n}",
+      "parsed": {
+        "provider_view": "Los cambios implementados abordan de manera efectiva los riesgos principales detectados en la experiencia móvil del flujo de subida inicial y el bloque opcional posterior al veredicto. La lógica para mantener visibles los selectores de espacio y expediente hasta tener contexto suficiente es clara y evita confusión. La ayuda visible aporta claridad sin recargar el viewport. La compactación del bloque post-veredicto elimina redundancias y mantiene un tono cercano pero institucional, alineado con el objetivo de simplicidad y confianza. Las pruebas focalizadas en verde respaldan la estabilidad de estos cambios específicos.",
+        "mobile_upload_fix": {
+          "assessment": "La solución aplicada para el primer upload móvil es adecuada y resuelve el riesgo de ocultación prematura de los selectores. La lógica condicional es explícita y el helper visible guía al usuario de forma clara, evitando errores o incertidumbre en la selección del espacio y expediente.",
+          "publish_blocker": false,
+          "reason": "No se identifican riesgos remanentes significativos en esta área que justifiquen bloquear la publicación. La experiencia es confiable y simple, cumpliendo con las restricciones de no recargar el viewport ni generar scroll lateral."
+        },
+        "post_verdict_compaction": {
+          "assessment": "El bloque opcional posterior al veredicto móvil está bien compactado y comunica de forma clara y directa la posibilidad de subir otro documento. El lenguaje es cercano pero institucional, sin redundancias ni sobrecarga visual, lo que mejora la experiencia sin perder funcionalidad.",
+          "publish_blocker": false,
+          "reason": "La compactación elimina la redundancia previa y mantiene la claridad necesaria para que el usuario entienda la acción disponible, sin afectar negativamente la usabilidad."
+        },
+        "overall_publish_readiness": {
+          "score": 9,
+          "recommendation": "publish_now",
+          "reason": "Los cambios realizados abordan los riesgos críticos detectados en esta ronda para la experiencia móvil en /auditar. La solución es sólida, el tono es adecuado y las pruebas focalizadas están en verde. No se identifican micro-riesgos que justifiquen posponer la publicación desde la perspectiva UX móvil."
+        },
+        "next_best_action": "Proceder con la publicación de esta versión móvil en /auditar, monitoreando métricas de uso y feedback para detectar posibles ajustes menores en futuras iteraciones."
+      }
+    },
+    "xai": {
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"provider_view\": \"Como auditor senior de producto digital y UX móvil, evalúo que los cambios en Auditapatrón mejoran la experiencia para trabajadores en México, manteniendo una interfaz simple y confiable para subir documentos laborales.\",\n  \"mobile_upload_fix\": {\n    \"assessment\": \"Los cambios resuelven el riesgo al mantener visibles los selectores hasta confirmar el contexto necesario, con un helper claro que guía al usuario.\",\n    \"publish_blocker\": false,\n    \"reason\": \"Las pruebas focalizadas están en verde y la lógica implementada asegura una experiencia fluida sin ocultamientos prematuros.\"\n  },\n  \"post_verdict_compaction\": {\n    \"assessment\": \"La compactación elimina la redundancia, con un lenguaje claro y conciso que invita a acciones sin sobrecargar la vista.\",\n    \"publish_blocker\": false,\n    \"reason\": \"El contenido ahora es directo y se ajusta a las restricciones de UX móvil, evitando scroll lateral y manteniendo la simplicidad.\"\n  },\n  \"overall_publish_readiness\": {\n    \"score\": 9,\n    \"recommendation\": \"publish_now\",\n    \"reason\": \"Los cambios en esta ronda son sólidos y probados, con pruebas relevantes en verde y sin riesgos directos identificados, a pesar de fallas ajenas en la suite general.\"\n  },\n  \"next_best_action\": \"Monitorear el flujo de upload en producción para capturar cualquier retroalimentación de usuarios reales y asegurar la continuidad.\"\n}",
+      "parsed": {
+        "provider_view": "Como auditor senior de producto digital y UX móvil, evalúo que los cambios en Auditapatrón mejoran la experiencia para trabajadores en México, manteniendo una interfaz simple y confiable para subir documentos laborales.",
+        "mobile_upload_fix": {
+          "assessment": "Los cambios resuelven el riesgo al mantener visibles los selectores hasta confirmar el contexto necesario, con un helper claro que guía al usuario.",
+          "publish_blocker": false,
+          "reason": "Las pruebas focalizadas están en verde y la lógica implementada asegura una experiencia fluida sin ocultamientos prematuros."
+        },
+        "post_verdict_compaction": {
+          "assessment": "La compactación elimina la redundancia, con un lenguaje claro y conciso que invita a acciones sin sobrecargar la vista.",
+          "publish_blocker": false,
+          "reason": "El contenido ahora es directo y se ajusta a las restricciones de UX móvil, evitando scroll lateral y manteniendo la simplicidad."
+        },
+        "overall_publish_readiness": {
+          "score": 9,
+          "recommendation": "publish_now",
+          "reason": "Los cambios en esta ronda son sólidos y probados, con pruebas relevantes en verde y sin riesgos directos identificados, a pesar de fallas ajenas en la suite general."
+        },
+        "next_best_action": "Monitorear el flujo de upload en producción para capturar cualquier retroalimentación de usuarios reales y asegurar la continuidad."
+      }
+    }
+  },
+  "summary": {
+    "parsed_providers": [
+      "openai",
+      "xai"
+    ],
+    "average_score": 9.0,
+    "recommendations": [
+      "publish_now",
+      "publish_now"
+    ],
+    "reasons": [
+      "Los cambios realizados abordan los riesgos críticos detectados en esta ronda para la experiencia móvil en /auditar. La solución es sólida, el tono es adecuado y las pruebas focalizadas están en verde. No se identifican micro-riesgos que justifiquen posponer la publicación desde la perspectiva UX móvil.",
+      "Los cambios en esta ronda son sólidos y probados, con pruebas relevantes en verde y sin riesgos directos identificados, a pesar de fallas ajenas en la suite general."
+    ],
+    "next_actions": [
+      "Proceder con la publicación de esta versión móvil en /auditar, monitoreando métricas de uso y feedback para detectar posibles ajustes menores en futuras iteraciones.",
+      "Monitorear el flujo de upload en producción para capturar cualquier retroalimentación de usuarios reales y asegurar la continuidad."
+    ]
+  }
+}
