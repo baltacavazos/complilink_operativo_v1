@@ -1573,3 +1573,8 @@
 - [x] Ronda post-upload móvil: hacer más claro y vivo el feedback de foto/OCR/carga para que el usuario vea que su documento fue recibido y está siendo leído.
 - [x] Ronda post-upload móvil: reducir altura, texto y ruido visual del primer viewport post-upload manteniendo claridad sobre hallazgo y siguiente paso.
 - [x] Ronda post-upload móvil: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.
+- [x] Ronda post-captura móvil: auditar la pantalla inmediata después de tomar foto para detectar altura excesiva, dudas de estado y acciones secundarias que compiten.
+- [x] Ronda post-captura móvil: contrastar con ChatGPT, Grok y Gemini la forma más clara de mostrar que la foto fue recibida y está siendo analizada.
+- [x] Ronda post-captura móvil: hacer más expresivo el feedback visual de análisis con progreso, microcopy y microinteracciones sin recargar la interfaz.
+- [x] Ronda post-captura móvil: reducir fricción y altura del primer viewport tras captura manteniendo claridad sobre qué está pasando y qué sigue.
+- [x] Ronda post-captura móvil: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.

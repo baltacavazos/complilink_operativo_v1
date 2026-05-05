@@ -1,0 +1,149 @@
+{
+  "openai": {
+    "diagnosis": "El feedback tras cargar o tomar foto es poco claro y denso, con mensajes largos y técnicos que pueden confundir. La jerarquía visual no destaca el estado de análisis, y el usuario no recibe confirmación inmediata y amigable de que el documento fue recibido y está siendo procesado.",
+    "top_issues": [
+      "Mensajes largos y técnicos en estado de análisis automático.",
+      "Falta de confirmación clara y visual inmediata tras carga.",
+      "Jerarquía y densidad de texto que dificulta la comprensión rápida."
+    ],
+    "recommended_changes": [
+      {
+        "target": "capture_cta",
+        "change": "Simplificar el texto a 'Toma foto' o 'Elige archivo' y cambiar a 'Cambiar documento' solo cuando hay archivo cargado.",
+        "why": "Reduce la carga cognitiva y guía claramente la acción siguiente."
+      },
+      {
+        "target": "capture_helper",
+        "change": "Reducir a un solo mensaje claro que explique qué se abrirá, sin detalles técnicos.",
+        "why": "Evita confusión y mantiene el foco en la acción principal."
+      },
+      {
+        "target": "analyzing_state",
+        "change": "Mostrar un mensaje breve y positivo: 'Documento recibido. Analizando…' con un icono animado simple.",
+        "why": "Refuerza que el documento fue recibido y el análisis está en curso sin sobrecargar al usuario."
+      },
+      {
+        "target": "status_line",
+        "change": "Mostrar solo el nombre del documento cargado o borrador listo, sin detalles técnicos ni ajustes.",
+        "why": "Mantiene la información clara y relevante para el usuario en pantalla pequeña."
+      },
+      {
+        "target": "autoadvance_feedback",
+        "change": "Simplificar a 'Abriremos tu revisión en breve.' sin condiciones ni explicaciones adicionales.",
+        "why": "Comunica el siguiente paso sin generar dudas o distracciones."
+      }
+    ],
+    "microcopy": {
+      "cta_camera": "Toma foto",
+      "cta_file": "Elige archivo",
+      "helper_idle": "Abriremos la cámara o archivos para empezar",
+      "analyzing_title": "Documento recibido",
+      "analyzing_description": "Analizando…",
+      "status_selected_file": "Documento cargado: {fileName}",
+      "autoadvance_message": "Abriremos tu revisión en breve."
+    },
+    "microinteraction_notes": [
+      "Agregar animación sutil de carga junto al mensaje de análisis para dar feedback visual vivo.",
+      "Deshabilitar temporalmente el botón 'Cambiar documento' durante el análisis para evitar acciones duplicadas."
+    ],
+    "confidence": "high"
+  },
+  "grok": {
+    "diagnosis": "El feedback post-captura en AuditaPatrón es confuso y poco dinámico, con lenguaje técnico que aliena a trabajadores mexicanos. Sobrecarga de texto reduce claridad, generando fricción. Mejoras en microcopy y visuales harán el proceso más intuitivo y cercano sin alterar funciones.",
+    "top_issues": [
+      "Lenguaje técnico y verboso que no es cercano ni claro.",
+      "Falta de feedback visual vivo para indicar progreso.",
+      "Jerarquía de texto densa que sobrecarga al usuario móvil."
+    ],
+    "recommended_changes": [
+      {
+        "target": "capture_cta",
+        "change": "Simplificar el botón a un texto único y directo basado en el modo, eliminando condicionales innecesarias.",
+        "why": "Reduce densidad y mejora la interacción táctil en móviles, haciendo la selección más intuitiva y rápida."
+      },
+      {
+        "target": "capture_helper",
+        "change": "Reestructurar el párrafo a una sola línea con enfoque en el siguiente paso.",
+        "why": "Optimiza la jerarquía visual en pantallas pequeñas, reduciendo scroll y aumentando la comprensión inmediata."
+      },
+      {
+        "target": "analyzing_state",
+        "change": "Consolidar el texto en un título y descripción más concisos, eliminando detalles innecesarios.",
+        "why": "Mejora el feedback visual al hacer el proceso más vivo y accesible, evitando confusión en usuarios no técnicos."
+      },
+      {
+        "target": "status_line",
+        "change": "Actualizar a un mensaje breve que confirme la recepción y muestre el nombre del archivo.",
+        "why": "Aumenta la claridad en dispositivos móviles, reforzando confianza del usuario con feedback positivo y directo."
+      },
+      {
+        "target": "autoadvance_feedback",
+        "change": "Agregar un indicador temporal simple, como 'En unos segundos...'.",
+        "why": "Proporciona feedback más vivo, reduciendo ansiedad y mejorando la fluidez de la experiencia en entornos móviles."
+      }
+    ],
+    "microcopy": {
+      "cta_camera": "Toma una foto para empezar",
+      "cta_file": "Elige un archivo para empezar",
+      "helper_idle": "Selecciona tu documento y comenzamos el análisis aquí.",
+      "analyzing_title": "Estamos revisando tu documento",
+      "analyzing_description": "Esto tomará solo un momento, ¡ya casi está listo!",
+      "status_selected_file": "Documento recibido: [nombre]",
+      "autoadvance_message": "Pronto abrimos tu borrador para revisar."
+    },
+    "microinteraction_notes": [
+      "Agregar un spinner animado durante el análisis para indicar actividad y hacer el feedback más dinámico.",
+      "Usar colores institucionales como verde para confirmaciones, mejorando la visibilidad y el engagement en pantallas móviles."
+    ],
+    "confidence": "high"
+  },
+  "gemini": {
+    "diagnosis": "El feedback actual tras la captura del documento es funcional pero carece de inmediatez y dinamismo visual. Los usuarios necesitan una confirmación más clara y activa de que su documento fue recibido y el análisis está en curso. El texto puede ser más proactivo y menos técnico, reduciendo la percepción de espera y fricción. Simplificar los textos de ayuda e integrar microinteracciones sutiles mejorará significativamente la UX móvil.",
+    "top_issues": [
+      "Feedback pasivo y genérico para el estado de análisis.",
+      "Falta de confirmación visual inmediata de la recepción y procesamiento del documento.",
+      "Textos de ayuda densos o con información no crítica para el momento post-captura."
+    ],
+    "recommended_changes": [
+      {
+        "target": "capture_cta",
+        "change": "Cuando 'isAutoAnalyzingSelectedFile' sea verdadero, el texto del botón debe ser 'Analizando...' (o 'Analizando documento...') con un spinner de carga integrado. El botón debe estar deshabilitado.",
+        "why": "Un 'Analizando...' conciso con un spinner es una señal visual universal de proceso en curso, haciendo el feedback más 'vivo' y claro. Deshabilitar el botón previene toques accidentales y refuerza el estado temporal."
+      },
+      {
+        "target": "capture_helper",
+        "change": "Cuando 'isAutoAnalyzingSelectedFile' sea verdadero, reemplazar 'Estamos preparando tu vista previa.' con una confirmación directa de recepción y el inicio del análisis, por ejemplo: 'Tu documento está siendo procesado.'",
+        "why": "Esto proporciona una tranquilidad inmediata de que la carga fue exitosa y el siguiente paso (análisis) ha comenzado, reduciendo la incertidumbre del usuario y el tiempo de espera percibido."
+      },
+      {
+        "target": "analyzing_state",
+        "change": "Revisar el mensaje principal de análisis. Usar un título más atractivo como '¡Documento recibido y en análisis!' y reformular la descripción para que sea menos restrictiva, enfocándose en el procesamiento y el borrador próximo, por ejemplo: 'Estamos procesando tu información. En breve verás el borrador.'",
+        "why": "Un título positivo y activo, junto con una descripción más suave y orientada al futuro, mejora el tono emocional, haciendo que el período de espera se sienta menos como un bloqueo y más como un progreso."
+      },
+      {
+        "target": "status_line",
+        "change": "Cuando 'selectedFile' esté presente pero 'pendingDraft' no, actualizar la línea de estado de 'Documento cargado: ${selectedFile.name}' para indicar claramente que el análisis está *en curso* para ese archivo específico, por ejemplo: 'Analizando: ${selectedFile.name}'.",
+        "why": "Esto clarifica el estado exacto del documento cargado en el área de estado persistente, proporcionando feedback continuo y específico durante la fase de análisis."
+      },
+      {
+        "target": "autoadvance_feedback",
+        "change": "Reformular 'En cuanto termine, abrimos tu revisión rápida automáticamente.' para que sea más proactivo y conciso, por ejemplo: 'Cuando termine, verás tu borrador automáticamente.'",
+        "why": "Un mensaje más directo y menos formal refuerza la automatización, estableciendo expectativas claras y reduciendo la necesidad de que el usuario monitoree activamente el proceso."
+      }
+    ],
+    "microcopy": {
+      "cta_camera": "Tomar foto",
+      "cta_file": "Elegir archivo",
+      "helper_idle": "Toma una foto o elige un archivo para empezar.",
+      "analyzing_title": "¡Documento recibido y en análisis!",
+      "analyzing_description": "Estamos procesando tu información. En breve verás el borrador.",
+      "status_selected_file": "Analizando: ${selectedFile.name}",
+      "autoadvance_message": "Cuando termine, verás tu borrador automáticamente."
+    },
+    "microinteraction_notes": [
+      "Implementar un spinner de carga sutil y continuo o una barra de progreso breve (incluso si es simulada) junto o dentro del texto/botón 'Analizando'. Esto confirma visualmente la actividad.",
+      "Mientras el análisis está activo, deshabilitar temporalmente el botón 'Cambiar documento' y mostrar una superposición semi-transparente sobre las áreas de selección de cámara/archivo para reforzar visualmente que la nueva entrada está en pausa, en lugar de solo indicarlo con texto."
+    ],
+    "confidence": "high"
+  }
+}

@@ -41,15 +41,15 @@ describe("compact mobile upload entry", () => {
       '"bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"',
     );
     expect(auditarSource).toContain('"bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"');
-    expect(auditarSource).toContain('"Toma foto para empezar"');
-    expect(auditarSource).toContain('"Elige archivo para empezar"');
+    expect(auditarSource).toContain('"Toma foto"');
+    expect(auditarSource).toContain('"Elige archivo"');
   });
 
   it("bloquea temporalmente los controles y explica el análisis automático en móvil", () => {
     expect(auditarSource).toContain("isAutoAnalyzingSelectedFile");
     expect(auditarSource).toContain('"Analizando documento..."');
-    expect(auditarSource).toContain("Estamos analizando tu documento");
-    expect(auditarSource).toContain("Ya recibimos tu documento. Enseguida abriremos la vista");
+    expect(auditarSource).toContain("Documento recibido");
+    expect(auditarSource).toContain("Lo estamos analizando. En breve verás tu borrador.");
     expect(auditarSource).toContain("disabled={isAutoAnalyzingSelectedFile}");
   });
 

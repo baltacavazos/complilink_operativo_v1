@@ -9097,16 +9097,16 @@ export default function Auditar() {
                           ? "Cambiar documento"
                           : shouldCompactMobileUploadEntry
                             ? activeCaptureMode === "camera"
-                              ? "Toma foto para empezar"
-                              : "Elige archivo para empezar"
+                              ? "Toma foto"
+                              : "Elige archivo"
                             : uploadPrimaryActionLabel}
                     </Button>
                     <div className="space-y-3">
                       <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
-                          ? "Estamos preparando tu vista previa."
+                          ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                            ? `${COMPACT_UPLOAD_GUARDRAILS.fileRules} El borrador se abre aquí mismo.`
+                            ? "Toma una foto o elige un archivo para empezar."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
@@ -9124,12 +9124,10 @@ export default function Auditar() {
                             </span>
                             <div className="min-w-0">
                               <p className="text-sm font-semibold">
-                                Estamos analizando tu documento
+                                Documento recibido
                               </p>
                               <p className="mt-1 text-xs leading-5 text-teal-900/90">
-                                Bloqueamos la cámara y los archivos unos
-                                segundos para evitar duplicados. Enseguida
-                                abriremos el borrador.
+                                Lo estamos analizando. En breve verás tu borrador.
                               </p>
                             </div>
                           </div>
@@ -9147,8 +9145,7 @@ export default function Auditar() {
                               : "Elegir cámara o archivo"}
                           </button>
                           <p className="mx-auto mt-2 max-w-[22rem] text-center text-xs leading-5 text-slate-500">
-                            Al tocar aquí eliges si quieres tomar foto o subir
-                            un archivo guardado.
+                            Elige si quieres tomar foto o subir un archivo.
                           </p>
                         </div>
                       ) : (
@@ -10295,9 +10292,9 @@ export default function Auditar() {
                   </Button>
 
                   {autoAdvanceFlash && !pendingDraft ? (
-                    <p className="text-xs font-medium leading-5 text-teal-700">
-                      En cuanto termine, abrimos tu revisión rápida automáticamente.
-                    </p>
+                      <p className="text-xs font-medium leading-5 text-teal-700">
+                        Abriremos tu revisión en breve.
+                      </p>
                   ) : null}
                 </div>
 
@@ -14109,9 +14106,11 @@ export default function Auditar() {
                 ? manualOverridePayload.length
                   ? `Borrador listo: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} para revisar.`
                   : `Borrador listo: ${pendingDraft.previewAsset.fileName}`
-                : selectedFile
-                  ? `Documento cargado: ${selectedFile.name}`
-                  : "Primero elige tu documento desde el celular o tus archivos guardados."}
+                  : selectedFile
+                    ? isAutoAnalyzingSelectedFile
+                      ? `Analizando: ${selectedFile.name}`
+                      : `Documento recibido: ${selectedFile.name}`
+                    : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
             {pendingDraft || selectedFile ? (
               <button
