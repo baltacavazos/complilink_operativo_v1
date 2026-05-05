@@ -220,15 +220,15 @@ export function getHumanUploadProgressMessages(
   switch (stepKey) {
     case "analyze":
       return [
-        "Estamos leyendo tu documento con cuidado...",
-        "Revisando periodos, montos y conceptos visibles...",
-        "Preparando una lectura clara para ti...",
+        "Analizando lo más importante...",
+        "Ubicando las señales clave...",
+        "Preparando tu revisión rápida...",
       ];
     case "save":
       return [
         "Protegiendo tu documento...",
-        "Guardándolo dentro de tu bóveda laboral...",
-        "Dejando listo tu siguiente paso...",
+        "Guardándolo de forma segura...",
+        "Dejando listo el resultado...",
       ];
     default:
       return [];
@@ -353,7 +353,7 @@ function getUploadStageLabel(stepKey: UploadProgressStepKey) {
     case "save":
       return "Etapa 3 de 4 · Guardando con control";
     case "review":
-      return "Etapa 4 de 4 · Vista previa lista";
+      return "Etapa 4 de 4 · Revisión lista";
     default:
       return "Etapa 1 de 4 · Preparación segura";
   }
@@ -677,10 +677,10 @@ export function buildUploadProgressState(params: {
 
   if (isConfirmingDraft) {
     return {
-      eyebrow: "Guardado en curso",
-      title: "Estamos guardando tu documento en la bóveda laboral",
+      eyebrow: "Guardando",
+      title: "Guardando en tu bóveda...",
       description:
-        "No necesitas repetir la carga. En cuanto termine, verás el resultado, el hallazgo guardado y el siguiente paso sugerido.",
+        "En breve confirmamos que tu documento quedó resguardado.",
       progress: 92,
       toneClasses: "border-teal-200 bg-teal-50 text-teal-950",
       barClasses: "bg-teal-600",
@@ -693,10 +693,10 @@ export function buildUploadProgressState(params: {
 
   if (pendingDraft) {
     return {
-      eyebrow: "Vista previa lista",
-      title: "Tu documento ya quedó listo para revisión",
+      eyebrow: "Revisión lista",
+      title: "Tu documento ya está listo para revisar",
       description:
-        "Todavía no se guarda en tu bóveda laboral: primero revisas lo leído y después confirmas si quieres conservarlo.",
+        "Revísalo primero y decide después si quieres guardarlo.",
       progress: 100,
       toneClasses: "border-sky-200 bg-sky-50 text-sky-950",
       barClasses: "bg-sky-600",
@@ -708,10 +708,10 @@ export function buildUploadProgressState(params: {
 
   if (isAnalyzingDraft) {
     return {
-      eyebrow: "Análisis en curso",
-      title: "Estamos leyendo tu archivo y preparando la primera lectura",
+      eyebrow: "Analizando",
+      title: "Analizando tu documento...",
       description:
-        "Quédate en esta pantalla. En cuanto termine, abriremos la revisión rápida automáticamente para que veas qué documento llegó y qué señal encontramos.",
+        "Estamos extrayendo la información clave para mostrarte la revisión rápida.",
       progress: 72,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       barClasses: "bg-amber-500",
@@ -724,10 +724,10 @@ export function buildUploadProgressState(params: {
 
   if (selectedFile) {
     return {
-      eyebrow: "Archivo listo",
-      title: "Documento preparado para una primera lectura automática",
+      eyebrow: "Documento cargado",
+      title: "Listo para analizar",
       description:
-        "La revisión preliminar empieza sola en cuanto termina la carga, para que llegues a la vista previa sin pasos extra antes de decidir si quieres guardarlo.",
+        "En unos segundos verás la revisión rápida sin pasos extra.",
       progress: 38,
       toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
       barClasses: "bg-emerald-500",
@@ -10275,10 +10275,10 @@ export default function Auditar() {
                   >
                     {isProcessingDocument
                       ? pendingDraft
-                        ? "Guardando documento..."
+                        ? "Guardando..."
                         : autoAdvanceFlash
-                          ? "Autoavance activado..."
-                          : "Analizando documento..."
+                          ? "Preparando revisión..."
+                          : "Procesando..."
                       : acceptLegalPackageMutation.isPending
                         ? "Registrando autorización..."
                         : pendingDraft
@@ -10296,8 +10296,7 @@ export default function Auditar() {
 
                   {autoAdvanceFlash && !pendingDraft ? (
                     <p className="text-xs font-medium leading-5 text-teal-700">
-                      Autoavance activado: en cuanto termine el análisis te
-                      llevamos a la revisión rápida para confirmar el documento.
+                      En cuanto termine, abrimos tu revisión rápida automáticamente.
                     </p>
                   ) : null}
                 </div>
@@ -10401,18 +10400,20 @@ export default function Auditar() {
                     data-testid="auditar-verdict-panel"
                     className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_42%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6"
                   >
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        Documento recibido
-                      </span>
-                      <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                        {getSimpleDocumentTypeLabel(
-                          lastUpload.classification.documentType
-                        )}
-                      </span>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Revisión rápida
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900 sm:text-base">
+                          {getSimpleDocumentTypeLabel(
+                            lastUpload.classification.documentType
+                          )} · {lastUploadVerdict.shortLabel}
+                        </p>
+                      </div>
                       <span
                         data-testid="auditar-verdict-pill"
-                        className={`rounded-full px-3 py-1 ${lastUploadVerdict.classes}`}
+                        className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${lastUploadVerdict.classes}`}
                       >
                         {lastUploadVerdict.label}
                       </span>
@@ -10421,12 +10422,12 @@ export default function Auditar() {
                     <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                       <div className="rounded-[1.25rem] border border-white/80 bg-white/92 p-4 shadow-sm sm:p-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Lo importante primero
+                          Lo esencial
                         </p>
                         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[1.9rem]">
                           {lastUploadResultHeadline}
                         </h3>
-                        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-[0.98rem]">
+                        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-[0.98rem]">
                           {lastUploadResultLead}
                         </p>
 
@@ -10441,9 +10442,6 @@ export default function Auditar() {
                           >
                             {lastUploadVerdict.shortLabel}
                           </span>
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-800">
-                            Expediente actualizado
-                          </span>
                         </div>
 
                         <div className="mt-4 rounded-[1rem] border border-teal-100 bg-teal-50/80 p-4">
@@ -10453,11 +10451,11 @@ export default function Auditar() {
                                 Lo más útil ahora
                               </p>
                               <p className="mt-2 text-sm leading-6 text-teal-950">
-                                Qué ya está claro, qué pide atención y qué te conviene hacer a continuación.
+                                Qué ya vimos y qué te conviene hacer ahora.
                               </p>
                             </div>
                             <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
-                              Máximo 3 puntos
+                              2 puntos clave
                             </span>
                           </div>
 
@@ -14089,10 +14087,10 @@ export default function Auditar() {
           >
             {isProcessingDocument
               ? pendingDraft
-                ? "Guardando documento..."
+                ? "Guardando..."
                 : autoAdvanceFlash
-                  ? "Autoavance activado..."
-                  : "Analizando documento..."
+                  ? "Preparando revisión..."
+                  : "Procesando..."
               : acceptLegalPackageMutation.isPending
                 ? "Registrando autorización..."
                 : pendingDraft
@@ -14101,8 +14099,7 @@ export default function Auditar() {
           </Button>
           {autoAdvanceFlash && !pendingDraft ? (
             <p className="mt-2 text-xs font-medium leading-5 text-teal-700">
-              Autoavance activado: terminando el análisis abrimos la revisión
-              rápida automáticamente.
+              En cuanto termine, abrimos tu revisión rápida automáticamente.
             </p>
           ) : null}
 
@@ -14110,10 +14107,10 @@ export default function Auditar() {
             <p className="min-w-0 flex-1 truncate">
               {pendingDraft
                 ? manualOverridePayload.length
-                  ? `Vista previa lista: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} preparado${manualOverridePayload.length === 1 ? "" : "s"} antes de guardar.`
-                  : `Vista previa lista: ${pendingDraft.previewAsset.fileName}`
+                  ? `Borrador listo: ${manualOverridePayload.length} ajuste${manualOverridePayload.length === 1 ? "" : "s"} para revisar.`
+                  : `Borrador listo: ${pendingDraft.previewAsset.fileName}`
                 : selectedFile
-                  ? `Borrador automático en preparación: ${selectedFile.name}`
+                  ? `Documento cargado: ${selectedFile.name}`
                   : "Primero elige tu documento desde el celular o tus archivos guardados."}
             </p>
             {pendingDraft || selectedFile ? (

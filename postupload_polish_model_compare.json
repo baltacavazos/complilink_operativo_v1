@@ -1,0 +1,89 @@
+{
+  "openai": {
+    "diagnosis": "La pantalla post-upload es densa y repetitiva, con textos largos que dificultan la comprensión rápida. Los estados de carga no priorizan lo esencial y el feedback visual es poco claro. El veredicto muestra demasiada información sin jerarquía clara, lo que puede confundir al usuario móvil. La CTA y mensajes inmediatos mezclan estados y no guían con claridad el siguiente paso.",
+    "top_issues": [
+      "Textos extensos y poco jerarquizados en estados de carga",
+      "Falta de foco en el hallazgo clave y siguiente acción en el veredicto",
+      "Mensajes y CTA poco claros y con información redundante"
+    ],
+    "recommended_changes": [
+      {
+        "target": "loading_state",
+        "change": "Reducir títulos y descripciones a frases cortas que expliquen solo el estado actual y el siguiente paso inmediato.",
+        "why": "Mejora la lectura rápida y reduce la carga cognitiva en pantallas pequeñas."
+      },
+      {
+        "target": "upload_cta",
+        "change": "Simplificar el texto del botón a un solo mensaje claro según estado, evitando combinaciones condicionales complejas.",
+        "why": "Facilita la comprensión y evita confusión sobre la acción disponible."
+      },
+      {
+        "target": "verdict_header",
+        "change": "Mostrar solo 'Documento recibido' con tipo y veredicto en una línea clara y visible, eliminando elementos redundantes.",
+        "why": "Maximiza el espacio útil y destaca la información clave para el usuario."
+      },
+      {
+        "target": "verdict_body",
+        "change": "Reducir el contenido a un titular claro, un resumen breve del hallazgo principal y un solo llamado a la acción o siguiente paso.",
+        "why": "Permite al usuario entender rápidamente qué importa y qué hacer sin saturación."
+      }
+    ],
+    "microcopy": {
+      "analyzing_title": "Analizando tu documento",
+      "analyzing_description": "Espera un momento, pronto verás el resumen y el siguiente paso.",
+      "saving_title": "Guardando tu documento",
+      "saving_description": "No necesitas hacer nada, en breve confirmaremos que quedó seguro.",
+      "cta_processing": "Procesando...",
+      "cta_autoadvance": "Avanzamos automáticamente al resumen",
+      "status_line_selected_file": "Documento listo para análisis: {selectedFile.name}",
+      "status_line_pending_draft": "Vista previa lista: {pendingDraft.previewAsset.fileName}",
+      "verdict_intro": "Documento recibido: {tipoDocumento} — {veredicto}"
+    },
+    "confidence": "high"
+  },
+  "grok": {
+    "diagnosis": "El primer viewport post-upload presenta texto denso y descripciones largas, sobrecargando la pantalla móvil y retrasando la comprensión. La jerarquía visual es débil, y el feedback de carga no es lo suficientemente directo, lo que genera confusión. Simplificar es clave para una experiencia rápida e intuitiva.",
+    "top_issues": [
+      "Texto excesivamente detallado en estados de carga, abrumando al usuario",
+      "Falta de jerarquía clara en el veredicto, dificultando la priorización",
+      "Mensajes de CTA inconsistentes, aumentando la incertidumbre en el flujo"
+    ],
+    "recommended_changes": [
+      {
+        "target": "loading_state",
+        "change": "Reducir descripciones a una sola línea y eliminar redundancias",
+        "why": "Mejora la legibilidad en pantallas pequeñas, permitiendo una comprensión inmediata sin scroll"
+      },
+      {
+        "target": "upload_cta",
+        "change": "Unificar texto del botón a acciones simples como 'Analizando...' o 'Guardando...'",
+        "why": "Reduce la densidad cognitiva, haciendo el feedback más directo y fluido en dispositivos móviles"
+      },
+      {
+        "target": "verdict_header",
+        "change": "Usar negritas para resaltar elementos clave y limitar a 2-3 líneas",
+        "why": "Enfatiza lo esencial primero, optimizando el espacio y acelerando la toma de decisiones"
+      },
+      {
+        "target": "verdict_body",
+        "change": "Consolidar puntos en listas cortas con máximo 3 ítems",
+        "why": "Mejora la navegación visual y reduce la densidad, facilitando una revisión rápida en vertical"
+      }
+    ],
+    "microcopy": {
+      "analyzing_title": "Analizando tu documento",
+      "analyzing_description": "Estamos revisando tu archivo para extraer lo clave.",
+      "saving_title": "Guardando en tu bóveda",
+      "saving_description": "Tu documento se está almacenando de forma segura.",
+      "cta_processing": "Procesando ahora...",
+      "cta_autoadvance": "Avanzando automáticamente...",
+      "status_line_selected_file": "Documento listo: [nombre del archivo]",
+      "status_line_pending_draft": "Vista previa lista para tu revisión",
+      "verdict_intro": "Resumen rápido de tu documento"
+    },
+    "confidence": "high"
+  },
+  "gemini": {
+    "error": "503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDCdrNJWe94BTb2cN8KClb2qF_DZEwO004"
+  }
+}

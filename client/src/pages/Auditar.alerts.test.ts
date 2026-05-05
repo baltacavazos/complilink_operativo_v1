@@ -54,9 +54,9 @@ describe("compact mobile upload entry", () => {
   });
 
   it("inyecta progreso humano y tracking discreto del veredicto móvil en la cuarta ronda", () => {
-    expect(auditarSource).toContain("Leyendo los detalles...");
-    expect(auditarSource).toContain("Buscando señales importantes...");
-    expect(auditarSource).toContain("Preparando tu veredicto...");
+    expect(auditarSource).toContain("Analizando lo más importante...");
+    expect(auditarSource).toContain("Ubicando las señales clave...");
+    expect(auditarSource).toContain("Preparando tu revisión rápida...");
     expect(auditarSource).toContain("auditar_mobile_verdict_viewed");
     expect(auditarSource).toContain("auditar_mobile_verdict_cta_clicked");
     expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
@@ -71,10 +71,10 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain('"mt-1 text-center text-[1.62rem] font-semibold leading-snug text-slate-800"');
     expect(auditarSource).toContain('Ya está en tu expediente.');
     expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[6.6rem] w-full max-w-[24rem] items-center justify-center gap-3 rounded-[1.8rem] border-2 border-emerald-700 bg-emerald-700 px-7 py-5 text-center text-[1.92rem] leading-tight tracking-[-0.03em] shadow-[0_26px_60px_-24px_rgba(5,150,105,0.52)] hover:bg-emerald-600"');
-    expect(auditarSource).toContain('"Comparar nómina y CFDI"');
+    expect(auditarSource).toContain('primaryLastUploadShortcut?.label ?? "Ver qué sigue"');
     expect(auditarSource).toContain('"inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"');
     expect(auditarSource).toContain('scrollToDigitalArchive("result_panel")');
-    expect(auditarSource).toContain('Ir a mi expediente');
+    expect(auditarSource).toContain('Ver expediente completo');
   });
 });
 
@@ -106,8 +106,9 @@ describe("digital archive access", () => {
   it("añade apertura segura del documento y CTA clara por tarjeta", () => {
     expect(auditarSource).toContain("utils.documents.access.fetch");
     expect(auditarSource).toContain("auditar_digital_archive_document_opened");
-    expect(auditarSource).toContain("Aquí están tus documentos guardados");
+    expect(auditarSource).toContain("Tu expediente ya quedó guardado y lo puedes abrir cuando quieras");
     expect(auditarSource).toContain('"Ver documento"');
+    expect(auditarSource).toContain('"Ver último documento"');
   });
 });
 
@@ -120,7 +121,7 @@ describe("digital archive round 8", () => {
   });
 
   it("incorpora filtros simples por tipo y fecha dentro del archivo digital", () => {
-    expect(auditarSource).toContain("Filtrar por tipo o fecha");
+    expect(auditarSource).toContain("Filtrar tu bóveda por tipo o fecha");
     expect(auditarSource).toContain("Cualquier fecha");
     expect(auditarSource).toContain("Últimos 30 días");
     expect(auditarSource).toContain("No encontramos documentos con este filtro");
@@ -462,14 +463,14 @@ describe("buildUploadProgressState", () => {
         isConfirmingDraft: true,
       }),
     ).toMatchObject({
-      eyebrow: "Guardado en curso",
+      eyebrow: "Guardando",
       progress: 92,
       stageLabel: "Etapa 3 de 4 · Guardando con control",
       etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
       humanMessages: [
         "Protegiendo tu documento...",
-        "Integrándolo al expediente...",
+        "Guardándolo de forma segura...",
         "Dejando listo el resultado...",
       ],
     });
@@ -498,7 +499,7 @@ describe("buildUploadProgressState", () => {
         isConfirmingDraft: false,
       }),
     ).toMatchObject({
-      eyebrow: "Archivo listo",
+      eyebrow: "Documento cargado",
       progress: 38,
       etaLabel: "En cuanto eliges el archivo, el borrador suele quedar listo en menos de 1 minuto.",
       stepKey: "prepare",
@@ -514,14 +515,14 @@ describe("buildUploadProgressState", () => {
         isConfirmingDraft: false,
       }),
     ).toMatchObject({
-      eyebrow: "Análisis en curso",
+      eyebrow: "Analizando",
       progress: 72,
       stageLabel: "Etapa 2 de 4 · Analizando contenido",
       stepKey: "analyze",
       humanMessages: [
-        "Leyendo los detalles...",
-        "Buscando señales importantes...",
-        "Preparando tu veredicto...",
+        "Analizando lo más importante...",
+        "Ubicando las señales clave...",
+        "Preparando tu revisión rápida...",
       ],
     });
 
@@ -533,9 +534,9 @@ describe("buildUploadProgressState", () => {
         isConfirmingDraft: false,
       }),
     ).toMatchObject({
-      eyebrow: "Vista previa lista",
+      eyebrow: "Revisión lista",
       progress: 100,
-      stageLabel: "Etapa 4 de 4 · Vista previa lista",
+      stageLabel: "Etapa 4 de 4 · Revisión lista",
       etaLabel: "Siguiente acción: revisar lo importante y confirmar solo si quieres guardarlo.",
       stepKey: "review",
     });
@@ -545,13 +546,13 @@ describe("buildUploadProgressState", () => {
 describe("getHumanUploadProgressMessages", () => {
   it("devuelve mensajes breves y humanos para análisis y guardado sin alargar la pantalla", () => {
     expect(getHumanUploadProgressMessages("analyze")).toEqual([
-      "Leyendo los detalles...",
-      "Buscando señales importantes...",
-      "Preparando tu veredicto...",
+      "Analizando lo más importante...",
+      "Ubicando las señales clave...",
+      "Preparando tu revisión rápida...",
     ]);
     expect(getHumanUploadProgressMessages("save")).toEqual([
       "Protegiendo tu documento...",
-      "Integrándolo al expediente...",
+      "Guardándolo de forma segura...",
       "Dejando listo el resultado...",
     ]);
     expect(getHumanUploadProgressMessages("review")).toEqual([]);

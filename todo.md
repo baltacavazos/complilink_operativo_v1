@@ -1568,3 +1568,8 @@
 - [x] Pulido final UX/UI: contrastar con ChatGPT, Grok y Gemini qué copies, botones flotantes y microajustes visuales conviene simplificar antes del cierre.
 - [x] Pulido final UX/UI: ajustar copies largos, CTA secundarias y botones flotantes para que la experiencia móvil sea más limpia y menos apretada.
 - [x] Pulido final UX/UI: ejecutar una QA visual final con pruebas y dejar el estado listo para decisión de publicación.
+- [x] Ronda post-upload móvil: auditar el primer resultado visible después de subir un documento para detectar altura excesiva, texto redundante y CTA secundarias que compiten.
+- [x] Ronda post-upload móvil: contrastar con ChatGPT, Grok y Gemini la compactación más segura del veredicto, siguiente paso y feedback inmediato de análisis.
+- [x] Ronda post-upload móvil: hacer más claro y vivo el feedback de foto/OCR/carga para que el usuario vea que su documento fue recibido y está siendo leído.
+- [x] Ronda post-upload móvil: reducir altura, texto y ruido visual del primer viewport post-upload manteniendo claridad sobre hallazgo y siguiente paso.
+- [x] Ronda post-upload móvil: revalidar con pruebas y revisión visual el flujo refinado antes del siguiente checkpoint.

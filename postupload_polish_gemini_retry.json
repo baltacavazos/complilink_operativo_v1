@@ -1,0 +1,46 @@
+{
+  "model": "gemini-2.5-flash-lite",
+  "result": {
+    "diagnosis": "El primer viewport post-upload es denso y confuso. Los estados de carga son largos y poco informativos, generando ansiedad. El feedback de CTA es genérico. El veredicto actual mezcla información de estado con el resultado, diluyendo el mensaje principal. El usuario no entiende rápidamente qué documento llegó, cuál es el hallazgo clave y cuál es el siguiente paso.",
+    "top_issues": [
+      "Estados de carga excesivamente largos y abstractos.",
+      "Falta de claridad inmediata sobre el documento recibido y el hallazgo principal.",
+      "CTA genéricos que no reflejan el progreso real o el siguiente paso.",
+      "Jerarquía de información confusa en el veredicto."
+    ],
+    "recommended_changes": [
+      {
+        "target": "loading_state",
+        "change": "Simplificar los mensajes de carga a frases cortas y directas. Usar un indicador visual claro (barra de progreso o spinner animado) junto a un texto conciso como 'Analizando tu documento...'. Eliminar la frase 'Quédate en esta pantalla'.",
+        "why": "Reduce la ansiedad del usuario al proporcionar feedback inmediato y visual. Mensajes cortos son más fáciles de digerir en segundos."
+      },
+      {
+        "target": "upload_cta",
+        "change": "Reemplazar 'Analizando documento...' y 'Guardando documento...' por un estado de carga visual y un texto más específico del proceso. Para el autoavance, usar 'Procesando para revisión...' o similar.",
+        "why": "Proporciona un feedback más preciso sobre la etapa actual, alineando la expectativa del usuario con el progreso real."
+      },
+      {
+        "target": "verdict_header",
+        "change": "Reemplazar los chips 'Documento recibido / tipo de documento / veredicto' por un título claro que identifique el documento y un subtítulo que resalte el hallazgo principal de forma concisa. Ejemplo: Título: 'Acta de Nacimiento' / Subtítulo: 'Identificamos tu CURP correctamente.'",
+        "why": "Prioriza la información más crítica (qué es y qué se encontró) para una comprensión rápida, cumpliendo el objetivo de entender en segundos."
+      },
+      {
+        "target": "verdict_body",
+        "change": "Reestructurar el bloque 'Lo más útil ahora' para que claramente presente el 'siguiente paso sugerido' como elemento principal, seguido de la opción de revisión o confirmación. Eliminar la descripción del guardado si ya se comunicó en el estado de carga.",
+        "why": "Guía al usuario de forma explícita hacia la acción deseada, mejorando la fluidez del flujo post-carga."
+      }
+    ],
+    "microcopy": {
+      "analyzing_title": "Analizando tu documento...",
+      "analyzing_description": "Estamos extrayendo la información clave.",
+      "saving_title": "Guardando en tu bóveda...",
+      "saving_description": "Tu documento se está guardando de forma segura.",
+      "cta_processing": "Procesando...",
+      "cta_autoadvance": "Preparando revisión...",
+      "status_line_selected_file": "Documento cargado: [nombreArchivo]",
+      "status_line_pending_draft": "Borrador automático: [nombreArchivo]",
+      "verdict_intro": "Revisión rápida:"
+    },
+    "confidence": "high"
+  }
+}
