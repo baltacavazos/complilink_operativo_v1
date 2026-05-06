@@ -1614,3 +1614,10 @@
 - [x] Determinar si conviene agregar una microdescripción breve del producto y, en su caso, proponer el mejor texto.
 - [x] Incorporar una microdescripción breve del producto en el hero para aclarar en segundos que AuditaPatron revisa recibos y detecta diferencias en el pago.
 - [x] Ajustar y revalidar las pruebas de copy o contratos afectados por la nueva microdescripción del hero.
+- [x] Evaluar con OpenAI, Grok y Gemini si la landing se entiende rápido para un trabajador común en México.
+- [x] Determinar con consenso multi-IA si la página es suficientemente convincente o qué le falta para elevar la intención de compra.
+- [x] Proponer cambios concretos de copy, estructura o prueba social para acercar la landing a un efecto tipo "shut up and take my money".
+- [x] Reforzar el hero con un beneficio económico más directo para que el trabajador entienda que podría estar perdiendo dinero.
+- [x] Aclarar en la landing qué pasa después si se detecta una diferencia y cómo seguir con una acción útil.
+- [x] Incorporar una capa de prueba social o casos anonimizados más persuasiva para elevar confianza e intención de pago.
+- [x] Actualizar y revalidar las pruebas contractuales y de copy afectadas por la nueva ronda de conversión.

@@ -23,10 +23,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('tabLabel: "Pago y señales"');
     expect(source).toContain('tabLabel: "Revisar primero"');
     expect(source).toContain("Sube una foto o PDF y revisa tu pago");
-    expect(source).toContain("Tu recibo puede revelar señales raras.");
-    expect(source).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
-    expect(source).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
-    expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(source).toContain("Tu recibo puede mostrar si te pagan de menos.");
+    expect(source).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
+    expect(source).toContain("Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.");
+    expect(source).toContain("Empieza con una foto o PDF. Si aparece algo, te decimos qué revisar y cómo seguir.");
     expect(source).toContain("Revisión urgente de nómina");
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");
@@ -35,10 +35,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Tus derechos laborales,");
     expect(source).toContain('const PRIMARY_CTA_LABEL = "Empezar auditoría gratis"');
     expect(source).toContain("Empezar auditoría gratis");
-    expect(source).toContain("Ya entendí mejor qué revisar primero.");
-    expect(source).toContain("Por fin tengo mis documentos en un solo lugar.");
+    expect(source).toContain("Ahí vi dónde podía estar perdiendo dinero.");
+    expect(source).toContain("Ya supe qué reclamar primero.");
     expect(source).toContain("Caso anónimo 01");
-    expect(source).toContain("Señal verificada en pruebas de comprensión");
+    expect(source).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
     expect(source).toContain("Privacidad visible y humana");
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).toContain("Borrado visible");
@@ -64,7 +64,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("audipatron_hero_paid_variant_activated");
     expect(source).toContain('new URLSearchParams(window.location.search).get("hero_variant")');
     expect(source).toContain("short_paid_campaign");
-    expect(source).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
+    expect(source).toContain("Si aparece una diferencia, te mostramos qué revisar primero y cómo seguir.");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Guardar solo si te sirve.");

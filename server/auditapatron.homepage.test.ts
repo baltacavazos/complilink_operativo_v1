@@ -12,9 +12,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
     expect(pricingSource).toContain("Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.");
     expect(pricingSource).toContain("AuditaPatron te deja entrar sin tarjeta, revisar tu primer contexto y decidir después si te conviene activar más profundidad o un entregable puntual.");
-    expect(homeSource).toContain("Tu recibo puede revelar señales raras.");
-    expect(homeSource).toContain("Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.");
-    expect(homeSource).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
+    expect(homeSource).toContain("Tu recibo puede mostrar si te pagan de menos.");
+    expect(homeSource).toContain("Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI.");
+    expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
     expect(homeSource).toContain("Empezar auditoría gratis");
     expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
@@ -26,8 +26,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Detecta señales y te las explica claro");
     expect(homeSource).toContain("Guárdalo en tu bóveda y sigue con más contexto");
     expect(homeSource).toContain("Empezar auditoría gratis");
-    expect(homeSource).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
-    expect(homeSource).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
+    expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
+    expect(homeSource).toContain("Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
@@ -46,12 +46,12 @@ describe("Auditapatron homepage and audit flow content", () => {
   });
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
-    expect(homeSource).toContain("Ya entendí mejor qué revisar primero.");
+    expect(homeSource).toContain("Ahí vi dónde podía estar perdiendo dinero.");
     expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Elige tu caso principal y te sugerimos el documento que más suele abrir contexto con baja fricción.");
     expect(homeSource).toContain("Caso anónimo 01");
-    expect(homeSource).toContain("Señal verificada en pruebas de comprensión");
+    expect(homeSource).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
     expect(homeSource).toContain("Privacidad visible y humana");
     expect(homeSource).toContain("Tus documentos son tuyos. Puedes borrarlos cuando quieras.");
     expect(homeSource).toContain("nivel de cuidado comparable al de un servicio bancario digital");

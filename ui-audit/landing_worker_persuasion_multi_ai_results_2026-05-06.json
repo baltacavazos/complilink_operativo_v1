@@ -1,0 +1,98 @@
+{
+  "generated_at": "2026-05-06T17:06:45.268669Z",
+  "source_notes_path": "/home/ubuntu/complilink_operativo_v1/ui-audit/landing_worker_persuasion_input_2026-05-06.md",
+  "screenshot_path": "/home/ubuntu/screenshots/3000-ifwslt4380ij879_2026-05-06_13-05-09_6786.webp",
+  "notes_excerpt": "# Insumo de evaluación multi-IA: claridad y persuasión de la landing\n\n## Contexto de revisión\n\nSe revisó primero `https://auditapatron.com`, pero ese dominio redirige a una pantalla de login, por lo que **no sirve** para evaluar la propuesta de valor pública. Para el análisis se toma como referencia la vista previa funcional del proyecto:\n\n- URL evaluada: `https://3000-ifwslt4380ij879g0ghvu-446467cd.us2.manus.computer/`\n- Captura del primer pantallazo: `/home/ubuntu/screenshots/3000-ifwslt4380ij879_2026-05-06_13-05-09_6786.webp`\n\n## Elementos visibles del hero evaluado\n\n| Elemento | Texto visible |\n|---|---|\n| Badge superior | `SUBE UNA FOTO O PDF Y REVISA TU PAGO` |\n| Headline | `Tu recibo puede revelar señales raras.` |\n| Support line | `Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.` |\n| Microdescripción | `Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.` |\n| Body | `Empieza con una foto o PDF. No necesitas reunir todo.` |\n| Tarjeta lateral guía | `Si no sabes con qué empezar` + `Empieza por el archivo que más rápido suele revelar diferencias: un recibo reciente o un CFDI del mismo periodo.` |\n| CTA principal header | `Empezar auditoría gratis` |\n| CTA principal en hero | `Empezar auditoría gratis` |\n| Panel visual derecho | `Señal encontrada: posible diferencia entre recibo y CFDI` |\n\n## Preguntas para los modelos\n\nPedir a cada modelo que responda **como si fuera un trabajador común en México**, no abogado ni experto en nómina. Evaluar:\n\n1. ¿Entiende en menos de 5 segundos para qué sirve la página?\n2. ¿Qué parte confunde, enfría o suena técnica?\n3. ¿La página genera ganas reales de probar o pagar, o se queda corta?\n4. ¿Qué tres cambios harían la landing más tipo \"shut up and take my money\"?\n5. ¿Qué frase exacta pondrían arriba para volverla más irresistible sin perder credibilidad?\n\n## Criterio de síntesis esperado\n\nSeparar la respuesta final en tres ejes:\n\n- **Claridad inmediata**\n- **Poder de convicción**\n- **Cambios prioritarios para conversión**\n",
+  "models": {
+    "openai": {
+      "raw": "```json\n{\n  \"clarity_score\": 7,\n  \"persuasion_score\": 5,\n  \"understands_in_5_seconds\": true,\n  \"would_try_now\": true,\n  \"would_pay_if_it_works\": false,\n  \"what_i_think_it_is\": \"Una herramienta para revisar si mi recibo de nómina tiene errores o diferencias con el CFDI, subiendo una foto o PDF.\",\n  \"main_confusions\": [\n    \"No entiendo bien qué tan confiable o seguro es subir documentos personales.\",\n    \"No queda claro qué pasa después de la revisión gratis, si hay un costo o qué beneficios adicionales ofrece.\",\n    \"No sé si la diferencia encontrada es algo grave o solo algo menor que no afecta mi pago.\"\n  ],\n  \"why_it_is_or_is_not_convincing\": \"Me gusta que sea gratis y fácil de empezar con solo una foto, pero no me convence pagar porque no sé qué tan preciso es ni qué ganaría exactamente. La página se ve profesional pero falta más confianza y claridad en el valor real.\",\n  \"money_blockers\": [\n    \"No hay testimonios ni casos de éxito que me den confianza.\",\n    \"No explican claramente qué pasa después de la auditoría gratis ni qué servicios pagos ofrecen.\",\n    \"No se menciona seguridad o privacidad de mis datos, lo cual me hace dudar.\"\n  ],\n  \"top_3_changes\": [\n    \"Agregar testimonios o reviews reales de usuarios que hayan detectado errores y ahorrado dinero.\",\n    \"Incluir un apartado claro sobre seguridad y privacidad de los documentos que subo.\",\n    \"Mostrar un ejemplo claro y visual de cuánto dinero se puede recuperar o ahorrar con la auditoría.\"\n  ],\n  \"stronger_top_line\": \"¿Tu recibo de nómina tiene errores? Descúbrelo fácil y gratis.\",\n  \"stronger_subline\": \"Sube una foto o PDF y revisa si te están pagando bien, sin complicaciones ni riesgos.\",\n  \"final_verdict\": \"La página es clara y la oferta gratis es atractiva para probar, pero falta confianza y claridad para que alguien pague. Con más pruebas sociales, seguridad y beneficios claros, sería mucho más irresistible.\"\n}\n```",
+      "parsed": {
+        "clarity_score": 7,
+        "persuasion_score": 5,
+        "understands_in_5_seconds": true,
+        "would_try_now": true,
+        "would_pay_if_it_works": false,
+        "what_i_think_it_is": "Una herramienta para revisar si mi recibo de nómina tiene errores o diferencias con el CFDI, subiendo una foto o PDF.",
+        "main_confusions": [
+          "No entiendo bien qué tan confiable o seguro es subir documentos personales.",
+          "No queda claro qué pasa después de la revisión gratis, si hay un costo o qué beneficios adicionales ofrece.",
+          "No sé si la diferencia encontrada es algo grave o solo algo menor que no afecta mi pago."
+        ],
+        "why_it_is_or_is_not_convincing": "Me gusta que sea gratis y fácil de empezar con solo una foto, pero no me convence pagar porque no sé qué tan preciso es ni qué ganaría exactamente. La página se ve profesional pero falta más confianza y claridad en el valor real.",
+        "money_blockers": [
+          "No hay testimonios ni casos de éxito que me den confianza.",
+          "No explican claramente qué pasa después de la auditoría gratis ni qué servicios pagos ofrecen.",
+          "No se menciona seguridad o privacidad de mis datos, lo cual me hace dudar."
+        ],
+        "top_3_changes": [
+          "Agregar testimonios o reviews reales de usuarios que hayan detectado errores y ahorrado dinero.",
+          "Incluir un apartado claro sobre seguridad y privacidad de los documentos que subo.",
+          "Mostrar un ejemplo claro y visual de cuánto dinero se puede recuperar o ahorrar con la auditoría."
+        ],
+        "stronger_top_line": "¿Tu recibo de nómina tiene errores? Descúbrelo fácil y gratis.",
+        "stronger_subline": "Sube una foto o PDF y revisa si te están pagando bien, sin complicaciones ni riesgos.",
+        "final_verdict": "La página es clara y la oferta gratis es atractiva para probar, pero falta confianza y claridad para que alguien pague. Con más pruebas sociales, seguridad y beneficios claros, sería mucho más irresistible."
+      }
+    },
+    "grok": {
+      "raw": "{\n  \"clarity_score\": 7,\n  \"persuasion_score\": 5,\n  \"understands_in_5_seconds\": true,\n  \"would_try_now\": true,\n  \"would_pay_if_it_works\": false,\n  \"what_i_think_it_is\": \"Una herramienta para subir mi recibo de nómina y checar si hay errores o diferencias que me afecten el pago, tipo si me deben lana o hay broncas con el CFDI.\",\n  \"main_confusions\": [\n    \"¿Qué chingados son 'señales raras'? Suena raro y no explica bien.\",\n    \"No dice si es gratis para siempre o cuánto cuesta después.\",\n    \"El ejemplo de diferencia con CFDI está chido, pero no entiendo qué gano yo al final.\"\n  ],\n  \"why_it_is_or_is_not_convincing\": \"Me convence para probar porque es gratis y fácil, solo subo una foto, pero no me dan ganas de pagar porque no veo testimonios de gente que recuperó dinero ni garantías de que funcione de verdad.\",\n  \"money_blockers\": [\n    \"No hay precio claro, ¿cuánto cuesta si encuentra algo?\",\n    \"Miedo a que sea un timo y me pidan datos personales para nada.\",\n    \"No promete cuánto dinero puedo recuperar, solo 'posibles diferencias'.\"\n  ],\n  \"top_3_changes\": [\n    \"Pon testimonios reales de trabajadores que recuperaron lana, con cantidades específicas para que suene creíble.\",\n    \"Agrega un calculador rápido de 'posible dinero perdido' basado en ejemplos comunes para que vea mi ganancia inmediata.\",\n    \"Haz el CTA más urgente, tipo 'Reclama tu dinero ahora gratis' con un timer o oferta limitada.\"\n  ],\n  \"stronger_top_line\": \"¡Descubre si tu jefe te debe miles en tu nómina!\",\n  \"stronger_subline\": \"Sube tu recibo gratis y ve errores que te roban lana cada quincena, con guía para reclamar.\",\n  \"final_verdict\": \"Está decente para curiosos, pero le falta punch para que saque la cartera al instante; con cambios, sería irresistible.\"\n}",
+      "parsed": {
+        "clarity_score": 7,
+        "persuasion_score": 5,
+        "understands_in_5_seconds": true,
+        "would_try_now": true,
+        "would_pay_if_it_works": false,
+        "what_i_think_it_is": "Una herramienta para subir mi recibo de nómina y checar si hay errores o diferencias que me afecten el pago, tipo si me deben lana o hay broncas con el CFDI.",
+        "main_confusions": [
+          "¿Qué chingados son 'señales raras'? Suena raro y no explica bien.",
+          "No dice si es gratis para siempre o cuánto cuesta después.",
+          "El ejemplo de diferencia con CFDI está chido, pero no entiendo qué gano yo al final."
+        ],
+        "why_it_is_or_is_not_convincing": "Me convence para probar porque es gratis y fácil, solo subo una foto, pero no me dan ganas de pagar porque no veo testimonios de gente que recuperó dinero ni garantías de que funcione de verdad.",
+        "money_blockers": [
+          "No hay precio claro, ¿cuánto cuesta si encuentra algo?",
+          "Miedo a que sea un timo y me pidan datos personales para nada.",
+          "No promete cuánto dinero puedo recuperar, solo 'posibles diferencias'."
+        ],
+        "top_3_changes": [
+          "Pon testimonios reales de trabajadores que recuperaron lana, con cantidades específicas para que suene creíble.",
+          "Agrega un calculador rápido de 'posible dinero perdido' basado en ejemplos comunes para que vea mi ganancia inmediata.",
+          "Haz el CTA más urgente, tipo 'Reclama tu dinero ahora gratis' con un timer o oferta limitada."
+        ],
+        "stronger_top_line": "¡Descubre si tu jefe te debe miles en tu nómina!",
+        "stronger_subline": "Sube tu recibo gratis y ve errores que te roban lana cada quincena, con guía para reclamar.",
+        "final_verdict": "Está decente para curiosos, pero le falta punch para que saque la cartera al instante; con cambios, sería irresistible."
+      }
+    },
+    "gemini": {
+      "raw": "{\n  \"clarity_score\": 8,\n  \"persuasion_score\": 8,\n  \"understands_in_5_seconds\": true,\n  \"would_try_now\": true,\n  \"would_pay_if_it_works\": true,\n  \"what_i_think_it_is\": \"Es una herramienta para subir mi recibo de nómina y que me diga si hay algún error, si me están pagando mal o si hay diferencias con lo que dice el CFDI. Como para ver si no me están 'picando los ojos' con mi sueldo.\",\n  \"main_confusions\": [\n    \"¿Qué pasa si encuentra una 'señal rara'? ¿Qué hago después? ¿Me ayuda a reclamar o solo me dice que hay un problema?\",\n    \"¿Qué tan confiable es esto? ¿Quién está detrás de la página y qué hacen con mis datos personales?\",\n    \"¿Qué es exactamente un CFDI y por qué es tan importante que coincida con mi recibo? (No todos los trabajadores comunes manejan estos términos a la perfección).\"\n  ],\n  \"why_it_is_or_is_not_convincing\": \"Es convincente porque es gratis y promete encontrar errores en mi pago, lo cual es una preocupación real para cualquiera. La idea de que 'mi recibo puede revelar señales raras' me pica la curiosidad. El ejemplo visual de una posible diferencia de $3,240 MXN es muy potente porque me hace pensar que podría estar perdiendo dinero. No es *totalmente* convincente para pagar aún porque no sé qué tan profundo es el análisis o qué tan útil sería el resultado final más allá de 'hay una diferencia'.\",\n  \"money_blockers\": [\n    \"No sé cuánto costaría la siguiente etapa si encuentro un problema. ¿Es caro el seguimiento?\",\n    \"No sé si el problema que detecte es algo que yo pueda resolver fácilmente o si necesitaría un abogado/contador, lo cual ya implica más gastos y complicaciones.\",\n    \"¿Qué tan real es la posibilidad de que encuentre algo? Si es muy raro que haya errores, ¿para qué pagar por algo que quizás no me sirva?\"\n  ],\n  \"top_3_changes\": [\n    \"Cambiar el titular a algo más directo y con beneficio económico, como '¿Te están pagando de menos? Descúbrelo en segundos' o 'Tu recibo de nómina: ¿Te deben dinero?'.\",\n    \"Mostrar claramente el 'después' de encontrar un error: 'Te decimos cómo reclamar tu dinero' o 'Te ayudamos a corregir el error y recuperar lo tuyo'. Esto le daría mucho más valor al servicio.\",\n    \"Añadir testimonios o casos de éxito (anonimizados) de personas que recuperaron dinero o corrigieron errores gracias a la plataforma. Esto generaría mucha más confianza y un 'shut up and take my money'.\"\n  ],\n  \"stronger_top_line\": \"¡No dejes que te paguen de menos! Revisa tu nómina en segundos.\",\n  \"stronger_subline\": \"Sube tu recibo gratis y descubre si hay errores en tu pago, deducciones o si te deben dinero.\",\n  \"final_verdict\": \"La idea es muy buena y el 'gratis' engancha, pero la página necesita ser más agresiva en el beneficio económico y dar más claridad sobre los siguientes pasos para que un trabajador común se sienta seguro y motivado a pagar si encuentra un problema. Necesita pasar de 'curiosidad' a 'necesidad urgente de resolver un problema de dinero'.\"\n}",
+      "parsed": {
+        "clarity_score": 8,
+        "persuasion_score": 8,
+        "understands_in_5_seconds": true,
+        "would_try_now": true,
+        "would_pay_if_it_works": true,
+        "what_i_think_it_is": "Es una herramienta para subir mi recibo de nómina y que me diga si hay algún error, si me están pagando mal o si hay diferencias con lo que dice el CFDI. Como para ver si no me están 'picando los ojos' con mi sueldo.",
+        "main_confusions": [
+          "¿Qué pasa si encuentra una 'señal rara'? ¿Qué hago después? ¿Me ayuda a reclamar o solo me dice que hay un problema?",
+          "¿Qué tan confiable es esto? ¿Quién está detrás de la página y qué hacen con mis datos personales?",
+          "¿Qué es exactamente un CFDI y por qué es tan importante que coincida con mi recibo? (No todos los trabajadores comunes manejan estos términos a la perfección)."
+        ],
+        "why_it_is_or_is_not_convincing": "Es convincente porque es gratis y promete encontrar errores en mi pago, lo cual es una preocupación real para cualquiera. La idea de que 'mi recibo puede revelar señales raras' me pica la curiosidad. El ejemplo visual de una posible diferencia de $3,240 MXN es muy potente porque me hace pensar que podría estar perdiendo dinero. No es *totalmente* convincente para pagar aún porque no sé qué tan profundo es el análisis o qué tan útil sería el resultado final más allá de 'hay una diferencia'.",
+        "money_blockers": [
+          "No sé cuánto costaría la siguiente etapa si encuentro un problema. ¿Es caro el seguimiento?",
+          "No sé si el problema que detecte es algo que yo pueda resolver fácilmente o si necesitaría un abogado/contador, lo cual ya implica más gastos y complicaciones.",
+          "¿Qué tan real es la posibilidad de que encuentre algo? Si es muy raro que haya errores, ¿para qué pagar por algo que quizás no me sirva?"
+        ],
+        "top_3_changes": [
+          "Cambiar el titular a algo más directo y con beneficio económico, como '¿Te están pagando de menos? Descúbrelo en segundos' o 'Tu recibo de nómina: ¿Te deben dinero?'.",
+          "Mostrar claramente el 'después' de encontrar un error: 'Te decimos cómo reclamar tu dinero' o 'Te ayudamos a corregir el error y recuperar lo tuyo'. Esto le daría mucho más valor al servicio.",
+          "Añadir testimonios o casos de éxito (anonimizados) de personas que recuperaron dinero o corrigieron errores gracias a la plataforma. Esto generaría mucha más confianza y un 'shut up and take my money'."
+        ],
+        "stronger_top_line": "¡No dejes que te paguen de menos! Revisa tu nómina en segundos.",
+        "stronger_subline": "Sube tu recibo gratis y descubre si hay errores en tu pago, deducciones o si te deben dinero.",
+        "final_verdict": "La idea es muy buena y el 'gratis' engancha, pero la página necesita ser más agresiva en el beneficio económico y dar más claridad sobre los siguientes pasos para que un trabajador común se sienta seguro y motivado a pagar si encuentra un problema. Necesita pasar de 'curiosidad' a 'necesidad urgente de resolver un problema de dinero'."
+      }
+    }
+  }
+}
