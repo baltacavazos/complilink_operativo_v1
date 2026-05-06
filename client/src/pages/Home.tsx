@@ -624,12 +624,12 @@ function SiteHeader() {
         <a
           href="#top"
           aria-label="Ir al inicio de AuditaPatron"
-          className="flex min-w-0 max-w-[40vw] shrink items-center pl-1 sm:max-w-none sm:pl-0 lg:max-w-[420px]"
+          className="flex min-w-0 max-w-[40vw] shrink items-center pl-1 max-[359px]:max-w-[37vw] sm:max-w-none sm:pl-0 lg:max-w-[420px]"
         >
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="!h-8 w-auto max-w-[min(34vw,7.8rem)] object-contain sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
+            imageClassName="!h-8 w-auto max-w-[min(34vw,7.8rem)] object-contain max-[359px]:!h-7 max-[359px]:max-w-[min(31vw,6.85rem)] sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
           />
         </a>
 
@@ -670,7 +670,7 @@ function SiteHeader() {
 
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
-            className="motion-hover-lift h-10 min-w-0 max-w-[8rem] rounded-full bg-teal-400 px-2.5 text-[0.75rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
+            className="motion-hover-lift h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem] rounded-full bg-teal-400 px-3 text-[0.78rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.7rem] max-[359px]:px-2.75 max-[359px]:text-[0.72rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
             onClick={goToAuditFlow}
           >
             <span className="truncate sm:hidden">Empezar</span>
@@ -678,7 +678,7 @@ function SiteHeader() {
           </Button>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
@@ -1002,7 +1002,7 @@ function HeroSection() {
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
@@ -1011,21 +1011,21 @@ function HeroSection() {
           </div>
 
           <h1
-            className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
+            className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
             style={{ ["--motion-delay" as string]: "120ms" }}
           >
             Tu recibo puede revelar señales raras.
           </h1>
 
           <p
-            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 sm:text-[1.02rem] sm:leading-8"
+            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 max-[359px]:text-[0.96rem] max-[359px]:leading-6 sm:text-[1.02rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "180ms" }}
           >
 Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.
           </p>
 
           <p
-            className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 sm:text-[1.08rem] sm:leading-8"
+            className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1.08rem] sm:leading-8"
             style={{ ["--motion-delay" as string]: "210ms" }}
           >
 Empieza con una foto o PDF. No necesitas reunir todo.
@@ -1068,7 +1068,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
           </div>
 
           <div
-            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2.5 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
+            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2.5 max-[359px]:gap-2 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -1091,7 +1091,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 max-[359px]:space-y-1">
                 <p className="text-sm font-semibold leading-6 text-slate-700">
                   Empieza con una foto. No necesitas reunir todo.
                 </p>
@@ -1101,7 +1101,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                 <p className="text-xs font-medium leading-5 text-teal-800">
                   Cifrado AES-256, control de borrado visible y resguardo serio desde el inicio.
                 </p>
-                <p className="text-xs leading-5 text-slate-500">
+                <p className="text-xs leading-5 text-slate-500 max-[359px]:hidden">
                   Diseñado con un nivel de cuidado comparable al que esperas de un servicio bancario digital.
                 </p>
                 <p className="inline-flex w-fit rounded-full border border-teal-100 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
@@ -1143,7 +1143,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
           </div>
 
           <div
-            className="motion-enter-soft mt-2.5 w-full max-w-xl rounded-[1.45rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] sm:p-4"
+            className="motion-enter-soft mt-2.5 w-full max-w-xl rounded-[1.45rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] max-[359px]:p-3 sm:p-4"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lo que hace simple esta experiencia</p>
@@ -1166,16 +1166,16 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
             id="ejemplo-reporte"
-            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 sm:p-6"
+            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 max-[359px]:p-4 sm:p-6"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
-            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:px-5 sm:py-5">
+            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] max-[359px]:px-3.5 max-[359px]:py-3.5 sm:px-5 sm:py-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
 Resultado realista, no promesa vacía
                   </p>
-                  <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 sm:text-[2.2rem]">
+                  <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.62rem] sm:text-[2.2rem]">
                     {activeReportDemoCopy.title}
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
@@ -1194,7 +1194,7 @@ Resultado realista, no promesa vacía
                 {activeReportDemoCopy.description}
               </p>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-4 grid gap-2 max-[359px]:gap-1.5 sm:grid-cols-3">
                 {reportDemoStates.map((state) => {
                   const isActive = selectedReportDemoState === state.id;
 
@@ -1203,7 +1203,7 @@ Resultado realista, no promesa vacía
                       key={state.id}
                       type="button"
                       onClick={() => handleReportDemoStateChange(state.id)}
-                      className={`rounded-[1.1rem] border px-3 py-3 text-left transition ${
+                      className={`rounded-[1.1rem] border px-3 py-3 text-left transition max-[359px]:px-2.5 max-[359px]:py-2.5 ${
                         isActive
                           ? "border-teal-300 bg-teal-50 text-teal-950 shadow-[0_18px_42px_-34px_rgba(13,148,136,0.34)]"
                           : "border-slate-200 bg-white/88 text-slate-700 hover:border-teal-200 hover:bg-white"
@@ -2594,7 +2594,7 @@ function FAQSection() {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
             Guía rápida para empezar
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.7rem] sm:text-4xl">
             Empieza por la duda que hoy más te frena.
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
@@ -2614,7 +2614,7 @@ function FAQSection() {
                     key={option.id}
                     type="button"
                     onClick={() => setSelectedFaq(option.id)}
-                    className={`w-full rounded-[1.05rem] border px-4 py-3 text-left transition ${
+                    className={`w-full rounded-[1.05rem] border px-4 py-3 text-left transition max-[359px]:px-3.5 ${
                       isActive
                         ? "border-teal-300 bg-teal-50 shadow-[0_16px_34px_-30px_rgba(13,148,136,0.34)]"
                         : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
@@ -2622,8 +2622,8 @@ function FAQSection() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">{option.label}</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">{option.description}</p>
+                        <p className="text-sm font-semibold leading-6 text-slate-950 max-[359px]:text-[0.97rem]">{option.label}</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-600 max-[359px]:text-[0.95rem]">{option.description}</p>
                       </div>
                       <ChevronRight className={`mt-0.5 h-4 w-4 shrink-0 ${isActive ? "text-teal-600" : "text-slate-400"}`} />
                     </div>
@@ -2634,14 +2634,14 @@ function FAQSection() {
 
             <div className="mt-3 rounded-[1.2rem] border border-teal-100 bg-teal-50/75 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeRecommendation.badge}</p>
-              <p className="mt-2 text-base font-semibold leading-7 text-slate-950">{activeRecommendation.document}</p>
+              <p className="mt-2 text-base font-semibold leading-7 text-slate-950 max-[359px]:text-[0.98rem] max-[359px]:leading-6">{activeRecommendation.document}</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">{activeRecommendation.reason}</p>
               <p className="mt-2 text-sm leading-6 text-teal-900">{activeRecommendation.nextStep}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+        <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4 max-[359px]:p-3.5 sm:p-5">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             Preguntas frecuentes clave
           </p>
@@ -2652,7 +2652,7 @@ function FAQSection() {
                 value={item.id}
                 className="rounded-[1.15rem] border border-slate-200 bg-white px-4"
               >
-                <AccordionTrigger className="text-left text-sm font-semibold text-slate-950 hover:no-underline sm:text-base">
+                <AccordionTrigger className="text-left text-sm font-semibold leading-6 text-slate-950 hover:no-underline max-[359px]:text-[0.97rem] sm:text-base">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent className="pb-4 text-sm leading-6 text-slate-600">
@@ -2673,21 +2673,21 @@ function FinalCtaSection() {
   return (
     <section className="bg-[#e8f1f0] py-12 sm:bg-[#f3f7f7] sm:py-14">
       <div className="container">
-        <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
+        <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] max-[359px]:px-4 max-[359px]:py-7 sm:px-10 sm:py-12">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
               {pricingExperience.landing.eyebrow}
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.8rem] sm:text-5xl">
               {pricingExperience.landing.title}
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
               {pricingExperience.landing.description}
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Button
-                className="rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700"
+                className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
                 onClick={goToAuditFlow}
               >
                 {PRIMARY_CTA_LABEL}
@@ -2695,7 +2695,7 @@ function FinalCtaSection() {
               </Button>
               <Button
                 variant="outline"
-                className="motion-hover-lift h-12 rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50"
+                className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto"
                 onClick={() => scrollToId("boveda")}
               >
                 Entender la bóveda laboral

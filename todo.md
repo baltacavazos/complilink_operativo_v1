@@ -1600,3 +1600,6 @@
 - [x] Recortar la landing mobile preservando Hero + primera lectura y fusionando bloques redundantes de confianza
 - [x] Reducir la densidad de Cómo funciona y dejar una FAQ más corta orientada a conversión
 - [x] Validar con pruebas y checkpoint el nuevo corte corto de la landing
+- [x] Auditar la landing recortada en mobile small, medium y large para detectar riesgos de overflow, densidad o targets táctiles débiles
+- [x] Aplicar ajustes responsive para que hero, tarjetas, CTAs y navegación se mantengan legibles y estables en todos los móviles
+- [x] Validar con pruebas y checkpoint que la landing conserve compatibilidad mobile amplia tras la ronda responsive

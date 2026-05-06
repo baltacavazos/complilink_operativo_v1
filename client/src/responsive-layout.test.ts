@@ -18,19 +18,22 @@ describe("responsive layout regression guards", () => {
     const homeSource = readProjectFile("client", "src", "pages", "Home.tsx");
 
     expect(homeSource).toContain('max-w-[40vw]');
+    expect(homeSource).toContain('max-[359px]:max-w-[37vw]');
     expect(homeSource).toContain('max-w-[min(34vw,7.8rem)]');
-    expect(homeSource).toContain('max-w-[8rem]');
+    expect(homeSource).toContain('max-[359px]:max-w-[min(31vw,6.85rem)]');
+    expect(homeSource).toContain('h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem]');
     expect(homeSource).toContain('Sube foto o PDF');
   });
 
-  it("keeps Auditar hero elements shrink-safe on mobile", () => {
-    const auditarSource = readProjectFile("client", "src", "pages", "Auditar.tsx");
+  it("keeps Home optimized for sub-360px hero density and CTA spacing", () => {
+    const homeSource = readProjectFile("client", "src", "pages", "Home.tsx");
 
-    expect(auditarSource).toContain('overflow-hidden rounded-[2rem]');
-    expect(auditarSource).toContain('max-w-[min(62vw,13rem)]');
-    expect(auditarSource).toContain('showTagline={false}');
-    expect(auditarSource).toContain('whitespace-normal rounded-full');
-    expect(auditarSource).toContain('className="flex min-w-0 items-start gap-3');
+    expect(homeSource).toContain('max-[359px]:text-[1.95rem]');
+    expect(homeSource).toContain('max-[359px]:leading-[0.98]');
+    expect(homeSource).toContain('max-[359px]:hidden');
+    expect(homeSource).toContain('mt-8 flex flex-col gap-4 sm:flex-row');
+    expect(homeSource).toContain('h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto');
+    expect(homeSource).toContain('motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto');
   });
 
   it("keeps the quick exit action compact on mobile", () => {

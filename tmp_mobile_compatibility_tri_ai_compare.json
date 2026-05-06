@@ -1,0 +1,347 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_mobile_compatibility_tri_ai_prompt.md",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"veredicto_general\": \"ok_con_ajustes\",\n  \"compatibilidad_mobile_actual\": {\n    \"small_320_359\": \"media\",\n    \"medium_360_389\": \"alta\",\n    \"large_390_430\": \"alta\"\n  },\n  \"top_5_ajustes\": [\n    {\n      \"id\": \"cta_header_width\",\n      \"zona\": \"header\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir max-width de CTA a 6rem en pantallas <360px para evitar targets apretados y overflow visual.\",\n      \"porque\": \"Mejora la usabilidad táctil y evita que el botón se vea comprimido o cause scroll horizontal en móviles pequeños.\",\n      \"aplicar_en\": [\"320-359\"]\n    },\n    {\n      \"id\": \"hero_text_scaling\",\n      \"zona\": \"hero\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Disminuir tamaño de h1 a 1.8rem en pantallas <360px y reducir padding interno en tarjetas para evitar densidad excesiva.\",\n      \"porque\": \"Reduce la longitud percibida y mejora la legibilidad sin perder jerarquía en móviles pequeños.\",\n      \"aplicar_en\": [\"320-359\"]\n    },\n    {\n      \"id\": \"padding_secciones\",\n      \"zona\": \"lectura\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir padding horizontal en secciones colapsadas a columna para pantallas <360px, manteniendo espacio suficiente para lectura cómoda.\",\n      \"porque\": \"Disminuye sensación de densidad y mejora el espacio táctil sin afectar la claridad del contenido.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"espaciado_ctas_pricing\",\n      \"zona\": \"pricing\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Incrementar margen entre CTA principal y secundaria para evitar targets táctiles juntos y confusión en selección.\",\n      \"porque\": \"Mejora la usabilidad táctil y reduce errores en la interacción en todos los tamaños móviles.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\", \"390-430\"]\n    },\n    {\n      \"id\": \"limitar_titulos_largos\",\n      \"zona\": \"faq\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Acortar o dividir títulos largos en FAQ para evitar competencia visual y mejorar jerarquía clara en móviles pequeños.\",\n      \"porque\": \"Facilita la lectura rápida y evita que títulos compitan por atención en pantallas reducidas.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    }\n  ],\n  \"ajustes_a_evitar\": [\n    \"rediseñar arquitectura general de grids o columnas\",\n    \"eliminar sombras o padding que aportan claridad visual\",\n    \"usar tamaños fijos de fuente sin responsive scaling\",\n    \"reducir targets táctiles por debajo de 44px\",\n    \"añadir scroll horizontal para acomodar contenido\"\n  ],\n  \"orden_recomendado\": [\n    \"cta_header_width\",\n    \"hero_text_scaling\",\n    \"padding_secciones\",\n    \"espaciado_ctas_pricing\",\n    \"limitar_titulos_largos\"\n  ],\n  \"estimacion_mejora\": {\n    \"legibilidad\": \"alta\",\n    \"tap_targets\": \"alta\",\n    \"densidad_visual\": \"media\",\n    \"riesgo_de_overflow\": \"baja\"\n  },\n  \"dictamen_final\": \"La landing AuditaPatrón es funcional en móviles, pero requiere ajustes puntuales en tamaños de texto, espaciados y targets táctiles para optimizar experiencia en móviles pequeños (320-359px). Estos cambios de bajo riesgo mejorarán legibilidad, usabilidad y evitarán densidad excesiva sin alterar la arquitectura general ni la confianza visual.\"\n}",
+      "parsed": {
+        "veredicto_general": "ok_con_ajustes",
+        "compatibilidad_mobile_actual": {
+          "small_320_359": "media",
+          "medium_360_389": "alta",
+          "large_390_430": "alta"
+        },
+        "top_5_ajustes": [
+          {
+            "id": "cta_header_width",
+            "zona": "header",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Reducir max-width de CTA a 6rem en pantallas <360px para evitar targets apretados y overflow visual.",
+            "porque": "Mejora la usabilidad táctil y evita que el botón se vea comprimido o cause scroll horizontal en móviles pequeños.",
+            "aplicar_en": [
+              "320-359"
+            ]
+          },
+          {
+            "id": "hero_text_scaling",
+            "zona": "hero",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Disminuir tamaño de h1 a 1.8rem en pantallas <360px y reducir padding interno en tarjetas para evitar densidad excesiva.",
+            "porque": "Reduce la longitud percibida y mejora la legibilidad sin perder jerarquía en móviles pequeños.",
+            "aplicar_en": [
+              "320-359"
+            ]
+          },
+          {
+            "id": "padding_secciones",
+            "zona": "lectura",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Reducir padding horizontal en secciones colapsadas a columna para pantallas <360px, manteniendo espacio suficiente para lectura cómoda.",
+            "porque": "Disminuye sensación de densidad y mejora el espacio táctil sin afectar la claridad del contenido.",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "espaciado_ctas_pricing",
+            "zona": "pricing",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Incrementar margen entre CTA principal y secundaria para evitar targets táctiles juntos y confusión en selección.",
+            "porque": "Mejora la usabilidad táctil y reduce errores en la interacción en todos los tamaños móviles.",
+            "aplicar_en": [
+              "320-359",
+              "360-389",
+              "390-430"
+            ]
+          },
+          {
+            "id": "limitar_titulos_largos",
+            "zona": "faq",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Acortar o dividir títulos largos en FAQ para evitar competencia visual y mejorar jerarquía clara en móviles pequeños.",
+            "porque": "Facilita la lectura rápida y evita que títulos compitan por atención en pantallas reducidas.",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          }
+        ],
+        "ajustes_a_evitar": [
+          "rediseñar arquitectura general de grids o columnas",
+          "eliminar sombras o padding que aportan claridad visual",
+          "usar tamaños fijos de fuente sin responsive scaling",
+          "reducir targets táctiles por debajo de 44px",
+          "añadir scroll horizontal para acomodar contenido"
+        ],
+        "orden_recomendado": [
+          "cta_header_width",
+          "hero_text_scaling",
+          "padding_secciones",
+          "espaciado_ctas_pricing",
+          "limitar_titulos_largos"
+        ],
+        "estimacion_mejora": {
+          "legibilidad": "alta",
+          "tap_targets": "alta",
+          "densidad_visual": "media",
+          "riesgo_de_overflow": "baja"
+        },
+        "dictamen_final": "La landing AuditaPatrón es funcional en móviles, pero requiere ajustes puntuales en tamaños de texto, espaciados y targets táctiles para optimizar experiencia en móviles pequeños (320-359px). Estos cambios de bajo riesgo mejorarán legibilidad, usabilidad y evitarán densidad excesiva sin alterar la arquitectura general ni la confianza visual."
+      }
+    },
+    "xai": {
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"veredicto_general\": \"ok_con_ajustes\",\n  \"compatibilidad_mobile_actual\": {\n    \"small_320_359\": \"baja\",\n    \"medium_360_389\": \"media\",\n    \"large_390_430\": \"alta\"\n  },\n  \"top_5_ajustes\": [\n    {\n      \"id\": \"header_cta\",\n      \"zona\": \"header\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Aumentar tamaño de CTA a min-width 10rem y padding 1rem\",\n      \"porque\": \"Mejora targets táctiles para evitar taps accidentales en pantallas pequeñas\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"hero_text\",\n      \"zona\": \"hero\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir font-size de h1 a 1.8rem y ajustar padding a p-3\",\n      \"porque\": \"Reduce densidad visual en móviles pequeños para mejorar legibilidad sin perder jerarquía\",\n      \"aplicar_en\": [\"320-359\"]\n    },\n    {\n      \"id\": \"section_pad\",\n      \"zona\": \"lectura\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir paddings generales a p-3 en secciones densas\",\n      \"porque\": \"Evita sensación de sobrecarga en pantallas estrechas, manteniendo usabilidad\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"cta_space\",\n      \"zona\": \"pricing\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"medio\",\n      \"cambio\": \"Aumentar margen entre CTAs a my-4\",\n      \"porque\": \"Previene CTAs apretados, mejorando precisión de taps en dispositivos variados\",\n      \"aplicar_en\": [\"320-359\", \"360-389\", \"390-430\"]\n    },\n    {\n      \"id\": \"faq_titles\",\n      \"zona\": \"faq\",\n      \"impacto\": \"bajo\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Acortar títulos largos a máximo 2 líneas con ellipsis\",\n      \"porque\": \"Reduce competencia visual y mejora jerarquía en layouts colapsados\",\n      \"aplicar_en\": [\"320-359\"]\n    }\n  ],\n  \"ajustes_a_evitar\": [\"Rediseñar arquitectura completa\", \"Eliminar elementos clave\", \"Aumentar elementos innecesarios\"],\n  \"orden_recomendado\": [\"header_cta\", \"hero_text\", \"section_pad\", \"cta_space\", \"faq_titles\"],\n  \"estimacion_mejora\": {\n    \"legibilidad\": \"alta\",\n    \"tap_targets\": \"alta\",\n    \"densidad_visual\": \"media\",\n    \"riesgo_de_overflow\": \"baja\"\n  },\n  \"dictamen_final\": \"La landing es funcional pero requiere ajustes menores en header y hero para optimizar tapping y densidad en móviles pequeños como iPhone SE, mejorando usabilidad sin alterar la estructura general y manteniendo confianza.\"\n}",
+      "parsed": {
+        "veredicto_general": "ok_con_ajustes",
+        "compatibilidad_mobile_actual": {
+          "small_320_359": "baja",
+          "medium_360_389": "media",
+          "large_390_430": "alta"
+        },
+        "top_5_ajustes": [
+          {
+            "id": "header_cta",
+            "zona": "header",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Aumentar tamaño de CTA a min-width 10rem y padding 1rem",
+            "porque": "Mejora targets táctiles para evitar taps accidentales en pantallas pequeñas",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "hero_text",
+            "zona": "hero",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Reducir font-size de h1 a 1.8rem y ajustar padding a p-3",
+            "porque": "Reduce densidad visual en móviles pequeños para mejorar legibilidad sin perder jerarquía",
+            "aplicar_en": [
+              "320-359"
+            ]
+          },
+          {
+            "id": "section_pad",
+            "zona": "lectura",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Reducir paddings generales a p-3 en secciones densas",
+            "porque": "Evita sensación de sobrecarga en pantallas estrechas, manteniendo usabilidad",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "cta_space",
+            "zona": "pricing",
+            "impacto": "alto",
+            "riesgo": "medio",
+            "cambio": "Aumentar margen entre CTAs a my-4",
+            "porque": "Previene CTAs apretados, mejorando precisión de taps en dispositivos variados",
+            "aplicar_en": [
+              "320-359",
+              "360-389",
+              "390-430"
+            ]
+          },
+          {
+            "id": "faq_titles",
+            "zona": "faq",
+            "impacto": "bajo",
+            "riesgo": "bajo",
+            "cambio": "Acortar títulos largos a máximo 2 líneas con ellipsis",
+            "porque": "Reduce competencia visual y mejora jerarquía en layouts colapsados",
+            "aplicar_en": [
+              "320-359"
+            ]
+          }
+        ],
+        "ajustes_a_evitar": [
+          "Rediseñar arquitectura completa",
+          "Eliminar elementos clave",
+          "Aumentar elementos innecesarios"
+        ],
+        "orden_recomendado": [
+          "header_cta",
+          "hero_text",
+          "section_pad",
+          "cta_space",
+          "faq_titles"
+        ],
+        "estimacion_mejora": {
+          "legibilidad": "alta",
+          "tap_targets": "alta",
+          "densidad_visual": "media",
+          "riesgo_de_overflow": "baja"
+        },
+        "dictamen_final": "La landing es funcional pero requiere ajustes menores en header y hero para optimizar tapping y densidad en móviles pequeños como iPhone SE, mejorando usabilidad sin alterar la estructura general y manteniendo confianza."
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"veredicto_general\": \"ok_con_ajustes\",\n  \"compatibilidad_mobile_actual\": {\n    \"small_320_359\": \"baja\",\n    \"medium_360_389\": \"media\",\n    \"large_390_430\": \"alta\"\n  },\n  \"top_5_ajustes\": [\n    {\n      \"id\": \"header_opt\",\n      \"zona\": \"header\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Ajustar `max-w` de CTA y `font-size` interno en header móvil para 320-359px. Revisar `max-w` del wordmark para evitar colisiones.\",\n      \"porque\": \"Garantiza que el header no se sienta apretado, mejora la legibilidad de la CTA y previene overflow en los viewports más pequeños.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"hero_densidad\",\n      \"zona\": \"hero\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir `font-size` del `h1` del hero a un valor como `1.8rem` o `2rem` para 320-359px. Optimizar paddings y sombras de tarjetas para reducir densidad visual.\",\n      \"porque\": \"Mejora la legibilidad del título principal en pantallas pequeñas y reduce la sensación de agobio visual en el primer impacto.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"espaciado_copy\",\n      \"zona\": \"lectura\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Reducir `padding-y` en secciones con contenido apilado para 320-359px. Revisar y condensar copy largo en párrafos clave para mejorar la escaneabilidad.\",\n      \"porque\": \"Disminuye la longitud percibida de la página, facilita la lectura en pantallas pequeñas y reduce la necesidad de scroll excesivo.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\"]\n    },\n    {\n      \"id\": \"targets_tactiles\",\n      \"zona\": \"privacidad|boveda|copiloto|como_funciona|expediente|faq|pricing\",\n      \"impacto\": \"medio\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Asegurar que todos los elementos interactivos (botones, chips, pills) tengan un tamaño mínimo de 44x44px para facilitar la interacción táctil.\",\n      \"porque\": \"Mejora la usabilidad en dispositivos móviles, reduciendo errores de toque y frustración del usuario, especialmente en pantallas pequeñas.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\", \"390-430\"]\n    },\n    {\n      \"id\": \"jerarquia_ctas\",\n      \"zona\": \"general\",\n      \"impacto\": \"alto\",\n      \"riesgo\": \"bajo\",\n      \"cambio\": \"Revisar la jerarquía de títulos (`h2`, `h3`) para asegurar que el tamaño y peso visual guíen la lectura. Aumentar el espaciado entre CTAs primarias y secundarias.\",\n      \"porque\": \"Clarifica el flujo de información, hace que los puntos clave sean más fáciles de identificar y previene toques accidentales en CTAs adyacentes.\",\n      \"aplicar_en\": [\"320-359\", \"360-389\", \"390-430\"]\n    }\n  ],\n  \"ajustes_a_evitar\": [\n    \"Rediseño completo de la arquitectura de la página.\",\n    \"Eliminación de secciones clave o funcionalidades.\",\n    \"Cambios drásticos en la identidad visual (colores, tipografía base).\"\n  ],\n  \"orden_recomendado\": [\n    \"header_opt\",\n    \"hero_densidad\",\n    \"espaciado_copy\",\n    \"jerarquia_ctas\",\n    \"targets_tactiles\"\n  ],\n  \"estimacion_mejora\": {\n    \"legibilidad\": \"alta\",\n    \"tap_targets\": \"alta\",\n    \"densidad_visual\": \"alta\",\n    \"riesgo_de_overflow\": \"baja\"\n  },\n  \"dictamen_final\": \"La landing es funcional pero presenta riesgos de densidad y usabilidad en móviles pequeños. Los ajustes propuestos, de bajo riesgo, mejorarán significativamente la legibilidad, la interacción táctil y la percepción de longitud. Priorizar la optimización del header y hero, junto con la reducción de espaciado y la mejora de la jerarquía visual, asegurará una experiencia más robusta y confiable en todo el espectro móvil, especialmente en 320-359px, sin alterar la arquitectura.\"\n}",
+      "parsed": {
+        "veredicto_general": "ok_con_ajustes",
+        "compatibilidad_mobile_actual": {
+          "small_320_359": "baja",
+          "medium_360_389": "media",
+          "large_390_430": "alta"
+        },
+        "top_5_ajustes": [
+          {
+            "id": "header_opt",
+            "zona": "header",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Ajustar `max-w` de CTA y `font-size` interno en header móvil para 320-359px. Revisar `max-w` del wordmark para evitar colisiones.",
+            "porque": "Garantiza que el header no se sienta apretado, mejora la legibilidad de la CTA y previene overflow en los viewports más pequeños.",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "hero_densidad",
+            "zona": "hero",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Reducir `font-size` del `h1` del hero a un valor como `1.8rem` o `2rem` para 320-359px. Optimizar paddings y sombras de tarjetas para reducir densidad visual.",
+            "porque": "Mejora la legibilidad del título principal en pantallas pequeñas y reduce la sensación de agobio visual en el primer impacto.",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "espaciado_copy",
+            "zona": "lectura",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Reducir `padding-y` en secciones con contenido apilado para 320-359px. Revisar y condensar copy largo en párrafos clave para mejorar la escaneabilidad.",
+            "porque": "Disminuye la longitud percibida de la página, facilita la lectura en pantallas pequeñas y reduce la necesidad de scroll excesivo.",
+            "aplicar_en": [
+              "320-359",
+              "360-389"
+            ]
+          },
+          {
+            "id": "targets_tactiles",
+            "zona": "privacidad|boveda|copiloto|como_funciona|expediente|faq|pricing",
+            "impacto": "medio",
+            "riesgo": "bajo",
+            "cambio": "Asegurar que todos los elementos interactivos (botones, chips, pills) tengan un tamaño mínimo de 44x44px para facilitar la interacción táctil.",
+            "porque": "Mejora la usabilidad en dispositivos móviles, reduciendo errores de toque y frustración del usuario, especialmente en pantallas pequeñas.",
+            "aplicar_en": [
+              "320-359",
+              "360-389",
+              "390-430"
+            ]
+          },
+          {
+            "id": "jerarquia_ctas",
+            "zona": "general",
+            "impacto": "alto",
+            "riesgo": "bajo",
+            "cambio": "Revisar la jerarquía de títulos (`h2`, `h3`) para asegurar que el tamaño y peso visual guíen la lectura. Aumentar el espaciado entre CTAs primarias y secundarias.",
+            "porque": "Clarifica el flujo de información, hace que los puntos clave sean más fáciles de identificar y previene toques accidentales en CTAs adyacentes.",
+            "aplicar_en": [
+              "320-359",
+              "360-389",
+              "390-430"
+            ]
+          }
+        ],
+        "ajustes_a_evitar": [
+          "Rediseño completo de la arquitectura de la página.",
+          "Eliminación de secciones clave o funcionalidades.",
+          "Cambios drásticos en la identidad visual (colores, tipografía base)."
+        ],
+        "orden_recomendado": [
+          "header_opt",
+          "hero_densidad",
+          "espaciado_copy",
+          "jerarquia_ctas",
+          "targets_tactiles"
+        ],
+        "estimacion_mejora": {
+          "legibilidad": "alta",
+          "tap_targets": "alta",
+          "densidad_visual": "alta",
+          "riesgo_de_overflow": "baja"
+        },
+        "dictamen_final": "La landing es funcional pero presenta riesgos de densidad y usabilidad en móviles pequeños. Los ajustes propuestos, de bajo riesgo, mejorarán significativamente la legibilidad, la interacción táctil y la percepción de longitud. Priorizar la optimización del header y hero, junto con la reducción de espaciado y la mejora de la jerarquía visual, asegurará una experiencia más robusta y confiable en todo el espectro móvil, especialmente en 320-359px, sin alterar la arquitectura."
+      }
+    }
+  },
+  "summary": {
+    "parsed_providers": [
+      "openai",
+      "xai",
+      "gemini"
+    ],
+    "compatibilidad_por_provider": {
+      "openai": {
+        "small_320_359": "media",
+        "medium_360_389": "alta",
+        "large_390_430": "alta"
+      },
+      "xai": {
+        "small_320_359": "baja",
+        "medium_360_389": "media",
+        "large_390_430": "alta"
+      },
+      "gemini": {
+        "small_320_359": "baja",
+        "medium_360_389": "media",
+        "large_390_430": "alta"
+      }
+    },
+    "consenso_orden_recomendado": [
+      "cta_header_width",
+      "hero_text_scaling",
+      "padding_secciones",
+      "espaciado_ctas_pricing",
+      "limitar_titulos_largos",
+      "header_cta",
+      "hero_text",
+      "section_pad",
+      "cta_space",
+      "faq_titles",
+      "header_opt",
+      "hero_densidad",
+      "espaciado_copy",
+      "jerarquia_ctas",
+      "targets_tactiles"
+    ],
+    "ajustes_considerados": [
+      "cta_header_width",
+      "hero_text_scaling",
+      "padding_secciones",
+      "espaciado_ctas_pricing",
+      "limitar_titulos_largos",
+      "header_cta",
+      "hero_text",
+      "section_pad",
+      "cta_space",
+      "faq_titles",
+      "header_opt",
+      "hero_densidad",
+      "espaciado_copy",
+      "targets_tactiles",
+      "jerarquia_ctas"
+    ]
+  }
+}
