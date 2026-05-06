@@ -24,6 +24,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('tabLabel: "Revisar primero"');
     expect(source).toContain("Sube una foto o PDF y revisa tu pago");
     expect(source).toContain("Tu recibo puede revelar señales raras.");
+    expect(source).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
     expect(source).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
     expect(source).toContain("Revisión urgente de nómina");
@@ -63,6 +64,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("audipatron_hero_paid_variant_activated");
     expect(source).toContain('new URLSearchParams(window.location.search).get("hero_variant")');
     expect(source).toContain("short_paid_campaign");
+    expect(source).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Guardar solo si te sirve.");

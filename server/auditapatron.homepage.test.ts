@@ -14,6 +14,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(pricingSource).toContain("AuditaPatron te deja entrar sin tarjeta, revisar tu primer contexto y decidir después si te conviene activar más profundidad o un entregable puntual.");
     expect(homeSource).toContain("Tu recibo puede revelar señales raras.");
     expect(homeSource).toContain("Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.");
+    expect(homeSource).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
     expect(homeSource).toContain("Empezar auditoría gratis");
     expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
@@ -25,6 +26,7 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Detecta señales y te las explica claro");
     expect(homeSource).toContain("Guárdalo en tu bóveda y sigue con más contexto");
     expect(homeSource).toContain("Empezar auditoría gratis");
+    expect(homeSource).toContain("Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.");
     expect(homeSource).toContain("Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");

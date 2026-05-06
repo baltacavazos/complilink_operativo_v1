@@ -1,0 +1,59 @@
+{
+  "inputs": {
+    "screenshot_path": "/home/ubuntu/screenshots/3000-ifwslt4380ij879_2026-05-06_00-12-05_6093.webp",
+    "screenshot_cdn_url": "https://files.manuscdn.com/user_upload_by_module/session_file/310519663473809458/VKMrchzdLZuAgwEk.webp"
+  },
+  "models": {
+    "openai": {
+      "status": "ok",
+      "response": {
+        "clarity_score": 3,
+        "understands_purpose_quickly": false,
+        "current_clarity_verdict": "Se entiende que es para revisar recibos y pagos, pero términos como 'CFDI' y 'señales raras' pueden confundir a alguien sin experiencia.",
+        "microdescription_needed": true,
+        "why": "El usuario común puede no saber qué es un CFDI ni qué significa 'señales raras' en este contexto. Falta una explicación sencilla y directa del beneficio.",
+        "confusing_terms": [
+          "CFDI",
+          "señales raras",
+          "diferencia entre recibo y CFDI"
+        ],
+        "best_action": "add_microdescription",
+        "proposed_microdescription": "Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.",
+        "confidence": "high"
+      }
+    },
+    "grok": {
+      "status": "ok",
+      "response": {
+        "clarity_score": 5,
+        "understands_purpose_quickly": false,
+        "current_clarity_verdict": "Algo confuso al principio",
+        "microdescription_needed": true,
+        "why": "En unos segundos veo que es para subir un recibo y revisar pagos, pero 'señales raras' y CFDI suenan raros, no entiendo rápido si es para checar errores en la nómina o qué exactamente.",
+        "confusing_terms": [
+          "señales raras",
+          "CFDI"
+        ],
+        "best_action": "add_microdescription",
+        "proposed_microdescription": "Herramienta gratis para detectar errores en tu recibo de nómina y CFDI.",
+        "confidence": "high"
+      }
+    },
+    "gemini": {
+      "status": "ok",
+      "response": {
+        "clarity_score": 85,
+        "understands_purpose_quickly": true,
+        "current_clarity_verdict": "Se entiende rápido que es para revisar si te están pagando bien o si hay errores en tu recibo de nómina. Lo del 'CFDI' no sé qué sea, pero lo demás sí lo entiendo.",
+        "microdescription_needed": false,
+        "why": "El título y la línea de apoyo dicen claramente que puedo subir mi recibo para ver si hay algo raro en mi pago o mis descuentos, y que es gratis. Eso es lo que me importa.",
+        "confusing_terms": [
+          "CFDI"
+        ],
+        "best_action": "keep_as_is",
+        "proposed_microdescription": "",
+        "confidence": "high"
+      }
+    }
+  }
+}

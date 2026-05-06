@@ -351,6 +351,7 @@ const heroCopyVariants = {
     titleAccent: "puede tener señales raras.",
     headline: "Tu recibo puede revelar señales raras.",
     supportLine: "Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
+    microDescription: "Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.",
     body: "Empieza con una foto o PDF. No necesitas reunir todo.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
@@ -363,6 +364,7 @@ const heroCopyVariants = {
     titleAccent: "puede tener señales raras.",
     headline: "Tu recibo puede revelar señales raras.",
     supportLine: "Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
+    microDescription: "Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.",
     body:
       "Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.",
     ctaPrimary: "Empezar auditoría gratis",
@@ -376,6 +378,7 @@ const heroCopyVariants = {
     titleAccent: "sin abrir una cuenta.",
     headline: "Revisa tu recibo hoy sin abrir una cuenta.",
     supportLine: "Sube una foto o PDF y recibe una primera lectura gratis.",
+    microDescription: "Revisa si tu recibo de nómina tiene errores o diferencias en tu pago.",
     body: "Si ves una señal útil, después decides si sigues completando tu expediente.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
@@ -1059,6 +1062,13 @@ function HeroSection() {
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {activeHeroVariant.supportLine}
+            </p>
+
+            <p
+              className="motion-enter-soft mt-2 max-w-xl text-sm font-medium leading-6 text-slate-800 max-[359px]:text-[0.9rem] max-[359px]:leading-6 sm:text-[0.98rem] sm:leading-7"
+              style={{ ["--motion-delay" as string]: "200ms" }}
+            >
+              {activeHeroVariant.microDescription}
             </p>
 
             <p

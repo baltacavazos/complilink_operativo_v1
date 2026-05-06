@@ -1610,3 +1610,7 @@
 - [x] Activar una variante corta del hero para campañas pagadas mediante ?hero_variant=short_paid_campaign sin afectar el hero por defecto.
 - [x] Actualizar pruebas contractuales y de UX de Home para cubrir placement y la activación de la variante corta del hero.
 - [x] Revalidar la ronda con Vitest focalizado, estado del proyecto y checkpoint final.
+- [x] Evaluar con consenso multi-IA si la landing deja claro en segundos para un trabajador común para qué sirve AuditaPatron.
+- [x] Determinar si conviene agregar una microdescripción breve del producto y, en su caso, proponer el mejor texto.
+- [x] Incorporar una microdescripción breve del producto en el hero para aclarar en segundos que AuditaPatron revisa recibos y detecta diferencias en el pago.
+- [x] Ajustar y revalidar las pruebas de copy o contratos afectados por la nueva microdescripción del hero.
