@@ -1,0 +1,88 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_landing_length_tri_ai_prompt.md",
+  "image_path": "/home/ubuntu/upload/pasted_file_h5tbxv_image.webp",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "status": 200,
+      "raw": "{\n  \"overall_verdict\": \"borderline\",\n  \"confidence\": \"high\",\n  \"first_impression\": \"La landing presenta una longitud considerable que puede generar fatiga de scroll en un visitante móvil frío, aunque la estructura mantiene una relación lógica entre explicación, prueba social, FAQ y CTA.\",\n  \"is_length_hurting_conversion\": true,\n  \"why\": \"Hay bloques repetitivos y algunos textos que podrían condensarse para evitar la sensación de exceso de contenido. La longitud parece justificada en parte por la necesidad de generar confianza y resolver dudas, pero se extiende más allá de lo necesario, lo que puede afectar la retención y la conversión.\",\n  \"likely_overextended_zones\": [\n    \"Bloques de preguntas frecuentes (FAQ) con respuestas largas y repetitivas\",\n    \"Secciones de testimonios o pruebas sociales que podrían fusionarse\",\n    \"Explicaciones detalladas que se repiten en diferentes formatos\",\n    \"Bloques de CTA múltiples con textos similares\"\n  ],\n  \"recommended_action\": \"trim_20_35_percent\",\n  \"best_single_move\": \"Reducir y fusionar las secciones de FAQ y testimonios para condensar la información clave y eliminar repeticiones, manteniendo solo las preguntas y testimonios más relevantes y persuasivos.\"\n}",
+      "parsed": {
+        "overall_verdict": "borderline",
+        "confidence": "high",
+        "first_impression": "La landing presenta una longitud considerable que puede generar fatiga de scroll en un visitante móvil frío, aunque la estructura mantiene una relación lógica entre explicación, prueba social, FAQ y CTA.",
+        "is_length_hurting_conversion": true,
+        "why": "Hay bloques repetitivos y algunos textos que podrían condensarse para evitar la sensación de exceso de contenido. La longitud parece justificada en parte por la necesidad de generar confianza y resolver dudas, pero se extiende más allá de lo necesario, lo que puede afectar la retención y la conversión.",
+        "likely_overextended_zones": [
+          "Bloques de preguntas frecuentes (FAQ) con respuestas largas y repetitivas",
+          "Secciones de testimonios o pruebas sociales que podrían fusionarse",
+          "Explicaciones detalladas que se repiten en diferentes formatos",
+          "Bloques de CTA múltiples con textos similares"
+        ],
+        "recommended_action": "trim_20_35_percent",
+        "best_single_move": "Reducir y fusionar las secciones de FAQ y testimonios para condensar la información clave y eliminar repeticiones, manteniendo solo las preguntas y testimonios más relevantes y persuasivos."
+      }
+    },
+    "xai": {
+      "provider": "xai",
+      "model": "grok-4",
+      "status": 200,
+      "raw": "{\n  \"overall_verdict\": \"too_long\",\n  \"confidence\": \"high\",\n  \"first_impression\": \"Overwhelming scroll length that may deter cold visitors from engaging fully.\",\n  \"is_length_hurting_conversion\": true,\n  \"why\": \"The page induces significant scroll fatigue on first visit due to numerous stacked sections with repetitive list-like structures and text-heavy blocks; while some length builds trust through explanations and proofs, it exceeds necessity by including overextended FAQs and redundant visual elements, disrupting the balance with CTAs.\",\n  \"likely_overextended_zones\": [\"accordion-style FAQ blocks\", \"multiple list-based feature sections\", \"extended testimonial or proof areas\", \"bottom pricing or plan details\"],\n  \"recommended_action\": \"trim_20_35_percent\",\n  \"best_single_move\": \"Consolidate the FAQ and feature lists into a single, shorter interactive section to reduce repetition and scroll depth.\"\n}",
+      "parsed": {
+        "overall_verdict": "too_long",
+        "confidence": "high",
+        "first_impression": "Overwhelming scroll length that may deter cold visitors from engaging fully.",
+        "is_length_hurting_conversion": true,
+        "why": "The page induces significant scroll fatigue on first visit due to numerous stacked sections with repetitive list-like structures and text-heavy blocks; while some length builds trust through explanations and proofs, it exceeds necessity by including overextended FAQs and redundant visual elements, disrupting the balance with CTAs.",
+        "likely_overextended_zones": [
+          "accordion-style FAQ blocks",
+          "multiple list-based feature sections",
+          "extended testimonial or proof areas",
+          "bottom pricing or plan details"
+        ],
+        "recommended_action": "trim_20_35_percent",
+        "best_single_move": "Consolidate the FAQ and feature lists into a single, shorter interactive section to reduce repetition and scroll depth."
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "status": 200,
+      "raw": "{\n  \"overall_verdict\": \"too_long\",\n  \"confidence\": \"high\",\n  \"first_impression\": \"La página requiere un scroll excesivo para un visitante frío, generando fatiga antes de llegar a la conversión principal. Hay mucha información densa.\",\n  \"is_length_hurting_conversion\": true,\n  \"why\": \"La cantidad de contenido es abrumadora para una primera visita móvil. Aunque busca construir confianza, la repetición de mensajes y la extensión de secciones como las FAQ y la justificación del servicio, probablemente causan abandono antes de que el usuario llegue al formulario de conversión final.\",\n  \"likely_overextended_zones\": [\n    \"La sección 'Haz de tu nómina a prueba de errores' (o similar, después de las FAQ), que parece reiterar beneficios ya mencionados.\",\n    \"La sección de 'Preguntas frecuentes' es excesivamente larga y podría ser más concisa o interactiva.\",\n    \"Los bloques iniciales de explicación de problemas y beneficios ('Errores comunes en recibos', 'Beneficios de auditar tu recibo') podrían fusionarse o condensarse.\"\n  ],\n  \"recommended_action\": \"trim_20_35_percent\",\n  \"best_single_move\": \"Eliminar o condensar drásticamente la sección de justificación del servicio que aparece después de las FAQ, y reducir la visibilidad de las preguntas frecuentes.\"\n}",
+      "parsed": {
+        "overall_verdict": "too_long",
+        "confidence": "high",
+        "first_impression": "La página requiere un scroll excesivo para un visitante frío, generando fatiga antes de llegar a la conversión principal. Hay mucha información densa.",
+        "is_length_hurting_conversion": true,
+        "why": "La cantidad de contenido es abrumadora para una primera visita móvil. Aunque busca construir confianza, la repetición de mensajes y la extensión de secciones como las FAQ y la justificación del servicio, probablemente causan abandono antes de que el usuario llegue al formulario de conversión final.",
+        "likely_overextended_zones": [
+          "La sección 'Haz de tu nómina a prueba de errores' (o similar, después de las FAQ), que parece reiterar beneficios ya mencionados.",
+          "La sección de 'Preguntas frecuentes' es excesivamente larga y podría ser más concisa o interactiva.",
+          "Los bloques iniciales de explicación de problemas y beneficios ('Errores comunes en recibos', 'Beneficios de auditar tu recibo') podrían fusionarse o condensarse."
+        ],
+        "recommended_action": "trim_20_35_percent",
+        "best_single_move": "Eliminar o condensar drásticamente la sección de justificación del servicio que aparece después de las FAQ, y reducir la visibilidad de las preguntas frecuentes."
+      }
+    }
+  },
+  "summary": {
+    "providers_with_valid_json": [
+      "openai",
+      "xai",
+      "gemini"
+    ],
+    "verdicts": {
+      "openai": "borderline",
+      "xai": "too_long",
+      "gemini": "too_long"
+    },
+    "recommended_actions": {
+      "openai": "trim_20_35_percent",
+      "xai": "trim_20_35_percent",
+      "gemini": "trim_20_35_percent"
+    },
+    "hurting_conversion_flags": {
+      "openai": true,
+      "xai": true,
+      "gemini": true
+    }
+  }
+}

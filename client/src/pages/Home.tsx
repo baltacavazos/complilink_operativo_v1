@@ -1754,21 +1754,21 @@ function HeliosFirstEntrySection() {
 
 function QuickTrustSection() {
   return (
-    <section id="privacidad" className="border-y border-teal-100/80 bg-[#dbeeee] py-8 sm:bg-[#e6f2f1] sm:py-10">
+    <section id="privacidad" className="bg-[#e7f2f0] py-6 sm:bg-[#eef6f5] sm:py-8">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid gap-5 rounded-[2rem] border border-teal-100 bg-white/94 p-5 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.32)] sm:p-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="grid gap-4 rounded-[1.7rem] border border-teal-100 bg-white/96 p-4 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.28)] sm:p-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
               Privacidad visible y humana
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.35rem]">
+            <h2 className="mt-3 text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.15rem]">
               Nadie de tu empresa puede ver lo que subes.
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
-              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Cumplimos LFPDPPP y reforzamos el resguardo con cifrado AES-256 y una capa de seguridad pensada con un nivel de cuidado comparable al de un servicio bancario digital para piezas sensibles dentro del servicio.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Reforzamos el resguardo con cifrado AES-256 y una capa de seguridad pensada con un nivel de cuidado comparable al de un servicio bancario digital para piezas sensibles dentro del servicio.
             </p>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
                 {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -1784,27 +1784,23 @@ function QuickTrustSection() {
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
-                title: "Tu control primero",
-                body: "Nada se integra al expediente hasta que ves el borrador y decides con calma si quieres guardarlo.",
-              },
-              {
-                title: "Borrado visible",
-                body: "Puedes borrar o pedir eliminación de tus documentos cuando lo necesites y mantener control sobre lo que decides conservar.",
+                title: "Tu control primero y Borrado visible",
+                body: "Nada se integra al expediente hasta que ves el borrador; además, puedes borrar o pedir eliminación cuando lo necesites.",
               },
               {
                 title: "Cifrado AES-256",
-                body: "Reforzamos el resguardo de piezas sensibles con cifrado AES-256 y una capa de seguridad pensada con nivel de cuidado bancario, además de una ruta pública para que leas el aviso completo cuando quieras.",
+                body: "Tu información viaja y se resguarda con una capa seria de protección, además de una ruta pública para revisar el aviso completo cuando quieras.",
               },
             ].map((item) => (
               <article
                 key={item.title}
-                className="rounded-[1.3rem] border border-slate-200 bg-slate-50/90 px-4 py-4 text-sm text-slate-700 shadow-sm"
+                className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm"
               >
                 <p className="font-semibold text-slate-950">{item.title}</p>
-                <p className="mt-2 leading-6">{item.body}</p>
+                <p className="mt-1.5 leading-6">{item.body}</p>
               </article>
             ))}
           </div>
@@ -1834,13 +1830,13 @@ function ConfidenceMagicSection() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="mt-7 grid gap-3 lg:grid-cols-2">
             {[
               {
                 title: "Orden en un solo lugar",
                 description:
                   "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar una bóveda laboral fácil de consultar.",
-                detail: "Tú decides qué conservar, qué revisar después y qué quieres tener disponible cuando necesites respaldo.",
+                detail: "Tú decides qué conservar y qué quieres tener disponible cuando necesites respaldo.",
                 icon: Upload,
               },
               {
@@ -1850,36 +1846,28 @@ function ConfidenceMagicSection() {
                 detail: "Así puede decirte qué coincide, qué falta y qué conviene contrastar antes de firmar o reclamar algo.",
                 icon: FileSearch,
               },
-              {
-                title: "Asesor con tus datos reales",
-                description:
-                  "Puedes preguntar qué significa un descuento, qué documento te falta o si tu nómina coincide con tu CFDI.",
-                detail: "La orientación deja de ser abstracta porque empieza a apoyarse en tu propia bóveda laboral.",
-                icon: ShieldCheck,
-              },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <article
                   key={item.title}
-                  className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)]"
+                  className="rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.28)]"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
                     <Icon className="h-5 w-5" strokeWidth={1.8} />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{item.description}</p>
-                  <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
-                    {item.detail}
-                  </div>
+                  <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">{item.detail}</p>
                 </article>
               );
             })}
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-            <div className="max-w-2xl text-sm leading-7 text-teal-950">
-              El orden viene después del primer hallazgo. Empieza con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.
+          <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-teal-100 bg-teal-50/85 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
+            <div className="text-sm leading-6 text-teal-950">
+              <p className="font-semibold">Tu primer hallazgo también puede convertirse en tu archivo laboral.</p>
+              <p className="mt-1">El orden llega después del primer hallazgo: empiezas con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.</p>
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
               <Button
@@ -1889,20 +1877,10 @@ function ConfidenceMagicSection() {
                 {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
-              <p className="text-sm text-teal-900/80">
+              <p className="text-xs leading-5 text-teal-900/80">
                 Cuando quieras continuar o recuperar tu avance, entras con tu correo.
               </p>
             </div>
-          </div>
-
-          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white/80 px-4 py-4 text-sm leading-6 text-slate-700">
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
-              <Lock className="h-4 w-4" strokeWidth={1.8} />
-              Tú mantienes el control
-            </div>
-            <p className="mt-3">
-              Nadie de tu empresa puede ver lo que subes. Tú decides qué guardar y puedes pedir eliminación cuando lo necesites.
-            </p>
           </div>
         </div>
       </div>
@@ -2008,7 +1986,7 @@ function CopilotPreviewSection() {
 
 function HowItWorksSection() {
   return (
-    <section id="como-funciona" className="bg-[#f2f5f7] py-14 sm:py-16">
+    <section id="como-funciona" className="bg-[#f2f5f7] py-12 sm:py-14">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
@@ -2017,27 +1995,27 @@ function HowItWorksSection() {
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Entiende tu situación sin complicarte.
           </h2>
-          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Empiezas con un documento, recibes una auditoría útil y fortaleces tu expediente paso a paso, sin lenguaje complicado ni fricción innecesaria.
+          <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+            Sube, entiende la señal y decide si quieres guardarla.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 grid gap-3 md:grid-cols-3">
           {[
             {
               number: "01",
               title: "Sube el primer documento útil",
-              description: "Puedes empezar con un recibo, CFDI, contrato u otro documento laboral útil sin preparar nada antes.",
+              description: "Empieza con un recibo, CFDI o contrato sin preparar nada antes.",
             },
             {
               number: "02",
               title: "Detecta señales y te las explica claro",
-              description: "AuditaPatron detecta señales, separa lo confirmado de lo estimado y te dice qué conviene revisar primero.",
+              description: "Detecta señales y te dice qué conviene revisar primero.",
             },
             {
               number: "03",
               title: "Guárdalo en tu bóveda y sigue con más contexto",
-              description: "Si te sirve el hallazgo, puedes guardarlo en tu bóveda laboral privada, seguir subiendo documentos y preguntarle al asesor con más contexto.",
+              description: "Si te sirve, lo guardas en tu Bóveda laboral privada y después sumas más contexto.",
             },
           ].map((item) => (
             <article
@@ -2610,8 +2588,8 @@ function FAQSection() {
   const activeRecommendation = prediagnosticRecommendations[selectedFaq ?? "para-mi"] ?? prediagnosticRecommendations["para-mi"];
 
   return (
-    <section id="preguntas" className="bg-[#f7fafb] py-14 sm:py-16">
-      <div className="container grid gap-8 lg:grid-cols-[0.85fr_1fr]">
+    <section id="preguntas" className="bg-[#f7fafb] py-12 sm:py-14">
+      <div className="container max-w-5xl grid gap-5 lg:grid-cols-[0.88fr_1fr]">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
             Guía rápida para empezar
@@ -2619,18 +2597,15 @@ function FAQSection() {
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Empieza por la duda que hoy más te frena.
           </h2>
-          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Si todavía no quieres subir un archivo, primero elige tu duda principal y te sugerimos el primer documento que más suele ayudarte a ganar contexto con baja fricción.
+          <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+            Elige tu caso principal y te sugerimos el documento que más suele abrir contexto con baja fricción.
           </p>
 
-          <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-[0_20px_60px_-52px_rgba(15,23,42,0.34)] sm:p-5">
+          <div className="mt-5 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)]">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Mini diagnóstico inicial
             </p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Elige lo que más se parece a tu caso y te mostramos primero la respuesta útil junto con el documento que mejor suele abrir contexto.
-            </p>
-            <div className="mt-4 space-y-3">
+            <div className="mt-3 space-y-2.5">
               {guidedFaqOptions.map((option) => {
                 const isActive = selectedFaq === option.id;
 
@@ -2639,9 +2614,9 @@ function FAQSection() {
                     key={option.id}
                     type="button"
                     onClick={() => setSelectedFaq(option.id)}
-                    className={`w-full rounded-[1.2rem] border px-4 py-3 text-left transition ${
+                    className={`w-full rounded-[1.05rem] border px-4 py-3 text-left transition ${
                       isActive
-                        ? "border-teal-300 bg-teal-50 shadow-[0_18px_40px_-34px_rgba(13,148,136,0.42)]"
+                        ? "border-teal-300 bg-teal-50 shadow-[0_16px_34px_-30px_rgba(13,148,136,0.34)]"
                         : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
                     }`}
                   >
@@ -2657,30 +2632,30 @@ function FAQSection() {
               })}
             </div>
 
-            <div className="mt-4 rounded-[1.35rem] border border-teal-100 bg-teal-50/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <div className="mt-3 rounded-[1.2rem] border border-teal-100 bg-teal-50/75 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeRecommendation.badge}</p>
               <p className="mt-2 text-base font-semibold leading-7 text-slate-950">{activeRecommendation.document}</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">{activeRecommendation.reason}</p>
-              <p className="mt-3 text-sm leading-6 text-teal-900">{activeRecommendation.nextStep}</p>
+              <p className="mt-2 text-sm leading-6 text-teal-900">{activeRecommendation.nextStep}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 sm:p-6">
-          <p className="mb-4 text-sm leading-6 text-slate-600">
-            Empieza por tu duda principal y revisa primero la respuesta más útil para ti. La recomendación del documento cambia según lo que elijas.
+        <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Preguntas frecuentes clave
           </p>
-          <Accordion type="single" collapsible value={selectedFaq} onValueChange={setSelectedFaq} className="space-y-3">
-            {faqs.map((item) => (
+          <Accordion type="single" collapsible value={selectedFaq} onValueChange={setSelectedFaq} className="space-y-2.5">
+            {faqs.slice(0, 4).map((item) => (
               <AccordionItem
                 key={item.id}
                 value={item.id}
-                className="rounded-[1.3rem] border border-slate-200 bg-white px-5"
+                className="rounded-[1.15rem] border border-slate-200 bg-white px-4"
               >
-                <AccordionTrigger className="text-left text-base font-semibold text-slate-950 hover:no-underline">
+                <AccordionTrigger className="text-left text-sm font-semibold text-slate-950 hover:no-underline sm:text-base">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="pb-5 text-sm leading-7 text-slate-600">
+                <AccordionContent className="pb-4 text-sm leading-6 text-slate-600">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -2696,7 +2671,7 @@ function FinalCtaSection() {
   const pricingExperience = getAuditapatronPricingExperience(0);
 
   return (
-    <section className="bg-[#e8f1f0] py-14 sm:bg-[#f3f7f7] sm:py-16">
+    <section className="bg-[#e8f1f0] py-12 sm:bg-[#f3f7f7] sm:py-14">
       <div className="container">
         <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] sm:px-10 sm:py-12">
           <div className="max-w-3xl">
@@ -2727,8 +2702,8 @@ function FinalCtaSection() {
               </Button>
             </div>
 
-            <div className="mt-8 grid gap-3 lg:grid-cols-3">
-              {pricingExperience.landing.principles.map((principle, index) => (
+            <div className="mt-6 grid gap-3 lg:grid-cols-2">
+              {pricingExperience.landing.principles.slice(0, 2).map((principle, index) => (
                 <article
                   key={principle}
                   className="rounded-[1.25rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
@@ -2803,7 +2778,6 @@ export default function Home() {
       <HeliosFirstEntrySection />
       <SectionDivider />
       <ConfidenceMagicSection />
-      <SectionDivider />
       <QuickTrustSection />
       <SectionDivider />
       <HowItWorksSection />

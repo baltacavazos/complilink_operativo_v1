@@ -1595,3 +1595,8 @@
 - [x] Actualizar la llave de Gemini y reejecutar el contraste tri-IA completo antes de aplicar los cambios finales de esta ronda
 - [x] Continuar esta ronda con consenso OpenAI + Grok mientras Gemini siga bloqueado por credencial inválida
 - [x] Micro-ronda final: reducir todavía más la altura visible del veredicto móvil en /auditar sin sacrificar claridad ni acción principal
+- [x] Auditar con ChatGPT, Grok y Gemini si la landing mobile de Auditapatrón se percibe demasiado larga y definir si conviene recortar, fusionar o reordenar secciones
+- [x] Proponer un recorte exacto, sección por sección, para acortar la landing mobile entre 20% y 35% sin perder claridad ni confianza
+- [x] Recortar la landing mobile preservando Hero + primera lectura y fusionando bloques redundantes de confianza
+- [x] Reducir la densidad de Cómo funciona y dejar una FAQ más corta orientada a conversión
+- [x] Validar con pruebas y checkpoint el nuevo corte corto de la landing

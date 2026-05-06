@@ -66,7 +66,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Modo CEO activo");
     expect(source).toContain('data-testid="home-ceo-header-toggle"');
     expect(source).toContain('baseLabel="la home privada"');
-    expect(source).toContain("El orden viene después del primer hallazgo. Empieza con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.");
+    expect(source).toContain("El orden llega después del primer hallazgo: empiezas con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.");
     expect(source).toContain("Guardas solo lo útil.");
     expect(source).toContain("Privacidad y control visibles.");
     expect(source).toContain("Si no sabes con qué empezar");
@@ -78,7 +78,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.");
     expect(source).toContain("posible diferencia entre recibo y CFDI");
     expect(source).toContain("SectionDivider");
-    expect(source).toContain('bg-[#dbeeee]');
+    expect(source).toContain('bg-[#e7f2f0]');
     expect(source).toContain('bg-[#eef6f5]');
     expect(source).toContain('bg-[#eaf5f3]');
     expect(source).not.toContain("<MobilePriorityPathSection />");
