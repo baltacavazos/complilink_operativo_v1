@@ -1,0 +1,199 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/tmp_cta_hero_tri_ai_prompt.md",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "raw": "{\n  \"tracking_decision\": {\n    \"recommended_approach\": \"Agregar un payload explícito y consistente en todos los CTAs principales diferenciando claramente 'top_cta' y 'final_cta', usando el helper goToAuditFlow con campos estandarizados.\",\n    \"why\": \"Permite mantener la estructura actual sin reescribir analítica, mejora la granularidad y limpieza de datos para comparar CTAs sin romper la experiencia ni la compatibilidad mobile.\",\n    \"event_strategy\": \"Usar el helper goToAuditFlow con payload que incluya un campo 'placement' con valores claros como 'header_top' y 'footer_final' para los CTAs principales, y extender esta lógica a otros CTAs importantes con etiquetas descriptivas.\",\n    \"payload_fields\": [\"source\", \"placement\", \"cta_label\"],\n    \"top_cta_key\": \"placement: 'header_top'\",\n    \"final_cta_key\": \"placement: 'footer_final'\",\n    \"other_ctas_to_label\": [\"placement: 'menu_mobile'\", \"placement: 'vault_section_primary'\", \"placement: 'home_mobile_priority_<id>'\"],\n    \"risk_level\": \"low\"\n  },\n  \"hero_short_variant_decision\": {\n    \"recommended_approach\": \"Implementar la variante corta del hero como una variante adicional controlada por un query param específico (ej. ?hero=short) para campañas pagadas, sin alterar la variante por defecto para tráfico orgánico/directo.\",\n    \"why\": \"Activar por query param es simple, transparente y fácil de probar sin afectar usuarios normales. Permite mantener la landing actual intacta y facilita medición y rollback rápido si es necesario.\",\n    \"activation_method\": \"Query param (ej. ?hero=short)\",\n    \"preserve_default_hero\": true,\n    \"copy_strategy\": \"Reducir líneas de texto y simplificar el mensaje para ser más directo y atractivo para tráfico frío, manteniendo consistencia de tono y CTA clara.\",\n    \"layout_strategy\": \"Mantener estructura responsive actual, solo acortar altura y contenido del hero, sin cambios disruptivos en diseño ni componentes para asegurar compatibilidad mobile.\",\n    \"risk_level\": \"low\"\n  },\n  \"implementation_order\": [\n    \"Estandarizar payloads en todos los CTAs principales para mejorar tracking\",\n    \"Desplegar tracking actualizado y validar datos\",\n    \"Implementar variante corta del hero controlada por query param\",\n    \"Monitorear comportamiento y métricas de ambas variantes\"\n  ],\n  \"do_now\": [\n    \"Actualizar todos los CTAs principales para usar goToAuditFlow con payload 'placement' explícito\",\n    \"Definir y documentar nomenclatura clara para payloads de tracking\",\n    \"Preparar variante corta del hero y configurar activación por query param\"\n  ],\n  \"avoid_now\": [\n    \"Reescribir o cambiar la lógica base del helper goToAuditFlow\",\n    \"Modificar la landing default para tráfico orgánico sin necesidad\",\n    \"Usar flags internas complejas o sistemas A/B testing para la variante corta inicialmente\"\n  ],\n  \"final_recommendation\": {\n    \"summary\": \"Mejorar tracking con payloads explícitos en CTAs para claridad y análisis sin reescrituras mayores, y lanzar variante corta del hero para campañas pagadas activada por query param para bajo riesgo y fácil control.\",\n    \"ship_tracking_now\": true,\n    \"ship_short_hero_now\": true,\n    \"confidence\": \"high\"\n  }\n}",
+      "parsed": {
+        "tracking_decision": {
+          "recommended_approach": "Agregar un payload explícito y consistente en todos los CTAs principales diferenciando claramente 'top_cta' y 'final_cta', usando el helper goToAuditFlow con campos estandarizados.",
+          "why": "Permite mantener la estructura actual sin reescribir analítica, mejora la granularidad y limpieza de datos para comparar CTAs sin romper la experiencia ni la compatibilidad mobile.",
+          "event_strategy": "Usar el helper goToAuditFlow con payload que incluya un campo 'placement' con valores claros como 'header_top' y 'footer_final' para los CTAs principales, y extender esta lógica a otros CTAs importantes con etiquetas descriptivas.",
+          "payload_fields": [
+            "source",
+            "placement",
+            "cta_label"
+          ],
+          "top_cta_key": "placement: 'header_top'",
+          "final_cta_key": "placement: 'footer_final'",
+          "other_ctas_to_label": [
+            "placement: 'menu_mobile'",
+            "placement: 'vault_section_primary'",
+            "placement: 'home_mobile_priority_<id>'"
+          ],
+          "risk_level": "low"
+        },
+        "hero_short_variant_decision": {
+          "recommended_approach": "Implementar la variante corta del hero como una variante adicional controlada por un query param específico (ej. ?hero=short) para campañas pagadas, sin alterar la variante por defecto para tráfico orgánico/directo.",
+          "why": "Activar por query param es simple, transparente y fácil de probar sin afectar usuarios normales. Permite mantener la landing actual intacta y facilita medición y rollback rápido si es necesario.",
+          "activation_method": "Query param (ej. ?hero=short)",
+          "preserve_default_hero": true,
+          "copy_strategy": "Reducir líneas de texto y simplificar el mensaje para ser más directo y atractivo para tráfico frío, manteniendo consistencia de tono y CTA clara.",
+          "layout_strategy": "Mantener estructura responsive actual, solo acortar altura y contenido del hero, sin cambios disruptivos en diseño ni componentes para asegurar compatibilidad mobile.",
+          "risk_level": "low"
+        },
+        "implementation_order": [
+          "Estandarizar payloads en todos los CTAs principales para mejorar tracking",
+          "Desplegar tracking actualizado y validar datos",
+          "Implementar variante corta del hero controlada por query param",
+          "Monitorear comportamiento y métricas de ambas variantes"
+        ],
+        "do_now": [
+          "Actualizar todos los CTAs principales para usar goToAuditFlow con payload 'placement' explícito",
+          "Definir y documentar nomenclatura clara para payloads de tracking",
+          "Preparar variante corta del hero y configurar activación por query param"
+        ],
+        "avoid_now": [
+          "Reescribir o cambiar la lógica base del helper goToAuditFlow",
+          "Modificar la landing default para tráfico orgánico sin necesidad",
+          "Usar flags internas complejas o sistemas A/B testing para la variante corta inicialmente"
+        ],
+        "final_recommendation": {
+          "summary": "Mejorar tracking con payloads explícitos en CTAs para claridad y análisis sin reescrituras mayores, y lanzar variante corta del hero para campañas pagadas activada por query param para bajo riesgo y fácil control.",
+          "ship_tracking_now": true,
+          "ship_short_hero_now": true,
+          "confidence": "high"
+        }
+      }
+    },
+    "xai": {
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "raw": "{\n  \"tracking_decision\": {\n    \"recommended_approach\": \"Modificar los onClick handlers de los CTAs existentes para incluir un simple payload que especifique el origen, utilizando el helper goToAuditFlow sin cambios mayores.\",\n    \"why\": \"Esto permite diferenciar el CTA superior del CTA final con precisión, mejorando la medición de conversión sin reescribir la analítica completa, manteniendo la compatibilidad y minimizando interrupciones.\",\n    \"event_strategy\": \"Agregar un campo 'placement' en el payload para cada CTA, manteniendo el uso de trackEvent y trackFunnelStep para un tracking consistente.\",\n    \"payload_fields\": [\"placement\", \"source\"],\n    \"top_cta_key\": \"header_cta\",\n    \"final_cta_key\": \"footer_cta\",\n    \"other_ctas_to_label\": [\"menu_cta\"],\n    \"risk_level\": \"low\"\n  },\n  \"hero_short_variant_decision\": {\n    \"recommended_approach\": \"Desarrollar una variante más corta del hero y activarla condicionalmente para campañas pagadas, preservando la versión actual para otro tráfico.\",\n    \"why\": \"Esto optimiza el hero para tráfico frío pagado con menos líneas y un enfoque directo, sin alterar la experiencia general, reduciendo el riesgo de impacto en métricas orgánicas.\",\n    \"activation_method\": \"query_param\",\n    \"preserve_default_hero\": true,\n    \"copy_strategy\": \"Reducir el texto a un titular principal, un beneficio clave y un CTA directo, eliminando elementos no esenciales para mantener la atención en tráfico pagado.\",\n    \"layout_strategy\": \"Compactar el diseño eliminando líneas innecesarias antes del CTA, asegurando compatibilidad con pantallas móviles mediante un enfoque responsive simple.\",\n    \"risk_level\": \"low\"\n  },\n  \"implementation_order\": [\n    \"Implementar mejoras en el tracking de CTAs\",\n    \"Desarrollar y probar la variante corta del hero\"\n  ],\n  \"do_now\": [\n    \"Actualizar los onClick de los CTAs principales para incluir payload como { placement: 'header_cta' } y { placement: 'footer_cta' }\",\n    \"Crear la variante corta del hero en el código y definir su activación vía query param, como ?hero_variant=short\"\n  ],\n  \"avoid_now\": [\n    \"Reescribir toda la analítica o el helper goToAuditFlow\",\n    \"Activar la variante corta para todo el tráfico sin control\"\n  ],\n  \"final_recommendation\": {\n    \"summary\": \"Prioriza el tracking para obtener datos precisos rápidamente, luego introduce la variante del hero para campañas, asegurando cambios de bajo riesgo y alta trazabilidad.\",\n    \"ship_tracking_now\": true,\n    \"ship_short_hero_now\": true,\n    \"confidence\": \"high\"\n  }\n}",
+      "parsed": {
+        "tracking_decision": {
+          "recommended_approach": "Modificar los onClick handlers de los CTAs existentes para incluir un simple payload que especifique el origen, utilizando el helper goToAuditFlow sin cambios mayores.",
+          "why": "Esto permite diferenciar el CTA superior del CTA final con precisión, mejorando la medición de conversión sin reescribir la analítica completa, manteniendo la compatibilidad y minimizando interrupciones.",
+          "event_strategy": "Agregar un campo 'placement' en el payload para cada CTA, manteniendo el uso de trackEvent y trackFunnelStep para un tracking consistente.",
+          "payload_fields": [
+            "placement",
+            "source"
+          ],
+          "top_cta_key": "header_cta",
+          "final_cta_key": "footer_cta",
+          "other_ctas_to_label": [
+            "menu_cta"
+          ],
+          "risk_level": "low"
+        },
+        "hero_short_variant_decision": {
+          "recommended_approach": "Desarrollar una variante más corta del hero y activarla condicionalmente para campañas pagadas, preservando la versión actual para otro tráfico.",
+          "why": "Esto optimiza el hero para tráfico frío pagado con menos líneas y un enfoque directo, sin alterar la experiencia general, reduciendo el riesgo de impacto en métricas orgánicas.",
+          "activation_method": "query_param",
+          "preserve_default_hero": true,
+          "copy_strategy": "Reducir el texto a un titular principal, un beneficio clave y un CTA directo, eliminando elementos no esenciales para mantener la atención en tráfico pagado.",
+          "layout_strategy": "Compactar el diseño eliminando líneas innecesarias antes del CTA, asegurando compatibilidad con pantallas móviles mediante un enfoque responsive simple.",
+          "risk_level": "low"
+        },
+        "implementation_order": [
+          "Implementar mejoras en el tracking de CTAs",
+          "Desarrollar y probar la variante corta del hero"
+        ],
+        "do_now": [
+          "Actualizar los onClick de los CTAs principales para incluir payload como { placement: 'header_cta' } y { placement: 'footer_cta' }",
+          "Crear la variante corta del hero en el código y definir su activación vía query param, como ?hero_variant=short"
+        ],
+        "avoid_now": [
+          "Reescribir toda la analítica o el helper goToAuditFlow",
+          "Activar la variante corta para todo el tráfico sin control"
+        ],
+        "final_recommendation": {
+          "summary": "Prioriza el tracking para obtener datos precisos rápidamente, luego introduce la variante del hero para campañas, asegurando cambios de bajo riesgo y alta trazabilidad.",
+          "ship_tracking_now": true,
+          "ship_short_hero_now": true,
+          "confidence": "high"
+        }
+      }
+    },
+    "gemini": {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "raw": "{\n  \"tracking_decision\": {\n    \"recommended_approach\": \"Leverage the existing 'goToAuditFlow' helper by explicitly passing a 'placement' parameter to each CTA call that currently lacks context. This is an additive change to the 'onClick' handlers.\",\n    \"why\": \"The 'goToAuditFlow' helper is already designed to accept an extra payload, making this a low-risk, easy-to-implement, and testable solution. It directly addresses the lack of differentiation for key CTAs (top vs. final) without requiring a rewrite of the analytics.\",\n    \"event_strategy\": \"Continue using 'trackEvent(\\\"audipatron_home_cta_clicked\\\", ...)' and 'trackFunnelStep(\\\"home_cta_clicked\\\", ...)' as they are already in place. The differentiation will be achieved through the 'placement' field within the event payload.\",\n    \"payload_fields\": [\"placement\"],\n    \"top_cta_key\": \"header_primary\",\n    \"final_cta_key\": \"final_block_cta\",\n    \"other_ctas_to_label\": [\n      \"mobile_menu_cta\"\n    ],\n    \"risk_level\": \"low\"\n  },\n  \"hero_short_variant_decision\": {\n    \"recommended_approach\": \"Introduce a new 'hero_variant' (e.g., 'short_paid_campaign') within the existing hero component. This variant will have its own specific, concise copy and a simplified layout tailored for paid traffic.\",\n    \"why\": \"This approach leverages the existing component architecture for handling variants, centralizing hero logic and minimizing impact on other parts of the landing page. It allows for targeted optimization for cold paid traffic without breaking the current experience.\",\n    \"activation_method\": \"query_param\",\n    \"preserve_default_hero\": true,\n    \"copy_strategy\": \"Define specific, concise copy for the 'short_paid_campaign' variant, focusing on fewer lines, a direct value proposition, and a clear call to action to quickly engage cold paid traffic.\",\n    \"layout_strategy\": \"Simplify the layout for this variant by potentially removing secondary elements and reducing visual clutter. Ensure the primary CTA is highly prominent and positioned above the fold on all mobile screen sizes (small, medium, large).\",\n    \"risk_level\": \"low\"\n  },\n  \"implementation_order\": [\n    \"1. Implement CTA tracking improvements: Add 'placement' parameter to all 'goToAuditFlow' calls that currently lack context (header desktop, header mobile, mobile menu, final block).\",\n    \"2. Develop the 'short_paid_campaign' hero variant: Define specific copy and implement the simplified layout within the existing hero component.\",\n    \"3. Implement the 'query_param' logic to activate the new hero variant (e.g., '?hero_variant=short_paid_campaign').\",\n    \"4. Thoroughly test both the enhanced tracking and the new hero variant functionality across different mobile devices and scenarios.\"\n  ],\n  \"do_now\": [\n    \"Add 'placement' parameter to all identified 'goToAuditFlow' calls lacking context (header desktop, header mobile, mobile menu, final block).\",\n    \"Define the specific, concise copy for the 'short_paid_campaign' hero variant.\",\n    \"Begin development of the 'short_paid_campaign' hero variant's layout and content within the existing hero component.\"\n  ],\n  \"avoid_now\": [\n    \"Rewriting the 'goToAuditFlow' helper or the entire analytics tracking system.\",\n    \"Over-engineering the hero variant activation with complex A/B testing frameworks if not immediately required.\",\n    \"Making significant structural changes to the landing page outside of the hero component.\"\n  ],\n  \"final_recommendation\": {\n    \"summary\": \"Prioritize immediate improvement of CTA tracking by leveraging the existing 'goToAuditFlow' payload with explicit 'placement' parameters. Simultaneously, develop a new, concise hero variant activated by a query parameter, ensuring the current hero remains the default for organic traffic. Both approaches are incremental, low-risk, and high-impact, aligning with the goal of improving conversion measurement and preparing for paid campaigns.\",\n    \"ship_tracking_now\": true,\n    \"ship_short_hero_now\": true,\n    \"confidence\": \"high\"\n  }\n}",
+      "parsed": {
+        "tracking_decision": {
+          "recommended_approach": "Leverage the existing 'goToAuditFlow' helper by explicitly passing a 'placement' parameter to each CTA call that currently lacks context. This is an additive change to the 'onClick' handlers.",
+          "why": "The 'goToAuditFlow' helper is already designed to accept an extra payload, making this a low-risk, easy-to-implement, and testable solution. It directly addresses the lack of differentiation for key CTAs (top vs. final) without requiring a rewrite of the analytics.",
+          "event_strategy": "Continue using 'trackEvent(\"audipatron_home_cta_clicked\", ...)' and 'trackFunnelStep(\"home_cta_clicked\", ...)' as they are already in place. The differentiation will be achieved through the 'placement' field within the event payload.",
+          "payload_fields": [
+            "placement"
+          ],
+          "top_cta_key": "header_primary",
+          "final_cta_key": "final_block_cta",
+          "other_ctas_to_label": [
+            "mobile_menu_cta"
+          ],
+          "risk_level": "low"
+        },
+        "hero_short_variant_decision": {
+          "recommended_approach": "Introduce a new 'hero_variant' (e.g., 'short_paid_campaign') within the existing hero component. This variant will have its own specific, concise copy and a simplified layout tailored for paid traffic.",
+          "why": "This approach leverages the existing component architecture for handling variants, centralizing hero logic and minimizing impact on other parts of the landing page. It allows for targeted optimization for cold paid traffic without breaking the current experience.",
+          "activation_method": "query_param",
+          "preserve_default_hero": true,
+          "copy_strategy": "Define specific, concise copy for the 'short_paid_campaign' variant, focusing on fewer lines, a direct value proposition, and a clear call to action to quickly engage cold paid traffic.",
+          "layout_strategy": "Simplify the layout for this variant by potentially removing secondary elements and reducing visual clutter. Ensure the primary CTA is highly prominent and positioned above the fold on all mobile screen sizes (small, medium, large).",
+          "risk_level": "low"
+        },
+        "implementation_order": [
+          "1. Implement CTA tracking improvements: Add 'placement' parameter to all 'goToAuditFlow' calls that currently lack context (header desktop, header mobile, mobile menu, final block).",
+          "2. Develop the 'short_paid_campaign' hero variant: Define specific copy and implement the simplified layout within the existing hero component.",
+          "3. Implement the 'query_param' logic to activate the new hero variant (e.g., '?hero_variant=short_paid_campaign').",
+          "4. Thoroughly test both the enhanced tracking and the new hero variant functionality across different mobile devices and scenarios."
+        ],
+        "do_now": [
+          "Add 'placement' parameter to all identified 'goToAuditFlow' calls lacking context (header desktop, header mobile, mobile menu, final block).",
+          "Define the specific, concise copy for the 'short_paid_campaign' hero variant.",
+          "Begin development of the 'short_paid_campaign' hero variant's layout and content within the existing hero component."
+        ],
+        "avoid_now": [
+          "Rewriting the 'goToAuditFlow' helper or the entire analytics tracking system.",
+          "Over-engineering the hero variant activation with complex A/B testing frameworks if not immediately required.",
+          "Making significant structural changes to the landing page outside of the hero component."
+        ],
+        "final_recommendation": {
+          "summary": "Prioritize immediate improvement of CTA tracking by leveraging the existing 'goToAuditFlow' payload with explicit 'placement' parameters. Simultaneously, develop a new, concise hero variant activated by a query parameter, ensuring the current hero remains the default for organic traffic. Both approaches are incremental, low-risk, and high-impact, aligning with the goal of improving conversion measurement and preparing for paid campaigns.",
+          "ship_tracking_now": true,
+          "ship_short_hero_now": true,
+          "confidence": "high"
+        }
+      }
+    }
+  },
+  "summary": {
+    "parsed_providers": [
+      "openai",
+      "xai",
+      "gemini"
+    ],
+    "tracking_recommendations": {
+      "openai": "Agregar un payload explícito y consistente en todos los CTAs principales diferenciando claramente 'top_cta' y 'final_cta', usando el helper goToAuditFlow con campos estandarizados.",
+      "xai": "Modificar los onClick handlers de los CTAs existentes para incluir un simple payload que especifique el origen, utilizando el helper goToAuditFlow sin cambios mayores.",
+      "gemini": "Leverage the existing 'goToAuditFlow' helper by explicitly passing a 'placement' parameter to each CTA call that currently lacks context. This is an additive change to the 'onClick' handlers."
+    },
+    "hero_activation_methods": {
+      "openai": "Query param (ej. ?hero=short)",
+      "xai": "query_param",
+      "gemini": "query_param"
+    },
+    "consensus_do_now": [
+      "Actualizar todos los CTAs principales para usar goToAuditFlow con payload 'placement' explícito",
+      "Definir y documentar nomenclatura clara para payloads de tracking",
+      "Preparar variante corta del hero y configurar activación por query param",
+      "Actualizar los onClick de los CTAs principales para incluir payload como { placement: 'header_cta' } y { placement: 'footer_cta' }",
+      "Crear la variante corta del hero en el código y definir su activación vía query param, como ?hero_variant=short",
+      "Add 'placement' parameter to all identified 'goToAuditFlow' calls lacking context (header desktop, header mobile, mobile menu, final block).",
+      "Define the specific, concise copy for the 'short_paid_campaign' hero variant.",
+      "Begin development of the 'short_paid_campaign' hero variant's layout and content within the existing hero component."
+    ],
+    "consensus_avoid_now": [
+      "Reescribir o cambiar la lógica base del helper goToAuditFlow",
+      "Modificar la landing default para tráfico orgánico sin necesidad",
+      "Usar flags internas complejas o sistemas A/B testing para la variante corta inicialmente",
+      "Reescribir toda la analítica o el helper goToAuditFlow",
+      "Activar la variante corta para todo el tráfico sin control",
+      "Rewriting the 'goToAuditFlow' helper or the entire analytics tracking system.",
+      "Over-engineering the hero variant activation with complex A/B testing frameworks if not immediately required.",
+      "Making significant structural changes to the landing page outside of the hero component."
+    ]
+  }
+}

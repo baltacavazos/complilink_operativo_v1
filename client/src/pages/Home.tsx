@@ -349,9 +349,9 @@ const heroCopyVariants = {
     eyebrowDesktop: "Revisión urgente de nómina",
     titleLead: "Tu recibo de nómina",
     titleAccent: "puede tener señales raras.",
-    supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
-    body:
-      "Entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
+    headline: "Tu recibo puede revelar señales raras.",
+    supportLine: "Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
+    body: "Empieza con una foto o PDF. No necesitas reunir todo.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
@@ -361,9 +361,22 @@ const heroCopyVariants = {
     eyebrowDesktop: "Empieza por tu recibo más reciente",
     titleLead: "Tu recibo de nómina",
     titleAccent: "puede tener señales raras.",
-    supportLine: "Revísalo gratis y entiende si hay algo que conviene revisar.",
+    headline: "Tu recibo puede revelar señales raras.",
+    supportLine: "Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.",
     body:
       "Empieza con una foto o PDF y revisa si hay algo que conviene mirar en tu pago, deducciones o CFDI.",
+    ctaPrimary: "Empezar auditoría gratis",
+    ctaSecondary: "Ver ejemplo de resultado",
+  },
+  short_paid_campaign: {
+    tabLabel: "Campaña corta",
+    eyebrowMobile: "Revisión urgente de nómina",
+    eyebrowDesktop: "Revisión urgente de nómina",
+    titleLead: "Revisa tu recibo hoy",
+    titleAccent: "sin abrir una cuenta.",
+    headline: "Revisa tu recibo hoy sin abrir una cuenta.",
+    supportLine: "Sube una foto o PDF y recibe una primera lectura gratis.",
+    body: "Si ves una señal útil, después decides si sigues completando tu expediente.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
@@ -390,7 +403,10 @@ const heroPrediagnosticOptions = [
 const heroVariantReadiness = {
   alert: 64,
   control: 72,
+  short_paid_campaign: 64,
 } as const;
+
+type InteractiveHeroVariantKey = Exclude<keyof typeof heroCopyVariants, "short_paid_campaign">;
 
 const heroFindingSlides = [
   {
@@ -661,7 +677,7 @@ function SiteHeader() {
           </Button>
           <Button
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
-            onClick={goToAuditFlow}
+            onClick={() => goToAuditFlow({ placement: "header_primary" })}
           >
             {PRIMARY_CTA_LABEL}
             <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -671,7 +687,7 @@ function SiteHeader() {
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
             className="motion-hover-lift h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem] rounded-full bg-teal-400 px-3 text-[0.78rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.7rem] max-[359px]:px-2.75 max-[359px]:text-[0.72rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
-            onClick={goToAuditFlow}
+            onClick={() => goToAuditFlow({ placement: "header_primary" })}
           >
             <span className="truncate sm:hidden">Empezar</span>
             <span className="hidden sm:inline">{PRIMARY_CTA_LABEL}</span>
@@ -743,7 +759,7 @@ function SiteHeader() {
                 className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
                 onClick={() => {
                   setOpen(false);
-                  goToAuditFlow();
+                  goToAuditFlow({ placement: "mobile_menu_cta" });
                 }}
               >
                 {PRIMARY_CTA_LABEL}
@@ -757,17 +773,27 @@ function SiteHeader() {
 }
 
 function HeroSection() {
-  const [selectedHeroVariant, setSelectedHeroVariant] = useState<keyof typeof heroCopyVariants>("alert");
+  const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("alert");
   const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
   const [activeFindingIndex, setActiveFindingIndex] = useState(0);
   const [selectedReportDemoState, setSelectedReportDemoState] = useState<(typeof reportDemoStates)[number]["id"]>("hallazgo-preliminar");
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroScrollMilestonesRef = useRef<Set<number>>(new Set());
-  const activeHeroVariant = heroCopyVariants[selectedHeroVariant];
+  const queryHeroVariant = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const heroVariant = new URLSearchParams(window.location.search).get("hero_variant");
+    return heroVariant === "short_paid_campaign" ? heroVariant : null;
+  }, []);
+  const trackedHeroVariant = queryHeroVariant ?? selectedHeroVariant;
+  const isShortPaidCampaignHero = queryHeroVariant === "short_paid_campaign";
+  const activeHeroVariant = heroCopyVariants[trackedHeroVariant];
   const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
   const activeFinding = heroFindingSlides[activeFindingIndex];
   const activeReportDemoState = reportDemoStates.find((state) => state.id === selectedReportDemoState) ?? reportDemoStates[1];
-  const dossierReadiness = heroVariantReadiness[selectedHeroVariant];
+  const dossierReadiness = heroVariantReadiness[trackedHeroVariant];
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
@@ -813,10 +839,21 @@ function HeroSection() {
   useEffect(() => {
     trackEvent("audipatron_hero_state_viewed", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
     });
-  }, [selectedHeroPrediagnostic, selectedHeroVariant]);
+  }, [selectedHeroPrediagnostic, trackedHeroVariant]);
+
+  useEffect(() => {
+    if (!isShortPaidCampaignHero) {
+      return;
+    }
+
+    trackEvent("audipatron_hero_paid_variant_activated", {
+      source: "hero",
+      variant: "short_paid_campaign",
+    });
+  }, [isShortPaidCampaignHero]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -840,14 +877,14 @@ function HeroSection() {
 
           trackEvent("audipatron_hero_scroll_depth_reached", {
             source: "hero",
-            hero_variant: selectedHeroVariant,
+            hero_variant: trackedHeroVariant,
             prediagnostic: selectedHeroPrediagnostic,
             depth_percentage: threshold,
           });
 
           trackFunnelStep("hero_scroll_depth_reached", {
             source: "hero",
-            hero_variant: selectedHeroVariant,
+            hero_variant: trackedHeroVariant,
             prediagnostic: selectedHeroPrediagnostic,
             depth_percentage: threshold,
           });
@@ -863,17 +900,17 @@ function HeroSection() {
       window.removeEventListener("scroll", handleScrollDepth);
       window.removeEventListener("resize", handleScrollDepth);
     };
-  }, [selectedHeroPrediagnostic, selectedHeroVariant]);
+  }, [selectedHeroPrediagnostic, trackedHeroVariant]);
 
   useEffect(() => {
     trackEvent("audipatron_hero_finding_viewed", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       finding_id: activeFinding.id,
       finding_index: activeFindingIndex + 1,
     });
-  }, [activeFinding.id, activeFindingIndex, selectedHeroPrediagnostic, selectedHeroVariant]);
+  }, [activeFinding.id, activeFindingIndex, selectedHeroPrediagnostic, trackedHeroVariant]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -889,7 +926,7 @@ function HeroSection() {
     };
   }, []);
 
-  function handleHeroVariantChange(variantKey: keyof typeof heroCopyVariants) {
+  function handleHeroVariantChange(variantKey: InteractiveHeroVariantKey) {
     if (variantKey === selectedHeroVariant) {
       return;
     }
@@ -929,13 +966,13 @@ function HeroSection() {
 
     trackEvent("audipatron_hero_prediagnostic_selected", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: optionId,
     });
 
     trackFunnelStep("hero_prediagnostic_selected", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: optionId,
     });
   }
@@ -949,7 +986,7 @@ function HeroSection() {
 
     trackEvent("audipatron_report_demo_state_selected", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       finding_id: activeFinding.id,
       report_demo_state: stateId,
@@ -957,7 +994,7 @@ function HeroSection() {
 
     trackFunnelStep("report_demo_state_selected", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       finding_id: activeFinding.id,
       report_demo_state: stateId,
@@ -967,7 +1004,7 @@ function HeroSection() {
   function handleHeroSecondaryCta() {
     const payload = {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       cta_label: activeHeroVariant.ctaSecondary,
       destination_section: "ejemplo-reporte",
@@ -984,7 +1021,7 @@ function HeroSection() {
 
     trackEvent("audipatron_hero_finding_changed", {
       source: "hero",
-      hero_variant: selectedHeroVariant,
+      hero_variant: trackedHeroVariant,
       prediagnostic: selectedHeroPrediagnostic,
       finding_id: heroFindingSlides[nextIndex]?.id,
       finding_index: nextIndex + 1,
@@ -1010,31 +1047,35 @@ function HeroSection() {
             <span className="hidden sm:inline">Sube una foto o PDF y revisa tu pago</span>
           </div>
 
-          <h1
-            className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
-            style={{ ["--motion-delay" as string]: "120ms" }}
-          >
-            Tu recibo puede revelar señales raras.
-          </h1>
+            <h1
+              className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
+              style={{ ["--motion-delay" as string]: "120ms" }}
+            >
+              {activeHeroVariant.headline}
+            </h1>
 
-          <p
-            className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 max-[359px]:text-[0.96rem] max-[359px]:leading-6 sm:text-[1.02rem] sm:leading-8"
-            style={{ ["--motion-delay" as string]: "180ms" }}
-          >
-Revísalo gratis y entiende si hay algo que revisar en tu pago, deducciones o CFDI.
-          </p>
+            <p
+              className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 max-[359px]:text-[0.96rem] max-[359px]:leading-6 sm:text-[1.02rem] sm:leading-8"
+              style={{ ["--motion-delay" as string]: "180ms" }}
+            >
+              {activeHeroVariant.supportLine}
+            </p>
 
-          <p
-            className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1.08rem] sm:leading-8"
-            style={{ ["--motion-delay" as string]: "210ms" }}
-          >
-Empieza con una foto o PDF. No necesitas reunir todo.
-          </p>
+            <p
+              className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1.08rem] sm:leading-8"
+              style={{ ["--motion-delay" as string]: "210ms" }}
+            >
+              {activeHeroVariant.body}
+            </p>
 
-          <div
-            className="motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
-            style={{ ["--motion-delay" as string]: "250ms" }}
-          >
+            <div
+              className={
+                isShortPaidCampaignHero
+                  ? "hidden"
+                  : "motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
+              }
+              style={{ ["--motion-delay" as string]: "250ms" }}
+            >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
@@ -1076,13 +1117,15 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               onClick={() => {
                 trackEvent("audipatron_home_primary_cta_redirected_to_guest_preview", {
                   entry_point: "hero_primary",
-                  hero_variant: selectedHeroVariant,
+                  placement: "hero_primary",
+                  hero_variant: trackedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                   cta_label: activeHeroVariant.ctaPrimary,
                 });
                 trackFunnelStep("home_primary_cta_redirected_to_guest_preview", {
                   entry_point: "hero_primary",
-                  hero_variant: selectedHeroVariant,
+                  placement: "hero_primary",
+                  hero_variant: trackedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                 });
                 scrollToId("lectura-gratis");
@@ -1308,7 +1351,8 @@ Resultado realista, no promesa vacía
               onClick={() => {
                 trackEvent("audipatron_home_sidebar_cta_redirected_to_guest_preview", {
                   entry_point: "hero_sidebar",
-                  hero_variant: selectedHeroVariant,
+                  placement: "hero_sidebar",
+                  hero_variant: trackedHeroVariant,
                   prediagnostic: selectedHeroPrediagnostic,
                   cta_label: "Siguiente paso sugerido",
                 });
@@ -2688,7 +2732,7 @@ function FinalCtaSection() {
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Button
                 className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
-                onClick={goToAuditFlow}
+                onClick={() => goToAuditFlow({ placement: "final_block_cta" })}
               >
                 {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />

@@ -58,6 +58,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Cuando quieras continuar o recuperar tu avance, entras con tu correo.");
     expect(source).toContain("Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.");
     expect(source).toContain("audipatron_home_primary_cta_redirected_to_guest_preview");
+    expect(source).toContain('placement: "hero_primary"');
+    expect(source).toContain('placement: "final_block_cta"');
+    expect(source).toContain("audipatron_hero_paid_variant_activated");
+    expect(source).toContain('new URLSearchParams(window.location.search).get("hero_variant")');
+    expect(source).toContain("short_paid_campaign");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");
     expect(source).toContain("Guardar solo si te sirve.");

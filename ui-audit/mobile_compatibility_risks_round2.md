@@ -15,3 +15,11 @@ Las tres IAs coinciden en que la landing está razonablemente bien para móviles
 OpenAI la ve en estado `ok_con_ajustes`, con compatibilidad media en 320–359 px y alta en 360 px en adelante. Grok y Gemini son más estrictos: califican 320–359 px como compatibilidad baja y 360–389 px como media, mientras coinciden en compatibilidad alta para 390–430 px.
 
 Los cambios de mayor consenso y menor riesgo son: ajustar el ancho y tipografía del CTA/header móvil, reducir el tamaño del `h1` y parte del padding del hero en sub-360 px, bajar padding vertical/horizontal en secciones densas, aumentar la separación entre CTAs donde conviven acciones primaria y secundaria, y vigilar títulos largos o chips que compiten visualmente en FAQ y bloques similares.
+
+## Consenso tri-IA sobre medición de CTAs y hero corto para campañas
+
+Las tres IAs coincidieron en un enfoque de **bajo riesgo**: reutilizar `goToAuditFlow` y añadir un payload explícito `placement` en los CTAs que hoy no están diferenciados, especialmente el CTA superior del header y el CTA final del bloque de cierre. También coincidieron en **no reescribir** la analítica existente ni introducir una capa compleja de experimentación por ahora.
+
+En paralelo, las tres recomendaron crear una **variante corta del hero** para campañas pagadas, preservando la versión actual como predeterminada. El mecanismo de activación consensuado fue un **query param** simple y trazable, por ejemplo `?hero_variant=short_paid_campaign`, para poder aislar tráfico pagado sin afectar orgánico/directo.
+
+Las prioridades derivadas del consenso son claras: etiquetar con `placement` al menos `header_primary`, `mobile_menu_cta` y `final_block_cta`; mantener el helper y los nombres de evento actuales; introducir la variante corta dentro de la arquitectura de variantes existente; y asegurar que esa variante deje el CTA principal arriba del fold en mobile small, medium y large.

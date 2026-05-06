@@ -61,12 +61,14 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
   });
 
-  it("includes the new hero instrumentation for variant changes, scroll depth, report states and finding navigation", () => {
+  it("includes the new hero instrumentation for variant changes, scroll depth, report states, finding navigation and paid-campaign activation", () => {
     expect(homeSource).toContain("audipatron_hero_variant_changed");
     expect(homeSource).toContain("audipatron_hero_scroll_depth_reached");
     expect(homeSource).toContain("audipatron_hero_finding_changed");
     expect(homeSource).toContain("audipatron_hero_finding_viewed");
     expect(homeSource).toContain("audipatron_report_demo_state_selected");
+    expect(homeSource).toContain("audipatron_hero_paid_variant_activated");
+    expect(homeSource).toContain('variant: "short_paid_campaign"');
   });
 
   it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {
@@ -121,6 +123,8 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("order-3 mt-5 hidden w-full max-w-xl");
     expect(homeSource).toContain("order-2 mt-3 flex w-full max-w-sm");
     expect(homeSource).toContain("goToAuditFlow({");
+    expect(homeSource).toContain('placement: "hero_primary"');
+    expect(homeSource).toContain('placement: "final_block_cta"');
     expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("mt-2.5 w-full max-w-xl rounded-[1.45rem]");
     expect(homeSource).toContain("rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm");

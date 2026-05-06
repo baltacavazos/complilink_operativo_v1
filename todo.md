@@ -1603,3 +1603,10 @@
 - [x] Auditar la landing recortada en mobile small, medium y large para detectar riesgos de overflow, densidad o targets táctiles débiles
 - [x] Aplicar ajustes responsive para que hero, tarjetas, CTAs y navegación se mantengan legibles y estables en todos los móviles
 - [x] Validar con pruebas y checkpoint que la landing conserve compatibilidad mobile amplia tras la ronda responsive
+- [x] Auditar la instrumentación actual de la landing para medir por separado el CTA superior y el CTA final
+- [ ] Contrastar con ChatGPT, Grok y Gemini la versión de hero más corta y la medición de menor riesgo para campañas pagadas
+- [x] Implementar medición comparativa de CTAs y preparar o aplicar una variante corta del hero manteniendo compatibilidad mobile
+- [x] Diferenciar el tracking de CTAs de Home con el campo placement en header, hero, menú móvil, sidebar y bloque final.
+- [x] Activar una variante corta del hero para campañas pagadas mediante ?hero_variant=short_paid_campaign sin afectar el hero por defecto.
+- [x] Actualizar pruebas contractuales y de UX de Home para cubrir placement y la activación de la variante corta del hero.
+- [x] Revalidar la ronda con Vitest focalizado, estado del proyecto y checkpoint final.
