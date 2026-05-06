@@ -1621,3 +1621,7 @@
 - [x] Aclarar en la landing qué pasa después si se detecta una diferencia y cómo seguir con una acción útil.
 - [x] Incorporar una capa de prueba social o casos anonimizados más persuasiva para elevar confianza e intención de pago.
 - [x] Actualizar y revalidar las pruebas contractuales y de copy afectadas por la nueva ronda de conversión.
+- [x] Agregar una franja breve de confianza y privacidad junto al CTA principal del hero.
+- [x] Incorporar una variante adicional del hero más frontal para comparar un mensaje más directo de conversión.
+- [x] Sumar 2–3 casos anonimizados con monto detectado y siguiente acción justo debajo del hero.
+- [x] Actualizar y revalidar las pruebas afectadas por la nueva ronda de conversión del hero.

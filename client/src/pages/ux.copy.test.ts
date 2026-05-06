@@ -27,6 +27,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
     expect(source).toContain("Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.");
     expect(source).toContain("Empieza con una foto o PDF. Si aparece algo, te decimos qué revisar y cómo seguir.");
+    expect(source).toContain("Sin tarjeta para empezar");
+    expect(source).toContain("Privado desde el inicio");
+    expect(source).toContain("Borra tu archivo cuando quieras");
     expect(source).toContain("Revisión urgente de nómina");
     expect(source).not.toContain("Comenzar mi revisión");
     expect(source).not.toContain("Revisar mis documentos");
@@ -38,6 +41,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Ahí vi dónde podía estar perdiendo dinero.");
     expect(source).toContain("Ya supe qué reclamar primero.");
     expect(source).toContain("Caso anónimo 01");
+    expect(source).toContain("Diferencia estimada: $3,240 MXN");
+    expect(source).toContain("Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.");
     expect(source).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
     expect(source).toContain("Privacidad visible y humana");
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
@@ -62,8 +67,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('placement: "hero_primary"');
     expect(source).toContain('placement: "final_block_cta"');
     expect(source).toContain("audipatron_hero_paid_variant_activated");
+    expect(source).toContain("audipatron_hero_direct_variant_activated");
     expect(source).toContain('new URLSearchParams(window.location.search).get("hero_variant")');
     expect(source).toContain("short_paid_campaign");
+    expect(source).toContain("direct_money_check");
+    expect(source).toContain("¿Te están pagando de menos?");
     expect(source).toContain("Si aparece una diferencia, te mostramos qué revisar primero y cómo seguir.");
     expect(source).toContain("Hallazgos claros prioritarios.");
     expect(source).toContain("Breves y urgentes primero.");

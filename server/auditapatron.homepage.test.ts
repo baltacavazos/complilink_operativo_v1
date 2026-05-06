@@ -15,6 +15,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Tu recibo puede mostrar si te pagan de menos.");
     expect(homeSource).toContain("Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI.");
     expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
+    expect(homeSource).toContain("Sin tarjeta para empezar");
+    expect(homeSource).toContain("Privado desde el inicio");
+    expect(homeSource).toContain("Borra tu archivo cuando quieras");
     expect(homeSource).toContain("Empezar auditoría gratis");
     expect(homeSource).not.toContain("Subir mi documento gratis");
     expect(homeSource).not.toContain("Ir a mi primera auditoría");
@@ -28,6 +31,9 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("Empezar auditoría gratis");
     expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
     expect(homeSource).toContain("Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.");
+    expect(homeSource).toContain("Lo que otras personas alcanzaron a ver en su primera lectura.");
+    expect(homeSource).toContain("Diferencia estimada: $3,240 MXN");
+    expect(homeSource).toContain("Siguiente acción sugerida");
     expect(homeSource).toContain('bullets: ["Desde tu celular"]');
     expect(homeSource).toContain("Hallazgos claros prioritarios.");
     expect(homeSource).toContain("Breves y urgentes primero.");
@@ -47,6 +53,7 @@ describe("Auditapatron homepage and audit flow content", () => {
 
   it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
     expect(homeSource).toContain("Ahí vi dónde podía estar perdiendo dinero.");
+    expect(homeSource).toContain("Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.");
     expect(homeSource).toContain("Ver ejemplo de resultado");
     expect(homeSource).toContain("Guía rápida para empezar");
     expect(homeSource).toContain("Elige tu caso principal y te sugerimos el documento que más suele abrir contexto con baja fricción.");
@@ -70,7 +77,10 @@ describe("Auditapatron homepage and audit flow content", () => {
     expect(homeSource).toContain("audipatron_hero_finding_viewed");
     expect(homeSource).toContain("audipatron_report_demo_state_selected");
     expect(homeSource).toContain("audipatron_hero_paid_variant_activated");
+    expect(homeSource).toContain("audipatron_hero_direct_variant_activated");
     expect(homeSource).toContain('variant: "short_paid_campaign"');
+    expect(homeSource).toContain('variant: "direct_money_check"');
+    expect(homeSource).toContain("¿Te están pagando de menos?");
   });
 
   it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {

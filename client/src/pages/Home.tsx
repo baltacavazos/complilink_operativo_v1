@@ -70,6 +70,8 @@ type SocialProofItem = {
   caseId: string;
   label: string;
   quote: string;
+  amountHighlight: string;
+  nextAction: string;
   supportingDetail: string;
   verification: string;
 };
@@ -383,6 +385,19 @@ const heroCopyVariants = {
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
+  direct_money_check: {
+    tabLabel: "Chequeo directo",
+    eyebrowMobile: "Chequea tu pago hoy",
+    eyebrowDesktop: "Chequea tu pago hoy",
+    titleLead: "¿Te están pagando",
+    titleAccent: "de menos?",
+    headline: "¿Te están pagando de menos?",
+    supportLine: "Revísalo gratis con un recibo y detecta una diferencia antes de dejar pasar otro periodo.",
+    microDescription: "Si aparece una señal, te mostramos monto estimado, qué revisar primero y el siguiente documento útil.",
+    body: "Empieza sin tarjeta, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
+    ctaPrimary: "Empezar auditoría gratis",
+    ctaSecondary: "Ver ejemplo de resultado",
+  },
 } as const;
 
 const heroPrediagnosticOptions = [
@@ -407,9 +422,10 @@ const heroVariantReadiness = {
   alert: 64,
   control: 72,
   short_paid_campaign: 64,
+  direct_money_check: 68,
 } as const;
 
-type InteractiveHeroVariantKey = Exclude<keyof typeof heroCopyVariants, "short_paid_campaign">;
+type InteractiveHeroVariantKey = Exclude<keyof typeof heroCopyVariants, "short_paid_campaign" | "direct_money_check">;
 
 const heroFindingSlides = [
   {
@@ -467,6 +483,8 @@ const socialProofItems: SocialProofItem[] = [
     caseId: "Caso anónimo 01",
     label: "Recibo reciente + CFDI del mismo periodo",
     quote: "Ahí vi dónde podía estar perdiendo dinero.",
+    amountHighlight: "Diferencia estimada: $3,240 MXN",
+    nextAction: "Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.",
     supportingDetail:
       "El primer cruce volvió visible una diferencia estimada de $3,240 MXN entre lo pagado y lo timbrado, con monto, periodo y conceptos a revisar.",
     verification:
@@ -476,6 +494,8 @@ const socialProofItems: SocialProofItem[] = [
     caseId: "Caso anónimo 02",
     label: "Primer hallazgo con ruta clara de acción",
     quote: "Ya supe qué reclamar primero.",
+    amountHighlight: "Foco inicial: pago incompleto en revisión",
+    nextAction: "Comparar el recibo siguiente y guardar la primera lectura para ordenar evidencia.",
     supportingDetail:
       "La primera lectura no se quedó en la alerta: también ordenó cuál documento subir después para confirmar si el pago estaba incompleto.",
     verification:
@@ -485,6 +505,8 @@ const socialProofItems: SocialProofItem[] = [
     caseId: "Caso anónimo 03",
     label: "Inicio cuidadoso con claridad de siguiente paso",
     quote: "Sí me animé a subirlo porque entendí qué seguía después.",
+    amountHighlight: "Entrada gratis y privada desde el primer archivo",
+    nextAction: "Guardar el hallazgo sólo si sirve y continuar después con el documento recomendado.",
     supportingDetail:
       "El flujo permitió empezar gratis con un archivo cotidiano, entender el siguiente paso útil y decidir con calma si valía la pena guardar el hallazgo.",
     verification:
@@ -782,16 +804,17 @@ function HeroSection() {
   const [selectedReportDemoState, setSelectedReportDemoState] = useState<(typeof reportDemoStates)[number]["id"]>("hallazgo-preliminar");
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroScrollMilestonesRef = useRef<Set<number>>(new Set());
-  const queryHeroVariant = useMemo(() => {
+  const queryHeroVariant = useMemo<"short_paid_campaign" | "direct_money_check" | null>(() => {
     if (typeof window === "undefined") {
       return null;
     }
 
     const heroVariant = new URLSearchParams(window.location.search).get("hero_variant");
-    return heroVariant === "short_paid_campaign" ? heroVariant : null;
+    return heroVariant === "short_paid_campaign" || heroVariant === "direct_money_check" ? heroVariant : null;
   }, []);
   const trackedHeroVariant = queryHeroVariant ?? selectedHeroVariant;
   const isShortPaidCampaignHero = queryHeroVariant === "short_paid_campaign";
+  const isDirectMoneyCheckHero = queryHeroVariant === "direct_money_check";
   const activeHeroVariant = heroCopyVariants[trackedHeroVariant];
   const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
   const activeFinding = heroFindingSlides[activeFindingIndex];
@@ -857,6 +880,17 @@ function HeroSection() {
       variant: "short_paid_campaign",
     });
   }, [isShortPaidCampaignHero]);
+
+  useEffect(() => {
+    if (!isDirectMoneyCheckHero) {
+      return;
+    }
+
+    trackEvent("audipatron_hero_direct_variant_activated", {
+      source: "hero",
+      variant: "direct_money_check",
+    });
+  }, [isDirectMoneyCheckHero]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1145,6 +1179,17 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
               <div className="space-y-1.5 max-[359px]:space-y-1">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    "Sin tarjeta para empezar",
+                    "Privado desde el inicio",
+                    "Borra tu archivo cuando quieras",
+                  ].map((item) => (
+                    <div key={item} className="rounded-[1.05rem] border border-teal-100 bg-white/92 px-3 py-2 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{item}</p>
+                    </div>
+                  ))}
+                </div>
                 <p className="text-sm font-semibold leading-6 text-slate-700">
                   Empieza con una foto. No necesitas reunir todo.
                 </p>
@@ -1209,6 +1254,40 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                 <div key={item} className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm">
                   <p className="text-sm font-semibold leading-6 text-slate-900">{item}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="motion-enter-soft mt-3.5 w-full max-w-3xl rounded-[1.6rem] border border-slate-200 bg-white/94 p-4 shadow-[0_24px_54px_-42px_rgba(15,23,42,0.28)] sm:p-5"
+            style={{ ["--motion-delay" as string]: "390ms" }}
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Casos anonimizados</p>
+                <p className="mt-2 text-base font-semibold leading-7 text-slate-950 sm:text-[1.05rem]">
+                  Lo que otras personas alcanzaron a ver en su primera lectura.
+                </p>
+              </div>
+              <p className="text-xs leading-5 text-slate-500">
+                Montos y rutas mostrados como referencia orientativa para explicar el tipo de salida inicial.
+              </p>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              {socialProofItems.map((item) => (
+                <article key={item.caseId} className="rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.caseId}</p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{item.label}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">“{item.quote}”</p>
+                  <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900">
+                    {item.amountHighlight}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.supportingDetail}</p>
+                  <div className="mt-3 rounded-[1rem] border border-white bg-white px-3.5 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">Siguiente acción sugerida</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-700">{item.nextAction}</p>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
