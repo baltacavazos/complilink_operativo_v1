@@ -263,6 +263,17 @@ function safeJsonParse<T>(value: string | null): T | null {
   }
 }
 
+function sanitizeResponseBody(value: string | null, maxLength = 2000) {
+  if (!value) return null;
+  const normalized = value.trim();
+  if (!normalized) return null;
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength)}…[truncated]` : normalized;
+}
+
+function hasValidBridgeAck(value: CompliLinkBridgeResponseAck | null) {
+  return value?.responseContract === "auditapatron.bridge.ack.v1";
+}
+
 function inferCompliLinkDocType(params: {
   documentContract: CanonicalDocumentContract;
   metadata?: AuditaPatronMetadata;
@@ -529,10 +540,10 @@ export async function sendDocumentToAuditaPatronEngine(
       });
 
       lastHttpStatus = response.status;
-      lastResponseBody = await response.text();
+      lastResponseBody = sanitizeResponseBody(await response.text());
       lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(lastResponseBody);
 
-      if (response.ok) {
+      if (response.ok && hasValidBridgeAck(lastResponseAck)) {
         const result = {
           status: "sent",
           dispatchedAt: new Date().toISOString(),
@@ -558,6 +569,41 @@ export async function sendDocumentToAuditaPatronEngine(
         emitBridgeObservability({
           status: result.status,
           attempts: result.attempts,
+          observabilityEnvelope: result.observabilityEnvelope,
+        });
+
+        return result;
+      }
+
+      if (response.ok) {
+        lastReason = "invalid_ack_contract";
+        const result = {
+          status: "failed",
+          dispatchedAt: new Date().toISOString(),
+          timestamp: finalTimestamp,
+          attempts,
+          httpStatus: response.status,
+          reason: lastReason,
+          responseBody: lastResponseBody,
+          responseAck: lastResponseAck,
+          payload,
+          observabilityEnvelope: buildObservabilityEnvelope({
+            dispatchId,
+            correlationId,
+            targetHost,
+            targetPath,
+            outcomeCategory: "permanent_failure",
+            retryScheduled: false,
+            retryDelayMs: null,
+            remoteSmokeEnabled,
+            httpStatusCode: response.status,
+          }),
+        } satisfies AuditaPatronEngineDispatchResult;
+
+        emitBridgeObservability({
+          status: result.status,
+          attempts: result.attempts,
+          reason: result.reason,
           observabilityEnvelope: result.observabilityEnvelope,
         });
 

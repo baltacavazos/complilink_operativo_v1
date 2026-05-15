@@ -7,6 +7,7 @@ import {
   buildCanonicalConsentContract,
   buildCanonicalDocumentContract,
   buildDocumentStorageKey,
+  buildPreliminaryLaborAnalysis,
   buildSharedEngineEnvelope,
   classifyMexicanLaborDocument,
   computeSha256,
@@ -107,10 +108,29 @@ describe("caseContracts", () => {
 
     expect(
       classifyMexicanLaborDocument({
+        fileName: "B022F1A1-1234-4F67-9ABC-1234567890AB.pdf",
+        mimeType: "application/pdf",
+      }).documentType,
+    ).toBe("payroll_receipt");
+
+    expect(
+      classifyMexicanLaborDocument({
         fileName: "memo_interno.txt",
         mimeType: "text/plain",
       }).documentType,
     ).toBe("other");
+  });
+
+  it("propagates visible INFONAVIT signals into preliminary payroll analysis", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "hector_cfdi.xml",
+      mimeType: "application/xml",
+      textHint: '<cfdi:Comprobante><nomina12:Deduccion TipoDeduccion="010" Concepto="PAGO INFONAVIT" Importe="530.99" /></cfdi:Comprobante>',
+    });
+
+    expect(analysis.confirmedData.hasInfonavitSignal).toBe(true);
+    expect(analysis.confirmedData.infonavitDeductionType).toBe("010");
+    expect(analysis.summary).toMatch(/INFONAVIT/i);
   });
 
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {

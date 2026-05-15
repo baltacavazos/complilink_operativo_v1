@@ -271,6 +271,46 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.observabilityEnvelope.correlationId).toBe(result.payload.correlationId);
   });
 
+  it("fails fast when the bridge returns HTTP 200 with invalid ack content", async () => {
+    const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
+
+    const htmlBody = `<html><body>${"landing ".repeat(400)}</body></html>`;
+    const server = createServer((req, res) => {
+      req.resume();
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(htmlBody);
+    });
+
+    serversToClose.push(server);
+    server.listen(0, "127.0.0.1");
+    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
+
+    const result = await sendDocumentToAuditaPatronEngine(
+      {
+        caseContract,
+        documentContract,
+        sharedEngineEnvelope,
+        sourceUserId: 77,
+        uploadedAt: "2026-04-06T10:00:00.000Z",
+      },
+      {
+        webhookUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`,
+        hmacSecret: "secret-for-engine-123456",
+        retryDelaysMs: [0, 0],
+      },
+    );
+
+    expect(result.status).toBe("failed");
+    expect(result.httpStatus).toBe(200);
+    expect(result.reason).toBe("invalid_ack_contract");
+    expect(result.responseAck).toBeNull();
+    expect(result.responseBody).toContain("<html><body>");
+    expect(result.responseBody).toContain("…[truncated]");
+    expect(result.responseBody?.length ?? 0).toBeLessThanOrEqual(2013);
+    expect(result.observabilityEnvelope.outcomeCategory).toBe("permanent_failure");
+  });
+
   it("classifies 400 responses as contract validation failures without retrying", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
     let hitCount = 0;

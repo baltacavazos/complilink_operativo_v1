@@ -516,6 +516,76 @@ describe("appRouter case workflows", () => {
     ]);
   });
 
+  it("detects Infonavit when the XML signal lives in structured preliminary data", async () => {
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      case: {
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        traceId: "trace-demo",
+        title: "Expediente demo",
+        jurisdiction: "CDMX",
+        status: "analysis",
+        employeeName: "Héctor Jovane Ortiz Hernández",
+        employerEntity: "Empresa Demo SA de CV",
+        summary: "Expediente de prueba",
+      },
+      alerts: [],
+      access: [],
+      events: [],
+      consents: [],
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-CFDI-001",
+        originalName: "hector_cfdi.xml",
+        documentType: "cfdi",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-CFDI-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "CFDI de nómina con deducciones visibles.",
+          legalOpinion: "Hay señales suficientes para revisar descuentos laborales.",
+          riskLevel: "medium",
+          recommendedNextStep: "Contrastar con IMSS y recibo del mismo periodo.",
+          recommendedActions: ["Subir recibo reciente"],
+          legalFoundations: [],
+          keyFactsUsed: ["TipoDeduccion 010"],
+          uncertainties: [],
+          confidenceScore: 84,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {
+            preliminaryAnalysis: {
+              confirmedData: {
+                hasInfonavitSignal: true,
+                infonavitDeductionType: "010",
+              },
+            },
+          },
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.detail({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(result.socialSecurityValidation).toMatchObject({
+      hasImssSignal: false,
+      hasInfonavitSignal: true,
+      infonavitSignalsCount: 1,
+      statusLabel: "Cruce parcial",
+      recommendedDocumentKey: "imss",
+    });
+  });
+
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {
     vi.mocked(db.listVisibleDocuments).mockResolvedValue([
       {

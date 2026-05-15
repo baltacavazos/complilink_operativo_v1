@@ -1,0 +1,158 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/research/final_closure_master_brief_2026-05-15.md",
+  "models": {
+    "openai": {
+      "top_5_fronts": [
+        "Corregir el flujo documental para evitar contaminación de datos y errores SQL, asegurando que el bridge reciba y procese correctamente los acks JSON",
+        "Reducir el tamaño y optimizar los bundles para mejorar performance bajo tráfico elevado",
+        "Mejorar la clasificación automática de documentos (PDFs, XML, DOCX) para evitar errores de categorización y pérdida de datos laborales relevantes",
+        "Simplificar y clarificar la navegación y transición entre landing, /acceso y sesión autenticada para eliminar confusión de usuarios",
+        "Incrementar la cobertura y estabilidad de pruebas E2E en flujos críticos, especialmente en /auditar y asistente laboral"
+      ],
+      "absolute_blockers": [
+        "Estabilidad y confiabilidad del bridge documental para evitar corrupción de datos y errores críticos en audit_logs",
+        "Performance adecuada para soportar tráfico alto sin degradación significativa",
+        "Cobertura mínima robusta de pruebas E2E que garantice flujos funcionales estables y sin regresiones"
+      ],
+      "most_fragile_area": {
+        "surface": "/auditar",
+        "why": "Es cognitivamente denso, con flujos complejos y carga mental alta para el usuario; además, presenta problemas de usabilidad y errores en la clasificación documental que impactan directamente la confianza y funcionalidad"
+      },
+      "three_round_plan": [
+        {
+          "round": 1,
+          "name": "Cierre técnico y corrección crítica",
+          "scope": [
+            "Resolver errores críticos del bridge documental y evitar contaminación de datos",
+            "Optimizar performance y reducir bundles",
+            "Corregir clasificación documental y manejo de formatos DOCX"
+          ],
+          "exit_criteria": [
+            "Bridge documental estable sin errores de inserción ni contaminación",
+            "Bundles optimizados con mejora medible en tiempos de carga",
+            "Documentos correctamente clasificados y procesados"
+          ]
+        },
+        {
+          "round": 2,
+          "name": "Simplificación UX y robustecimiento de pruebas",
+          "scope": [
+            "Simplificar navegación entre landing, /acceso y sesión autenticada",
+            "Reducir carga cognitiva en /auditar y asistente laboral",
+            "Aumentar cobertura y estabilidad de pruebas E2E"
+          ],
+          "exit_criteria": [
+            "Flujos de acceso y navegación claros y sin confusión",
+            "Usuarios reportan menor fricción y mejor entendimiento en /auditar",
+            "Pruebas E2E estables cubriendo flujos críticos sin fallos recurrentes"
+          ]
+        },
+        {
+          "round": 3,
+          "name": "Endurecimiento operativo y preparación escalabilidad",
+          "scope": [
+            "Depurar consola CEO para mejorar usabilidad y enfoque",
+            "Corregir advertencias técnicas menores (baseline-browser-mapping)",
+            "Auditar infraestructura para completar migraciones y eliminar alertas operativas"
+          ],
+          "exit_criteria": [
+            "Consola CEO usable y menos cargada",
+            "Sin advertencias técnicas críticas en entorno de producción",
+            "Infraestructura migrada y estable sin alertas de CEO Bridge"
+          ]
+        }
+      ],
+      "do_not_touch_yet": [
+        "Rediseño visual o cambios de UX que no sean simplificaciones claras y necesarias",
+        "Incorporación de nuevas funcionalidades o features no esenciales para cierre final",
+        "Conversión a app móvil nativa o React Native"
+      ],
+      "mobile_app_timing": {
+        "verdict": "La conversión a app móvil debe planearse solo después de estabilizar la plataforma web y asegurar escalabilidad para miles de usuarios",
+        "condition": "Cuando la versión web esté consolidada, con flujos robustos, sin errores críticos, y la infraestructura preparada para alta demanda"
+      },
+      "executive_verdict": "Para alcanzar una versión final web sólida y confiable, es imprescindible priorizar la corrección de errores críticos en el flujo documental y performance, seguido de simplificación UX y robustecimiento de pruebas. Solo tras asegurar estabilidad y escalabilidad se debe pensar en expansión móvil. Esta secuencia evita dispersión y garantiza foco en confiabilidad y claridad operacional."
+    },
+    "grok": {
+      "error": "429 Client Error: Too Many Requests for url: https://api.x.ai/v1/chat/completions"
+    },
+    "gemini": {
+      "top_5_fronts": [
+        "Estabilización y fiabilidad del Bridge Documental y Base de Datos (errores HTML/SQL)",
+        "Mejora crítica de la clasificación y extracción de datos por Helios (PDFs 'other', INFONAVIT)",
+        "Optimización de la experiencia de usuario en flujos críticos (/auditar, /acceso)",
+        "Endurecimiento de la plataforma para performance y estabilidad (bundles, E2E)",
+        "Resolución de la infraestructura faltante reportada por CEO Bridge y advertencias técnicas"
+      ],
+      "absolute_blockers": [
+        "La recepción de HTML en el bridge documental y los errores SQL asociados",
+        "Riesgo de performance por bundles grandes y pruebas E2E insuficientes/inestables",
+        "La infraestructura faltante persistente reportada por el CEO Bridge"
+      ],
+      "most_fragile_area": {
+        "surface": "Bridge Documental y Motor Helios",
+        "why": "Presenta fallas críticas de integridad de datos (recepción de HTML, errores SQL) y clasificación fundamental (PDFs, INFONAVIT), comprometiendo el valor central de la auditoría."
+      },
+      "three_round_plan": [
+        {
+          "round": 1,
+          "name": "Estabilización Crítica y Core Funcional",
+          "scope": [
+            "Resolución de la recepción de HTML en el bridge documental y errores SQL",
+            "Mejora de la clasificación de PDFs y propagación de señales clave (INFONAVIT)",
+            "Implementación y estabilización de pruebas E2E para flujos críticos (/auditar, resultado)"
+          ],
+          "exit_criteria": [
+            "El bridge documental procesa JSON correctamente sin errores SQL por contaminación",
+            "PDFs de nómina y XMLs clave se clasifican y extraen datos correctamente",
+            "Pruebas E2E para el flujo de auditoría y resultados son estables y pasan consistentemente"
+          ]
+        },
+        {
+          "round": 2,
+          "name": "Optimización de Experiencia y Preparación para Escalado",
+          "scope": [
+            "Simplificación y mejora de la intuitividad en /auditar y el asistente laboral",
+            "Claridad en la transición entre landing, /acceso y sesión autenticada",
+            "Optimización de bundles para mejorar el performance y reducir el riesgo de carga",
+            "Refinamiento de las respuestas de Helios para que sean más aterrizadas y útiles",
+            "Soporte para documentos DOCX en el flujo de auditoría"
+          ],
+          "exit_criteria": [
+            "Flujo de /auditar y acceso es intuitivo y sin fricción, validado por UX",
+            "Bundles de la aplicación optimizados, reduciendo el tiempo de carga inicial",
+            "Respuestas de Helios son específicas y accionables, mejorando la confianza",
+            "Documentos DOCX son aceptados y procesados correctamente"
+          ]
+        },
+        {
+          "round": 3,
+          "name": "Endurecimiento Operacional y Cierre Web Final",
+          "scope": [
+            "Resolución de la advertencia de `baseline-browser-mapping`",
+            "Resolución de la infraestructura faltante reportada por CEO Bridge",
+            "Mejora de la usabilidad y orientación de la Consola CEO para operación interna",
+            "Auditoría final de seguridad y cumplimiento para la versión web",
+            "Revisión final de UX/UI para eliminar cualquier fricción o confusión restante"
+          ],
+          "exit_criteria": [
+            "Todas las advertencias técnicas y operativas están resueltas",
+            "Consola CEO es funcional, intuitiva y eficiente para el equipo operativo",
+            "Plataforma web es robusta, segura y lista para una versión final pública",
+            "No hay fricciones o confusiones significativas en la experiencia de usuario"
+          ]
+        }
+      ],
+      "do_not_touch_yet": [
+        "Conversión a app móvil nativa o React Native",
+        "Desarrollo de nuevas funcionalidades no esenciales o 'por gusto'",
+        "Rediseños estéticos mayores o cambios de branding en la landing/marketing"
+      ],
+      "mobile_app_timing": {
+        "verdict": "No es el momento.",
+        "condition": "Una vez que la versión web final esté completamente estabilizada, sea intuitiva, Helios opere al 100% y la plataforma esté probada para miles de usuarios, y se haya validado la necesidad estratégica de una app nativa."
+      },
+      "executive_verdict": "La prioridad absoluta es la estabilización del core documental y la fiabilidad de Helios, seguida de una experiencia de usuario impecable en los flujos críticos y la preparación técnica para la escalabilidad. Cualquier desvío de este camino comprometerá la versión final web y la confianza del usuario."
+    }
+  }
+}

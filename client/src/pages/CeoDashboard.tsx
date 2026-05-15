@@ -1933,14 +1933,14 @@ export default function CeoDashboard() {
 
   return (
     <DashboardLayout
-      title="Mi Expediente de Defensa"
-      subtitle="Panel privado del owner autorizado para AuditaPatron. Este expediente privado solo está disponible para el owner autorizado."
+      title="Consola CEO"
+      subtitle="Vista privada del owner autorizado para monitorear prioridades, riesgos y operación."
       navigation={navigation}
       headerActions={
         <>
           <Button className="rounded-full bg-slate-950 text-white hover:bg-slate-800" onClick={openHeliosForCeo}>
             <Sparkles className="mr-2 h-4 w-4" />
-            Abrir Helios CEO
+            Preguntar a Helios
           </Button>
           <Button
             variant="outline"
@@ -1964,7 +1964,7 @@ export default function CeoDashboard() {
             }}
           >
             {exportKind === "pdf" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-            Reporte PDF
+            Descargar PDF
           </Button>
           <Button
             variant="outline"
@@ -1990,7 +1990,7 @@ export default function CeoDashboard() {
           </Button>
           <Button variant="ghost" className="rounded-full" onClick={() => setLocation("/")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Sitio público
+            Volver al sitio
           </Button>
         </>
       }
@@ -2043,10 +2043,10 @@ export default function CeoDashboard() {
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-100/85">Modo CEO</p>
                     <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]">
-                      Prioridades del día y acciones seguras en una sola vista.
+                      Prioridades del día en una sola vista.
                     </h2>
                     <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100/90 xl:text-[15px]">
-                      Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda más abajo para cuando realmente haga falta.
+                      Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda abajo, solo cuando haga falta.
                     </p>
                   </div>
 
@@ -2054,24 +2054,24 @@ export default function CeoDashboard() {
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué ver primero</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        Alertas críticas, cuellos de botella documentales y accesos que siguen activos.
+                        Alertas críticas, bloqueos documentales y accesos activos.
                       </p>
                     </article>
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué queda oculto</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        Métricas maestras, trazabilidad profunda y controles técnicos solo cuando los abras.
+                        Métricas y controles técnicos solo cuando los abras.
                       </p>
                     </article>
                     <article className="rounded-[1.35rem] border border-white/15 bg-white/10 p-3 backdrop-blur sm:p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-teal-100/80">Qué puedes hacer</p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-100/85">
-                        Decidir rápido, exportar cuando convenga y volver a la vista de usuario sin perder contexto.
+                        Decidir rápido, exportar y volver a la vista de usuario con contexto.
                       </p>
                     </article>
                   </div>
                   <div className="rounded-[1.2rem] border border-amber-200/25 bg-slate-950/20 px-4 py-3 text-sm leading-6 text-slate-100/88">
-                    <strong className="text-white">Carril seguro del chat CEO:</strong> si pides una acción sensible, primero se devuelve como propuesta sujeta a confirmación visible.
+                    <strong className="text-white">Carril seguro:</strong> si pides una acción sensible, primero regresa como propuesta sujeta a confirmación visible.
                   </div>
 
               </div>
@@ -2099,7 +2099,7 @@ export default function CeoDashboard() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Exploración ejecutiva</p>
                 <h3 className="text-xl font-semibold tracking-tight text-slate-950">Filtros rápidos</h3>
                 <p className="text-sm leading-6 text-slate-600">
-                  Busca tenant, caso, alerta, acceso o documento. Los listados responden a tus filtros sin mover el panorama general.
+                  Filtra tenant, caso, alerta, acceso o documento sin perder la vista general.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -2112,7 +2112,7 @@ export default function CeoDashboard() {
                   onClick={() => setShowAdvancedFilters((previous) => !previous)}
                 >
                   <Filter className="mr-2 h-4 w-4" />
-                  {showAdvancedFilters ? "Ocultar filtros avanzados" : "Más filtros"}
+                  {showAdvancedFilters ? "Ocultar avanzados" : "Más filtros"}
                 </Button>
               </div>
             </div>

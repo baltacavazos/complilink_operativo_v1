@@ -7256,11 +7256,11 @@ export default function Auditar() {
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 Revisión rápida y privada
               </div>
-              <h1 className="mt-5 max-w-[12ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Comienza sin correo
+              <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
+                Sube tu primer documento
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
-                Sube una foto, PDF o XML. Verás el documento, la señal y el siguiente paso. Solo pediremos tu correo si decides guardarlo.
+                Empieza con una foto, PDF o XML. Te diremos qué documento detectamos, qué señal apareció y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -7277,8 +7277,8 @@ export default function Auditar() {
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                 <Button
-                  variant="outline"
-                  className="h-auto min-h-12 w-full whitespace-normal rounded-full border-slate-100 bg-slate-50/80 px-5 py-3 text-sm leading-5 text-slate-600 hover:bg-slate-100 sm:h-12 sm:w-auto sm:px-6 sm:py-0 sm:text-[0.95rem]"
+                  variant="ghost"
+                  className="h-auto min-h-12 w-full whitespace-normal rounded-full px-5 py-3 text-sm leading-5 text-slate-600 hover:bg-slate-100 sm:h-12 sm:w-auto sm:px-4 sm:py-0 sm:text-[0.95rem]"
                   onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -7286,21 +7286,21 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  <span className="sm:hidden">Guardar con mi cuenta</span>
-                  <span className="hidden sm:inline">Inicia sesión para guardar</span>
+                  <span className="sm:hidden">Ya tengo cuenta</span>
+                  <span className="hidden sm:inline">Ya tengo cuenta · iniciar sesión</span>
                 </Button>
               </div>
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
-                Lo que pasa en cuanto subes
+                Qué pasa después de subirlo
               </p>
               <div className="mt-4 space-y-3">
                 {[
-                  "Subes foto, PDF o XML desde tu celular o computadora.",
-                  "Te mostramos qué documento detectamos, qué señal apareció y qué significa en palabras simples.",
-                  "Si decides guardarlo en tu bóveda laboral, ahí sí activas el acceso por correo.",
+                  "Subes un solo archivo desde tu celular o computadora.",
+                  "Te mostramos qué detectamos y si ya apareció una señal para revisar.",
+                  "Si quieres guardarlo o seguir después, entonces activas tu acceso por correo.",
                 ].map(item => (
                   <div
                     key={item}
@@ -8060,7 +8060,7 @@ export default function Auditar() {
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Elige un archivo o toma una foto cuando quieras sumar otra pieza útil."
-                        : "Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado."}
+                        : "Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil."}
                     </p>
                   </div>
                 </div>

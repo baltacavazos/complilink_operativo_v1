@@ -243,6 +243,16 @@ function extractMoney(text: string) {
   return match?.[0]?.replace(/\s+/g, "") ?? null;
 }
 
+function fileNameLooksLikeUuid(value: string) {
+  const cleaned = value.replace(/\.[^.]+$/, "");
+  return /(?:^|[^a-z0-9])[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}(?:[^a-z0-9]|$)/i.test(cleaned);
+}
+
+function extractInfonavitDeductionType(text: string) {
+  const match = text.match(/TipoDeduccion\s*=\s*["']?(010)["']?/i);
+  return match?.[1] ?? null;
+}
+
 function extractDate(text: string) {
   const match = text.match(/\b(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})\b/);
   return match?.[1] ?? null;
@@ -345,6 +355,7 @@ export function classifyMexicanLaborDocument(params: {
   textHint?: string | null;
 }): DocumentClassification {
   const haystack = normalizeText(`${params.fileName} ${params.mimeType} ${params.textHint ?? ""}`);
+  const uuidNamedPdf = params.mimeType === "application/pdf" && fileNameLooksLikeUuid(params.fileName);
 
   if (hasAny(haystack, "cfdi", "xml", "factura", "timbre fiscal", "sat", "uuid")) {
     return buildClassification({
@@ -372,12 +383,17 @@ export function classifyMexicanLaborDocument(params: {
     });
   }
 
-  if (hasAny(haystack, "nomina", "nómina", "recibo", "payroll", "quincena", "semanal", "percepciones", "deducciones")) {
+  if (
+    hasAny(haystack, "nomina", "nómina", "recibo", "payroll", "quincena", "semanal", "percepciones", "deducciones", "folio fiscal", "representacion impresa", "representación impresa", "comprobante fiscal") ||
+    uuidNamedPdf
+  ) {
     return buildClassification({
       documentType: "payroll_receipt",
-      normalizedDocType: "recibo_nomina",
-      classificationConfidence: 86,
-      reason: "Se detectaron indicadores de recibos de nómina o pagos laborales.",
+      normalizedDocType: uuidNamedPdf ? "recibo_nomina_cfdi_pdf" : "recibo_nomina",
+      classificationConfidence: uuidNamedPdf ? 82 : 86,
+      reason: uuidNamedPdf
+        ? "El PDF usa un nombre tipo UUID frecuente en representaciones impresas de CFDI o recibos de nómina."
+        : "Se detectaron indicadores de recibos de nómina o pagos laborales.",
       processingProfile: "standard",
       reviewRecommendation: "auto",
       supportsStructuredExtraction: true,
@@ -479,6 +495,14 @@ export function buildPreliminaryLaborAnalysis(params: {
   const sourceText = `${params.fileName} ${params.textHint ?? ""}`;
   const normalizedText = normalizeText(sourceText);
 
+  const infonavitDeductionType = extractInfonavitDeductionType(sourceText);
+  const hasInfonavitSignal =
+    infonavitDeductionType === "010" ||
+    normalizedText.includes("pago infonavit") ||
+    normalizedText.includes("credito infonavit") ||
+    normalizedText.includes("crédito infonavit") ||
+    normalizedText.includes("infonavit");
+
   const estimatedData: Record<string, AnalysisValue> = {
     employerRfc: extractRfc(sourceText),
     period: extractPeriod(sourceText),
@@ -497,6 +521,8 @@ export function buildPreliminaryLaborAnalysis(params: {
     processingProfile: classification.processingProfile,
     structuredExtractionReady: classification.supportsStructuredExtraction,
     benefitEstimationReady: classification.supportsBenefitEstimation,
+    hasInfonavitSignal,
+    infonavitDeductionType,
   };
 
   const extractionTargets = (() => {
@@ -527,7 +553,7 @@ export function buildPreliminaryLaborAnalysis(params: {
         ];
       case "payroll_receipt":
       case "cfdi":
-        return ["RFC patrón", "RFC trabajador", "periodo", "salario", "percepciones", "deducciones"];
+        return ["RFC patrón", "RFC trabajador", "periodo", "salario", "percepciones", "deducciones", "INFONAVIT"];
       case "imss":
         return ["NSS", "fecha de alta", "salario base", "semanas cotizadas"];
       default:
@@ -543,7 +569,9 @@ export function buildPreliminaryLaborAnalysis(params: {
       return "Parece un documento de terminación o pago final. Puede revisarse qué conceptos se liquidaron y cuáles solo parecen estimados.";
     }
     if (classification.documentType === "payroll_receipt" || classification.documentType === "cfdi") {
-      return "Parece un comprobante de pago laboral. Puede usarse para extraer periodo, percepciones, deducciones y señales salariales.";
+      return hasInfonavitSignal
+        ? "Parece un comprobante de pago laboral con señales visibles de INFONAVIT. Puede usarse para extraer periodo, percepciones, deducciones y validar seguridad social."
+        : "Parece un comprobante de pago laboral. Puede usarse para extraer periodo, percepciones, deducciones y señales salariales.";
     }
     if (classification.documentType === "imss") {
       return "Parece un documento de seguridad social. Puede ayudar a revisar alta, salario registrado y semanas cotizadas.";

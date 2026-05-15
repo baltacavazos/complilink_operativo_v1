@@ -1,0 +1,336 @@
+{
+  "prompt_path": "/home/ubuntu/complilink_operativo_v1/research/final_ux_simplification_brief_2026-05-15.md",
+  "images": {
+    "home": "/home/ubuntu/complilink_operativo_v1/ui-audit/home-mobile-fixed-3.png",
+    "acceso": "/home/ubuntu/complilink_operativo_v1/ui-audit/acceso-mobile-loaded.png",
+    "auditar": "/home/ubuntu/complilink_operativo_v1/ui-audit/auditar-mobile-polish-fixed.png",
+    "ceo": "/home/ubuntu/complilink_operativo_v1/ui-audit/ceo-desktop-polish-fixed.png"
+  },
+  "models": {
+    "openai": {
+      "most_confusing_surface": {
+        "surface": "auditar",
+        "why": "La pantalla presenta demasiadas opciones y decisiones visibles al mismo tiempo, con botones y textos que compiten por atención y no queda claro cuál es el siguiente paso obligatorio. La mezcla entre empezar sin correo y guardar con cuenta genera confusión sobre el flujo."
+      },
+      "screen_by_screen": [
+        {
+          "screen": "home",
+          "what_is_clear": [
+            "El mensaje principal sobre la utilidad del recibo para detectar señales raras.",
+            "Los pasos están numerados y explican el proceso general."
+          ],
+          "what_is_confusing": [
+            "El botón 'Sube foto o PDF' no destaca lo suficiente y puede perderse.",
+            "El texto explicativo es denso y puede ser abrumador para un usuario común."
+          ],
+          "what_feels_redundant": [
+            "Repetición de la idea de subir foto o PDF en el botón y en el texto.",
+            "Los tres pasos tienen explicaciones largas que podrían simplificarse."
+          ],
+          "next_step_clarity_score": 3,
+          "do_not_touch": [
+            "El orden y numeración de los pasos.",
+            "El mensaje principal que conecta con el usuario."
+          ]
+        },
+        {
+          "screen": "acceso",
+          "what_is_clear": [
+            "El propósito de la pantalla: iniciar sesión para continuar con el expediente.",
+            "El campo para ingresar correo y el botón para recibir código."
+          ],
+          "what_is_confusing": [
+            "La presencia del texto 'Más opciones de acceso' sin claridad sobre qué opciones hay.",
+            "La mezcla entre volver al inicio y continuar con sesión activa puede confundir."
+          ],
+          "what_feels_redundant": [
+            "El texto explicativo es largo y puede simplificarse para no saturar.",
+            "El botón 'Volver al inicio' y el texto 'Vuelves al inicio' parecen duplicar función."
+          ],
+          "next_step_clarity_score": 4,
+          "do_not_touch": [
+            "El campo de correo y botón para recibir código.",
+            "El encabezado que indica claramente la acción de iniciar sesión."
+          ]
+        },
+        {
+          "screen": "auditar",
+          "what_is_clear": [
+            "El mensaje de 'Comienza sin correo' que invita a subir documentos rápido.",
+            "Los botones para 'Empezar gratis' y 'Guardar con mi cuenta' están visibles."
+          ],
+          "what_is_confusing": [
+            "No queda claro qué pasa después de subir el documento y qué opción elegir primero.",
+            "El texto explicativo es muy denso y mezcla varios mensajes en un solo bloque."
+          ],
+          "what_feels_redundant": [
+            "La explicación larga bajo los botones que repite información sobre subir archivos.",
+            "Dos botones principales que compiten y pueden generar indecisión."
+          ],
+          "next_step_clarity_score": 2,
+          "do_not_touch": [
+            "El llamado a la acción principal 'Empezar gratis'."
+          ]
+        },
+        {
+          "screen": "ceo",
+          "what_is_clear": [
+            "El mensaje de acceso seguro y protección de información.",
+            "El botón azul 'Iniciar sesión' destaca claramente la acción."
+          ],
+          "what_is_confusing": [
+            "La pantalla es muy minimalista y puede parecer vacía o poco informativa para usuarios internos.",
+            "No hay indicación clara de qué sucede después de iniciar sesión."
+          ],
+          "what_feels_redundant": [
+            "El texto pequeño sobre diseño para operación laboral puede no ser necesario en esta pantalla.",
+            "La repetición del concepto de seguridad en varios textos."
+          ],
+          "next_step_clarity_score": 5,
+          "do_not_touch": [
+            "El botón de acción principal.",
+            "El mensaje de seguridad y privacidad."
+          ]
+        }
+      ],
+      "top_10_simplification_fixes": [
+        {
+          "order": 1,
+          "surface": "auditar",
+          "fix": "Reducir a un solo botón claro para empezar (subir documento) y eliminar o esconder la opción de guardar con cuenta hasta después.",
+          "impact": "high",
+          "reason": "Disminuye la densidad cognitiva y elimina la indecisión inicial."
+        },
+        {
+          "order": 2,
+          "surface": "home",
+          "fix": "Simplificar el texto explicativo y hacer más visible el botón para subir foto o PDF.",
+          "impact": "high",
+          "reason": "Mejora la claridad del llamado a la acción principal y reduce el ruido."
+        },
+        {
+          "order": 3,
+          "surface": "acceso",
+          "fix": "Eliminar texto redundante y unificar el botón 'Volver al inicio' para que sea más claro y menos repetitivo.",
+          "impact": "medium",
+          "reason": "Reduce confusión y mejora la navegación."
+        },
+        {
+          "order": 4,
+          "surface": "auditar",
+          "fix": "Dividir el texto explicativo en bloques más cortos y usar bullets para facilitar lectura rápida.",
+          "impact": "medium",
+          "reason": "Facilita la comprensión rápida del flujo."
+        },
+        {
+          "order": 5,
+          "surface": "ceo",
+          "fix": "Agregar un mensaje breve que indique qué sigue después de iniciar sesión para mejorar claridad.",
+          "impact": "medium",
+          "reason": "Mejora la experiencia del operador y CEO con información clara."
+        },
+        {
+          "order": 6,
+          "surface": "home",
+          "fix": "Eliminar la repetición de la idea de subir documentos en texto y botón para evitar redundancia.",
+          "impact": "low",
+          "reason": "Reduce ruido visual y textual."
+        },
+        {
+          "order": 7,
+          "surface": "acceso",
+          "fix": "Ocultar 'Más opciones de acceso' o mostrar claramente qué opciones hay para evitar confusión.",
+          "impact": "low",
+          "reason": "Evita distracción y mejora foco."
+        },
+        {
+          "order": 8,
+          "surface": "auditar",
+          "fix": "Clarificar el flujo posterior a subir documento con un mensaje o indicador visual.",
+          "impact": "medium",
+          "reason": "Mejora la percepción de progreso y reduce incertidumbre."
+        },
+        {
+          "order": 9,
+          "surface": "ceo",
+          "fix": "Eliminar texto pequeño sobre diseño para operación laboral que no aporta en esta pantalla.",
+          "impact": "low",
+          "reason": "Reduce ruido visual."
+        },
+        {
+          "order": 10,
+          "surface": "home",
+          "fix": "Mantener la numeración de pasos pero usar frases más cortas y directas.",
+          "impact": "low",
+          "reason": "Facilita lectura y retención del mensaje."
+        }
+      ],
+      "final_closure_focus": [
+        "Simplificación y claridad máxima en el flujo de auditoría (pantalla auditar).",
+        "Eliminar redundancias y mejorar foco en botones y llamadas a la acción.",
+        "Preparar la plataforma para escalabilidad sin perder intuición."
+      ],
+      "executive_verdict": "AuditaPatron está cerca de cerrar su versión final web, pero la pantalla de auditoría es el principal cuello de botella por su alta densidad cognitiva y opciones confusas. Simplificar este flujo y mejorar la claridad en home y acceso permitirá una experiencia más intuitiva para usuarios comunes y el equipo interno. La consola CEO requiere pequeños ajustes para mejorar la comunicación del siguiente paso. Con estas correcciones, la plataforma estará lista para escalar y cumplir con la promesa de valor sin ruido ni distracciones."
+    },
+    "grok": {
+      "error": "429 Client Error: Too Many Requests for url: https://api.x.ai/v1/chat/completions"
+    },
+    "gemini": {
+      "most_confusing_surface": {
+        "surface": "acceso",
+        "why": "La pantalla de acceso presenta dos botones de navegación idénticos y redundantes ('Volver al inicio' y 'Vuelves al inicio') que compiten por la atención y generan confusión inmediata sobre cuál es la acción correcta o si hay un error en la interfaz. Esto rompe la confianza y la claridad del flujo de onboarding."
+      },
+      "screen_by_screen": [
+        {
+          "screen": "home",
+          "what_is_clear": [
+            "La propuesta de valor 'Tu recibo puede revelar señales raras' es clara y atractiva.",
+            "La explicación del proceso en 3 pasos es intuitiva y genera expectativas claras.",
+            "La frase 'No necesitas juntar todo para empezar a entender tu' (aunque cortada) reduce la fricción inicial."
+          ],
+          "what_is_confusing": [
+            "El botón principal de acción 'SUBE FOTO O PDF' es pequeño, utiliza un ícono de 'check' que no sugiere 'subir' y no tiene la prominencia necesaria para ser el punto de entrada principal.",
+            "La frase 'Asegura el documento que ya tienes' es un poco ambigua; podría ser más directa como 'Ten a la mano tu documento'.",
+            "El texto cortado en el 'PASO 1' ('No necesitas juntar todo para empezar a entender tu') es un error de contenido."
+          ],
+          "what_feels_redundant": [],
+          "next_step_clarity_score": 3,
+          "do_not_touch": [
+            "El título principal y la descripción de la propuesta de valor.",
+            "La estructura de los 'PASO 1, 2, 3' para explicar el proceso."
+          ]
+        },
+        {
+          "screen": "acceso",
+          "what_is_clear": [
+            "La descripción 'Esta pantalla solo sirve para entrar o continuar...' explica claramente el propósito y el mecanismo de acceso (código de 6 dígitos), reduciendo la ansiedad del usuario.",
+            "El campo de correo y el botón 'Recibir código' son estándar y claros."
+          ],
+          "what_is_confusing": [
+            "La presencia de dos botones de navegación idénticos y consecutivos ('Volver al inicio' y 'Vuelves al inicio') es extremadamente confusa y un error de UX crítico.",
+            "'Más opciones de acceso' podría generar incertidumbre sobre qué opciones adicionales existen y si son necesarias, añadiendo una ligera carga cognitiva."
+          ],
+          "what_feels_redundant": [
+            "Los dos botones de 'Volver al inicio' son completamente redundantes y contradictorios."
+          ],
+          "next_step_clarity_score": 2,
+          "do_not_touch": [
+            "La explicación del proceso de inicio de sesión con código."
+          ]
+        },
+        {
+          "screen": "auditar",
+          "what_is_clear": [
+            "La propuesta 'Comienza sin correo' es un diferenciador fuerte y reduce significativamente la fricción de entrada.",
+            "La frase 'Revisión rápida y privada' genera confianza.",
+            "La explicación del flujo 'Sube una foto, PDF o XML. Verás el documento, la señal y el siguiente paso. Solo pediremos tu correo si decides guardarlo.' es muy clara y transparente.",
+            "Los botones 'Empezar gratis' y 'Guardar con mi cuenta' ofrecen opciones claras para diferentes intenciones de usuario."
+          ],
+          "what_is_confusing": [],
+          "what_feels_redundant": [
+            "La sección 'LO QUE PASA EN CUANTO SUBES' con el texto 'Subes foto, PDF o XML desde tu celular o computadora.' repite información que ya se mencionó explícitamente en el párrafo superior."
+          ],
+          "next_step_clarity_score": 5,
+          "do_not_touch": [
+            "El título 'Comienza sin correo' y su descripción.",
+            "Los botones 'Empezar gratis' y 'Guardar con mi cuenta'."
+          ]
+        },
+        {
+          "screen": "ceo",
+          "what_is_clear": [
+            "El título 'Acceso seguro a tu cuenta' y 'ÁREA PRIVADA' son claros para un login de usuario interno/CEO.",
+            "La descripción sobre la protección de la información y las opciones de inicio de sesión (Manus, Google, código por correo) es muy completa y genera confianza.",
+            "La mención de 'Diseñado para operación laboral en México, con control, privacidad y respaldo confiable' refuerza la seguridad y el enfoque local."
+          ],
+          "what_is_confusing": [
+            "La descripción del problema mencionaba una 'Consola CEO útil pero cargada', pero la captura muestra solo una pantalla de login muy limpia. Esto genera confusión sobre si la captura es representativa de la 'Consola CEO' o solo de su acceso."
+          ],
+          "what_feels_redundant": [],
+          "next_step_clarity_score": 4,
+          "do_not_touch": [
+            "La estructura y el contenido del texto explicativo sobre el acceso seguro."
+          ]
+        }
+      ],
+      "top_10_simplification_fixes": [
+        {
+          "order": 1,
+          "surface": "acceso",
+          "fix": "Eliminar el botón redundante 'Vuelves al inicio' y mantener solo uno de 'Volver al inicio' con una ubicación y estilo consistentes en toda la plataforma.",
+          "impact": "high",
+          "reason": "Es un error crítico de UX que genera confusión y frustración inmediata, afectando la confianza del usuario desde el primer contacto con el flujo de acceso."
+        },
+        {
+          "order": 2,
+          "surface": "home",
+          "fix": "Transformar 'SUBE FOTO O PDF' en un botón de acción principal mucho más grande y prominente, con un ícono de 'subir' (flecha hacia arriba o clip) en lugar del 'check'.",
+          "impact": "high",
+          "reason": "Mejorará drásticamente la claridad del primer paso para el usuario, haciendo que el inicio del proceso sea obvio e intuitivo."
+        },
+        {
+          "order": 3,
+          "surface": "home",
+          "fix": "Corregir el texto cortado en el 'PASO 1' para que se lea completo y claro.",
+          "impact": "medium",
+          "reason": "Es un error básico de contenido que afecta la profesionalidad y la claridad de la explicación del flujo."
+        },
+        {
+          "order": 4,
+          "surface": "home",
+          "fix": "Cambiar la redacción de 'Asegura el documento que ya tienes' a algo más directo como 'Ten a la mano tu documento' o 'Prepara tu documento'.",
+          "impact": "medium",
+          "reason": "Mejora la claridad y reduce la ambigüedad para el usuario común, haciendo el lenguaje más accesible."
+        },
+        {
+          "order": 5,
+          "surface": "auditar",
+          "fix": "Eliminar la frase redundante 'Subes foto, PDF o XML desde tu celular o computadora.' de la sección 'LO QUE PASA EN CUANTO SUBES'.",
+          "impact": "medium",
+          "reason": "Reduce el ruido visual y la densidad cognitiva, ya que la información ya está claramente expresada en el párrafo superior."
+        },
+        {
+          "order": 6,
+          "surface": "acceso",
+          "fix": "Reevaluar la necesidad de 'Más opciones de acceso'. Si son pocas y comunes (ej. Google), mostrarlas directamente. Si son muchas, mantener el enlace pero con un texto más descriptivo (ej. 'Otras formas de iniciar sesión').",
+          "impact": "medium",
+          "reason": "Simplifica el flujo de acceso para la mayoría de los usuarios, evitando una capa adicional de decisión si no es estrictamente necesaria."
+        },
+        {
+          "order": 7,
+          "surface": "Global",
+          "fix": "Establecer una guía de estilo y ubicación consistente para todos los botones de navegación 'Volver/Regresar' en toda la plataforma.",
+          "impact": "medium",
+          "reason": "Mejora la coherencia y la predictibilidad de la navegación, reduciendo la carga cognitiva y mejorando la experiencia general del usuario."
+        },
+        {
+          "order": 8,
+          "surface": "home",
+          "fix": "Asegurar que el selector de idioma 'En' no compita visualmente con el CTA principal y esté en una posición esperada y discreta.",
+          "impact": "low",
+          "reason": "Es una mejora de pulido para asegurar que los elementos secundarios no distraigan del flujo principal."
+        },
+        {
+          "order": 9,
+          "surface": "auditar",
+          "fix": "Verificar la visibilidad y el propósito del botón 'Revisión' (parcialmente cortado en la captura) para asegurar que sea consistente con la navegación y no añada confusión.",
+          "impact": "low",
+          "reason": "Asegura la consistencia en la navegación y evita elementos inesperados o poco claros."
+        },
+        {
+          "order": 10,
+          "surface": "CEO (Consola)",
+          "fix": "Realizar una auditoría específica de la 'Consola CEO' real para identificar y simplificar elementos cargados o confusos, ya que la captura proporcionada es solo del login.",
+          "impact": "high",
+          "reason": "El problema original menciona que la consola es 'cargada'. Aunque el login es bueno, la consola en sí es un riesgo no evaluado que podría generar fricción para el equipo interno."
+        }
+      ],
+      "final_closure_focus": [
+        "**Coherencia y Prominencia de CTAs:** Asegurar que el botón principal de acción en la Home sea inconfundible y que todos los llamados a la acción sean claros y consistentes.",
+        "**Eliminación de Redundancias Críticas:** Resolver de inmediato la duplicidad de botones de navegación en la pantalla de Acceso y eliminar cualquier repetición textual innecesaria.",
+        "**Claridad del Flujo de Onboarding:** Optimizar el primer contacto del usuario para que el proceso de 'subir y auditar' sea lo más intuitivo posible, sin fricciones ni dudas sobre el siguiente paso."
+      ],
+      "executive_verdict": "AuditaPatron tiene una propuesta de valor y un enfoque de onboarding ('Comienza sin correo') muy sólidos. Sin embargo, existen fallas críticas de UX en la navegación (redundancia en Acceso) y la visibilidad del CTA principal (Home) que deben ser corregidas urgentemente para cerrar la versión web final. La eliminación de estas fricciones y redundancias, junto con un pulido del lenguaje, elevará significativamente la intuición y confianza del usuario, preparando la plataforma para escalar."
+    }
+  }
+}

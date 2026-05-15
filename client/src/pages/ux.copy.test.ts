@@ -54,13 +54,13 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Si no sabes con qué empezar");
     expect(source).toContain("Empieza por el archivo que más rápido suele revelar diferencias");
-    expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(source).toContain("Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.");
     expect(source).toContain('id="lectura-gratis"');
     expect(source).toContain("Primera lectura sin correo");
     expect(source).toContain("Empieza con una foto. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después dentro de tu Bóveda Laboral.");
     expect(source).toContain("Criterios laborales vigentes 2026");
     expect(source).toContain("Primera lectura sin correo");
-    expect(source).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(source).toContain("Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.");
     expect(source).toContain("Cuando quieras continuar o recuperar tu avance, entras con tu correo.");
     expect(source).toContain("Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.");
     expect(source).toContain("audipatron_home_primary_cta_redirected_to_guest_preview");
@@ -129,7 +129,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Elegir documento');
     expect(source).toContain('mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700');
     expect(source).toContain('max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600');
-    expect(source).toContain('Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.');
+    expect(source).toContain('Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Sube otro archivo si lo necesitas.');
     expect(source).toContain('Tu resultado ya está arriba. Aquí puedes sumar otra pieza');
@@ -245,8 +245,9 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Iniciar sesión");
-    expect(source).toContain("Inicia sesión y vuelve a tu expediente");
-    expect(source).toContain("Esta pantalla solo sirve para entrar o continuar. Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al ");
+    expect(source).toContain("Entra y sigue donde te quedaste");
+    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al ");
+    expect(source).toContain("Aquí solo resolvemos el acceso.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
@@ -257,16 +258,17 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "inicio"');
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
-    expect(source).toContain("sin perder tu avance.");
+    expect(source).not.toContain("sin perder tu avance.");
     expect(source).not.toContain("Después de entrar: ");
-    expect(source).toContain('Vuelves al ');
-    expect(source).toContain("Recibir código");
+    expect(source).not.toContain('Vuelves al ');
+    expect(source).toContain("Enviar código");
     expect(source).toContain("Enviando código...");
     expect(source).toContain("Estamos enviando tu código.");
     expect(source).toContain("Código enviado");
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Volver a enviar código");
-    expect(source).toContain("Más opciones de acceso");
+    expect(source).toContain("Otros métodos");
+    expect(source).toContain("Úsalos solo si tu correo no es la mejor ruta para entrar.");
     expect(source).toContain("Acceso base con salida CEO");
     expect(source).toContain("Acceso normal con salida CEO");
     expect(source).toContain('data-testid="access-ceo-header-toggle"');
@@ -281,17 +283,16 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain('text-2xl font-semibold tracking-tight sm:text-3xl xl:text-[2.55rem]');
     expect(source).toContain("Modo CEO");
-    expect(source).toContain("Prioridades del día y acciones seguras en una sola vista.");
-    expect(source).toContain("Empieza por alertas críticas, documentos pendientes y accesos vigentes.");
-    expect(source).toContain("Abrir Helios CEO");
+    expect(source).toContain("Prioridades del día en una sola vista.");
+    expect(source).toContain("Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda abajo, solo cuando haga falta.");
+    expect(source).toContain("Preguntar a Helios");
     expect(source).toContain("Qué ver primero");
     expect(source).toContain("Qué queda oculto");
     expect(source).toContain("Qué puedes hacer");
-    expect(source).toContain("Carril seguro del chat CEO");
+    expect(source).toContain("Carril seguro:");
     expect(source).toContain("propuesta sujeta a confirmación visible");
-    expect(source).toContain("Mi Expediente de Defensa");
-    expect(source).toContain("Panel privado del owner autorizado para AuditaPatron");
-    expect(source).toContain("Este expediente privado solo está disponible para el owner autorizado.");
+    expect(source).toContain("Consola CEO");
+    expect(source).toContain("Vista privada del owner autorizado para monitorear prioridades, riesgos y operación.");
   });
 
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {

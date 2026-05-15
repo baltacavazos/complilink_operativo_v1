@@ -1625,3 +1625,28 @@
 - [x] Incorporar una variante adicional del hero más frontal para comparar un mensaje más directo de conversión.
 - [x] Sumar 2–3 casos anonimizados con monto detectado y siguiente acción justo debajo del hero.
 - [x] Actualizar y revalidar las pruebas afectadas por la nueva ronda de conversión del hero.
+- [x] Ejecutar una prueba funcional del flujo de carga del CEO usando 6 documentos reales para observar clasificación, extracción y cruces del sistema.
+- [x] Contrastar la salida del sistema contra el contenido real de contratos, XML y PDF para detectar aciertos, omisiones o fallas.
+- [x] Documentar el comportamiento observado y proponer ajustes concretos de producto o lógica si aparecen errores.
+- [ ] Corregir el bridge documental para que el despacho al motor responda un ack válido en JSON y no HTML de la landing, evitando errores posteriores en audit_logs.
+- [ ] Limitar o sanitizar el payload guardado en audit_logs durante document.engine_dispatch para que una respuesta HTML grande no rompa la inserción SQL.
+- [ ] Mejorar la clasificación de PDFs de nómina/CFDI para que no caigan como `other` cuando el contenido sí muestra folio fiscal, RFC, NSS y periodo.
+- [ ] Extraer y propagar señales reales de IMSS/INFONAVIT desde XML/PDF de nómina; por ejemplo, deducciones tipo 010 y NSS visibles no deben quedar en falso negativo.
+- [ ] Definir si los contratos DOCX deben soportarse en el flujo CEO o convertirse automáticamente, porque hoy contienen datos laborales valiosos pero se rechazan por formato.
+- [ ] Auditar integralmente la plataforma para detectar y eliminar fricción, redundancia, jerga, pasos confusos y superficies innecesarias antes del cierre final web.
+- [ ] Priorizar y ejecutar la simplificación final de Home, /auditar, /acceso y Consola CEO para que el flujo sea intuitivo para usuario común y ejecutivo.
+- [ ] Llevar Helios al 100% corrigiendo estabilidad del bridge documental, precisión de clasificación, extracción laboral clave y utilidad real de las respuestas.
+- [ ] Endurecer la plataforma para escala real revisando cuellos de botella, límites del runtime, tolerancia a concurrencia, observabilidad y riesgo operativo.
+- [ ] Consolidar una versión web final validada con auditorías, pruebas funcionales y checkpoint estable antes de iniciar cualquier trabajo de app móvil.
+- [ ] Definir únicamente después el plan de conversión a Android e iOS sobre una base web ya cerrada y estable.
+- [x] Simplificar `/auditar` para dejar un camino inicial inequívoco, reducir competencia entre acciones y hacer explícito qué pasa justo después de subir un documento.
+- [x] Limpiar `/acceso` eliminando redundancias de navegación y aclarando si realmente hacen falta opciones adicionales de acceso.
+- [x] Reforzar Home con un CTA principal más obvio y comprimir el copy repetido o excesivo sin alterar la propuesta de valor ya consolidada.
+- [x] Auditar la consola CEO real, no solo su acceso, para identificar densidad operativa y simplificarla antes del cierre final web.
+- [ ] Endurecer `auditaPatronIntegrationService` para exigir un ack JSON válido del bridge y no tratar respuestas HTML o contratos inválidos como despacho exitoso.
+- [ ] Limitar o sanear `responseBody` del bridge antes de persistirlo en auditoría para evitar contaminación de `audit_logs` con HTML o payloads irrelevantes.
+- [ ] Mejorar la clasificación de PDFs de nómina usando texto visible y marcadores de CFDI/recibo para que no caigan como `other`.
+- [ ] Hacer que las señales de INFONAVIT, deducciones, NSS, periodo y RFC se propaguen de forma consistente al expediente cuando vengan visibles en XML o PDF.
+- [x] Endurecer el bridge de AuditaPatron para aceptar solo ack válidos y sanear respuestas remotas antes de persistir auditoría
+- [x] Reforzar la clasificación documental para PDFs de nómina con nombre opaco y propagar señales estructuradas de INFONAVIT desde XML al expediente
+- [x] Verificar la infraestructura del CEO Bridge, revalidar las tablas presentes y ejecutar pruebas focalizadas de Helios/Auditar

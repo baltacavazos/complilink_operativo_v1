@@ -375,16 +375,11 @@ export default function Access() {
         <div className="mx-auto flex w-full max-w-md flex-col gap-3">
           <a
             href="/"
-            className="inline-flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
+            className="inline-flex w-fit items-center gap-2 rounded-full px-1 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
-            <span className="truncate">Volver al inicio</span>
+            <span className="truncate">Volver</span>
           </a>
-
-          <div className="ml-1 inline-flex w-fit items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 shadow-sm">
-            <ArrowRight className="h-4 w-4 shrink-0 text-teal-700" />
-            <span>Vuelves al {returnToLabel}</span>
-          </div>
         </div>
 
         <section className="mx-auto mt-4 flex w-full max-w-md flex-1 flex-col justify-center">
@@ -399,10 +394,10 @@ export default function Access() {
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Inicia sesión y vuelve a tu expediente
+                Entra y sigue donde te quedaste
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Esta pantalla solo sirve para entrar o continuar. Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel} sin perder tu avance.
+                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel}. Aquí solo resolvemos el acceso.
               </p>
             </div>
 
@@ -459,7 +454,7 @@ export default function Access() {
                     ? "Enviando código..."
                     : emailCooldownActive
                       ? `Espera ${emailCooldownSecondsRemaining}s`
-                      : "Recibir código"}
+                      : "Enviar código"}
                 </Button>
 
                 {requestEmailCode.isPending ? (
@@ -546,8 +541,9 @@ Iniciar sesión
 
             {secondaryOptionsAvailable ? (
               <details className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
-                <summary className="cursor-pointer font-semibold text-slate-900">Más opciones de acceso</summary>
+                <summary className="cursor-pointer font-semibold text-slate-900">Otros métodos</summary>
                 <div className="mt-3 flex flex-col gap-3">
+                  <p className="text-sm leading-6 text-slate-600">Úsalos solo si tu correo no es la mejor ruta para entrar.</p>
                   {manusLoginAvailable && manusLoginUrl ? (
                     <Button
                       type="button"

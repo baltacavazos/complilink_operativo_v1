@@ -1134,6 +1134,14 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
   }
 }
 
+function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Buffer }) {
+  if (params.mimeType !== "text/xml" && params.mimeType !== "application/xml") {
+    return "";
+  }
+
+  return params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").slice(0, 6000);
+}
+
 function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string; binary: Buffer }) {
   const { safeFileName } = validateAuditarUploadMetadata(params);
 
@@ -1175,7 +1183,11 @@ async function prepareAuditarDocumentPipeline(params: {
   });
   const uploaded = await storagePut(storageKey, params.binary, params.mimeType);
   const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(params.expectedDocumentType);
-  const enrichedTextHint = [params.textHint, expectedDocumentTypeHint].filter(Boolean).join(" ");
+  const binaryDerivedTextHint = buildBinaryDerivedTextHint({
+    mimeType: params.mimeType,
+    binary: params.binary,
+  });
+  const enrichedTextHint = [params.textHint, expectedDocumentTypeHint, binaryDerivedTextHint].filter(Boolean).join(" ");
   const classification = classifyMexicanLaborDocument({
     fileName: params.fileName,
     mimeType: params.mimeType,
@@ -1602,22 +1614,38 @@ function getOptionalStringList(value: unknown) {
     : [];
 }
 
+function getOptionalBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : null;
+}
+
 function documentMentionsInfonavit(document: {
   documentType: string;
   originalName?: string | null;
   heliosOpinion?: unknown;
 }) {
   const heliosOpinion = asObjectRecord(document.heliosOpinion);
+  const rawPayload = asObjectRecord(heliosOpinion?.rawPayload);
+  const preliminaryAnalysis = asObjectRecord(rawPayload?.preliminaryAnalysis);
+  const confirmedData = asObjectRecord(preliminaryAnalysis?.confirmedData);
+  const estimatedData = asObjectRecord(preliminaryAnalysis?.estimatedData);
+  const explicitSignal =
+    getOptionalBoolean(confirmedData?.hasInfonavitSignal) ??
+    getOptionalBoolean(estimatedData?.hasInfonavitSignal) ??
+    false;
+  const deductionType =
+    getOptionalString(confirmedData?.infonavitDeductionType) ??
+    getOptionalString(estimatedData?.infonavitDeductionType) ??
+    null;
   const searchableText = [
     document.originalName ?? "",
     getOptionalString(heliosOpinion?.summary) ?? "",
     getOptionalString(heliosOpinion?.legalOpinion) ?? "",
-    JSON.stringify(heliosOpinion?.rawPayload ?? {}),
+    JSON.stringify(rawPayload ?? {}),
   ]
     .join(" ")
     .toLowerCase();
 
-  return searchableText.includes("infonavit");
+  return explicitSignal || deductionType === "010" || searchableText.includes("infonavit");
 }
 
 function buildSocialSecurityValidationSummary(params: {

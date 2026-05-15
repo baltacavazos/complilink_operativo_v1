@@ -1190,11 +1190,8 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                     </div>
                   ))}
                 </div>
-                <p className="text-sm font-semibold leading-6 text-slate-700">
-                  Empieza con una foto. No necesitas reunir todo.
-                </p>
-                <p className="text-sm leading-6 text-slate-600">
-                  Si no tienes recibo a la mano, también sirve PDF, XML o una imagen clara del documento que sí tengas.
+                <p className="text-sm leading-6 text-slate-700">
+                  Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
                 </p>
                 <p className="text-xs font-medium leading-5 text-teal-800">
                   Cifrado AES-256, control de borrado visible y resguardo serio desde el inicio.
@@ -1215,18 +1212,18 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
             {[
               {
                 eyebrow: "Paso 1",
-                title: "Asegura el documento que ya tienes",
-                detail: "No necesitas juntar todo para empezar a entender tu situación.",
+                title: "Sube un documento que ya tengas",
+                detail: "No necesitas juntar todo para empezar.",
               },
               {
                 eyebrow: "Paso 2",
-                title: "Lo leemos y te mostramos lo importante",
-                detail: "Detectamos señales y te enseñamos primero lo que sí conviene revisar.",
+                title: "Te mostramos la señal importante",
+                detail: "Primero ves qué detectamos y por qué vale la pena revisarlo.",
               },
               {
                 eyebrow: "Paso 3",
-                title: "Recibes una explicación fácil de entender",
-                detail: "Ves qué entendimos, qué hallazgo aparece y qué podrías subir después.",
+                title: "Sabes cómo seguir",
+                detail: "Recibes el siguiente documento o acción útil para avanzar.",
               },
             ].map((item) => (
               <div
