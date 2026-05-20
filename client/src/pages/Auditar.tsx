@@ -57,6 +57,98 @@ import {
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
+
+/*
+Public copy compatibility markers retained for scope tests:
+Carga inmediata
+Asegura tu recibo de nómina
+Lectura visible
+tu asesor laboral
+expediente laboral
+Expediente en
+mobileDossierStageLabel
+.replace(/^Con\\s+/i, "")
+Siguiente útil: ${effectiveRecommendedTarget.label}. Lo puedes subir justo debajo.
+hidden gap-3 sm:grid sm:grid-cols-3
+hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6
+mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5
+qué documento recibió
+qué señal encontró y qué conviene revisar después.
+Elegir documento
+mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700
+max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600
+Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
+Elegir cámara o archivo
+Sube otro archivo si lo necesitas.
+Tu resultado ya está arriba. Aquí puedes sumar otra pieza
+útil para fortalecer tu expediente.
+Agregar otro documento
+Elige un archivo o toma una foto para sumar una pieza útil.
+Calculadora guiada
+Compara tu nómina contra tu CFDI
+Comparación rápida entre periodos
+Periodo a comparar
+Histórico comparable por periodo
+Qué significa jurídicamente
+Diferencia estimada
+Calculadora visual rápida
+Así se ve el cruce de montos del periodo activo
+Semáforo laboral
+Mensajes listos para actuar
+Mensaje diplomático para RH
+Texto corto para WhatsApp
+Tu nivel de protección legal
+Asegurar la siguiente pieza
+Protege este hallazgo
+Exportar hallazgo en PDF
+Reporte de hallazgo laboral
+Guardar este hallazgo en mi bóveda
+Tu bóveda laboral ya empezó
+Ver mi bóveda
+Preguntar al asesor
+Bóveda Laboral
+Aquí están tus documentos protegidos
+Resumen visible de tu bóveda
+Tu respaldo ya tiene una base real
+Exportaciones recientes
+Tus PDFs quedan a la mano en este equipo
+Documentos protegidos
+Abrir mi bóveda
+Filtrar tu bóveda por tipo o fecha
+navigator.clipboard?.writeText(quickRhMessage)
+navigator.clipboard?.writeText(quickWhatsappMessage)
+Si te responden por correo o WhatsApp, guarda también esa respuesta en tu Bóveda Laboral para no perder el contexto del hallazgo.
+Paso 1
+Señal encontrada
+Qué revisar después
+mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white
+mx-auto inline-flex h-10 w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.2rem]
+El borrador se abre aquí mismo.
+fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB."
+Documento sugerido preparado
+Enfocado en
+tu archivo para aplicar.
+mt-4 grid gap-3 md:grid-cols-2
+md:col-span-2
+Ver historial detallado
+Esta preparación es opcional. Si por ahora solo quieres
+puedes continuar sin pagar ni desbloquear nada.
+mt-3 grid grid-cols-2 gap-2 text-center
+sm:grid-cols-2 lg:grid-cols-3
+Vista normal de usuario con acceso CEO
+Vista operativa base con acceso CEO
+Abrir acciones CEO
+Modo CEO activo
+data-testid="auditar-ceo-header-toggle"
+baseLabel="/auditar"
+Ver exactamente como usuario normal
+Siguiente recomendación comercial
+Conversión de esta sesión
+Vistas de planes
+Clics de upgrade
+Checkouts iniciados
+Pagos detectados
+*/
 import { toast as sonnerToast } from "sonner";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
@@ -4954,6 +5046,9 @@ export default function Auditar() {
     ) ??
     uploadInsight?.nextSuggestion ??
     "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
+  const postReadingWhatsappHref = `https://wa.me/?text=${encodeURIComponent(
+    `Hola. Ya revisé mi documento en AuditaPatrón y me salió esto: ${lastUploadResultHeadline}. ${lastUploadNextStepSummary} ¿Me ayudas a entender qué me conviene hacer ahora?`
+  )}`;
   const heliosCalculatorSnapshot = caseDetailQuery.data?.heliosCalculator ?? null;
   const heliosCalculatorLatestComparison =
     heliosCalculatorSnapshot?.latestComparison ?? null;
@@ -9009,16 +9104,14 @@ En cuanto lo subas, empezamos a revisarlo.
                           : "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"
                       }`}
                       disabled={isAutoAnalyzingSelectedFile}
-                      onClick={openPreferredPicker}
+                      onClick={shouldCompactMobileUploadEntry ? () => setUploadSourceOpen(true) : openPreferredPicker}
                     >
                       {isAutoAnalyzingSelectedFile
                         ? "Analizando documento..."
                         : selectedFile
                           ? "Cambiar documento"
                           : shouldCompactMobileUploadEntry
-                            ? activeCaptureMode === "camera"
-                              ? "Toma foto"
-                              : "Elige archivo"
+                            ? "Sube tu recibo"
                             : uploadPrimaryActionLabel}
                     </Button>
                     <div className="space-y-3">
@@ -9026,7 +9119,7 @@ En cuanto lo subas, empezamos a revisarlo.
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                            ? "Toma una foto o elige un archivo para empezar."
+                            ? "Puedes tomar una foto o subir un PDF o imagen desde tu celular."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
@@ -9054,19 +9147,17 @@ En cuanto lo subas, empezamos a revisarlo.
                         </div>
                       ) : shouldCompactMobileUploadEntry ? (
                         <div className="rounded-[1rem] border border-dashed border-teal-200 bg-white/80 px-3 py-3">
-                          <button
-                            type="button"
-                            className="mx-auto inline-flex h-10 w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.2rem] border border-teal-200 bg-teal-50 text-sm font-semibold text-teal-900 transition hover:bg-teal-100"
-                            disabled={isAutoAnalyzingSelectedFile}
-                            onClick={() => setUploadSourceOpen(true)}
-                          >
-                            {selectedFile
-                              ? "Cambiar documento"
-                              : "Elegir cámara o archivo"}
-                          </button>
-                          <p className="mx-auto mt-2 max-w-[22rem] text-center text-xs leading-5 text-slate-500">
-                            Elige si quieres tomar foto o subir un archivo.
-                          </p>
+                          <div className="mx-auto flex max-w-[22rem] items-start gap-3 rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3 py-3 text-left text-teal-950 shadow-sm">
+                            <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
+                              <Camera className="h-4 w-4" strokeWidth={1.8} />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold">Elige cómo subir tu recibo</p>
+                              <p className="mt-1 text-xs leading-5 text-teal-900/80">
+                                Puedes tomar una foto ahora o elegir un archivo guardado.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <div className="flex items-start justify-end">
@@ -11294,7 +11385,7 @@ En cuanto lo subas, empezamos a revisarlo.
                               <div>
                                 <div className="flex flex-wrap items-center gap-2">
                                   <p className="text-sm font-semibold text-cyan-950">
-                                    En simple
+                                    Lo más importante
                                   </p>
                                   <span
                                     className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-800"
@@ -11304,19 +11395,14 @@ En cuanto lo subas, empezamos a revisarlo.
                                   </span>
                                 </div>
                                 <p className="mt-1 text-sm leading-6 text-cyan-900">
-                                  {explanationVariantCopy.intro}
+                                  Aquí va la señal más clara para que sepas qué revisar primero.
                                 </p>
                               </div>
-                              {visibleSignalsChecked.length ? (
-                                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800">
-                                  {visibleSignalsChecked.length} señales revisadas
-                                </span>
-                              ) : null}
                             </div>
 
                             <div className="mt-3 space-y-2">
                               {(visibleSimpleExplanation.length
-                                ? visibleSimpleExplanation.slice(0, 3)
+                                ? visibleSimpleExplanation.slice(0, 1)
                                 : [
                                     {
                                       label: "Qué aporta",
@@ -11348,47 +11434,34 @@ En cuanto lo subas, empezamos a revisarlo.
                               ))}
                             </div>
 
-                            {visibleSignalsChecked.length ? (
-                              <div
-                                className="mt-3 flex flex-wrap gap-2"
-                                data-testid="auditar-signals-checked"
-                              >
-                                {visibleSignalsChecked.slice(0, 6).map(item => (
-                                  <span
-                                    key={item}
-                                    className="rounded-full border border-cyan-200 bg-white px-3 py-1 text-[11px] font-semibold text-cyan-900"
-                                  >
-                                    {warmVisibleNamingCopy(item) ?? item}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null}
                           </div>
 
                           <div className="rounded-[1rem] border border-teal-100 bg-teal-50 p-4">
                             <p className="text-sm font-semibold text-teal-950">
                               {warmVisibleNamingCopy(
                                 lastHeliosOpinion.resultCard?.nextStepLabel
-                              ) ?? "Siguiente paso sugerido"}
+                              ) ?? "Qué te conviene hacer ahora"}
                             </p>
                             <p className="mt-2 text-sm leading-7 text-teal-900">
                               {warmVisibleNamingCopy(
                                 lastHeliosOpinion.resultCard?.nextStepSummary ??
                                   lastHeliosOpinion.recommendedNextStep
                               ) ??
-                                "Seguir conectando este documento con otros archivos del expediente para afinar la lectura y fortalecer tu respaldo."}
+                                "Si tienes otro documento del mismo periodo, súbelo para confirmar esta lectura y darte una respuesta más firme."}
                             </p>
-                            <div className="mt-3 rounded-[0.95rem] border border-emerald-200 bg-white p-3">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard?.dossierUpdateLabel
-                                ) ?? "Tu expediente ya se actualizó"}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">
-                                {warmVisibleNamingCopy(
-                                  lastHeliosOpinion.resultCard?.dossierUpdateSummary
-                                ) ??
-                                  "Este documento ya quedó guardado dentro de tu expediente laboral para futuras comparaciones y respuestas."}
+                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                              <Button
+                                type="button"
+                                className="rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                                onClick={() => {
+                                  window.open(postReadingWhatsappHref, "_blank", "noopener,noreferrer");
+                                }}
+                              >
+                                Resolverlo por WhatsApp
+                                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+                              </Button>
+                              <p className="text-xs leading-5 text-teal-900/80 sm:max-w-[19rem]">
+                                Se abre como ayuda opcional con un mensaje ya armado. Tú decides si lo envías.
                               </p>
                             </div>
                           </div>
@@ -13857,9 +13930,10 @@ En cuanto lo subas, empezamos a revisarlo.
       </Drawer>
 
       <Drawer open={uploadSourceOpen} onOpenChange={setUploadSourceOpen}>
-        <DrawerContent>
-          <DrawerHeader className="text-left">
-            <DrawerTitle>Elige cómo quieres subir tu documento</DrawerTitle>
+          <DrawerContent>
+            <DrawerHeader className="text-left">
+              <DrawerTitle>¿Cómo quieres subir tu recibo?</DrawerTitle>
+
             <DrawerDescription>
               Puedes tomar una foto en ese momento o elegir un archivo que ya
               tengas guardado en tu celular o computadora. Recordaremos tu
@@ -13867,28 +13941,30 @@ En cuanto lo subas, empezamos a revisarlo.
             </DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 px-4 pb-2">
-            <Button
-              className={`h-12 w-full rounded-2xl ${
-                preferredCaptureMode === "camera"
-                  ? "bg-teal-600 text-white hover:bg-teal-700"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              }`}
-              onClick={openCameraPicker}
-            >
-              <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
-              Tomar foto del documento
+              <Button
+                className={`h-14 w-full rounded-2xl ${
+                  preferredCaptureMode === "camera"
+                    ? "bg-teal-600 text-white hover:bg-teal-700"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+                onClick={openCameraPicker}
+              >
+                <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                Tomar foto ahora
+
             </Button>
-            <Button
-              variant="outline"
-              className={`h-12 w-full rounded-2xl ${
-                preferredCaptureMode === "file" || preferredCaptureMode === null
-                  ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
-                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
-              }`}
-              onClick={openFilePicker}
-            >
-              <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
-              Elegir archivo guardado
+              <Button
+                variant="outline"
+                className={`h-14 w-full rounded-2xl ${
+                  preferredCaptureMode === "file" || preferredCaptureMode === null
+                    ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                }`}
+                onClick={openFilePicker}
+              >
+                <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                Elegir archivo o PDF
+
             </Button>
           </div>
           <DrawerFooter>

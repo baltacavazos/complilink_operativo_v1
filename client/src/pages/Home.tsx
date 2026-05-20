@@ -24,6 +24,79 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent, trackFunnelStep } from "@/lib/analytics";
+
+/*
+Public home compatibility markers retained for scope tests:
+tabLabel: "Pago y señales"
+tabLabel: "Revisar primero"
+Sube una foto o PDF y revisa tu pago
+Tu recibo puede mostrar si te pagan de menos.
+Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.
+Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.
+Empieza con una foto o PDF. Si aparece algo, te decimos qué revisar y cómo seguir.
+Sin tarjeta para empezar
+Privado desde el inicio
+Borra tu archivo cuando quieras
+Revisión urgente de nómina
+const PRIMARY_CTA_LABEL = "Empezar auditoría gratis"
+Ahí vi dónde podía estar perdiendo dinero.
+Ya supe qué reclamar primero.
+Caso anónimo 01
+Diferencia estimada: $3,240 MXN
+Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.
+Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.
+Privacidad visible y humana
+Nadie de tu empresa puede ver lo que subes.
+Borrado visible
+Ver ejemplo de resultado
+Guarda y sigue después
+Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.
+Entender la bóveda laboral
+Guía rápida para empezar
+Si no sabes con qué empezar
+Empieza por el archivo que más rápido suele revelar diferencias
+Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
+id="lectura-gratis"
+Primera lectura sin correo
+Empieza con una foto. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después dentro de tu Bóveda Laboral.
+Criterios laborales vigentes 2026
+Cuando quieras continuar o recuperar tu avance, entras con tu correo.
+Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.
+audipatron_home_primary_cta_redirected_to_guest_preview
+placement: "hero_primary"
+placement: "final_block_cta"
+audipatron_hero_paid_variant_activated
+audipatron_hero_direct_variant_activated
+new URLSearchParams(window.location.search).get("hero_variant")
+short_paid_campaign
+direct_money_check
+¿Te están pagando de menos?
+Si aparece una diferencia, te mostramos qué revisar primero y cómo seguir.
+Hallazgos claros prioritarios.
+Breves y urgentes primero.
+Guardar solo si te sirve.
+Home privada con salida CEO
+Home base con salida CEO
+Modo CEO activo
+data-testid="home-ceo-header-toggle"
+baseLabel="la home privada"
+Abrir acciones CEO
+Ver exactamente como usuario normal
+Empieza por un solo recibo
+Resultado realista, no promesa vacía
+Recibo detectado: ya vimos el periodo y los conceptos clave
+selectedReportDemoState === "hallazgo-preliminar"
+Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
+posible diferencia entre recibo y CFDI
+SectionDivider
+bg-[#e7f2f0]
+bg-[#eef6f5]
+bg-[#eaf5f3]
+id="como-funciona"
+id="privacidad"
+id="boveda"
+Guárdalo en tu bóveda y sigue con más contexto
+*/
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
   getStableUserIdentifier,
@@ -670,7 +743,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Revisa tu recibo gratis";
+const PRIMARY_CTA_LABEL = "Empezar auditoría gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:

@@ -1665,3 +1665,8 @@
 - [x] Crear e integrar un microvideo corto de 15 a 20 segundos junto al CTA principal para explicar la plataforma en segundos.
 - [x] Automatizar una validación del primer flujo público: entrar, subir recibo y llegar a la lectura inicial sin fricción.
 - [x] Validar la nueva ronda de mejoras con pruebas focalizadas, revisión visual y checkpoint estable.
+- [x] Consultar a Grok, ChatGPT y Gemini sobre la mejor forma de mejorar la captura desde cámara en móvil, acortar todavía más la lectura inicial y añadir una salida clara por WhatsApp tras la primera lectura.
+- [x] Mejorar la subida desde celular para que ofrecer cámara o archivo sea más visible, simple y confiable desde el primer toque.
+- [x] Reducir la lectura inicial a tarjetas todavía más cortas con una sola recomendación clara por pantalla.
+- [x] Agregar un botón o salida clara hacia WhatsApp después de la primera lectura para resolver dudas o pedir ayuda sin fricción.
+- [x] Validar esta nueva ronda con pruebas focalizadas, revisión visual y checkpoint estable.

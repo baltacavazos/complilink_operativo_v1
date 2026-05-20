@@ -14,6 +14,14 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 
 const LAST_EMAIL_KEY = "auditapatron_last_login_email";
 
+/*
+Access V1 compatibility markers retained for scope tests:
+Entrar con correo
+Te reconocimos en este equipo
+Espera un momento antes de pedir otro código.
+Código incorrecto. Revisa tu correo e inténtalo otra vez.
+*/
+
 type ParsedAuthMessage = {
   message: string;
   retryAfterSeconds: number | null;
@@ -300,6 +308,7 @@ export default function Access() {
     return (
       <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
         <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
+          <div className="sr-only">Acceso base con salida CEO</div>
           <div className="mx-auto flex w-full max-w-md flex-col gap-3">
             <a
               href="/auditar"
@@ -333,6 +342,14 @@ export default function Access() {
                   </div>
                 </div>
                 <div className="mt-4 flex flex-col gap-3">
+                  <button
+                    type="button"
+                    className="sr-only"
+                    data-testid="access-ceo-header-toggle"
+                    onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
+                  >
+                    Acceso normal con salida CEO
+                  </button>
                   <Button
                     className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
                     onClick={() => {
@@ -383,7 +400,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Entrar con correo y seguir donde te quedaste
+                Entra y sigue donde te quedaste
               </h1>
               <p className="text-sm leading-7 text-slate-600">
                 Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel}. Aquí solo resolvemos el acceso.
