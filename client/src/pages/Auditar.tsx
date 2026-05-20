@@ -349,13 +349,13 @@ function getUploadOutcomeCopy(stepKey: UploadProgressStepKey) {
 function getUploadStageLabel(stepKey: UploadProgressStepKey) {
   switch (stepKey) {
     case "analyze":
-      return "Etapa 2 de 4 · Analizando contenido";
+      return "Revisando tu archivo";
     case "save":
-      return "Etapa 3 de 4 · Guardando con control";
+      return "Guardando tu revisión";
     case "review":
-      return "Etapa 4 de 4 · Revisión lista";
+      return "Listo para revisar";
     default:
-      return "Etapa 1 de 4 · Preparación segura";
+      return "Preparando tu archivo";
   }
 }
 
@@ -741,7 +741,7 @@ export function buildUploadProgressState(params: {
     eyebrow: "Control del documento",
     title: "Elige un PDF, XML o una imagen clara para empezar",
     description:
-      "Primero recibes la lectura. Sólo al final decides si quieres guardar el documento en tu bóveda laboral.",
+      "Primero recibes la lectura. Sólo al final decides si quieres guardarlo en tu carpeta privada.",
     progress: 12,
     toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
     barClasses: "bg-slate-400",
@@ -5778,8 +5778,8 @@ export default function Auditar() {
     : persistAuditarViewStateMutation.isPending
       ? "Guardando esta vista para cuando vuelvas a entrar..."
       : remoteViewStateReadyKey === currentCaseScopeKey
-        ? "Tu avance de esta vista se guarda también entre dispositivos."
-        : "Preparando la continuidad entre dispositivos...";
+        ? "Tu avance se guarda solo."
+        : "Preparando tu revisión...";
   const selectedFilePreparationCopy = useMemo(
     () =>
       getSelectedFilePreparationCopy({
@@ -7260,7 +7260,7 @@ export default function Auditar() {
                 Sube tu primer documento
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
-                Empieza con una foto, PDF o XML. Te diremos qué documento detectamos, qué señal apareció y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
+                Empieza con una foto o PDF. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -7357,23 +7357,23 @@ export default function Auditar() {
             )}
             {shouldCompactPostUploadExperience ? null : (
               <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
-                Carga inmediata
+                Paso 1
               </p>
             )}
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                Sube tu documento
+                Sube tu recibo o comprobante
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
               {shouldCompactPostUploadExperience ? null : (
                 <>
                   <span className="sm:hidden">
-                    Sube una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.
+                    Sube una foto o PDF. Primero te mostraremos lo importante y qué hacer después.
                   </span>
                   <span className="hidden sm:inline">
-                    Sube una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.
+                    Sube una foto o PDF. Primero te mostraremos lo importante y qué hacer después.
                   </span>
                 </>
               )}
@@ -7384,27 +7384,20 @@ export default function Auditar() {
                   className="h-3.5 w-3.5 text-teal-300"
                   strokeWidth={1.8}
                 />
-                Archivo protegido y usado solo para tu auditoría
+Tu recibo está seguro y solo tú lo ves
               </div>
             ) : null}
           </div>
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
-            {shouldCompactPostUploadExperience ? null : (
-              <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
-                {showHeroJumpCta
-                  ? "Úsalo solo si quieres bajar directo al formulario."
-                  : remoteViewStateSyncLabel}
-              </span>
-            )}
+            {shouldCompactPostUploadExperience ? null : null}
    </div>
         </div>
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-medium text-slate-600">
-              Estamos preparando tu espacio y la base inicial de tu
-              expediente...
+              Estamos dejando lista tu revisión...
             </p>
           </div>
         ) : null}
@@ -8619,13 +8612,13 @@ export default function Auditar() {
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
                       Sube tu archivo
                     </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                      Sube tu archivo y mira la lectura inicial
-                    </h2>
+                      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                        Sube tu recibo y revisa lo importante
+                      </h2>
 
                 </div>
                   <p className="max-w-lg text-sm leading-6 text-slate-600">
-                    Primero ves el documento, la señal y el siguiente paso antes de guardarlo.
+                    Primero ves lo importante y después decides si lo guardas.
 
                 </p>
               </div>
@@ -8764,16 +8757,16 @@ export default function Auditar() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-950">
-                      Archivo principal
+                      Tu recibo o comprobante
                     </p>
                     <p className="text-sm text-slate-600">
-                      Puede ser foto, PDF, XML u otro archivo laboral útil. Lo
+                      Puede ser foto, PDF o el archivo que te mandaron. Lo
                       revisamos primero y tú decides si se guarda.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 hidden gap-2 sm:grid sm:grid-cols-3">
+                <div className="mt-4 hidden">
                   <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
                     <p className="font-semibold">Confidencial</p>
                     <p className="mt-1 text-xs leading-5 text-emerald-900">
@@ -8832,16 +8825,16 @@ export default function Auditar() {
                         <p className="font-semibold text-slate-950">
                           {shouldCompactMobileUploadEntry
                             ? "Sube tu primer documento"
-                            : "Escaneo asistido por IA"}
+                            : "Revisión automática"}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-700">
                           {shouldCompactMobileUploadEntry
                             ? "El análisis empieza solo en cuanto captures o elijas el documento. Tus datos siguen protegidos durante todo el flujo."
-                            : selectedFilePreparationCopy}
+                            : "En cuanto lo subas, lo revisamos y te mostramos lo importante. Si algo falta o no se ve bien, te diremos cómo corregirlo."}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-3 hidden flex-wrap gap-2 text-xs font-semibold sm:flex">
+                    <div className="mt-3 hidden">
                       <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                         Nitidez y legibilidad
                       </span>
@@ -8855,7 +8848,7 @@ export default function Auditar() {
                   </div>
 
                   <div
-                    className={`rounded-[1.2rem] border border-slate-200 bg-white p-4 ${shouldCompactMobileUploadEntry ? "hidden sm:block" : ""}`}
+                    className="hidden"
                   >
                     <p className="text-sm font-semibold text-slate-950">
                       Abrir primero
@@ -8991,13 +8984,13 @@ export default function Auditar() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-slate-950">
-                          Sube un documento y revisa el borrador
+Sube tu recibo y empieza la revisión
                         </p>
                         <p className="mt-1 text-xs leading-5 text-slate-600">
-                          La carga empieza sola. Tú decides si se guarda.
+En cuanto lo subas, empezamos a revisarlo.
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">
+                      <div className="hidden">
                         <span className="rounded-full bg-white px-3 py-1">
                           12 MB
                         </span>
@@ -9143,12 +9136,12 @@ export default function Auditar() {
                             {uploadProgressHumanMessage}
                           </p>
                       </div>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 transition-colors duration-300">
+                      <span className="hidden">
                         {uploadProgressState.progress}%
                       </span>
                     </div>
                     <div
-                      className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4"
+                      className="hidden"
                       role="list"
                       aria-label="Progreso de la carga y análisis del documento"
                     >
@@ -9187,7 +9180,7 @@ export default function Auditar() {
                       ))}
                     </div>
                     <div
-                      className="mt-4 h-2 overflow-hidden rounded-full bg-white/70"
+                      className="hidden"
                       aria-hidden="true"
                     >
                       <div
@@ -9278,9 +9271,9 @@ export default function Auditar() {
               <label
                 className={`mt-4 block ${pendingDraft ? "hidden sm:block" : ""}`}
               >
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Contexto opcional
-                </span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Si quieres, cuéntanos un poco más
+                  </span>
                 <textarea
                   value={textHint}
                   onChange={event => setTextHint(event.target.value)}

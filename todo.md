@@ -1655,3 +1655,8 @@
 - [x] Revisar la landing, /auditar, el acceso y las superficies críticas visibles para consolidar una lista priorizada de simplificación.
 - [x] Implementar la simplificación prioritaria en copy, jerarquía visual y flujos esenciales para dejar solo lo elemental al usuario.
 - [x] Validar la versión simplificada con pruebas focalizadas y revisión final del estado del proyecto.
+- [x] Consultar a Grok, ChatGPT y Gemini con la instrucción de evaluar Auditapatron como si fueran trabajadores de a pie en México y detectar cualquier palabra, paso o bloque que no sea obvio.
+- [x] Simplificar todavía más la landing para que la promesa, la acción principal y el ejemplo de resultado se entiendan en segundos sin lenguaje técnico.
+- [x] Simplificar /auditar para que el usuario solo vea lo indispensable antes de subir su documento y no encuentre controles o conceptos operativos confusos.
+- [x] Simplificar /acceso para que iniciar sesión parezca una continuidad natural del trámite y no una barrera administrativa.
+- [x] Validar la nueva ronda de simplicidad extrema con pruebas focalizadas y revisión visual desde la perspectiva de un usuario no técnico.

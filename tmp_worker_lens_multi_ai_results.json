@@ -1,0 +1,238 @@
+{
+  "chatgpt": {
+    "verdict": "entiendo_pero_sobra_ruido",
+    "top_confusions": [
+      {
+        "surface": "landing",
+        "issue": "Demasiados botones para empezar y navegar, como 'Iniciar sesión', 'Empezar auditoría gratis', 'Preguntas', 'Cómo funciona', que pueden abrumar.",
+        "why_it_confuses": "Un trabajador con poco tiempo y nervioso puede no saber cuál botón presionar primero o qué esperar.",
+        "severity": 4
+      },
+      {
+        "surface": "/auditar",
+        "issue": "Palabras técnicas como 'IA', 'bóveda laboral', 'contexto opcional', 'legibilidad', 'etapas' que no aportan claridad inmediata.",
+        "why_it_confuses": "El usuario común no entiende estos términos y puede pensar que el proceso es complicado o que necesita conocimientos especiales.",
+        "severity": 5
+      },
+      {
+        "surface": "/acceso",
+        "issue": "Mensaje 'Sesión activa' y 'Tu sesión ya está activa' suena formal y poco claro para un trabajador que sólo quiere seguir con su recibo.",
+        "why_it_confuses": "No explica qué sigue ni qué debe hacer, sólo dice que puede continuar, sin motivar ni aclarar.",
+        "severity": 3
+      }
+    ],
+    "remove_or_hide": [
+      {
+        "surface": "landing",
+        "element": "Navegación con múltiples CTAs (Iniciar sesión, Preguntas, Cómo funciona, Empezar auditoría gratis)",
+        "reason": "Reducir opciones para que el usuario no se sienta perdido ni abrumado."
+      },
+      {
+        "surface": "/auditar",
+        "element": "Términos técnicos: 'IA', 'bóveda laboral', 'contexto opcional', 'etapas', 'legibilidad', 'Nitidez y orientación'",
+        "reason": "No aportan valor inmediato y complican la comprensión."
+      },
+      {
+        "surface": "/acceso",
+        "element": "Texto 'Sesión activa' y 'Tu sesión ya está activa'",
+        "reason": "No aporta claridad ni motivación, puede eliminarse o reemplazarse por algo más directo."
+      }
+    ],
+    "rewrite_now": [
+      {
+        "surface": "landing",
+        "from": "Tu recibo puede darte una primera lectura clara.",
+        "to": "Sube tu recibo y te decimos rápido si hay algo que revisar.",
+        "reason": "Más directo, sencillo y con lenguaje cercano."
+      },
+      {
+        "surface": "/auditar",
+        "from": "Súbe una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.",
+        "to": "Sube tu recibo y te mostramos lo más importante para que decidas qué hacer.",
+        "reason": "Evita palabras técnicas y explica el beneficio inmediato."
+      },
+      {
+        "surface": "/auditar",
+        "from": "Archivo protegido y usado solo para tu auditoría.",
+        "to": "Tu recibo está seguro y sólo tú lo ves.",
+        "reason": "Más simple y tranquilizador."
+      },
+      {
+        "surface": "/acceso",
+        "from": "Tu sesión ya está activa. Desde aquí sólo sigues a tu auditoría para retomar el flujo donde te quedaste.",
+        "to": "Listo, sigue con tu revisión donde la dejaste.",
+        "reason": "Más cercano, menos formal y más claro."
+      }
+    ],
+    "one_sentence_test": "Sube tu recibo y te decimos rápido si hay algo que revisar para que puedas actuar fácil.",
+    "ideal_first_screen": "Una pantalla limpia con un solo botón grande que diga 'Sube tu recibo', un texto corto que explique que en segundos verás si hay algo que revisar, y sin distracciones ni palabras difíciles.",
+    "priority_actions": [
+      "Quitar o esconder botones y enlaces que no sean el paso principal para subir recibo.",
+      "Eliminar o cambiar palabras técnicas por lenguaje simple y cercano.",
+      "Simplificar mensajes para que el usuario sepa qué hacer en cada paso sin pensar mucho."
+    ],
+    "score_clarity_0_10": 5
+  },
+  "grok": {
+    "verdict": "entiendo_pero_sobra_ruido",
+    "top_confusions": [
+      {
+        "surface": "auditar",
+        "issue": "Palabras como IA, etapas, bóveda laboral y legibilidad",
+        "why_it_confuses": "Suena a cosa de oficina o computadora y no sé qué significa, me da flojera leer",
+        "severity": 5
+      },
+      {
+        "surface": "landing",
+        "issue": "Muchos botones y textos repetidos",
+        "why_it_confuses": "No sé por dónde empezar y parece que me están vendiendo algo",
+        "severity": 4
+      },
+      {
+        "surface": "auditar",
+        "issue": "Decir CFDI, XML y expediente",
+        "why_it_confuses": "No uso esas palabras en mi trabajo, me confunde y pienso que es para gente de contabilidad",
+        "severity": 4
+      }
+    ],
+    "remove_or_hide": [
+      {
+        "surface": "auditar",
+        "element": "Todo lo de IA, etapas y bóveda laboral",
+        "reason": "Me hace sentir que es complicado y no para gente normal"
+      },
+      {
+        "surface": "landing",
+        "element": "Tarjeta de ayuda y tantos CTAs",
+        "reason": "Solo me distrae y no sé cuál botón apretar primero"
+      }
+    ],
+    "rewrite_now": [
+      {
+        "surface": "auditar",
+        "from": "Sube tu documento",
+        "to": "Saca foto de tu recibo o súbelo",
+        "reason": "Suena más normal y directo"
+      },
+      {
+        "surface": "landing",
+        "from": "Tu recibo puede darte una primera lectura clara",
+        "to": "Sube tu recibo y te decimos si hay algo raro",
+        "reason": "Más corto y sin palabras raras"
+      }
+    ],
+    "one_sentence_test": "Subes foto de tu recibo y te dice rápido si hay algo que revisar de tu trabajo.",
+    "ideal_first_screen": "Pantalla blanca con un botón grande verde que diga Sube tu recibo, una foto de ejemplo y nada más de texto.",
+    "priority_actions": [
+      "Quitar todas las palabras técnicas como IA y etapas",
+      "Dejar solo un botón grande para subir el recibo",
+      "Usar palabras como en el trabajo: recibo, revisar, guardar"
+    ],
+    "score_clarity_0_10": 4,
+    "_model": "grok-3-mini-beta"
+  },
+  "gemini": {
+    "verdict": "entiendo_pero_sobra_ruido",
+    "top_confusions": [
+      {
+        "surface": "landing",
+        "issue": "Término técnico 'CFDI'",
+        "why_it_confuses": "La mayoría de los trabajadores conocen su 'recibo de nómina' o 'recibo', pero 'CFDI' suena a algo complicado o para contadores.",
+        "severity": 4
+      },
+      {
+        "surface": "landing|auditar",
+        "issue": "Término 'auditoría'",
+        "why_it_confuses": "Suena formal, legalista y puede ser intimidante. Un trabajador podría pensar que es un proceso serio o que va a tener problemas con su patrón.",
+        "severity": 5
+      },
+      {
+        "surface": "/auditar",
+        "issue": "Detalles técnicos del proceso ('Escaneo asistido por IA', 'Nitidez y legibilidad', 'Bordes y orientación', etc.)",
+        "why_it_confuses": "El trabajador no necesita saber cómo funciona la tecnología, solo que funciona. Estos términos añaden complejidad y hacen que el proceso parezca difícil.",
+        "severity": 4
+      },
+      {
+        "surface": "/auditar",
+        "issue": "División en 'Etapa 1 Preparar', 'Etapa 2 Analizar', 'Etapa 3 Guardar', 'Etapa 4 Revisar'",
+        "why_it_confuses": "Un proceso simple de subir un documento y ver un resultado se convierte en una serie de pasos burocráticos, haciendo que parezca largo y complicado.",
+        "severity": 3
+      },
+      {
+        "surface": "landing|auditar",
+        "issue": "Términos 'expediente' y 'bóveda laboral'",
+        "why_it_confuses": "Suenan muy formales y legales. 'Bóveda' puede ser intimidante. El trabajador solo quiere guardar sus documentos de forma segura, no crear un 'expediente' o usar una 'bóveda'.",
+        "severity": 3
+      }
+    ],
+    "remove_or_hide": [
+      {
+        "surface": "landing",
+        "element": "Navegación con: Asegurar evidencia",
+        "reason": "Suena legalista y no es claro para qué se necesita 'evidencia' en un primer contacto. Genera dudas innecesarias."
+      },
+      {
+        "surface": "landing",
+        "element": "CTA principal repetido varias veces",
+        "reason": "Genera ruido visual y confusión sobre cuál es el botón principal o si hay que hacer algo más. Un solo CTA claro es suficiente."
+      },
+      {
+        "surface": "/auditar",
+        "element": "Texto técnico/operativo aún visible: 'Escaneo asistido por IA', 'Nitidez y legibilidad', 'Bordes y orientación', 'Coincidencia con el documento esperado'",
+        "reason": "Son detalles técnicos del proceso interno, no información útil o accionable para el usuario común. Si hay un problema, se debe decir qué hacer, no el porqué técnico."
+      },
+      {
+        "surface": "/auditar",
+        "element": "Mensajes de proceso: 'Etapa 1 Preparar', 'Etapa 2 Analizar', 'Etapa 3 Guardar', 'Etapa 4 Revisar'",
+        "reason": "Fragmenta un proceso simple en pasos burocráticos, haciendo que parezca más largo y complicado de lo que es. El flujo debe ser percibido como instantáneo."
+      },
+      {
+        "surface": "/auditar",
+        "element": "Texto adicional: 'bóveda laboral', 'Contexto opcional'",
+        "reason": "'Bóveda laboral' es formal e intimidante. 'Contexto opcional' es un término de producto que no aporta valor inmediato al usuario."
+      }
+    ],
+    "rewrite_now": [
+      {
+        "surface": "landing",
+        "from": "Empezar auditoría gratis.",
+        "to": "Revisa tu recibo gratis.",
+        "reason": "'Auditoría' es intimidante. 'Revisa tu recibo' es claro, directo y menos formal para el trabajador."
+      },
+      {
+        "surface": "landing",
+        "from": "Sube un recibo, CFDI o PDF y te mostramos la señal principal y el siguiente paso.",
+        "to": "Sube tu recibo (foto o PDF) y te decimos qué buscar.",
+        "reason": "Elimina 'CFDI' (técnico), simplifica 'señal principal' y 'siguiente paso' a un lenguaje más cotidiano y accionable."
+      },
+      {
+        "surface": "/auditar",
+        "from": "Sube una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.",
+        "to": "Sube tu recibo (foto o PDF). Te decimos qué buscar y qué hacer.",
+        "reason": "Elimina 'XML' (técnico) y simplifica la descripción del resultado a un lenguaje más directo y comprensible."
+      },
+      {
+        "surface": "/auditar",
+        "from": "Archivo protegido y usado solo para tu auditoría.",
+        "to": "Tu recibo está seguro y solo lo usamos para ayudarte.",
+        "reason": "Cambia el tono formal de 'auditoría' por uno más cercano y de apoyo."
+      },
+      {
+        "surface": "/acceso",
+        "from": "Tu sesión ya está activa. Desde aquí sólo sigues a tu auditoría para retomar el flujo donde te quedaste.",
+        "to": "Tu sesión está lista. Continúa donde te quedaste.",
+        "reason": "Elimina 'auditoría' y 'flujo' (término de producto), haciendo la frase más directa y fácil de entender."
+      }
+    ],
+    "one_sentence_test": "Sube tu recibo para saber rápido si tu patrón te está pagando bien.",
+    "ideal_first_screen": "Un pantallazo limpio y amigable. Un título grande y claro como '¿Tu recibo está bien?' o 'Revisa tu recibo'. Un botón principal grande que diga 'Sube tu recibo' o 'Empieza aquí'. Una imagen simple de un recibo o un celular subiendo un documento. Nada de texto técnico, solo lo esencial para que el trabajador sepa qué hacer y para qué sirve, sin distracciones.",
+    "priority_actions": [
+      "Simplificar el lenguaje: Eliminar todo término técnico (CFDI, XML, IA, bóveda, expediente, flujo, etapas) y usar palabras cotidianas.",
+      "Clarificar el propósito: Reemplazar 'auditoría' por 'revisar' o 'checar tu recibo' para que suene menos intimidante y más útil.",
+      "Reducir la fricción en el flujo: Consolidar CTAs, eliminar pasos burocráticos ('Etapas') y enfocar el proceso en 'subir' y 'ver el resultado' de forma instantánea.",
+      "Mejorar la propuesta de valor: Explicar de forma sencilla y directa el beneficio principal para el trabajador ('saber si te pagan bien', 'detectar errores')."
+    ],
+    "score_clarity_0_10": 4,
+    "_model": "gemini-2.5-flash"
+  }
+}

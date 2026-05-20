@@ -188,37 +188,35 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#lectura-gratis", label: "Asegurar evidencia" },
-  { href: "#privacidad", label: "Privacidad" },
-  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#como-funciona", label: "Cómo te ayuda" },
   { href: "#preguntas", label: "Preguntas" },
 ];
 
 const tourSteps: TourStep[] = [
   {
     id: "sube",
-    title: "Asegura el documento que ya tienes y AuditaPatron lo recibe",
-    summary: "Asegura tu primer documento.",
+    title: "Sube el recibo que ya tienes",
+    summary: "Empieza con tu recibo.",
     description:
-      "Asegura desde tu celular el documento que ya tienes y recibe claridad útil desde el inicio.",
+      "Sube desde tu celular el recibo o comprobante que ya tienes y recibe una lectura clara desde el inicio.",
     bullets: ["Desde tu celular"],
     icon: Upload,
   },
   {
     id: "revisamos",
-    title: "AuditaPatron te devuelve hallazgos claros",
-    summary: "Hallazgos claros prioritarios.",
+    title: "Te decimos qué revisar primero",
+    summary: "Lo importante va primero.",
     description:
-      "Recibe hallazgos prioritarios: confirmado vs. estimado para pagos, condiciones e IMSS e Infonavit.",
+      "Te mostramos lo más importante de tu pago o tus condiciones con palabras simples y sin vueltas.",
     bullets: ["Breves y urgentes primero."],
     icon: FileSearch,
   },
   {
     id: "proteges",
-    title: "Guardas lo importante en tu Bóveda Laboral",
-    summary: "Guardar solo si te sirve.",
+    title: "Guarda lo importante solo si te sirve",
+    summary: "Primero revisas, luego decides.",
     description:
-      "Primero ves la lectura. Si te ayuda, guardas el documento y el hallazgo dentro de tu Bóveda Laboral para volver a ellos cuando lo necesites.",
+      "Primero ves la lectura. Si te ayuda, guardas el documento y el resultado en tu carpeta privada para volver a ellos cuando lo necesites.",
     bullets: ["Guardas solo lo útil.", "Privacidad y control visibles."],
     icon: ShieldCheck,
   },
@@ -231,8 +229,8 @@ const dossierSignals: DossierSignal[] = [
     status: "listo",
   },
   {
-    title: "CFDI timbrado",
-    description: "Sirve para contrastar lo reportado contra lo que realmente recibiste.",
+    title: "Comprobante fiscal del mismo mes",
+    description: "Sirve para comparar lo reportado con lo que realmente recibiste.",
     status: "listo",
   },
   {
@@ -301,8 +299,8 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
   },
   {
     step: "03",
-    title: "Guárdalo en tu Bóveda Laboral si te sirve",
-    description: "Si quieres conservar el documento y el hallazgo, entonces sí lo pasas a tu Bóveda Laboral para volver a verlo cuando lo necesites.",
+    title: "Guárdalo si te sirve",
+    description: "Si quieres conservar el documento y el resultado, entonces sí lo guardas en tu carpeta privada para volver a verlo cuando lo necesites.",
   },
 ];
 
@@ -335,7 +333,7 @@ const faqs = [
     id: "mas-contexto",
     question: "¿Por qué conviene subir más de un documento?",
     answer:
-      "Porque varios documentos dan más contexto. Eso ayuda a detectar patrones, comparar información y fortalecer tu expediente digital con mayor claridad.",
+      "Porque varios documentos dan más contexto. Eso ayuda a detectar patrones, comparar información y entender mejor lo que está pasando.",
   },
 ];
 
@@ -360,43 +358,43 @@ const guidedFaqOptions = [
 const heroCopyVariants = {
   alert: {
     tabLabel: "Revisión inicial",
-    eyebrowMobile: "Sube una foto o PDF y revisa tu pago",
-    eyebrowDesktop: "Sube una foto o PDF y revisa tu pago",
-    titleLead: "Tu recibo",
-    titleAccent: "puede darte una primera lectura clara.",
-    headline: "Tu recibo puede darte una primera lectura clara.",
-    supportLine: "Sube un recibo, CFDI o PDF y te mostramos la señal principal y el siguiente paso.",
-    microDescription: "Empieza con un solo documento y entiende rápido si hay algo que revisar.",
-    body: "Primero ves la lectura y después decides si quieres seguir o guardar tu expediente.",
-    ctaPrimary: "Empezar auditoría gratis",
-    ctaSecondary: "Ver ejemplo de resultado",
+    eyebrowMobile: "Sube tu recibo y revísalo gratis",
+    eyebrowDesktop: "Sube tu recibo y revísalo gratis",
+    titleLead: "Sube tu recibo",
+    titleAccent: "y te decimos qué revisar.",
+    headline: "Sube tu recibo y te decimos qué revisar.",
+    supportLine: "Sube tu recibo o comprobante y te mostramos lo más importante.",
+    microDescription: "Empieza con un solo archivo y entiende rápido si hay algo raro o pendiente.",
+    body: "Primero ves el resultado. Si te sirve, luego decides si lo guardas.",
+    ctaPrimary: "Revisa tu recibo gratis",
+    ctaSecondary: "Ver un ejemplo",
   },
   control: {
     tabLabel: "Revisión inicial",
-    eyebrowMobile: "Empieza por tu recibo más reciente",
-    eyebrowDesktop: "Empieza por tu recibo más reciente",
-    titleLead: "Tu recibo",
-    titleAccent: "puede darte una primera lectura clara.",
-    headline: "Tu recibo puede darte una primera lectura clara.",
-    supportLine: "Sube un recibo, CFDI o PDF y te mostramos la señal principal y el siguiente paso.",
-    microDescription: "Empieza con un solo documento y entiende rápido si hay algo que revisar.",
+    eyebrowMobile: "Empieza con tu recibo más reciente",
+    eyebrowDesktop: "Empieza con tu recibo más reciente",
+    titleLead: "Sube tu recibo",
+    titleAccent: "y te decimos qué revisar.",
+    headline: "Sube tu recibo y te decimos qué revisar.",
+    supportLine: "Sube tu recibo o comprobante y te mostramos lo más importante.",
+    microDescription: "Empieza con un solo archivo y entiende rápido si hay algo raro o pendiente.",
     body:
-      "Primero ves la lectura y después decides si quieres seguir o guardar tu expediente.",
-    ctaPrimary: "Empezar auditoría gratis",
-    ctaSecondary: "Ver ejemplo de resultado",
+      "Primero ves el resultado. Si te sirve, luego decides si lo guardas.",
+    ctaPrimary: "Revisa tu recibo gratis",
+    ctaSecondary: "Ver un ejemplo",
   },
   short_paid_campaign: {
     tabLabel: "Revisión inicial",
-    eyebrowMobile: "Sube una foto o PDF y revisa tu pago",
-    eyebrowDesktop: "Sube una foto o PDF y revisa tu pago",
+    eyebrowMobile: "Sube tu recibo y revísalo gratis",
+    eyebrowDesktop: "Sube tu recibo y revísalo gratis",
     titleLead: "Sube tu recibo",
     titleAccent: "y entiende rápido qué revisar.",
     headline: "Sube tu recibo y entiende rápido qué revisar.",
     supportLine: "Empieza gratis con un solo documento y recibe una primera lectura útil.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir.",
-    body: "Empiezas con un solo recibo y después decides si quieres profundizar en tu expediente.",
-    ctaPrimary: "Empezar auditoría gratis",
-    ctaSecondary: "Ver ejemplo de resultado",
+    body: "Empiezas con un solo recibo y después decides si quieres seguir.",
+    ctaPrimary: "Revisa tu recibo gratis",
+    ctaSecondary: "Ver un ejemplo",
   },
   direct_money_check: {
     tabLabel: "Revisión inicial",
@@ -407,9 +405,9 @@ const heroCopyVariants = {
     headline: "Revisa tu pago con una primera lectura útil.",
     supportLine: "Sube un recibo y detecta una señal antes de dejar pasar otro periodo.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y el siguiente documento útil.",
-    body: "Empieza sin tarjeta, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
-    ctaPrimary: "Empezar auditoría gratis",
-    ctaSecondary: "Ver ejemplo de resultado",
+    body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
+    ctaPrimary: "Revisa tu recibo gratis",
+    ctaSecondary: "Ver un ejemplo",
   },
 } as const;
 
@@ -638,7 +636,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Empezar auditoría gratis";
+const PRIMARY_CTA_LABEL = "Revisa tu recibo gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -711,7 +709,7 @@ function SiteHeader() {
               window.location.href = "/acceso?returnTo=/auditar";
             }}
           >
-            Iniciar sesión
+            Entrar
           </Button>
           <Button
             className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
@@ -791,7 +789,7 @@ function SiteHeader() {
                   window.location.href = "/acceso?returnTo=/auditar";
                 }}
               >
-                Iniciar sesión
+                Entrar
               </Button>
               <Button
                 className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
@@ -836,13 +834,13 @@ function HeroSection() {
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
-        title: "Recibo detectado: ya vimos el periodo y los conceptos clave",
-        description: "Detectamos tu recibo y guardamos el periodo para que el siguiente cruce tenga más contexto desde el inicio.",
+        title: "Recibo detectado: ya vimos lo más importante",
+        description: "Detectamos tu recibo y ya tenemos una base clara para seguir revisando.",
         focusLabel: "Qué significa",
-        focusValue: "Ya sabemos con qué documento empezar y podemos usarlo como base para revisar pagos, deducciones o CFDI.",
+        focusValue: "Ya sabemos con qué documento empezar y podemos usarlo como base para revisar pagos, deducciones o comprobantes del mismo mes.",
         focusClass: "border-slate-200 bg-slate-50/90 text-slate-800",
         secondaryLabel: "Siguiente paso",
-        secondaryValue: "Si tienes el CFDI del mismo mes, suele ser el mejor cruce para confirmar o descartar la diferencia inicial.",
+        secondaryValue: "Si tienes el comprobante fiscal del mismo mes, suele ser el mejor cruce para confirmar o descartar la diferencia inicial.",
         secondaryClass: "border-slate-200 bg-white text-slate-700",
         progressLabel: "Nivel de claridad inicial",
       };
@@ -850,10 +848,10 @@ function HeroSection() {
 
     if (selectedReportDemoState === "siguiente-paso") {
       return {
-        title: "Qué revisar primero: monto, periodo y conceptos",
+        title: "Qué revisar primero en tu pago",
         description: "Todavía no cerramos una conclusión. Primero te mostramos el cruce más útil para confirmar si la diferencia realmente existe.",
         focusLabel: "Siguiente paso",
-        focusValue: "Sube el CFDI del mismo mes para contrastar monto, periodo y conceptos contra tu recibo.",
+        focusValue: "Sube el comprobante fiscal del mismo mes para contrastar monto, periodo y conceptos contra tu recibo.",
         focusClass: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
         secondaryLabel: "Qué ganarías al continuar",
         secondaryValue: activeFinding.impact,
@@ -863,13 +861,13 @@ function HeroSection() {
     }
 
     return {
-      title: "Señal encontrada: posible diferencia entre recibo y CFDI",
+      title: "Señal encontrada: tu pago podría no coincidir",
       description: "Vemos una diferencia posible y te decimos cómo revisarla antes de sacar una conclusión.",
       focusLabel: "Qué significa",
-      focusValue: "Puede haber diferencias de monto, periodo o conceptos entre lo pagado y lo timbrado.",
+      focusValue: "Puede haber diferencias de monto, periodo o conceptos entre lo que te pagaron y lo que se reportó.",
       focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
       secondaryLabel: "Siguiente paso",
-      secondaryValue: "Sube el CFDI del mismo mes para confirmar si ambos documentos cuentan la misma historia.",
+      secondaryValue: "Sube el comprobante fiscal del mismo mes para confirmar si ambos documentos cuentan la misma historia.",
       secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
       progressLabel: "Nivel de claridad inicial",
     };
@@ -1094,7 +1092,7 @@ function HeroSection() {
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
             <span className="sm:hidden">Sube foto o PDF</span>
-            <span className="hidden sm:inline">Sube una foto o PDF y revisa tu pago</span>
+            <span className="hidden sm:inline">Sube tu recibo y revísalo gratis</span>
           </div>
 
             <h1
@@ -1139,7 +1137,7 @@ function HeroSection() {
                   Si no sabes con qué empezar
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-700">
-Empieza por el archivo que más rápido suele revelar diferencias: un recibo reciente o un CFDI del mismo periodo.
+Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobante del mismo mes.
                 </p>
               </div>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
@@ -1204,7 +1202,7 @@ Empieza por el archivo que más rápido suele revelar diferencias: un recibo rec
                   ))}
                 </div>
                 <p className="text-sm leading-6 text-slate-700">
-                  Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
+                  Empieza con una foto o PDF del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
                 </p>
                 <p className="text-xs font-medium leading-5 text-teal-800">
                   Cifrado AES-256, control de borrado visible y resguardo serio desde el inicio.

@@ -306,7 +306,7 @@ export default function Access() {
               className="inline-flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
             >
               <ArrowLeft className="h-4 w-4 shrink-0" />
-              <span className="truncate">Volver a /auditar</span>
+              <span className="truncate">Volver a revisar mi recibo</span>
             </a>
           </div>
 
@@ -316,7 +316,7 @@ export default function Access() {
                 <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
                 <div className="min-w-0">
                   <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
-                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Sesión activa</p>
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Todo listo</p>
                 </div>
               </div>
 
@@ -325,10 +325,10 @@ export default function Access() {
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                      Ya puedes continuar
+                      Ya puedes seguir
                     </p>
                     <p className="mt-2 leading-6">
-                      Tu sesión ya está activa. Desde aquí solo sigues a tu auditoría para retomar el flujo donde te quedaste.
+                      Listo, sigue con tu revisión donde la dejaste.
                     </p>
                   </div>
                 </div>
@@ -339,10 +339,10 @@ export default function Access() {
                       window.location.href = "/auditar";
                     }}
                   >
-                    Continuar con mi auditoría
+Continuar con mi revisión
                   </Button>
                   <p className="text-xs leading-5 text-teal-900/80">
-                    Entrarás directo al flujo para subir, revisar o guardar tus documentos.
+Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   </p>
                 </div>
               </div>
@@ -383,7 +383,7 @@ export default function Access() {
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Entra y sigue donde te quedaste
+                Entrar con correo y seguir donde te quedaste
               </h1>
               <p className="text-sm leading-7 text-slate-600">
                 Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel}. Aquí solo resolvemos el acceso.

@@ -22,3 +22,17 @@
 2. En /auditar, esconder o colapsar la infraestructura legal/operativa antes del primer upload.
 3. Dejar visible solo una acción principal arriba: elegir documento o tomar foto.
 4. Mover lenguaje secundario y administrativo a capas posteriores o expandibles.
+
+## /auditar — revisión visual 2026-05-20 tras la nueva ronda
+
+- La cabecera principal ya es más clara: "Sube tu recibo o comprobante" funciona mejor y el mensaje de seguridad es entendible.
+- Sigue apareciendo el rótulo **"Carga inmediata"**, que no aporta mucho al trabajador común.
+- El bloque principal aún dice **"Sube tu archivo"** y **"lectura inicial"**, que puede simplificarse más hacia lenguaje de recibo o revisión.
+- El módulo **"Abrir primero"** sigue metiendo jerga de PDF/XML/foto guardada y compite con la acción principal.
+- La barra de progreso y las cuatro etapas siguen ocupando espacio mental antes de subir el documento.
+- El texto **"bóveda laboral"** todavía aparece en el flujo y conviene sustituirlo por un término más cotidiano.
+- Los límites técnicos **PDF, XML, JPG, PNG o WEBP** siguen demasiado visibles para una primera visita.
+
+### Recomendación inmediata
+
+Dejar un solo bloque principal arriba con lenguaje de recibo/comprobante y esconder el progreso, los formatos técnicos y la jerga adicional hasta que el usuario realmente necesite ayuda.
