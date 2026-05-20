@@ -1,0 +1,137 @@
+{
+  "chatgpt": {
+    "recommended_path": "Wrap the existing React/Vite web app with Capacitor for native iOS and Android apps.",
+    "priority": "Capacitor",
+    "confidence": 85,
+    "why_now": [
+      "Maximizes reuse of current React codebase",
+      "Provides native access to camera and file APIs",
+      "Enables app store publishing with minimal rewrite"
+    ],
+    "main_risks": [
+      "Potential native plugin limitations or bugs",
+      "Performance overhead compared to pure native",
+      "App store review challenges with webview apps"
+    ],
+    "must_do_before_store_release": [
+      "Implement and test Capacitor plugins for camera and file upload",
+      "Ensure offline and session continuity works reliably",
+      "Optimize app startup and loading performance",
+      "Thoroughly test auth flows and WhatsApp integration",
+      "Comply with App Store and Play Store guidelines"
+    ],
+    "phase_1": [
+      "Integrate Capacitor into existing React/Vite app",
+      "Configure native plugins for camera and file upload",
+      "Test core flows on iOS and Android devices",
+      "Set up app store accounts and prepare metadata"
+    ],
+    "phase_2": [
+      "Optimize mobile UX within Capacitor shell",
+      "Add native splash screens and app icons",
+      "Implement push notifications if needed",
+      "Conduct beta testing with real users"
+    ],
+    "phase_3": [
+      "Submit apps to App Store and Google Play",
+      "Monitor app performance and crash reports",
+      "Iterate on UX improvements based on feedback",
+      "Plan for future native feature enhancements"
+    ],
+    "avoid": [
+      "Full React Native rewrite due to high rework",
+      "Relying solely on PWA for app store presence",
+      "Hybrid staged approach adding complexity"
+    ]
+  },
+  "grok": {
+    "recommended_path": "Wrap existing React/Vite app with Capacitor for native iOS/Android builds.",
+    "priority": "Capacitor",
+    "confidence": 85,
+    "why_now": [
+      "Mobile web already heavily optimized",
+      "Preserves all current code and flows",
+      "Fastest path to App Store and Play Store"
+    ],
+    "main_risks": [
+      "Store rejection risk for thin wrapper",
+      "Plugin maintenance overhead",
+      "Slight native UI differences"
+    ],
+    "must_do_before_store_release": [
+      "Add app icons and splash screens",
+      "Configure camera and file permissions",
+      "Test all document upload flows on device",
+      "Set up production signing and certificates",
+      "Verify session and WhatsApp continuity"
+    ],
+    "phase_1": [
+      "Install Capacitor and add iOS/Android platforms",
+      "Integrate camera and file plugins",
+      "Update Vite build for mobile",
+      "Run first device builds"
+    ],
+    "phase_2": [
+      "Polish native navigation and status bar",
+      "Add offline handling and push config",
+      "End-to-end testing with Playwright on emulators",
+      "Prepare store metadata and screenshots"
+    ],
+    "phase_3": [
+      "Beta testing via TestFlight and Play Console",
+      "Fix any platform-specific bugs",
+      "Submit for review",
+      "Monitor crash and analytics post-launch"
+    ],
+    "avoid": [
+      "Full React Native rewrite",
+      "Pure PWA only approach",
+      "Custom native modules unless required"
+    ]
+  },
+  "gemini": {
+    "recommended_path": "Wrap the existing React/Vite web app with Capacitor for native iOS and Android deployment.",
+    "priority": "Capacitor",
+    "confidence": 95,
+    "why_now": [
+      "Maximizes reuse of existing React/Vite codebase.",
+      "Enables App Store/Google Play publishing.",
+      "Provides reliable access to native device features."
+    ],
+    "main_risks": [
+      "Potential for 'web-view feel' if not carefully styled.",
+      "Debugging across web/native boundary can be complex.",
+      "Plugin compatibility or custom plugin development for edge cases."
+    ],
+    "must_do_before_store_release": [
+      "Implement Capacitor plugins for camera, file, and auth.",
+      "Configure native splash screens and app icons.",
+      "Optimize web app for Capacitor-specific performance (e.g., initial load).",
+      "Thoroughly test all key flows on target devices.",
+      "Set up push notifications (if needed) and deep linking."
+    ],
+    "phase_1": [
+      "Integrate Capacitor into existing React/Vite project.",
+      "Build and run basic app on iOS/Android emulators.",
+      "Implement core Capacitor plugins (camera, file upload).",
+      "Test critical document input flows."
+    ],
+    "phase_2": [
+      "Refine mobile UX for native feel (status bar, gestures).",
+      "Implement session continuity and simple auth via Capacitor.",
+      "Set up app icons, splash screens, and app store metadata.",
+      "Conduct extensive user acceptance testing (UAT) on devices."
+    ],
+    "phase_3": [
+      "Prepare for App Store and Google Play submission.",
+      "Address any platform-specific bugs or performance issues.",
+      "Monitor app store reviews and analytics post-launch.",
+      "Plan for ongoing maintenance and updates."
+    ],
+    "avoid": [
+      "Full React Native rewrite due to high cost/rework.",
+      "Pure PWA for iOS App Store and native feature reliability.",
+      "Over-customizing native code, stick to web-first approach."
+    ]
+  }
+}

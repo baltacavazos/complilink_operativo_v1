@@ -1,7 +1,8 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { shouldRedirectDemoUserFromCeo } from "@/lib/viewMode";
+import AppUrlListener from "@/components/AppUrlListener";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { shouldRedirectDemoUserFromCeo } from "@/lib/viewMode";
 import { lazy, Suspense, useEffect } from "react";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -67,6 +68,7 @@ function QuickExitButton() {
 function Router() {
   return (
     <>
+      <AppUrlListener />
       <DemoViewGuard />
       <QuickExitButton />
       <Suspense fallback={<RouteLoadingFallback />}>

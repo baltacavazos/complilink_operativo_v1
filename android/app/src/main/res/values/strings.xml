@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Auditapatron</string>
+    <string name="title_activity_main">Auditapatron</string>
+    <string name="package_name">com.auditapatron.mobile</string>
+    <string name="custom_url_scheme">com.auditapatron.mobile</string>
+</resources>

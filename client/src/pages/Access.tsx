@@ -3,6 +3,7 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
+import { isNativeApp } from "@/lib/nativeRuntime";
 import { trpc } from "@/lib/trpc";
 import {
   getStableUserIdentifier,
@@ -144,7 +145,8 @@ function getFriendlyAuthMessage(parsed: ParsedAuthMessage) {
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
   const returnToLabel = useMemo(() => getReturnToLabel(returnTo), [returnTo]);
-  const manusLoginAvailable = useMemo(() => canUseManusLogin(), []);
+  const nativeApp = useMemo(() => isNativeApp(), []);
+  const manusLoginAvailable = useMemo(() => !nativeApp && canUseManusLogin(), [nativeApp]);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
   const auth = useAuth();
   const { loading, user } = auth;
@@ -297,7 +299,7 @@ export default function Access() {
   const googleEnabled = Boolean(googleStatusQuery.data?.enabled);
   const emailCooldownSecondsRemaining = emailCooldownUntil ? Math.max(0, Math.ceil((emailCooldownUntil - nowTs) / 1000)) : 0;
   const emailCooldownActive = emailCooldownSecondsRemaining > 0;
-  const secondaryOptionsAvailable = Boolean((manusLoginAvailable && manusLoginUrl) || googleEnabled);
+  const secondaryOptionsAvailable = !nativeApp && Boolean((manusLoginAvailable && manusLoginUrl) || googleEnabled);
 
   const setPersistedCeoPanelOpen = (nextOpen: boolean) => {
     setCeoPanelPreferenceOpen(nextOpen);
@@ -405,6 +407,11 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <p className="text-sm leading-7 text-slate-600">
                 Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel}. Aquí solo resolvemos el acceso.
               </p>
+              {nativeApp ? (
+                <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
+                  Dentro de la app, el acceso por correo es la ruta más estable en esta primera versión móvil.
+                </p>
+              ) : null}
             </div>
 
             {rememberedEmail && emailStep === "request" ? (

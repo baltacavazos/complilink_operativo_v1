@@ -1,0 +1,130 @@
+{
+  "chatgpt": {
+    "recommended_shell_mode": "remote_url_first",
+    "confidence": 90,
+    "reasoning_summary": "Loading remote URL minimizes build complexity and keeps parity with web app; local assets add complexity and risk for phase 1. Remote mode allows quick iteration and easier auth flow handling.",
+    "auth_v1_recommendation": "Use email code login and OAuth via external browser with deep linking for safe, minimal changes.",
+    "oauth_strategy": "browser_external_with_deeplink",
+    "required_now_plugins": [
+      "@capacitor/app",
+      "@capacitor/browser",
+      "@capacitor/device",
+      "@capacitor/network",
+      "@capacitor/haptics"
+    ],
+    "can_keep_html_file_input_for_v1": true,
+    "must_change_now": [
+      "Implement deep link handling for OAuth redirects",
+      "Configure Capacitor Browser plugin for OAuth flows",
+      "Update API client base URL to absolute remote URL",
+      "Add Capacitor App plugin event listeners for lifecycle",
+      "Ensure CORS and credentials work with remote origin",
+      "Add minimal native splash screen and app metadata"
+    ],
+    "can_defer_until_next_round": [
+      "Package local web assets for offline support",
+      "Implement native camera/file picker plugins",
+      "Add push notifications",
+      "Add biometric auth",
+      "Improve native UI integration",
+      "Optimize offline data storage"
+    ],
+    "main_risks": [
+      "OAuth redirect handling complexity",
+      "CORS and credential issues with remote origin",
+      "User experience lag on initial remote load",
+      "Potential mismatch between web and native behaviors",
+      "Deep link configuration errors"
+    ],
+    "implementation_order": [
+      "Set Capacitor shell to load remote URL",
+      "Integrate Capacitor Browser plugin for OAuth flows",
+      "Implement deep link listeners with Capacitor App plugin",
+      "Adjust API client to use absolute remote URL with credentials",
+      "Test email code login and OAuth flows end-to-end",
+      "Prepare minimal native app metadata and splash screen"
+    ]
+  },
+  "grok": {
+    "recommended_shell_mode": "local_assets_first",
+    "confidence": 80,
+    "reasoning_summary": "Local assets minimize latency and auth redirect friction while keeping the web codebase untouched. Remote-first adds unnecessary CORS and session risks for a v1 native wrapper.",
+    "auth_v1_recommendation": "Keep email code login as primary path and gate OAuth behind external browser for v1.",
+    "oauth_strategy": "browser_external_with_deeplink",
+    "required_now_plugins": [
+      "@capacitor/core",
+      "@capacitor/app",
+      "@capacitor/browser"
+    ],
+    "can_keep_html_file_input_for_v1": true,
+    "must_change_now": [
+      "Make API base URL configurable via env",
+      "Add App plugin URL listener for redirects",
+      "Replace window.location with Capacitor Browser where possible"
+    ],
+    "can_defer_until_next_round": [
+      "Camera plugin integration",
+      "Secure storage migration",
+      "Push notification setup"
+    ],
+    "main_risks": [
+      "Deep link entitlement misconfiguration",
+      "OAuth state loss on app resume",
+      "Webview cookie/credential isolation"
+    ],
+    "implementation_order": [
+      "Init Capacitor and sync web build",
+      "Configure platform deep links",
+      "Wire App plugin listener",
+      "Test email login end-to-end",
+      "Add external browser OAuth flow",
+      "Build signed dev binaries"
+    ]
+  },
+  "gemini": {
+    "recommended_shell_mode": "local_assets_first",
+    "confidence": 90,
+    "reasoning_summary": "Loading local assets first provides a more stable, faster, and predictable user experience for the initial release, minimizing network dependencies and app store review complexities. This approach aligns with low-risk delivery and a practical base for future evolution.",
+    "auth_v1_recommendation": "Adapt existing web authentication flows to work within the Capacitor WebView, prioritizing external browser for OAuth and deep links.",
+    "oauth_strategy": "browser_external_with_deeplink",
+    "required_now_plugins": [
+      "@capacitor/app",
+      "@capacitor/browser",
+      "@capacitor/preferences",
+      "@capacitor/status-bar",
+      "@capacitor/keyboard"
+    ],
+    "can_keep_html_file_input_for_v1": true,
+    "must_change_now": [
+      "Configure Capacitor deep links for OAuth redirects",
+      "Replace `window.location` for external redirects with `Browser.open()`",
+      "Verify/adapt internal `window.location` navigation if not using router",
+      "Ensure API calls resolve correctly from `capacitor://localhost`",
+      "Configure Vite for Capacitor build output",
+      "Verify `credentials: 'include'` behavior in WebView"
+    ],
+    "can_defer_until_next_round": [
+      "Replacing `input type=file` with native Camera/Filesystem plugins",
+      "Push notifications integration",
+      "Custom splash screen and app icons",
+      "Native share sheet integration",
+      "Biometric authentication",
+      "Advanced offline capabilities"
+    ],
+    "main_risks": [
+      "Deep link configuration errors",
+      "OAuth provider redirect compatibility issues",
+      "WebView security policies (CORS/CSP)",
+      "Performance on low-end devices",
+      "Maintaining web vs. mobile code divergence"
+    ],
+    "implementation_order": [
+      "Initialize Capacitor and configure `capacitor.config.ts` (local assets, deep links)",
+      "Install core Capacitor plugins (`App`, `Browser`, `Preferences`, `Status Bar`, `Keyboard`)",
+      "Refactor `window.location` calls for external redirects using `Browser.open()`",
+      "Verify API calls and `credentials: 'include'` in the Capacitor WebView",
+      "Test existing `input type=file` for camera/gallery functionality",
+      "Build, test, and debug on target iOS and Android devices"
+    ]
+  }
+}

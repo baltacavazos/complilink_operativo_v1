@@ -1675,3 +1675,11 @@
 - [x] Mejorar Auditar con mensajes de carga más tranquilizadores, continuidad más natural y ayudas de decisión más simples.
 - [x] Añadir casos cotidianos y rutas de retorno/seguimiento para que el trabajador entienda qué hacer después del primer hallazgo.
 - [x] Validar esta nueva ronda con pruebas focalizadas, revisión visual y checkpoint estable.
+- [x] Consultar a Grok, ChatGPT y Gemini sobre la mejor ruta para convertir Auditapatron en app iOS y Android sin rehacer todo desde cero.
+- [x] Auditar la base web actual para detectar bloqueos de experiencia móvil, autenticación, cámara, archivos y navegación híbrida.
+- [x] Implementar la base técnica de empaquetado móvil sobre la app web actual y adaptar los puntos críticos del flujo público.
+- [x] Documentar cómo compilar, probar y preparar la publicación en App Store y Google Play.
+- [ ] Validar esta nueva ronda móvil con pruebas focalizadas y checkpoint estable.
+- [x] Ronda móvil base: instalar Capacitor y los plugins mínimos de cámara, archivos y preferencias sin romper la build web actual.
+- [x] Ronda móvil base: adaptar el flujo de autenticación para entorno híbrido, priorizando acceso por correo y preparando apertura externa más deep link para OAuth si aplica.
+- [x] Ronda móvil base: documentar build, permisos y release checklist de iOS/Android en MOBILE_BUILD.md.
