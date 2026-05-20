@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-05-15T04:44:14.212372Z",
+  "prompt": "Actúa como estratega senior de conversión y producto para una plataforma legal-laboral en México.\n\nContexto del producto:\n- Nombre: Auditapatron.\n- Público principal: trabajadores en México.\n- Promesa visible actual: subir una foto o PDF del recibo para revisar si les pagan de menos y detectar diferencias en pago, deducciones o CFDI.\n- La plataforma busca transmitir claridad, confianza, facilidad de uso y utilidad inmediata.\n- La pregunta estratégica es: ¿conviene hacer un video corto que explique la plataforma?\n\nQuiero una respuesta ESTRICTAMENTE en JSON válido con esta estructura exacta:\n{\n  \"verdict\": \"si\" | \"no\" | \"depende\",\n  \"confidence\": 0-100,\n  \"top_line\": \"una frase de máximo 20 palabras\",\n  \"why_it_helps\": [\"razón 1\", \"razón 2\", \"razón 3\"],\n  \"main_risks\": [\"riesgo 1\", \"riesgo 2\", \"riesgo 3\"],\n  \"best_use_case\": \"explica el mejor uso del video\",\n  \"recommended_length_seconds\": number,\n  \"recommended_style\": \"estilo recomendado en una frase\",\n  \"placement\": \"dónde usarlo primero\",\n  \"script_focus\": [\"punto 1\", \"punto 2\", \"punto 3\"],\n  \"final_recommendation\": \"recomendación final en máximo 60 palabras\"\n}\n\nCriterios para decidir:\n- Prioriza conversión, claridad, reducción de fricción y construcción de confianza.\n- Penaliza el video si añade ruido, tiempo de carga o distrae del CTA principal.\n- Si respondes que sí o depende, asume un formato muy corto y de alta claridad.\n- No expliques fuera del JSON.\n",
+  "results": {
+    "chatgpt": {
+      "verdict": "si",
+      "confidence": 90,
+      "top_line": "Un video corto mejora claridad y confianza para aumentar la conversión.",
+      "why_it_helps": [
+        "Explica visualmente el proceso simple y seguro de subir recibos.",
+        "Reduce dudas y fricciones al mostrar resultados inmediatos.",
+        "Genera confianza al humanizar la plataforma y su utilidad."
+      ],
+      "main_risks": [
+        "Puede aumentar tiempo de carga si no está optimizado.",
+        "Si es muy largo o complejo, distrae del CTA principal.",
+        "Si no es claro, puede generar confusión o desconfianza."
+      ],
+      "best_use_case": "Video introductorio de 30 segundos en la página principal antes del CTA.",
+      "recommended_length_seconds": 30,
+      "recommended_style": "Claro, directo, amigable y con lenguaje sencillo mexicano.",
+      "placement": "Encima o junto al botón principal de subir recibo en la landing page.",
+      "script_focus": [
+        "Qué es Auditapatron y cómo ayuda a detectar pagos incorrectos.",
+        "Cómo subir la foto o PDF de forma fácil y segura.",
+        "Qué tipo de resultados inmediatos y claros recibirán."
+      ],
+      "final_recommendation": "Crear un video corto, claro y amigable para la landing, optimizado para carga rápida, que explique el valor y proceso, aumentando confianza y conversión sin distraer del CTA."
+    },
+    "grok": {
+      "verdict": "si",
+      "confidence": 85,
+      "top_line": "Un video corto mejora la claridad y confianza para usuarios nuevos.",
+      "why_it_helps": [
+        "Aumenta la comprensión visual del proceso de revisión",
+        "Construye confianza al mostrar resultados reales y rápidos",
+        "Reduce fricciones al guiar al usuario hacia el CTA principal"
+      ],
+      "main_risks": [
+        "Aumenta el tiempo de carga y posible abandono",
+        "Puede distraer si no es relevante, alejando del botón de subida",
+        "No todos los usuarios reproducen videos, perdiendo impacto"
+      ],
+      "best_use_case": "Para atraer trabajadores primerizos que necesitan una demostración rápida de cómo subir recibos y detectar errores de pago.",
+      "recommended_length_seconds": 30,
+      "recommended_style": "Animado, claro y conciso con voz en off amigable en español.",
+      "placement": "En la landing page, justo arriba del formulario de subida.",
+      "script_focus": [
+        "Explicar cómo subir una foto o PDF del recibo",
+        "Mostrar un ejemplo de revisión de pagos y deducciones",
+        "Enfatizar los beneficios y finalizar con el CTA"
+      ],
+      "final_recommendation": "Recomiendo crear un video corto de 30 segundos para explicar Auditapatron, enfocándote en facilidad y confianza, para impulsar conversiones sin agregar distracciones innecesarias."
+    },
+    "gemini": {
+      "verdict": "si",
+      "confidence": 90,
+      "top_line": "Sí, un video corto y claro aumentará confianza y conversión, simplificando la propuesta de valor para trabajadores.",
+      "why_it_helps": [
+        "Simplifica visualmente el proceso de subir el recibo y entender el beneficio.",
+        "Genera confianza al mostrar la interfaz real y el flujo de uso de forma transparente.",
+        "Reduce la fricción al responder preguntas comunes y aclarar dudas antes de que surjan."
+      ],
+      "main_risks": [
+        "Un video demasiado largo o complejo puede distraer del CTA principal de subir el recibo.",
+        "Puede aumentar el tiempo de carga de la página si no está optimizado, afectando la experiencia móvil.",
+        "Podría ser percibido como un obstáculo si el usuario prefiere ir directo a la acción sin ver el video."
+      ],
+      "best_use_case": "Introducción rápida en la landing page principal, antes del CTA, para explicar el valor y el proceso en segundos.",
+      "recommended_length_seconds": 20,
+      "recommended_style": "Animación didáctica y limpia con voz en off clara, mostrando la interfaz real paso a paso.",
+      "placement": "Landing page principal, justo encima o al lado del formulario de carga del recibo.",
+      "script_focus": [
+        "Problema: ¿Te pagan lo justo? (Conexión emocional)",
+        "Solución: Sube tu recibo en 3 pasos (Muestra el proceso de carga y la interfaz).",
+        "Beneficio: Detecta diferencias y entiende tu pago (Muestra un resultado simplificado y claro)."
+      ],
+      "final_recommendation": "Un video conciso y visualmente claro es una inversión estratégica. Debe enfocarse en la simplicidad del proceso y el valor inmediato, construyendo confianza. Colócalo prominentemente en la landing page para guiar al usuario y reducir la fricción, impulsando la conversión sin distraer del CTA principal."
+    }
+  }
+}

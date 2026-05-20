@@ -7329,83 +7329,6 @@ export default function Auditar() {
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
       <div className="container mx-auto max-w-6xl">
-        {auth.canToggleUserView ? (
-          <Alert
-            className={`mb-6 shadow-sm ${
-              auth.isViewingAsUser
-                ? "border-amber-200 bg-amber-50/95 text-amber-950"
-                : "border-teal-200 bg-teal-50/95 text-teal-950"
-            }`}
-          >
-            {auth.isViewingAsUser ? (
-              <AlertCircle className="h-4 w-4 text-amber-700" />
-            ) : (
-              <ShieldCheck className="h-4 w-4 text-teal-700" />
-            )}
-            <AlertTitle>
-              {auth.isViewingAsUser
-                ? "Vista normal de usuario con acceso CEO"
-                : "Vista operativa base con acceso CEO"}
-            </AlertTitle>
-            <AlertDescription
-              className={`mt-2 space-y-3 text-sm leading-6 ${
-                auth.isViewingAsUser ? "text-amber-900" : "text-teal-900"
-              }`}
-            >
-              <p>
-                {auth.isViewingAsUser ? (
-                  <>
-                    Tu identidad real como <strong>CEO maestro</strong> sigue
-                    intacta. Estás recorriendo la plataforma como un usuario
-                    normal, pero ahora puedes abrir tus acciones ejecutivas
-                    desde aquí sin perder el hilo.
-                  </>
-                ) : (
-                  <>
-                    Estás usando la misma vista operativa que vería un usuario en
-                    <strong> /auditar</strong>, con una entrada discreta para tus
-                    acciones CEO cuando necesites subir al nivel ejecutivo.
-                  </>
-                )}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  className={`rounded-full ${
-                    auth.isViewingAsUser
-                      ? "bg-amber-700 text-white hover:bg-amber-800"
-                      : "bg-teal-700 text-white hover:bg-teal-800"
-                  }`}
-                  onClick={() => setPersistedCeoPanelOpen(true)}
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  Abrir acciones CEO
-                </Button>
-                {auth.isViewingAsUser ? (
-                  <Button
-                    variant="outline"
-                    className="rounded-full border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
-                    onClick={() => {
-                      auth.exitUserView();
-                      window.location.href = "/ceo";
-                    }}
-                  >
-                    <ArrowRight className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                    Volver al tablero CEO
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="rounded-full border-teal-300 bg-white text-teal-900 hover:bg-teal-100"
-                    onClick={() => auth.enterUserView()}
-                  >
-                    <AlertCircle className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                    Ver exactamente como usuario normal
-                  </Button>
-                )}
-              </div>
-            </AlertDescription>
-          </Alert>
-        ) : null}
         <div
           ref={heroCardRef}
           className={shouldCompactPostUploadExperience
@@ -7440,19 +7363,17 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                Sube tu recibo de nómina
+                Sube tu documento
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
               {shouldCompactPostUploadExperience ? null : (
                 <>
                   <span className="sm:hidden">
-                    Usa una foto, PDF o archivo. Te diremos qué documento recibió,
-                    qué señal encontró y qué conviene revisar después.
+                    Sube una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.
                   </span>
                   <span className="hidden sm:inline">
-                    Usa una foto, PDF o archivo. AuditaPatron te dirá qué documento
-                    recibió, qué señal encontró y qué conviene revisar después.
+                    Sube una foto, PDF o XML. Primero verás la señal principal y el siguiente paso útil.
                   </span>
                 </>
               )}
@@ -7469,60 +7390,6 @@ export default function Auditar() {
           </div>
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
-            {auth.canToggleUserView ? (
-              <div className="flex flex-col items-stretch gap-2 sm:items-end">
-                <Button
-                  variant="outline"
-                  className={`rounded-full border px-4 text-sm font-semibold ${ceoActionsDrawerOpen ? "border-amber-300/70 bg-amber-400/15 text-amber-50 hover:bg-amber-400/25" : "border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25"}`}
-                  onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
-                  aria-pressed={ceoActionsDrawerOpen}
-                  data-testid="auditar-ceo-header-toggle"
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  {ceoActionsDrawerOpen ? "Modo CEO activo" : "Modo CEO"}
-                </Button>
-                <span className="text-[11px] font-medium text-slate-300">
-                  {ceoActionsDrawerOpen
-                    ? "Tu panel ejecutivo quedó abierto para este usuario en este equipo."
-                    : auth.isViewingAsUser
-                      ? "Sigue siendo la vista normal de usuario con salida discreta al CEO."
-                      : "Abre acciones CEO sin salir del flujo operativo base."}
-                </span>
-              </div>
-            ) : null}
-            <Button
-              variant="outline"
-              className={shouldCompactPostUploadExperience ? "hidden" : "hidden rounded-full border-teal-300/40 bg-teal-400/15 text-white hover:bg-teal-400/25 sm:inline-flex"}
-              onClick={() => {
-                void handleRevalidateSocialSecurity();
-              }}
-              disabled={
-                !caseDetailInput || revalidateSocialSecurityMutation.isPending
-              }
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${revalidateSocialSecurityMutation.isPending ? "animate-spin" : ""}`}
-                strokeWidth={1.8}
-              />
-              {revalidateSocialSecurityMutation.isPending
-                ? "Revalidando cruce..."
-                : "Revalidar IMSS e Infonavit"}
-            </Button>
-            {showHeroJumpCta ? (
-              <Button
-                variant="ghost"
-                className="hidden rounded-full border border-white/10 bg-white/5 px-4 text-slate-100 hover:bg-white/10 hover:text-white sm:inline-flex"
-                onClick={() => {
-                  setMobileOnboardingIndex(0);
-                  uploadSectionRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }}
-              >
-                Ir al formulario
-              </Button>
-            ) : null}
             {shouldCompactPostUploadExperience ? null : (
               <span className="hidden text-[11px] font-medium text-slate-300 sm:inline">
                 {showHeroJumpCta
@@ -7610,7 +7477,7 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        {legalGateRequired || legalGateHarnessMode ? (
+        {!auth.canToggleUserView && (legalGateRequired || legalGateHarnessMode) ? (
           <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
@@ -7800,7 +7667,7 @@ export default function Auditar() {
           baseLabel="/auditar"
         />
 
-        {showWorkspaceSectionSelector ? (
+        {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -7960,7 +7827,7 @@ export default function Auditar() {
                   </div>
                 </details>
               ) : null}
-              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience ? "hidden sm:grid" : ""}`}>
+              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "hidden" : ""}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
@@ -7975,10 +7842,10 @@ export default function Auditar() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Úsalo solo si quieres fortalecer tu expediente con otra pieza útil."
-                      : "Empieza con una foto o PDF. Dejamos la acción principal arriba y los detalles debajo para que el primer paso sea más claro."}
+                      : "Empieza con una foto o PDF. Primero subes, luego ves la señal y después decides si sigues."}
                   </p>
                   <div
-                    className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                    className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                   >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
@@ -8007,7 +7874,7 @@ export default function Auditar() {
                   </div>
 
                   <div
-                    className={`mt-4 hidden gap-3 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                    className={`mt-4 hidden gap-3 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                   >
                     <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -8066,7 +7933,7 @@ export default function Auditar() {
                 </div>
 
                 <div
-                  className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience ? "sm:hidden" : ""}`}
+                  className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
                       <p className="text-sm font-semibold text-slate-950">
@@ -8835,7 +8702,7 @@ export default function Auditar() {
               </div>
 
               <div
-                className={`mt-6 gap-4 md:grid-cols-2 ${shouldHideUploadSelectors ? "hidden sm:grid" : "grid"}`}
+                className={`mt-6 gap-4 md:grid-cols-2 ${shouldHideUploadSelectors || auth.canToggleUserView ? "hidden" : "grid"}`}
               >
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">
@@ -8883,8 +8750,7 @@ export default function Auditar() {
 
               {showCompactUploadContextHint ? (
                 <p className="mt-3 text-xs leading-5 text-slate-500 sm:hidden">
-                  Primero confirma tu espacio y expediente. Después puedes tomar
-                  la foto o elegir el archivo.
+                  Primero elige el documento. Después puedes tomar la foto o subir el archivo.
                 </p>
               ) : null}
 
@@ -14047,7 +13913,7 @@ export default function Auditar() {
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
-          {showWorkspaceSectionSelector ? (
+          {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
             <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {
                 const isActive = workspaceSection === item.key;

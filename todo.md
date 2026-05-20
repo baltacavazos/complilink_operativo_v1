@@ -1650,3 +1650,8 @@
 - [x] Endurecer el bridge de AuditaPatron para aceptar solo ack válidos y sanear respuestas remotas antes de persistir auditoría
 - [x] Reforzar la clasificación documental para PDFs de nómina con nombre opaco y propagar señales estructuradas de INFONAVIT desde XML al expediente
 - [x] Verificar la infraestructura del CEO Bridge, revalidar las tablas presentes y ejecutar pruebas focalizadas de Helios/Auditar
+- [x] Evaluar con Grok, ChatGPT y Gemini si conviene crear un video corto que explique Auditapatron y aterrizar una recomendación orientada a conversión.
+- [x] Ejecutar una auditoría comparada con Grok, ChatGPT y Gemini simulando clientes para detectar fricción, confusión, redundancia y elementos no esenciales en Auditapatron.
+- [x] Revisar la landing, /auditar, el acceso y las superficies críticas visibles para consolidar una lista priorizada de simplificación.
+- [x] Implementar la simplificación prioritaria en copy, jerarquía visual y flujos esenciales para dejar solo lo elemental al usuario.
+- [x] Validar la versión simplificada con pruebas focalizadas y revisión final del estado del proyecto.

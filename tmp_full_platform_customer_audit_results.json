@@ -1,0 +1,356 @@
+{
+  "generated_at": "2026-05-20T18:40:08.252089Z",
+  "results": {
+    "chatgpt": {
+      "overall_verdict": "necesita_simplificacion_fuerte",
+      "confidence": 95,
+      "top_summary": "La plataforma mezcla demasiada información y roles, generando fatiga y confusión en usuarios nuevos que buscan simplicidad y claridad inmediata.",
+      "biggest_confusions": [
+        {
+          "surface": "landing",
+          "issue": "Multiples bloques con mensajes similares y microvariantes que repiten la misma idea",
+          "severity": "alta",
+          "why_it_hurts": "Genera fatiga cognitiva y dificulta entender el valor principal y el siguiente paso."
+        },
+        {
+          "surface": "landing",
+          "issue": "Exceso de CTAs y enlaces visibles compitiendo por atención",
+          "severity": "alta",
+          "why_it_hurts": "Distracción que impide que el usuario se enfoque en la acción principal: subir un documento."
+        },
+        {
+          "surface": "auditar",
+          "issue": "Mezcla de experiencia usuario común con elementos CEO y operativos visibles",
+          "severity": "alta",
+          "why_it_hurts": "Confunde y abruma al usuario común, que no debe ver opciones ejecutivas ni técnicas."
+        },
+        {
+          "surface": "auditar",
+          "issue": "Demasiados mensajes paralelos y detalles técnicos en el primer paso",
+          "severity": "media",
+          "why_it_hurts": "Sobrecarga de información que dificulta la acción elemental: elegir y subir un documento."
+        },
+        {
+          "surface": "landing",
+          "issue": "Copy técnico visible (ej. 'confirmedData') en ejemplos de lectura",
+          "severity": "alta",
+          "why_it_hurts": "Rompe la confianza y claridad para usuarios sin conocimientos técnicos."
+        }
+      ],
+      "redundancies": [
+        {
+          "surface": "landing",
+          "element": "Múltiples bloques explicando la primera lectura y siguientes pasos con variaciones mínimas",
+          "reason": "Repetición innecesaria que genera confusión y fatiga."
+        },
+        {
+          "surface": "landing",
+          "element": "Varios CTAs para empezar auditoría gratis en distintas secciones",
+          "reason": "Multiplica puntos de acción sin jerarquía clara."
+        },
+        {
+          "surface": "auditar",
+          "element": "Mensajes sobre privacidad, control, borrado y tipos de archivo repetidos en el primer paso",
+          "reason": "Información valiosa pero no elemental para la acción inicial."
+        }
+      ],
+      "not_elemental_for_user": [
+        {
+          "surface": "auditar",
+          "element": "Modo CEO, Abrir acciones CEO, revalidar IMSS e Infonavit",
+          "reason": "No corresponde a la experiencia de usuario común y añade complejidad innecesaria."
+        },
+        {
+          "surface": "landing",
+          "element": "Casos anonimizados con detalles extensos y ejemplos múltiples",
+          "reason": "Puede ocultarse o resumirse para no saturar la landing."
+        },
+        {
+          "surface": "landing",
+          "element": "Detalles técnicos en ejemplos de lectura (ej. 'confirmedData')",
+          "reason": "No aporta valor al usuario final y genera confusión."
+        }
+      ],
+      "remove_now": [
+        "Mostrar copy técnico interno como 'confirmedData' en ejemplos",
+        "Elementos y botones relacionados con Modo CEO en flujo usuario común",
+        "Repetición de múltiples CTAs para empezar auditoría gratis",
+        "Bloques redundantes que explican la misma idea de primera lectura y siguiente paso",
+        "Mensajes paralelos sobre privacidad y control que no son esenciales en primer paso"
+      ],
+      "simplify_now": [
+        "Reducir landing a un solo CTA principal con mensaje claro y directo",
+        "Ocultar o colapsar casos anonimizados y ejemplos extensos en landing",
+        "En /auditar, mostrar solo instrucciones mínimas para subir documento y confianza básica",
+        "Separar completamente experiencia CEO/operativa en área distinta y no visible para usuario común",
+        "Eliminar o resumir textos explicativos técnicos y detalles no esenciales en primer paso"
+      ],
+      "keep_as_is": [
+        "Propuesta de valor principal clara: subir recibo para detectar diferencias",
+        "Privacidad y control visible pero resumido para generar confianza",
+        "Flujo de tres pasos: subir documento, ver señal, decidir guardar"
+      ],
+      "ideal_user_journey": [
+        "Paso 1: Usuario llega a landing con mensaje claro y único, CTA destacado para subir documento",
+        "Paso 2: Usuario sube documento (foto, PDF o XML) con instrucciones mínimas y confianza visible",
+        "Paso 3: Usuario recibe lectura inicial clara sin copy técnico, con señal y siguiente paso sugerido",
+        "Paso 4: Usuario decide guardar o continuar, con opción de crear cuenta para guardar expediente"
+      ],
+      "copy_warnings": [
+        "Evitar términos técnicos o internos visibles para usuario final (ej. 'confirmedData')",
+        "No repetir la misma idea con microvariantes que confunden",
+        "No usar lenguaje excesivamente explicativo o redundante en primer contacto"
+      ],
+      "priority_order": [
+        "Eliminar mezcla de experiencia CEO y usuario común",
+        "Reducir cantidad de CTAs y enlaces visibles en landing",
+        "Simplificar y resumir textos explicativos en landing y /auditar",
+        "Ocultar copy técnico y ejemplos extensos no esenciales",
+        "Mantener foco en acción principal: subir documento y recibir lectura clara"
+      ],
+      "final_recommendation": "Simplificar radicalmente la landing y el flujo /auditar para usuarios nuevos, eliminando elementos CEO, copy técnico y redundancias. Priorizar un único CTA claro, instrucciones mínimas y confianza visible. Separar experiencias por rol para evitar confusión y fatiga cognitiva. Así se mejora la conversión y la percepción de simplicidad y seguridad."
+    },
+    "grok": {
+      "overall_verdict": "necesita_simplificacion_fuerte",
+      "confidence": 85,
+      "top_summary": "Exceso de texto repetitivo, casos anonimizados y mezcla de elementos CEO en flujo de usuario común genera fatiga y fricción innecesaria.",
+      "biggest_confusions": [
+        {
+          "surface": "landing",
+          "issue": "Múltiples bloques que repiten la misma propuesta de valor",
+          "severity": "alta",
+          "why_it_hurts": "El usuario solo quiere subir un archivo y ver si le pagan menos; el resto distrae"
+        },
+        {
+          "surface": "auditar",
+          "issue": "Presencia inmediata de Modo CEO y acciones ejecutivas",
+          "severity": "alta",
+          "why_it_hurts": "Rompe la sensación de simplicidad y privacidad para un trabajador normal"
+        },
+        {
+          "surface": "landing",
+          "issue": "Copy técnico visible como 'confirmedData'",
+          "severity": "media",
+          "why_it_hurts": "Genera desconfianza y sensación de que el sistema no está pulido"
+        }
+      ],
+      "redundancies": [
+        {
+          "surface": "landing",
+          "element": "Bloques de casos anónimos y ejemplos de lectura",
+          "reason": "Repiten la misma idea de 'primera lectura útil' varias veces"
+        },
+        {
+          "surface": "auditar",
+          "element": "Mensajes paralelos de privacidad, control y etapas",
+          "reason": "Acumulan información que no es necesaria en el primer paso"
+        },
+        {
+          "surface": "landing",
+          "element": "Múltiples CTAs y enlaces secundarios",
+          "reason": "Compiten con el botón principal de subir documento"
+        }
+      ],
+      "not_elemental_for_user": [
+        {
+          "surface": "auditar",
+          "element": "Modo CEO y Revalidar IMSS e Infonavit",
+          "reason": "No pertenece a la experiencia de un trabajador que llega por primera vez"
+        },
+        {
+          "surface": "landing",
+          "element": "Carrusel de casos y nivel de claridad 64%",
+          "reason": "Añade complejidad visual sin resolver la duda principal"
+        },
+        {
+          "surface": "landing",
+          "element": "Secciones de 'POR QUÉ ESTE FLUJO EXISTE'",
+          "reason": "Explicación interna que el usuario no necesita leer"
+        }
+      ],
+      "remove_now": [
+        "Todos los bloques de casos anónimos en la landing",
+        "Botones y menciones de Modo CEO en /auditar",
+        "Frases técnicas como 'confirmedData' en ejemplos",
+        "Sección 'LO QUE HACE SIMPLE ESTA EXPERIENCIA' y 'POR QUÉ ESTE FLUJO EXISTE'",
+        "Múltiples CTAs secundarios y enlaces de navegación superior"
+      ],
+      "simplify_now": [
+        "Reducir la landing a un solo headline + un botón grande de subir archivo",
+        "Mostrar solo tres pasos numerados muy cortos en /auditar",
+        "Ocultar toda la superficie CEO detrás de un acceso discreto",
+        "Eliminar todo el texto explicativo debajo del área de carga",
+        "Dejar solo una línea de privacidad visible y el resto colapsado"
+      ],
+      "keep_as_is": [
+        "Botón principal 'Empezar auditoría gratis' o 'Sube tu documento'",
+        "Mensaje claro de 'Sin tarjeta' y 'Privado desde el inicio'",
+        "Área de carga de archivo con opción de cámara y galería"
+      ],
+      "ideal_user_journey": [
+        "Llega a la landing y ve un solo mensaje: 'Sube tu recibo y revisa si te pagan de menos'",
+        "Presiona el botón principal y va directo a /auditar",
+        "Sube el archivo y ve inmediatamente: documento detectado + señal + siguiente paso",
+        "Decide si guarda el resultado o borra el archivo"
+      ],
+      "copy_warnings": [
+        "Eliminar cualquier referencia a 'confirmedData' o metadatos internos",
+        "Quitar frases como 'Nivel de claridad inicial 64%'",
+        "Evitar repetir 'primera lectura útil' más de una vez"
+      ],
+      "priority_order": [
+        "Eliminar toda superficie CEO del flujo de usuario normal",
+        "Reducir la landing a headline + un solo CTA",
+        "Simplificar /auditar a tres pasos mínimos y área de carga dominante",
+        "Eliminar casos anónimos y bloques explicativos redundantes",
+        "Revisar que no quede copy técnico visible"
+      ],
+      "final_recommendation": "Quitar todo lo que no sea subir archivo, ver resultado y decidir guardar. El resto debe ocultarse o eliminarse. Priorizar una sola acción clara por pantalla."
+    },
+    "gemini": {
+      "overall_verdict": "necesita_simplificacion_fuerte",
+      "confidence": 9,
+      "top_summary": "La plataforma está sobrecargada de información, CTAs y elementos operativos/CEO que confunden al usuario nuevo. Urge una simplificación extrema para enfocar la experiencia en el objetivo principal: subir un documento y obtener una lectura clara.",
+      "biggest_confusions": [
+        {
+          "surface": "landing",
+          "issue": "Exceso de CTAs y enlaces secundarios que compiten con la acción principal 'Empezar auditoría gratis'.",
+          "severity": "alta",
+          "why_it_hurts": "Genera fatiga de decisión y distrae del objetivo principal de iniciar la auditoría."
+        },
+        {
+          "surface": "landing",
+          "issue": "Múltiples bloques repiten la misma idea (privacidad, cómo funciona, qué subir primero) con microvariantes.",
+          "severity": "alta",
+          "why_it_hurts": "Causa fatiga cognitiva y hace que el usuario tenga que leer demasiado para entender lo esencial."
+        },
+        {
+          "surface": "landing",
+          "issue": "Presencia de copy interno o semitécnico como 'confirmedData' en ejemplos de lectura.",
+          "severity": "alta",
+          "why_it_hurts": "Rompe la confianza, genera confusión y hace que la plataforma se sienta menos profesional o inacabada para el usuario final."
+        },
+        {
+          "surface": "auditar",
+          "issue": "Elementos de 'Modo CEO', 'Abrir acciones CEO', 'Revalidar IMSS e Infonavit' y 'Ir al formulario' visibles para un usuario normal.",
+          "severity": "alta",
+          "why_it_hurts": "Mezcla roles, distrae y genera desconfianza al no saber qué significan esas opciones o si son relevantes para su tarea."
+        },
+        {
+          "surface": "auditar",
+          "issue": "Bloque superior con demasiados mensajes paralelos (privacidad, control, borrado, pasos, tipos de archivo, progreso) antes de la acción principal de subir.",
+          "severity": "alta",
+          "why_it_hurts": "Sobrecarga mental antes de la acción clave, haciendo que el primer paso se sienta pesado y complejo."
+        },
+        {
+          "surface": "acceso",
+          "issue": "Pantalla de 'ACCESO BASE CON SALIDA CEO' y 'Tu sesión de administrador ya está activa' visible para un usuario que busca iniciar sesión o continuar.",
+          "severity": "alta",
+          "why_it_hurts": "Es una pantalla de desarrollo/admin expuesta al usuario final, rompe la inmersión y genera confusión sobre el estado de su sesión."
+        }
+      ],
+      "redundancies": [
+        {
+          "surface": "landing",
+          "element": "Múltiples botones 'Empezar auditoría gratis' y 'Empezar con una foto o PDF'.",
+          "reason": "Repiten la misma acción principal, diluyendo el foco."
+        },
+        {
+          "surface": "landing",
+          "element": "Varias secciones explicando 'qué documento subir primero' ('SI NO SABES CON QUÉ EMPEZAR', 'EMPIEZA POR UN SOLO RECIBO', 'DOCUMENTO EXACTO SUGERIDO', 'DOCUMENTO RECOMENDADO PARA ARRANCAR', etc.).",
+          "reason": "Sobreesplican la misma idea, generando fatiga y confusión sobre cuál es la instrucción definitiva."
+        },
+        {
+          "surface": "landing",
+          "element": "Múltiples explicaciones sobre privacidad y seguridad ('Privacidad', 'PRIVADO DESDE EL INICIO', 'BORRA TU ARCHIVO CUANDO QUIERAS', 'PRIVACIDAD VISIBLE Y HUMANA', etc.).",
+          "reason": "Aunque la privacidad es clave, se repite la misma información en diferentes bloques, saturando al usuario."
+        },
+        {
+          "surface": "auditar",
+          "element": "Mensajes de privacidad y control ('Archivo protegido y usado solo para tu auditoría', 'Privacidad radical', 'Control total', 'Borrado visible', 'Qué pasa con tu archivo', etc.).",
+          "reason": "La información de privacidad y control es vital, pero se presenta de forma redundante y dispersa, aumentando la carga de lectura."
+        },
+        {
+          "surface": "auditar",
+          "element": "Instrucciones para subir el archivo ('Sube tu recibo de nómina', 'Elegir documento', 'SUBE TU ARCHIVO', 'Sube tu primer documento', 'Abrir primero', etc.).",
+          "reason": "Demasiadas frases y botones para la misma acción, complicando la interfaz."
+        }
+      ],
+      "not_elemental_for_user": [
+        {
+          "surface": "landing",
+          "element": "Salida rápida, Criterios laborales vigentes 2026, Home base con salida CEO, Modo CEO, 0 documentos revisados en las últimas 24 horas, Tu expediente actual va en: Con lectura activa.",
+          "reason": "Elementos de navegación/testing, técnicos, de administración o desarrollo que no pertenecen a la experiencia del usuario final."
+        },
+        {
+          "surface": "auditar",
+          "element": "Vista operativa base con acceso CEO, Abrir acciones CEO, Ver exactamente como usuario normal, Revalidar IMSS e Infonavit, Ir al formulario, Modo CEO, Tu espacio, Elige tu caso.",
+          "reason": "Elementos de administración o desarrollo que no pertenecen a la experiencia del usuario final y confunden el propósito de la página."
+        },
+        {
+          "surface": "acceso",
+          "element": "ACCESO BASE CON SALIDA CEO, ACCESO OPERATIVO CON SALIDA CEO, Tu sesión de administrador ya está activa, Modo CEO, Seguir en /auditar.",
+          "reason": "Pantalla de desarrollo/admin expuesta al usuario final, no es parte de un flujo de acceso normal."
+        }
+      ],
+      "remove_now": [
+        "Todos los elementos y referencias a 'Modo CEO', 'acciones CEO', 'administrador' y 'Salida rápida'.",
+        "Criterios laborales vigentes 2026.",
+        "0 documentos revisados en las últimas 24 horas y Tu expediente actual va en: Con lectura activa.",
+        "Revalidar IMSS e Infonavit e Ir al formulario.",
+        "Todas las instancias de 'confirmedData' y frases técnicas similares.",
+        "Todos los botones redundantes de 'Empezar auditoría gratis' y 'Empezar con una foto o PDF' (dejar solo uno principal por página).",
+        "Sección 'RESULTADO REALISTA, NO PROMESA VACÍA'.",
+        "Nivel de claridad inicial 64%.",
+        "POR QUÉ ESTE FLUJO EXISTE.",
+        "Límites: PDF, XML, JPG, PNG o WEBP · máximo 12 MB. (Integrar en el botón de subir o tooltip).",
+        "Limpiar formulario."
+      ],
+      "simplify_now": [
+        "Consolidar todas las explicaciones sobre 'qué documento subir' en una sola sección concisa en la landing.",
+        "Reducir y consolidar las explicaciones de privacidad en un solo bloque claro y conciso, con un enlace al aviso completo.",
+        "Simplificar la sección 'Cómo funciona en 3 pasos' para que sea más visual y con menos texto.",
+        "Reducir el número de 'Casos anonimizados' a uno o dos, eliminando la repetición de la estructura.",
+        "Consolidar la información de 'PRIMERA LECTURA SIN CORREO' en un solo mensaje claro.",
+        "Simplificar el bloque superior de instrucciones y mensajes de privacidad/control en /auditar a lo esencial para la acción de subir.",
+        "Reducir el texto alrededor de los botones de carga ('Tomar foto', 'Elegir archivo') a solo la instrucción de acción.",
+        "Simplificar la barra de progreso a un mensaje más amigable y menos técnico (ej. 'Subiendo documento...')."
+      ],
+      "keep_as_is": [
+        "SUBE UNA FOTO O PDF Y REVISA TU PAGO (Headline, Landing).",
+        "Tu recibo puede mostrar si te pagan de menos. (Sub-headline, Landing).",
+        "Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI. (Landing).",
+        "Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar. (Landing).",
+        "Empieza con una foto o PDF. (Instrucción clave, Landing).",
+        "SIN TARJETA PARA EMPEZAR, PRIVADO DESDE EL INICIO, BORRA TU ARCHIVO CUANDO QUIERAS (Como bullets concisos de confianza, si se consolidan).",
+        "La estructura de 'PASO 1 Sube, PASO 2 Te mostramos, PASO 3 Sabes cómo seguir' (si se simplifica el copy).",
+        "Preguntas frecuentes clave (si las preguntas son relevantes y concisas).",
+        "Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor. (Propuesta freemium, Landing).",
+        "Recupera claridad, orden y respaldo con un expediente digital simple, privado y útil para revisar tu situación laboral. (Beneficio final, Landing).",
+        "Tomar foto / Elegir archivo (Botones de acción, Auditar)."
+      ],
+      "ideal_user_journey": [
+        "El usuario llega a la landing, entiende el valor principal y hace clic en 'Empezar auditoría gratis'.",
+        "En la página de auditoría, el usuario ve una instrucción clara para subir un documento (foto/PDF/XML).",
+        "El usuario sube su documento y espera la primera lectura.",
+        "El usuario ve una lectura clara con una señal detectada y un siguiente paso sugerido.",
+        "El usuario decide si guarda el hallazgo o continúa con más documentos, o si cierra la sesión."
+      ],
+      "copy_warnings": [
+        "Uso de terminología interna como 'confirmedData' en la interfaz de usuario.",
+        "Exceso de repetición de mensajes de valor y privacidad a lo largo de las páginas.",
+        "Lenguaje demasiado explicativo que diluye la acción principal y la claridad.",
+        "Mezcla de lenguaje de usuario final con mensajes operativos o de administración (CEO).",
+        "Frases como 'Hoy conviene poner atención especial en esto: Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.' son inaceptables."
+      ],
+      "priority_order": [
+        "Eliminar todos los elementos y referencias a 'Modo CEO', 'acciones CEO' y 'administrador' de las vistas de usuario.",
+        "Consolidar y simplificar drásticamente todas las explicaciones redundantes sobre privacidad, cómo funciona y qué documento subir.",
+        "Reducir el número de CTAs principales en la landing a uno o dos muy prominentes.",
+        "Simplificar la página /auditar para que el foco sea exclusivamente la carga del documento y la espera de la lectura.",
+        "Revisar todo el copy para eliminar tecnicismos, repeticiones y asegurar un tono simple, claro y confiable."
+      ],
+      "final_recommendation": "La plataforma necesita una cirugía radical de simplificación. Eliminar sin piedad todo lo que no sea elemental para el primer uso del trabajador. Concentrar la experiencia en una sola acción principal por pantalla, eliminando distracciones, redundancias y cualquier rastro de elementos operativos o de administrador. La confianza se construye con claridad y foco, no con sobre-explicación."
+    }
+  }
+}

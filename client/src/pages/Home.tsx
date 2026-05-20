@@ -161,6 +161,19 @@ function readStoredHomeGuestPreview() {
   }
 }
 
+function sanitizeHomeVisibleCopy(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return value
+    .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
+    .replace(/confirmedData/gi, "datos visibles")
+    .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
   if (typeof window === "undefined") {
     return;
@@ -346,54 +359,54 @@ const guidedFaqOptions = [
 
 const heroCopyVariants = {
   alert: {
-    tabLabel: "Pago y señales",
-    eyebrowMobile: "Revisión urgente de nómina",
-    eyebrowDesktop: "Revisión urgente de nómina",
-    titleLead: "Tu recibo de nómina",
-    titleAccent: "puede mostrar si te pagan de menos.",
-    headline: "Tu recibo puede mostrar si te pagan de menos.",
-    supportLine: "Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI.",
-    microDescription: "Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.",
-    body: "Empieza con una foto o PDF. Si aparece algo, te decimos qué revisar y cómo seguir.",
+    tabLabel: "Revisión inicial",
+    eyebrowMobile: "Sube una foto o PDF y revisa tu pago",
+    eyebrowDesktop: "Sube una foto o PDF y revisa tu pago",
+    titleLead: "Tu recibo",
+    titleAccent: "puede darte una primera lectura clara.",
+    headline: "Tu recibo puede darte una primera lectura clara.",
+    supportLine: "Sube un recibo, CFDI o PDF y te mostramos la señal principal y el siguiente paso.",
+    microDescription: "Empieza con un solo documento y entiende rápido si hay algo que revisar.",
+    body: "Primero ves la lectura y después decides si quieres seguir o guardar tu expediente.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
   control: {
-    tabLabel: "Revisar primero",
+    tabLabel: "Revisión inicial",
     eyebrowMobile: "Empieza por tu recibo más reciente",
     eyebrowDesktop: "Empieza por tu recibo más reciente",
-    titleLead: "Tu recibo de nómina",
-    titleAccent: "puede mostrar si te pagan de menos.",
-    headline: "Tu recibo puede mostrar si te pagan de menos.",
-    supportLine: "Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI.",
-    microDescription: "Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.",
+    titleLead: "Tu recibo",
+    titleAccent: "puede darte una primera lectura clara.",
+    headline: "Tu recibo puede darte una primera lectura clara.",
+    supportLine: "Sube un recibo, CFDI o PDF y te mostramos la señal principal y el siguiente paso.",
+    microDescription: "Empieza con un solo documento y entiende rápido si hay algo que revisar.",
     body:
-      "Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.",
+      "Primero ves la lectura y después decides si quieres seguir o guardar tu expediente.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
   short_paid_campaign: {
-    tabLabel: "Campaña corta",
-    eyebrowMobile: "Revisión urgente de nómina",
-    eyebrowDesktop: "Revisión urgente de nómina",
-    titleLead: "Descubre hoy",
-    titleAccent: "si te pagan de menos.",
-    headline: "Descubre hoy si te pagan de menos.",
-    supportLine: "Sube una foto o PDF y recibe una primera lectura gratis.",
-    microDescription: "Si aparece una diferencia, te mostramos qué revisar primero y cómo seguir.",
+    tabLabel: "Revisión inicial",
+    eyebrowMobile: "Sube una foto o PDF y revisa tu pago",
+    eyebrowDesktop: "Sube una foto o PDF y revisa tu pago",
+    titleLead: "Sube tu recibo",
+    titleAccent: "y entiende rápido qué revisar.",
+    headline: "Sube tu recibo y entiende rápido qué revisar.",
+    supportLine: "Empieza gratis con un solo documento y recibe una primera lectura útil.",
+    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir.",
     body: "Empiezas con un solo recibo y después decides si quieres profundizar en tu expediente.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
   },
   direct_money_check: {
-    tabLabel: "Chequeo directo",
-    eyebrowMobile: "Chequea tu pago hoy",
-    eyebrowDesktop: "Chequea tu pago hoy",
-    titleLead: "¿Te están pagando",
-    titleAccent: "de menos?",
-    headline: "¿Te están pagando de menos?",
-    supportLine: "Revísalo gratis con un recibo y detecta una diferencia antes de dejar pasar otro periodo.",
-    microDescription: "Si aparece una señal, te mostramos monto estimado, qué revisar primero y el siguiente documento útil.",
+    tabLabel: "Revisión inicial",
+    eyebrowMobile: "Revisa tu pago con un solo documento",
+    eyebrowDesktop: "Revisa tu pago con un solo documento",
+    titleLead: "Revisa tu pago",
+    titleAccent: "con una primera lectura útil.",
+    headline: "Revisa tu pago con una primera lectura útil.",
+    supportLine: "Sube un recibo y detecta una señal antes de dejar pasar otro periodo.",
+    microDescription: "Si aparece una señal, te mostramos qué revisar primero y el siguiente documento útil.",
     body: "Empieza sin tarjeta, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
     ctaPrimary: "Empezar auditoría gratis",
     ctaSecondary: "Ver ejemplo de resultado",
@@ -1672,53 +1685,19 @@ function HeliosFirstEntrySection() {
             Sube un archivo y recibe una primera lectura clara.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
-            Primero ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Si quieres guardar ese hallazgo en tu Bóveda Laboral, ahí sí te pedimos correo.
+            Primero ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si decides guardarlo te pedimos tu correo para llevarlo a tu expediente privado.
           </p>
-
-          {auth.canToggleUserView ? (
-            <div className="mt-5 rounded-[1.45rem] border border-teal-100 bg-teal-50/80 p-4 text-sm text-teal-950 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                {auth.isViewingAsUser ? "Home privada con salida CEO" : "Home base con salida CEO"}
-              </p>
-              <p className="mt-2 leading-6">
-                Tu base sigue siendo la misma home privada que vería un usuario normal, pero desde aquí puedes abrir el nivel ejecutivo sin perder el hilo del expediente.
-              </p>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button
-                  variant="outline"
-                  className={`rounded-full border ${ceoActionsDrawerOpen ? "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200" : "border-teal-300 bg-white text-teal-900 hover:bg-teal-100"}`}
-                  onClick={() => setPersistedCeoPanelOpen(!ceoActionsDrawerOpen)}
-                  data-testid="home-ceo-header-toggle"
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  {ceoActionsDrawerOpen ? "Modo CEO activo" : "Modo CEO"}
-                </Button>
-                <Button
-                  className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
-                  onClick={() => {
-                    window.location.href = "/auditar";
-                  }}
-                >
-                  Seguir en /auditar
-                </Button>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-teal-900/80">
-                {ceoActionsDrawerOpen
-                  ? "La apertura del panel quedó recordada para este usuario en este equipo."
-                  : "Cuando necesites subir al nivel ejecutivo, tendrás la misma salida discreta que en /auditar."}
-              </p>
-            </div>
-          ) : null}
 
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
-              {publicActivity?.documentsReviewedToday ?? 0} documentos revisados en las últimas 24 horas
+              Sin correo para empezar
             </span>
-            {latestCase?.stageLabel ? (
-              <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900">
-                Tu expediente actual va en: {latestCase.stageLabel}
-              </span>
-            ) : null}
+            <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900">
+              Privado desde el inicio
+            </span>
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+              Tú decides si lo guardas
+            </span>
           </div>
 
           <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f6fbfa_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)] sm:p-6">
@@ -1729,7 +1708,7 @@ function HeliosFirstEntrySection() {
                   Primera lectura sin correo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Empieza con una foto. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después dentro de tu Bóveda Laboral.
+                  Empieza con una foto o PDF. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después en tu expediente privado.
                 </p>
               </div>
               <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
@@ -1758,19 +1737,19 @@ function HeliosFirstEntrySection() {
                     ) : null}
                   </div>
                   <p className="mt-3 text-xl font-semibold leading-8 tracking-[-0.03em] text-slate-950">
-                    {guestPreview.heliosOpinion.resultCard?.headline ?? guestPreview.heliosOpinion.summary}
+                    {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.resultCard?.headline) ?? sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.summary) ?? "Ya revisamos tu documento y hay una primera lectura útil."}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-slate-700">{guestPreview.heliosOpinion.summary}</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.summary) ?? "Ya hay una primera lectura útil para revisar este documento con más claridad."}</p>
                   <div className="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50 px-4 py-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal encontrada</p>
                     <p className="mt-2 text-sm leading-6 text-amber-950">
-                      {guestPreview.heliosOpinion.legalHighlights?.primaryConcern ?? "Ya detectamos una señal principal útil para empezar a revisar este documento."}
+                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.legalHighlights?.primaryConcern) ?? "Ya detectamos una señal principal útil para empezar a revisar este documento."}
                     </p>
                   </div>
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Siguiente paso sugerido</p>
                     <p className="mt-2 text-sm leading-6 text-emerald-950">
-                      {guestPreview.heliosOpinion.resultCard?.nextStepSummary ?? guestPreview.heliosOpinion.recommendedNextStep ?? "Ya tienes un siguiente paso útil para continuar con más contexto."}
+                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.resultCard?.nextStepSummary) ?? sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.recommendedNextStep) ?? "Ya tienes un siguiente paso útil para continuar con más contexto."}
                     </p>
                   </div>
                 </div>
@@ -1779,25 +1758,26 @@ function HeliosFirstEntrySection() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cómo guardarlo si te sirve</p>
                   <div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">
                     <p>
-                      {guestPreview.preview.scanAssistance?.friendlyHeadline ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
+                      {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.friendlyHeadline) ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
                     </p>
                     <p>
-                      {guestPreview.preview.scanAssistance?.userGuidance ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla dentro de tu Bóveda Laboral con acceso por correo."}
+                        {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.userGuidance) ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla en tu expediente privado con acceso por correo."}
+
                     </p>
                   </div>
                   <div className="mt-5 flex flex-col gap-3">
                     {auth.isAuthenticated ? (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={() => void persistGuestPreview("manual")} disabled={isSavingPreview}>
                         {isSavingPreview ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Guardar ahora en mi bóveda laboral
+                        Guardar ahora en mi expediente
                       </Button>
                     ) : (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={handleLoginToSave}>
-                        Guardar en mi bóveda por correo
+                        Guardar en mi expediente por correo
                       </Button>
                     )}
                     <p className="text-xs leading-5 text-slate-500">
-                      Primero ves la lectura. El correo sólo se usa cuando decides guardar el hallazgo y seguir dentro de tu bóveda.
+                      Primero ves la lectura. El correo solo se usa cuando decides guardar el hallazgo y seguir dentro de tu expediente.
                     </p>
                   </div>
                 </div>
