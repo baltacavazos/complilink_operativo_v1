@@ -1,10 +1,13 @@
 import { App as CapacitorApp } from "@capacitor/app";
+import { type PluginListenerHandle } from "@capacitor/core";
+import { trpc } from "@/lib/trpc";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { getAppPathFromUrl, isNativeApp } from "@/lib/nativeRuntime";
 
 export default function AppUrlListener() {
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     if (!isNativeApp()) {
@@ -13,6 +16,23 @@ export default function AppUrlListener() {
 
     let disposed = false;
 
+    const refreshSession = () => {
+      if (disposed) {
+        return;
+      }
+
+      void utils.auth.me.invalidate();
+    };
+
+    const closeExternalBrowser = async () => {
+      try {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.close();
+      } catch {
+        // noop: close is best-effort because the browser might not be open
+      }
+    };
+
     const routeIncomingUrl = (rawUrl?: string | null) => {
       const nextPath = getAppPathFromUrl(rawUrl);
       if (!nextPath || disposed) {
@@ -20,14 +40,24 @@ export default function AppUrlListener() {
       }
 
       setLocation(nextPath);
+      refreshSession();
+      void closeExternalBrowser();
     };
 
-    const listener = CapacitorApp.addListener("appUrlOpen", (event) => {
+    const urlListener = CapacitorApp.addListener("appUrlOpen", event => {
       routeIncomingUrl(event.url);
     });
 
+    const appStateListener = CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) {
+        refreshSession();
+      }
+    });
+
+    refreshSession();
+
     CapacitorApp.getLaunchUrl()
-      .then((launch) => {
+      .then((launch: { url?: string } | undefined) => {
         routeIncomingUrl(launch?.url);
       })
       .catch(() => {
@@ -36,9 +66,10 @@ export default function AppUrlListener() {
 
     return () => {
       disposed = true;
-      void listener.then((handle) => handle.remove());
+      void urlListener.then((handle: PluginListenerHandle) => handle.remove());
+      void appStateListener.then((handle: PluginListenerHandle) => handle.remove());
     };
-  }, [setLocation]);
+  }, [setLocation, utils]);
 
   return null;
 }

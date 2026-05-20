@@ -3,7 +3,7 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
-import { isNativeApp } from "@/lib/nativeRuntime";
+import { isNativeApp, openExternalUrl } from "@/lib/nativeRuntime";
 import { trpc } from "@/lib/trpc";
 import {
   getStableUserIdentifier,
@@ -12,6 +12,7 @@ import {
 } from "@/lib/viewMode";
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useLocation } from "wouter";
 
 const LAST_EMAIL_KEY = "auditapatron_last_login_email";
 
@@ -150,6 +151,7 @@ export default function Access() {
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
   const auth = useAuth();
   const { loading, user } = auth;
+  const [, setLocation] = useLocation();
   const [rememberedEmail, setRememberedEmail] = useState(() => getStoredEmail());
   const [email, setEmail] = useState(() => getStoredEmail());
   const [code, setCode] = useState("");
@@ -207,9 +209,7 @@ export default function Access() {
         setRememberedEmail(normalizedEmail);
       }
 
-      if (typeof window !== "undefined") {
-        window.location.replace(returnTo);
-      }
+      setLocation(returnTo);
     },
     onError(error) {
       const parsed = parseStructuredAuthMessage(error.message);
@@ -219,10 +219,10 @@ export default function Access() {
   });
 
   useEffect(() => {
-    if (!loading && user && !auth.canToggleUserView && typeof window !== "undefined") {
-      window.location.replace(returnTo);
+    if (!loading && user && !auth.canToggleUserView) {
+      setLocation(returnTo);
     }
-  }, [auth.canToggleUserView, loading, returnTo, user]);
+  }, [auth.canToggleUserView, loading, returnTo, setLocation, user]);
 
   useEffect(() => {
     if (!auth.canToggleUserView || !stableUserIdentifier) {
@@ -352,12 +352,13 @@ export default function Access() {
                   >
                     Acceso normal con salida CEO
                   </button>
-                  <Button
-                    className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
-                    onClick={() => {
-                      window.location.href = "/auditar";
-                    }}
-                  >
+                    <Button
+                      className="rounded-full bg-slate-950 text-white hover:bg-slate-900"
+                      onClick={() => {
+                        setLocation("/auditar");
+                      }}
+                    >
+
 Continuar con mi revisión
                   </Button>
                   <p className="text-xs leading-5 text-teal-900/80">
@@ -563,7 +564,7 @@ Iniciar sesión
                       variant="outline"
                       className="h-11 w-full rounded-2xl border-slate-200 bg-white"
                       onClick={() => {
-                        window.location.href = manusLoginUrl;
+                        void openExternalUrl(manusLoginUrl);
                       }}
                     >
                       Continuar con Manus
@@ -576,7 +577,7 @@ Iniciar sesión
                       variant="outline"
                       className="h-11 w-full rounded-2xl border-slate-200 bg-white"
                       onClick={() => {
-                        window.location.href = getGoogleLoginUrl(returnTo);
+                        void openExternalUrl(getGoogleLoginUrl(returnTo));
                       }}
                     >
                       Continuar con Google

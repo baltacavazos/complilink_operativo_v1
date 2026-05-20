@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { getApiBaseUrl } from "@/lib/nativeRuntime";
+import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -16,10 +17,14 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
 
-  window.location.href = getLoginUrl();
+  const loginUrl = getLoginUrl();
+  if (window.location.pathname === "/acceso" && window.location.search === new URL(loginUrl, window.location.origin).search) {
+    return;
+  }
+
+  window.location.replace(loginUrl);
 };
 
 queryClient.getQueryCache().subscribe(event => {
@@ -41,7 +46,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiBaseUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
@@ -60,5 +65,5 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </ViewModeProvider>
     </QueryClientProvider>
-  </trpc.Provider>
+  </trpc.Provider>,
 );

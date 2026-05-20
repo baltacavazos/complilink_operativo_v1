@@ -1,0 +1,134 @@
+{
+  "chatgpt": {
+    "recommended_session_strategy": "Use server-managed secure SameSite=Lax cookies with Capacitor configured to share cookies via the embedded webview loading the remote URL.",
+    "confidence": 90,
+    "api_base_strategy": "centralized_public_origin_helper",
+    "oauth_return_strategy": "defer_full_oauth_until_next_round",
+    "must_implement_now": [
+      "Centralize API base URL resolution in a runtime helper",
+      "Ensure Capacitor webview shares cookies with remote web app",
+      "Validate SameSite cookie attributes for session continuity",
+      "Enhance AppUrlListener to parse OAuth return URLs minimally",
+      "Prioritize email code login stability in mobile shell",
+      "Add runtime environment detection for origin handling"
+    ],
+    "should_avoid_now": [
+      "Rewriting authentication flows or UI",
+      "Implementing custom token storage or token sprawl",
+      "Switching to native OAuth flows prematurely",
+      "Changing existing web app cookie/session behavior",
+      "Overbuilding OAuth return handling with complex schemes"
+    ],
+    "continuity_risks": [
+      "Cookies not shared properly between Capacitor webview and backend",
+      "API calls using inconsistent origins causing CORS or session loss",
+      "OAuth redirects breaking due to missing or incorrect deep link handling",
+      "Session expiration or invalidation not detected in mobile shell",
+      "Unstable alternate login options causing user confusion"
+    ],
+    "recommended_test_cases": [
+      "Mobile app login with email code maintains session after app restart",
+      "API calls from mobile shell use correct centralized API base URL",
+      "OAuth redirect URLs trigger minimal AppUrlListener handling without errors",
+      "Web app login and session behavior unchanged after mobile changes",
+      "Cookie SameSite and Secure flags verified on Android and iOS",
+      "Session continuity verified across app background/foreground cycles"
+    ],
+    "implementation_order": [
+      "Centralize API base URL resolution in a shared runtime helper",
+      "Verify and configure Capacitor webview cookie sharing with backend",
+      "Test and confirm server-set cookies have proper SameSite and Secure flags",
+      "Enhance AppUrlListener to minimally parse OAuth returns without full flow",
+      "Add runtime environment detection to toggle origin handling logic",
+      "Stabilize email code login UI and flows in mobile shell"
+    ],
+    "one_sentence_summary": "Stabilize mobile login by centralizing API origin handling, ensuring cookie-based session continuity in Capacitor webview, and preparing minimal OAuth return parsing without disrupting web app behavior."
+  },
+  "grok": {
+    "recommended_session_strategy": "Use server-managed HTTP-only cookies with SameSite=None and explicit domain/secure flags, served from a stable public origin that both web and Capacitor remote loads can reach.",
+    "confidence": 85,
+    "api_base_strategy": "centralized_public_origin_helper",
+    "oauth_return_strategy": "defer_full_oauth_until_next_round",
+    "must_implement_now": [
+      "Add runtime getApiBase() helper that returns public origin for native and same-origin for web",
+      "Update tRPC client to always use the helper for base URL",
+      "Ensure Set-Cookie headers include SameSite=None; Secure; Domain=.auditapatron.com",
+      "Strengthen AppUrlListener to route code-login deep links directly to existing auth flow",
+      "Add Capacitor server config to allow cleartext localhost only in dev",
+      "Document cookie domain and origin env vars for staging/prod"
+    ],
+    "should_avoid_now": [
+      "Introducing client-side token storage or refresh logic",
+      "Changing any existing web login routes or cookie behavior",
+      "Implementing full OAuth browser flows or custom schemes",
+      "Rewriting auth middleware or session store"
+    ],
+    "continuity_risks": [
+      "Cookie not set when webview loads remote URL on different subdomain",
+      "iOS ATS blocking non-HTTPS calls in production builds",
+      "Session loss on app background/foreground if cookie domain mismatches",
+      "Deep-link code handling colliding with existing Wouter routes"
+    ],
+    "recommended_test_cases": [
+      "Fresh install on Android/iOS completes email code login and retains session after restart",
+      "Web login continues to work unchanged on desktop and mobile browsers",
+      "App survives background/foreground and network switch without re-auth",
+      "API calls succeed from both same-origin web and native remote load",
+      "Invalid/expired session returns 401 and triggers minimal re-login prompt"
+    ],
+    "implementation_order": [
+      "Introduce and wire centralized getApiBase() helper",
+      "Update tRPC/http client to use the helper everywhere",
+      "Adjust cookie attributes on the Express session/cookie layer",
+      "Harden AppUrlListener for auth deep links",
+      "Add dev-only cleartext exception and prod HTTPS enforcement",
+      "Run the five test cases on both platforms"
+    ],
+    "one_sentence_summary": "Centralize API origin resolution and lock down cookie attributes to deliver reliable cookie-based sessions for the remote-loaded Capacitor app while leaving the web auth stack untouched."
+  },
+  "gemini": {
+    "recommended_session_strategy": "Leverage secure, HTTP-only, SameSite=None; Secure server-managed cookies for session continuity within the Capacitor webview.",
+    "confidence": 95,
+    "api_base_strategy": "centralized_public_origin_helper",
+    "oauth_return_strategy": "browser_external_with_custom_scheme",
+    "must_implement_now": [
+      "Centralize API client base URL configuration",
+      "Configure backend SameSite=None; Secure for session cookies",
+      "Verify backend CORS headers for Capacitor origin",
+      "Enhance AppUrlListener for custom scheme redirects",
+      "Implement robust API error handling in frontend",
+      "Ensure webview session persistence across app restarts"
+    ],
+    "should_avoid_now": [
+      "Rewriting the entire authentication system",
+      "Implementing native-specific token storage for webview sessions",
+      "Deep integration of Capacitor plugins for auth (unless critical)",
+      "Complex client-side token refresh mechanisms",
+      "Overhauling the web app's existing login UI"
+    ],
+    "continuity_risks": [
+      "SameSite cookie misconfiguration for cross-origin webview",
+      "CORS misconfigurations between webview and API",
+      "Deep link handling failures on various OS versions",
+      "Inconsistent API base URL resolution across environments",
+      "Session expiration handling leading to poor UX"
+    ],
+    "recommended_test_cases": [
+      "Successful email code login and session persistence",
+      "API calls work correctly after login and app restart",
+      "Deep link handling for custom scheme (e.g., mock OAuth return)",
+      "Session expiration and re-authentication flow",
+      "Web app login and session continuity (ensure no breakage)",
+      "Network connectivity changes during an active session"
+    ],
+    "implementation_order": [
+      "1. Centralize API client base URL configuration",
+      "2. Configure backend SameSite=None; Secure for session cookies",
+      "3. Verify backend CORS headers for Capacitor origin",
+      "4. Test existing email code login in Capacitor",
+      "5. Enhance AppUrlListener for custom scheme handling",
+      "6. Document future OAuth integration points for phase 2"
+    ],
+    "one_sentence_summary": "Stabilize mobile login by centralizing API origin, ensuring correct SameSite cookie configuration, and preparing for custom scheme OAuth returns, all while preserving the existing web architecture."
+  }
+}

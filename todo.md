@@ -1679,7 +1679,11 @@
 - [x] Auditar la base web actual para detectar bloqueos de experiencia móvil, autenticación, cámara, archivos y navegación híbrida.
 - [x] Implementar la base técnica de empaquetado móvil sobre la app web actual y adaptar los puntos críticos del flujo público.
 - [x] Documentar cómo compilar, probar y preparar la publicación en App Store y Google Play.
-- [ ] Validar esta nueva ronda móvil con pruebas focalizadas y checkpoint estable.
+- [x] Validar esta nueva ronda móvil con pruebas focalizadas y checkpoint estable.
 - [x] Ronda móvil base: instalar Capacitor y los plugins mínimos de cámara, archivos y preferencias sin romper la build web actual.
 - [x] Ronda móvil base: adaptar el flujo de autenticación para entorno híbrido, priorizando acceso por correo y preparando apertura externa más deep link para OAuth si aplica.
 - [x] Ronda móvil base: documentar build, permisos y release checklist de iOS/Android en MOBILE_BUILD.md.
+- [x] Ronda móvil auth: endurecer el acceso por correo dentro de la app híbrida y reducir rebotes frágiles por navegación externa.
+- [x] Ronda móvil auth: centralizar continuidad de sesión y origen API para entorno nativo sin romper la web existente.
+- [x] Ronda móvil auth: preparar retornos controlados y base de deep links/OAuth externo para futuras activaciones.
+- [x] Ronda móvil auth: validar con pruebas focalizadas la nueva capa de acceso y sesión móvil.
