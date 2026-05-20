@@ -9079,10 +9079,10 @@ Tu recibo está seguro y solo tú lo ves
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-slate-950">
-Sube tu recibo y empieza la revisión
+Sube tu recibo y empieza en menos de un minuto
                         </p>
                         <p className="mt-1 text-xs leading-5 text-slate-600">
-En cuanto lo subas, empezamos a revisarlo.
+Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                         </p>
                       </div>
                       <div className="hidden">
@@ -9119,7 +9119,7 @@ En cuanto lo subas, empezamos a revisarlo.
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                            ? "Puedes tomar una foto o subir un PDF o imagen desde tu celular."
+                            ? "Puedes tomar una foto clara o subir un PDF o imagen desde tu celular."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
@@ -9152,9 +9152,9 @@ En cuanto lo subas, empezamos a revisarlo.
                               <Camera className="h-4 w-4" strokeWidth={1.8} />
                             </span>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold">Elige cómo subir tu recibo</p>
+                              <p className="text-sm font-semibold">Elige cómo quieres subirlo</p>
                               <p className="mt-1 text-xs leading-5 text-teal-900/80">
-                                Puedes tomar una foto ahora o elegir un archivo guardado.
+                                Si lo tienes en papel, toma una foto. Si ya lo guardaste, elige tu archivo.
                               </p>
                             </div>
                           </div>
@@ -11325,7 +11325,7 @@ En cuanto lo subas, empezamos a revisarlo.
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
                           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">
-                            Resultado de tu documento
+                            Tu primera lectura
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
                             {warmVisibleNamingCopy(
@@ -11395,7 +11395,7 @@ En cuanto lo subas, empezamos a revisarlo.
                                   </span>
                                 </div>
                                 <p className="mt-1 text-sm leading-6 text-cyan-900">
-                                  Aquí va la señal más clara para que sepas qué revisar primero.
+                                  Aquí te dejamos la idea principal para que entiendas rápido qué se vio y qué conviene hacer.
                                 </p>
                               </div>
                             </div>
@@ -11440,7 +11440,7 @@ En cuanto lo subas, empezamos a revisarlo.
                             <p className="text-sm font-semibold text-teal-950">
                               {warmVisibleNamingCopy(
                                 lastHeliosOpinion.resultCard?.nextStepLabel
-                              ) ?? "Qué te conviene hacer ahora"}
+                              ) ?? "Tu siguiente paso más útil"}
                             </p>
                             <p className="mt-2 text-sm leading-7 text-teal-900">
                               {warmVisibleNamingCopy(
@@ -11449,7 +11449,7 @@ En cuanto lo subas, empezamos a revisarlo.
                               ) ??
                                 "Si tienes otro documento del mismo periodo, súbelo para confirmar esta lectura y darte una respuesta más firme."}
                             </p>
-                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start">
                               <Button
                                 type="button"
                                 className="rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
@@ -11457,11 +11457,21 @@ En cuanto lo subas, empezamos a revisarlo.
                                   window.open(postReadingWhatsappHref, "_blank", "noopener,noreferrer");
                                 }}
                               >
-                                Resolverlo por WhatsApp
+                                Pedir ayuda por WhatsApp
                                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                               </Button>
-                              <p className="text-xs leading-5 text-teal-900/80 sm:max-w-[19rem]">
-                                Se abre como ayuda opcional con un mensaje ya armado. Tú decides si lo envías.
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full border-teal-200 bg-white px-4 text-teal-900 hover:bg-teal-50"
+                                onClick={() => {
+                                  window.location.href = getLoginUrl();
+                                }}
+                              >
+                                Guardar y seguir después
+                              </Button>
+                              <p className="text-xs leading-5 text-teal-900/80 sm:max-w-[22rem]">
+                                Puedes pedir ayuda por WhatsApp o guardar este avance para retomarlo luego con tu correo, sin empezar desde cero.
                               </p>
                             </div>
                           </div>

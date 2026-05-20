@@ -387,9 +387,9 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
 const faqs = [
   {
     id: "para-mi",
-    question: "¿Esto me puede servir si todavía no sé qué revisar primero?",
+    question: "¿Esto me sirve aunque trabaje en tienda, obra, oficina, call center o maquila?",
     answer:
-      "Sí. AuditaPatron está pensado para empezar justo ahí: ordenar lo que ya tienes, explicarte lo importante con palabras simples y ayudarte a ver qué conviene revisar primero.",
+      "Sí. AuditaPatron está pensado para revisar pagos, periodos, deducciones y documentos que viven en muchos trabajos del día a día. Empiezas con lo que ya tengas y te decimos si ese papel ya sirve para detectar algo raro.",
   },
   {
     id: "primer-documento",
@@ -399,29 +399,29 @@ const faqs = [
   },
   {
     id: "privacidad",
-    question: "¿Mi información está protegida?",
+    question: "¿Mi empresa puede ver lo que subo aquí?",
     answer:
-      "Sí. Tus archivos se resguardan dentro del flujo para mantenerlos ordenados, disponibles para ti y bajo tu control.",
+      "No. Lo que subes se queda dentro de tu revisión y bajo tu control. Nadie de tu empresa ve tus archivos desde esta pantalla y puedes borrarlos cuando quieras.",
   },
   {
     id: "sin-tecnicismos",
     question: "¿Necesito saber de leyes o de nómina para usarlo?",
     answer:
-      "No. Está pensado para explicarte lo importante con palabras sencillas, pasos claros y una recomendación inicial del documento que más te conviene subir.",
+      "No. Te hablamos en fácil. Primero te mostramos qué se ve raro, qué significa y cuál sería el siguiente papel útil, sin pedirte que entiendas términos legales.",
   },
   {
     id: "mas-contexto",
-    question: "¿Por qué conviene subir más de un documento?",
+    question: "¿Por qué a veces conviene subir otro documento después?",
     answer:
-      "Porque varios documentos dan más contexto. Eso ayuda a detectar patrones, comparar información y entender mejor lo que está pasando.",
+      "Porque con un segundo papel, como el CFDI del mismo mes o un recibo anterior, ya puedes confirmar si la diferencia era real o solo una duda inicial. Pero primero ves una lectura útil con un solo archivo.",
   },
 ];
 
 const guidedFaqOptions = [
   {
     id: "para-mi",
-    label: "Quiero entender rápido si esto me puede ayudar",
-    description: "Te orienta con el primer archivo que suele abrir más contexto sin complicarte.",
+    label: "Quiero saber si esto también aplica para mi trabajo",
+    description: "Te orienta con el tipo de documento que más rápido suele revelar pagos raros o pendientes.",
   },
   {
     id: "primer-documento",
@@ -431,7 +431,7 @@ const guidedFaqOptions = [
   {
     id: "privacidad",
     label: "Me preocupa mi privacidad y quiero empezar con calma",
-    description: "Aclara cómo se resguardan tus archivos y qué documento puedes usar para probar el flujo con control.",
+    description: "Te explica cómo revisar sin exponer tus archivos y con control desde el primer paso.",
   },
 ];
 
@@ -443,9 +443,9 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube tu recibo o comprobante y te mostramos lo más importante.",
-    microDescription: "Empieza con un solo archivo y entiende rápido si hay algo raro o pendiente.",
-    body: "Primero ves el resultado. Si te sirve, luego decides si lo guardas.",
+    supportLine: "¿Te están pagando bien? Sube tu recibo y te mostramos si hay algo raro en tu pago.",
+    microDescription: "Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.",
+    body: "Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.",
     ctaPrimary: "Revisa tu recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
@@ -456,10 +456,10 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube tu recibo o comprobante y te mostramos lo más importante.",
-    microDescription: "Empieza con un solo archivo y entiende rápido si hay algo raro o pendiente.",
+    supportLine: "¿Te están pagando bien? Sube tu recibo y te mostramos si hay algo raro en tu pago.",
+    microDescription: "Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.",
     body:
-      "Primero ves el resultado. Si te sirve, luego decides si lo guardas.",
+      "Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.",
     ctaPrimary: "Revisa tu recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
@@ -470,9 +470,9 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y entiende rápido qué revisar.",
     headline: "Sube tu recibo y entiende rápido qué revisar.",
-    supportLine: "Empieza gratis con un solo documento y recibe una primera lectura útil.",
-    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir.",
-    body: "Empiezas con un solo recibo y después decides si quieres seguir.",
+    supportLine: "Empieza gratis con un solo recibo y descubre si algo no cuadra en tu pago.",
+    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir sin enredarte.",
+    body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues después.",
     ctaPrimary: "Revisa tu recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
@@ -483,8 +483,8 @@ const heroCopyVariants = {
     titleLead: "Revisa tu pago",
     titleAccent: "con una primera lectura útil.",
     headline: "Revisa tu pago con una primera lectura útil.",
-    supportLine: "Sube un recibo y detecta una señal antes de dejar pasar otro periodo.",
-    microDescription: "Si aparece una señal, te mostramos qué revisar primero y el siguiente documento útil.",
+    supportLine: "Sube un recibo y detecta a tiempo si algo podría estar raro en tu pago.",
+    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
     body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
     ctaPrimary: "Revisa tu recibo gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -1258,7 +1258,7 @@ function HeroSection() {
                   Si no sabes con qué empezar
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-700">
-Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobante del mismo mes.
+Empieza por el papel que tengas más a la mano: un recibo reciente, una foto clara o el comprobante del mismo mes.
                 </p>
               </div>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
@@ -1314,7 +1314,7 @@ Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobant
                 <div className="grid gap-2 sm:grid-cols-2">
                   {[
                     "Gratis para empezar",
-                    "Privado desde el inicio",
+                    "Nadie de tu empresa lo ve",
                   ].map((item) => (
                     <div key={item} className="rounded-[1.05rem] border border-teal-100 bg-white/92 px-3 py-2 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{item}</p>
@@ -1322,10 +1322,10 @@ Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobant
                   ))}
                 </div>
                 <p className="text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF del documento que ya tengas. En segundos ves si hay algo importante por revisar.
+                  Empieza con una foto o PDF del documento que ya tengas. En unos segundos ves si tu pago merece una revisión más a fondo.
                 </p>
                 <p className="text-xs leading-5 text-slate-500">
-                  Solo subes un archivo y te explicamos el resultado sin palabras complicadas.
+                  No necesitas cuenta para empezar y puedes borrar tu archivo cuando quieras.
                 </p>
               </div>
           </div>
@@ -2001,7 +2001,7 @@ function QuickTrustSection() {
               Nadie de tu empresa puede ver lo que subes.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tus documentos son tuyos. Puedes borrarlos cuando quieras. Reforzamos el resguardo con cifrado AES-256 y una capa de seguridad pensada con un nivel de cuidado comparable al de un servicio bancario digital para piezas sensibles dentro del servicio.
+              Tus documentos son tuyos. Nadie de tu empresa puede verlos desde aquí, puedes borrarlos cuando quieras y primero ves el resultado antes de decidir si lo guardas.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -2022,12 +2022,12 @@ function QuickTrustSection() {
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
-                title: "Tu control primero y Borrado visible",
-                body: "Nada se integra al expediente hasta que ves el borrador; además, puedes borrar o pedir eliminación cuando lo necesites.",
+                title: "Tu archivo sigue bajo tu control",
+                body: "Primero ves una lectura útil. Solo después decides si quieres guardar ese archivo dentro de tu expediente.",
               },
               {
-                title: "Cifrado AES-256",
-                body: "Tu información viaja y se resguarda con una capa seria de protección, además de una ruta pública para revisar el aviso completo cuando quieras.",
+                title: "Privacidad explicada sin vueltas",
+                body: "Puedes revisar el aviso de privacidad cuando quieras y aquí te lo repetimos claro: lo que subes no se comparte con tu empresa.",
               },
             ].map((item) => (
               <article
@@ -2830,15 +2830,15 @@ function FAQSection() {
             Guía rápida para empezar
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.7rem] sm:text-4xl">
-            Empieza por la duda que hoy más te frena.
+            Empieza por la duda más común en tu chamba.
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-            Elige tu caso principal y te sugerimos el documento que más suele abrir contexto con baja fricción.
+            Elige el caso que más se parezca al tuyo y te sugerimos el documento más fácil para arrancar sin enredarte.
           </p>
 
           <div className="mt-5 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)]">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Mini diagnóstico inicial
+              Casos cotidianos para empezar
             </p>
             <div className="mt-3 space-y-2.5">
               {guidedFaqOptions.map((option) => {

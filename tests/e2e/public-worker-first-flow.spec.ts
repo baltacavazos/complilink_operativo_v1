@@ -5,7 +5,7 @@ test.describe("flujo público base para trabajador", () => {
     await page.goto("/acceso?returnTo=/auditar", { waitUntil: "networkidle" });
 
     await expect(
-      page.getByRole("heading", { name: "Entrar con correo y seguir donde te quedaste" })
+      page.getByRole("heading", { name: "Entra y sigue donde te quedaste" })
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Enviar código" })).toBeVisible();
 
@@ -15,9 +15,9 @@ test.describe("flujo público base para trabajador", () => {
       page.getByRole("heading", { name: "Sube tu recibo y te decimos qué revisar." })
     ).toBeVisible();
     await expect(
-      page.getByText("Empieza con una foto o PDF del documento que ya tengas. En segundos ves si hay algo importante por revisar.")
+      page.getByText("Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.")
     ).toBeVisible();
-    await page.getByRole("button", { name: "Revisa tu recibo gratis" }).first().click();
+    await page.getByRole("button", { name: "Empezar auditoría gratis" }).first().click();
 
     await expect(page).toHaveURL(/\/auditar$/);
 

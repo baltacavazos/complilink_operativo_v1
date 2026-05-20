@@ -1670,3 +1670,8 @@
 - [x] Reducir la lectura inicial a tarjetas todavía más cortas con una sola recomendación clara por pantalla.
 - [x] Agregar un botón o salida clara hacia WhatsApp después de la primera lectura para resolver dudas o pedir ayuda sin fricción.
 - [x] Validar esta nueva ronda con pruebas focalizadas, revisión visual y checkpoint estable.
+- [x] Consultar a Grok, ChatGPT y Gemini sobre la mejor secuencia de cambios de alto impacto del nuevo planteamiento de mejora.
+- [x] Reforzar el hero y la confianza visible en la experiencia pública con promesa más concreta, privacidad más clara y preguntas frecuentes básicas.
+- [x] Mejorar Auditar con mensajes de carga más tranquilizadores, continuidad más natural y ayudas de decisión más simples.
+- [x] Añadir casos cotidianos y rutas de retorno/seguimiento para que el trabajador entienda qué hacer después del primer hallazgo.
+- [x] Validar esta nueva ronda con pruebas focalizadas, revisión visual y checkpoint estable.

@@ -1,0 +1,102 @@
+{
+  "chatgpt": {
+    "veredicto_general": "Auditapatron tiene una propuesta de valor sólida y un flujo ya simplificado, pero para lograr adopción masiva entre trabajadores de a pie en México debe enfocarse en claridad inmediata, confianza visible y minimizar fricción en móvil. Los cambios de muy corto plazo deben priorizar un hero claro y humano, mensajes de carga que generen tranquilidad y continuidad, y ejemplos cotidianos que expliquen para quién sirve la herramienta. Es clave no tocar funcionalidades avanzadas o flujos de acceso que puedan generar fricción o confusión en esta etapa.",
+    "top_3_cambios": [
+      {
+        "titulo": "Rediseñar el Hero para máxima claridad y confianza",
+        "por_que": "El hero es la primera impresión y debe responder en menos de 10 segundos qué hace Auditapatron, para quién es y qué beneficio inmediato ofrece, usando lenguaje cotidiano y humano que genere confianza.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Implementar mensajes de carga claros y tranquilizadores en /auditar",
+        "por_que": "Durante la carga y análisis del recibo, el usuario debe sentir que el proceso es rápido, seguro y bajo su control, evitando incertidumbre o abandono por falta de feedback.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Agregar casos cotidianos y ayudas concretas para explicar a quién sirve Auditapatron",
+        "por_que": "Mostrar ejemplos reales y cotidianos ayuda a que el usuario se identifique, entienda el valor y se sienta acompañado, reduciendo dudas y aumentando la conversión.",
+        "impacto": "alto"
+      }
+    ],
+    "microcopies_sugeridos": {
+      "hero": "¿Te están pagando de menos? Sube tu recibo y te decimos qué revisar primero y cómo seguir. Empieza gratis, sin complicaciones.",
+      "privacidad": "Nadie de tu empresa ve lo que subes. Puedes borrar tus archivos cuando quieras. Tu información está segura y bajo tu control.",
+      "carga": "Estamos leyendo tu recibo... Esto suele tomar menos de 20 segundos. Mantente tranquilo, nadie más ve tu información.",
+      "whatsapp": "¿Quieres ayuda o compartir tu resultado? Usa WhatsApp para seguir con tu revisión o pedir apoyo sin salir de Auditapatron."
+    },
+    "cosas_que_no_tocaria": [
+      "Flujos avanzados de acceso y verificación por correo para evitar fricción en usuarios nuevos.",
+      "Funcionalidades de venta o contacto con abogados antes de que el usuario vea valor claro.",
+      "Rutas secundarias que pidan muchos datos o documentos antes del primer resultado.",
+      "Lenguaje técnico o legal en el primer pantallazo que pueda confundir o intimidar."
+    ],
+    "riesgo_principal": "Que se intente agregar demasiada información o funcionalidades en el primer minuto, generando confusión, desconfianza o fricción que provoque abandono antes de que el usuario vea el valor real."
+  },
+  "grok": {
+    "veredicto_general": "Auditapatron tiene una propuesta muy potente y ya simplificada, pero el primer minuto aún genera dudas y baja confianza en trabajadores mexicanos de a pie. Con cambios cortos en hero, carga y ejemplos cotidianos se puede subir conversión y retención sin complicar el flujo.",
+    "top_3_cambios": [
+      {
+        "titulo": "Hero y confianza visible",
+        "por_que": "El hero actual es funcional pero aún suena algo abstracto; necesita promesa concreta + escudos de privacidad repetidos para que el usuario sienta seguridad en los primeros 5 segundos.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Mensajes de carga y continuidad en /auditar",
+        "por_que": "Los estados de carga actuales son técnicos; mensajes humanos y tranquilizadores reducen abandono mientras se procesa el archivo y guían hacia WhatsApp o guardar.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Casos cotidianos o ayudas que expliquen mejor para quién sirve",
+        "por_que": "Los ejemplos actuales son buenos pero genéricos; casos muy concretos (tienda, obra, maquila) ayudan a identificación inmediata y bajan la pregunta '¿esto me sirve a mí?'.",
+        "impacto": "alto"
+      }
+    ],
+    "microcopies_sugeridos": {
+      "hero": "Sube tu recibo y te decimos si hay algo raro en tu pago. Empieza gratis, en segundos y sin cuenta.",
+      "privacidad": "Nadie de tu empresa ve lo que subes. Puedes borrar tu archivo cuando quieras.",
+      "carga": "Revisando tu recibo... Esto toma menos de 20 segundos. Tu archivo queda bajo tu control.",
+      "whatsapp": "Mandar resultado por WhatsApp para guardarlo o pedir ayuda después"
+    },
+    "cosas_que_no_tocaria": [
+      "Calculadoras avanzadas de finiquito o PTU",
+      "Ruta a abogado desde el primer resultado",
+      "Comparación múltiple de documentos antes de la primera lectura",
+      "Registro obligatorio o bóveda antes de ver cualquier hallazgo"
+    ],
+    "riesgo_principal": "Agregar demasiados ejemplos o pasos de confianza que ralenticen el flujo móvil y generen fricción antes del primer valor."
+  },
+  "gemini": {
+    "veredicto_general": "Auditapatron tiene una propuesta de valor muy potente para el trabajador mexicano, pero necesita urgentemente simplificar su mensaje, construir confianza visible y eliminar cualquier fricción en la experiencia móvil para lograr una adopción masiva. El producto debe sentirse como un apoyo humano y no como una herramienta legal o técnica.",
+    "top_3_cambios": [
+      {
+        "titulo": "Simplificar el Hero y hacer la confianza explícita",
+        "por_que": "El primer contacto es crucial para que el trabajador entienda el valor inmediato y se sienta seguro de subir un documento sensible. Un mensaje claro y una promesa de privacidad visible reducen la fricción inicial y aumentan la tasa de inicio.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Optimizar mensajes de carga y continuidad en el flujo de auditoría",
+        "por_que": "El proceso de subir y analizar un documento puede generar ansiedad. Mensajes tranquilizadores, claros sobre el progreso y opciones de continuidad (como WhatsApp) reducen el abandono y refuerzan la sensación de apoyo durante el momento crítico de la espera.",
+        "impacto": "alto"
+      },
+      {
+        "titulo": "Integrar ejemplos de casos cotidianos y preguntas frecuentes contextuales",
+        "por_que": "Los trabajadores de a pie necesitan ver cómo el producto resuelve problemas reales y cercanos a su experiencia. Ejemplos claros y FAQs que aborden miedos comunes construyen relevancia, aumentan la identificación del usuario y reducen la barrera de entrada.",
+        "impacto": "alto"
+      }
+    ],
+    "microcopies_sugeridos": {
+      "hero": "¿Te pagan bien? Sube tu recibo y descubre si hay algo raro en tu pago. Te decimos qué revisar y cómo seguir.",
+      "privacidad": "Tu información es privada. Nadie de tu empresa ve lo que subes y puedes borrar tus archivos cuando quieras.",
+      "carga": "Estamos revisando tu recibo. Esto suele tardar unos segundos. Tu información está segura.",
+      "whatsapp": "¿Necesitas ayuda o quieres compartir tu resultado? Envía un mensaje por WhatsApp."
+    },
+    "cosas_que_no_tocaria": [
+      "La promesa de 'en 60 segundos te decimos cuánto te debe tu empresa' (demasiado absoluta y riesgosa jurídicamente).",
+      "El flujo inicial con sueldo, contrato, antigüedad, aguinaldo, vacaciones como entrada principal (mete demasiada fricción antes del primer valor).",
+      "La opción de 'Hablar con abogado' desde temprano en el flujo (parece venta agresiva si no hay un hallazgo claro que lo justifique).",
+      "La integración de calculadoras específicas (liquidación, finiquito, PTU) en la primera fase del producto (prioridad media en Fase 3, no para corto plazo).",
+      "La funcionalidad de 'Comparación documental' avanzada (cruces entre CFDI, IMSS, INFONAVIT) como parte del flujo inicial (prioridad alta en Fase 3, pero no para el primer minuto)."
+    ],
+    "riesgo_principal": "Que el producto, a pesar de su potencial, no logre conectar emocionalmente con el trabajador de a pie, sintiéndose demasiado técnico o institucional en lugar de un apoyo cercano y humano que le resuelva una duda urgente."
+  }
+}
