@@ -1,0 +1,194 @@
+{
+  "chatgpt": {
+    "ok": true,
+    "response": {
+      "overall_recommendation": "Priorizar la simplificación visual y de contenido para que el usuario entienda rápidamente el valor, complementando con un microvideo explicativo y asegurando la validación automática del flujo para detectar fricciones.",
+      "priority_order": [
+        "A",
+        "B",
+        "C"
+      ],
+      "home_changes": [
+        "Mostrar solo una señal clara y relevante en el ejemplo de resultado para evitar saturar al usuario.",
+        "Incorporar un microvideo de 15-20 segundos junto al CTA principal para explicar el proceso de forma sencilla y amigable.",
+        "Reducir el texto del subcopy a frases cortas y directas, usando lenguaje claro y familiar para trabajadores mexicanos."
+      ],
+      "video_recommendation": {
+        "should_add": true,
+        "best_format": "MP4 optimizado para web y móvil, con subtítulos y sin audio obligatorio",
+        "placement": "Al lado derecho del CTA principal en la Home, visible sin hacer scroll en desktop y justo debajo del CTA en móvil",
+        "script": [
+          "¿Tienes tu recibo de nómina a la mano? Súbelo aquí.",
+          "Nosotros te decimos qué revisar para que tu pago sea correcto.",
+          "Es rápido, gratis y fácil, sin letra chica ni complicaciones.",
+          "Si algo no cuadra, te damos recomendaciones claras para actuar."
+        ],
+        "risks": [
+          "El video puede distraer si es muy largo o con demasiada información.",
+          "Si no se adapta bien a móvil, puede afectar la experiencia de usuarios con smartphones."
+        ]
+      },
+      "result_demo_recommendation": {
+        "best_structure": "Una sola señal o alerta por pantalla, con texto claro y un ícono visual que refuerce el mensaje.",
+        "slides_or_states": [
+          "Señal encontrada: tu pago podría no coincidir",
+          "Qué revisar primero en tu pago",
+          "Recibo detectado: ya vimos lo más importante"
+        ],
+        "what_to_remove": [
+          "Mostrar múltiples señales simultáneamente que puedan confundir.",
+          "Detalles técnicos o jerga complicada en la vista inicial.",
+          "Elementos visuales que no aporten claridad o que saturen la pantalla."
+        ]
+      },
+      "validation_recommendation": {
+        "best_test_type": "Prueba automatizada de flujo con seguimiento de eventos clave y análisis de tasa de éxito en subida y lectura inicial.",
+        "critical_steps": [
+          "Entrar a la plataforma sin registro previo",
+          "Subir un recibo válido (foto o PDF)",
+          "Recibir la lectura inicial simplificada",
+          "Visualizar el resultado y decidir guardar o no"
+        ],
+        "notes": [
+          "Incluir métricas de tiempo en cada paso para detectar posibles cuellos de botella.",
+          "Validar que no haya errores técnicos que impidan avanzar en el flujo."
+        ]
+      },
+      "copy_rules": [
+        "Usar lenguaje claro, directo y familiar para trabajadores mexicanos.",
+        "Evitar tecnicismos y frases largas; preferir oraciones cortas y activas.",
+        "Incluir llamados a la acción concretos y positivos.",
+        "Priorizar la empatía y confianza en el mensaje para reducir ansiedad."
+      ],
+      "confidence": 0.95
+    }
+  },
+  "grok": {
+    "ok": true,
+    "response": {
+      "overall_recommendation": "Priorizar simplicidad extrema con lenguaje cotidiano mexicano para que cualquier trabajador entienda al instante qué revisar en su pago sin esfuerzo técnico.",
+      "priority_order": [
+        "A",
+        "B",
+        "C"
+      ],
+      "home_changes": [
+        "Reducir hero a un solo mensaje claro y directo",
+        "Colocar microvideo de 15 segundos junto al CTA principal",
+        "Usar iconos grandes y colores amigables para guiar visualmente"
+      ],
+      "video_recommendation": {
+        "should_add": true,
+        "best_format": "Video vertical corto optimizado para móvil",
+        "placement": "Justo al lado o debajo del botón principal de subir recibo",
+        "script": [
+          "Un trabajador sube su recibo en segundos",
+          "Ve una señal simple como 'tu pago podría no coincidir'",
+          "Entiende qué revisar primero sin complicaciones",
+          "Decide guardar solo si le sirve"
+        ],
+        "risks": [
+          "Que el video distraiga del botón de acción",
+          "Que se vea lento en conexiones móviles"
+        ]
+      },
+      "result_demo_recommendation": {
+        "best_structure": "Una sola señal clara por vista con icono grande y acción inmediata",
+        "slides_or_states": [
+          "Señal principal detectada",
+          "Qué revisar primero en tu pago",
+          "Siguiente paso recomendado"
+        ],
+        "what_to_remove": [
+          "Múltiples señales en una sola pantalla",
+          "Términos técnicos o estados complejos",
+          "Contenido secundario que distrae"
+        ]
+      },
+      "validation_recommendation": {
+        "best_test_type": "Prueba de usabilidad con 5-7 trabajadores reales",
+        "critical_steps": [
+          "Entrar con correo y código",
+          "Subir recibo o foto",
+          "Llegar a la lectura inicial",
+          "Entender la señal mostrada"
+        ],
+        "notes": [
+          "Grabar reacciones y dudas",
+          "Medir tiempo hasta primera comprensión"
+        ]
+      },
+      "copy_rules": [
+        "Usa frases cortas y palabras comunes como 'sube tu recibo'",
+        "Evita jerga legal o técnica",
+        "Incluye 'gratis' y 'rápido' para generar confianza",
+        "Termina con acción clara como 'revisa ahora'"
+      ],
+      "confidence": 80
+    }
+  },
+  "gemini": {
+    "ok": true,
+    "response": {
+      "overall_recommendation": "Enfocarnos en la simplicidad radical y la claridad absoluta para empoderar al trabajador mexicano, eliminando cualquier fricción o duda desde el primer contacto.",
+      "priority_order": [
+        "A",
+        "B",
+        "C"
+      ],
+      "home_changes": [
+        "Integrar el ejemplo de resultado simplificado (A) en un carrusel o secuencia interactiva, mostrando una única señal por vista.",
+        "Añadir el microvideo (B) junto al CTA principal 'Revisa tu recibo gratis' para ilustrar el proceso y el valor de forma rápida.",
+        "Asegurar que el CTA principal sea el elemento más prominente y que su mensaje sea consistente con la promesa de valor inmediata."
+      ],
+      "video_recommendation": {
+        "should_add": true,
+        "best_format": "MP4 corto (15-20s) sin audio, con subtítulos claros si es necesario, o un GIF animado de alta calidad.",
+        "placement": "Junto al CTA principal 'Revisa tu recibo gratis' en la sección Hero, visible sin scroll.",
+        "script": [
+          "¿Dudas con tu recibo de nómina? (Visual: Trabajador pensativo con un recibo)",
+          "Súbelo a Auditapatron, ¡es fácil y rápido! (Visual: Proceso de subir un recibo, foto o PDF)",
+          "Te mostramos qué revisar en segundos. (Visual: Resultado simplificado con una señal clara)",
+          "Entiende tu pago y toma el control. (Visual: Trabajador con expresión de alivio/confianza)"
+        ],
+        "risks": [
+          "Puede distraer si no es extremadamente conciso o si su reproducción automática interfiere con la experiencia.",
+          "Aumentar el tiempo de carga de la página si no está optimizado para web y dispositivos móviles."
+        ]
+      },
+      "result_demo_recommendation": {
+        "best_structure": "Carrusel interactivo o secuencia de estados que se revelan al hacer scroll o click, mostrando una única señal por vista para evitar la sobrecarga cognitiva.",
+        "slides_or_states": [
+          "¡Atención! Tu pago podría tener un detalle. (Ejemplo: 'Días trabajados no coinciden')",
+          "Revisa esto: [Ejemplo específico y accionable: 'Faltan 2 días de tu quincena']",
+          "¿Quieres saber más? Guarda tu recibo y te ayudamos. (CTA claro para el siguiente paso)"
+        ],
+        "what_to_remove": [
+          "Estados genéricos o ambiguos como 'Recibo detectado: ya vimos lo más importante'.",
+          "Múltiples señales o puntos de revisión en una sola vista del ejemplo.",
+          "Cualquier lenguaje técnico o jerga que no sea inmediatamente comprensible para un trabajador promedio."
+        ]
+      },
+      "validation_recommendation": {
+        "best_test_type": "Pruebas de integración y funcionales automatizadas (End-to-End) para el flujo crítico, complementadas con pruebas de usabilidad cualitativas con el público objetivo.",
+        "critical_steps": [
+          "Acceso exitoso al sistema (Entrar con correo y código).",
+          "Carga de recibo (foto/PDF) sin errores y con confirmación visual.",
+          "Procesamiento y visualización de la lectura inicial simplificada en el tiempo esperado.",
+          "Claridad del CTA para guardar el recibo o continuar, y su funcionalidad."
+        ],
+        "notes": [
+          "Implementar monitoreo de embudo para identificar puntos de abandono en el flujo.",
+          "Realizar entrevistas con usuarios después de la prueba para entender percepciones y frustraciones."
+        ]
+      },
+      "copy_rules": [
+        "Lenguaje claro, directo y sencillo, comprensible para cualquier trabajador (nivel primaria).",
+        "Evitar tecnicismos, jerga legal o financiera; usar analogías si es necesario.",
+        "Tono empático, de apoyo y no alarmista, enfocado en el beneficio y la acción.",
+        "Mensajes concisos que transmitan valor inmediato y la facilidad de uso."
+      ],
+      "confidence": 0
+    }
+  }
+}

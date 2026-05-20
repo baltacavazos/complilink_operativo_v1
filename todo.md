@@ -1660,3 +1660,8 @@
 - [x] Simplificar /auditar para que el usuario solo vea lo indispensable antes de subir su documento y no encuentre controles o conceptos operativos confusos.
 - [x] Simplificar /acceso para que iniciar sesión parezca una continuidad natural del trámite y no una barrera administrativa.
 - [x] Validar la nueva ronda de simplicidad extrema con pruebas focalizadas y revisión visual desde la perspectiva de un usuario no técnico.
+- [x] Consultar a Grok, ChatGPT y Gemini sobre cómo simplificar todavía más el ejemplo de resultado, incorporar un microvideo corto junto al CTA y validar el primer flujo del usuario.
+- [x] Rediseñar el ejemplo de resultado para que muestre una sola señal por vista y sea más fácil de entender para un trabajador no técnico.
+- [x] Crear e integrar un microvideo corto de 15 a 20 segundos junto al CTA principal para explicar la plataforma en segundos.
+- [x] Automatizar una validación del primer flujo público: entrar, subir recibo y llegar a la lectura inicial sin fricción.
+- [x] Validar la nueva ronda de mejoras con pruebas focalizadas, revisión visual y checkpoint estable.

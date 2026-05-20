@@ -66,6 +66,13 @@ type ReportDemoState = {
   summary: string;
 };
 
+type HeroMicroDemoScene = {
+  step: string;
+  title: string;
+  detail: string;
+  accent: string;
+};
+
 type SocialProofItem = {
   caseId: string;
   label: string;
@@ -471,21 +478,48 @@ const heroFindingSlides = [
 const reportDemoStates: ReportDemoState[] = [
   {
     id: "documento-recibido",
-    label: "Documento detectado",
-    badge: "Recibo de nómina",
-    summary: "Detectamos un recibo de nómina y conservamos el periodo para revisar mejor lo que sigue.",
+    label: "Recibo recibido",
+    badge: "Ya podemos empezar",
+    summary: "Ya vimos tu recibo y con eso podemos darte una primera lectura clara.",
   },
   {
     id: "hallazgo-preliminar",
     label: "Señal encontrada",
-    badge: "Posible diferencia contra CFDI",
-    summary: "Aparece una diferencia posible contra el CFDI y ya sabes qué vale la pena revisar primero.",
+    badge: "Algo podría no cuadrar",
+    summary: "Aparece una señal inicial y te la mostramos con palabras simples para que sepas qué revisar.",
   },
   {
     id: "siguiente-paso",
-    label: "Qué significa",
-    badge: "Monto, periodo y conceptos",
-    summary: "Conviene comparar monto, periodo y conceptos antes de sacar una conclusión.",
+    label: "Qué revisar",
+    badge: "Lo primero que conviene comparar",
+    summary: "Te mostramos el siguiente cruce útil para confirmar si la señal es real o no.",
+  },
+];
+
+const heroMicroDemoScenes: HeroMicroDemoScene[] = [
+  {
+    step: "Paso 1",
+    title: "Subes tu recibo",
+    detail: "Puede ser foto o PDF. Solo necesitas un archivo para empezar.",
+    accent: "Recibo listo",
+  },
+  {
+    step: "Paso 2",
+    title: "Ves una señal clara",
+    detail: "Te mostramos solo lo importante para que no te pierdas.",
+    accent: "Señal clara",
+  },
+  {
+    step: "Paso 3",
+    title: "Sabes qué revisar",
+    detail: "Recibes el siguiente paso más útil para salir de dudas.",
+    accent: "Qué sigue",
+  },
+  {
+    step: "Listo",
+    title: "Tú decides si sigues",
+    detail: "Primero ves el resultado y luego decides si quieres guardar o continuar.",
+    accent: "Tú tienes el control",
   },
 ];
 
@@ -813,6 +847,7 @@ function HeroSection() {
   const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
   const [activeFindingIndex, setActiveFindingIndex] = useState(0);
   const [selectedReportDemoState, setSelectedReportDemoState] = useState<(typeof reportDemoStates)[number]["id"]>("hallazgo-preliminar");
+  const [activeMicroDemoSceneIndex, setActiveMicroDemoSceneIndex] = useState(0);
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroScrollMilestonesRef = useRef<Set<number>>(new Set());
   const queryHeroVariant = useMemo<"short_paid_campaign" | "direct_money_check" | null>(() => {
@@ -830,48 +865,61 @@ function HeroSection() {
   const activePrediagnostic = prediagnosticRecommendations[selectedHeroPrediagnostic];
   const activeFinding = heroFindingSlides[activeFindingIndex];
   const activeReportDemoState = reportDemoStates.find((state) => state.id === selectedReportDemoState) ?? reportDemoStates[1];
+  const activeMicroDemoScene = heroMicroDemoScenes[activeMicroDemoSceneIndex] ?? heroMicroDemoScenes[0];
   const dossierReadiness = heroVariantReadiness[trackedHeroVariant];
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
-        title: "Recibo detectado: ya vimos lo más importante",
-        description: "Detectamos tu recibo y ya tenemos una base clara para seguir revisando.",
-        focusLabel: "Qué significa",
-        focusValue: "Ya sabemos con qué documento empezar y podemos usarlo como base para revisar pagos, deducciones o comprobantes del mismo mes.",
+        title: "Recibo recibido: ya podemos empezar",
+        description: "Ya vimos tu recibo y con eso podemos darte una primera lectura útil.",
+        focusLabel: "Lo primero que vemos",
+        focusValue: "Este recibo ya sirve para empezar a revisar si algo no cuadra en tu pago.",
         focusClass: "border-slate-200 bg-slate-50/90 text-slate-800",
-        secondaryLabel: "Siguiente paso",
-        secondaryValue: "Si tienes el comprobante fiscal del mismo mes, suele ser el mejor cruce para confirmar o descartar la diferencia inicial.",
+        secondaryLabel: "Qué sigue",
+        secondaryValue: "Si luego tienes el comprobante fiscal del mismo mes, lo puedes subir para confirmar mejor.",
         secondaryClass: "border-slate-200 bg-white text-slate-700",
-        progressLabel: "Nivel de claridad inicial",
+        progressLabel: "Avance de la revisión",
       };
     }
 
     if (selectedReportDemoState === "siguiente-paso") {
       return {
-        title: "Qué revisar primero en tu pago",
-        description: "Todavía no cerramos una conclusión. Primero te mostramos el cruce más útil para confirmar si la diferencia realmente existe.",
+        title: "Esto es lo primero que conviene revisar",
+        description: "Todavía no cerramos nada. Te mostramos el paso más útil para salir de dudas.",
         focusLabel: "Siguiente paso",
-        focusValue: "Sube el comprobante fiscal del mismo mes para contrastar monto, periodo y conceptos contra tu recibo.",
+        focusValue: "Compara el comprobante fiscal del mismo mes con tu recibo.",
         focusClass: "border-emerald-200 bg-emerald-50/80 text-emerald-950",
-        secondaryLabel: "Qué ganarías al continuar",
-        secondaryValue: activeFinding.impact,
+        secondaryLabel: "Para qué sirve",
+        secondaryValue: "Así confirmas si la diferencia es real o no.",
         secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
-        progressLabel: "Nivel de avance sugerido",
+        progressLabel: "Qué tan clara va la revisión",
       };
     }
 
     return {
-      title: "Señal encontrada: tu pago podría no coincidir",
-      description: "Vemos una diferencia posible y te decimos cómo revisarla antes de sacar una conclusión.",
+      title: "Señal encontrada: algo podría no cuadrar",
+      description: "Vemos una señal inicial y te la mostramos con palabras simples.",
       focusLabel: "Qué significa",
-      focusValue: "Puede haber diferencias de monto, periodo o conceptos entre lo que te pagaron y lo que se reportó.",
+      focusValue: "El monto, el periodo o algún concepto podría verse distinto entre tus papeles.",
       focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
-      secondaryLabel: "Siguiente paso",
-      secondaryValue: "Sube el comprobante fiscal del mismo mes para confirmar si ambos documentos cuentan la misma historia.",
+      secondaryLabel: "Qué hacer después",
+      secondaryValue: "Sube el comprobante fiscal del mismo mes para confirmar si de verdad hay diferencia.",
       secondaryClass: "border-teal-100 bg-teal-50/80 text-teal-900",
-      progressLabel: "Nivel de claridad inicial",
+      progressLabel: "Avance de la lectura",
     };
   }, [activeFinding, selectedReportDemoState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveMicroDemoSceneIndex((current) => (current + 1) % heroMicroDemoScenes.length);
+    }, 3200);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     trackEvent("audipatron_hero_state_viewed", {
@@ -1189,12 +1237,11 @@ Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobant
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <div className="space-y-1.5 max-[359px]:space-y-1">
-                <div className="grid gap-2 sm:grid-cols-3">
+              <div className="space-y-2 max-[359px]:space-y-1.5">
+                <div className="grid gap-2 sm:grid-cols-2">
                   {[
-                    "Sin tarjeta para empezar",
+                    "Gratis para empezar",
                     "Privado desde el inicio",
-                    "Borra tu archivo cuando quieras",
                   ].map((item) => (
                     <div key={item} className="rounded-[1.05rem] border border-teal-100 bg-white/92 px-3 py-2 shadow-sm">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{item}</p>
@@ -1202,62 +1249,123 @@ Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobant
                   ))}
                 </div>
                 <p className="text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
+                  Empieza con una foto o PDF del documento que ya tengas. En segundos ves si hay algo importante por revisar.
                 </p>
-                <p className="text-xs font-medium leading-5 text-teal-800">
-                  Cifrado AES-256, control de borrado visible y resguardo serio desde el inicio.
-                </p>
-                <p className="text-xs leading-5 text-slate-500 max-[359px]:hidden">
-                  Diseñado con un nivel de cuidado comparable al que esperas de un servicio bancario digital.
-                </p>
-                <p className="inline-flex w-fit rounded-full border border-teal-100 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                  Criterios laborales vigentes 2026
+                <p className="text-xs leading-5 text-slate-500">
+                  Solo subes un archivo y te explicamos el resultado sin palabras complicadas.
                 </p>
               </div>
           </div>
 
           <div
-            className="motion-enter-soft mt-3 grid w-full max-w-3xl gap-3 sm:grid-cols-3"
+            className="motion-enter-soft mt-3 w-full max-w-3xl rounded-[1.55rem] border border-slate-200 bg-white/94 p-4 shadow-[0_24px_54px_-42px_rgba(15,23,42,0.28)] sm:p-5"
             style={{ ["--motion-delay" as string]: "330ms" }}
           >
-            {[
-              {
-                eyebrow: "Paso 1",
-                title: "Sube un documento que ya tengas",
-                detail: "No necesitas juntar todo para empezar.",
-              },
-              {
-                eyebrow: "Paso 2",
-                title: "Te mostramos la señal importante",
-                detail: "Primero ves qué detectamos y por qué vale la pena revisarlo.",
-              },
-              {
-                eyebrow: "Paso 3",
-                title: "Sabes cómo seguir",
-                detail: "Recibes el siguiente documento o acción útil para avanzar.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-[1.35rem] border border-slate-200 bg-white/92 p-4 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.24)]"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{item.eyebrow}</p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{item.title}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Microvideo guiado</p>
+                <p className="mt-1 text-base font-semibold leading-7 text-slate-950 sm:text-[1.05rem]">
+                  Mira cómo funciona en segundos.
+                </p>
               </div>
-            ))}
+              <span className="inline-flex w-fit rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                15 segundos aprox.
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
+              <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
+                    {activeMicroDemoScene.step}
+                  </span>
+                  <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                    {activeMicroDemoScene.accent}
+                  </span>
+                </div>
+                <p className="mt-4 text-[1.35rem] font-semibold leading-8 tracking-[-0.03em] text-slate-950">
+                  {activeMicroDemoScene.title}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {activeMicroDemoScene.detail}
+                </p>
+                <div className="mt-4 flex items-center gap-2">
+                  {heroMicroDemoScenes.map((scene, index) => {
+                    const isActive = index === activeMicroDemoSceneIndex;
+
+                    return (
+                      <button
+                        key={scene.title}
+                        type="button"
+                        aria-label={`Ver escena ${index + 1}`}
+                        aria-pressed={isActive}
+                        onClick={() => setActiveMicroDemoSceneIndex(index)}
+                        className={`h-2.5 rounded-full transition ${isActive ? "w-8 bg-teal-600" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-[1.45rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_44px_-30px_rgba(15,23,42,0.18)]">
+                <div className="mx-auto max-w-[18rem] rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.2)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Vista rápida</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2">
+                    {[
+                      { label: "Subir", icon: Upload, activeAt: 0 },
+                      { label: "Ver", icon: FileSearch, activeAt: 1 },
+                      { label: "Seguir", icon: CheckCircle2, activeAt: 2 },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeMicroDemoSceneIndex >= item.activeAt;
+
+                      return (
+                        <div
+                          key={item.label}
+                          className={`flex items-center gap-3 rounded-[1rem] border px-3 py-3 transition ${
+                            isActive ? "border-teal-200 bg-teal-50 text-teal-950" : "border-slate-200 bg-slate-50 text-slate-500"
+                          }`}
+                        >
+                          <div className={`rounded-full p-2 ${isActive ? "bg-white text-teal-700" : "bg-white text-slate-400"}`}>
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold leading-5">{item.label}</p>
+                            <p className="text-xs leading-5">{item.label === "Subir" ? "Foto o PDF" : item.label === "Ver" ? "Señal clara" : "Siguiente paso"}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Mensaje del momento</p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{activeMicroDemoScene.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{activeMicroDemoScene.detail}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div
             className="motion-enter-soft mt-2.5 w-full max-w-xl rounded-[1.45rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] max-[359px]:p-3 sm:p-4"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lo que hace simple esta experiencia</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Así de simple</p>
             <div className="mt-2.5 grid gap-2.5 sm:grid-cols-3">
               {[
-                "Empiezas con un solo archivo.",
-                "Te explicamos todo sin tecnicismos.",
-                "Ves primero qué hacer después.",
+                "Subes tu recibo.",
+                "Ves una señal clara.",
+                "Sabes qué hacer después.",
               ].map((item) => (
                 <div key={item} className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm">
                   <p className="text-sm font-semibold leading-6 text-slate-900">{item}</p>
@@ -1313,21 +1421,21 @@ Empieza por el archivo más fácil de ubicar: un recibo reciente o el comprobant
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-Resultado realista, no promesa vacía
+                    Así se ve tu resultado
                   </p>
                   <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.62rem] sm:text-[2.2rem]">
                     {activeReportDemoCopy.title}
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
                     {selectedReportDemoState === "hallazgo-preliminar"
-                      ? "Ejemplo anónimo: posible diferencia estimada de $3,240 MXN."
+                      ? "Ejemplo simple: una sola señal clara."
                       : selectedReportDemoState === "documento-recibido"
-                        ? "Ejemplo anónimo: recibo detectado y periodo conservado."
-                        : "Ejemplo anónimo: siguiente cruce sugerido para confirmar la señal."}
+                        ? "Ejemplo simple: primero vemos tu recibo."
+                        : "Ejemplo simple: te decimos qué revisar primero."}
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
-                  {activeFindingIndex + 1}/{heroFindingSlides.length}
+                  1 señal por vista
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
@@ -1357,20 +1465,8 @@ Resultado realista, no promesa vacía
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
+                Cambia entre tres ejemplos simples. En cada vista solo aparece una idea principal.
               </p>
-
-              <div className="mt-4 rounded-[1.05rem] border border-teal-100 bg-white/90 px-4 py-3 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
-                    {activeFinding.badge}
-                  </span>
-                  <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                    {activeReportDemoState.badge}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm font-semibold leading-6 text-slate-950">{activeReportDemoState.summary}</p>
-              </div>
 
               <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
                 <p className="text-[1.28rem] font-semibold leading-7 tracking-[-0.03em] text-slate-950 sm:text-[1.35rem]">{activeReportDemoCopy.title}</p>
@@ -1386,61 +1482,19 @@ Resultado realista, no promesa vacía
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-teal-800">{activeReportDemoCopy.progressLabel}</p>
-                  <span className="text-sm font-semibold text-slate-700">{dossierReadiness}%</span>
-                </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                  <div
-                    className="motion-progress-fill h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
-                    style={{ ["--progress-scale" as string]: `${dossierReadiness / 100}`, ["--motion-delay" as string]: "260ms" }}
-                  />
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
-                    onClick={() =>
-                      handleHeroFindingChange(
-                        (activeFindingIndex - 1 + heroFindingSlides.length) % heroFindingSlides.length,
-                        "previous",
-                      )
-                    }
-                  >
-                    Anterior
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    {heroFindingSlides.map((finding, index) => {
-                      const isActive = index === activeFindingIndex;
-
-                      return (
-                        <button
-                          key={finding.id}
-                          type="button"
-                          aria-label={`Ver hallazgo ${index + 1}`}
-                          aria-pressed={isActive}
-                          className={`h-2.5 rounded-full transition ${isActive ? "w-8 bg-teal-600" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
-                          onClick={() => handleHeroFindingChange(index, "direct")}
-                        />
-                      );
-                    })}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
-                    onClick={() => handleHeroFindingChange((activeFindingIndex + 1) % heroFindingSlides.length, "next")}
-                  >
-                    Siguiente
-                  </Button>
+                <div className="mt-4 rounded-[1.05rem] border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Lo primero que verás
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                    Una sola señal clara, una explicación breve y el siguiente paso más útil para salir de dudas.
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="mt-5 rounded-[1.3rem] border border-slate-200 bg-white/96 p-4 text-sm leading-6 text-slate-700 shadow-[0_20px_44px_-34px_rgba(15,23,42,0.34)]">
-              Empiezas con un solo archivo, ves una lectura clara y decides después si quieres seguir fortaleciendo tu expediente.
+              Empiezas con un solo archivo, ves una lectura simple y decides después si quieres seguir.
             </div>
 
             <button
