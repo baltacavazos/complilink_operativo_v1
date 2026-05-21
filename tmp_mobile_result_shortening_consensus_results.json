@@ -1,0 +1,129 @@
+{
+  "chatgpt": {
+    "primary_problem": "El resultado post-carga es demasiado largo y difícil de escanear rápidamente.",
+    "confidence": 95,
+    "recommended_visible_sections_count": 3,
+    "above_the_fold": [
+      "Resumen clave del análisis",
+      "Estado general del documento",
+      "Riesgos o alertas principales"
+    ],
+    "merge_first": [
+      "Detalles técnicos con explicaciones simples",
+      "Recomendaciones con ejemplos",
+      "Secciones de contexto y antecedentes"
+    ],
+    "collapse_first": [
+      "Información legal detallada",
+      "Notas y comentarios adicionales",
+      "Historial de revisiones",
+      "Glosario de términos",
+      "Sección de ayuda o soporte"
+    ],
+    "remove_or_deemphasize": [
+      "Tarjetas repetitivas o similares",
+      "Datos secundarios no críticos",
+      "Gráficos complejos sin resumen",
+      "Textos largos sin subtítulos claros",
+      "Jergas legales o técnicas"
+    ],
+    "best_single_cta": "Ver detalles completos",
+    "microcopy_examples": {
+      "headline": "Resultado rápido y claro",
+      "meaning": "Aquí tienes lo más importante de tu documento.",
+      "next_step": "Toca para ver más detalles o descargar."
+    },
+    "implementation_order": [
+      "Reducir visible a máximo 3 secciones clave",
+      "Fusionar bloques relacionados para simplificar",
+      "Colapsar secciones menos urgentes por defecto",
+      "Eliminar o atenuar contenido no esencial",
+      "Actualizar CTA a 'Ver detalles completos'",
+      "Probar con usuarios para validar comprensión rápida"
+    ],
+    "one_sentence_summary": "Simplificar y comprimir el resultado para que el usuario entienda lo esencial en segundos y tenga un solo paso claro a seguir."
+  },
+  "grok": {
+    "primary_problem": "Long card stack after upload blocks fast scanning and clear next action on iPhone.",
+    "confidence": 85,
+    "recommended_visible_sections_count": 3,
+    "above_the_fold": [
+      "Puntuación general",
+      "Riesgos clave",
+      "Acción recomendada"
+    ],
+    "merge_first": [
+      "Hallazgos por sección",
+      "Detalles de cláusulas",
+      "Comparaciones"
+    ],
+    "collapse_first": [
+      "Texto completo",
+      "Listas exhaustivas",
+      "Metadata técnica"
+    ],
+    "remove_or_deemphasize": [
+      "Upsells",
+      "Opciones expertas",
+      "Fechas de carga"
+    ],
+    "best_single_cta": "Ver detalles ahora",
+    "microcopy_examples": {
+      "headline": "Tu documento en segundos",
+      "meaning": "Detectamos 2 riesgos que necesitan revisión.",
+      "next_step": "Toca para revisar y resolver."
+    },
+    "implementation_order": [
+      "Mover puntuación y riesgos arriba",
+      "Fusionar cards en 3 bloques",
+      "Colapsar todo lo demás",
+      "Un solo CTA claro",
+      "Probar legibilidad en iPhone"
+    ],
+    "one_sentence_summary": "Show only score, top risks and one CTA above the fold for instant trust and action."
+  },
+  "gemini": {
+    "primary_problem": "The post-upload result screen is overwhelming, making it hard for anonymous users to quickly grasp value and next steps.",
+    "confidence": 90,
+    "recommended_visible_sections_count": 1,
+    "above_the_fold": [
+      "Estado del documento: [Resultado clave]",
+      "Análisis completado con éxito",
+      "Tu resumen rápido",
+      "Botón: Ver informe completo",
+      "Logo Auditapatron"
+    ],
+    "merge_first": [
+      "Resultados clave y resumen general",
+      "Detalles de carga y documento",
+      "Secciones de bajo impacto"
+    ],
+    "collapse_first": [
+      "Lista detallada de hallazgos",
+      "Recomendaciones secundarias",
+      "Información técnica del análisis",
+      "Secciones de ayuda o FAQ"
+    ],
+    "remove_or_deemphasize": [
+      "Jargon técnico legal",
+      "Múltiples CTAs secundarios",
+      "Gráficos complejos iniciales",
+      "Información redundante"
+    ],
+    "best_single_cta": "Ver informe completo",
+    "microcopy_examples": {
+      "headline": "Tu Análisis Rápido",
+      "meaning": "Aquí tienes un resumen clave de tu documento.",
+      "next_step": "Explora el informe completo para más detalles y acciones."
+    },
+    "implementation_order": [
+      "Definir la métrica o estado primario del documento",
+      "Diseñar la tarjeta de resumen principal 'above the fold'",
+      "Implementar el botón CTA dominante 'Ver informe completo'",
+      "Consolidar información secundaria en secciones colapsables",
+      "Eliminar o reubicar detalles no esenciales para el primer vistazo",
+      "Realizar pruebas de usabilidad con usuarios anónimos"
+    ],
+    "one_sentence_summary": "Condense la pantalla de resultados inicial en una única tarjeta de resumen escaneable con un estado primario claro y una llamada a la acción dominante para generar confianza y guiar a los usuarios anónimos."
+  }
+}

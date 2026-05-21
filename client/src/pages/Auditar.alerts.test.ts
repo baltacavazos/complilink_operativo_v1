@@ -101,19 +101,15 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain('data-testid="auditar-verdict-panel"');
   });
 
-  it("equilibra el primer viewport con CTA consistente y salida secundaria discreta", () => {
+  it("equilibra el primer viewport con CTA consistente y una lectura más corta del resultado", () => {
     expect(auditarSource).toContain('"flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5"');
-    expect(auditarSource).toContain('"text-[2.2rem] leading-[0.92] sm:text-[2.7rem]"');
-    expect(auditarSource).toContain('"w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7"');
-    expect(auditarSource).toContain('"flex items-center gap-2.5 sm:mt-1"');
-    expect(auditarSource).toContain('"h-8 w-8 shrink-0 text-emerald-700"');
-    expect(auditarSource).toContain('"mt-0.5 text-center text-base font-semibold leading-5 text-slate-800 sm:text-[1.2rem]"');
-    expect(auditarSource).toContain('Ya quedó listo para revisar.');
+    expect(auditarSource).toContain('Resultado listo');
+    expect(auditarSource).toContain('"flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start"');
+    expect(auditarSource).toContain('"text-[1.85rem] leading-[1.02] sm:text-[2.3rem]"');
+    expect(auditarSource).toContain('Qué sigue');
+    expect(auditarSource).toContain('Un solo paso claro primero. Si luego quieres profundizar, abajo puedes abrir el informe completo.');
     expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600"');
     expect(auditarSource).toContain('primaryLastUploadShortcut?.label ?? "Ver qué sigue"');
-    expect(auditarSource).toContain('"inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-[12px] font-medium text-slate-500 transition hover:text-slate-700"');
-    expect(auditarSource).toContain('scrollToDigitalArchive("result_panel")');
-    expect(auditarSource).toContain('Ver expediente completo');
   });
 });
 
@@ -128,18 +124,17 @@ describe("single-case blocking alert", () => {
 });
 
 describe("digital archive access", () => {
-  it("hace visible el archivo digital desde el resultado principal y permite saltar al expediente", () => {
+  it("deja el archivo digital como capa secundaria y protege el primer viewport del exceso de tarjetas", () => {
     expect(auditarSource).toContain("Mi archivo digital");
     expect(auditarSource).toContain(
       "Tu expediente ya quedó guardado y lo puedes abrir cuando quieras",
     );
     expect(auditarSource).toContain('id="mi-archivo-digital"');
     expect(auditarSource).toContain("Ver todo mi archivo");
-    expect(auditarSource).toContain(
-      "Ver resumen del expediente y documentos sugeridos",
-    );
+    expect(auditarSource).toContain("Más opciones si quieres seguir");
+    expect(auditarSource).toContain("Ver informe completo");
+    expect(auditarSource).toContain("shouldCompactPostUploadExperience ? \"hidden\"");
     expect(auditarSource).toContain("shouldCompactPostUploadExperience ? \"hidden rounded-[1.25rem]");
-    expect(auditarSource).toContain("Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.");
   });
 
   it("añade apertura segura del documento y CTA clara por tarjeta", () => {

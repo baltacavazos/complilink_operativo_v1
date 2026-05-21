@@ -5823,16 +5823,19 @@ export default function Auditar() {
   const shouldCompactPostUploadExperience =
     Boolean(lastUpload) && !pendingDraft && !selectedFile;
   const condensedDossierTargets = shouldCompactPostUploadExperience
-    ? dossierTargets.slice(0, 2)
+    ? dossierTargets.slice(0, 1)
     : dossierTargets;
   const condensedPriorityUploadGuides = shouldCompactPostUploadExperience
-    ? visiblePriorityUploadGuides.slice(0, 2)
+    ? visiblePriorityUploadGuides.slice(0, 1)
     : visiblePriorityUploadGuides;
   const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
   const hasDossierActivity =
     documents.length > 0 || Boolean(lastUpload) || Boolean(pendingDraft);
   const showWorkspaceSectionSelector =
-    hasDossierActivity && !selectedFile && !pendingDraft;
+    hasDossierActivity &&
+    !selectedFile &&
+    !pendingDraft &&
+    !shouldCompactPostUploadExperience;
   const isSummaryWorkspaceSection = workspaceSection === "resumen";
   const isDossierWorkspaceSection = workspaceSection === "expediente";
   const isAdvancedWorkspaceSection = workspaceSection === "herramientas";
@@ -7819,19 +7822,41 @@ Tu recibo está seguro y solo tú lo ves
                         </span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2.5 sm:mt-1">
-                      <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
-                      <h2 className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[2.2rem] leading-[0.92] sm:text-[2.7rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
-                        {shouldCompactPostUploadExperience
-                          ? `${getSimpleDocumentTypeLabel(lastUpload.classification.documentType)} confirmado`
-                          : lastUploadVerdict.label}
-                      </h2>
-                    </div>
                     {shouldCompactPostUploadExperience ? (
-                      <p className="mt-0.5 text-center text-base font-semibold leading-5 text-slate-800 sm:text-[1.2rem]">
-                        Ya quedó listo para revisar.
-                      </p>
+                      <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                          Resultado listo
+                        </span>
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 shadow-sm">
+                          {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
+                        </span>
+                      </div>
                     ) : null}
+                    <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
+                      <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
+                      <div className="min-w-0">
+                        <h2 className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
+                          {shouldCompactPostUploadExperience
+                            ? lastUploadResultHeadline
+                            : lastUploadVerdict.label}
+                        </h2>
+                        {shouldCompactPostUploadExperience ? (
+                          <>
+                            <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                              {lastUploadResultLead}
+                            </p>
+                            <div className="mt-3 rounded-[1rem] border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-left">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                                Qué sigue
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-900">
+                                {lastUploadNextStepSummary}
+                              </p>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
                     {shouldCompactPostUploadExperience ? null : (
                       <p className={`mt-2 font-semibold text-emerald-900 ${shouldCompactPostUploadExperience ? "text-base tracking-[-0.01em]" : "text-[13px] uppercase tracking-[0.16em] text-slate-500 sm:mt-3 sm:text-xs"}`}>
                         {lastUploadResultHeadline}
@@ -7858,18 +7883,8 @@ Tu recibo está seguro y solo tú lo ves
                     </Button>
                     {shouldCompactPostUploadExperience ? (
                       <p className="max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600">
-                        Sigue con: {primaryLastUploadShortcut?.description ?? "revisar este resultado y decidir qué documento conviene conectar después."} El borrador se abre aquí mismo.
+                        Un solo paso claro primero. Si luego quieres profundizar, abajo puedes abrir el informe completo.
                       </p>
-                    ) : null}
-                    {shouldCompactPostUploadExperience ? (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-[12px] font-medium text-slate-500 transition hover:text-slate-700"
-                        onClick={() => void scrollToDigitalArchive("result_panel")}
-                      >
-                        <FolderOpen className="h-4 w-4" strokeWidth={2} />
-                        Ver expediente completo
-                      </button>
                     ) : null}
                   </div>
                 </div>
@@ -8105,10 +8120,10 @@ Tu recibo está seguro y solo tú lo ves
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-950">
-                        Ver resumen del expediente y documentos sugeridos
+                        Más opciones si quieres seguir
                       </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
-                        Dejamos aquí el progreso y las recomendaciones para que no compitan con tu resultado principal.
+                        Aquí dejamos solo lo secundario para que no compita con tu resultado principal.
                       </p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -10470,7 +10485,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                           <div className="mt-3 space-y-2">
                             {(visibleSimpleExplanation.length
                               ? visibleSimpleExplanation
-                                  .slice(0, shouldCompactPostUploadExperience ? 2 : 3)
+                                  .slice(0, shouldCompactPostUploadExperience ? 1 : 3)
                                   .map((item, index) => ({
                                   id: `${item.label}-${index}`,
                                   label: item.label,
@@ -11022,7 +11037,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                           </div>
                         ) : null}
 
-                        <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
+                        <div className={shouldCompactPostUploadExperience ? "hidden" : "mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4"}>
                           <div className="flex items-start gap-3">
                             <Sparkles
                               className="mt-1 h-5 w-5 shrink-0 text-teal-700"
@@ -11061,24 +11076,6 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                             Los detalles completos quedan abajo, solo para cuando quieras profundizar.
                           </p>
 
-                          {shouldCompactPostUploadExperience ? (
-                            <div className="mt-3 rounded-[0.95rem] border border-slate-200 bg-white px-3 py-3 sm:hidden">
-                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                Mi archivo digital
-                              </p>
-                              <p className="mt-1 text-sm leading-5 text-slate-700">
-                                Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.
-                              </p>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="mt-3 h-10 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                                onClick={() => scrollToDigitalArchive("result_panel")}
-                              >
-                                Ver todo mi archivo
-                              </Button>
-                            </div>
-                          ) : null}
                         </div>
                       </div>
 
@@ -11143,15 +11140,16 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">
-                          Ver cómo se obtuvo este resultado
+{shouldCompactPostUploadExperience ? "Ver informe completo" : "Ver cómo se obtuvo este resultado"}
                         </p>
                         <p className="mt-1 text-xs leading-6 text-slate-500">
-                          Aquí quedan la lectura detallada, el apoyo visual y el
-                          contexto técnico solo para cuando quieras profundizar.
+                          {shouldCompactPostUploadExperience
+                            ? "Aquí dejamos el detalle, el archivo y las comparaciones solo para cuando quieras profundizar."
+                            : "Aquí quedan la lectura detallada, el apoyo visual y el contexto técnico solo para cuando quieras profundizar."}
                         </p>
                       </div>
                       <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                        Abrir detalles
+{shouldCompactPostUploadExperience ? "Abrir informe" : "Abrir detalles"}
                       </span>
                     </summary>
 
@@ -11553,7 +11551,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-slate-950">
-                              Ver cómo se obtuvo este resultado
+    {shouldCompactPostUploadExperience ? "Ver informe completo" : "Ver cómo se obtuvo este resultado"}
                             </p>
                             <p className="mt-1 text-sm leading-6 text-slate-600">
                               Aquí dejamos solo los detalles, comparaciones y notas que sirven para profundizar sin saturar la vista principal.

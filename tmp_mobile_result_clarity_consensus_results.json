@@ -1,0 +1,157 @@
+{
+  "chatgpt": {
+    "primary_problem": "El usuario no entiende rápidamente el resultado ni qué hacer después de subir un documento.",
+    "confidence": 95,
+    "recommended_information_hierarchy": [
+      "Resumen principal con hallazgo clave",
+      "Explicación simple del hallazgo",
+      "Significado o impacto para el usuario",
+      "Sugerencia clara del siguiente paso",
+      "Detalles adicionales organizados en secciones colapsables",
+      "Información de confianza y contacto"
+    ],
+    "hero_summary_fields": [
+      "Estado general (Ej. Riesgo bajo/alto)",
+      "Hallazgo principal",
+      "Impacto breve",
+      "Recomendación inmediata",
+      "Fecha del análisis",
+      "Confianza del resultado"
+    ],
+    "main_finding_style": "headline_plus_explanation",
+    "best_next_cta": "Ver recomendaciones detalladas",
+    "must_implement_now": [
+      "Agregar bloque resumen visible al inicio",
+      "Usar lenguaje simple y directo en español mexicano",
+      "Destacar el hallazgo principal con un título claro",
+      "Incluir una explicación breve y sin jerga",
+      "Colapsar detalles secundarios para evitar scroll largo",
+      "Colocar CTA clara y prominente debajo del resumen"
+    ],
+    "should_defer": [
+      "Rediseño completo del flujo",
+      "Integración de login o personalización",
+      "Análisis profundo de múltiples documentos",
+      "Traducción a otros idiomas",
+      "Funcionalidades avanzadas de interacción"
+    ],
+    "microcopy_examples": {
+      "headline": "Riesgo moderado detectado",
+      "finding": "Se encontró un posible incumplimiento en cláusulas clave.",
+      "meaning": "Esto puede afectar la validez del contrato si no se corrige.",
+      "next_step": "Consulta las recomendaciones para mejorar tu documento."
+    },
+    "implementation_order": [
+      "Diseñar y colocar bloque resumen al inicio de resultados",
+      "Definir y redactar microcopy simple para hallazgo y significado",
+      "Implementar colapsables para detalles secundarios",
+      "Agregar CTA clara y visible debajo del resumen",
+      "Probar en iPhone para legibilidad y rapidez de comprensión",
+      "Recopilar feedback rápido para ajustes menores"
+    ],
+    "one_sentence_summary": "Un resumen claro y un CTA visible al inicio harán que el usuario entienda rápido el resultado y qué hacer."
+  },
+  "grok": {
+    "primary_problem": "Post-upload results lack a scannable top summary, leaving anonymous users unable to grasp findings, meaning, or next actions in seconds on mobile.",
+    "confidence": 85,
+    "recommended_information_hierarchy": [
+      "Overall status",
+      "Dominant finding",
+      "Plain-language meaning",
+      "Risk level",
+      "Recommended action",
+      "Full details link"
+    ],
+    "hero_summary_fields": [
+      "Status chip",
+      "Main finding",
+      "Simple explanation",
+      "Impact",
+      "Next step"
+    ],
+    "main_finding_style": "status_chip_plus_plain_language",
+    "best_next_cta": "Ver recomendaciones",
+    "must_implement_now": [
+      "Add fixed top summary block",
+      "Use plain Spanish",
+      "Prominent single CTA near top",
+      "Collapse lower sections",
+      "Add trust indicators",
+      "Ensure iPhone tap targets"
+    ],
+    "should_defer": [
+      "Full flow redesign",
+      "Email login prompts",
+      "Advanced filters",
+      "Multi-document comparison",
+      "Backend engine changes"
+    ],
+    "microcopy_examples": {
+      "headline": "Análisis completado",
+      "finding": "Se detectaron 2 cláusulas de alto riesgo.",
+      "meaning": "Estas cláusulas podrían limitar tus derechos laborales.",
+      "next_step": "Revisa las recomendaciones para actuar."
+    },
+    "implementation_order": [
+      "Insert summary block at top of results",
+      "Define status chip and plain text",
+      "Add single CTA button",
+      "Collapse remaining cards",
+      "Test on iPhone",
+      "Gather quick user feedback"
+    ],
+    "one_sentence_summary": "Add a clear top summary with status, simple finding, meaning, and one CTA to make results understandable in seconds."
+  },
+  "gemini": {
+    "primary_problem": "The post-upload result lacks immediate clarity, making it difficult for anonymous users to understand findings or next steps.",
+    "confidence": 90,
+    "recommended_information_hierarchy": [
+      "Resumen clave del resultado",
+      "Hallazgo principal y su impacto",
+      "Siguiente paso claro y único",
+      "Detalles relevantes por sección",
+      "Secciones secundarias de apoyo",
+      "Recursos adicionales"
+    ],
+    "hero_summary_fields": [
+      "Estado general del documento",
+      "Hallazgo más crítico",
+      "Impacto potencial",
+      "Recomendación inmediata",
+      "Fecha de análisis",
+      "Documento analizado"
+    ],
+    "main_finding_style": "headline_plus_explanation",
+    "best_next_cta": "Ver detalles y recomendaciones",
+    "must_implement_now": [
+      "Crear bloque de resumen superior",
+      "Destacar hallazgo principal",
+      "Añadir CTA prominente",
+      "Simplificar lenguaje de hallazgos",
+      "Reordenar secciones clave",
+      "Usar íconos de estado"
+    ],
+    "should_defer": [
+      "Rediseño completo de tarjetas",
+      "Personalización avanzada de resultados",
+      "Integración con otros sistemas",
+      "Flujo de onboarding para usuarios anónimos",
+      "Chatbot de soporte"
+    ],
+    "microcopy_examples": {
+      "headline": "¡Atención! Se detectaron inconsistencias críticas.",
+      "finding": "El documento presenta 3 áreas de riesgo que podrían generar multas.",
+      "meaning": "Esto significa que su empresa podría enfrentar sanciones si no se corrigen.",
+      "next_step": "Ver detalles y pasos para corregir."
+    },
+    "implementation_order": [
+      "Diseñar bloque de resumen superior",
+      "Implementar hallazgo principal visible",
+      "Añadir CTA 'Ver detalles' en resumen",
+      "Revisar microcopy de hallazgos",
+      "Reordenar secciones existentes",
+      "A/B test con usuarios anónimos"
+    ],
+    "one_sentence_summary": "Priorice un bloque de resumen superior con el hallazgo clave y un CTA claro para guiar al usuario anónimo."
+  }
+}

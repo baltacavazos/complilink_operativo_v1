@@ -1687,3 +1687,10 @@
 - [x] Ronda móvil auth: centralizar continuidad de sesión y origen API para entorno nativo sin romper la web existente.
 - [x] Ronda móvil auth: preparar retornos controlados y base de deep links/OAuth externo para futuras activaciones.
 - [x] Ronda móvil auth: validar con pruebas focalizadas la nueva capa de acceso y sesión móvil.
+- [x] Ronda móvil resultado: clarificar para usuario anónimo en iPhone qué se encontró después de subir un documento.
+- [x] Ronda móvil resultado: hacer explícito el significado del hallazgo principal y el nivel de riesgo o relevancia detectado.
+- [x] Ronda móvil resultado: mostrar un siguiente paso claro y visible después del primer resultado post-carga.
+- [x] Ronda móvil resultado: validar con pruebas focalizadas la nueva claridad del resultado móvil post-carga.
+- [x] Ronda móvil resultado: reducir drásticamente la longitud visible del resultado inicial en iPhone.
+- [x] Ronda móvil resultado: fusionar o colapsar tarjetas secundarias para que el flujo se sienta menos tedioso.
+- [x] Ronda móvil resultado: dejar un resumen inicial dominante con hallazgo, significado y un solo siguiente paso.
