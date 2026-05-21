@@ -1,4 +1,5 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { getPublicWebOrigin, isNativeApp } from "@/lib/nativeRuntime";
 
 function getCurrentReturnPath() {
   if (typeof window === "undefined") return "/";
@@ -102,13 +103,17 @@ export const getManusLoginUrl = (returnPath = getCurrentReturnPath()) => {
 };
 
 export const getGoogleLoginUrl = (returnPath = getCurrentReturnPath()) => {
-  if (typeof window === "undefined") return "/api/auth/google/start";
-
   const safeReturnPath = normalizeReturnPath(returnPath);
-  const url = new URL("/api/auth/google/start", window.location.origin);
+  const nativeApp = isNativeApp();
+  const url = new URL("/api/auth/google/start", getPublicWebOrigin());
 
   if (safeReturnPath !== "/") {
     url.searchParams.set("returnTo", safeReturnPath);
+  }
+
+  if (nativeApp) {
+    url.searchParams.set("native", "1");
+    return url.toString();
   }
 
   return `${url.pathname}${url.search}`;

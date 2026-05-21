@@ -14,6 +14,15 @@ La app móvil reutiliza la plataforma actual y la envuelve con Capacitor. En est
 | `client/src/components/AppUrlListener.tsx` | Escucha retornos de deep links y vuelve a enrutar dentro del SPA. |
 | `client/src/lib/nativeRuntime.ts` | Detecta si la app corre en entorno nativo y centraliza helpers de deep links/URLs. |
 
+## Identidad móvil actual
+
+| Dato | Valor actual |
+|---|---|
+| Nombre visible | `Auditapatron` |
+| App ID / Package base | `com.auditapatron.mobile` |
+| Dominio público principal | `https://auditapatron.com` |
+| Esquema nativo para retorno | `auditapatron://` |
+
 ## Modos disponibles
 
 | Modo | Cuándo conviene | Cómo se activa |
@@ -74,15 +83,15 @@ En esta base, el flujo documental ya usa el selector HTML existente. Si en la si
 
 ## Auth y deep links en esta etapa
 
-La ruta más estable en esta primera base móvil es el acceso por correo. La pantalla `/acceso` ya prioriza esa vía dentro del entorno nativo. El listener `AppUrlListener` deja preparada la app para manejar deep links y retornos futuros sin rehacer la navegación principal.
+La ruta más estable en esta primera base móvil sigue siendo el acceso por correo. La pantalla `/acceso` ya prioriza esa vía dentro del entorno nativo, pero ahora también queda preparada la ruta de Google para abrirse en navegador externo y volver a la app con el esquema `auditapatron://` cuando el callback termine correctamente. El listener `AppUrlListener` se mantiene como punto central para capturar ese regreso, refrescar sesión y cerrar el navegador externo cuando aplica.
 
 ## Qué queda para la siguiente ronda
 
 | Frente | Trabajo siguiente |
 |---|---|
-| **Autenticación** | Endurecer deep links reales de OAuth y definir si Google/otros accesos se abren en navegador externo con retorno nativo controlado. |
+| **Autenticación** | Validar en dispositivo real el retorno nativo de Google, la continuidad de sesión y la llegada limpia a la ruta final después del callback. |
 | **Captura documental** | Probar si el `input type=file` actual es suficiente en dispositivos reales o si conviene migrar a `@capacitor/camera` y `@capacitor/filesystem`. |
-| **Publicación** | Generar iconos, splash screens, bundle IDs finales y metadatos de tiendas. |
+| **Publicación** | Generar iconos, splash screens, firma final, política de privacidad móvil y capturas para tiendas. |
 | **Modo local** | Validar API, cookies y sesión cuando el shell use activos locales en vez de URL remota. |
 
 ## Checklist previo a tiendas
@@ -91,8 +100,8 @@ Antes de pensar en publicación, conviene cerrar estos puntos:
 
 | Estado | Punto crítico |
 |---|---|
-| Pendiente | Probar login por correo en dispositivos reales. |
-| Pendiente | Verificar continuidad de sesión al cerrar y reabrir la app. |
+| En curso | Probar login por correo en dispositivos reales. |
+| En curso | Verificar continuidad de sesión al cerrar y reabrir la app. |
 | Pendiente | Confirmar cámara, PDF, XML y galería en iOS y Android reales. |
-| Pendiente | Definir deep links productivos y archivos `.well-known` si se habilita retorno nativo de OAuth. |
+| Base lista | Google ya cuenta con retorno nativo por esquema `auditapatron://`; falta validarlo en dispositivos reales y decidir si más adelante conviene complementar con enlaces universales y `.well-known`. |
 | Pendiente | Configurar iconos, splash, firma y política de privacidad móvil. |

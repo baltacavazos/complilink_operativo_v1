@@ -34,6 +34,14 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function normalizeReturnToPath(returnTo?: string | null) {
+  if (!returnTo || !returnTo.startsWith("/")) {
+    return "/";
+  }
+
+  return returnTo;
+}
+
 function getBaseUrl(req: Request) {
   const forwardedProto = req.get("x-forwarded-proto");
   const protocol = forwardedProto?.split(",")[0]?.trim() || req.protocol || "https";
@@ -220,11 +228,15 @@ async function verifyEmailChallengeToken(token: string | undefined | null) {
   return { email, codeHash, name };
 }
 
-async function signGoogleStateToken(payload: { returnTo: string }) {
+async function signGoogleStateToken(payload: { returnTo: string; nativeApp?: boolean }) {
   const secretKey = new TextEncoder().encode(ENV.cookieSecret);
   const expirationSeconds = Math.floor((Date.now() + GOOGLE_STATE_TTL_MS) / 1000);
 
-  return new SignJWT({ purpose: "google_oauth", returnTo: payload.returnTo })
+  return new SignJWT({
+    purpose: "google_oauth",
+    returnTo: normalizeReturnToPath(payload.returnTo),
+    nativeApp: payload.nativeApp === true,
+  })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setExpirationTime(expirationSeconds)
     .sign(secretKey);
@@ -238,7 +250,8 @@ export async function verifyGoogleStateToken(token: string) {
   }
 
   return {
-    returnTo: typeof payload.returnTo === "string" ? payload.returnTo : "/",
+    returnTo: normalizeReturnToPath(typeof payload.returnTo === "string" ? payload.returnTo : "/"),
+    nativeApp: payload.nativeApp === true,
   };
 }
 
@@ -250,12 +263,19 @@ export function getGoogleCallbackUrl(req: Request) {
   return `${getBaseUrl(req)}${GOOGLE_CALLBACK_PATH}`;
 }
 
-export async function buildGoogleAuthorizationUrl(req: Request, returnTo: string = "/") {
+export async function buildGoogleAuthorizationUrl(
+  req: Request,
+  returnTo: string = "/",
+  options?: { nativeApp?: boolean },
+) {
   if (!isGoogleOAuthConfigured()) {
     throw new Error("Google OAuth is not configured");
   }
 
-  const state = await signGoogleStateToken({ returnTo });
+  const state = await signGoogleStateToken({
+    returnTo: normalizeReturnToPath(returnTo),
+    nativeApp: options?.nativeApp === true,
+  });
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", ENV.googleClientId);
   url.searchParams.set("redirect_uri", getGoogleCallbackUrl(req));
@@ -274,9 +294,14 @@ async function resolveOrCreateUser(params: {
 }) {
   const normalizedEmail = params.email ? normalizeEmail(params.email) : null;
   const isOwnerManusIdentity = params.provider === "manus" && params.providerUserId === ENV.ownerOpenId;
+  const providerScopedOpenId = params.provider === "manus"
+    ? params.providerUserId
+    : `${params.provider}:${params.providerUserId}`;
   const canonicalOwnerUser = isOwnerManusIdentity ? await db.getUserByOpenId(ENV.ownerOpenId) : undefined;
-  const existingUser = canonicalOwnerUser ?? (normalizedEmail ? await db.getUserByEmail(normalizedEmail) : undefined);
-  const openId = isOwnerManusIdentity ? ENV.ownerOpenId : existingUser?.openId ?? `${params.provider}:${params.providerUserId}`;
+  const existingProviderUser = isOwnerManusIdentity ? canonicalOwnerUser : await db.getUserByOpenId(providerScopedOpenId);
+  const existingUserByEmail = normalizedEmail ? await db.getUserByEmail(normalizedEmail) : undefined;
+  const existingUser = canonicalOwnerUser ?? existingProviderUser ?? existingUserByEmail;
+  const openId = isOwnerManusIdentity ? ENV.ownerOpenId : existingUser?.openId ?? providerScopedOpenId;
   const name = params.name?.trim() || existingUser?.name || normalizedEmail || params.providerUserId;
 
   await db.upsertUser({
@@ -507,7 +532,7 @@ export async function completeGoogleLogin(params: { req: Request; res: Response;
     throw new Error("Google OAuth is not configured");
   }
 
-  const { returnTo } = await verifyGoogleStateToken(params.state);
+  const { returnTo, nativeApp } = await verifyGoogleStateToken(params.state);
   const redirectUri = getGoogleCallbackUrl(params.req);
 
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -558,7 +583,7 @@ export async function completeGoogleLogin(params: { req: Request; res: Response;
     name: user.name ?? profile.email,
   });
 
-  return { returnTo, user };
+  return { returnTo, nativeApp, user };
 }
 
 export async function syncManusUser(params: { openId: string; email?: string | null; name?: string | null }) {

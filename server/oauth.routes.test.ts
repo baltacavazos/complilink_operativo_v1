@@ -6,6 +6,7 @@ const authServiceMocks = vi.hoisted(() => ({
   completeGoogleLogin: vi.fn(),
   createAppSessionForUser: vi.fn(),
   syncManusUser: vi.fn(),
+  verifyGoogleStateToken: vi.fn(),
 }));
 
 const sdkMocks = vi.hoisted(() => ({
@@ -101,5 +102,81 @@ describe("registerOAuthRoutes", () => {
     );
 
     expect(res.redirect).toHaveBeenCalledWith(302, "/acceso?error=manus_callback_failed&returnTo=%2Fauditar");
+  });
+
+  it("propaga la bandera nativa al inicio de Google para preparar el retorno a la app", async () => {
+    const routes = createFakeApp();
+    const handler = routes.get("/api/auth/google/start");
+    const res = createResponse();
+
+    authServiceMocks.buildGoogleAuthorizationUrl.mockResolvedValue("https://accounts.google.com/mock");
+
+    await handler?.(
+      {
+        query: {
+          returnTo: "/auditar?from=mobile",
+          native: "1",
+        },
+      } as Request,
+      res,
+    );
+
+    expect(authServiceMocks.buildGoogleAuthorizationUrl).toHaveBeenCalledWith(
+      expect.anything(),
+      "/auditar?from=mobile",
+      { nativeApp: true },
+    );
+    expect(res.redirect).toHaveBeenCalledWith(302, "https://accounts.google.com/mock");
+  });
+
+  it("redirige el callback exitoso de Google al esquema nativo cuando la sesión viene de móvil", async () => {
+    const routes = createFakeApp();
+    const handler = routes.get("/api/auth/google/callback");
+    const res = createResponse();
+
+    authServiceMocks.completeGoogleLogin.mockResolvedValue({
+      returnTo: "/auditar?from=google",
+      nativeApp: true,
+      user: { openId: "email:persona@empresa.com" },
+    });
+
+    await handler?.(
+      {
+        query: {
+          code: "oauth-code",
+          state: "signed-state",
+        },
+      } as Request,
+      res,
+    );
+
+    expect(res.redirect).toHaveBeenCalledWith(302, "auditapatron:///auditar?from=google");
+  });
+
+  it("usa el estado firmado para regresar a /acceso dentro de la app cuando falla Google en móvil", async () => {
+    const routes = createFakeApp();
+    const handler = routes.get("/api/auth/google/callback");
+    const res = createResponse();
+
+    authServiceMocks.completeGoogleLogin.mockRejectedValue(new Error("google failed"));
+    authServiceMocks.verifyGoogleStateToken.mockResolvedValue({
+      returnTo: "/auditar?from=mobile",
+      nativeApp: true,
+    });
+
+    await handler?.(
+      {
+        query: {
+          code: "oauth-code",
+          state: "signed-state",
+        },
+      } as Request,
+      res,
+    );
+
+    expect(res.redirect).toHaveBeenCalledWith(
+      302,
+      "auditapatron:///acceso?error=google_callback_failed&returnTo=%2Fauditar%3Ffrom%3Dmobile",
+    );
   });
 });

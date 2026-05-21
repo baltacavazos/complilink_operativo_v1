@@ -1697,3 +1697,18 @@
 - [x] Ronda acceso correo: corregir el flujo del código de 6 dígitos que hoy vence o valida mal para usuarios reales de Auditapatron.
 - [x] Ronda acceso correo: corregir el branding heredado en correos y plantillas para que Auditapatron no muestre referencias a CompliLink.
 - [x] Ronda acceso correo: validar con pruebas focalizadas el envío, la verificación del código y el copy final del correo.
+- [x] Ronda login social móvil: definir el flujo final de Google Sign-In para iPhone y Android con retorno estable a la app.
+- [ ] Ronda login social móvil: incorporar Sign in with Apple para cumplir en iOS cuando exista acceso social adicional.
+- [ ] Ronda login social móvil: unificar identidades para evitar usuarios duplicados entre correo, Google y Apple.
+- [x] Ronda login social móvil: validar con pruebas focalizadas los nuevos accesos sociales y la convivencia con el login por correo.
+- [x] Cerrar flujo móvil de Google login con retorno seguro a la app y browser plugin
+- [x] Implementar linking de cuentas para evitar duplicados entre email y Google
+- [ ] Validar persistencia de sesión al cerrar y reabrir la app en entorno móvil
+- [ ] Preparar identidad móvil pendiente de Apple: bundle IDs, nombre final y checklist de assets
+- [x] Revisar siguiente ronda de mejoras UX móvil de mayor impacto sin depender de Apple
+- [x] Ejecutar ronda integral aprobada por el usuario: Google móvil, linking de cuentas, persistencia de sesión, preparación de stores y pulido UX sin Apple
+- [ ] Probar en iPhone y Android reales el retorno nativo de Google con el esquema auditapatron://
+- [ ] Validar en dispositivos reales que la sesión sobreviva al cerrar y reabrir la app después del login social
+- [ ] Definir y producir iconos, splash screens y capturas finales para tiendas
+- [ ] Decidir si después del esquema nativo conviene complementar OAuth móvil con universal links y archivos .well-known
+- [x] Documentar identidad móvil actual, esquema auditapatron:// y checklist operativo de preparación para stores

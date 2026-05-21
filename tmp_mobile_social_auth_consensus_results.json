@@ -1,0 +1,176 @@
+{
+  "chatgpt": {
+    "recommended_mobile_auth_architecture": "Use existing server-side OAuth flows with Capacitor external browser and universal links for return handling.",
+    "confidence": 90,
+    "google_strategy": "reuse_existing_server_oauth_with_mobile_return",
+    "apple_strategy": "server_side_sign_in_with_apple",
+    "return_strategy": "https_universal_link",
+    "account_linking_rule": "Link accounts by matching verified email addresses and prompt users to merge if conflicts arise.",
+    "must_implement_now": [
+      "Add universal link handling for OAuth return in Capacitor app",
+      "Extend server-side Google OAuth to support mobile return URLs",
+      "Implement Sign in with Apple server-side flow with mobile return",
+      "Enhance deep link listener to handle OAuth redirects securely",
+      "Add UI prompts for account linking on email conflict",
+      "Test fallback to email code login on mobile",
+      "Update privacy policy and app store metadata for new auth methods"
+    ],
+    "must_configure_externally": [
+      "Configure Apple Developer account for Sign in with Apple",
+      "Set up Google OAuth credentials with mobile redirect URIs",
+      "Register universal links and associated domains for iOS and Android",
+      "Update backend OAuth redirect URIs for mobile",
+      "Configure app store entitlements and permissions for Apple Sign In",
+      "Set up analytics to track login method usage",
+      "Prepare support documentation for users on login options"
+    ],
+    "should_avoid_now": [
+      "Implementing native SDK bridges for Google or Apple login",
+      "Using custom URL schemes for OAuth return",
+      "Rewriting existing email login flow",
+      "Mixing native and server-side OAuth flows prematurely",
+      "Adding biometric or device-based login before social login is stable"
+    ],
+    "main_risks": [
+      "OAuth redirect URI misconfiguration causing login failures",
+      "App Store rejection due to improper Apple Sign In implementation",
+      "Duplicate user accounts from unlinked social and email logins",
+      "Deep link handling vulnerabilities or race conditions",
+      "User confusion during account linking prompts",
+      "Regression in existing email code login reliability"
+    ],
+    "test_cases": [
+      "Successful Google login on iOS and Android via universal link",
+      "Successful Apple Sign In on iOS with server-side flow",
+      "Fallback to email code login when social login fails",
+      "Account linking prompt appears when emails match but accounts differ",
+      "OAuth redirect handling with app in background and foreground",
+      "No regression in existing web login flows",
+      "App Store compliance validation for Apple Sign In"
+    ],
+    "implementation_order": [
+      "Configure Apple and Google OAuth credentials with mobile redirect URIs",
+      "Set up universal links and associated domains in mobile projects",
+      "Extend backend OAuth flows to support mobile universal link returns",
+      "Implement deep link listener enhancements in Capacitor app",
+      "Add UI for account linking and conflict resolution",
+      "Test Google and Apple login flows on both platforms",
+      "Update privacy policy and app store metadata",
+      "Deploy incrementally with monitoring for regressions"
+    ],
+    "one_sentence_summary": "Leverage existing server-side OAuth with universal links in Capacitor to add Google and Apple login safely while preserving email login and web flows."
+  },
+  "grok": {
+    "recommended_mobile_auth_architecture": "Extend existing server-side OAuth flows using system browser launches and https universal link returns via the current AppUrlOpen listener.",
+    "confidence": 85,
+    "google_strategy": "reuse_existing_server_oauth_with_mobile_return",
+    "apple_strategy": "server_side_sign_in_with_apple",
+    "return_strategy": "https_universal_link",
+    "account_linking_rule": "Link accounts by verified email address returned from providers while preserving the existing user record.",
+    "must_implement_now": [
+      "Enhance AppUrlOpen handler to parse auth callbacks with state validation",
+      "Add server endpoint for Sign in with Apple token exchange",
+      "Update web auth UI to detect Capacitor and open system browser",
+      "Implement backend account merge logic keyed on email",
+      "Add mobile-specific error and cancel handling in tRPC auth routes",
+      "Register iOS associated domains and Android intent filters",
+      "Preserve email code login path unchanged"
+    ],
+    "must_configure_externally": [
+      "Apple Sign In service ID and key in developer portal",
+      "Google OAuth web client with mobile redirect URIs",
+      "AASA file for universal links on domain",
+      "Android assetlinks.json for app links",
+      "App Store Connect capability for Sign in with Apple"
+    ],
+    "should_avoid_now": [
+      "Native Google or Apple SDK bridges",
+      "Custom URL scheme only returns",
+      "Any rewrite of email code login"
+    ],
+    "main_risks": [
+      "iOS universal link configuration errors",
+      "Duplicate accounts before linking is live",
+      "OAuth state replay on mobile",
+      "App Store rejection for auth UX",
+      "Regression in existing web Google flow"
+    ],
+    "test_cases": [
+      "Google login on Android returns via universal link",
+      "Apple login on iPhone succeeds and links to email user",
+      "Email code login remains fully functional on mobile",
+      "Web Google OAuth flow unchanged",
+      "Auth cancel and error states handled gracefully",
+      "Same email from Google and Apple merges to one account",
+      "Deep link with invalid state is rejected"
+    ],
+    "implementation_order": [
+      "Configure Apple and Google credentials externally",
+      "Add Apple token exchange endpoint on backend",
+      "Strengthen AppUrlOpen listener with state checks",
+      "Detect mobile shell in frontend and launch external auth",
+      "Implement email-based account linking in user service",
+      "Add mobile error paths and fallbacks",
+      "Register associated domains and intent filters",
+      "Device test all flows before App Store submission"
+    ],
+    "one_sentence_summary": "Reuse hardened server OAuth with universal links and email-based linking for minimal-risk addition of Google and Apple login."
+  },
+  "gemini": {
+    "recommended_mobile_auth_architecture": "Leverage external browser flows for Google and a native Capacitor plugin for Apple, both integrating with the existing backend, using universal links for return and robust email-based account linking.",
+    "confidence": 95,
+    "google_strategy": "reuse_existing_server_oauth_with_mobile_return",
+    "apple_strategy": "native_apple_sdk_bridge",
+    "return_strategy": "https_universal_link",
+    "account_linking_rule": "Link new social accounts to an existing user if the verified email matches, otherwise create a new user.",
+    "must_implement_now": [
+      "Capacitor plugin for Apple Sign-In (client-side)",
+      "Backend endpoints for Apple Sign-In identity token verification",
+      "Backend logic to handle Google OAuth mobile redirects",
+      "Frontend UI for Google/Apple buttons (web component)",
+      "Backend logic for account linking (email matching)",
+      "Harden Capacitor appUrlOpen listener for specific auth redirects"
+    ],
+    "must_configure_externally": [
+      "Apple Developer Portal: App IDs, Services, Keys",
+      "Google Cloud Console: OAuth client IDs, authorized redirect URIs",
+      "DNS/Web Server: apple-app-site-association and assetlinks.json files",
+      "Capacitor config: url_schemes and associated_domains",
+      "Xcode/Android Studio: Associated Domains, Intent Filters"
+    ],
+    "should_avoid_now": [
+      "Rewriting existing email login system",
+      "Implementing full native SDKs for Google/Apple without backend integration",
+      "Complex multi-factor authentication beyond current scope",
+      "Client-side only social login (security risk)"
+    ],
+    "main_risks": [
+      "Universal Link/App Link configuration complexity",
+      "App Store rejection due to Apple Sign-In implementation details",
+      "Race conditions or state issues during redirect handling",
+      "Account linking edge cases (e.g., multiple social accounts, same email)",
+      "Maintaining consistent session state between web and mobile",
+      "Security vulnerabilities if tokens are mishandled"
+    ],
+    "test_cases": [
+      "New user signs up with Google (mobile)",
+      "Existing email user signs in with Google (mobile, links account)",
+      "New user signs up with Apple (mobile)",
+      "Existing email user signs in with Apple (mobile, links account)",
+      "User signs in with Google/Apple on web, then mobile",
+      "User cancels social login flow",
+      "Deep link handling for various states (logged in, logged out)"
+    ],
+    "implementation_order": [
+      "Configure Apple/Google developer consoles",
+      "Implement Capacitor plugin for Apple Sign-In (native UI)",
+      "Backend endpoints for Apple Sign-In verification and Google OAuth mobile redirects",
+      "Frontend UI for social login buttons (web component)",
+      "Implement account linking logic on backend",
+      "Configure Universal Links/App Links (web server, Capacitor, native projects)",
+      "Harden deep link handling in Capacitor appUrlOpen listener",
+      "Test thoroughly on both platforms"
+    ],
+    "one_sentence_summary": "Implement Google login via external browser and Apple login via native Capacitor plugin, both leveraging the existing backend with universal links for return and robust email-based account linking."
+  }
+}

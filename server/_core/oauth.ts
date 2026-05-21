@@ -4,6 +4,7 @@ import {
   completeGoogleLogin,
   createAppSessionForUser,
   syncManusUser,
+  verifyGoogleStateToken,
 } from "../authService";
 import { sdk } from "./sdk";
 
@@ -15,6 +16,27 @@ function getQueryParam(req: Request, key: string): string | undefined {
 function getSafeReturnTo(req: Request) {
   const returnTo = getQueryParam(req, "returnTo") || "/";
   return returnTo.startsWith("/") ? returnTo : "/";
+}
+
+function isTruthyFlag(value: string | undefined) {
+  return value === "1" || value === "true";
+}
+
+function buildAccessErrorPath(errorCode: string, returnTo = "/") {
+  const safeReturnTo = returnTo.startsWith("/") ? returnTo : "/";
+  const url = new URL("/acceso", "https://auditapatron.com");
+  url.searchParams.set("error", errorCode);
+
+  if (safeReturnTo !== "/") {
+    url.searchParams.set("returnTo", safeReturnTo);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function buildPostAuthRedirect(targetPath: string, nativeApp = false) {
+  const safeTargetPath = targetPath.startsWith("/") ? targetPath : "/";
+  return nativeApp ? `auditapatron://${safeTargetPath}` : safeTargetPath;
 }
 
 export function registerOAuthRoutes(app: Express) {
@@ -57,14 +79,15 @@ export function registerOAuthRoutes(app: Express) {
 
   app.get("/api/auth/google/start", async (req: Request, res: Response) => {
     const returnTo = getQueryParam(req, "returnTo") || "/";
+    const nativeApp = isTruthyFlag(getQueryParam(req, "native"));
 
     try {
-      const authorizationUrl = await buildGoogleAuthorizationUrl(req, returnTo);
+      const authorizationUrl = await buildGoogleAuthorizationUrl(req, returnTo, { nativeApp });
       res.redirect(302, authorizationUrl);
     } catch (error) {
       console.error("[OAuth] Google start failed", error);
       const safeReturnTo = returnTo.startsWith("/") ? returnTo : "/";
-      res.redirect(302, `/acceso?error=google_not_available&returnTo=${encodeURIComponent(safeReturnTo)}`);
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("google_not_available", safeReturnTo), nativeApp));
     }
   });
 
@@ -73,16 +96,28 @@ export function registerOAuthRoutes(app: Express) {
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
-      res.redirect(302, "/acceso?error=google_callback_failed");
+      res.redirect(302, buildAccessErrorPath("google_callback_failed"));
       return;
     }
 
     try {
-      const { returnTo } = await completeGoogleLogin({ req, res, code, state });
-      res.redirect(302, returnTo || "/");
+      const { returnTo, nativeApp } = await completeGoogleLogin({ req, res, code, state });
+      res.redirect(302, buildPostAuthRedirect(returnTo || "/", nativeApp));
     } catch (error) {
       console.error("[OAuth] Google callback failed", error);
-      res.redirect(302, "/acceso?error=google_callback_failed");
+
+      let returnTo = "/";
+      let nativeApp = false;
+
+      try {
+        const parsedState = await verifyGoogleStateToken(state);
+        returnTo = parsedState.returnTo;
+        nativeApp = parsedState.nativeApp;
+      } catch {
+        // noop: fallback to the generic access route
+      }
+
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("google_callback_failed", returnTo), nativeApp));
     }
   });
 }

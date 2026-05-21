@@ -1,0 +1,138 @@
+{
+  "openai": {
+    "top_priority": {
+      "name": "Completar y endurecer el flujo de login con Google en móvil",
+      "why_now": "Google login ya está parcialmente implementado; cerrar bien el retorno a la app y robustecer el flujo permitirá un acceso social estable y sin fricciones, clave para la experiencia móvil y publicación en stores.",
+      "expected_user_impact": "Usuarios móviles podrán autenticarse fácilmente con Google sin errores ni confusión, mejorando la tasa de login y retención.",
+      "implementation_risk": "medium"
+    },
+    "next_four": [
+      {
+        "name": "Implementar account linking para evitar duplicados entre email y Google",
+        "why_now": "Evitar duplicación de usuarios es crítico para la integridad de datos y experiencia; hacerlo antes de Apple es vital para no complicar el onboarding y mantener la base limpia.",
+        "expected_user_impact": "Usuarios que usen distintos métodos de login tendrán una cuenta unificada, evitando confusión y pérdida de datos.",
+        "implementation_risk": "medium"
+      },
+      {
+        "name": "Optimizar la experiencia post-login móvil (simplificación y claridad UI/UX)",
+        "why_now": "La experiencia móvil debe ser corta y clara; mejorar la pantalla post-login reducirá la fricción y mejorará la percepción de la app antes de la publicación.",
+        "expected_user_impact": "Usuarios tendrán un flujo más fluido y comprensible, reduciendo abandonos y mejorando satisfacción.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Preparar y validar la identidad visual y branding para stores",
+        "why_now": "El branding ya está corregido, pero validar assets, iconos, splash screens y metadatos es necesario para cumplir requisitos de publicación y dar imagen profesional.",
+        "expected_user_impact": "La app tendrá una presentación profesional y coherente en stores, aumentando confianza y descargas.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Revisar y endurecer manejo de sesión y refresh en móvil",
+        "why_now": "El refresh de sesión ya existe pero debe ser robusto para evitar logout inesperados y mejorar estabilidad, especialmente en iOS y Android con Capacitor.",
+        "expected_user_impact": "Usuarios mantendrán sesión activa sin interrupciones, mejorando experiencia y retención.",
+        "implementation_risk": "medium"
+      }
+    ],
+    "recommended_sequence": [
+      "Completar y endurecer el flujo de login con Google en móvil",
+      "Implementar account linking para evitar duplicados entre email y Google",
+      "Optimizar la experiencia post-login móvil (simplificación y claridad UI/UX)",
+      "Preparar y validar la identidad visual y branding para stores",
+      "Revisar y endurecer manejo de sesión y refresh en móvil"
+    ],
+    "do_not_start_yet": [
+      "Implementar login con Apple"
+    ],
+    "notes": "El foco ahora debe estar en cerrar y robustecer el login social existente (Google), evitar duplicados con account linking y mejorar la experiencia móvil para poder avanzar hacia publicación en stores. Apple login queda en espera hasta que se tenga la cuenta Apple Developer. Separar claramente login de branding y estabilidad para evitar bloqueos."
+  },
+  "grok": {
+    "top_priority": {
+      "name": "Completar y endurecer flujo completo de Google Login en móvil",
+      "why_now": "El login de Google ya existe parcialmente en móvil pero el retorno a la app y el flujo end-to-end siguen rotos, bloqueando la experiencia real de usuarios en iPhone y Android.",
+      "expected_user_impact": "Permite que los usuarios completen login con Google sin fricción y sin depender de Apple, reduciendo abandonos en el primer uso.",
+      "implementation_risk": "medium"
+    },
+    "next_four": [
+      {
+        "name": "Implementar account linking entre email y Google",
+        "why_now": "Evita duplicación de usuarios antes de incorporar Apple; crea una base de identidad unificada que simplificará la llegada de Apple Sign In sin romper cuentas existentes.",
+        "expected_user_impact": "Usuarios que ya entraron por email o Google no crean cuentas duplicadas, mejorando continuidad y confianza en la app.",
+        "implementation_risk": "medium"
+      },
+      {
+        "name": "Preparar app para publicación en stores (assets, splash, metadata, configuración Capacitor)",
+        "why_now": "Separado del login, este trabajo desbloquea la posibilidad real de subir a App Store y Play Store una vez que el flujo de Google esté estable.",
+        "expected_user_impact": "Reduce tiempo de espera para lanzamiento público y evita rechazos por configuración básica de la app.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Reforzar manejo de sesión, deep links y refresh al volver a la app",
+        "why_now": "Ya hay listeners básicos; endurecerlos asegura que la sesión no se pierda en segundo plano ni al regresar desde Google, mejorando estabilidad diaria.",
+        "expected_user_impact": "Usuarios experimentan menos cierres de sesión inesperados y una app más confiable en uso real.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Pulir UX de login y flujo post-login para móvil (corto y claro)",
+        "why_now": "Optimizar pantallas y mensajes de error específicos de móvil reduce fricción percibida mientras se completa el resto de la infraestructura de autenticación.",
+        "expected_user_impact": "La experiencia de entrada se siente rápida y profesional, aumentando retención en los primeros minutos.",
+        "implementation_risk": "low"
+      }
+    ],
+    "recommended_sequence": [
+      "Completar y endurecer flujo completo de Google Login en móvil",
+      "Implementar account linking entre email y Google",
+      "Reforzar manejo de sesión, deep links y refresh al volver a la app",
+      "Pulir UX de login y flujo post-login para móvil (corto y claro)",
+      "Preparar app para publicación en stores (assets, splash, metadata, configuración Capacitor)"
+    ],
+    "do_not_start_yet": [
+      "Integración de Apple Sign In",
+      "Configuración de cuenta Apple Developer"
+    ],
+    "notes": "Account linking se prioriza antes de Apple para garantizar que no existan usuarios duplicados cuando se active Apple Sign In. Todo el trabajo de stores se mantiene separado del login para poder avanzar en paralelo sin bloqueos."
+  },
+  "gemini": {
+    "top_priority": {
+      "name": "Endurecimiento y Cierre del Flujo de Google Login en Móvil",
+      "why_now": "El login de Google es una vía de acceso crítica y ya parcialmente implementada. Cerrar y endurecer su flujo completo en móvil (incluyendo el retorno a la app y manejo de estados) es fundamental para la estabilidad del acceso y la reducción de fricción para los usuarios de Android y iPhone, independientemente de Apple. Es un desbloqueador clave para una experiencia de login fiable.",
+      "expected_user_impact": "Alta. Los usuarios podrán iniciar sesión de forma consistente y sin errores con su cuenta de Google, mejorando la confianza y la usabilidad de la aplicación desde el primer contacto.",
+      "implementation_risk": "medium"
+    },
+    "next_four": [
+      {
+        "name": "Estrategia e Implementación de Vinculación de Cuentas (Email/Google)",
+        "why_now": "La prevención de duplicidad de usuarios es un requisito clave. Definir e implementar la lógica de vinculación de cuentas entre email y Google ahora, antes de que Apple Login esté activo, sentará las bases para una identidad de usuario unificada. Esto evitará refactorizaciones complejas y problemas de datos cuando se integre Apple, asegurando que el sistema pueda manejar múltiples proveedores de identidad para una misma persona desde el inicio.",
+        "expected_user_impact": "Alta. Evita la frustración del usuario por tener múltiples perfiles, asegura la integridad de los datos y simplifica la gestión de la cuenta a largo plazo.",
+        "implementation_risk": "medium"
+      },
+      {
+        "name": "Preparación para Publicación en Google Play Store (Metadatos y Activos)",
+        "why_now": "Mientras se espera por Apple, se puede avanzar significativamente en la preparación para la publicación en Android. Esto incluye la creación y configuración de todos los metadatos (descripciones, categorías), activos gráficos (iconos, capturas de pantalla, gráficos de funciones) y la revisión de políticas de privacidad y términos de servicio específicos para la tienda. Esto desbloquea la posibilidad de publicar en Android tan pronto como el login principal sea estable.",
+        "expected_user_impact": "Alta. Permite el lanzamiento inicial de la aplicación en el mercado Android, obteniendo feedback temprano y visibilidad.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Manejo Robusto de Errores y Feedback al Usuario en Móvil",
+        "why_now": "Una experiencia móvil 'corta y muy clara' requiere un manejo de errores impecable. Identificar y estandarizar los mensajes de error, los estados de carga y el feedback visual en todas las interacciones clave (login, formularios, llamadas a la API) es crucial para la usabilidad. Esto reduce la fricción, evita la confusión del usuario y mejora la percepción de estabilidad de la app.",
+        "expected_user_impact": "Media-Alta. Mejora la experiencia del usuario al guiarlo claramente a través de problemas, reduciendo la frustración y la tasa de abandono.",
+        "implementation_risk": "low"
+      },
+      {
+        "name": "Experiencia de Onboarding/Primer Uso Específica para Móvil",
+        "why_now": "Para una aplicación legal-laboral, una primera impresión clara es vital. Diseñar un onboarding conciso y específico para móvil (ej. 2-3 pantallas introductorias sobre el valor principal o un tour guiado rápido) ayudará a los nuevos usuarios a entender rápidamente qué hace Auditapatron y cómo usarla, reduciendo la curva de aprendizaje y mejorando la retención inicial. Esto complementa la meta de una experiencia móvil 'corta y muy clara'.",
+        "expected_user_impact": "Media. Aumenta la comprensión del producto, la activación de usuarios y la retención inicial.",
+        "implementation_risk": "low"
+      }
+    ],
+    "recommended_sequence": [
+      "Endurecimiento y Cierre del Flujo de Google Login en Móvil",
+      "Estrategia e Implementación de Vinculación de Cuentas (Email/Google)",
+      "Manejo Robusto de Errores y Feedback al Usuario en Móvil",
+      "Preparación para Publicación en Google Play Store (Metadatos y Activos)",
+      "Experiencia de Onboarding/Primer Uso Específica para Móvil"
+    ],
+    "do_not_start_yet": [
+      "Implementación del Flujo de Apple Login"
+    ],
+    "notes": "La estrategia se centra en estabilizar los pilares fundamentales de la aplicación móvil (login principal, identidad de usuario y preparación para publicación) utilizando lo que ya está disponible y no depende de terceros. Esto permite avanzar en la madurez del producto móvil y estar en una posición sólida para integrar Apple Login una vez que las credenciales estén disponibles, minimizando el riesgo y maximizando el valor entregado en el corto plazo."
+  }
+}

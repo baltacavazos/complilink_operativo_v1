@@ -297,9 +297,10 @@ export default function Access() {
   };
 
   const googleEnabled = Boolean(googleStatusQuery.data?.enabled);
+  const googleOptionAvailable = googleStatusQuery.isLoading || googleEnabled;
   const emailCooldownSecondsRemaining = emailCooldownUntil ? Math.max(0, Math.ceil((emailCooldownUntil - nowTs) / 1000)) : 0;
   const emailCooldownActive = emailCooldownSecondsRemaining > 0;
-  const secondaryOptionsAvailable = !nativeApp && Boolean((manusLoginAvailable && manusLoginUrl) || googleEnabled);
+  const secondaryOptionsAvailable = Boolean((!nativeApp && manusLoginAvailable && manusLoginUrl) || googleOptionAvailable);
 
   const setPersistedCeoPanelOpen = (nextOpen: boolean) => {
     setCeoPanelPreferenceOpen(nextOpen);
@@ -410,7 +411,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
-                  Dentro de la app, el acceso por correo es la ruta más estable en esta primera versión móvil.
+                  Dentro de la app, el acceso por correo sigue siendo la ruta más estable. Si prefieres Google, ya puedes usarlo abajo y te regresamos aquí al terminar.
                 </p>
               ) : null}
             </div>
@@ -571,16 +572,18 @@ Iniciar sesión
                     </Button>
                   ) : null}
 
-                  {googleEnabled ? (
+                  {googleOptionAvailable ? (
                     <Button
                       type="button"
                       variant="outline"
                       className="h-11 w-full rounded-2xl border-slate-200 bg-white"
+                      disabled={googleStatusQuery.isLoading || !googleEnabled}
                       onClick={() => {
                         void openExternalUrl(getGoogleLoginUrl(returnTo));
                       }}
                     >
-                      Continuar con Google
+                      {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {nativeApp ? "Continuar con Google" : "Continuar con Google"}
                     </Button>
                   ) : null}
                 </div>
