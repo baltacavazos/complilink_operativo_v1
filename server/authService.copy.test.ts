@@ -6,7 +6,7 @@ describe("auth service transactional trust copy", () => {
   const source = readFileSync(resolve(process.cwd(), "server/authService.ts"), "utf8");
 
   it("adds visible privacy and vault wording to the email access code message", () => {
-    expect(source).toContain("Tu código de acceso a CompliLink");
+    expect(source).toContain("Tu código de acceso a ${AUTH_BRAND_NAME}");
     expect(source).toContain("Tu acceso es privado.");
     expect(source).toContain("asegurar evidencia");
     expect(source).toContain("Bóveda Laboral");

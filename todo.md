@@ -1694,3 +1694,6 @@
 - [x] Ronda móvil resultado: reducir drásticamente la longitud visible del resultado inicial en iPhone.
 - [x] Ronda móvil resultado: fusionar o colapsar tarjetas secundarias para que el flujo se sienta menos tedioso.
 - [x] Ronda móvil resultado: dejar un resumen inicial dominante con hallazgo, significado y un solo siguiente paso.
+- [x] Ronda acceso correo: corregir el flujo del código de 6 dígitos que hoy vence o valida mal para usuarios reales de Auditapatron.
+- [x] Ronda acceso correo: corregir el branding heredado en correos y plantillas para que Auditapatron no muestre referencias a CompliLink.
+- [x] Ronda acceso correo: validar con pruebas focalizadas el envío, la verificación del código y el copy final del correo.

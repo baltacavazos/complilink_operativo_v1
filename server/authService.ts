@@ -16,8 +16,19 @@ const GOOGLE_START_PATH = "/api/auth/google/start";
 const EMAIL_RESEND_COOLDOWN_MS = 1000 * 60;
 const EMAIL_RESEND_WINDOW_MS = 1000 * 60 * 60;
 const EMAIL_RESEND_MAX_REQUESTS = 5;
+const EMAIL_CHALLENGE_CLOCK_TOLERANCE_SECONDS = 30;
+const AUTH_BRAND_NAME = "Auditapatron";
+
+type PendingEmailChallenge = {
+  email: string;
+  codeHash: string;
+  name: string;
+  issuedAt: number;
+  expiresAt: number;
+};
 
 const emailLoginRateByEmail = new Map<string, { lastSentAt: number; windowStartedAt: number; sentCount: number }>();
+const pendingEmailChallengesByEmail = new Map<string, PendingEmailChallenge>();
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -133,9 +144,43 @@ function clearEmailCodeRequestState(email: string) {
   emailLoginRateByEmail.delete(email);
 }
 
-async function signEmailChallengeToken(payload: { email: string; codeHash: string; name: string }) {
+function createPendingEmailChallenge(payload: { email: string; codeHash: string; name: string }): PendingEmailChallenge {
+  const issuedAt = Date.now();
+  return {
+    email: payload.email,
+    codeHash: payload.codeHash,
+    name: payload.name,
+    issuedAt,
+    expiresAt: issuedAt + EMAIL_CODE_TTL_MS,
+  };
+}
+
+function setPendingEmailChallenge(challenge: PendingEmailChallenge) {
+  pendingEmailChallengesByEmail.set(challenge.email, challenge);
+}
+
+function getPendingEmailChallenge(email: string, now = Date.now()) {
+  const challenge = pendingEmailChallengesByEmail.get(email);
+  if (!challenge) {
+    return null;
+  }
+
+  if (challenge.expiresAt <= now) {
+    pendingEmailChallengesByEmail.delete(email);
+    return null;
+  }
+
+  return challenge;
+}
+
+function clearPendingEmailChallenge(email: string) {
+  pendingEmailChallengesByEmail.delete(email);
+}
+
+async function signEmailChallengeToken(payload: PendingEmailChallenge) {
   const secretKey = new TextEncoder().encode(ENV.cookieSecret);
-  const expirationSeconds = Math.floor((Date.now() + EMAIL_CODE_TTL_MS) / 1000);
+  const issuedAtSeconds = Math.floor(payload.issuedAt / 1000);
+  const expirationSeconds = Math.floor(payload.expiresAt / 1000);
 
   return new SignJWT({
     email: payload.email,
@@ -144,6 +189,7 @@ async function signEmailChallengeToken(payload: { email: string; codeHash: strin
     purpose: "email_login",
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuedAt(issuedAtSeconds)
     .setExpirationTime(expirationSeconds)
     .sign(secretKey);
 }
@@ -154,7 +200,10 @@ async function verifyEmailChallengeToken(token: string | undefined | null) {
   }
 
   const secretKey = new TextEncoder().encode(ENV.cookieSecret);
-  const { payload } = await jwtVerify(token, secretKey, { algorithms: ["HS256"] });
+  const { payload } = await jwtVerify(token, secretKey, {
+    algorithms: ["HS256"],
+    clockTolerance: EMAIL_CHALLENGE_CLOCK_TOLERANCE_SECONDS,
+  });
 
   if (payload.purpose !== "email_login") {
     throw new Error("Invalid email verification challenge");
@@ -281,18 +330,20 @@ export async function createTestingEmailLoginChallenge(params: {
     throw new Error("Testing email code must contain exactly 6 digits");
   }
 
-  const challengeToken = await signEmailChallengeToken({
+  const challenge = createPendingEmailChallenge({
     email,
     codeHash: hashEmailCode(email, code),
     name: buildFallbackName(email, params.name),
   });
+  const challengeToken = await signEmailChallengeToken(challenge);
 
+  setPendingEmailChallenge(challenge);
   setEmailChallengeCookie(params.req, params.res, challengeToken);
 
   return {
     email,
     code,
-    name: buildFallbackName(email, params.name),
+    name: challenge.name,
   } as const;
 }
 
@@ -316,6 +367,10 @@ export async function sendEmailWithResend(params: {
     throw new Error("RESEND_FROM_EMAIL is not configured");
   }
 
+  const fromAddress = ENV.resendFromEmail.includes("<")
+    ? ENV.resendFromEmail
+    : `${AUTH_BRAND_NAME} <${ENV.resendFromEmail}>`;
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -323,7 +378,7 @@ export async function sendEmailWithResend(params: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: ENV.resendFromEmail,
+      from: fromAddress,
       to: params.to,
       subject: params.subject,
       html: params.html,
@@ -345,9 +400,9 @@ export async function sendEmailWithResend(params: {
 async function sendEmailCodeWithResend(params: { email: string; code: string }) {
   await sendEmailWithResend({
     to: [params.email],
-    subject: "Tu código de acceso a CompliLink",
-    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>CompliLink</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p><p style="margin-top:18px;color:#475569">Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.</p></div>`,
-    text: `Tu código de acceso a CompliLink es ${params.code}. Expira en 10 minutos. Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.`,
+    subject: `Tu código de acceso a ${AUTH_BRAND_NAME}`,
+    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827"><h2>${AUTH_BRAND_NAME}</h2><p>Usa este código para iniciar sesión:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0">${params.code}</p><p>El código expira en 10 minutos.</p><p style="margin-top:18px;color:#475569">Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.</p></div>`,
+    text: `Tu código de acceso a ${AUTH_BRAND_NAME} es ${params.code}. Expira en 10 minutos. Tu acceso es privado. Si después decides asegurar evidencia, podrás conservarla en tu Bóveda Laboral con un resguardo serio y visible.`,
   });
 }
 
@@ -374,15 +429,16 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
   assertEmailCodeRequestAllowed(email);
 
   const code = `${randomInt(100000, 999999)}`;
-  const codeHash = hashEmailCode(email, code);
-  const challengeToken = await signEmailChallengeToken({
+  const challenge = createPendingEmailChallenge({
     email,
-    codeHash,
+    codeHash: hashEmailCode(email, code),
     name: buildFallbackName(email, params.name),
   });
+  const challengeToken = await signEmailChallengeToken(challenge);
 
   const delivery = await deliverEmailCode({ requestedEmail: email, code });
   recordEmailCodeRequest(email);
+  setPendingEmailChallenge(challenge);
   setEmailChallengeCookie(params.req, params.res, challengeToken);
 
   return {
@@ -398,11 +454,16 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
 export async function completeEmailLogin(params: { req: Request; res: Response; email: string; code: string; name?: string | null }) {
   const cookies = parseCookies(params.req);
   const normalizedEmail = normalizeEmail(params.email);
+  const submittedCodeHash = hashEmailCode(normalizedEmail, params.code.trim());
 
-  let challenge: Awaited<ReturnType<typeof verifyEmailChallengeToken>>;
+  let challenge: Awaited<ReturnType<typeof verifyEmailChallengeToken>> | PendingEmailChallenge | null = null;
   try {
     challenge = await verifyEmailChallengeToken(cookies[EMAIL_LOGIN_COOKIE]);
   } catch {
+    challenge = getPendingEmailChallenge(normalizedEmail);
+  }
+
+  if (!challenge) {
     throw new AuthFlowError(
       "EMAIL_CODE_EXPIRED",
       "El código ya expiró o esta solicitud ya no es válida. Solicita uno nuevo para continuar.",
@@ -416,7 +477,6 @@ export async function completeEmailLogin(params: { req: Request; res: Response; 
     );
   }
 
-  const submittedCodeHash = hashEmailCode(normalizedEmail, params.code.trim());
   if (submittedCodeHash !== challenge.codeHash) {
     throw new AuthFlowError(
       "INVALID_EMAIL_CODE",
@@ -437,6 +497,7 @@ export async function completeEmailLogin(params: { req: Request; res: Response; 
   });
   clearEmailChallengeCookie(params.req, params.res);
   clearEmailCodeRequestState(normalizedEmail);
+  clearPendingEmailChallenge(normalizedEmail);
 
   return user;
 }

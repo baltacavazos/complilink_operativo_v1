@@ -1,0 +1,155 @@
+{
+  "chatgpt": {
+    "otp_root_causes": [
+      "Server-side OTP expiration time too short or mismatched",
+      "Client-server clock skew causing premature expiry",
+      "Multiple OTP requests invalidating previous codes",
+      "Incorrect OTP validation logic or time zone handling",
+      "Race condition in OTP state update or cache invalidation",
+      "Delayed email delivery causing user to enter expired code"
+    ],
+    "branding_root_causes": [
+      "Hardcoded old product name in email templates",
+      "Email template caching or CDN serving stale content",
+      "Environment variables or config files not updated",
+      "In-app UI strings not synced with current branding",
+      "Sender email address or domain not updated",
+      "Legacy code or components reused without rebranding"
+    ],
+    "first_files_or_layers_to_audit": [
+      "Express backend OTP generation and validation modules",
+      "tRPC API handlers for login and OTP verification",
+      "React login and OTP input components",
+      "Email template files and rendering logic",
+      "Environment config files for branding and expiry settings",
+      "Email sending service integration and logs",
+      "Client-server time synchronization utilities",
+      "Cache or CDN config for email templates"
+    ],
+    "must_fix_now": [
+      "Align OTP expiration time between generation and validation",
+      "Update all email templates to use Auditapatron branding",
+      "Ensure sender email and subject reflect Auditapatron",
+      "Fix client-server clock skew or add tolerance",
+      "Invalidate previous OTPs only after new OTP is confirmed sent",
+      "Audit and update in-app login copy to Auditapatron"
+    ],
+    "tests_to_add": [
+      "OTP expiry boundary tests with simulated delays",
+      "Email template branding content verification",
+      "End-to-end OTP login flow on real devices",
+      "Clock skew tolerance tests between client and server",
+      "Regression tests for email sender and subject lines",
+      "UI snapshot tests for login and OTP screens"
+    ],
+    "risk_if_unfixed": [
+      "User frustration and increased support tickets",
+      "Loss of brand trust and confusion",
+      "Potential security risks from OTP mishandling",
+      "Reduced login success rate and user retention"
+    ],
+    "one_sentence_summary": "Fix OTP expiry timing and update all branding sources to Auditapatron to resolve user login and email inconsistencies."
+  },
+  "grok": {
+    "otp_root_causes": [
+      "Server/client clock skew or timezone mismatch on OTP expiry check",
+      "OTP generation timestamp stored in wrong format or not persisted atomically",
+      "Expiration window too short relative to email delivery latency",
+      "Verification endpoint using stale OTP record or duplicate check logic",
+      "React UI sending code after local time already exceeds server TTL",
+      "tRPC mutation not refreshing the OTP expiry on resend or retry"
+    ],
+    "branding_root_causes": [
+      "Hardcoded CompliLink strings in email templates or subject lines",
+      "Environment config still pointing to old product domain or sender identity",
+      "Email service provider template not updated for Auditapatron",
+      "In-app login copy pulling from legacy branding constants",
+      "Database or tenant config retaining previous product name",
+      "React components using shared UI library with old brand defaults"
+    ],
+    "first_files_or_layers_to_audit": [
+      "src/server/auth/otp.ts or equivalent OTP generate/verify",
+      "email templates in /emails or transactional-email service",
+      "Express route or tRPC procedure for /verify-otp",
+      "React login component handling code input and expiry display",
+      "config/branding.ts or env vars for sender/from address",
+      "database schema for otp_codes table expiry column",
+      "i18n or copy files containing product name strings",
+      "email provider dashboard (SendGrid/Mailgun) template IDs"
+    ],
+    "must_fix_now": [
+      "Increase OTP TTL to 10-15 min with server-side only check",
+      "Replace all CompliLink strings with Auditapatron in email templates",
+      "Add server time normalization (UTC) for expiry comparison",
+      "Update sender name and subject line via config/env",
+      "Ensure OTP record is created with current server timestamp",
+      "Audit and sync in-app login copy strings"
+    ],
+    "tests_to_add": [
+      "Unit test OTP expiry with simulated clock skew",
+      "Integration test for email send with correct branding",
+      "E2E test entering valid code within TTL on slow network",
+      "Snapshot test for email subject and body copy",
+      "Test returning user flow without breaking existing login",
+      "Verify no CompliLink references remain in rendered emails"
+    ],
+    "risk_if_unfixed": [
+      "High user drop-off at login for returning accounts",
+      "Continued brand confusion and support tickets",
+      "Perceived security flaw if codes appear expired too fast",
+      "Compliance risk from mismatched sender identity"
+    ],
+    "one_sentence_summary": "Audit OTP timestamp handling and branding config first, then apply minimal TTL increase plus string replacements to resolve both issues without touching core auth flow."
+  },
+  "gemini": {
+    "otp_root_causes": [
+      "Server/client clock skew",
+      "Short OTP expiry window",
+      "Multiple OTPs invalidating previous ones",
+      "Incorrect time zone handling",
+      "Network latency exceeding expiry",
+      "Server clock drift (NTP issue)"
+    ],
+    "branding_root_causes": [
+      "Outdated email templates",
+      "Hardcoded strings in code",
+      "Environment variables/config drift",
+      "Email service provider settings",
+      "Database stored content",
+      "Frontend UI copy"
+    ],
+    "first_files_or_layers_to_audit": [
+      "OTP generation/verification logic (Express/tRPC)",
+      "Database schema for OTP (timestamps)",
+      "Email sending service/utility",
+      "Email template files",
+      "Server clock synchronization (NTP)",
+      "Configuration files (env vars)",
+      "React OTP input component",
+      "Authentication middleware"
+    ],
+    "must_fix_now": [
+      "Verify/sync server clocks (NTP)",
+      "Increase OTP expiry to 5-10 mins",
+      "Ensure only latest OTP is valid",
+      "Centralize branding config",
+      "Update all email templates/sender",
+      "Update in-app login copy"
+    ],
+    "tests_to_add": [
+      "E2E OTP login flow test",
+      "Unit tests for OTP expiry/invalidation",
+      "Integration test for email content/branding",
+      "Server clock drift monitoring",
+      "Regression tests for branding",
+      "Load test OTP generation"
+    ],
+    "risk_if_unfixed": [
+      "High user frustration/churn",
+      "Brand inconsistency/damage",
+      "Login flow failure",
+      "Reduced user engagement"
+    ],
+    "one_sentence_summary": "Address critical OTP expiry issues by verifying server time and logic, and resolve branding inconsistencies by centralizing configuration and updating all user-facing content."
+  }
+}
