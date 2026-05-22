@@ -1712,3 +1712,4 @@
 - [ ] Definir y producir iconos, splash screens y capturas finales para tiendas
 - [ ] Decidir si después del esquema nativo conviene complementar OAuth móvil con universal links y archivos .well-known
 - [x] Documentar identidad móvil actual, esquema auditapatron:// y checklist operativo de preparación para stores
+- [x] Preparar paquete visual de stores: iconos, splash screens y capturas base para iOS y Android

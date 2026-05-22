@@ -1,0 +1,156 @@
+{
+  "prompt": "Eres director de marca móvil y ASO para una app mexicana llamada Auditapatron.\n\nContexto de marca ya confirmado:\n- Producto: revisión de recibos de nómina y orientación laboral para trabajadores en México.\n- Tono: serio, confiable, claro, no juguetón.\n- Visual actual: fondo verde muy claro, acentos turquesa, barra superior azul gris oscuro, tipografía negra o muy oscura.\n- Assets existentes: ya hay logo completo, wordmark, icono base y lockups de header.\n- Restricciones store verificadas:\n  - Apple: base práctica iPhone 6.9 con screenshots 1260x2736 px verticales.\n  - Google Play: icono 512x512 PNG con alpha; screenshots verticales en proporción 9:16.\n\nNecesito una respuesta JSON estricta para producir un paquete inicial de stores SIN Apple Sign In todavía. Quiero consistencia de marca y alta claridad para un trabajador no técnico en México.\n\nDevuelve un JSON con esta estructura exacta:\n{\n  \"overall_direction\": \"...\",\n  \"palette\": {\n    \"background\": \"#hex\",\n    \"dark_surface\": \"#hex\",\n    \"accent\": \"#hex\",\n    \"text\": \"#hex\"\n  },\n  \"icon\": {\n    \"recommended_concept\": \"...\",\n    \"should_use_existing_logo\": true,\n    \"avoid\": [\"...\", \"...\"],\n    \"prompt\": \"...\"\n  },\n  \"splash\": {\n    \"recommended_layout\": \"...\",\n    \"copy\": \"...\",\n    \"prompt\": \"...\"\n  },\n  \"screenshots\": [\n    {\n      \"title\": \"...\",\n      \"subtitle\": \"...\",\n      \"scene\": \"...\"\n    },\n    {\n      \"title\": \"...\",\n      \"subtitle\": \"...\",\n      \"scene\": \"...\"\n    },\n    {\n      \"title\": \"...\",\n      \"subtitle\": \"...\",\n      \"scene\": \"...\"\n    },\n    {\n      \"title\": \"...\",\n      \"subtitle\": \"...\",\n      \"scene\": \"...\"\n    }\n  ],\n  \"store_positioning\": \"...\",\n  \"confidence\": \"low|medium|high\"\n}\n\nReglas:\n- Mantén el español de México.\n- No inventes una marca nueva.\n- Reutiliza al máximo el ícono/logotipo existente.\n- Evita claims legales absolutos o promesas imposibles.\n- El resultado debe ser accionable para generar assets hoy mismo.",
+  "openai": {
+    "raw": "{\n  \"overall_direction\": \"Crear una presencia visual seria, confiable y clara que refleje la función de Auditapatron como herramienta esencial para la revisión de recibos de nómina y orientación laboral para trabajadores en México. Mantener la identidad visual actual con fondo verde muy claro y acentos turquesa, enfatizando la claridad y legibilidad para un público no técnico.\",\n  \"palette\": {\n    \"background\": \"#DFF6E4\",\n    \"dark_surface\": \"#2C3E50\",\n    \"accent\": \"#30CFCF\",\n    \"text\": \"#1A1A1A\"\n  },\n  \"icon\": {\n    \"recommended_concept\": \"Usar el ícono base existente que representa confianza y profesionalismo, con el color turquesa como acento principal sobre fondo verde muy claro para mantener coherencia visual.\",\n    \"should_use_existing_logo\": true,\n    \"avoid\": [\"colores saturados o muy brillantes\", \"elementos juguetones o caricaturescos\"],\n    \"prompt\": \"Ícono profesional y claro que utilice el símbolo base de Auditapatron, con colores turquesa y verde muy claro, fondo limpio, sin elementos adicionales que distraigan, transmitiendo confianza y seriedad.\"\n  },\n  \"splash\": {\n    \"recommended_layout\": \"Fondo verde muy claro con el logo completo centrado, barra superior azul gris oscuro opcional para continuidad, sin elementos distractores, con espacio suficiente para respirar.\",\n    \"copy\": \"Auditapatron\\nTu aliado en revisión de nómina y orientación laboral\",\n    \"prompt\": \"Pantalla de bienvenida con fondo verde muy claro, logo completo centrado en la parte superior o media pantalla, texto claro y legible en negro muy oscuro, sin iconografía adicional, transmitiendo profesionalismo y confianza.\"\n  },\n  \"screenshots\": [\n    {\n      \"title\": \"Revisa tus recibos de nómina\",\n      \"subtitle\": \"Detecta errores y entiende cada detalle de tu pago\",\n      \"scene\": \"Pantalla de la app mostrando un recibo de nómina con detalles claros, resaltando elementos importantes con acentos turquesa sobre fondo verde muy claro.\"\n    },\n    {\n      \"title\": \"Orientación laboral confiable\",\n      \"subtitle\": \"Asesoría clara para que conozcas tus derechos y obligaciones\",\n      \"scene\": \"Interfaz de orientación laboral con texto legible y botones simples, colores corporativos y diseño sobrio, sin elementos distractores.\"\n    },\n    {\n      \"title\": \"Historial accesible y seguro\",\n      \"subtitle\": \"Consulta tus recibos y asesorías anteriores en cualquier momento\",\n      \"scene\": \"Pantalla mostrando listado de recibos y consultas pasadas, con tipografía negra sobre fondo claro y acentos turquesa para navegación.\"\n    },\n    {\n      \"title\": \"Fácil de usar para todos\",\n      \"subtitle\": \"Diseño claro y directo pensado para trabajadores no técnicos\",\n      \"scene\": \"Interfaz simple con botones grandes, textos claros y navegación intuitiva, manteniendo la paleta y estilo visual definidos.\"\n    }\n  ],\n  \"store_positioning\": \"Auditapatron es la app confiable para trabajadores en México que desean revisar sus recibos de nómina y recibir orientación laboral clara y accesible, sin tecnicismos, con un diseño profesional y fácil de usar.\",\n  \"confidence\": \"high\"\n}",
+    "parsed": {
+      "overall_direction": "Crear una presencia visual seria, confiable y clara que refleje la función de Auditapatron como herramienta esencial para la revisión de recibos de nómina y orientación laboral para trabajadores en México. Mantener la identidad visual actual con fondo verde muy claro y acentos turquesa, enfatizando la claridad y legibilidad para un público no técnico.",
+      "palette": {
+        "background": "#DFF6E4",
+        "dark_surface": "#2C3E50",
+        "accent": "#30CFCF",
+        "text": "#1A1A1A"
+      },
+      "icon": {
+        "recommended_concept": "Usar el ícono base existente que representa confianza y profesionalismo, con el color turquesa como acento principal sobre fondo verde muy claro para mantener coherencia visual.",
+        "should_use_existing_logo": true,
+        "avoid": [
+          "colores saturados o muy brillantes",
+          "elementos juguetones o caricaturescos"
+        ],
+        "prompt": "Ícono profesional y claro que utilice el símbolo base de Auditapatron, con colores turquesa y verde muy claro, fondo limpio, sin elementos adicionales que distraigan, transmitiendo confianza y seriedad."
+      },
+      "splash": {
+        "recommended_layout": "Fondo verde muy claro con el logo completo centrado, barra superior azul gris oscuro opcional para continuidad, sin elementos distractores, con espacio suficiente para respirar.",
+        "copy": "Auditapatron\nTu aliado en revisión de nómina y orientación laboral",
+        "prompt": "Pantalla de bienvenida con fondo verde muy claro, logo completo centrado en la parte superior o media pantalla, texto claro y legible en negro muy oscuro, sin iconografía adicional, transmitiendo profesionalismo y confianza."
+      },
+      "screenshots": [
+        {
+          "title": "Revisa tus recibos de nómina",
+          "subtitle": "Detecta errores y entiende cada detalle de tu pago",
+          "scene": "Pantalla de la app mostrando un recibo de nómina con detalles claros, resaltando elementos importantes con acentos turquesa sobre fondo verde muy claro."
+        },
+        {
+          "title": "Orientación laboral confiable",
+          "subtitle": "Asesoría clara para que conozcas tus derechos y obligaciones",
+          "scene": "Interfaz de orientación laboral con texto legible y botones simples, colores corporativos y diseño sobrio, sin elementos distractores."
+        },
+        {
+          "title": "Historial accesible y seguro",
+          "subtitle": "Consulta tus recibos y asesorías anteriores en cualquier momento",
+          "scene": "Pantalla mostrando listado de recibos y consultas pasadas, con tipografía negra sobre fondo claro y acentos turquesa para navegación."
+        },
+        {
+          "title": "Fácil de usar para todos",
+          "subtitle": "Diseño claro y directo pensado para trabajadores no técnicos",
+          "scene": "Interfaz simple con botones grandes, textos claros y navegación intuitiva, manteniendo la paleta y estilo visual definidos."
+        }
+      ],
+      "store_positioning": "Auditapatron es la app confiable para trabajadores en México que desean revisar sus recibos de nómina y recibir orientación laboral clara y accesible, sin tecnicismos, con un diseño profesional y fácil de usar.",
+      "confidence": "high"
+    }
+  },
+  "grok": {
+    "raw": "{\n  \"overall_direction\": \"Mantener consistencia total con la identidad visual actual de Auditapatron: fondo verde muy claro, acentos turquesa, barra superior azul gris oscuro y tipografía oscura. Enfocado en transmitir confianza, claridad y utilidad práctica para trabajadores mexicanos sin tecnicismos.\",\n  \"palette\": {\n    \"background\": \"#E8F5E9\",\n    \"dark_surface\": \"#455A64\",\n    \"accent\": \"#00ACC1\",\n    \"text\": \"#212121\"\n  },\n  \"icon\": {\n    \"recommended_concept\": \"Reutilizar el logo e icono base existente centrado sobre fondo verde claro con sutil acento turquesa en el borde inferior.\",\n    \"should_use_existing_logo\": true,\n    \"avoid\": [\"elementos decorativos juguetones\", \"ilustraciones de personas o dinero\"],\n    \"prompt\": \"Icono 512x512 PNG con alpha: logo completo de Auditapatron centrado sobre fondo #E8F5E9 con acento turquesa sutil en la parte inferior, sin agregar texto ni elementos nuevos.\"\n  },\n  \"splash\": {\n    \"recommended_layout\": \"Logo centrado en la mitad superior, fondo verde muy claro, barra superior azul gris oscuro y texto de bienvenida en tipografía oscura debajo del logo.\",\n    \"copy\": \"Revisa tu nómina con claridad\",\n    \"prompt\": \"Splash screen vertical con logo de Auditapatron centrado, fondo #E8F5E9, barra superior #455A64 y texto 'Revisa tu nómina con claridad' en #212121 debajo del logo.\"\n  },\n  \"screenshots\": [\n    {\n      \"title\": \"Revisa tu recibo de nómina\",\n      \"subtitle\": \"Sube tu recibo y detecta errores comunes\",\n      \"scene\": \"Pantalla principal con recibo de nómina cargado, resaltados en turquesa sobre conceptos clave y totales claros.\"\n    },\n    {\n      \"title\": \"Entiende cada concepto\",\n      \"subtitle\": \"Explicaciones simples y directas\",\n      \"scene\": \"Detalle de un recibo con explicaciones en tarjetas claras, tipografía oscura sobre fondo verde claro.\"\n    },\n    {\n      \"title\": \"Orienta tu situación laboral\",\n      \"subtitle\": \"Respuestas prácticas para tus dudas\",\n      \"scene\": \"Sección de orientación laboral con preguntas frecuentes y respuestas cortas en tarjetas ordenadas.\"\n    },\n    {\n      \"title\": \"Guarda y consulta tus recibos\",\n      \"subtitle\": \"Historial seguro y accesible\",\n      \"scene\": \"Lista de recibos guardados con fecha y monto visible, barra superior azul gris oscuro.\"\n    }\n  ],\n  \"store_positioning\": \"Revisa tus recibos de nómina y recibe orientación laboral clara y confiable para trabajadores en México.\",\n  \"confidence\": \"high\"\n}",
+    "parsed": {
+      "overall_direction": "Mantener consistencia total con la identidad visual actual de Auditapatron: fondo verde muy claro, acentos turquesa, barra superior azul gris oscuro y tipografía oscura. Enfocado en transmitir confianza, claridad y utilidad práctica para trabajadores mexicanos sin tecnicismos.",
+      "palette": {
+        "background": "#E8F5E9",
+        "dark_surface": "#455A64",
+        "accent": "#00ACC1",
+        "text": "#212121"
+      },
+      "icon": {
+        "recommended_concept": "Reutilizar el logo e icono base existente centrado sobre fondo verde claro con sutil acento turquesa en el borde inferior.",
+        "should_use_existing_logo": true,
+        "avoid": [
+          "elementos decorativos juguetones",
+          "ilustraciones de personas o dinero"
+        ],
+        "prompt": "Icono 512x512 PNG con alpha: logo completo de Auditapatron centrado sobre fondo #E8F5E9 con acento turquesa sutil en la parte inferior, sin agregar texto ni elementos nuevos."
+      },
+      "splash": {
+        "recommended_layout": "Logo centrado en la mitad superior, fondo verde muy claro, barra superior azul gris oscuro y texto de bienvenida en tipografía oscura debajo del logo.",
+        "copy": "Revisa tu nómina con claridad",
+        "prompt": "Splash screen vertical con logo de Auditapatron centrado, fondo #E8F5E9, barra superior #455A64 y texto 'Revisa tu nómina con claridad' en #212121 debajo del logo."
+      },
+      "screenshots": [
+        {
+          "title": "Revisa tu recibo de nómina",
+          "subtitle": "Sube tu recibo y detecta errores comunes",
+          "scene": "Pantalla principal con recibo de nómina cargado, resaltados en turquesa sobre conceptos clave y totales claros."
+        },
+        {
+          "title": "Entiende cada concepto",
+          "subtitle": "Explicaciones simples y directas",
+          "scene": "Detalle de un recibo con explicaciones en tarjetas claras, tipografía oscura sobre fondo verde claro."
+        },
+        {
+          "title": "Orienta tu situación laboral",
+          "subtitle": "Respuestas prácticas para tus dudas",
+          "scene": "Sección de orientación laboral con preguntas frecuentes y respuestas cortas en tarjetas ordenadas."
+        },
+        {
+          "title": "Guarda y consulta tus recibos",
+          "subtitle": "Historial seguro y accesible",
+          "scene": "Lista de recibos guardados con fecha y monto visible, barra superior azul gris oscuro."
+        }
+      ],
+      "store_positioning": "Revisa tus recibos de nómina y recibe orientación laboral clara y confiable para trabajadores en México.",
+      "confidence": "high"
+    }
+  },
+  "gemini": {
+    "raw": "{\n  \"overall_direction\": \"La dirección general es establecer a Auditapatron como una herramienta indispensable y confiable para el trabajador mexicano. El enfoque es la claridad, la seriedad y la accesibilidad, asegurando que la información compleja se presente de manera sencilla y empoderadora, sin tecnicismos ni tonos juguetones. La marca debe proyectar seguridad y apoyo.\",\n  \"palette\": {\n    \"background\": \"#E8F8E8\",\n    \"dark_surface\": \"#2F4F4F\",\n    \"accent\": \"#40E0D0\",\n    \"text\": \"#1A1A1A\"\n  },\n  \"icon\": {\n    \"recommended_concept\": \"Adaptación del logotipo existente para máxima legibilidad y reconocimiento. Si el logo incluye un símbolo, este debe ser el elemento principal. Si es predominantemente textual, usar una versión simplificada del wordmark o una inicial estilizada que represente auditoría/protección.\",\n    \"should_use_existing_logo\": true,\n    \"avoid\": [\n      \"Diseños complejos o con muchos detalles pequeños que se pierdan al reducir el tamaño.\",\n      \"Elementos juguetones, caricaturescos o que sugieran informalidad.\",\n      \"Iconografía que pueda confundirse con servicios legales o gubernamentales directos.\"\n    ],\n    \"prompt\": \"Diseñar el icono de la app utilizando el logo base de Auditapatron. Priorizar la claridad y el reconocimiento instantáneo. Si el logo tiene un símbolo, centrarlo sobre un fondo limpio (idealmente el 'background' o 'dark_surface' de la paleta, con el símbolo en contraste). Si es un wordmark, considerar una inicial fuerte (ej. 'A') o una versión condensada y legible. Asegurar que el icono sea robusto y claro en todos los tamaños requeridos por las tiendas.\"\n  },\n  \"splash\": {\n    \"recommended_layout\": \"Pantalla limpia y minimalista. El logotipo completo de Auditapatron (wordmark + símbolo, si aplica) centrado. Sin elementos distractores. Opcional: un lema muy breve y directo debajo del logo.\",\n    \"copy\": \"Auditapatron: Tu nómina, clara.\",\n    \"prompt\": \"Crear una pantalla de bienvenida (splash screen) con el logotipo completo de Auditapatron centrado. El fondo debe ser el color 'background' de la paleta. El texto 'Tu nómina, clara.' (en color 'text') puede ir debajo del logo, con una tipografía limpia y legible, acorde al tono serio de la marca.\"\n  },\n  \"screenshots\": [\n    {\n      \"title\": \"Entiende tu nómina\",\n      \"subtitle\": \"Revisa tus recibos con claridad y confianza.\",\n      \"scene\": \"Una pantalla de la app mostrando un recibo de nómina simplificado, con secciones clave resaltadas (ej. 'Salario Base', 'Deducciones', 'Neto a Pagar') y un botón claro de 'Revisar' o 'Auditar'. El diseño es limpio y fácil de leer.\"\n    },\n    {\n      \"title\": \"Conoce tus derechos\",\n      \"subtitle\": \"Orientación laboral confiable, siempre a tu alcance.\",\n      \"scene\": \"Una pantalla de la app con una sección de 'Guía Laboral' o 'Preguntas Frecuentes'. Se ven títulos de temas relevantes para trabajadores (ej. 'Vacaciones', 'Aguinaldo', 'Despido Injustificado') con un ícono de información o ayuda.\"\n    },\n    {\n      \"title\": \"Evita errores y abusos\",\n      \"subtitle\": \"Protege tu ingreso y bienestar laboral.\",\n      \"scene\": \"Una pantalla que muestra el resultado de una auditoría de nómina. Podría ser un resumen con un mensaje como 'Todo en orden' o 'Posible inconsistencia', con detalles claros y una sugerencia de acción. El tono es informativo y protector.\"\n    },\n    {\n      \"title\": \"Tu aliado laboral\",\n      \"subtitle\": \"Información clara y precisa para tu tranquilidad.\",\n      \"scene\": \"Una pantalla de inicio o 'dashboard' de la app, mostrando acceso rápido a las funciones principales: 'Mis Nóminas', 'Consultas', 'Mi Perfil'. El diseño es intuitivo, con íconos claros y texto legible, reflejando facilidad de uso.\"\n    }\n  ],\n  \"store_positioning\": \"Auditapatron se posiciona como la herramienta esencial para el trabajador mexicano que busca claridad y confianza en su nómina y derechos laborales. Ofrecemos una revisión sencilla de recibos y orientación práctica, empoderando a los usuarios con información precisa para proteger su ingreso y bienestar, sin complejidades ni promesas vacías.\",\n  \"confidence\": \"high\"\n}",
+    "parsed": {
+      "overall_direction": "La dirección general es establecer a Auditapatron como una herramienta indispensable y confiable para el trabajador mexicano. El enfoque es la claridad, la seriedad y la accesibilidad, asegurando que la información compleja se presente de manera sencilla y empoderadora, sin tecnicismos ni tonos juguetones. La marca debe proyectar seguridad y apoyo.",
+      "palette": {
+        "background": "#E8F8E8",
+        "dark_surface": "#2F4F4F",
+        "accent": "#40E0D0",
+        "text": "#1A1A1A"
+      },
+      "icon": {
+        "recommended_concept": "Adaptación del logotipo existente para máxima legibilidad y reconocimiento. Si el logo incluye un símbolo, este debe ser el elemento principal. Si es predominantemente textual, usar una versión simplificada del wordmark o una inicial estilizada que represente auditoría/protección.",
+        "should_use_existing_logo": true,
+        "avoid": [
+          "Diseños complejos o con muchos detalles pequeños que se pierdan al reducir el tamaño.",
+          "Elementos juguetones, caricaturescos o que sugieran informalidad.",
+          "Iconografía que pueda confundirse con servicios legales o gubernamentales directos."
+        ],
+        "prompt": "Diseñar el icono de la app utilizando el logo base de Auditapatron. Priorizar la claridad y el reconocimiento instantáneo. Si el logo tiene un símbolo, centrarlo sobre un fondo limpio (idealmente el 'background' o 'dark_surface' de la paleta, con el símbolo en contraste). Si es un wordmark, considerar una inicial fuerte (ej. 'A') o una versión condensada y legible. Asegurar que el icono sea robusto y claro en todos los tamaños requeridos por las tiendas."
+      },
+      "splash": {
+        "recommended_layout": "Pantalla limpia y minimalista. El logotipo completo de Auditapatron (wordmark + símbolo, si aplica) centrado. Sin elementos distractores. Opcional: un lema muy breve y directo debajo del logo.",
+        "copy": "Auditapatron: Tu nómina, clara.",
+        "prompt": "Crear una pantalla de bienvenida (splash screen) con el logotipo completo de Auditapatron centrado. El fondo debe ser el color 'background' de la paleta. El texto 'Tu nómina, clara.' (en color 'text') puede ir debajo del logo, con una tipografía limpia y legible, acorde al tono serio de la marca."
+      },
+      "screenshots": [
+        {
+          "title": "Entiende tu nómina",
+          "subtitle": "Revisa tus recibos con claridad y confianza.",
+          "scene": "Una pantalla de la app mostrando un recibo de nómina simplificado, con secciones clave resaltadas (ej. 'Salario Base', 'Deducciones', 'Neto a Pagar') y un botón claro de 'Revisar' o 'Auditar'. El diseño es limpio y fácil de leer."
+        },
+        {
+          "title": "Conoce tus derechos",
+          "subtitle": "Orientación laboral confiable, siempre a tu alcance.",
+          "scene": "Una pantalla de la app con una sección de 'Guía Laboral' o 'Preguntas Frecuentes'. Se ven títulos de temas relevantes para trabajadores (ej. 'Vacaciones', 'Aguinaldo', 'Despido Injustificado') con un ícono de información o ayuda."
+        },
+        {
+          "title": "Evita errores y abusos",
+          "subtitle": "Protege tu ingreso y bienestar laboral.",
+          "scene": "Una pantalla que muestra el resultado de una auditoría de nómina. Podría ser un resumen con un mensaje como 'Todo en orden' o 'Posible inconsistencia', con detalles claros y una sugerencia de acción. El tono es informativo y protector."
+        },
+        {
+          "title": "Tu aliado laboral",
+          "subtitle": "Información clara y precisa para tu tranquilidad.",
+          "scene": "Una pantalla de inicio o 'dashboard' de la app, mostrando acceso rápido a las funciones principales: 'Mis Nóminas', 'Consultas', 'Mi Perfil'. El diseño es intuitivo, con íconos claros y texto legible, reflejando facilidad de uso."
+        }
+      ],
+      "store_positioning": "Auditapatron se posiciona como la herramienta esencial para el trabajador mexicano que busca claridad y confianza en su nómina y derechos laborales. Ofrecemos una revisión sencilla de recibos y orientación práctica, empoderando a los usuarios con información precisa para proteger su ingreso y bienestar, sin complejidades ni promesas vacías.",
+      "confidence": "high"
+    }
+  },
+  "generated_at": "2026-05-21T23:55:32Z",
+  "elapsed_seconds": 47.92
+}
