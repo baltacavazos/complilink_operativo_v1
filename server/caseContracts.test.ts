@@ -115,6 +115,14 @@ describe("caseContracts", () => {
 
     expect(
       classifyMexicanLaborDocument({
+        fileName: "CONTRATOINDETERMINADO-UICABPALOMODIDIERANTONIO.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        textHint: "Contrato individual de trabajo por tiempo indeterminado. Puesto: auxiliar. Jornada diurna. Prestaciones de ley. Salario diario integrado. Fecha de ingreso.",
+      }).documentType,
+    ).toBe("contract");
+
+    expect(
+      classifyMexicanLaborDocument({
         fileName: "memo_interno.txt",
         mimeType: "text/plain",
       }).documentType,

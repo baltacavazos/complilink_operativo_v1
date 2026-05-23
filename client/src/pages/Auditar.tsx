@@ -216,6 +216,7 @@ const SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS = [
   ".jpeg",
   ".png",
   ".webp",
+  ".docx",
 ] as const;
 const SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES = new Set([
   "application/pdf",
@@ -224,9 +225,11 @@ const SUPPORTED_DOCUMENT_UPLOAD_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/octet-stream",
 ]);
 const DOCUMENT_UPLOAD_PICKER_ACCEPT =
-  "image/jpeg,image/png,image/webp,application/pdf,text/xml,application/xml,.xml";
+  "image/jpeg,image/png,image/webp,application/pdf,text/xml,application/xml,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.xml,.docx";
 const MOBILE_UNSUPPORTED_IMAGE_EXTENSIONS = [".heic", ".heif"] as const;
 
 type UploadProgressStepKey = "prepare" | "analyze" | "save" | "review";
@@ -265,13 +268,13 @@ const UPLOAD_PROGRESS_STEPS: Array<{
 
 const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
-    "Formatos compatibles: PDF, XML, JPG, PNG o WEBP. Límite real: 12 MB por archivo.",
+    "Formatos compatibles: PDF, XML, JPG, PNG, WEBP o DOCX. Límite real: 12 MB por archivo.",
   privacyRules:
     "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. Nadie de tu empresa puede ver lo que subes y puedes pedir borrado cuando lo necesites.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
-  fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
+  fileRules: "PDF, XML, JPG, PNG, WEBP o DOCX · máximo 12 MB.",
   privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.",
 };
 
@@ -744,11 +747,11 @@ export function validateDocumentUploadFile(file: File | null) {
   );
 
   if (isUnsupportedMobileImageFormat(file)) {
-    return "Tu celular entregó la imagen en HEIC o HEIF. Para evitar fallos, súbela como JPG, PNG, WEBP, PDF o XML.";
+    return "Tu celular entregó la imagen en HEIC o HEIF. Para evitar fallos, súbela como JPG, PNG, WEBP, PDF, XML o DOCX.";
   }
 
   if (!isSupportedByMime && !isSupportedByExtension) {
-    return "Este archivo no es compatible todavía. Sube PDF, XML, JPG, PNG o WEBP para continuar.";
+    return "Este archivo no es compatible todavía. Sube PDF, XML, JPG, PNG, WEBP o DOCX para continuar.";
   }
 
   if (file.size > MAX_DOCUMENT_UPLOAD_SIZE_BYTES) {
@@ -7358,7 +7361,7 @@ export default function Auditar() {
                 Sube tu primer documento
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
-                Empieza con una foto o PDF. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
+                Empieza con una foto, PDF, XML o contrato en DOCX. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -7468,10 +7471,11 @@ export default function Auditar() {
               {shouldCompactPostUploadExperience ? null : (
                 <>
                   <span className="sm:hidden">
-                    Sube una foto o PDF. Primero te mostraremos lo importante y qué hacer después.
+                      Sube una foto, PDF o contrato en DOCX. Primero te mostraremos lo importante y qué hacer después.
+
                   </span>
                   <span className="hidden sm:inline">
-                    Sube una foto o PDF. Primero te mostraremos lo importante y qué hacer después.
+                    Sube una foto, PDF, XML o contrato en DOCX. Primero te mostraremos lo importante y qué hacer después.
                   </span>
                 </>
               )}
@@ -8871,7 +8875,7 @@ Tu recibo está seguro y solo tú lo ves
                     </p>
                     <p className="text-sm text-slate-600">
                       Puede ser foto, PDF o el archivo que te mandaron. Lo
-                      revisamos primero y tú decides si se guarda.
+                      revisamos primero y tú decides si se guarda, incluso si es un contrato en DOCX.
                     </p>
                   </div>
                 </div>
@@ -9105,7 +9109,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                           12 MB
                         </span>
                         <span className="rounded-full bg-white px-3 py-1">
-                          PDF · XML · imagen
+                          PDF · XML · DOCX · imagen
                         </span>
                       </div>
                     </div>
@@ -9134,7 +9138,8 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                            ? "Puedes tomar una foto clara o subir un PDF o imagen desde tu celular."
+                                ? "Puedes tomar una foto clara o subir un PDF, XML, DOCX o imagen desde tu celular."
+
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"

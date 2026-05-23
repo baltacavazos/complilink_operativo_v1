@@ -1,0 +1,85 @@
+{
+  "chatgpt": {
+    "key_findings": [
+      "Se recibieron tres CFDI XML de nómina con datos consistentes entre ellos.",
+      "El contrato individual de trabajo indica una relación por tiempo indeterminado con inicio el 16 de enero de 2024, coincidiendo con la fecha de inicio laboral en los XML.",
+      "El patrón emisor en XML y el patrón visible en contrato coinciden en nombre (aunque con diferencias en formato) y RFC.",
+      "Los recibos detectados tienen fechas y montos consistentes con la periodicidad quincenal reportada.",
+      "Se detecta una diferencia significativa entre el salario diario integrado reportado en los XML (331.01 MXN) y el salario diario visible en el contrato (248.93 MXN)."
+    ],
+    "possible_inconsistencies": [
+      "Discrepancia entre el salario diario integrado en XML y el salario diario indicado en el contrato individual.",
+      "Diferencia en la denominación del patrón (Evolucion Creativa Camreflex vs EVOLUCIÓN CREATIVA CAMREFLEX, S.A. DE C.V.) que podría requerir validación para confirmar identidad legal.",
+      "Los recibos corresponden a periodos en 2026, mientras que la relación laboral inicia en 2024, lo que es consistente pero debe confirmarse que no haya recibos faltantes o inconsistentes en el intervalo."
+    ],
+    "expected_working_signals": [
+      "La plataforma procesa correctamente los tres XML de nómina y asocia los PDFs correspondientes sin errores.",
+      "El contrato individual se carga y se vincula al expediente del trabajador sin pérdida de datos.",
+      "La plataforma detecta y reporta claramente la diferencia entre el salario diario integrado en XML y el salario diario del contrato.",
+      "Los datos clave (RFC, CURP, NSS, fechas, montos) se extraen y muestran de forma coherente y sin contradicciones internas.",
+      "Los recibos se ordenan cronológicamente y se validan contra la periodicidad de pago indicada."
+    ],
+    "priority_checks": [
+      "Verificar que la discrepancia salarial sea reportada para revisión documental y posible aclaración.",
+      "Confirmar que el patrón emisor en XML y el patrón del contrato corresponden a la misma entidad legal.",
+      "Validar que todos los documentos (XML, PDFs, contrato) estén correctamente vinculados al expediente del trabajador.",
+      "Corroborar que las fechas de pago y periodos en los recibos sean consistentes con la periodicidad quincenal y la relación laboral activa.",
+      "Asegurar que no existan errores de procesamiento o datos faltantes en la carga de documentos."
+    ],
+    "short_verdict": "El flujo de procesamiento parece funcionar correctamente al integrar XML, PDFs y contrato, pero se debe destacar y comunicar claramente la inconsistencia detectada entre el salario diario integrado reportado en los XML y el salario diario visible en el contrato para su revisión."
+  },
+  "gemini": {
+    "key_findings": [
+      "Identificación completa y consistente del trabajador (Didier Antonio Uicab Palomo, RFC: UIPD9211257I0, CURP: UIPD921125HYNCLD03, NSS: 84129214965, Número de empleado: 935264) en XML y contrato.",
+      "Identificación completa y consistente del patrón (Evolucion Creativa Camreflex / EVOLUCIÓN CREATIVA CAMREFLEX, S.A. DE C.V., RFC: ECC190605VA1, Registro patronal: R1379389106) en XML y contrato.",
+      "Fecha de inicio de relación laboral consistente (2024-01-16) en XML y contrato.",
+      "Tipo de contrato (01 - Indeterminado) y periodicidad de pago (04 - Quincenal) consistentes entre XML y contrato.",
+      "Se detectaron tres recibos de nómina (CFDI) con sus UUIDs, periodos (2026-04-01 a 2026-04-15, 2026-04-16 a 2026-04-30, 2026-05-01 a 2026-05-15), fechas de pago y totales (4,725.60 MXN cada uno por 15 días pagados).",
+      "El Salario Base de Cotización (SBC) y Salario Diario Integrado (SDI) reportados en los XML es de 331.01 MXN.",
+      "El contrato individual de trabajo menciona un salario diario de 248.93 MXN.",
+      "El contrato especifica el puesto de 'INPLANT DE NOMINA' y la cuenta bancaria BBVA 1541017741."
+    ],
+    "possible_inconsistencies": [
+      "Existe una discrepancia significativa en el salario diario: los XML de nómina reportan un Salario Base de Cotización y Salario Diario Integrado de 331.01 MXN, mientras que el contrato individual de trabajo establece un salario diario de 248.93 MXN. Esta diferencia es un hallazgo crítico que requiere validación y aclaración."
+    ],
+    "expected_working_signals": [
+      "La plataforma debe haber parseado y extraído correctamente todos los datos estructurados de los tres CFDI XML de nómina.",
+      "Los tres documentos PDF deben estar correctamente asociados y vinculados a sus respectivos CFDI XML.",
+      "El contrato individual de trabajo debe haber sido procesado, y sus datos clave (fecha de inicio, tipo de contrato, salario diario, puesto, datos del patrón y trabajador) extraídos con precisión.",
+      "Todos los documentos (XML, PDF, Contrato) deben estar correctamente asociados al expediente digital del trabajador Didier Antonio Uicab Palomo.",
+      "La plataforma debe haber detectado y resaltado de forma clara y visible la inconsistencia entre el salario diario del contrato (248.93 MXN) y el salario base de cotización/diario integrado de los XML (331.01 MXN).",
+      "El flujo de punta a punta debe permitir la visualización integrada de toda la información extraída y los documentos originales dentro del expediente del trabajador.",
+      "Confirmación de que los datos de identificación del trabajador y patrón son consistentes entre todos los documentos procesados, más allá de variaciones en el formato del nombre."
+    ],
+    "priority_checks": [
+      "Verificar la detección y el reporte explícito de la discrepancia salarial (331.01 MXN en XML vs. 248.93 MXN en contrato) como un hallazgo de alta prioridad.",
+      "Asegurar que todos los documentos (3 XML, 3 PDF, 1 Contrato) estén correctamente cargados, procesados y vinculados al expediente del trabajador sin errores.",
+      "Confirmar la extracción precisa de todos los campos clave de los XML y del contrato, incluyendo fechas, montos y datos de identificación.",
+      "Validar que la identificación del trabajador (RFC, CURP, NSS) y del patrón (RFC, Registro Patronal) sea consistente en todos los documentos para evitar errores de asociación."
+    ],
+    "short_verdict": "El procesamiento documental fue exitoso en la integración de XML, PDF y contrato, pero la plataforma debe haber detectado y comunicado claramente la inconsistencia crítica en el salario diario entre el contrato y los CFDI de nómina."
+  },
+  "grok": {
+    "key_findings": [
+      "Coincidencia en datos personales del trabajador entre XML y contrato (nombre, RFC, CURP, NSS)",
+      "Diferencia entre salario base de cotización/SDI reportado en XML (331.01 MXN) y salario diario indicado en contrato (248.93 MXN)",
+      "Datos de patrón, registro patronal y tipo de contrato alineados entre documentos",
+      "Periodos de pago quincenal consistentes con la periodicidad indicada"
+    ],
+    "possible_inconsistencies": [
+      "Discrepancia salarial entre XML de nómina y contrato individual de trabajo",
+      "Fechas de los recibos XML en 2026 contrastan con inicio de relación laboral en 2024"
+    ],
+    "expected_working_signals": [
+      "Procesamiento exitoso de los tres XML de nómina, PDFs asociados y contrato individual",
+      "Extracción y comparación automática de campos clave como SBC, SDI y salario contractual",
+      "Detección y reporte claro de la diferencia salarial dentro del expediente del trabajador"
+    ],
+    "priority_checks": [
+      "Verificar coincidencia de RFC, CURP y NSS entre XML y contrato",
+      "Comparar salario diario integrado de XML contra salario diario del contrato",
+      "Confirmar que el flujo marca la inconsistencia salarial sin generar errores de carga"
+    ],
+    "short_verdict": "El flujo funciona si procesa todos los documentos y reporta la diferencia salarial detectada"
+  }
+}

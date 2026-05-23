@@ -356,8 +356,64 @@ export function classifyMexicanLaborDocument(params: {
 }): DocumentClassification {
   const haystack = normalizeText(`${params.fileName} ${params.mimeType} ${params.textHint ?? ""}`);
   const uuidNamedPdf = params.mimeType === "application/pdf" && fileNameLooksLikeUuid(params.fileName);
+  const normalizedMimeType = params.mimeType.trim().toLowerCase();
+  const isXmlLikeFile = normalizedMimeType === "application/xml" || normalizedMimeType === "text/xml" || params.fileName.toLowerCase().endsWith(".xml");
+  const hasCoreContractSignals = hasAny(
+    haystack,
+    "contrato",
+    "oferta laboral",
+    "relacion laboral",
+    "relación laboral",
+    "periodo de prueba",
+    "jornada",
+    "prestaciones",
+    "puesto",
+    "salario diario",
+    "salario base",
+    "fecha de ingreso",
+  );
+  const hasEmploymentParties = hasAny(haystack, "patron", "patrón") && hasAny(haystack, "trabajador", "empleado");
+  const hasContractSignals = hasCoreContractSignals || (hasEmploymentParties && hasAny(haystack, "jornada", "prestaciones", "salario diario", "fecha de ingreso", "puesto"));
+  const hasStrongCfdiSignals = hasAny(
+    haystack,
+    "cfdi",
+    "timbre fiscal",
+    "folio fiscal",
+    "uuid",
+    "representacion impresa",
+    "representación impresa",
+    "comprobante fiscal",
+    "nomina12",
+    "nomina 12",
+  ) || (isXmlLikeFile && hasAny(haystack, "sat", "factura", "comprobante", "percepciones", "deducciones", "emisor", "receptor"));
 
-  if (hasAny(haystack, "cfdi", "xml", "factura", "timbre fiscal", "sat", "uuid")) {
+  if (isXmlLikeFile && hasStrongCfdiSignals) {
+    return buildClassification({
+      documentType: "cfdi",
+      normalizedDocType: "cfdi_nomina",
+      classificationConfidence: 91,
+      reason: "El archivo XML contiene marcadores típicos de CFDI de nómina o timbrado fiscal.",
+      processingProfile: "standard",
+      reviewRecommendation: "auto",
+      supportsStructuredExtraction: true,
+      supportsBenefitEstimation: true,
+    });
+  }
+
+  if (hasContractSignals) {
+    return buildClassification({
+      documentType: "contract",
+      normalizedDocType: "contrato_laboral",
+      classificationConfidence: 84,
+      reason: "Se detectaron términos de contratación o relación laboral.",
+      processingProfile: "contract_deep_dive",
+      reviewRecommendation: "legal_review",
+      supportsStructuredExtraction: true,
+      supportsBenefitEstimation: true,
+    });
+  }
+
+  if (hasStrongCfdiSignals) {
     return buildClassification({
       documentType: "cfdi",
       normalizedDocType: "cfdi_nomina",
@@ -396,19 +452,6 @@ export function classifyMexicanLaborDocument(params: {
         : "Se detectaron indicadores de recibos de nómina o pagos laborales.",
       processingProfile: "standard",
       reviewRecommendation: "auto",
-      supportsStructuredExtraction: true,
-      supportsBenefitEstimation: true,
-    });
-  }
-
-  if (hasAny(haystack, "contrato", "oferta laboral", "relacion laboral", "relación laboral", "periodo de prueba", "jornada", "prestaciones")) {
-    return buildClassification({
-      documentType: "contract",
-      normalizedDocType: "contrato_laboral",
-      classificationConfidence: 84,
-      reason: "Se detectaron términos de contratación o relación laboral.",
-      processingProfile: "contract_deep_dive",
-      reviewRecommendation: "legal_review",
       supportsStructuredExtraction: true,
       supportsBenefitEstimation: true,
     });

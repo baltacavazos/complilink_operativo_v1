@@ -1,0 +1,90 @@
+{
+  "startedAt": "2026-05-23T22:46:18.959Z",
+  "workerName": "DIDIER ANTONIO UICAB PALOMO",
+  "caseId": "CASE-BALT-1-MPIXTTYE",
+  "uploads": [
+    {
+      "fileName": "8C18C713-7AFA-5EA6-B323-FA208F8A3880_DIDIER_ANTONIO_UICAB_PALOMO.pdf",
+      "mimeType": "application/pdf",
+      "status": "success",
+      "result": {
+        "documentId": "DOC-3EA7C83A8DC442D1",
+        "fileName": null,
+        "documentType": "payroll_receipt",
+        "classificationConfidence": 82,
+        "displayName": null,
+        "summary": "Helios ya recibió tu recibo de nómina y está contrastando pagos, deducciones y periodo con el resto del expediente.",
+        "headline": "Tu documento ya está en revisión avanzada",
+        "nextStep": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+        "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+        "workerName": null,
+        "employerName": null
+      }
+    },
+    {
+      "fileName": "8C18C713-7AFA-5EA6-B323-FA208F8A3880_DIDIER_ANTONIO_UICAB_PALOMO.xml",
+      "mimeType": "application/xml",
+      "status": "success",
+      "result": {
+        "documentId": "DOC-D28752A80B834CE3",
+        "fileName": null,
+        "documentType": "cfdi",
+        "classificationConfidence": 91,
+        "displayName": null,
+        "summary": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+        "headline": "Tu documento ya está en revisión avanzada",
+        "nextStep": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+        "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+        "workerName": null,
+        "employerName": null
+      }
+    },
+    {
+      "fileName": "CONTRATOINDETERMINADO-UICABPALOMODIDIERANTONIO.docx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "status": "success",
+      "result": {
+        "documentId": "DOC-98CF9402E0B6433E",
+        "fileName": null,
+        "documentType": "contract",
+        "classificationConfidence": 84,
+        "displayName": null,
+        "summary": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+        "headline": "Tu documento ya está en revisión avanzada",
+        "nextStep": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+        "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+        "workerName": null,
+        "employerName": null
+      }
+    }
+  ],
+  "detail": {
+    "caseStatus": "intake",
+    "casePriority": "medium",
+    "documentsCount": 3,
+    "documentTypes": [
+      {
+        "documentType": "contract",
+        "classificationConfidence": 84,
+        "visibility": "tenant_legal",
+        "consentStatus": "pending"
+      },
+      {
+        "documentType": "cfdi",
+        "classificationConfidence": 91,
+        "visibility": "tenant_legal",
+        "consentStatus": "pending"
+      },
+      {
+        "documentType": "payroll_receipt",
+        "classificationConfidence": 82,
+        "visibility": "tenant_legal",
+        "consentStatus": "pending"
+      }
+    ],
+    "heliosSummary": "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+    "heliosDocumentsCount": 3,
+    "heliosDocumentsWithOpinion": 3
+  },
+  "finishedAt": "2026-05-23T22:46:47.646Z"
+}

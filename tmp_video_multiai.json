@@ -1,0 +1,124 @@
+{
+  "brief_path": "/home/ubuntu/complilink_operativo_v1/tmp_video_brief.md",
+  "models": {
+    "chatgpt": {
+      "recommended_angle": "Mostrar cómo Auditapatron brinda una primera lectura clara, rápida y privada de documentos laborales, empoderando al trabajador para entender qué revisar y decidir su siguiente paso con confianza.",
+      "why_it_works": "Este enfoque conecta directamente con la necesidad del trabajador de tener claridad y control sobre su información laboral, sin falsas promesas, usando un lenguaje simple y un proceso visual intuitivo que refleja confianza y profesionalismo.",
+      "target_emotion": "Tranquilidad y confianza, acompañadas de una sensación de control y claridad.",
+      "must_include_messages": [
+        "Sube tu recibo o documento y entiende rápido qué revisar.",
+        "Recibe una primera lectura clara desde el inicio, sin complicaciones.",
+        "Tus documentos se revisan en un espacio privado y bajo tu control."
+      ],
+      "scene_outline": [
+        {
+          "time": "0-5",
+          "visual": "Pantalla de un celular con la app Auditapatron abierta, mostrando la opción para subir un recibo o documento laboral.",
+          "voiceover": "¿Quieres entender tu recibo laboral sin complicaciones?",
+          "onscreen_text": "Sube tu recibo o documento"
+        },
+        {
+          "time": "6-12",
+          "visual": "Usuario toma una foto o selecciona un PDF; la plataforma procesa el documento con animaciones limpias y modernas que resaltan detalles clave.",
+          "voiceover": "Con Auditapatron, obtienes una primera lectura rápida y clara.",
+          "onscreen_text": "Lectura rápida y clara"
+        },
+        {
+          "time": "13-20",
+          "visual": "Pantalla mostrando puntos importantes destacados con palabras simples y colores azul oscuro y verde turquesa, transmitiendo orden y calma.",
+          "voiceover": "Identifica qué revisar y entiende qué sigue, sin tecnicismos.",
+          "onscreen_text": "Qué revisar y próximo paso"
+        },
+        {
+          "time": "21-27",
+          "visual": "Usuario sonriente, tranquilo, interactuando con la app, con íconos que simbolizan privacidad y control sobre sus datos.",
+          "voiceover": "Tu información está segura y bajo tu control en todo momento.",
+          "onscreen_text": "Privacidad y control total"
+        },
+        {
+          "time": "28-30",
+          "visual": "Logotipo de Auditapatron sobre fondo claro con los colores institucionales, acompañado del botón o texto de llamada a la acción.",
+          "voiceover": "Auditapatron, entiende tu documento y decide con claridad.",
+          "onscreen_text": "Descarga Auditapatron hoy"
+        }
+      ],
+      "voice_style": "Serio, humano, confiable y claro, con un ritmo pausado que facilite la comprensión sin perder dinamismo.",
+      "cta": "Descarga Auditapatron hoy y toma control de tu información laboral.",
+      "gemini_video_prompt_guidelines": [
+        "Formato vertical 9:16 con diseño limpio y moderno.",
+        "Paleta de colores azul oscuro, verde turquesa y fondos claros, transmitiendo orden y calma.",
+        "Mostrar interacción realista y natural del usuario con la app, enfocando en simplicidad y privacidad."
+      ],
+      "phrases_to_avoid": [
+        "garantía legal",
+        "recupera dinero",
+        "te decimos si vas a ganar"
+      ]
+    },
+    "grok": {
+      "error": "grok-4: HTTPSConnectionPool(host='api.x.ai', port=443): Read timed out. (read timeout=60)"
+    },
+    "gemini": {
+      "recommended_angle": "Empoderamiento Laboral: Claridad Instantánea y Privacidad en tus Manos",
+      "why_it_works": "Este enfoque resuena porque aborda la frustración común de los trabajadores mexicanos al no comprender sus documentos laborales. Ofrece una solución directa, rápida y confiable que promete control y claridad, sin caer en promesas legales o financieras exageradas. La secuencia visual de problema-solución-beneficio inmediato es altamente efectiva para videos cortos, generando una sensación de alivio y confianza.",
+      "target_emotion": "Alivio, claridad, confianza, control.",
+      "must_include_messages": [
+        "Entiende tus documentos laborales al instante.",
+        "Privacidad total, control absoluto.",
+        "Pasos claros para tu siguiente decisión.",
+        "Rápido, simple y confiable."
+      ],
+      "scene_outline": [
+        {
+          "time": "0-5",
+          "visual": "Inicio con un trabajador (25-40 años, diversas etnias) mirando con frustración un recibo de nómina o contrato en papel, con un fondo ligeramente desenfocado que sugiere un espacio personal. Enfoque en su expresión de confusión. Transición rápida a una interfaz limpia de Auditapatron.",
+          "voiceover": "¿Confundido con tus documentos laborales?",
+          "onscreen_text": "Tu información, tu control."
+        },
+        {
+          "time": "5-10",
+          "visual": "Primer plano de una mano subiendo un recibo o contrato (físico o PDF) a la app de Auditapatron en un smartphone en formato vertical. Se ve la barra de progreso de carga rápida y la interfaz de la app en colores azul y verde turquesa.",
+          "voiceover": "Sube tu recibo o documento. ¡Así de fácil!",
+          "onscreen_text": "Sube y entiende. Rápido."
+        },
+        {
+          "time": "10-15",
+          "visual": "Animación de la app 'leyendo' el documento, destacando visualmente palabras clave o secciones importantes con un efecto de escaneo o resaltado en verde turquesa. La interfaz muestra un resumen claro y conciso.",
+          "voiceover": "Auditapatron te da una primera lectura clara, identificando lo importante sin rodeos.",
+          "onscreen_text": "Claridad instantánea."
+        },
+        {
+          "time": "15-20",
+          "visual": "El trabajador ahora mira la pantalla de su teléfono con una expresión de comprensión y alivio. Se desplaza por la interfaz de Auditapatron, que muestra sugerencias o puntos a revisar. Superposición de un icono de candado o escudo para enfatizar la privacidad.",
+          "voiceover": "Entiende qué revisar, de forma privada y bajo tu control. Tus datos, seguros.",
+          "onscreen_text": "Privacidad y control."
+        },
+        {
+          "time": "20-25",
+          "visual": "La interfaz de Auditapatron muestra opciones como 'Guardar análisis' o 'Ver siguientes pasos'. El trabajador asiente con confianza, ahora con una postura más erguida y decidida. El fondo es limpio, moderno, con toques de azul y verde.",
+          "voiceover": "Obtén los puntos clave y decide tu siguiente paso con confianza. Una herramienta útil en tu mano.",
+          "onscreen_text": "Decide con confianza."
+        },
+        {
+          "time": "25-30",
+          "visual": "Cierre con el logo de Auditapatron flotando sobre una pantalla de smartphone con la interfaz de la app. Eslogan final y llamado a la acción. Fondo limpio con los colores de la marca. Música ascendente y optimista.",
+          "voiceover": "Auditapatron. Claridad laboral en tus manos. Descarga hoy.",
+          "onscreen_text": "Auditapatron.com\nDescarga la app."
+        }
+      ],
+      "voice_style": "Cálida, profesional, clara y empática, con un tono que inspira confianza y autoridad sin ser condescendiente. Ritmo pausado pero constante.",
+      "cta": "Descarga Auditapatron hoy / Visita Auditapatron.com",
+      "gemini_video_prompt_guidelines": [
+        "Utilizar transiciones suaves y modernas, con animaciones de UI fluidas y limpias.",
+        "Mantener la paleta de colores de la marca (azul oscuro, verde turquesa, fondos claros) dominante en toda la estética visual.",
+        "Mostrar diversidad en los actores, representando la fuerza laboral mexicana. Enfocar la interacción con la app de forma natural y orgánica en un entorno vertical.",
+        "La música de fondo debe ser optimista pero discreta, transmitiendo profesionalismo y tranquilidad. Los efectos de sonido deben ser mínimos y enfocados en la interacción con la app (ej. sonido de 'carga exitosa')."
+      ],
+      "phrases_to_avoid": [
+        "garantía legal",
+        "recupera dinero",
+        "te decimos si vas a ganar"
+      ]
+    }
+  }
+}

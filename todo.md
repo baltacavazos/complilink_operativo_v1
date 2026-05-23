@@ -1716,3 +1716,11 @@
 - [x] Refinar screenshots de stores con copy final y composición comercial más pulida
 - [x] Generar paquete final de iconos y splash screens en tamaños nativos requeridos por iOS y Android
 - [x] Redactar ficha de publicación para App Store y Google Play con títulos, subtítulos, descripción y keywords
+- [ ] Consensuar con ChatGPT, Grok y Gemini el ángulo creativo del video promocional de 30 segundos de Auditapatron
+- [x] Redactar guion final de 30 segundos para video promocional de Auditapatron
+- [x] Preparar prompt final para generar video promocional de Auditapatron en Gemini Omni
+- [ ] Reintentar la consulta creativa con Grok para cerrar consenso completo del video promocional de Auditapatron
+- [x] Procesar caso real de Didier Antonio Uicab Palomo con sus CFDI, recibos y contrato para verificar el flujo end-to-end
+- [x] Corregir el flujo end-to-end de expediente para que el paso de contrato no se rompa con documentos reales
+- [x] Resolver la fricción de formatos en contrato para que el usuario perciba continuidad automática y sin bloqueos
+- [x] Validar nuevamente el caso real de Didier Antonio Uicab Palomo hasta contrato o equivalente aceptado por el flujo

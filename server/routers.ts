@@ -69,6 +69,12 @@ import {
 } from "./authService";
 import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
+import {
+  DOCX_MIME_TYPE,
+  extractDocxPlainText,
+  looksLikeZipContainer,
+  normalizeAuditarMimeType,
+} from "./docxSupport";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 import {
@@ -267,7 +273,15 @@ const auditarEditableFieldKeys = [
 ] as const;
 
 const auditarEditableFieldKeySet = new Set<string>(auditarEditableFieldKeys);
-const AUDITAR_ALLOWED_UPLOAD_MIME_TYPES = new Set(["application/pdf", "text/xml", "application/xml", "image/jpeg", "image/png", "image/webp"]);
+const AUDITAR_ALLOWED_UPLOAD_MIME_TYPES = new Set([
+  "application/pdf",
+  "text/xml",
+  "application/xml",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  DOCX_MIME_TYPE,
+]);
 const AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH = 160;
 const AUDITAR_MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 const AUDITAR_DRAFT_TTL_MS = 2 * 60 * 60 * 1000;
@@ -1101,8 +1115,10 @@ function validateAuditarUploadMetadata(params: { fileName: string; mimeType: str
     throw new Error("El archivo necesita un nombre válido antes de poder revisarlo.");
   }
 
-  if (!AUDITAR_ALLOWED_UPLOAD_MIME_TYPES.has(params.mimeType)) {
-    throw new Error("Por ahora solo puedes subir archivos PDF, XML, JPG, PNG o WEBP para una revisión confiable.");
+  const normalizedMimeType = normalizeAuditarMimeType(safeFileName, params.mimeType);
+
+  if (!AUDITAR_ALLOWED_UPLOAD_MIME_TYPES.has(normalizedMimeType)) {
+    throw new Error("Por ahora solo puedes subir archivos PDF, XML, JPG, PNG, WEBP o DOCX para una revisión confiable.");
   }
 
   if (safeFileName.length > AUDITAR_MAX_UPLOAD_FILE_NAME_LENGTH) {
@@ -1111,6 +1127,7 @@ function validateAuditarUploadMetadata(params: { fileName: string; mimeType: str
 
   return {
     safeFileName,
+    normalizedMimeType,
   };
 }
 
@@ -1119,6 +1136,7 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
   const matchesJpeg = params.binary.byteLength >= 3 && params.binary[0] === 0xff && params.binary[1] === 0xd8 && params.binary[2] === 0xff;
   const matchesPng = params.binary.byteLength >= 8 && params.binary.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
   const matchesWebp = params.binary.byteLength >= 12 && params.binary.subarray(0, 4).equals(Buffer.from("RIFF")) && params.binary.subarray(8, 12).equals(Buffer.from("WEBP"));
+  const matchesDocx = looksLikeZipContainer(params.binary);
   const normalizedTextHeader = params.binary.subarray(0, Math.min(params.binary.byteLength, 256)).toString("utf8").replace(/^\uFEFF/, "").trimStart();
   const matchesXml = normalizedTextHeader.startsWith("<") && (normalizedTextHeader.startsWith("<?xml") || normalizedTextHeader.startsWith("<cfdi:") || normalizedTextHeader.startsWith("<Comprobante") || normalizedTextHeader.startsWith("<"));
 
@@ -1127,23 +1145,28 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
     (params.mimeType === "image/jpeg" && matchesJpeg) ||
     (params.mimeType === "image/png" && matchesPng) ||
     (params.mimeType === "image/webp" && matchesWebp) ||
-    ((params.mimeType === "text/xml" || params.mimeType === "application/xml") && matchesXml);
+    ((params.mimeType === "text/xml" || params.mimeType === "application/xml") && matchesXml) ||
+    (params.mimeType === DOCX_MIME_TYPE && matchesDocx);
 
   if (!isValidBinary) {
     throw new Error("El contenido real del archivo no coincide con el tipo declarado. Vuelve a exportarlo o súbelo en su formato original.");
   }
 }
 
-function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Buffer }) {
-  if (params.mimeType !== "text/xml" && params.mimeType !== "application/xml") {
-    return "";
+async function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Buffer }) {
+  if (params.mimeType === "text/xml" || params.mimeType === "application/xml") {
+    return params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").slice(0, 6000);
   }
 
-  return params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").slice(0, 6000);
+  if (params.mimeType === DOCX_MIME_TYPE) {
+    return extractDocxPlainText(params.binary);
+  }
+
+  return "";
 }
 
 function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string; binary: Buffer }) {
-  const { safeFileName } = validateAuditarUploadMetadata(params);
+  const { safeFileName, normalizedMimeType } = validateAuditarUploadMetadata(params);
 
   if (params.binary.byteLength === 0) {
     throw new Error("El archivo llegó vacío. Intenta subirlo otra vez.");
@@ -1154,12 +1177,13 @@ function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string;
   }
 
   assertAuditarMimeMatchesBinary({
-    mimeType: params.mimeType,
+    mimeType: normalizedMimeType,
     binary: params.binary,
   });
 
   return {
     safeFileName,
+    normalizedMimeType,
     sizeBytes: params.binary.byteLength,
     sha256: computeSha256(params.binary),
   };
@@ -1183,7 +1207,7 @@ async function prepareAuditarDocumentPipeline(params: {
   });
   const uploaded = await storagePut(storageKey, params.binary, params.mimeType);
   const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(params.expectedDocumentType);
-  const binaryDerivedTextHint = buildBinaryDerivedTextHint({
+  const binaryDerivedTextHint = await buildBinaryDerivedTextHint({
     mimeType: params.mimeType,
     binary: params.binary,
   });
@@ -3659,7 +3683,7 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ input }) => {
-        const { safeFileName } = validateAuditarUploadMetadata({
+        const { safeFileName, normalizedMimeType } = validateAuditarUploadMetadata({
           fileName: input.fileName,
           mimeType: input.mimeType,
         });
@@ -3673,7 +3697,7 @@ export const appRouter = router({
             caseId: guestPreviewId,
             storageEntityId: guestPreviewId,
             fileName: safeFileName,
-            mimeType: input.mimeType,
+            mimeType: normalizedMimeType,
             binary,
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
@@ -3691,7 +3715,7 @@ export const appRouter = router({
           traceId,
           createdAt,
           fileName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           sizeBytes: binary.byteLength,
           sha256,
           storageKey,
@@ -3713,7 +3737,7 @@ export const appRouter = router({
             ...buildDraftPreviewPayload({
               draftId: guestPreviewId,
               fileName: safeFileName,
-              mimeType: input.mimeType,
+              mimeType: normalizedMimeType,
               sizeBytes: binary.byteLength,
               sha256,
               storageKey,
@@ -4051,7 +4075,7 @@ export const appRouter = router({
         });
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
-        const { safeFileName } = validateAuditarUploadMetadata({
+        const { safeFileName, normalizedMimeType } = validateAuditarUploadMetadata({
           fileName: input.fileName,
           mimeType: input.mimeType,
         });
@@ -4060,7 +4084,7 @@ export const appRouter = router({
         });
         const { sizeBytes, sha256 } = prepareAuditarUploadAsset({
           fileName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           binary,
         });
         acquireAuditarTransientDedup({
@@ -4076,7 +4100,7 @@ export const appRouter = router({
             caseId: input.caseId,
             storageEntityId: draftId,
             fileName: safeFileName,
-            mimeType: input.mimeType,
+            mimeType: normalizedMimeType,
             binary,
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
@@ -4092,7 +4116,7 @@ export const appRouter = router({
         const draftPayload: AuditarDraftContractPayload = {
           draftId,
           fileName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           sizeBytes,
           sha256,
           storageKey: uploaded.key,
@@ -4741,7 +4765,7 @@ export const appRouter = router({
         }
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
-        const { safeFileName } = validateAuditarUploadMetadata({
+        const { safeFileName, normalizedMimeType } = validateAuditarUploadMetadata({
           fileName: input.fileName,
           mimeType: input.mimeType,
         });
@@ -4750,7 +4774,7 @@ export const appRouter = router({
         });
         const { sizeBytes, sha256 } = prepareAuditarUploadAsset({
           fileName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           binary,
         });
         acquireAuditarTransientDedup({
@@ -4766,7 +4790,7 @@ export const appRouter = router({
             caseId: input.caseId,
             storageEntityId: documentId,
             fileName: safeFileName,
-            mimeType: input.mimeType,
+            mimeType: normalizedMimeType,
             binary,
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
@@ -4787,7 +4811,7 @@ export const appRouter = router({
           documentId,
           uploadedByUserId: ctx.user.id,
           originalName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           sizeBytes,
           storageKey: uploaded.key,
           storageUrl: uploaded.url,
@@ -4823,7 +4847,7 @@ export const appRouter = router({
           consentStatus: input.consentStatus,
           classificationConfidence: classification.classificationConfidence,
           originalName: safeFileName,
-          mimeType: input.mimeType,
+          mimeType: normalizedMimeType,
           sizeBytes,
         });
 
