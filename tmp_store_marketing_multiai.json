@@ -1,0 +1,251 @@
+{
+  "openai": {
+    "store_positioning": {
+      "core_promise": "Sube tu recibo laboral y entiende rápido qué revisar para proteger tus derechos.",
+      "tone": "Serio, confiable, claro, humano y simple, sin jerga técnica ni legalista.",
+      "do_not_say": [
+        "Garantía legal",
+        "Recupera dinero",
+        "Asesoría definitiva"
+      ]
+    },
+    "screenshot_direction": {
+      "visual_principles": [
+        "Jerarquía tipográfica clara y dominante",
+        "Uso de fondo verde claro para sensación limpia y clínica",
+        "Elementos en turquesa para llamadas a la acción",
+        "Diseño simple y sin saturación técnica"
+      ],
+      "headline_set": [
+        {
+          "order": 1,
+          "headline": "Sube tu recibo laboral fácil",
+          "subheadline": "En segundos tendrás un análisis claro y sencillo."
+        },
+        {
+          "order": 2,
+          "headline": "Entiende qué revisar rápido",
+          "subheadline": "Detecta puntos clave para cuidar tus derechos."
+        },
+        {
+          "order": 3,
+          "headline": "Privacidad y seguridad total",
+          "subheadline": "Tus documentos están protegidos en todo momento."
+        },
+        {
+          "order": 4,
+          "headline": "Simplifica tu vida laboral",
+          "subheadline": "Sin tecnicismos ni complicaciones innecesarias."
+        }
+      ],
+      "icon_refinement": "Usar exclusivamente el símbolo central que combina documento y auditoría, con alta legibilidad, fondo limpio y sin textos ni badges externos.",
+      "splash_refinement": "Mantener wordmark oficial sobre fondo verde claro, con barra superior azul grisáceo oscuro y acento turquesa para detalles, asegurando coherencia y sensación de confianza."
+    },
+    "app_store_copy": {
+      "app_name_options": [
+        "Auditapatron",
+        "Auditapatron Laboral",
+        "Auditapatron Recibos"
+      ],
+      "subtitle_options": [
+        "Revisa tus recibos laborales fácil y rápido",
+        "Tu auditoría laboral simple y segura",
+        "Protege tus derechos laborales al instante"
+      ],
+      "keywords_es_mx": [
+        "recibo laboral",
+        "auditoría salarial",
+        "derechos laborales",
+        "trabajador México",
+        "revisión de nómina",
+        "documentos laborales",
+        "privacidad laboral",
+        "simple y claro"
+      ]
+    },
+    "google_play_copy": {
+      "short_description_options": [
+        "Sube y revisa tu recibo laboral fácil y rápido.",
+        "Audita tus documentos laborales sin complicaciones.",
+        "Protege tus derechos laborales con simplicidad."
+      ],
+      "long_description_paragraphs": [
+        "Auditapatron te ayuda a entender tu recibo laboral al instante. Sube tu documento y recibe un análisis claro y sencillo para saber qué puntos revisar.",
+        "Nuestra app es segura y privada: tus datos y documentos están protegidos en todo momento. Sin tecnicismos, sin confusiones, solo información útil para ti.",
+        "Ideal para trabajadores en México que quieren cuidar sus derechos sin complicarse con términos legales o técnicos. Auditapatron es tu aliado confiable y simple.",
+        "Descarga Auditapatron y comienza a revisar tus documentos laborales con confianza, rapidez y claridad. La forma más fácil de entender tu recibo y protegerte."
+      ]
+    },
+    "rationale": {
+      "why_this_will_convert": "La propuesta comunica claramente el beneficio inmediato de subir y entender recibos laborales en México, con un tono serio y humano que genera confianza. La simplicidad y privacidad resaltan como valores clave, diferenciándose de ofertas técnicas o legales que pueden intimidar al usuario promedio.",
+      "main_risk": "Que el usuario espere asesoría legal o resultados garantizados, lo que puede generar desconfianza o frustración si no se cumple.",
+      "mitigation": "Se evita lenguaje técnico o promesas legales, enfatizando simplicidad, utilidad y protección de privacidad; además, se comunican claramente los límites de la app en las descripciones y screenshots."
+    }
+  },
+  "grok": {
+    "store_positioning": {
+      "core_promise": "Sube tu recibo o documento y revisa rápido lo que importa.",
+      "tone": "serio, confiable, claro, humano y simple",
+      "do_not_say": [
+        "resultados legales garantizados",
+        "dinero recuperado",
+        "asesoría definitiva"
+      ]
+    },
+    "screenshot_direction": {
+      "visual_principles": [
+        "fondo verde claro limpio",
+        "azul grisáceo oscuro en encabezados",
+        "texto muy oscuro con alto contraste",
+        "acento turquesa solo en botones clave"
+      ],
+      "headline_set": [
+        {
+          "order": 1,
+          "headline": "Sube tu recibo en segundos",
+          "subheadline": "Toma una foto y listo."
+        },
+        {
+          "order": 2,
+          "headline": "Ve qué revisar de un vistazo",
+          "subheadline": "Puntos clave resaltados."
+        },
+        {
+          "order": 3,
+          "headline": "Tu información siempre privada",
+          "subheadline": "Solo tú ves tus documentos."
+        },
+        {
+          "order": 4,
+          "headline": "Simple y directo para ti",
+          "subheadline": "Sin complicaciones ni tecnicismos."
+        }
+      ],
+      "icon_refinement": "Usar solo el símbolo central de documento con lupa turquesa sobre fondo verde claro, sin recortes ni texto.",
+      "splash_refinement": "Wordmark oficial centrado sobre fondo verde claro con barra superior azul grisáceo."
+    },
+    "app_store_copy": {
+      "app_name_options": [
+        "Auditapatron",
+        "Audita Patrón",
+        "AuditaPatron MX"
+      ],
+      "subtitle_options": [
+        "Revisa tu recibo fácil",
+        "Entiende tu documento laboral",
+        "Sube y revisa rápido"
+      ],
+      "keywords_es_mx": [
+        "recibo de nómina",
+        "revisar documento",
+        "documento laboral",
+        "subir recibo",
+        "privacidad",
+        "trabajadores México",
+        "revisión simple",
+        "nomina fácil"
+      ]
+    },
+    "google_play_copy": {
+      "short_description_options": [
+        "Sube tu recibo y revisa lo importante de forma clara y privada.",
+        "Entiende rápido tu documento laboral con explicaciones simples.",
+        "Revisa tu recibo sin complicaciones ni tecnicismos."
+      ],
+      "long_description_paragraphs": [
+        "Sube una foto de tu recibo o documento laboral y descubre qué revisar de manera clara.",
+        "Todo se mantiene privado. Solo tú ves tu información.",
+        "Diseñado para trabajadores en México que quieren entender sus documentos sin complicaciones.",
+        "Interfaz simple con colores confiables y explicaciones directas."
+      ]
+    },
+    "rationale": {
+      "why_this_will_convert": "Enfatiza simplicidad y privacidad inmediata que resuena con trabajadores que buscan claridad sin tecnicismos.",
+      "main_risk": "Que el usuario espere asesoría legal completa.",
+      "mitigation": "Mantener lenguaje de revisión visual y utilidad práctica en todos los textos."
+    }
+  },
+  "gemini": {
+    "store_positioning": {
+      "core_promise": "Empoderar a los trabajadores de México con claridad sobre sus documentos laborales, de forma simple y confiable.",
+      "tone": "Serio, confiable, claro, humano y simple. Accesible y directo.",
+      "do_not_say": [
+        "Asesoría legal garantizada",
+        "Recupera tu dinero",
+        "Resoluciones definitivas"
+      ]
+    },
+    "screenshot_direction": {
+      "visual_principles": [
+        "Minimalismo funcional: Enfocado en la acción y la claridad del contenido.",
+        "Confianza cromática: Uso de verdes suaves, azules oscuros y turquesa para una sensación profesional y serena.",
+        "Tipografía legible: Fuentes de alto contraste para una lectura cómoda y rápida.",
+        "Jerarquía visual: Elementos clave (titulares, CTAs) dominantes para guiar la atención."
+      ],
+      "headline_set": [
+        {
+          "order": 1,
+          "headline": "Sube tu documento, entiende rápido",
+          "subheadline": "Fotografía o carga cualquier recibo o contrato laboral."
+        },
+        {
+          "order": 2,
+          "headline": "Puntos clave al instante",
+          "subheadline": "Identifica qué conviene revisar en tu situación laboral."
+        },
+        {
+          "order": 3,
+          "headline": "Información clara, no legalista",
+          "subheadline": "Lenguaje simple para tu tranquilidad y comprensión."
+        },
+        {
+          "order": 4,
+          "headline": "Tu privacidad es lo primero",
+          "subheadline": "Gestiona tus datos de forma segura y confidencial."
+        }
+      ],
+      "icon_refinement": "El icono final debe representar claramente un documento y un proceso de revisión o auditoría, con un diseño limpio y reconocible, optimizado para legibilidad en tamaños pequeños.",
+      "splash_refinement": "La pantalla de carga (splash) debe mantener la continuidad de la marca Auditapatron usando el wordmark oficial y la paleta de colores corporativa, transmitiendo una sensación de inicio profesional y rápido."
+    },
+    "app_store_copy": {
+      "app_name_options": [
+        "Auditapatron",
+        "Auditapatron MX",
+        "AuditaPatron"
+      ],
+      "subtitle_options": [
+        "Entiende tu recibo laboral fácil",
+        "Revisa tus documentos de trabajo",
+        "Claridad laboral, rápido y simple"
+      ],
+      "keywords_es_mx": [
+        "trabajo",
+        "recibo",
+        "documentos",
+        "laboral",
+        "derechos",
+        "México",
+        "empleo",
+        "contrato"
+      ]
+    },
+    "google_play_copy": {
+      "short_description_options": [
+        "Sube tus documentos laborales. Entiende qué revisar de forma simple y confiable.",
+        "Claridad inmediata sobre tus recibos y contratos de trabajo en México.",
+        "Auditapatron: Tu guía rápida para entender tus derechos laborales."
+      ],
+      "long_description_paragraphs": [
+        "Auditapatron te ayuda a entender tus documentos laborales de forma sencilla y sin complicaciones. Sube tu recibo de nómina, contrato o cualquier documento de trabajo y nuestra app te mostrará los puntos clave que debes revisar, con un lenguaje claro y humano.",
+        "Diseñada para trabajadores en México, Auditapatron te ofrece una herramienta confiable para tener mayor claridad sobre tu situación laboral. Olvídate de la jerga legalista; aquí la información es directa y fácil de comprender, para que tomes decisiones informadas.",
+        "Tu privacidad es nuestra prioridad. Todos tus documentos y datos son gestionados con la máxima seguridad y confidencialidad. Auditapatron no guarda tus datos personales más allá de lo necesario para el análisis y te permite mantener el control total sobre tu información.",
+        "Descarga Auditapatron hoy y descubre la forma más simple de entender tus derechos y obligaciones laborales. Obtén tranquilidad al saber qué buscar en tus documentos, sin promesas de resultados legales, solo claridad y empoderamiento para ti."
+      ]
+    },
+    "rationale": {
+      "why_this_will_convert": "La propuesta enfatiza la simplicidad, la claridad y la inmediatez de la utilidad, lo cual es altamente atractivo para un público que busca entender información compleja sin esfuerzo. El tono humano y confiable genera seguridad, mientras que la privacidad y la no-promesa legalista alinean las expectativas correctamente, construyendo una base de confianza.",
+      "main_risk": "El principal riesgo es que los usuarios esperen asesoría legal o soluciones definitivas, a pesar de las advertencias. La naturaleza sensible de los temas laborales puede llevar a interpretaciones erróneas de la funcionalidad de la app.",
+      "mitigation": "Reforzar constantemente en el copy, screenshots y en la propia app que Auditapatron es una 'guía para revisión' o 'herramienta de claridad', no un sustituto de asesoría legal. Incluir un disclaimer claro y visible dentro de la app sobre el alcance de su funcionalidad. La comunicación debe ser siempre de 'entendimiento' y 'puntos a revisar', no de 'solución' o 'ganancia'."
+    }
+  }
+}

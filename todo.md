@@ -1709,7 +1709,10 @@
 - [x] Ejecutar ronda integral aprobada por el usuario: Google móvil, linking de cuentas, persistencia de sesión, preparación de stores y pulido UX sin Apple
 - [ ] Probar en iPhone y Android reales el retorno nativo de Google con el esquema auditapatron://
 - [ ] Validar en dispositivos reales que la sesión sobreviva al cerrar y reabrir la app después del login social
-- [ ] Definir y producir iconos, splash screens y capturas finales para tiendas
+- [x] Definir y producir iconos, splash screens y capturas finales para tiendas
 - [ ] Decidir si después del esquema nativo conviene complementar OAuth móvil con universal links y archivos .well-known
 - [x] Documentar identidad móvil actual, esquema auditapatron:// y checklist operativo de preparación para stores
 - [x] Preparar paquete visual de stores: iconos, splash screens y capturas base para iOS y Android
+- [x] Refinar screenshots de stores con copy final y composición comercial más pulida
+- [x] Generar paquete final de iconos y splash screens en tamaños nativos requeridos por iOS y Android
+- [x] Redactar ficha de publicación para App Store y Google Play con títulos, subtítulos, descripción y keywords
