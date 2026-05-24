@@ -1,0 +1,184 @@
+{
+  "context": {
+    "problem_summary": [
+      "La app local sí clasifica y guarda documentos, y sí dispara el flujo hacia Helios.",
+      "El bridge remoto falla con reason=invalid_ack_contract en devserver.log.",
+      "https://www.complilink.mx/api/auditapatron/health responde 301 a complilink.mx y luego 200 text/html, no JSON contractual.",
+      "https://complilink.mx/api/internal/helios/bridge/contract responde 200 application/json con contractReady=true.",
+      "https://complilink.mx/api/auditapatron/webhook responde 200 text/html, no un ack con responseContract=auditapatron.bridge.ack.v1.",
+      "En código fuente actual existe registerCompliLinkReturnWebhook(app) y registra /api/auditapatron/health, /api/auditapatron/webhook, /api/internal/helios/bridge/contract y otras rutas.",
+      "El usuario pide una conexión a prueba de balas con Helios o el bridge, evitando quedar atados a un endpoint remoto que devuelva HTML o un contrato inválido."
+    ],
+    "current_design_notes": {
+      "dispatch_function": "sendDocumentToAuditaPatronEngine() hace POST firmado al webhookUrl configurado y sólo considera válido el ack si responseContract == auditapatron.bridge.ack.v1.",
+      "current_config": "getAuditaPatronEngineConfig() hoy sólo contempla un webhookUrl primario y un hmacSecret.",
+      "observable_risk": "Si el dominio público queda desalineado o publica una versión sin esas rutas, el flujo documental se rompe aunque Helios interno siga sano."
+    }
+  },
+  "chatgpt": {
+    "status_code": 200,
+    "body": {
+      "id": "chatcmpl-DisxcCqhyXrPajkNPGDswU3f3JyLr",
+      "object": "chat.completion",
+      "created": 1779590072,
+      "model": "gpt-4.1-mini-2025-04-14",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"root_cause_hypothesis\": \"El bridge remoto falla porque el endpoint configurado para el webhookUrl responde con contenido HTML o redirecciones (301) en lugar del JSON esperado con el contrato válido, lo que provoca invalid_ack_contract y rompe el flujo documental.\",\n  \"recommended_fix\": \"Implementar un mecanismo de validación previa y fallback para el webhookUrl que verifique que el endpoint responde con el contrato JSON esperado (responseContract == auditapatron.bridge.ack.v1) antes de enviar documentos, y en caso de fallo, cambiar automáticamente a un endpoint alternativo o modo degradado que garantice la continuidad del flujo.\",\n  \"hardening_steps\": [\n    \"Agregar validación de contrato en health checks periódicos que confirmen que el webhookUrl responde con JSON válido y el responseContract esperado.\",\n    \"Configurar múltiples endpoints webhookUrl con prioridad y lógica de fallback automática en caso de respuesta inválida o no contractual.\",\n    \"Modificar sendDocumentToAuditaPatronEngine() para que rechace endpoints que no cumplan el contrato y active fallback sin interrumpir el flujo documental.\"\n  ],\n  \"tests_to_add\": [\n    \"Smoke test que valide que el webhookUrl responde con JSON válido y responseContract correcto antes de enviar documentos.\",\n    \"Test de integración que simule respuestas 301, HTML o contratos inválidos para verificar que el fallback se activa correctamente.\",\n    \"Health check automatizado que monitorice la disponibilidad y validez del contrato de los endpoints configurados.\"\n  ],\n  \"risk_level\": \"high\"\n}",
+            "refusal": null,
+            "annotations": []
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 502,
+        "completion_tokens": 319,
+        "total_tokens": 821,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "service_tier": "default",
+      "system_fingerprint": "fp_44222b3f42"
+    }
+  },
+  "grok": {
+    "status_code": 200,
+    "body": {
+      "id": "6606fbb4-e4d5-9752-a1df-fb7269520a01",
+      "object": "chat.completion",
+      "created": 1779590077,
+      "model": "grok-4.3",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"root_cause_hypothesis\": \"Public endpoints /api/auditapatron/health and /api/auditapatron/webhook return HTML (after 301 redirect) instead of the required JSON ack with responseContract=auditapatron.bridge.ack.v1, causing sendDocumentToAuditaPatronEngine() validation to fail with invalid_ack_contract despite internal contract endpoint succeeding.\",\n  \"recommended_fix\": \"Extend getAuditaPatronEngineConfig() to support primary webhook + internal Helios bridge fallback; update dispatch to first validate via /contract, POST to webhook, enforce strict JSON ack, and failover to internal bridge on mismatch or non-JSON.\",\n  \"hardening_steps\": [\n    \"Add contract pre-flight check + responseContract validator with circuit-breaker before every document POST\",\n    \"Register dual endpoints (public webhook + internal /api/internal/helios/bridge) and auto-failover on HTML/301 or invalid ack\",\n    \"Enforce JSON-only responses via Express middleware and deploy health-check that asserts contractReady=true + ack schema\"\n  ],\n  \"tests_to_add\": [\n    \"Unit test dispatch with mocked HTML 200, 301 redirect, and valid ack.v1 responses\",\n    \"Integration smoke test hitting both public and internal bridge URLs verifying failover path\",\n    \"Contract schema test asserting responseContract and absence of HTML body on webhook replies\"\n  ],\n  \"risk_level\": \"high\"\n}",
+            "reasoning_content": "The task is to respond EXCLUSIVELY in valid JSON with this exact schema:\n{\n  \"root_cause_hypothesis\": \"El bridge remoto falla porque el webhook endpoint de AuditaPatron devuelve HTML en lugar de JSON con el ack contract esperado, causando invalid_ack_contract; además, el health check está desalineado retornando 301/200 text/html no JSON, y el dominio 301 redirige a no-contractual.",
+            "refusal": null
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 639,
+        "completion_tokens": 290,
+        "total_tokens": 1525,
+        "prompt_tokens_details": {
+          "text_tokens": 639,
+          "audio_tokens": 0,
+          "image_tokens": 0,
+          "cached_tokens": 128
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 596,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        },
+        "num_sources_used": 0,
+        "cost_in_usd_ticks": 28793500
+      },
+      "system_fingerprint": "fp_eb3c003fc66c14ed"
+    }
+  },
+  "gemini": {
+    "status_code": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "parts": [
+              {
+                "text": "{\n  \"root_cause_hypothesis\": \"The remote CompliLink 'auditapatron' service endpoints (/api/auditapatron/health and /api/auditapatron/webhook) are misconfigured or incorrectly deployed on 'complilink.mx' (and 'www.complilink.mx'). Instead of returning contractual JSON responses, they are serving 'text/html'. This directly causes the 'invalid_ack_contract' error as the local application expects a specific JSON structure and content-type for the webhook acknowledgement. The domain redirection from 'www.complilink.mx' further complicates consistent access.\",\n  \"recommended_fix\": \"1. **Immediate Remote Action:** The CompliLink team must correct the deployment/configuration of their 'auditapatron' service endpoints on 'complilink.mx' to return valid JSON with the expected 'responseContract' for the webhook and a contractual JSON for the health check. 2. **Local Application Hardening (Node/Express):** Update the 'webhookUrl' configuration to explicitly use 'https://complilink.mx/api/auditapatron/webhook' (avoiding 'www.' redirection). Implement a pre-dispatch contract validation step by calling 'https://complilink.mx/api/internal/helios/bridge/contract' and proceeding only if 'contractReady=true'. Enhance the webhook call to strictly validate the response 'Content-Type' as 'application/json' and the 'responseContract' value. Integrate a circuit breaker pattern around the 'sendDocumentToAuditaPatronEngine' function to prevent continuous calls to a failing service. Implement a persistent outbox/Dead Letter Queue (DLQ) for documents that fail to dispatch after retries or when the circuit is open.\",\n  \"hardening_steps\": [\n    \"Extend `getAuditaPatronEngineConfig()` to include `primaryWebhookUrl`, `contractValidationUrl`, `healthCheckUrl`, `retryPolicy` (max retries, backoff), and `circuitBreakerConfig` (failure threshold, reset timeout).\",\n    \"Modify `sendDocumentToAuditaPatronEngine()` to perform a pre-dispatch `GET` request to `contractValidationUrl`. Abort dispatch if the response is not `200 application/json` or `contractReady` is `false`, logging a critical error.\",\n    \"Implement strict validation of the webhook response: first, check the `Content-Type` header for `application/json`. If it's not, immediately log a critical error and treat as an invalid contract. Then, parse the JSON and validate the `responseContract` value.\",\n    \"Integrate a circuit breaker (e.g., using 'opossum' library for Node.js) around the `sendDocumentToAuditaPatronEngine` call to manage failures, prevent cascading issues, and provide graceful degradation.\",\n    \"Implement a persistent outbox or Dead Letter Queue (DLQ) to store documents that fail to dispatch after all retries or when the circuit is open, ensuring no data loss and allowing for manual review/reprocessing.\",\n    \"Add comprehensive monitoring and alerting for contract validation failures, non-JSON webhook responses, `invalid_ack_contract` errors, circuit breaker state changes (open/half-open/closed), and DLQ backlog.\"\n  ],\n  \"tests_to_add\": [\n    \"Unit Test: `sendDocumentToAuditaPatronEngine` with a mocked remote service returning `200 text/html` for the webhook, asserting failure due to `Content-Type` mismatch and correct error handling.\",\n    \"Unit Test: `sendDocumentToAuditaPatronEngine` with a mocked remote service returning `200 application/json` but an invalid `responseContract` value, asserting failure due to contract validation.\",\n    \"Integration Test: Pre-dispatch contract validation, mocking `contractValidationUrl` to return `contractReady: false` or a non-200 status, asserting that `sendDocumentToAuditaPatronEngine` is aborted and an appropriate error is logged.\",\n    \"Integration Test: Circuit breaker functionality, simulating a series of failures (e.g., 5 consecutive `invalid_ack_contract` responses) to open the circuit, then a successful call after the `resetTimeout` to half-open/close it, verifying correct state transitions and call prevention.\",\n    \"End-to-End Test: Deploy a mock CompliLink service capable of simulating valid, invalid (HTML), and delayed responses for the webhook and contract endpoints, then run the full document dispatch flow to validate the resilience mechanisms.\"\n  ],\n  \"risk_level\": \"high\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "usageMetadata": {
+        "promptTokenCount": 553,
+        "candidatesTokenCount": 986,
+        "totalTokenCount": 5435,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 553
+          }
+        ],
+        "thoughtsTokenCount": 3896,
+        "serviceTier": "standard"
+      },
+      "modelVersion": "gemini-2.5-flash",
+      "responseId": "w2MSao2nGsWu_PUPzomYwA4"
+    }
+  },
+  "normalized": {
+    "chatgpt": {
+      "root_cause_hypothesis": "El bridge remoto falla porque el endpoint configurado para el webhookUrl responde con contenido HTML o redirecciones (301) en lugar del JSON esperado con el contrato válido, lo que provoca invalid_ack_contract y rompe el flujo documental.",
+      "recommended_fix": "Implementar un mecanismo de validación previa y fallback para el webhookUrl que verifique que el endpoint responde con el contrato JSON esperado (responseContract == auditapatron.bridge.ack.v1) antes de enviar documentos, y en caso de fallo, cambiar automáticamente a un endpoint alternativo o modo degradado que garantice la continuidad del flujo.",
+      "hardening_steps": [
+        "Agregar validación de contrato en health checks periódicos que confirmen que el webhookUrl responde con JSON válido y el responseContract esperado.",
+        "Configurar múltiples endpoints webhookUrl con prioridad y lógica de fallback automática en caso de respuesta inválida o no contractual.",
+        "Modificar sendDocumentToAuditaPatronEngine() para que rechace endpoints que no cumplan el contrato y active fallback sin interrumpir el flujo documental."
+      ],
+      "tests_to_add": [
+        "Smoke test que valide que el webhookUrl responde con JSON válido y responseContract correcto antes de enviar documentos.",
+        "Test de integración que simule respuestas 301, HTML o contratos inválidos para verificar que el fallback se activa correctamente.",
+        "Health check automatizado que monitorice la disponibilidad y validez del contrato de los endpoints configurados."
+      ],
+      "risk_level": "high"
+    },
+    "grok": {
+      "root_cause_hypothesis": "Public endpoints /api/auditapatron/health and /api/auditapatron/webhook return HTML (after 301 redirect) instead of the required JSON ack with responseContract=auditapatron.bridge.ack.v1, causing sendDocumentToAuditaPatronEngine() validation to fail with invalid_ack_contract despite internal contract endpoint succeeding.",
+      "recommended_fix": "Extend getAuditaPatronEngineConfig() to support primary webhook + internal Helios bridge fallback; update dispatch to first validate via /contract, POST to webhook, enforce strict JSON ack, and failover to internal bridge on mismatch or non-JSON.",
+      "hardening_steps": [
+        "Add contract pre-flight check + responseContract validator with circuit-breaker before every document POST",
+        "Register dual endpoints (public webhook + internal /api/internal/helios/bridge) and auto-failover on HTML/301 or invalid ack",
+        "Enforce JSON-only responses via Express middleware and deploy health-check that asserts contractReady=true + ack schema"
+      ],
+      "tests_to_add": [
+        "Unit test dispatch with mocked HTML 200, 301 redirect, and valid ack.v1 responses",
+        "Integration smoke test hitting both public and internal bridge URLs verifying failover path",
+        "Contract schema test asserting responseContract and absence of HTML body on webhook replies"
+      ],
+      "risk_level": "high"
+    },
+    "gemini": {
+      "root_cause_hypothesis": "The remote CompliLink 'auditapatron' service endpoints (/api/auditapatron/health and /api/auditapatron/webhook) are misconfigured or incorrectly deployed on 'complilink.mx' (and 'www.complilink.mx'). Instead of returning contractual JSON responses, they are serving 'text/html'. This directly causes the 'invalid_ack_contract' error as the local application expects a specific JSON structure and content-type for the webhook acknowledgement. The domain redirection from 'www.complilink.mx' further complicates consistent access.",
+      "recommended_fix": "1. **Immediate Remote Action:** The CompliLink team must correct the deployment/configuration of their 'auditapatron' service endpoints on 'complilink.mx' to return valid JSON with the expected 'responseContract' for the webhook and a contractual JSON for the health check. 2. **Local Application Hardening (Node/Express):** Update the 'webhookUrl' configuration to explicitly use 'https://complilink.mx/api/auditapatron/webhook' (avoiding 'www.' redirection). Implement a pre-dispatch contract validation step by calling 'https://complilink.mx/api/internal/helios/bridge/contract' and proceeding only if 'contractReady=true'. Enhance the webhook call to strictly validate the response 'Content-Type' as 'application/json' and the 'responseContract' value. Integrate a circuit breaker pattern around the 'sendDocumentToAuditaPatronEngine' function to prevent continuous calls to a failing service. Implement a persistent outbox/Dead Letter Queue (DLQ) for documents that fail to dispatch after retries or when the circuit is open.",
+      "hardening_steps": [
+        "Extend `getAuditaPatronEngineConfig()` to include `primaryWebhookUrl`, `contractValidationUrl`, `healthCheckUrl`, `retryPolicy` (max retries, backoff), and `circuitBreakerConfig` (failure threshold, reset timeout).",
+        "Modify `sendDocumentToAuditaPatronEngine()` to perform a pre-dispatch `GET` request to `contractValidationUrl`. Abort dispatch if the response is not `200 application/json` or `contractReady` is `false`, logging a critical error.",
+        "Implement strict validation of the webhook response: first, check the `Content-Type` header for `application/json`. If it's not, immediately log a critical error and treat as an invalid contract. Then, parse the JSON and validate the `responseContract` value.",
+        "Integrate a circuit breaker (e.g., using 'opossum' library for Node.js) around the `sendDocumentToAuditaPatronEngine` call to manage failures, prevent cascading issues, and provide graceful degradation.",
+        "Implement a persistent outbox or Dead Letter Queue (DLQ) to store documents that fail to dispatch after all retries or when the circuit is open, ensuring no data loss and allowing for manual review/reprocessing.",
+        "Add comprehensive monitoring and alerting for contract validation failures, non-JSON webhook responses, `invalid_ack_contract` errors, circuit breaker state changes (open/half-open/closed), and DLQ backlog."
+      ],
+      "tests_to_add": [
+        "Unit Test: `sendDocumentToAuditaPatronEngine` with a mocked remote service returning `200 text/html` for the webhook, asserting failure due to `Content-Type` mismatch and correct error handling.",
+        "Unit Test: `sendDocumentToAuditaPatronEngine` with a mocked remote service returning `200 application/json` but an invalid `responseContract` value, asserting failure due to contract validation.",
+        "Integration Test: Pre-dispatch contract validation, mocking `contractValidationUrl` to return `contractReady: false` or a non-200 status, asserting that `sendDocumentToAuditaPatronEngine` is aborted and an appropriate error is logged.",
+        "Integration Test: Circuit breaker functionality, simulating a series of failures (e.g., 5 consecutive `invalid_ack_contract` responses) to open the circuit, then a successful call after the `resetTimeout` to half-open/close it, verifying correct state transitions and call prevention.",
+        "End-to-End Test: Deploy a mock CompliLink service capable of simulating valid, invalid (HTML), and delayed responses for the webhook and contract endpoints, then run the full document dispatch flow to validate the resilience mechanisms."
+      ],
+      "risk_level": "high"
+    }
+  }
+}

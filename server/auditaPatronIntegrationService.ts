@@ -27,6 +27,7 @@ export type AuditaPatronEngineConfig = {
   webhookUrl: string;
   hmacSecret: string;
   retryDelaysMs: number[];
+  fallbackWebhookUrls?: string[];
 };
 
 export type AuditaPatronMetadataValue = string | number | boolean | null;
@@ -45,6 +46,21 @@ export type CompliLinkBridgeResponseAck = {
   recommendedNextAction?: string | null;
   responseContract?: string | null;
   issues?: Array<Record<string, unknown>>;
+};
+
+type BridgeHealthAck = {
+  status?: string | null;
+  bridge?: string | null;
+  webhookPath?: string | null;
+  responseContract?: string | null;
+};
+
+type BridgeHealthProbeResult = {
+  ok: boolean;
+  reason?: string;
+  httpStatus: number | null;
+  responseBody: string | null;
+  errorMessage?: string;
 };
 
 export type AuditaPatronEnginePayload = {
@@ -180,6 +196,146 @@ function isRemoteBridgeSmokeEnabled() {
     process.env.ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === "TRUE" &&
     (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test")
   );
+}
+
+function buildLoopbackWebhookUrl(webhookUrl: string) {
+  const port = process.env.PORT?.trim();
+  if (!port) return null;
+
+  try {
+    const parsed = new URL(webhookUrl);
+    const allowedHost =
+      parsed.hostname === "complilink.mx" ||
+      parsed.hostname === "www.complilink.mx" ||
+      parsed.hostname.endsWith(".manus.space") ||
+      parsed.hostname.includes(".manus.computer");
+
+    if (!allowedHost || parsed.pathname !== "/api/auditapatron/webhook") {
+      return null;
+    }
+
+    return `http://127.0.0.1:${port}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeWebhookUrlCandidates(config: AuditaPatronEngineConfig) {
+  const candidates: string[] = [];
+  const push = (value?: string | null) => {
+    const normalized = value?.trim();
+    if (!normalized || candidates.includes(normalized)) return;
+    candidates.push(normalized);
+  };
+
+  push(config.webhookUrl);
+  for (const fallbackUrl of config.fallbackWebhookUrls ?? []) {
+    push(fallbackUrl);
+  }
+
+  try {
+    const parsed = new URL(config.webhookUrl);
+    if (parsed.hostname.startsWith("www.")) {
+      const withoutWww = new URL(parsed.toString());
+      withoutWww.hostname = parsed.hostname.replace(/^www\./, "");
+      push(withoutWww.toString());
+    }
+  } catch {
+    // Ignore malformed URL here; the send function will surface a clearer error later.
+  }
+
+  push(buildLoopbackWebhookUrl(config.webhookUrl));
+
+  return candidates;
+}
+
+function deriveBridgeHealthUrl(webhookUrl: string) {
+  try {
+    const parsed = new URL(webhookUrl);
+    parsed.pathname = "/api/auditapatron/health";
+    parsed.search = "";
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function hasValidBridgeHealthAck(value: BridgeHealthAck | null, webhookUrl: string) {
+  if (value?.status !== "ok" || value?.responseContract !== COMPLILINK_BRIDGE_RESPONSE_CONTRACT) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(webhookUrl);
+    return !value.webhookPath || value.webhookPath === parsed.pathname;
+  } catch {
+    return true;
+  }
+}
+
+async function probeBridgeHealth(webhookUrl: string): Promise<BridgeHealthProbeResult> {
+  const healthUrl = deriveBridgeHealthUrl(webhookUrl);
+  if (!healthUrl) {
+    return {
+      ok: false,
+      reason: "invalid_webhook_url",
+      httpStatus: null,
+      responseBody: null,
+    };
+  }
+
+  try {
+    const response = await fetch(healthUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    const responseBody = sanitizeResponseBody(await response.text());
+    const parsed = safeJsonParse<BridgeHealthAck>(responseBody);
+    const contentType = (response.headers.get("content-type") ?? "").toLowerCase();
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        reason: "health_check_failed",
+        httpStatus: response.status,
+        responseBody,
+      };
+    }
+
+    if (!contentType.includes("application/json")) {
+      return {
+        ok: false,
+        reason: "health_non_json",
+        httpStatus: response.status,
+        responseBody,
+      };
+    }
+
+    if (!hasValidBridgeHealthAck(parsed, webhookUrl)) {
+      return {
+        ok: false,
+        reason: "health_invalid_contract",
+        httpStatus: response.status,
+        responseBody,
+      };
+    }
+
+    return {
+      ok: true,
+      httpStatus: response.status,
+      responseBody,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "health_network_error",
+      httpStatus: null,
+      responseBody: null,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function buildObservabilityEnvelope(params: {
@@ -326,6 +482,7 @@ export function getAuditaPatronEngineConfig(overrides?: Partial<AuditaPatronEngi
     webhookUrl: overrides?.webhookUrl ?? (ENV as typeof ENV & { auditapatronEngineWebhookUrl?: string }).auditapatronEngineWebhookUrl ?? "",
     hmacSecret: overrides?.hmacSecret ?? (ENV as typeof ENV & { auditapatronEngineHmacSecret?: string }).auditapatronEngineHmacSecret ?? "",
     retryDelaysMs: overrides?.retryDelaysMs ?? [...DEFAULT_RETRY_DELAYS_MS],
+    fallbackWebhookUrls: overrides?.fallbackWebhookUrls ?? [],
   };
 }
 
@@ -472,6 +629,7 @@ export async function sendDocumentToAuditaPatronEngine(
   overrides?: Partial<AuditaPatronEngineConfig>,
 ): Promise<AuditaPatronEngineDispatchResult> {
   const config = getAuditaPatronEngineConfig(overrides);
+  const candidateWebhookUrls = normalizeWebhookUrlCandidates(config);
   const dispatchId = randomUUID();
   const correlationId = randomUUID();
   const payload = buildAuditaPatronEnginePayload({
@@ -479,10 +637,10 @@ export async function sendDocumentToAuditaPatronEngine(
     dispatchId,
     correlationId,
   });
-  const { targetHost, targetPath } = parseWebhookTarget(config.webhookUrl);
+  const initialTarget = parseWebhookTarget(candidateWebhookUrls[0] ?? config.webhookUrl);
   const remoteSmokeEnabled = isRemoteBridgeSmokeEnabled();
 
-  if (!config.webhookUrl || !config.hmacSecret) {
+  if (candidateWebhookUrls.length === 0 || !config.hmacSecret) {
     const result = {
       status: "skipped",
       dispatchedAt: new Date().toISOString(),
@@ -494,8 +652,8 @@ export async function sendDocumentToAuditaPatronEngine(
       observabilityEnvelope: buildObservabilityEnvelope({
         dispatchId,
         correlationId,
-        targetHost,
-        targetPath,
+        targetHost: initialTarget.targetHost,
+        targetPath: initialTarget.targetPath,
         outcomeCategory: "skipped",
         retryScheduled: false,
         retryDelayMs: null,
@@ -522,160 +680,116 @@ export async function sendDocumentToAuditaPatronEngine(
   let lastReason: string | undefined;
   let lastResponseAck: CompliLinkBridgeResponseAck | null = null;
   let finalTimestamp = buildUnixTimestamp();
+  let lastTargetHost = initialTarget.targetHost;
+  let lastTargetPath = initialTarget.targetPath;
 
-  for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
-    attempts += 1;
-    finalTimestamp = buildUnixTimestamp();
-    const signature = buildAuditaPatronEngineSignature(finalTimestamp, body, config.hmacSecret);
+  for (const webhookUrl of candidateWebhookUrls) {
+    const candidateTarget = parseWebhookTarget(webhookUrl);
+    lastTargetHost = candidateTarget.targetHost;
+    lastTargetPath = candidateTarget.targetPath;
 
-    try {
-      const response = await fetch(config.webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-AuditaPatron-Signature": signature,
-          "X-AuditaPatron-Timestamp": finalTimestamp,
-        },
-        body,
-      });
+    const healthProbe = await probeBridgeHealth(webhookUrl);
+    if (!healthProbe.ok) {
+      lastHttpStatus = healthProbe.httpStatus;
+      lastResponseBody = healthProbe.responseBody;
+      lastErrorMessage = healthProbe.errorMessage;
+      lastReason = healthProbe.reason;
+      continue;
+    }
 
-      lastHttpStatus = response.status;
-      lastResponseBody = sanitizeResponseBody(await response.text());
-      lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(lastResponseBody);
+    for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
+      attempts += 1;
+      finalTimestamp = buildUnixTimestamp();
+      const signature = buildAuditaPatronEngineSignature(finalTimestamp, body, config.hmacSecret);
 
-      if (response.ok && hasValidBridgeAck(lastResponseAck)) {
-        const result = {
-          status: "sent",
-          dispatchedAt: new Date().toISOString(),
-          timestamp: finalTimestamp,
-          attempts,
-          httpStatus: response.status,
-          responseBody: lastResponseBody,
-          responseAck: lastResponseAck,
-          payload,
-          observabilityEnvelope: buildObservabilityEnvelope({
-            dispatchId,
-            correlationId,
-            targetHost,
-            targetPath,
-            outcomeCategory: "success",
-            retryScheduled: false,
-            retryDelayMs: null,
-            remoteSmokeEnabled,
-            httpStatusCode: response.status,
-          }),
-        } satisfies AuditaPatronEngineDispatchResult;
-
-        emitBridgeObservability({
-          status: result.status,
-          attempts: result.attempts,
-          observabilityEnvelope: result.observabilityEnvelope,
+      try {
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-AuditaPatron-Signature": signature,
+            "X-AuditaPatron-Timestamp": finalTimestamp,
+          },
+          body,
         });
 
-        return result;
+        lastHttpStatus = response.status;
+        lastResponseBody = sanitizeResponseBody(await response.text());
+        lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(lastResponseBody);
+        lastErrorMessage = undefined;
+
+        if (response.ok && hasValidBridgeAck(lastResponseAck)) {
+          const result = {
+            status: "sent",
+            dispatchedAt: new Date().toISOString(),
+            timestamp: finalTimestamp,
+            attempts,
+            httpStatus: response.status,
+            responseBody: lastResponseBody,
+            responseAck: lastResponseAck,
+            payload,
+            observabilityEnvelope: buildObservabilityEnvelope({
+              dispatchId,
+              correlationId,
+              targetHost: candidateTarget.targetHost,
+              targetPath: candidateTarget.targetPath,
+              outcomeCategory: "success",
+              retryScheduled: false,
+              retryDelayMs: null,
+              remoteSmokeEnabled,
+              httpStatusCode: response.status,
+            }),
+          } satisfies AuditaPatronEngineDispatchResult;
+
+          emitBridgeObservability({
+            status: result.status,
+            attempts: result.attempts,
+            observabilityEnvelope: result.observabilityEnvelope,
+          });
+
+          return result;
+        }
+
+        if (response.ok) {
+          lastReason = "invalid_ack_contract";
+          break;
+        }
+
+        lastReason = response.status === 400
+          ? "contract_validation_failed"
+          : response.status === 403
+            ? "authentication_failed"
+            : "webhook_rejected";
+
+        if (shouldRetry(response.status) && attemptIndex < config.retryDelaysMs.length) {
+          const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
+          emitBridgeObservability({
+            status: "failed",
+            attempts,
+            reason: lastReason,
+            observabilityEnvelope: buildObservabilityEnvelope({
+              dispatchId,
+              correlationId,
+              targetHost: candidateTarget.targetHost,
+              targetPath: candidateTarget.targetPath,
+              outcomeCategory: "retry_scheduled",
+              retryScheduled: true,
+              retryDelayMs,
+              remoteSmokeEnabled,
+              httpStatusCode: response.status,
+            }),
+          });
+          await sleep(retryDelayMs);
+          continue;
+        }
+
+        break;
+      } catch (error) {
+        lastHttpStatus = null;
+        lastReason = "network_error";
+        lastErrorMessage = error instanceof Error ? error.message : String(error);
+        break;
       }
-
-      if (response.ok) {
-        lastReason = "invalid_ack_contract";
-        const result = {
-          status: "failed",
-          dispatchedAt: new Date().toISOString(),
-          timestamp: finalTimestamp,
-          attempts,
-          httpStatus: response.status,
-          reason: lastReason,
-          responseBody: lastResponseBody,
-          responseAck: lastResponseAck,
-          payload,
-          observabilityEnvelope: buildObservabilityEnvelope({
-            dispatchId,
-            correlationId,
-            targetHost,
-            targetPath,
-            outcomeCategory: "permanent_failure",
-            retryScheduled: false,
-            retryDelayMs: null,
-            remoteSmokeEnabled,
-            httpStatusCode: response.status,
-          }),
-        } satisfies AuditaPatronEngineDispatchResult;
-
-        emitBridgeObservability({
-          status: result.status,
-          attempts: result.attempts,
-          reason: result.reason,
-          observabilityEnvelope: result.observabilityEnvelope,
-        });
-
-        return result;
-      }
-
-      lastReason = response.status === 400
-        ? "contract_validation_failed"
-        : response.status === 403
-          ? "authentication_failed"
-          : "webhook_rejected";
-
-      if (shouldRetry(response.status) && attemptIndex < config.retryDelaysMs.length) {
-        const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
-        emitBridgeObservability({
-          status: "failed",
-          attempts,
-          reason: lastReason,
-              observabilityEnvelope: buildObservabilityEnvelope({
-                dispatchId,
-                correlationId,
-                targetHost,
-                targetPath,
-                outcomeCategory: "retry_scheduled",
-
-            retryScheduled: true,
-            retryDelayMs,
-            remoteSmokeEnabled,
-            httpStatusCode: response.status,
-          }),
-        });
-        await sleep(retryDelayMs);
-        continue;
-      }
-
-      const result = {
-        status: "failed",
-        dispatchedAt: new Date().toISOString(),
-        timestamp: finalTimestamp,
-        attempts,
-        httpStatus: response.status,
-        reason: lastReason,
-        responseBody: lastResponseBody,
-        responseAck: lastResponseAck,
-        payload,
-          observabilityEnvelope: buildObservabilityEnvelope({
-            dispatchId,
-            correlationId,
-            targetHost,
-            targetPath,
-            outcomeCategory: "permanent_failure",
-
-          retryScheduled: false,
-          retryDelayMs: null,
-          remoteSmokeEnabled,
-          httpStatusCode: response.status,
-        }),
-      } satisfies AuditaPatronEngineDispatchResult;
-
-      emitBridgeObservability({
-        status: result.status,
-        attempts: result.attempts,
-        reason: result.reason,
-        observabilityEnvelope: result.observabilityEnvelope,
-      });
-
-      return result;
-    } catch (error) {
-      lastHttpStatus = null;
-      lastReason = "network_error";
-      lastErrorMessage = error instanceof Error ? error.message : String(error);
-      break;
     }
   }
 
@@ -693,8 +807,8 @@ export async function sendDocumentToAuditaPatronEngine(
     observabilityEnvelope: buildObservabilityEnvelope({
       dispatchId,
       correlationId,
-      targetHost,
-      targetPath,
+      targetHost: lastTargetHost,
+      targetPath: lastTargetPath,
       outcomeCategory: "permanent_failure",
       retryScheduled: false,
       retryDelayMs: null,

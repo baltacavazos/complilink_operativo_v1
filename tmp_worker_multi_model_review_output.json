@@ -1,0 +1,195 @@
+{
+  "input": {
+    "xml_summaries": [
+      {
+        "file": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+        "uuid": "1F870DC0-BDF0-5227-A698-907D55E15F69",
+        "fecha_pago": "2026-04-30",
+        "periodo_inicio": "2026-04-16",
+        "periodo_fin": "2026-04-30",
+        "total": "4725.60",
+        "sub_total": "4725.60",
+        "worker_name": "JAIME SANTIAGO LOPEZ",
+        "worker_rfc": "SALJ6005104X2",
+        "employer_name": "EVOLUCION CREATIVA CAMREFLEX",
+        "employer_rfc": "ECC190605VA1",
+        "num_empleado": "929714",
+        "fecha_inicio_relacion": "2023-07-16",
+        "tipo_contrato": "01",
+        "tipo_regimen": "02",
+        "periodicidad_pago": "04",
+        "salario_base_cotizacion": "331.45",
+        "salario_diario_integrado": "331.45",
+        "nss": "64836003307",
+        "curp": "SALJ600510HOCNPM00",
+        "concepto": "SALARIO",
+        "importe_gravado": "4725.60"
+      },
+      {
+        "file": "8562B2DB-D708-5325-842D-18A5837E8497_JAIME_SANTIAGO_LOPEZ.xml",
+        "uuid": "8562B2DB-D708-5325-842D-18A5837E8497",
+        "fecha_pago": "2026-05-15",
+        "periodo_inicio": "2026-05-01",
+        "periodo_fin": "2026-05-15",
+        "total": "4725.60",
+        "sub_total": "4725.60",
+        "worker_name": "JAIME SANTIAGO LOPEZ",
+        "worker_rfc": "SALJ6005104X2",
+        "employer_name": "EVOLUCION CREATIVA CAMREFLEX",
+        "employer_rfc": "ECC190605VA1",
+        "num_empleado": "929714",
+        "fecha_inicio_relacion": "2023-07-16",
+        "tipo_contrato": "01",
+        "tipo_regimen": "02",
+        "periodicidad_pago": "04",
+        "salario_base_cotizacion": "331.45",
+        "salario_diario_integrado": "331.45",
+        "nss": "64836003307",
+        "curp": "SALJ600510HOCNPM00",
+        "concepto": "SALARIO",
+        "importe_gravado": "4725.60"
+      },
+      {
+        "file": "BEEB9BA6-EAAE-544E-AD6E-2C2C1A4C942B_JAIME_SANTIAGO_LOPEZ.xml",
+        "uuid": "BEEB9BA6-EAAE-544E-AD6E-2C2C1A4C942B",
+        "fecha_pago": "2026-04-15",
+        "periodo_inicio": "2026-04-01",
+        "periodo_fin": "2026-04-15",
+        "total": "4725.60",
+        "sub_total": "4725.60",
+        "worker_name": "JAIME SANTIAGO LOPEZ",
+        "worker_rfc": "SALJ6005104X2",
+        "employer_name": "EVOLUCION CREATIVA CAMREFLEX",
+        "employer_rfc": "ECC190605VA1",
+        "num_empleado": "929714",
+        "fecha_inicio_relacion": "2023-07-16",
+        "tipo_contrato": "01",
+        "tipo_regimen": "02",
+        "periodicidad_pago": "04",
+        "salario_base_cotizacion": "331.45",
+        "salario_diario_integrado": "331.45",
+        "nss": "64836003307",
+        "curp": "SALJ600510HOCNPM00",
+        "concepto": "SALARIO",
+        "importe_gravado": "4725.60"
+      }
+    ],
+    "contract_excerpt": "CONTRATO INDIVIDUAL DE TRABAJO \n | \nQUE CELEBRAN, POR UNA PARTE, LA EMPRESA DENOMINADA EVOLUCIÓN CREATIVA CAMREFLEX, S.A. DE C.V. POR CONDUCTO DE SU APODERADA LEGAL LA C. MARÍA ANDREA FLORES LOZANO, A QUIEN PARA LOS EFECTOS DEL PRESENTE CONTRATO SE LE DENOMINARÁ COMO “EL PATRÓN”, Y POR OTRA PARTE SANTIAGO LOPEZ JAIME, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ COMO “EL TRABAJADOR”, MISMAS QUE EN CONJUNTO SE LES DENOMINARÁ COMO “LAS PARTES” LAS CUALES SUJETAN SU VOLUNTAD BAJO LAS SIGUIENTES DECLARACIONES Y CLÁUSULAS.\nD E C L A R A C I O N E S:\n1.- Declara “EL PATRÓN” por conducto de su representante legal:\nQue es una sociedad legalmente constituida de conformidad a la legislación de los Estados Unidos Mexicanos, según consta en la escritura pública número 99,245 noventa y nueve mil doscientos cuarenta y cinco. de fecha 04 cuatro de junio de 2019 dos mil diecinueve, ante la fe del Licenciado Vidal González Durán Valencia, Notario Público Titular número 58 cincuenta y ocho de Guadalajara, Jalisco, debidamente inscrita en el Registro Público de la Propiedad y Comercio de Jalisco bajo el folio electrónico número N-2019043609. Así mismo, cuenta con Registro Federal de Contribuyentes ECC190605VA1.\nQue la C. MARÍA ANDREA FLORES LOZANO, es su calidad de Apoderada Legal, la cual cuenta con las facultades necesarias para obligar a su representada y quien, a su vez, manifiesta bajo protesta de conducirse con verdad que, dichas facultades no le han sido revocadas ni limitadas en forma alguna, tal y como consta en la escritura pública número 109,805 ciento nueve mil ochocientos cinco , de fecha 26 veintiséis de agosto de 2021 dos mil veintiuno, pasada ante la fe del Licenciado Vidal González Durán Valencia, Notario Público Titular número 58 cincuenta y ocho de Guadalajara, Jalisco. \nQue su representada tiene su domicilio para todos los efectos a que haya lugar en la Calle Torres Quintero, número 231, interior 3, colonia Independencia Poniente, C.P. 44290, Guadalajara, Jalisco. \nAsimismo, declara que su representada requiere de una persona física que brinde su trabajo de manera subordinada y en calidad de empleado, para que contribuya a la consecución de los fines y objetos sociales de EL PATRÓN.\n 2.- Declara “EL TRABAJADOR” por su propio derecho:\nLlamarse SANTIAGO LOPEZ JAIME, ser de nacionalidad MEXICANA, estado civil CASADO, sexo MASCULINO, tener 64 años de edad, con domicilio particular para todos los efectos legales en calle LAGO WETTER 194, COL. AGUA AZUL, NEZAHUALCOYOTL, ESTADO DE MEXICO CP. 57500, que se encuentra inscrito al Registro Federal de Contribuyentes bajo la clave SALJ6005104X2, que cuenta con la Clave de Única de Registro de Población SALJ600510HOCNPM00 así como con Número de Seguridad Social 6483600330-7.\nQue acompaña referencias que le atribuyen que cuenta con la capacidad necesaria para desempeñar satisfactoriamente las funciones requeridas por “EL PATRÓN”.\nAsí mismo, manifiesta estar de acuerdo en prestar los servicios requeridos por el patrón por el tiempo que en el presente contrato se acuerde.\n \n3.- Declaran ambas partes:\nQue es su firme intención celebrar el presente instrumento, por lo cual ambas partes declaran haber venido bajo su propia voluntad, así mismo, reconocen que no existe error, lesión, dolo, mala fe, reticencia o vicio alguno de la voluntad que lo pudiera invalidar.\nDe conformidad con las anteriores declaraciones, ambas partes reconocen mutuamente su personalidad jurídica y la capacidad legal que ostentan, así como el alcance y contenido de este contrato y están de acuerdo en someterse a las siguientes \n \nC L Á U S U L A S:\nPRIMERA.- “EL TRABAJADOR” manifiesta bajo protesta de decir verdad, que es apto para desempeñar el puesto de MESERO, así mismo desde este momento acepta y otorga su consentimiento de que en caso de que sea requerido por “EL PATRÓN”, esté brindara sus servicios en cualquier otro puesto que “EL PATRÓN” requiera para la consecución de los fines de la empresa, siempre y cuando sea compatible con sus fuerzas, aptitudes, estado, condición y que sea del mismo género de la que forman el objeto de la empresa, de conformidad a lo establecido por el artículo 27 de la Ley Federal del Trabajo, con la suficiente calidad, intensidad y esmero requeridos. Dicho puesto laboral tendrá asignadas las actividades que de manera enunciativa más no limitativa se enuncien en esta cláusula o en el anexo correspondiente, las mismas, podrán ser sujetas a variación teniendo “EL TRABAJADOR” la obligación de atender cualquier otra labor de las que realiza EL PATRÓN siempre y cuando se le respete su salario. Dentro de las actividades antes referidas se encuentran: .\nSEGUNDA. - “EL TRABAJADOR” se obliga a prestar bajo la dirección y dependencia del patrón y sus representantes, sus servicios personales y subordinados, debiendo dedicarse durante el tiempo de su contrato a las actividades indicadas por “EL PATRÓN”, de conformidad con lo establecido en la cláusula primera del presente acuerdo, así mismo, deberá mostrar en todo momento con actitud e iniciativa propia para desempeñar las funciones requeridas por parte de “EL PATRÓN”.\nEL TRABAJADOR” prestará sus servicios personales y subordinados en las instalaciones o en los lugares en donde “EL PATRÓN” realice sus actividades o tenga operaciones, mismos que se ubicaran dentro de la República Mexicana \n“EL TRABAJADOR” al firmar el presente contrato manifiesta su consentimiento expreso para que “EL PATRÓN” en cualquier tiempo modifique el lugar donde prestará sus servicios, quedando enterado desde estos momentos del alcance y contenido de este pacto, que constituye una condición para su contratación. \nAsimismo, “EL PATRÓN” tendrá la más amplia facultad para movilizar a “EL TRABAJADOR” de un puesto a otro, o de un lugar a otro dentro de la empresa o establecimiento, con la condición de que respetara el salario base de “EL TRABAJADOR” para que no sufra menoscabo alguno, en el entendido también que, si el puesto al que se cambia es de categoría superior, percibirá el sueldo que corresponde a dicho puesto.\nTERCERA.- El presente contrato tendrá una vigencia indeterminada y comenzará a surtir sus efectos a partir del día 16 de Julio de 2023 y/o terminará al momento de presentarse cualquiera de los supuestos del artículo 53 de la Ley Federal del Trabajo o bien, del artículo 47 de la citada ley.\nCUARTA. - El presente contrato obliga a lo expresamente pactado conforme a las disposiciones contenidas en el artículo 31 de la Ley Federal del Trabajo y la duración del mismo será la señalada en la cláusula anterior, con apoyo en el artículo antes mencionado y en los demás relativos de la Ley Federal del Trabajo.\nQUINTA.- “EL PATRÓN” se obliga a pagar por concepto de salario diario, la cantidad $207.44 por día laborado, durante la vigencia de la presente relación laboral, mismos que serán pagados de manera QUINCENAL. Ambas partes acuerdan en que la forma de pago de ambos conceptos sea por medio de transferencia electrónica de fondos a la cuenta número () correspondiente a la institución bancaria BBVA a nombre de “EL TRABAJADOR”.\nEn dicha retribución se entenderá integrados los pagos hechos en efectivo por cuota diaria, gratificaciones, percepciones, habitación, primas, comisiones, prestaciones en especie y cualquiera otra cantidad o prestación que se entregue a “EL TRABAJADOR” por la prestación de los servicios, conforme a lo previsto por el artículo 84 de la Ley Federal del Trabajo; asimismo en dicho salario se incluye la proporción correspondiente a los séptimos días y días de descanso obligatorio.\nDel salario señalado anteriormente “EL PATRÓN” realizará por cuenta de “EL TRABAJADOR” las deducciones legales correspondientes, particularmente las que se refieren a Impuestos Sobre la Renta, Seguro Social, Créditos de INFONAVIT, etcétera.\nSEXTA. - “EL TRABAJADOR” realizará su trabajo en una jornada diurna, cubriendo 48 horas semanales, disfrutando dentro de ese horario de 75 minutos para tomar alimentos fuera de la fuente de trabajo y no ejercerá labor alguna en dicho tiempo; por lo cual el horario de alimentos, no le será computado como parte de la jornada de trabajo. “EL TRABAJADOR” conviene expresamente en que prestará sus servicios en los turnos y horarios que las necesidades de operación requieran, y, asimismo, manifiesta su consentimiento expreso en que tales turnos y horarios serán modificados por “EL PATRÓN”, para el mejor desempeño de los servicios.\n“EL TRABAJADOR” y “EL PATRÓN” fijarán la duración de la jornada de trabajo, sin que pueda exceder los máximos legales. “EL PATRÓN” podrá repartir las horas de trabajo, a fin de permitir a “EL TRABAJADOR el reposo del sábado en la tarde o cualquier modalidad equivalente, dando así cumplimiento a lo establecido en el artículo 59 de la Ley Federal del Trabajo, sin que ello implique en momento alguno renuncia a su derecho de restablecer la distribución hasta en seis días, cuando así lo decidiere “EL PATRÓN”, para lo que desde ahora otorga su consentimiento EL TRABAJADOR.\nLa reducción temporal de la jornada semanal de trabajo no implicará menoscabo del derecho de EL PATRÓN para restablecer en cualquier momento la jornada total contratada.\nLe queda prohibido “EL TRABAJADOR”, laborar jornada extra, salvo que exista autorización por escrito de EL PATRON y/o representante legal y/o Director General, donde se indique el motivo y horas extras autorizadas a laborar, firmando ambas partes de conformidad y conservando el trabajador copia de tal autorización, no tendrá validez legal cualquier pacto verbal o reclamación sin tal autorización y aceptación de “EL PATRÓN”. \nEn consecuencia, queda expresamente reconocido por “EL TRABAJADOR” que su derecho al pago de horas extras se encuentra supeditado a la satisfacción del requisito antes señalado. \nSÉPTIMA. - “EL TRABAJADOR” está obligado a: checar su tarjeta, checar en el reloj checador, firmar lista de asistencia, o cualquier otro medio de control de asistencia, la entrada y salida de sus labores, por lo que el incumplimiento de este requisito indicará la falta injustificada de sus labores, para todos los efectos legales a que haya lugar. Cuando “EL TRABAJADOR” por cualquier circunstancia se vea obligado a faltar a sus labores, deberá avisar a “EL PATRÓN”. El aviso no justifica la falta, pues en todo caso “EL TRABAJADOR” al regresar a sus labores, deberá de justificar su ausencia con el comprobante respectivo, que en caso de enfermedad será únicamente el certificado de incapacidad que expide el Instituto Mexicano del Seguro Social. Si “EL TRABAJADOR” faltare a sus labores por cualquier otra causa, deberá justificarlo plenamente a “EL PATRÓN”, cuando solicite permisos con o sin goce de sueldo, deberá recabar en todo caso, constancia escrita de “EL PATRÓN” sin cuyo requisito se considerará como falta injustificada.\nOCTAVA. Si “EL TRABAJADOR” se presenta con retardo a sus labores será potestativo para “EL PATRÓN” admitirlo, y si lo hace cubrirá únicamente el tiempo efectivo de trabajo desarrollado.\nNOVENA. “EL TRABAJADOR” tendrá derecho a un aguinaldo anual equivalente a 15 días de salario, cuando este haya prestado sus servicios durante un año, por lo menos, en forma continua, o en su parte proporcional al tiempo trabajado en el año calendario, el que se le cubrirá antes del día 20 de diciembre.\nDÉCIMA. “EL TRABAJADOR” disfrutará de 12 días de vacaciones durante el primer año de servicios prestados, el cual será en la época que así lo determine “EL PATRÓN”, obligándose “EL TRABAJADOR” en todo caso a solicitar sus vacaciones a que hace mención esta cláusula, no será canjeable por dinero, ni serán acumulables año con año. Los días de vacaciones correspondientes por cada año de servicios, se otorgarán de acuerdo al artículo 76 de la Ley Federal del Trabajo, es decir, dicho periodo vacacional aumentará dos días laborales por cada año de prestación de servicios, hasta llegar a 20 días; después del quinto año laborado el periodo vacacional aumentará dos días por cada cinco de servicios, tal y como se indica en la siguiente tabla: \nAños laborados\n | Días de vacaciones\n | \n1\n | 12\n | \n2\n | 14\n | \n3\n | 16\n | \n4\n | 18\n | \n5 \n | 20\n | \n6 - 10\n | 22\n | \n11 -15\n | 24\n | \n16 - 20\n | 26\n | \nDe igual modo recibirá la prima vacacional respectiva, equivalente al 25% del importe pagado por concepto de vacaciones.\nDÉCIMA PRIMERA. “EL TRABAJADOR” será asegurado en el Instituto Mexicano del Seguro Social, conforme con la Ley de la Materia, así mismo, “EL PATRÓN” queda relevado de todas las responsabilidades que por riesgo profesional le impone la Ley Federal del Trabajo.\nDÉCIMA SEGUNDA. “EL TRABAJADOR” se obliga a observar y respetar las disposiciones del Reglamento Interior de trabajo que existe en el centro de trabajo y demás ordenamientos aplicables a la relación laboral objeto del presente contrato.\nDÉCIMA TERCERA. “EL TRABAJADOR” está obligado a presentar los exámenes médicos que “EL PATRÓN” establezca tanto al ingresar a laborar como durante el desarrollo de sus actividades o durante la vigencia de la relación de trabajo, así como a reportar a “EL PATRÓN” o a sus representantes si el mismo padece alguna enfermedad contagiosa o incurable, para que EL PATRÓN dicte las medidas preventivas de higiene y seguridad, las que el mismo empleado está igualmente obligado a cumplir durante el desarrollo de sus labores.\nDÉCIMA CUARTA. “EL PATRÓN” se obliga a proporcionar capacitación y adiestramiento a “EL TRABAJADOR” en los términos de ley, así mismo se establece expresamente como una obligación del trabajo contratado para “EL TRABAJADOR” el de asistir puntualmente a los cursos, de sesiones de grupo y demás actividades que formen parte del proceso de capacitación y adiestramiento, el de atender las indicaciones de las personas que imparten la capacitación y adiestramiento, las de cumplir con los programas respectivos y presentar los exámenes de evaluación de conocimientos de aptitudes que sean requeridos.\nDÉCIMA QUINTA. En atención a las actividades que realiza “EL PATRÓN” y dada la necesidad de mantener en absoluta CONFIDENCIALIDAD los procesos administrativos y de cualquier otra naturaleza, “EL TRABAJADOR” se obliga a no revelar, divulgar, usar, comercializar, diseñar, transferir, explotar y guardar escrupulosamente los secretos de fabricación de los productos, datos, procesos, especificaciones, contratos, información financiera, métodos, manuales, y en general cualquier información de los cuales tenga acceso o conocimiento por razones de trabajo, así como los asuntos administrativos, cuya divulgación puede causar perjuicios a “EL PATRÓN” en la inteligencia de que el incumplimiento específico de esta obligación lo hará el acreedor a la rescisión de su Contrato de trabajo sin responsabilidad para “EL PATRÓN” de conformidad con el artículo 47 de la Ley Federal del trabajo y a las penas que impone el Código Penal Federal en sus artículos 210 y 211 a quienes incurran en el delito de revelación de secretos, en relación con los diversos numerales 82 a 86 y 221 bis, 224 y 233 de la ley de Propiedad Industrial. \n“EL TRABAJADOR” se obliga, dentro de la vigencia de este contrato, así como hasta 5 años después de la terminación o recisión del mismo, a no divulgar ni a utilizar en su propio beneficio cualquier aspecto o información relacionada con los negocios, actividades y operaciones de “EL PATRÓN” que fueran de su conocimiento con motivo de la relación de trabajo, ni proporcionará a terceros, directa o indirectamente, información verbal o por escrito, sobre los métodos, sistemas, datos y actividades de cualquier clase que se relacionen con “EL PATRÓN”, durante el desarrollo de sus actividades. \n“EL TRABAJADOR” tampoco divulgará el contenido de los documentos, estudios, programas, propuestas, programas de cómputo, dispositivos, diseños, prácticas, manuales, videos, formulas, folletos, publicaciones, etcétera, y en general de cualquier documento que se le hubiera proporcionado o facilitado durante el desempeño sus servicios. Igualmente, “EL TRABAJADOR” queda obligado a no servirse para su provecho personal o de terceros de las patentes, marcas y derechos de autor, propiedad de “EL PATRÓN”. \nDÉCIMA SEXTA. “EL PATRÓN” le informará a “EL TRABAJADOR” que los datos personales facilitados para el presente contrato, serán incorporados a una base de datos, propiedad de “EL PATRÓN”, la cual se almacena para resguardar la información y evitar su pérdida uso indebido, alteración, o que la misma puede ser interceptada por terceros, a fin de dar cumplimiento a los dispuesto por la Ley Federal de Protección de Datos Personales en posesión de los Particulares, su reglamento y demás ordenamientos aplicables. “EL TRABAJADOR” autoriza expresamente por este medio a “EL PATRÓN” a compartir la información personal proporcionada para dar cumplimiento a cualquier obligación de índole laboral, fiscal, administrativa con alguna autoridad que le requiera por escrito y en términos de la Ley. Asimismo, se informará a “EL TRABAJADOR” de la posibilidad de ejercitar los derechos ARCO, es decir, de acceso, rectificación, cancelación y oposición respecto de los datos personales recabados, por lo que podrá efectuar mediante petición dirigida por escrito a “EL PATRÓN”, al domicilio descrito en el apartado de DECLARACIONES del presente contrato.\nDÉCIMA SÉPTIMA. “EL TRABAJADOR” se obliga a trabajar exclusivamente para “EL PATRÓN”, esto es que, se compromete a no trabajar en sus horas libres con otras empresas que tengan actividades similares o conexas a las de “EL PATRÓN”.\nDÉCIMA OCTAVA. En el caso de que “EL PATRÓN” le asigne alguno de los vehículos que son propiedad de EL PATRÓN a “EL TRABAJADOR”, deberá ser destinado única y exclusivamente para el desempeño de la actividad laboral, quedándole expresamente prohibido utilizarlo para otros fines personales, negocios o empresas que no sean relacionadas con el trabajo contratado. La violación de esta cláusula traerá como resultado la rescisión del contrato además de las sanciones civiles y/o penales a las que se pudiera hacer acreedor.\nDÉCIMA NOVENA. “EL TRABAJADOR” se obliga a notificar de inmediato y por escrito a “EL PATRÓN” si en el futuro cambiará de domicilio de aquel que tiene registrado en EL PATRÓN y en el presente contrato, y en el caso de no hacerlo “EL PATRÓN” quedará relevado de cualquier responsabilidad proveniente de lo establecido en el último párrafo del artículo 47 de la Ley Federal del Trabajo.\nVIGÉSIMA. - “EL TRABAJADOR” otorga su consentimiento para que la entrega de los recibos de pago sea efectuada a través del envío de los comprobantes fiscales digitales por Internet (CFDI), en la cuenta de correo electrónico que “EL TRABAJADOR” proporcionó a “EL PATRÓN” para tal efecto ( ), los cuales sustituyen a los recibos impresos, conforme a lo previsto por el artículo 101 de la Ley Federal del Trabajo. \nVIGÉSIMA PRIMERA. - “EL PATRON” se obliga a controlar la incidencia de los riesgos psicosociales en el seno de la organización que pudiesen afectar a “EL TRABAJADOR”, estableciendo mecanismos de detección y prevención de los factores de Riesgo Psicosocial, entorno Organizacional Favorable y la prevención de la Violencia Laboral.\nVIGÉSIMA SEGUNDA. - “EL PATRON” conforme a lo establecido en la NOM-035-STPS-2018 en su numeral 5:"
+  },
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DisHNTXQbznOJETlAfMoRJuSFBNyc",
+        "object": "chat.completion",
+        "created": 1779587453,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"documentary_consistency\": {\n    \"status\": \"ok\",\n    \"summary\": \"Los CFDI de nómina y el contrato laboral presentan consistencia en datos clave como RFC, CURP, fechas y salario base, sin discrepancias relevantes.\",\n    \"matches\": [\n      \"RFC trabajador SALJ6005104X2 coincide en CFDI y contrato\",\n      \"CURP SALJ600510HOCNPM00 consistente en ambos documentos\",\n      \"Fecha inicio relación laboral 2023-07-16 coincide en CFDI y contrato\",\n      \"Salario base cotización 331.45 en CFDI y salario diario pactado 207.44 en contrato (compatible con pago quincenal)\",\n      \"Empleador EVOLUCION CREATIVA CAMREFLEX con RFC ECC190605VA1 consistente\"\n    ],\n    \"mismatches\": []\n  },\n  \"expected_system_behavior\": {\n    \"classifications\": [\n      {\n        \"file\": \"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      },\n      {\n        \"file\": \"8562B2DB-D708-5325-842D-18A5837E8497_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      },\n      {\n        \"file\": \"BEEB9BA6-EAAE-544E-AD6E-2C2C1A4C942B_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      }\n    ],\n    \"helios_should_detect\": [\n      \"Pagos y deducciones en cada CFDI de nómina\",\n      \"Periodos de pago y fechas de pago\",\n      \"Contraste de salario diario integrado y base de cotización contra salario pactado en contrato\",\n      \"Validación de fechas de inicio de relación laboral\",\n      \"Detección de consistencia en RFC, CURP y NSS\"\n    ],\n    \"connector_should_do\": [\n      \"Mapear payroll_receipt a recibo_nomina para cada CFDI\",\n      \"Mapear cfdi a cfdi_nomina para cada archivo XML\",\n      \"Mapear contract a contrato_laboral para el contrato textual\",\n      \"Enviar webhook document.processed.v1 para refrescar estado documental\",\n      \"Guardar contrato canónico y generar opinión remota en Helios\"\n    ],\n    \"likely_failure_points\": [\n      \"Ausencia de archivo explícito de contrato en XML para mapear contract\",\n      \"Posible falta de contrato en formato digital estructurado para bridge\",\n      \"Errores en webhook si no se recibe document.processed.v1 correctamente\",\n      \"Inconsistencias en datos personales si hubiera diferencias no detectadas\",\n      \"Manejo de múltiples CFDI con fechas y periodos consecutivos sin solapamientos\"\n    ]\n  },\n  \"validation_priority\": [\n    \"Verificar recepción y clasificación correcta del contrato laboral en el sistema\",\n    \"Confirmar que el bridge mapea correctamente los CFDI a cfdi_nomina\",\n    \"Asegurar que Helios realiza análisis de pagos y salario contra contrato\",\n    \"Validar webhook document.processed.v1 para actualización y generación de opinión\",\n    \"Monitorear posibles errores en la integración del bridge y Helios\"\n  ],\n  \"verdict\": \"El flujo documental, bridge y Helios deberían funcionar correctamente con estos archivos, dado que los datos son consistentes y el sistema está configurado para mapear y procesar estos tipos de documentos. Se recomienda validar la correcta ingestión del contrato en formato digital para evitar fallas en la generación de opinión remota.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 5941,
+          "completion_tokens": 819,
+          "total_tokens": 6760,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_49f260aaf7"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "54a9ffbc-e190-9ec8-90e4-acbae5e40891",
+        "object": "chat.completion",
+        "created": 1779587463,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"documentary_consistency\": {\n    \"status\": \"warning\",\n    \"summary\": \"Datos consistentes en identidad y fechas, discrepancia salarial y fechas futuras\",\n    \"matches\": [\"nombres trabajador\", \"RFCs\", \"CURP\", \"NSS\", \"fecha_inicio_relacion\", \"periodicidad_pago\", \"empleador\"],\n    \"mismatches\": [\"salario diario 207.44 vs SBC 331.45\", \"fechas 2026 futuras\"]\n  },\n  \"expected_system_behavior\": {\n    \"classifications\": [{\"file\": \"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\", \"expected_type\": \"cfdi/cfdi_nomina\", \"confidence\": \"high\"}, {\"file\": \"8562B2DB-D708-5325-842D-18A5837E8497_JAIME_SANTIAGO_LOPEZ.xml\", \"expected_type\": \"cfdi/cfdi_nomina\", \"confidence\": \"high\"}, {\"file\": \"BEEB9BA6-EAAE-544E-AD6E-2C2C1A4C942B_JAIME_SANTIAGO_LOPEZ.xml\", \"expected_type\": \"cfdi/cfdi_nomina\", \"confidence\": \"high\"}],\n    \"helios_should_detect\": [\"pagos quincenales\", \"salario integrado vs pactado\", \"periodos y contraste contrato\"],\n    \"connector_should_do\": [\"mapear cfdi a cfdi_nomina\", \"refrescar estado en webhook document.processed.v1\"],\n    \"likely_failure_points\": [\"fechas futuras 2026\", \"diferencia salarial base\"]\n  },\n  \"validation_priority\": [\"verificar integracion salarial\", \"manejo fechas futuras\", \"coincidencia contrato\"],\n  \"verdict\": \"Flujo viable con advertencias menores en salario y fechas\"\n}",
+              "reasoning_content": "The user wants me to respond ONLY with valid JSON in a specific format. No surrounding text.\nFirst, the user query is to analyze if the flow documentary, Helios, and bridge/connectors should work well with these files. I need to output ONLY a valid JSON in the exact specified format. No surrounding text.",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 6097,
+          "completion_tokens": 412,
+          "total_tokens": 7175,
+          "prompt_tokens_details": {
+            "text_tokens": 6097,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 666,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 101818500
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"documentary_consistency\": {\n    \"status\": \"critical\",\n    \"summary\": \"Existe una discrepancia crítica en el salario diario pactado en el contrato y el salario reflejado en los CFDI de nómina, además de la aparente ausencia de deducciones en los CFDI.\",\n    \"matches\": [\n      \"Identificación del Empleador (Nombre y RFC) coincide entre contrato y CFDI.\",\n      \"Identificación del Trabajador (Nombre, RFC, CURP, NSS con mínima variación de formato) coincide entre contrato y CFDI.\",\n      \"Tipo de Contrato (Indefinido) coincide entre contrato y CFDI (tipo_contrato: 01).\",\n      \"Fecha de Inicio de Relación Laboral (16 de Julio de 2023) coincide entre contrato y CFDI.\",\n      \"Periodicidad de Pago (Quincenal) coincide entre contrato y CFDI (periodicidad_pago: 04).\",\n      \"El contrato menciona explícitamente la entrega de recibos de pago mediante CFDI, validando el tipo de documento.\"\n    ],\n    \"mismatches\": [\n      \"Salario Diario: El contrato establece $207.44 MXN/día. Los CFDI, al calcular el importe gravado quincenal ($4725.60) dividido por 15 días, implican un salario diario de $315.04 MXN/día. Además, el Salario Base de Cotización (SBC) y Salario Diario Integrado (SDI) en los CFDI es de $331.45 MXN/día. Esta es una discrepancia crítica y significativa.\",\n      \"Deducciones: El contrato (Cláusula Quinta) estipula que 'EL PATRÓN' realizará deducciones legales (ISR, Seguro Social, INFONAVIT). Sin embargo, los datos estructurados de los CFDI muestran 'total' igual a 'sub_total' e 'importe_gravado' (4725.60), lo que sugiere la ausencia de deducciones en la información proporcionada. Helios debería verificar esto en el XML completo.\"\n    ]\n  },\n  \"expected_system_behavior\": {\n    \"classifications\": [\n      {\n        \"file\": \"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      },\n      {\n        \"file\": \"8562B2DB-D708-5325-842D-18A5837E8497_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      },\n      {\n        \"file\": \"BEEB9BA6-EAAE-544E-AD6E-2C2C1A4C942B_JAIME_SANTIAGO_LOPEZ.xml\",\n        \"expected_type\": \"cfdi/cfdi_nomina\",\n        \"confidence\": \"high\"\n      },\n      {\n        \"file\": \"contrato_laboral_JAIME_SANTIAGO_LOPEZ.pdf\",\n        \"expected_type\": \"contract/contrato_laboral\",\n        \"confidence\": \"high\"\n      }\n    ],\n    \"helios_should_detect\": [\n      \"Para CFDI de nómina: Pagos (importe_gravado, total), deducciones (su ausencia o presencia), periodos de pago (fecha_pago, periodo_inicio, periodo_fin).\",\n      \"Para CFDI de nómina: Contraste de datos contra el contrato, identificando coincidencias en identificación de partes, tipo de contrato, fecha de inicio y periodicidad de pago.\",\n      \"Para CFDI de nómina: **CRÍTICO**: Detección de la discrepancia entre el salario diario pactado en el contrato ($207.44) y el salario diario implícito en el importe gravado del CFDI ($315.04), así como el SBC/SDI ($331.45).\",\n      \"Para CFDI de nómina: Detección de la ausencia de deducciones en los CFDI, a pesar de que el contrato las estipula.\",\n      \"Para contratos: Salario pactado ($207.44/día), jornada (diurna, 48 horas semanales), puesto (MESERO), fecha de ingreso (16 de Julio de 2023), prestaciones (aguinaldo, vacaciones, prima vacacional, IMSS).\",\n      \"Para contratos: Detección de diferencias entre lo pactado (salario) y lo real (salario en CFDI).\"\n    ],\n    \"connector_should_do\": [\n      \"El bridge saliente debe mapear los XML CFDI de nómina (tipo 'cfdi') a 'cfdi_nomina' para su procesamiento.\",\n      \"El bridge saliente debe mapear el contrato (tipo 'contract') a 'contrato_laboral' para su procesamiento.\",\n      \"El webhook de retorno, al recibir 'document.processed.v1', debe refrescar el estado documental de los CFDI y el contrato.\",\n      \"El webhook de retorno debe guardar el contrato como canónico.\",\n      \"El webhook de retorno debe generar una opinión remota de Helios, incluyendo las inconsistencias detectadas.\"\n    ],\n    \"likely_failure_points\": [\n      \"La capacidad de Helios para realizar un análisis comparativo profundo del salario, considerando el salario pactado en el contrato, el salario implícito en el importe gravado del CFDI y el SBC/SDI.\",\n      \"La detección de la ausencia de nodos de deducción en el XML CFDI completo, si la lógica de Helios se basa solo en los datos estructurados simplificados.\",\n      \"Robustez del sistema para manejar variaciones menores en el formato de nombres (orden) y números de identificación (NSS con/sin guion) al vincular documentos.\",\n      \"Fiabilidad del webhook para ejecutar todas las acciones post-procesamiento (actualización de estado, guardado canónico, generación de opinión de Helios) de manera consistente.\"\n    ]\n  },\n  \"validation_priority\": [\n    \"Validar la detección de la discrepancia salarial por parte de Helios (contrato vs. CFDI).\",\n    \"Validar la detección de la ausencia de deducciones en los CFDI por parte de Helios.\",\n    \"Confirmar la correcta clasificación de los CFDI como 'cfdi/cfdi_nomina' y del contrato como 'contract/contrato_laboral'.\",\n    \"Verificar el mapeo del bridge saliente de 'cfdi' a 'cfdi_nomina'.\",\n    \"Asegurar la funcionalidad completa del webhook de retorno (refresco de estado, guardado canónico, opinión de Helios).\",\n    \"Probar la vinculación de documentos entre trabajador/empleador con variaciones de formato.\"\n  ],\n  \"verdict\": \"El flujo documental y las clasificaciones iniciales son correctas. Sin embargo, existe una discrepancia salarial crítica y una posible omisión de deducciones que Helios debe identificar y reportar. La validación debe priorizar la capacidad de Helios para detectar estas inconsistencias clave.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 6418,
+          "candidatesTokenCount": 1660,
+          "totalTokenCount": 11972,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 6418
+            }
+          ],
+          "thoughtsTokenCount": 3894,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "jlkSar-NEsmY1MkP5s7jqQE"
+      }
+    }
+  }
+}

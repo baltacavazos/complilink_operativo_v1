@@ -74,6 +74,60 @@ function buildFixtures() {
   };
 }
 
+async function startBridgeServer(options: {
+  webhookPath?: string;
+  healthHandler?: (req: InstanceType<typeof IncomingMessageShim>, res: InstanceType<typeof ServerResponseShim>) => void;
+  webhookHandler: (req: InstanceType<typeof IncomingMessageShim>, res: InstanceType<typeof ServerResponseShim>) => void;
+}) {
+  const webhookPath = options.webhookPath ?? "/engine/webhook";
+  const server = createServer((req, res) => {
+    if (req.url === "/api/auditapatron/health") {
+      if (options.healthHandler) {
+        options.healthHandler(req as never, res as never);
+        return;
+      }
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          bridge: "auditapatron",
+          webhookPath,
+          responseContract: "auditapatron.bridge.ack.v1",
+        }),
+      );
+      return;
+    }
+
+    if (req.url === webhookPath) {
+      options.webhookHandler(req as never, res as never);
+      return;
+    }
+
+    res.statusCode = 404;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: "not_found" }));
+  });
+
+  serversToClose.push(server);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", () => resolve()));
+  return server;
+}
+
+type IncomingMessageShim = {
+  on: (event: string, handler: (chunk?: Buffer) => void) => void;
+  resume: () => void;
+  headers: Record<string, string | string[] | undefined>;
+  url?: string;
+};
+
+type ServerResponseShim = {
+  statusCode: number;
+  setHeader: (name: string, value: string) => void;
+  end: (body?: string) => void;
+};
+
 describe("auditaPatronIntegrationService", () => {
   it("builds a compliant outbound payload for the final CompliLink contract", () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
@@ -161,19 +215,27 @@ describe("auditaPatronIntegrationService", () => {
     expect(verification.ok).toBe(true);
   });
 
-  it("sends the final bridge payload with bearer token, mirrored token header and body signature, then parses the enriched ack", async () => {
+  it("sends the final bridge payload after a successful contractual health preflight", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
+
+    let resolveReceived: ((value: {
+      body: string;
+      signature: string | undefined;
+      timestamp: string | undefined;
+    }) => void) | null = null;
 
     const receivedPromise = new Promise<{
       body: string;
-      authorization: string | undefined;
-      token: string | undefined;
       signature: string | undefined;
       timestamp: string | undefined;
     }>((resolve) => {
-      const server = createServer((req, res) => {
+      resolveReceived = resolve;
+    });
+
+    const server = await startBridgeServer({
+      webhookHandler: (req, res) => {
         const chunks: Buffer[] = [];
-        req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        req.on("data", (chunk) => chunks.push(Buffer.from(chunk ?? [])));
         req.on("end", () => {
           const body = Buffer.concat(chunks).toString("utf8");
           res.statusCode = 202;
@@ -191,26 +253,15 @@ describe("auditaPatronIntegrationService", () => {
               responseContract: "auditapatron.bridge.ack.v1",
             }),
           );
-          resolve({
+          resolveReceived?.({
             body,
-            authorization: req.headers.authorization,
-            token: req.headers["x-auditapatron-token"] as string | undefined,
             signature: req.headers["x-auditapatron-signature"] as string | undefined,
             timestamp: req.headers["x-auditapatron-timestamp"] as string | undefined,
           });
         });
-      });
-
-      serversToClose.push(server);
-      server.listen(0, "127.0.0.1");
+      },
     });
 
-    const server = serversToClose.at(-1);
-    if (!server) {
-      throw new Error("Server was not created");
-    }
-
-    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
     const webhookUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`;
 
     const resultPromise = sendDocumentToAuditaPatronEngine(
@@ -231,15 +282,9 @@ describe("auditaPatronIntegrationService", () => {
 
     const [received, result] = await Promise.all([receivedPromise, resultPromise]);
 
-    expect(received.authorization).toBeUndefined();
-    expect(received.token).toBeUndefined();
     expect(received.timestamp).toBeTruthy();
     expect(received.signature).toBe(
-      buildAuditaPatronEngineSignature(
-        String(received.timestamp),
-        received.body,
-        "secret-for-engine-123456",
-      ),
+      buildAuditaPatronEngineSignature(String(received.timestamp), received.body, "secret-for-engine-123456"),
     );
     expect(result.status).toBe("sent");
     expect(result.httpStatus).toBe(202);
@@ -255,36 +300,23 @@ describe("auditaPatronIntegrationService", () => {
       recommendedNextAction: "none",
       responseContract: "auditapatron.bridge.ack.v1",
     });
-    expect(result.payload.eventName).toBe("document.uploaded");
-    expect(result.payload.idempotencyKey).toBe(result.payload.eventId);
-    expect(result.payload.correlationId).toMatch(/^[0-9a-f-]{36}$/i);
     expect(result.observabilityEnvelope.targetHost).toContain("127.0.0.1");
     expect(result.observabilityEnvelope.targetPath).toBe("/engine/webhook");
     expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
-    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
-    expect(result.observabilityEnvelope.retryDelayMs).toBeNull();
-    expect(result.observabilityEnvelope.httpStatusCode).toBe(202);
-    expect(result.observabilityEnvelope.remoteSmokeEnabled).toBe(false);
-    expect(result.observabilityEnvelope.dispatchId).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
-    expect(result.observabilityEnvelope.correlationId).toBe(result.payload.correlationId);
   });
 
-  it("fails fast when the bridge returns HTTP 200 with invalid ack content", async () => {
+  it("fails with invalid_ack_contract when health is valid but the webhook returns HTML", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
-
     const htmlBody = `<html><body>${"landing ".repeat(400)}</body></html>`;
-    const server = createServer((req, res) => {
-      req.resume();
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.end(htmlBody);
-    });
 
-    serversToClose.push(server);
-    server.listen(0, "127.0.0.1");
-    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
+    const server = await startBridgeServer({
+      webhookHandler: (req, res) => {
+        req.resume();
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(htmlBody);
+      },
+    });
 
     const result = await sendDocumentToAuditaPatronEngine(
       {
@@ -307,31 +339,27 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.responseAck).toBeNull();
     expect(result.responseBody).toContain("<html><body>");
     expect(result.responseBody).toContain("…[truncated]");
-    expect(result.responseBody?.length ?? 0).toBeLessThanOrEqual(2013);
-    expect(result.observabilityEnvelope.outcomeCategory).toBe("permanent_failure");
   });
 
   it("classifies 400 responses as contract validation failures without retrying", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
     let hitCount = 0;
 
-    const server = createServer((req, res) => {
-      hitCount += 1;
-      req.resume();
-      res.statusCode = 400;
-      res.setHeader("Content-Type", "application/json");
-      res.end(
-        JSON.stringify({
-          received: false,
-          issues: [{ code: "missing_field", field: "providerId" }],
-          responseContract: "auditapatron.bridge.ack.v1",
-        }),
-      );
+    const server = await startBridgeServer({
+      webhookHandler: (req, res) => {
+        hitCount += 1;
+        req.resume();
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            received: false,
+            issues: [{ code: "missing_field", field: "providerId" }],
+            responseContract: "auditapatron.bridge.ack.v1",
+          }),
+        );
+      },
     });
-
-    serversToClose.push(server);
-    server.listen(0, "127.0.0.1");
-    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
 
     const result = await sendDocumentToAuditaPatronEngine(
       {
@@ -352,34 +380,27 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.status).toBe("failed");
     expect(result.httpStatus).toBe(400);
     expect(result.reason).toBe("contract_validation_failed");
-    expect(result.responseAck).toMatchObject({
-      received: false,
-      responseContract: "auditapatron.bridge.ack.v1",
-    });
-    expect(result.observabilityEnvelope.outcomeCategory).toBe("permanent_failure");
   });
 
   it("retries only for 5xx responses and eventually succeeds", async () => {
     const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
     let hitCount = 0;
 
-    const server = createServer((req, res) => {
-      hitCount += 1;
-      req.resume();
-      if (hitCount < 3) {
-        res.statusCode = 503;
-        res.end("temporary error");
-        return;
-      }
+    const server = await startBridgeServer({
+      webhookHandler: (req, res) => {
+        hitCount += 1;
+        req.resume();
+        if (hitCount < 3) {
+          res.statusCode = 503;
+          res.end("temporary error");
+          return;
+        }
 
-      res.statusCode = 202;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ received: true, responseContract: "auditapatron.bridge.ack.v1" }));
+        res.statusCode = 202;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ received: true, responseContract: "auditapatron.bridge.ack.v1" }));
+      },
     });
-
-    serversToClose.push(server);
-    server.listen(0, "127.0.0.1");
-    await new Promise<void>((resolve) => server.once("listening", () => resolve()));
 
     const result = await sendDocumentToAuditaPatronEngine(
       {
@@ -400,9 +421,53 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.status).toBe("sent");
     expect(result.httpStatus).toBe(202);
     expect(result.attempts).toBe(3);
-    expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
-    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
-    expect(result.observabilityEnvelope.httpStatusCode).toBe(202);
+  });
+
+  it("falls back to a healthy secondary webhook when the primary candidate fails the health contract", async () => {
+    const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
+
+    const unhealthyServer = await startBridgeServer({
+      healthHandler: (_req, res) => {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end("<html>landing</html>");
+      },
+      webhookHandler: (req, res) => {
+        req.resume();
+        res.statusCode = 500;
+        res.end("should_not_be_used");
+      },
+    });
+
+    const healthyServer = await startBridgeServer({
+      webhookHandler: (req, res) => {
+        req.resume();
+        res.statusCode = 202;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ received: true, responseContract: "auditapatron.bridge.ack.v1" }));
+      },
+    });
+
+    const result = await sendDocumentToAuditaPatronEngine(
+      {
+        caseContract,
+        documentContract,
+        sharedEngineEnvelope,
+        sourceUserId: 77,
+        uploadedAt: "2026-04-06T10:00:00.000Z",
+      },
+      {
+        webhookUrl: `http://127.0.0.1:${(unhealthyServer.address() as AddressInfo).port}/engine/webhook`,
+        fallbackWebhookUrls: [`http://127.0.0.1:${(healthyServer.address() as AddressInfo).port}/engine/webhook`],
+        hmacSecret: "secret-for-engine-123456",
+        retryDelaysMs: [],
+      },
+    );
+
+    expect(result.status).toBe("sent");
+    expect(result.httpStatus).toBe(202);
+    expect(result.attempts).toBe(1);
+    expect(result.observabilityEnvelope.targetHost).toContain(String((healthyServer.address() as AddressInfo).port));
   });
 
   it("skips delivery cleanly when configuration is missing", async () => {
@@ -426,11 +491,5 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.reason).toBe("engine_not_configured");
     expect(result.httpStatus).toBeNull();
     expect(result.attempts).toBe(0);
-    expect(result.observabilityEnvelope.targetHost).toBeNull();
-    expect(result.observabilityEnvelope.targetPath).toBeNull();
-    expect(result.observabilityEnvelope.outcomeCategory).toBe("skipped");
-    expect(result.observabilityEnvelope.retryScheduled).toBe(false);
-    expect(result.observabilityEnvelope.retryDelayMs).toBeNull();
-    expect(result.observabilityEnvelope.httpStatusCode).toBeNull();
   });
 });

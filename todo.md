@@ -1731,3 +1731,11 @@
 - [x] Stripe V2: centralizar la definición comercial de productos y precios en un módulo dedicado para evitar price_data inline disperso.
 - [x] Stripe V2: crear una vista protegida de historial de pagos y compras para el usuario usando la persistencia local nueva.
 - [x] Stripe V2: cubrir webhook, persistencia comercial y vista de historial con pruebas Vitest antes de entregar.
+- [ ] Validar con Jaime Santiago López el flujo documental punta a punta usando PDF, XML y contrato para comprobar análisis, persistencia y lectura jurídica.
+- [ ] Auditar con Jaime Santiago López que Helios procese correctamente los documentos y devuelva señales consistentes con el expediente.
+- [ ] Verificar con este caso real que los conectores y bridges activos relacionados con AuditaPatron sigan operando correctamente.
+- [ ] Contrastar el diagnóstico documental y operativo de este caso con Grok, ChatGPT y Gemini antes de cerrar la validación.
+- [x] Blindar el contrato del bridge de AuditaPatron para que el endpoint remoto siempre responda con `auditapatron.bridge.ack.v1` en salud y webhook.
+- [x] Corregir la ruta/configuración remota que hoy devuelve HTML o acuses inválidos desde `www.complilink.mx/api/auditapatron/webhook`.
+- [x] Reforzar la observabilidad y pruebas de humo de Helios/bridge para detectar de inmediato desalineaciones contractuales.
+- [ ] Revalidar con el caso de Jaime Santiago López el flujo extremo a extremo entre expediente, Helios y bridge.
