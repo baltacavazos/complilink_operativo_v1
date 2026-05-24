@@ -16,6 +16,7 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 64 }).unique(),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -396,6 +397,57 @@ export const operationalAlerts = mysqlTable(
   ],
 );
 
+export const commerceSubscriptions = mysqlTable(
+  "commerce_subscriptions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id),
+    stripeCustomerId: varchar("stripeCustomerId", { length: 64 }).notNull(),
+    stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 64 }).notNull(),
+    stripePriceId: varchar("stripePriceId", { length: 64 }),
+    planKey: mysqlEnum("planKey", ["free", "essential", "pro"]).notNull(),
+    status: varchar("status", { length: 32 }).notNull(),
+    latestInvoiceId: varchar("latestInvoiceId", { length: 64 }),
+    currentPeriodEnd: timestamp("currentPeriodEnd"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("commerce_subscriptions_subscription_uq").on(table.stripeSubscriptionId),
+    index("commerce_subscriptions_user_status_idx").on(table.userId, table.status),
+    index("commerce_subscriptions_customer_idx").on(table.stripeCustomerId),
+  ],
+);
+
+export const commercePayments = mysqlTable(
+  "commerce_payments",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").references(() => users.id),
+    stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),
+    stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 64 }).unique(),
+    stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 64 }).unique(),
+    stripeInvoiceId: varchar("stripeInvoiceId", { length: 64 }).unique(),
+    stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 64 }),
+    productKey: varchar("productKey", { length: 64 }).notNull(),
+    productLabel: varchar("productLabel", { length: 255 }).notNull(),
+    productType: mysqlEnum("productType", ["subscription", "one_shot"]).notNull(),
+    amountTotal: int("amountTotal").notNull(),
+    currency: varchar("currency", { length: 8 }).default("mxn").notNull(),
+    paymentStatus: varchar("paymentStatus", { length: 32 }).notNull(),
+    paidAt: timestamp("paidAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    index("commerce_payments_user_paid_idx").on(table.userId, table.paidAt),
+    index("commerce_payments_customer_idx").on(table.stripeCustomerId),
+    index("commerce_payments_subscription_idx").on(table.stripeSubscriptionId),
+  ],
+);
+
 export const canonicalContracts = mysqlTable(
   "canonical_contracts",
   {
@@ -446,5 +498,9 @@ export type CeoBridgeSchedule = typeof ceoBridgeSchedules.$inferSelect;
 export type InsertCeoBridgeSchedule = typeof ceoBridgeSchedules.$inferInsert;
 export type OperationalAlert = typeof operationalAlerts.$inferSelect;
 export type InsertOperationalAlert = typeof operationalAlerts.$inferInsert;
+export type CommerceSubscription = typeof commerceSubscriptions.$inferSelect;
+export type InsertCommerceSubscription = typeof commerceSubscriptions.$inferInsert;
+export type CommercePayment = typeof commercePayments.$inferSelect;
+export type InsertCommercePayment = typeof commercePayments.$inferInsert;
 export type CanonicalContract = typeof canonicalContracts.$inferSelect;
 export type InsertCanonicalContract = typeof canonicalContracts.$inferInsert;

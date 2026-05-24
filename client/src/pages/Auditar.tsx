@@ -13909,6 +13909,14 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
             </div>
           </div>
           <DrawerFooter>
+            <a href="/pagos" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              >
+                Ver historial de pagos
+              </Button>
+            </a>
             {commerceStatusQuery.data?.canManageBilling ? (
               <Button
                 variant="outline"

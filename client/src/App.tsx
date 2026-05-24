@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 const Home = lazy(() => import("./pages/Home"));
 const Access = lazy(() => import("@/pages/Access"));
 const Auditar = lazy(() => import("@/pages/Auditar"));
+const Payments = lazy(() => import("@/pages/Payments"));
 const CeoDashboard = lazy(() => import("@/pages/CeoDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LegalPrivacyPage = lazy(() =>
@@ -76,6 +77,7 @@ function Router() {
           <Route path={"/"} component={Home} />
           <Route path={"/acceso"} component={Access} />
           <Route path={"/auditar"} component={Auditar} />
+          <Route path={"/pagos"} component={Payments} />
           <Route path={"/ceo"} component={CeoDashboard} />
           <Route path={"/ceo/bridge"} component={CeoDashboard} />
           <Route path={"/ceo/alertas"} component={CeoDashboard} />

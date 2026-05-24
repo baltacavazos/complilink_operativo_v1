@@ -1,0 +1,182 @@
+{
+  "results": {
+    "chatgpt": {
+      "already_satisfied": [
+        "Integración con Stripe en Node/TypeScript",
+        "Checkout de suscripciones y pagos puntuales funciona con stripe.checkout.sessions.create()",
+        "Frontend abre checkout en nueva pestaña y muestra toast",
+        "Retorno de checkout redirige a /auditar con parámetros billing=success&product=...",
+        "Webhook en /api/stripe/webhook con express.raw y validación de firma",
+        "Webhook responde { verified: true } para eventos evt_test_",
+        "Sistema permite promotion codes",
+        "Se pasan client_reference_id, metadata.user_id, metadata.customer_email y metadata.customer_name en checkout",
+        "Modo sandbox activo y recomendación de tarjeta 4242 4242 4242 4242",
+        "Panel/información de monetización dentro de /auditar"
+      ],
+      "top_recommendations": [
+        {
+          "rank": 1,
+          "title": "Persistir datos clave de Stripe (customer_id, subscription_id, payment_intent_id, invoice_id) en base local desde webhook",
+          "why_now": "Permite tener un estado local confiable y rápido sin depender de consultas en tiempo real a Stripe, mejorando robustez y experiencia usuario.",
+          "implementation_scope": [
+            "Extender webhook para extraer y guardar identificadores Stripe relevantes",
+            "Actualizar modelo de datos local para almacenar estos IDs",
+            "Ajustar lógica comercial para usar datos locales en lugar de consultas en tiempo real"
+          ],
+          "impact": 5,
+          "effort": 3,
+          "risk": 2
+        },
+        {
+          "rank": 2,
+          "title": "Crear página dedicada de historial de pagos (/orders o /payments) para usuarios",
+          "why_now": "Mejora la transparencia y confianza del usuario mostrando su historial de transacciones, lo que es clave para retención y soporte.",
+          "implementation_scope": [
+            "Diseñar endpoint y frontend para mostrar pagos y sus estados",
+            "Consumir datos locales persistidos (recomendado tras mejora #1)",
+            "Agregar paginación y filtros básicos"
+          ],
+          "impact": 4,
+          "effort": 3,
+          "risk": 2
+        },
+        {
+          "rank": 3,
+          "title": "Centralizar definición de productos y precios en archivo dedicado (products.ts)",
+          "why_now": "Facilita mantenimiento y escalabilidad comercial, reduce errores y mejora claridad del código sin afectar funcionalidad inmediata.",
+          "implementation_scope": [
+            "Crear archivo products.ts con objetos de productos y precios",
+            "Refactorizar server/stripeBilling.ts para consumir esta definición",
+            "Verificar que checkout use datos centralizados"
+          ],
+          "impact": 3,
+          "effort": 2,
+          "risk": 1
+        }
+      ],
+      "absolute_first": {
+        "title": "Persistir datos clave de Stripe en base local desde webhook",
+        "reason": "Es la base para robustecer el sistema, evitar consultas en tiempo real costosas y mejorar la experiencia de usuario con datos confiables y rápidos."
+      },
+      "anti_overengineering_note": "Evitar implementar funcionalidades complejas o múltiples refactors simultáneos; priorizar mejoras que aporten valor inmediato y permitan lanzar rápido con estabilidad."
+    },
+    "grok": {
+      "already_satisfied": [
+        "Integración Stripe en Node/TypeScript",
+        "Uso de stripe.checkout.sessions.create() para suscripciones y pagos puntuales",
+        "Frontend abre checkout en nueva pestaña y muestra toast",
+        "Retorno a /auditar con parámetros billing=success",
+        "Webhook en /api/stripe/webhook con express.raw y validación de firma",
+        "Respuesta { verified: true } para eventos de test",
+        "Soporte de promotion codes",
+        "Paso de client_reference_id y metadata (user_id, customer_email, customer_name)",
+        "Modo sandbox con tarjeta 4242 recomendada",
+        "Panel de monetización dentro de /auditar"
+      ],
+      "top_recommendations": [
+        {
+          "rank": 1,
+          "title": "Persistir identificadores de Stripe y actualizar estado local en el webhook",
+          "why_now": "Evita depender de consultas en tiempo real y garantiza integridad de datos de suscripción/pago antes del lanzamiento",
+          "implementation_scope": [
+            "Actualizar webhook para guardar customer_id, subscription_id, payment_intent_id",
+            "Actualizar estado local del usuario/empresa",
+            "Manejar eventos checkout.session.completed e invoice.paid"
+          ],
+          "impact": 5,
+          "effort": 3,
+          "risk": 2
+        },
+        {
+          "rank": 2,
+          "title": "Crear products.ts centralizado con definiciones de productos y precios",
+          "why_now": "Elimina duplicación inline y facilita cambios de precios sin tocar lógica de checkout",
+          "implementation_scope": [
+            "Extraer price_data a constantes tipadas",
+            "Exportar funciones helper para crear sesiones"
+          ],
+          "impact": 3,
+          "effort": 2,
+          "risk": 1
+        },
+        {
+          "rank": 3,
+          "title": "Almacenar customer_id y subscription_id localmente tras checkout",
+          "why_now": "Reduce latencia y llamadas a Stripe en el panel de monetización",
+          "implementation_scope": [
+            "Guardar IDs en la tabla de usuario tras webhook",
+            "Usar estos IDs para mostrar estado en /auditar"
+          ],
+          "impact": 4,
+          "effort": 3,
+          "risk": 2
+        }
+      ],
+      "absolute_first": {
+        "title": "Persistir identificadores de Stripe y actualizar estado local en el webhook",
+        "reason": "Es el cambio de mayor impacto en robustez y valor de negocio con esfuerzo contenido; sin él el sistema sigue frágil para producción"
+      },
+      "anti_overengineering_note": "Mantener solo persistencia mínima de IDs y estado; evitar vistas de historial completo o sincronización bidireccional por ahora"
+    },
+    "gemini": {
+      "already_satisfied": [
+        "Integración con Stripe en Node/TypeScript ya existe.",
+        "Checkout de suscripciones y pagos puntuales funciona desde backend con stripe.checkout.sessions.create().",
+        "El frontend abre checkout en nueva pestaña y muestra toast.",
+        "El retorno de checkout vuelve a /auditar con parámetros billing=success&product=....",
+        "El webhook existe en /api/stripe/webhook con express.raw({ type: 'application/json' }) y valida firma.",
+        "El webhook responde { verified: true } para eventos evt_test_.",
+        "El sistema permite promotion codes.",
+        "El sistema pasa client_reference_id, metadata.user_id, metadata.customer_email y metadata.customer_name.",
+        "El sistema muestra modo sandbox y recomienda la tarjeta 4242 4242 4242 4242.",
+        "El sistema tiene un panel/información de monetización dentro de /auditar."
+      ],
+      "top_recommendations": [
+        {
+          "rank": 1,
+          "title": "Implementar persistencia local de datos esenciales de Stripe vía webhook",
+          "why_now": "Es fundamental para la robustez del sistema de pagos. Sin esto, la aplicación no tiene una fuente de verdad local sobre el estado de las suscripciones y pagos, lo que lleva a inconsistencias, problemas de acceso y una experiencia de usuario deficiente. Es la base para cualquier funcionalidad de monetización fiable.",
+          "implementation_scope": [
+            "Definir esquema de base de datos para `customers`, `subscriptions`, `payments` (o `transactions`).",
+            "Modificar el webhook para procesar y persistir eventos clave como `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`.",
+            "Guardar `customer_id`, `subscription_id`, `payment_intent_id`, `invoice_id` y el estado relevante en la base de datos local."
+          ],
+          "impact": 5,
+          "effort": 4,
+          "risk": 3
+        },
+        {
+          "rank": 2,
+          "title": "Centralizar la definición de productos y precios de Stripe",
+          "why_now": "Mejora la mantenibilidad, reduce la probabilidad de errores y prepara el sistema para futuras expansiones o cambios de precios. Evita la duplicación y la inconsistencia al definir productos y precios directamente en cada llamada de checkout.",
+          "implementation_scope": [
+            "Crear un archivo `products.ts` (o similar) que contenga objetos con los IDs de productos y precios de Stripe, junto con sus metadatos comerciales (nombre, descripción, etc.).",
+            "Refactorizar `server/stripeBilling.ts` para que utilice estas definiciones centralizadas en lugar de `price_data` inline."
+          ],
+          "impact": 4,
+          "effort": 2,
+          "risk": 1
+        },
+        {
+          "rank": 3,
+          "title": "Crear una página dedicada de 'Historial de Pagos'",
+          "why_now": "Mejora significativamente la transparencia para el usuario y reduce la carga de soporte al permitirles consultar sus transacciones y el estado de sus suscripciones de forma autónoma. Depende directamente de la persistencia local de datos (Recomendación #1).",
+          "implementation_scope": [
+            "Desarrollar una nueva ruta y componente de frontend (ej. `/payments` o `/historial-pagos`).",
+            "Crear un endpoint de API en el backend que consulte los datos de pagos y suscripciones persistidos localmente para el usuario autenticado.",
+            "Mostrar una lista clara de transacciones, fechas, montos, productos y estado de la suscripción."
+          ],
+          "impact": 3,
+          "effort": 3,
+          "risk": 2
+        }
+      ],
+      "absolute_first": {
+        "title": "Implementar persistencia local de datos esenciales de Stripe vía webhook",
+        "reason": "Esta es la base de un sistema de pagos funcional y robusto. Sin una fuente de verdad local, la aplicación operará a ciegas respecto al estado real de los pagos y suscripciones, lo que inevitablemente llevará a problemas de acceso, facturación incorrecta y una experiencia de usuario frustrante. Es un requisito no negociable para la fiabilidad del producto."
+      },
+      "anti_overengineering_note": "Para un lanzamiento rápido, enfócate en la funcionalidad esencial y la robustez mínima. Evita construir abstracciones complejas o funcionalidades secundarias que no sean críticas para el valor principal del negocio en esta etapa. Iterar es clave."
+    }
+  },
+  "errors": {}
+}

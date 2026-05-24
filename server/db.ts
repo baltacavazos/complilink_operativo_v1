@@ -10,6 +10,8 @@ import {
   ceoBridgeSchedules,
   caseDocuments,
   caseEvents,
+  commercePayments,
+  commerceSubscriptions,
   compliLinkWebhookEvents,
   consentRecords,
   documentPolicies,
@@ -20,6 +22,8 @@ import {
   InsertCeoBridgeSchedule,
   InsertCaseDocument,
   InsertCaseEvent,
+  InsertCommercePayment,
+  InsertCommerceSubscription,
   InsertCompliLinkWebhookEvent,
   InsertConsentRecord,
   InsertDocumentPolicy,
@@ -254,6 +258,147 @@ export async function getUserByEmail(email: string) {
     .orderBy(desc(adminPriority), desc(users.lastSignedIn), desc(users.id))
     .limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user by id: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByStripeCustomerId(stripeCustomerId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user by Stripe customer id: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.stripeCustomerId, stripeCustomerId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function linkStripeCustomerToUser(params: { userId: number; stripeCustomerId: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(users)
+    .set({
+      stripeCustomerId: params.stripeCustomerId,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, params.userId));
+}
+
+export async function upsertCommerceSubscription(input: InsertCommerceSubscription) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const values: InsertCommerceSubscription = {
+    userId: input.userId,
+    stripeCustomerId: input.stripeCustomerId,
+    stripeSubscriptionId: input.stripeSubscriptionId,
+    stripePriceId: input.stripePriceId ?? null,
+    planKey: input.planKey,
+    status: input.status,
+    latestInvoiceId: input.latestInvoiceId ?? null,
+    currentPeriodEnd: input.currentPeriodEnd ?? null,
+  };
+
+  await db.insert(commerceSubscriptions).values(values).onDuplicateKeyUpdate({
+    set: {
+      userId: values.userId,
+      stripeCustomerId: values.stripeCustomerId,
+      stripePriceId: values.stripePriceId,
+      planKey: values.planKey,
+      status: values.status,
+      latestInvoiceId: values.latestInvoiceId,
+      currentPeriodEnd: values.currentPeriodEnd,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function upsertCommercePayment(input: InsertCommercePayment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const values: InsertCommercePayment = {
+    userId: input.userId ?? null,
+    stripeCustomerId: input.stripeCustomerId ?? null,
+    stripeCheckoutSessionId: input.stripeCheckoutSessionId ?? null,
+    stripePaymentIntentId: input.stripePaymentIntentId ?? null,
+    stripeInvoiceId: input.stripeInvoiceId ?? null,
+    stripeSubscriptionId: input.stripeSubscriptionId ?? null,
+    productKey: input.productKey,
+    productLabel: input.productLabel,
+    productType: input.productType,
+    amountTotal: input.amountTotal,
+    currency: input.currency ?? "mxn",
+    paymentStatus: input.paymentStatus,
+    paidAt: input.paidAt ?? new Date(),
+  };
+
+  await db.insert(commercePayments).values(values).onDuplicateKeyUpdate({
+    set: {
+      userId: values.userId,
+      stripeCustomerId: values.stripeCustomerId,
+      stripeSubscriptionId: values.stripeSubscriptionId,
+      productKey: values.productKey,
+      productLabel: values.productLabel,
+      productType: values.productType,
+      amountTotal: values.amountTotal,
+      currency: values.currency,
+      paymentStatus: values.paymentStatus,
+      paidAt: values.paidAt,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function getStoredCommerceStatusForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [user] = await db
+    .select({ stripeCustomerId: users.stripeCustomerId })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  const subscriptions = await db
+    .select()
+    .from(commerceSubscriptions)
+    .where(eq(commerceSubscriptions.userId, userId))
+    .orderBy(desc(commerceSubscriptions.updatedAt), desc(commerceSubscriptions.id));
+
+  const payments = await db
+    .select()
+    .from(commercePayments)
+    .where(eq(commercePayments.userId, userId))
+    .orderBy(desc(commercePayments.paidAt), desc(commercePayments.id));
+
+  return {
+    stripeCustomerId: user?.stripeCustomerId ?? null,
+    subscriptions,
+    payments,
+  };
+}
+
+export async function listCommercePaymentsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db
+    .select()
+    .from(commercePayments)
+    .where(eq(commercePayments.userId, userId))
+    .orderBy(desc(commercePayments.paidAt), desc(commercePayments.id));
 }
 
 function toJson<T>(value: T) {

@@ -129,6 +129,7 @@ import {
   buildCommercialSnapshot,
   createCommerceBillingPortalSession,
   createCommerceCheckoutSession,
+  resolveCommerceHistory,
   resolveCommerceStatus,
 } from "./stripeBilling";
 
@@ -2142,6 +2143,9 @@ export const appRouter = router({
         ...status,
         catalog: buildCommercialSnapshot(),
       };
+    }),
+    history: protectedProcedure.query(async ({ ctx }) => {
+      return resolveCommerceHistory(ctx.user.id);
     }),
     createCheckout: protectedProcedure
       .input(

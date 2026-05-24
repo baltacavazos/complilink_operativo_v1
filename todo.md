@@ -1724,3 +1724,10 @@
 - [x] Corregir el flujo end-to-end de expediente para que el paso de contrato no se rompa con documentos reales
 - [x] Resolver la fricción de formatos en contrato para que el usuario perciba continuidad automática y sin bloqueos
 - [x] Validar nuevamente el caso real de Didier Antonio Uicab Palomo hasta contrato o equivalente aceptado por el flujo
+- [ ] Añadir vista previa legible de contratos dentro del expediente
+- [ ] Añadir línea de tiempo del expediente con documentos conectados y siguiente mejor paso sugerido
+- [ ] Añadir reglas de consistencia entre contrato, CFDI y recibo para detectar discrepancias automáticamente
+- [x] Stripe V2: persistir customer_id, subscription_id, payment_intent_id, invoice_id y checkout_session_id en base local desde el webhook con la mínima huella necesaria.
+- [x] Stripe V2: centralizar la definición comercial de productos y precios en un módulo dedicado para evitar price_data inline disperso.
+- [x] Stripe V2: crear una vista protegida de historial de pagos y compras para el usuario usando la persistencia local nueva.
+- [x] Stripe V2: cubrir webhook, persistencia comercial y vista de historial con pruebas Vitest antes de entregar.
