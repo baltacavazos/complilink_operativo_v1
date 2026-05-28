@@ -1739,3 +1739,6 @@
 - [x] Corregir la ruta/configuración remota que hoy devuelve HTML o acuses inválidos desde `www.complilink.mx/api/auditapatron/webhook`.
 - [x] Reforzar la observabilidad y pruebas de humo de Helios/bridge para detectar de inmediato desalineaciones contractuales.
 - [ ] Revalidar con el caso de Jaime Santiago López el flujo extremo a extremo entre expediente, Helios y bridge.
+- [x] Ejecutar el contraste multi-IA del caso de Héctor Jovane Ortiz Hernández con ChatGPT, Grok y Gemini
+- [x] Ejecutar la revalidación end-to-end del expediente de Héctor Jovane Ortiz Hernández con XML y contrato DOCX
+- [x] Redactar y entregar el reporte final de revalidación de Héctor Jovane Ortiz Hernández con evidencia adjunta
