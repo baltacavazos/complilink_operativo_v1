@@ -243,6 +243,60 @@ function extractMoney(text: string) {
   return match?.[0]?.replace(/\s+/g, "") ?? null;
 }
 
+function extractXmlAttribute(text: string, attributeName: string) {
+  const escapedName = attributeName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = text.match(new RegExp(`${escapedName}\\s*=\\s*["']([^"']+)["']`, "i"));
+  return match?.[1] ?? null;
+}
+
+function extractSalaryByLabel(text: string, labels: string[]) {
+  const normalizedLabels = labels.map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(`(?:${normalizedLabels.join("|")})[^$\\d]{0,30}(\\$?\\s?\\d[\\d,]*(?:\\.\\d{2,4})?)`, "i");
+  const match = text.match(regex);
+  return match?.[1]?.replace(/\s+/g, "") ?? null;
+}
+
+function extractContractDailySalary(text: string) {
+  return (
+    extractSalaryByLabel(text, [
+      "salario diario integrado",
+      "salario diario",
+      "salario base",
+      "salario",
+      "sueldo diario",
+      "sueldo",
+    ]) ?? extractMoney(text)
+  );
+}
+
+function extractSocialSecurityBaseSalary(text: string) {
+  return (
+    extractXmlAttribute(text, "SalarioBaseCotApor") ??
+    extractSalaryByLabel(text, ["salariobasecotapor", "sbc", "salario base de cotizacion", "salario base cotizacion"])
+  );
+}
+
+function extractIntegratedDailySalary(text: string) {
+  return (
+    extractXmlAttribute(text, "SalarioDiarioIntegrado") ??
+    extractSalaryByLabel(text, ["salariodiariointegrado", "sdi", "salario diario integrado"])
+  );
+}
+
+function extractCfdiWorkerName(text: string) {
+  return (
+    extractXmlAttribute(text, "Nombre") ??
+    extractNamedField(text, ["trabajador", "empleado", "colaborador"])
+  );
+}
+
+function extractCfdiEmployerName(text: string) {
+  return (
+    extractXmlAttribute(text, "RfcPatronOrigen") ??
+    extractNamedField(text, ["patron", "patrón", "empresa", "empleador"])
+  );
+}
+
 function fileNameLooksLikeUuid(value: string) {
   const cleaned = value.replace(/\.[^.]+$/, "");
   return /(?:^|[^a-z0-9])[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}(?:[^a-z0-9]|$)/i.test(cleaned);
@@ -551,9 +605,18 @@ export function buildPreliminaryLaborAnalysis(params: {
     period: extractPeriod(sourceText),
     apparentAmount: extractMoney(sourceText),
     apparentEffectiveDate: extractDate(sourceText),
-    workerName: extractNamedField(sourceText, ["trabajador", "empleado", "colaborador"]),
-    employerName: extractNamedField(sourceText, ["patron", "patrón", "empresa", "empleador"]),
+    workerName: extractCfdiWorkerName(sourceText),
+    employerName: extractCfdiEmployerName(sourceText),
     jobTitle: extractNamedField(sourceText, ["puesto", "cargo"]),
+    contractDailySalary: classification.documentType === "contract" ? extractContractDailySalary(sourceText) : null,
+    socialSecurityBaseSalary:
+      classification.documentType === "cfdi" || classification.documentType === "payroll_receipt"
+        ? extractSocialSecurityBaseSalary(sourceText)
+        : null,
+    integratedDailySalary:
+      classification.documentType === "cfdi" || classification.documentType === "payroll_receipt"
+        ? extractIntegratedDailySalary(sourceText)
+        : null,
   };
 
   const confirmedData: Record<string, AnalysisValue> = {

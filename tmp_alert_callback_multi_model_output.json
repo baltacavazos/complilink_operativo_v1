@@ -1,0 +1,291 @@
+{
+  "context": {
+    "current_state": {
+      "salary_discrepancy_detection": "No existe una alerta automática específica al comparar contrato vs CFDI/SBC-SDI. Solo existen alertas operativas genéricas.",
+      "bridge_callback_persistence": "Existe tabla compliLinkWebhookEvents y webhook de retorno autenticado; registra eventos recibidos, pero no hay timeout visible cuando el callback no llega tras el dispatch inicial.",
+      "existing_observability": "El upload registra case_events, audit_logs, canonical contracts y operational alerts. El dispatch al bridge ya genera audit log document.engine_dispatch con correlationId, dispatchId y httpStatus.",
+      "case_detail_surface": "getCaseDetailForUser ya devuelve events, documents, consents, alerts y policies, por lo que una alerta backend visible en alerts/events sería suficiente para una primera versión.",
+      "test_state": "Existe suite auditaPatronReturnWebhook.test.ts con cobertura de autenticación, duplicados, retries y fallas de procesamiento."
+    },
+    "constraints": {
+      "goal": "Implementación mínima, robusta, sin rediseño grande de UI, aprovechando alertas y eventos existentes.",
+      "preference": "Backend-first, trazabilidad fuerte, UX clara, sin sobrecargar el flujo de carga documental.",
+      "runtime": "Node-only, sin workers persistentes; se prefiere solución síncrona o derivada de datos ya persistidos."
+    },
+    "document_pattern": {
+      "observed_case": "Hector y otros casos previos muestran identidad consistente entre contrato y CFDI pero discrepancia entre salario contractual y SBC/SDI.",
+      "desired_behavior": "Generar warning claro con timestamp y contexto de valores comparados, sin bloquear la carga."
+    },
+    "callback_pattern": {
+      "observed_case": "El dispatch inicial responde HTTP 202 y queda auditado, pero en ventana corta puede no llegar ningún registro a compliLinkWebhookEvents.",
+      "desired_behavior": "Mostrar de forma explícita que el callback sigue pendiente y elevar warning/critical si vence un timeout razonable."
+    }
+  },
+  "prompt": "Eres un arquitecto senior de producto y backend para una app legal-documental mexicana. Propón la mejor implementación mínima y robusta para dos mejoras: 1) alerta automática de discrepancia salarial entre contrato y CFDI/SBC-SDI; 2) monitoreo visible del callback asíncrono del bridge cuando el dispatch ya fue aceptado pero no llega retorno. Responde JSON estricto con este esquema: {\"salary_alert_strategy\":{\"where_to_compute\":\"string\",\"severity\":\"string\",\"blocking\":\"boolean\",\"fields_to_include\":[\"string\"],\"event_or_alerts\":[\"string\"]},\"callback_monitoring_strategy\":{\"where_to_compute\":\"string\",\"pending_state_source\":\"string\",\"timeout_rule\":\"string\",\"event_or_alerts\":[\"string\"],\"ui_surface\":\"string\"},\"implementation_notes\":[\"string\"],\"test_cases\":[\"string\"],\"recommended_scope\":\"string\"}. Contexto: {\"current_state\": {\"salary_discrepancy_detection\": \"No existe una alerta automática específica al comparar contrato vs CFDI/SBC-SDI. Solo existen alertas operativas genéricas.\", \"bridge_callback_persistence\": \"Existe tabla compliLinkWebhookEvents y webhook de retorno autenticado; registra eventos recibidos, pero no hay timeout visible cuando el callback no llega tras el dispatch inicial.\", \"existing_observability\": \"El upload registra case_events, audit_logs, canonical contracts y operational alerts. El dispatch al bridge ya genera audit log document.engine_dispatch con correlationId, dispatchId y httpStatus.\", \"case_detail_surface\": \"getCaseDetailForUser ya devuelve events, documents, consents, alerts y policies, por lo que una alerta backend visible en alerts/events sería suficiente para una primera versión.\", \"test_state\": \"Existe suite auditaPatronReturnWebhook.test.ts con cobertura de autenticación, duplicados, retries y fallas de procesamiento.\"}, \"constraints\": {\"goal\": \"Implementación mínima, robusta, sin rediseño grande de UI, aprovechando alertas y eventos existentes.\", \"preference\": \"Backend-first, trazabilidad fuerte, UX clara, sin sobrecargar el flujo de carga documental.\", \"runtime\": \"Node-only, sin workers persistentes; se prefiere solución síncrona o derivada de datos ya persistidos.\"}, \"document_pattern\": {\"observed_case\": \"Hector y otros casos previos muestran identidad consistente entre contrato y CFDI pero discrepancia entre salario contractual y SBC/SDI.\", \"desired_behavior\": \"Generar warning claro con timestamp y contexto de valores comparados, sin bloquear la carga.\"}, \"callback_pattern\": {\"observed_case\": \"El dispatch inicial responde HTTP 202 y queda auditado, pero en ventana corta puede no llegar ningún registro a compliLinkWebhookEvents.\", \"desired_behavior\": \"Mostrar de forma explícita que el callback sigue pendiente y elevar warning/critical si vence un timeout razonable.\"}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DkdOVbZHv8o9Y2TheyVmdL7ldDSxd",
+        "object": "chat.completion",
+        "created": 1780006891,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"Backend, en el servicio que procesa la carga o actualización del contrato y CFDI/SBC-SDI, justo después de persistir ambos registros para comparar valores.\",\n    \"severity\": \"warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\n      \"contracted_salary\",\n      \"cfdi_salary\",\n      \"sbc_sdi_salary\",\n      \"caseId\",\n      \"timestamp\"\n    ],\n    \"event_or_alerts\": [\n      \"salary_discrepancy_alert\"\n    ]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"Backend, en un proceso derivado tras el registro del dispatch con estado HTTP 202 y creación de audit log document.engine_dispatch.\",\n    \"pending_state_source\": \"compliLinkWebhookEvents filtrando por dispatchId y correlationId sin evento de retorno recibido.\",\n    \"timeout_rule\": \"Si no se recibe callback en compliLinkWebhookEvents dentro de 5 minutos desde el dispatch inicial, generar alerta crítica.\",\n    \"event_or_alerts\": [\n      \"bridge_callback_pending\",\n      \"bridge_callback_timeout\"\n    ],\n    \"ui_surface\": \"alerts/events en getCaseDetailForUser, mostrando estado pendiente o timeout con timestamps y dispatchId.\"\n  },\n  \"implementation_notes\": [\n    \"Para la alerta salarial, implementar comparación estricta de salario contractual vs CFDI y SBC/SDI tras persistencia, generando alerta backend no bloqueante.\",\n    \"Para callback monitoring, extender lógica tras dispatch para registrar timestamp y verificar existencia de callback en compliLinkWebhookEvents.\",\n    \"Usar job síncrono o trigger post-persistencia para evaluar timeout sin workers persistentes, apoyándose en timestamps y consultas periódicas en cada request relevante.\",\n    \"Aprovechar esquema de alertas y eventos ya existentes para no modificar UI más que mostrar alertas en sección estándar.\",\n    \"Mantener trazabilidad con correlationId y dispatchId en logs y alertas para fácil auditoría.\"\n  ],\n  \"test_cases\": [\n    \"Carga de contrato y CFDI/SBC-SDI con salarios coincidentes no genera alerta.\",\n    \"Carga con discrepancia salarial genera alerta warning con datos correctos y timestamp.\",\n    \"Dispatch al bridge genera audit log con HTTP 202 y correlationId.\",\n    \"No llega callback en compliLinkWebhookEvents en 5 minutos genera alerta crítica bridge_callback_timeout.\",\n    \"Callback llega dentro de timeout elimina estado pendiente y alerta.\",\n    \"Alertas visibles en getCaseDetailForUser en sección alerts/events con contexto claro.\",\n    \"Simulación de múltiples dispatch y callbacks para validar correlación y no falsos positivos.\"\n  ],\n  \"recommended_scope\": \"Backend-first, sin cambios UI mayores, implementando lógica en servicios de persistencia y consulta, usando alertas existentes y audit logs para trazabilidad y visibilidad.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 611,
+          "completion_tokens": 588,
+          "total_tokens": 1199,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_98316961e9"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "238ad572-7ea8-9ca2-8b52-837eb6c37754",
+        "object": "chat.completion",
+        "created": 1780006899,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"backend_in_getCaseDetailForUser\",\n    \"severity\": \"warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\"contract_salary\", \"cfdi_sbc\", \"cfdi_sdi\", \"discrepancy\"],\n    \"event_or_alerts\": [\"operational_alert\"]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"backend_in_getCaseDetailForUser\",\n    \"pending_state_source\": \"audit_log_document.engine_dispatch\",\n    \"timeout_rule\": \"no_compliLinkWebhookEvents within 5min after dispatch\",\n    \"event_or_alerts\": [\"pending_callback\", \"timeout_critical\"],\n    \"ui_surface\": \"case_detail alerts\"\n  },\n  \"implementation_notes\": [\"derive from existing audit_logs + compliLinkWebhookEvents\", \"add comparison in getCaseDetailForUser\", \"emit operational_alert only\"],\n  \"test_cases\": [\"salary mismatch emits warning with values\", \"dispatch without webhook shows pending then timeout\", \"no UI or flow changes\"],\n  \"recommended_scope\": \"backend_only_getCaseDetailForUser_extension\"\n}",
+              "reasoning_content": "The task is to respond with a single valid JSON object matching the exact schema provided. No surrounding text.\n",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 747,
+          "completion_tokens": 238,
+          "total_tokens": 1617,
+          "prompt_tokens_details": {
+            "text_tokens": 747,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 632,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 29743500
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"Post-procesamiento en el pipeline de carga documental, una vez que tanto el contrato como el CFDI/SBC-SDI estén parseados y persistidos para un mismo caso. Se activaría al completar el procesamiento de cualquiera de los dos documentos relevantes, buscando el otro en los datos ya persistidos del caso.\",\n    \"severity\": \"Warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\n      \"salario_contrato\",\n      \"salario_cfdi_sbc_sdi\",\n      \"diferencia_absoluta\",\n      \"diferencia_porcentual\",\n      \"documento_contrato_id\",\n      \"documento_cfdi_id\",\n      \"timestamp_deteccion\"\n    ],\n    \"event_or_alerts\": [\n      \"operational_alert de tipo 'salary_discrepancy_warning' asociada al caso, visible en la superficie de alertas del caso.\",\n      \"case_event de tipo 'salary_discrepancy_detected' para trazabilidad histórica.\"\n    ]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"Proceso batch/cron job periódico (Node-based, e.g., cada 15 minutos) que escanea los 'audit_logs' de 'document.engine_dispatch' y los compara con 'compliLinkWebhookEvents'.\",\n    \"pending_state_source\": \"La existencia de un 'audit log' de 'document.engine_dispatch' con 'httpStatus: 202' y 'dispatchId', y la ausencia de un registro correspondiente en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"timeout_rule\": \"Si un 'document.engine_dispatch' con 'httpStatus: 202' tiene más de 30 minutos de antigüedad y no existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"event_or_alerts\": [\n      \"case_event de tipo 'bridge_callback_pending' (generado cuando se detecta el estado pendiente por primera vez).\",\n      \"operational_alert de tipo 'bridge_callback_timeout' (generado cuando se excede el timeout, con severidad 'Critical' o 'Error').\"\n    ],\n    \"ui_surface\": \"La sección de 'Alertas' y/o 'Eventos' en la vista de detalle del caso (getCaseDetailForUser) para mostrar el estado pendiente y las alertas de timeout.\"\n  },\n  \"implementation_notes\": [\n    \"**Alerta Salarial:**\",\n    \"1. Extender el servicio de procesamiento documental para que, una vez que un contrato y un CFDI/SBC-SDI estén ambos parseados y disponibles para un mismo 'caseId', se ejecute una función de comparación de salarios.\",\n    \"2. La función de comparación extraerá el salario contractual (e.g., de 'canonical contracts') y el SBC/SDI (e.g., de datos parseados del CFDI).\",\n    \"3. Calcular la diferencia absoluta y porcentual. Si excede un umbral configurable (e.g., 5-10%), generar la 'operational_alert' y el 'case_event'.\",\n    \"4. Asegurar idempotencia: no generar múltiples alertas para la misma discrepancia ya detectada y activa.\",\n    \"**Monitoreo de Callback:**\",\n    \"1. Implementar un script Node.js que se ejecute como un cron job. Este script consultará la base de datos.\",\n    \"2. Query para 'audit_logs' donde 'event_type' sea 'document.engine_dispatch', 'httpStatus' sea 202, y 'timestamp' esté dentro de un rango relevante (e.g., últimas 24 horas).\",\n    \"3. Para cada dispatch, verificar si existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"4. Si no existe y el dispatch es reciente (e.g., 5-29 minutos de antigüedad), generar un 'case_event' 'bridge_callback_pending' si no existe ya uno activo para ese 'dispatchId'.\",\n    \"5. Si no existe y el dispatch tiene más de 30 minutos de antigüedad, generar una 'operational_alert' 'bridge_callback_timeout' si no existe ya una activa para ese 'dispatchId'.\",\n    \"6. Considerar un mecanismo para 'resolver' o 'cerrar' las alertas/eventos pendientes una vez que el callback finalmente llega, aunque esto puede ser una mejora de V2 para mantener el scope mínimo.\"\n  ],\n  \"test_cases\": [\n    \"**Alerta Salarial:**\",\n    \"1. Carga de contrato y CFDI con salarios idénticos: No se genera ninguna alerta.\",\n    \"2. Carga de contrato y CFDI con una discrepancia salarial del 15%: Se genera una 'operational_alert' y un 'case_event' de 'salary_discrepancy_warning' con los detalles de la diferencia.\",\n    \"3. Carga de solo contrato o solo CFDI: No se genera alerta de discrepancia salarial (se espera el otro documento).\",\n    \"4. Carga de múltiples contratos o CFDI para el mismo caso: El sistema debe aplicar la lógica de comparación al par más relevante o reciente, o generar una alerta de ambigüedad si la selección no es clara (fuera de scope para la alerta salarial inicial).\",\n    \"**Monitoreo de Callback:**\",\n    \"1. Dispatch exitoso (HTTP 202) y callback recibido en 5 minutos: No se genera ninguna alerta ni evento de pendiente/timeout.\",\n    \"2. Dispatch exitoso (HTTP 202) y no llega callback después de 10 minutos: Se genera un 'case_event' 'bridge_callback_pending' para el 'dispatchId' correspondiente.\",\n    \"3. Dispatch exitoso (HTTP 202) y no llega callback después de 45 minutos: Se genera una 'operational_alert' 'bridge_callback_timeout' (y el 'case_event' 'pending' si no existía o se actualiza).\",\n    \"4. Dispatch exitoso (HTTP 202), se genera 'pending_event', y el callback llega antes del timeout: El 'pending_event' debería ser marcado como resuelto o eliminado (V2).\",\n    \"5. Ejecución repetida del cron job: No debe generar alertas o eventos duplicados para el mismo estado de un 'dispatchId'.\"\n  ],\n  \"recommended_scope\": \"MVP (Minimum Viable Product) enfocado en la detección y notificación. Para la alerta salarial, se prioriza la comparación directa de un contrato vs. un CFDI/SBC-SDI por caso, con un umbral de discrepancia configurable. Para el monitoreo de callback, se implementará la detección del estado pendiente y la alerta de timeout, sin implementar la resolución automática de alertas una vez que el callback llega (esto se considerará una mejora posterior para mantener el scope mínimo y robusto).\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 617,
+          "candidatesTokenCount": 1593,
+          "totalTokenCount": 7208,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 617
+            }
+          ],
+          "thoughtsTokenCount": 4998,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "A8AYavOtD4TLjMcPpoSG8AU"
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "text": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"Backend, en el servicio que procesa la carga o actualización del contrato y CFDI/SBC-SDI, justo después de persistir ambos registros para comparar valores.\",\n    \"severity\": \"warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\n      \"contracted_salary\",\n      \"cfdi_salary\",\n      \"sbc_sdi_salary\",\n      \"caseId\",\n      \"timestamp\"\n    ],\n    \"event_or_alerts\": [\n      \"salary_discrepancy_alert\"\n    ]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"Backend, en un proceso derivado tras el registro del dispatch con estado HTTP 202 y creación de audit log document.engine_dispatch.\",\n    \"pending_state_source\": \"compliLinkWebhookEvents filtrando por dispatchId y correlationId sin evento de retorno recibido.\",\n    \"timeout_rule\": \"Si no se recibe callback en compliLinkWebhookEvents dentro de 5 minutos desde el dispatch inicial, generar alerta crítica.\",\n    \"event_or_alerts\": [\n      \"bridge_callback_pending\",\n      \"bridge_callback_timeout\"\n    ],\n    \"ui_surface\": \"alerts/events en getCaseDetailForUser, mostrando estado pendiente o timeout con timestamps y dispatchId.\"\n  },\n  \"implementation_notes\": [\n    \"Para la alerta salarial, implementar comparación estricta de salario contractual vs CFDI y SBC/SDI tras persistencia, generando alerta backend no bloqueante.\",\n    \"Para callback monitoring, extender lógica tras dispatch para registrar timestamp y verificar existencia de callback en compliLinkWebhookEvents.\",\n    \"Usar job síncrono o trigger post-persistencia para evaluar timeout sin workers persistentes, apoyándose en timestamps y consultas periódicas en cada request relevante.\",\n    \"Aprovechar esquema de alertas y eventos ya existentes para no modificar UI más que mostrar alertas en sección estándar.\",\n    \"Mantener trazabilidad con correlationId y dispatchId en logs y alertas para fácil auditoría.\"\n  ],\n  \"test_cases\": [\n    \"Carga de contrato y CFDI/SBC-SDI con salarios coincidentes no genera alerta.\",\n    \"Carga con discrepancia salarial genera alerta warning con datos correctos y timestamp.\",\n    \"Dispatch al bridge genera audit log con HTTP 202 y correlationId.\",\n    \"No llega callback en compliLinkWebhookEvents en 5 minutos genera alerta crítica bridge_callback_timeout.\",\n    \"Callback llega dentro de timeout elimina estado pendiente y alerta.\",\n    \"Alertas visibles en getCaseDetailForUser en sección alerts/events con contexto claro.\",\n    \"Simulación de múltiples dispatch y callbacks para validar correlación y no falsos positivos.\"\n  ],\n  \"recommended_scope\": \"Backend-first, sin cambios UI mayores, implementando lógica en servicios de persistencia y consulta, usando alertas existentes y audit logs para trazabilidad y visibilidad.\"\n}",
+      "json": {
+        "salary_alert_strategy": {
+          "where_to_compute": "Backend, en el servicio que procesa la carga o actualización del contrato y CFDI/SBC-SDI, justo después de persistir ambos registros para comparar valores.",
+          "severity": "warning",
+          "blocking": false,
+          "fields_to_include": [
+            "contracted_salary",
+            "cfdi_salary",
+            "sbc_sdi_salary",
+            "caseId",
+            "timestamp"
+          ],
+          "event_or_alerts": [
+            "salary_discrepancy_alert"
+          ]
+        },
+        "callback_monitoring_strategy": {
+          "where_to_compute": "Backend, en un proceso derivado tras el registro del dispatch con estado HTTP 202 y creación de audit log document.engine_dispatch.",
+          "pending_state_source": "compliLinkWebhookEvents filtrando por dispatchId y correlationId sin evento de retorno recibido.",
+          "timeout_rule": "Si no se recibe callback en compliLinkWebhookEvents dentro de 5 minutos desde el dispatch inicial, generar alerta crítica.",
+          "event_or_alerts": [
+            "bridge_callback_pending",
+            "bridge_callback_timeout"
+          ],
+          "ui_surface": "alerts/events en getCaseDetailForUser, mostrando estado pendiente o timeout con timestamps y dispatchId."
+        },
+        "implementation_notes": [
+          "Para la alerta salarial, implementar comparación estricta de salario contractual vs CFDI y SBC/SDI tras persistencia, generando alerta backend no bloqueante.",
+          "Para callback monitoring, extender lógica tras dispatch para registrar timestamp y verificar existencia de callback en compliLinkWebhookEvents.",
+          "Usar job síncrono o trigger post-persistencia para evaluar timeout sin workers persistentes, apoyándose en timestamps y consultas periódicas en cada request relevante.",
+          "Aprovechar esquema de alertas y eventos ya existentes para no modificar UI más que mostrar alertas en sección estándar.",
+          "Mantener trazabilidad con correlationId y dispatchId en logs y alertas para fácil auditoría."
+        ],
+        "test_cases": [
+          "Carga de contrato y CFDI/SBC-SDI con salarios coincidentes no genera alerta.",
+          "Carga con discrepancia salarial genera alerta warning con datos correctos y timestamp.",
+          "Dispatch al bridge genera audit log con HTTP 202 y correlationId.",
+          "No llega callback en compliLinkWebhookEvents en 5 minutos genera alerta crítica bridge_callback_timeout.",
+          "Callback llega dentro de timeout elimina estado pendiente y alerta.",
+          "Alertas visibles en getCaseDetailForUser en sección alerts/events con contexto claro.",
+          "Simulación de múltiples dispatch y callbacks para validar correlación y no falsos positivos."
+        ],
+        "recommended_scope": "Backend-first, sin cambios UI mayores, implementando lógica en servicios de persistencia y consulta, usando alertas existentes y audit logs para trazabilidad y visibilidad."
+      }
+    },
+    "grok": {
+      "text": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"backend_in_getCaseDetailForUser\",\n    \"severity\": \"warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\"contract_salary\", \"cfdi_sbc\", \"cfdi_sdi\", \"discrepancy\"],\n    \"event_or_alerts\": [\"operational_alert\"]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"backend_in_getCaseDetailForUser\",\n    \"pending_state_source\": \"audit_log_document.engine_dispatch\",\n    \"timeout_rule\": \"no_compliLinkWebhookEvents within 5min after dispatch\",\n    \"event_or_alerts\": [\"pending_callback\", \"timeout_critical\"],\n    \"ui_surface\": \"case_detail alerts\"\n  },\n  \"implementation_notes\": [\"derive from existing audit_logs + compliLinkWebhookEvents\", \"add comparison in getCaseDetailForUser\", \"emit operational_alert only\"],\n  \"test_cases\": [\"salary mismatch emits warning with values\", \"dispatch without webhook shows pending then timeout\", \"no UI or flow changes\"],\n  \"recommended_scope\": \"backend_only_getCaseDetailForUser_extension\"\n}",
+      "json": {
+        "salary_alert_strategy": {
+          "where_to_compute": "backend_in_getCaseDetailForUser",
+          "severity": "warning",
+          "blocking": false,
+          "fields_to_include": [
+            "contract_salary",
+            "cfdi_sbc",
+            "cfdi_sdi",
+            "discrepancy"
+          ],
+          "event_or_alerts": [
+            "operational_alert"
+          ]
+        },
+        "callback_monitoring_strategy": {
+          "where_to_compute": "backend_in_getCaseDetailForUser",
+          "pending_state_source": "audit_log_document.engine_dispatch",
+          "timeout_rule": "no_compliLinkWebhookEvents within 5min after dispatch",
+          "event_or_alerts": [
+            "pending_callback",
+            "timeout_critical"
+          ],
+          "ui_surface": "case_detail alerts"
+        },
+        "implementation_notes": [
+          "derive from existing audit_logs + compliLinkWebhookEvents",
+          "add comparison in getCaseDetailForUser",
+          "emit operational_alert only"
+        ],
+        "test_cases": [
+          "salary mismatch emits warning with values",
+          "dispatch without webhook shows pending then timeout",
+          "no UI or flow changes"
+        ],
+        "recommended_scope": "backend_only_getCaseDetailForUser_extension"
+      }
+    },
+    "gemini": {
+      "text": "{\n  \"salary_alert_strategy\": {\n    \"where_to_compute\": \"Post-procesamiento en el pipeline de carga documental, una vez que tanto el contrato como el CFDI/SBC-SDI estén parseados y persistidos para un mismo caso. Se activaría al completar el procesamiento de cualquiera de los dos documentos relevantes, buscando el otro en los datos ya persistidos del caso.\",\n    \"severity\": \"Warning\",\n    \"blocking\": false,\n    \"fields_to_include\": [\n      \"salario_contrato\",\n      \"salario_cfdi_sbc_sdi\",\n      \"diferencia_absoluta\",\n      \"diferencia_porcentual\",\n      \"documento_contrato_id\",\n      \"documento_cfdi_id\",\n      \"timestamp_deteccion\"\n    ],\n    \"event_or_alerts\": [\n      \"operational_alert de tipo 'salary_discrepancy_warning' asociada al caso, visible en la superficie de alertas del caso.\",\n      \"case_event de tipo 'salary_discrepancy_detected' para trazabilidad histórica.\"\n    ]\n  },\n  \"callback_monitoring_strategy\": {\n    \"where_to_compute\": \"Proceso batch/cron job periódico (Node-based, e.g., cada 15 minutos) que escanea los 'audit_logs' de 'document.engine_dispatch' y los compara con 'compliLinkWebhookEvents'.\",\n    \"pending_state_source\": \"La existencia de un 'audit log' de 'document.engine_dispatch' con 'httpStatus: 202' y 'dispatchId', y la ausencia de un registro correspondiente en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"timeout_rule\": \"Si un 'document.engine_dispatch' con 'httpStatus: 202' tiene más de 30 minutos de antigüedad y no existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"event_or_alerts\": [\n      \"case_event de tipo 'bridge_callback_pending' (generado cuando se detecta el estado pendiente por primera vez).\",\n      \"operational_alert de tipo 'bridge_callback_timeout' (generado cuando se excede el timeout, con severidad 'Critical' o 'Error').\"\n    ],\n    \"ui_surface\": \"La sección de 'Alertas' y/o 'Eventos' en la vista de detalle del caso (getCaseDetailForUser) para mostrar el estado pendiente y las alertas de timeout.\"\n  },\n  \"implementation_notes\": [\n    \"**Alerta Salarial:**\",\n    \"1. Extender el servicio de procesamiento documental para que, una vez que un contrato y un CFDI/SBC-SDI estén ambos parseados y disponibles para un mismo 'caseId', se ejecute una función de comparación de salarios.\",\n    \"2. La función de comparación extraerá el salario contractual (e.g., de 'canonical contracts') y el SBC/SDI (e.g., de datos parseados del CFDI).\",\n    \"3. Calcular la diferencia absoluta y porcentual. Si excede un umbral configurable (e.g., 5-10%), generar la 'operational_alert' y el 'case_event'.\",\n    \"4. Asegurar idempotencia: no generar múltiples alertas para la misma discrepancia ya detectada y activa.\",\n    \"**Monitoreo de Callback:**\",\n    \"1. Implementar un script Node.js que se ejecute como un cron job. Este script consultará la base de datos.\",\n    \"2. Query para 'audit_logs' donde 'event_type' sea 'document.engine_dispatch', 'httpStatus' sea 202, y 'timestamp' esté dentro de un rango relevante (e.g., últimas 24 horas).\",\n    \"3. Para cada dispatch, verificar si existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.\",\n    \"4. Si no existe y el dispatch es reciente (e.g., 5-29 minutos de antigüedad), generar un 'case_event' 'bridge_callback_pending' si no existe ya uno activo para ese 'dispatchId'.\",\n    \"5. Si no existe y el dispatch tiene más de 30 minutos de antigüedad, generar una 'operational_alert' 'bridge_callback_timeout' si no existe ya una activa para ese 'dispatchId'.\",\n    \"6. Considerar un mecanismo para 'resolver' o 'cerrar' las alertas/eventos pendientes una vez que el callback finalmente llega, aunque esto puede ser una mejora de V2 para mantener el scope mínimo.\"\n  ],\n  \"test_cases\": [\n    \"**Alerta Salarial:**\",\n    \"1. Carga de contrato y CFDI con salarios idénticos: No se genera ninguna alerta.\",\n    \"2. Carga de contrato y CFDI con una discrepancia salarial del 15%: Se genera una 'operational_alert' y un 'case_event' de 'salary_discrepancy_warning' con los detalles de la diferencia.\",\n    \"3. Carga de solo contrato o solo CFDI: No se genera alerta de discrepancia salarial (se espera el otro documento).\",\n    \"4. Carga de múltiples contratos o CFDI para el mismo caso: El sistema debe aplicar la lógica de comparación al par más relevante o reciente, o generar una alerta de ambigüedad si la selección no es clara (fuera de scope para la alerta salarial inicial).\",\n    \"**Monitoreo de Callback:**\",\n    \"1. Dispatch exitoso (HTTP 202) y callback recibido en 5 minutos: No se genera ninguna alerta ni evento de pendiente/timeout.\",\n    \"2. Dispatch exitoso (HTTP 202) y no llega callback después de 10 minutos: Se genera un 'case_event' 'bridge_callback_pending' para el 'dispatchId' correspondiente.\",\n    \"3. Dispatch exitoso (HTTP 202) y no llega callback después de 45 minutos: Se genera una 'operational_alert' 'bridge_callback_timeout' (y el 'case_event' 'pending' si no existía o se actualiza).\",\n    \"4. Dispatch exitoso (HTTP 202), se genera 'pending_event', y el callback llega antes del timeout: El 'pending_event' debería ser marcado como resuelto o eliminado (V2).\",\n    \"5. Ejecución repetida del cron job: No debe generar alertas o eventos duplicados para el mismo estado de un 'dispatchId'.\"\n  ],\n  \"recommended_scope\": \"MVP (Minimum Viable Product) enfocado en la detección y notificación. Para la alerta salarial, se prioriza la comparación directa de un contrato vs. un CFDI/SBC-SDI por caso, con un umbral de discrepancia configurable. Para el monitoreo de callback, se implementará la detección del estado pendiente y la alerta de timeout, sin implementar la resolución automática de alertas una vez que el callback llega (esto se considerará una mejora posterior para mantener el scope mínimo y robusto).\"\n}",
+      "json": {
+        "salary_alert_strategy": {
+          "where_to_compute": "Post-procesamiento en el pipeline de carga documental, una vez que tanto el contrato como el CFDI/SBC-SDI estén parseados y persistidos para un mismo caso. Se activaría al completar el procesamiento de cualquiera de los dos documentos relevantes, buscando el otro en los datos ya persistidos del caso.",
+          "severity": "Warning",
+          "blocking": false,
+          "fields_to_include": [
+            "salario_contrato",
+            "salario_cfdi_sbc_sdi",
+            "diferencia_absoluta",
+            "diferencia_porcentual",
+            "documento_contrato_id",
+            "documento_cfdi_id",
+            "timestamp_deteccion"
+          ],
+          "event_or_alerts": [
+            "operational_alert de tipo 'salary_discrepancy_warning' asociada al caso, visible en la superficie de alertas del caso.",
+            "case_event de tipo 'salary_discrepancy_detected' para trazabilidad histórica."
+          ]
+        },
+        "callback_monitoring_strategy": {
+          "where_to_compute": "Proceso batch/cron job periódico (Node-based, e.g., cada 15 minutos) que escanea los 'audit_logs' de 'document.engine_dispatch' y los compara con 'compliLinkWebhookEvents'.",
+          "pending_state_source": "La existencia de un 'audit log' de 'document.engine_dispatch' con 'httpStatus: 202' y 'dispatchId', y la ausencia de un registro correspondiente en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.",
+          "timeout_rule": "Si un 'document.engine_dispatch' con 'httpStatus: 202' tiene más de 30 minutos de antigüedad y no existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.",
+          "event_or_alerts": [
+            "case_event de tipo 'bridge_callback_pending' (generado cuando se detecta el estado pendiente por primera vez).",
+            "operational_alert de tipo 'bridge_callback_timeout' (generado cuando se excede el timeout, con severidad 'Critical' o 'Error')."
+          ],
+          "ui_surface": "La sección de 'Alertas' y/o 'Eventos' en la vista de detalle del caso (getCaseDetailForUser) para mostrar el estado pendiente y las alertas de timeout."
+        },
+        "implementation_notes": [
+          "**Alerta Salarial:**",
+          "1. Extender el servicio de procesamiento documental para que, una vez que un contrato y un CFDI/SBC-SDI estén ambos parseados y disponibles para un mismo 'caseId', se ejecute una función de comparación de salarios.",
+          "2. La función de comparación extraerá el salario contractual (e.g., de 'canonical contracts') y el SBC/SDI (e.g., de datos parseados del CFDI).",
+          "3. Calcular la diferencia absoluta y porcentual. Si excede un umbral configurable (e.g., 5-10%), generar la 'operational_alert' y el 'case_event'.",
+          "4. Asegurar idempotencia: no generar múltiples alertas para la misma discrepancia ya detectada y activa.",
+          "**Monitoreo de Callback:**",
+          "1. Implementar un script Node.js que se ejecute como un cron job. Este script consultará la base de datos.",
+          "2. Query para 'audit_logs' donde 'event_type' sea 'document.engine_dispatch', 'httpStatus' sea 202, y 'timestamp' esté dentro de un rango relevante (e.g., últimas 24 horas).",
+          "3. Para cada dispatch, verificar si existe un registro en 'compliLinkWebhookEvents' con el mismo 'dispatchId'.",
+          "4. Si no existe y el dispatch es reciente (e.g., 5-29 minutos de antigüedad), generar un 'case_event' 'bridge_callback_pending' si no existe ya uno activo para ese 'dispatchId'.",
+          "5. Si no existe y el dispatch tiene más de 30 minutos de antigüedad, generar una 'operational_alert' 'bridge_callback_timeout' si no existe ya una activa para ese 'dispatchId'.",
+          "6. Considerar un mecanismo para 'resolver' o 'cerrar' las alertas/eventos pendientes una vez que el callback finalmente llega, aunque esto puede ser una mejora de V2 para mantener el scope mínimo."
+        ],
+        "test_cases": [
+          "**Alerta Salarial:**",
+          "1. Carga de contrato y CFDI con salarios idénticos: No se genera ninguna alerta.",
+          "2. Carga de contrato y CFDI con una discrepancia salarial del 15%: Se genera una 'operational_alert' y un 'case_event' de 'salary_discrepancy_warning' con los detalles de la diferencia.",
+          "3. Carga de solo contrato o solo CFDI: No se genera alerta de discrepancia salarial (se espera el otro documento).",
+          "4. Carga de múltiples contratos o CFDI para el mismo caso: El sistema debe aplicar la lógica de comparación al par más relevante o reciente, o generar una alerta de ambigüedad si la selección no es clara (fuera de scope para la alerta salarial inicial).",
+          "**Monitoreo de Callback:**",
+          "1. Dispatch exitoso (HTTP 202) y callback recibido en 5 minutos: No se genera ninguna alerta ni evento de pendiente/timeout.",
+          "2. Dispatch exitoso (HTTP 202) y no llega callback después de 10 minutos: Se genera un 'case_event' 'bridge_callback_pending' para el 'dispatchId' correspondiente.",
+          "3. Dispatch exitoso (HTTP 202) y no llega callback después de 45 minutos: Se genera una 'operational_alert' 'bridge_callback_timeout' (y el 'case_event' 'pending' si no existía o se actualiza).",
+          "4. Dispatch exitoso (HTTP 202), se genera 'pending_event', y el callback llega antes del timeout: El 'pending_event' debería ser marcado como resuelto o eliminado (V2).",
+          "5. Ejecución repetida del cron job: No debe generar alertas o eventos duplicados para el mismo estado de un 'dispatchId'."
+        ],
+        "recommended_scope": "MVP (Minimum Viable Product) enfocado en la detección y notificación. Para la alerta salarial, se prioriza la comparación directa de un contrato vs. un CFDI/SBC-SDI por caso, con un umbral de discrepancia configurable. Para el monitoreo de callback, se implementará la detección del estado pendiente y la alerta de timeout, sin implementar la resolución automática de alertas una vez que el callback llega (esto se considerará una mejora posterior para mantener el scope mínimo y robusto)."
+      }
+    }
+  }
+}

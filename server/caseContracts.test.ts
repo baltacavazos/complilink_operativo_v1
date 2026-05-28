@@ -141,6 +141,35 @@ describe("caseContracts", () => {
     expect(analysis.summary).toMatch(/INFONAVIT/i);
   });
 
+  it("detects salary signals from contract and CFDI text hints", () => {
+    const contractAnalysis = buildPreliminaryLaborAnalysis({
+      fileName: "contrato-hector.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      textHint: "Contrato individual de trabajo. Puesto: auxiliar. Salario diario $207.44. Jornada diurna.",
+      classification: classifyMexicanLaborDocument({
+        fileName: "contrato-hector.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        textHint: "Contrato individual de trabajo. Salario diario $207.44.",
+      }),
+    });
+    const cfdiAnalysis = buildPreliminaryLaborAnalysis({
+      fileName: "hector_cfdi.xml",
+      mimeType: "application/xml",
+      textHint:
+        '<cfdi:Comprobante><nomina12:Nomina TotalPercepciones="999.00" SalarioBaseCotApor="331.45" SalarioDiarioIntegrado="331.45" /></cfdi:Comprobante>',
+      classification: classifyMexicanLaborDocument({
+        fileName: "hector_cfdi.xml",
+        mimeType: "application/xml",
+        textHint:
+          '<cfdi:Comprobante><nomina12:Nomina SalarioBaseCotApor="331.45" SalarioDiarioIntegrado="331.45" /></cfdi:Comprobante>',
+      }),
+    });
+
+    expect(contractAnalysis.estimatedData.contractDailySalary).toBe("$207.44");
+    expect(cfdiAnalysis.estimatedData.socialSecurityBaseSalary).toBe("331.45");
+    expect(cfdiAnalysis.estimatedData.integratedDailySalary).toBe("331.45");
+  });
+
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {
     expect(
       getHeliosExpedienteStage({

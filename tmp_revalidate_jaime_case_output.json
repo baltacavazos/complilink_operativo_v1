@@ -1,0 +1,1525 @@
+{
+  "executedAt": "2026-05-28T22:35:35.104Z",
+  "origin": "https://auditapatron.com",
+  "actorUser": {
+    "id": 1,
+    "openId": "S8ApRqTbJj4mEpPnubsWbo",
+    "email": "balt@cavazos.com",
+    "role": "admin"
+  },
+  "tenant": {
+    "tenantId": "balt-1",
+    "role": "tenant_admin",
+    "accessScope": "tenant"
+  },
+  "sourceCase": {
+    "caseId": "CASE-BALT-1-MPJ76XIT",
+    "title": "Revalidación real · Jaime Santiago López",
+    "employerEntity": "Validación operativa AuditaPatron",
+    "updatedAt": "2026-05-24T03:08:26.000Z"
+  },
+  "sourceDocuments": {
+    "xml": {
+      "documentId": "DOC-220D066A10DF4CFF",
+      "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "mimeType": "application/xml",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPJ76XIT/DOC-220D066A10DF4CFF/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml"
+    },
+    "contract": {
+      "documentId": "DOC-7247DDB7A1E447ED",
+      "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPJ76XIT/DOC-7247DDB7A1E447ED/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx"
+    }
+  },
+  "case": {
+    "id": 180001,
+    "tenantId": "balt-1",
+    "caseId": "CASE-BALT-1-MPQ2N1KZ",
+    "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+    "title": "Revalidación E2E Jaime Santiago López",
+    "employeeName": "JAIME SANTIAGO LOPEZ",
+    "employerEntity": "Validación operativa AuditaPatron",
+    "jurisdiction": "México",
+    "status": "intake",
+    "priority": "medium",
+    "assignedUserId": 1,
+    "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
+    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
+    "openedAt": "2026-05-28T22:35:23.000Z",
+    "dueAt": null,
+    "closedAt": null,
+    "lastActivityAt": "2026-05-28T22:35:23.000Z",
+    "createdAt": "2026-05-28T22:35:23.000Z",
+    "updatedAt": "2026-05-28T22:35:23.000Z"
+  },
+  "persistedCase": {
+    "id": 180001,
+    "tenantId": "balt-1",
+    "caseId": "CASE-BALT-1-MPQ2N1KZ",
+    "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+    "title": "Revalidación E2E Jaime Santiago López",
+    "employeeName": "JAIME SANTIAGO LOPEZ",
+    "employerEntity": "Validación operativa AuditaPatron",
+    "jurisdiction": "México",
+    "status": "intake",
+    "priority": "medium",
+    "assignedUserId": 1,
+    "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
+    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
+    "openedAt": "2026-05-28T22:35:23.000Z",
+    "dueAt": null,
+    "closedAt": null,
+    "lastActivityAt": "2026-05-28T22:35:23.000Z",
+    "createdAt": "2026-05-28T22:35:23.000Z",
+    "updatedAt": "2026-05-28T22:35:23.000Z"
+  },
+  "xmlUpload": {
+    "document": {
+      "id": 240001,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "documentId": "DOC-6BCF366BE6A145E3",
+      "uploadedByUserId": 1,
+      "supersedesDocumentId": null,
+      "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "mimeType": "application/xml",
+      "sizeBytes": 5780,
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
+      "documentType": "cfdi",
+      "sourceChannel": "manual",
+      "integrityStatus": "verified",
+      "consentStatus": "granted",
+      "visibility": "case_team",
+      "classificationConfidence": 91,
+      "processedAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z",
+      "updatedAt": "2026-05-28T22:35:25.000Z"
+    },
+    "classification": {
+      "documentType": "cfdi",
+      "normalizedDocType": "cfdi_nomina",
+      "classificationConfidence": 91,
+      "reasons": [
+        "El archivo XML contiene marcadores típicos de CFDI de nómina o timbrado fiscal."
+      ],
+      "processingProfile": "standard",
+      "reviewRecommendation": "auto",
+      "supportsStructuredExtraction": true,
+      "supportsBenefitEstimation": true
+    },
+    "preliminaryAnalysis": {
+      "normalizedDocType": "cfdi_nomina",
+      "simpleLabel": "cfdi nomina",
+      "processingProfile": "standard",
+      "summary": "Parece un comprobante de pago laboral. Puede usarse para extraer periodo, percepciones, deducciones y señales salariales.",
+      "confirmedData": {
+        "fileName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+        "mimeType": "application/xml",
+        "internalDocumentType": "cfdi",
+        "normalizedDocType": "cfdi_nomina",
+        "processingProfile": "standard",
+        "structuredExtractionReady": true,
+        "benefitEstimationReady": true,
+        "hasInfonavitSignal": false,
+        "infonavitDeductionType": null
+      },
+      "estimatedData": {
+        "employerRfc": "ECC190605VA1",
+        "period": "2026-04",
+        "apparentAmount": null,
+        "apparentEffectiveDate": "2026-04-30",
+        "workerName": "EVOLUCION CREATIVA CAMREFLEX",
+        "employerName": null,
+        "jobTitle": null,
+        "contractDailySalary": null,
+        "socialSecurityBaseSalary": "331.45",
+        "integratedDailySalary": "331.45"
+      },
+      "extractionTargets": [
+        "RFC patrón",
+        "RFC trabajador",
+        "periodo",
+        "salario",
+        "percepciones",
+        "deducciones",
+        "INFONAVIT"
+      ],
+      "guardrails": [
+        "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+        "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal."
+      ],
+      "structuredExtraction": {
+        "headline": "Esto es lo más importante que parece decir el comprobante de pago",
+        "summary": "Parece un comprobante de pago laboral. Puede usarse para extraer periodo, percepciones, deducciones y señales salariales.",
+        "fields": [
+          {
+            "key": "fileName",
+            "label": "Archivo",
+            "value": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "mimeType",
+            "label": "Formato",
+            "value": "application/xml",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "internalDocumentType",
+            "label": "Tipo de documento",
+            "value": "cfdi",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "normalizedDocType",
+            "label": "Detalle detectado",
+            "value": "cfdi_nomina",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "processingProfile",
+            "label": "Nivel de revisión",
+            "value": "standard",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "structuredExtractionReady",
+            "label": "Puede leer detalles",
+            "value": "true",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "benefitEstimationReady",
+            "label": "Puede estimar prestaciones",
+            "value": "true",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "hasInfonavitSignal",
+            "label": "Has Infonavit Signal",
+            "value": "false",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "employerRfc",
+            "label": "RFC visible",
+            "value": "ECC190605VA1",
+            "status": "estimated",
+            "confidence": "medium"
+          },
+          {
+            "key": "period",
+            "label": "Periodo visible",
+            "value": "2026-04",
+            "status": "estimated",
+            "confidence": "medium"
+          }
+        ],
+        "missingFields": [
+          "RFC patrón",
+          "RFC trabajador",
+          "salario",
+          "percepciones",
+          "deducciones"
+        ],
+        "reviewNotes": [
+          "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+          "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal."
+        ]
+      }
+    },
+    "documentContract": {
+      "contract_type": "document",
+      "schema_version": "v1",
+      "tenant_id": "balt-1",
+      "case_id": "CASE-BALT-1-MPQ2N1KZ",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "document_id": "DOC-6BCF366BE6A145E3",
+      "document_type": "cfdi",
+      "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
+      "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "visibility": "case_team",
+      "consent_status": "granted",
+      "classification_confidence": 91,
+      "original_name": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "mime_type": "application/xml",
+      "size_bytes": 5780,
+      "country": "MX"
+    },
+    "sharedEngineEnvelope": {
+      "contract_type": "shared_engine",
+      "schema_version": "v1",
+      "tenant_id": "balt-1",
+      "case_id": "CASE-BALT-1-MPQ2N1KZ",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "case_contract": {
+        "contract_type": "case",
+        "schema_version": "v1",
+        "tenant_id": "balt-1",
+        "case_id": "CASE-BALT-1-MPQ2N1KZ",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "title": "Revalidación E2E Jaime Santiago López",
+        "status": "intake",
+        "priority": "medium",
+        "employee_name": "JAIME SANTIAGO LOPEZ",
+        "employer_entity": "Validación operativa AuditaPatron",
+        "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
+        "jurisdiction": "MX"
+      },
+      "document_contracts": [
+        {
+          "contract_type": "document",
+          "schema_version": "v1",
+          "tenant_id": "balt-1",
+          "case_id": "CASE-BALT-1-MPQ2N1KZ",
+          "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "document_id": "DOC-6BCF366BE6A145E3",
+          "document_type": "cfdi",
+          "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
+          "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+          "visibility": "case_team",
+          "consent_status": "granted",
+          "classification_confidence": 91,
+          "original_name": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+          "mime_type": "application/xml",
+          "size_bytes": 5780,
+          "country": "MX"
+        }
+      ],
+      "ready_for_shared_engine": true
+    },
+    "heliosOpinion": {
+      "documentId": "DOC-6BCF366BE6A145E3",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "status": "processing",
+      "mode": "remote",
+      "summary": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+      "legalOpinion": "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente.",
+      "riskLevel": "low",
+      "recommendedNextStep": "Contrastar lo fiscalmente timbrado con nómina, depósitos y condiciones pactadas en el contrato.",
+      "recommendedActions": [
+        "Comparar lo timbrado con tus recibos de nómina y depósitos reales.",
+        "Identificar periodos o montos que no coincidan entre documentos.",
+        "Aportar contrato o soporte IMSS para reforzar el contexto laboral."
+      ],
+      "legalFoundations": [
+        {
+          "title": "Acreditación de pagos y deducciones",
+          "reference": "Recibos y comprobantes fiscales laborales",
+          "relevance": "Permite revisar si los pagos documentados coinciden con la relación laboral y con otros soportes del expediente."
+        },
+        {
+          "title": "Primacía de la realidad",
+          "reference": "Doctrina laboral aplicable",
+          "relevance": "Sirve para contrastar lo que se pactó documentalmente contra lo que realmente ocurrió en la relación de trabajo."
+        },
+        {
+          "title": "Protección de derechos laborales",
+          "reference": "Marco laboral mexicano",
+          "relevance": "La interpretación inicial debe favorecer una revisión suficiente de salario, jornada, prestaciones y seguridad social."
+        }
+      ],
+      "keyFactsUsed": [
+        "EVOLUCION CREATIVA CAMREFLEX",
+        "2026-04",
+        "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml"
+      ],
+      "uncertainties": [
+        "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo."
+      ],
+      "confidenceScore": 78,
+      "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
+      "generatedAt": "2026-05-28T22:35:25.616Z",
+      "resultCard": {
+        "headline": "Tu documento ya está en revisión avanzada",
+        "lead": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+        "keyFindings": [
+          {
+            "label": "Estado del motor",
+            "value": "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+            "source": "derived",
+            "tone": "support"
+          },
+          {
+            "label": "Qué sigue",
+            "value": "En cuanto el motor termine, esta vista se actualizará con hallazgos concretos, contexto del expediente y preguntas sugeridas.",
+            "source": "derived",
+            "tone": "neutral"
+          }
+        ],
+        "nextStepLabel": "Siguiente paso sugerido",
+        "nextStepSummary": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+        "dossierUpdateLabel": "Tu expediente ya se actualizó",
+        "dossierUpdateSummary": "Tu CFDI laboral ya quedó ordenado dentro de tu expediente y servirá para futuras comparaciones, respuestas y seguimientos.",
+        "assistantIntro": "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
+        "suggestedQuestions": [
+          "Explícame este CFDI con palabras simples.",
+          "¿Qué podría no coincidir con mis pagos reales?",
+          "¿Qué documento me conviene subir después?"
+        ],
+        "signalsChecked": [
+          "tipo de documento detectado",
+          "campos visibles del archivo",
+          "estado del motor Helios",
+          "contexto inmediato del expediente"
+        ],
+        "simpleExplanation": [
+          {
+            "label": "Qué ya revisé por ti",
+            "summary": "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+            "tone": "support"
+          },
+          {
+            "label": "Lo que sí pude concluir",
+            "summary": "Ya sabemos qué tipo de documento es y cómo puede ayudar dentro de tu expediente.",
+            "tone": "support"
+          },
+          {
+            "label": "Lo que todavía no puedo asegurar",
+            "summary": "La lectura jurídica fina todavía depende de que termine el procesamiento remoto del documento completo.",
+            "tone": "attention"
+          },
+          {
+            "label": "Si quieres más claridad, esto sigue",
+            "summary": "Mientras llega la respuesta final, puedes seguir subiendo archivos del mismo periodo para enriquecer el expediente.",
+            "tone": "neutral"
+          }
+        ]
+      },
+      "legalHighlights": {
+        "primaryConclusion": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+        "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+        "nextActionLabel": "Contrastar lo fiscalmente timbrado con nómina, depósitos y condiciones pactadas en el contrato."
+      },
+      "rawPayload": {
+        "tenantId": "balt-1",
+        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "documentId": "DOC-6BCF366BE6A145E3",
+        "documentType": "cfdi",
+        "jurisdiction": "México",
+        "caseTitle": "Revalidación E2E Jaime Santiago López",
+        "preliminaryAnalysis": {
+          "confirmedData": {
+            "fileName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+            "mimeType": "application/xml",
+            "internalDocumentType": "cfdi",
+            "normalizedDocType": "cfdi_nomina",
+            "processingProfile": "standard",
+            "structuredExtractionReady": true,
+            "benefitEstimationReady": true,
+            "hasInfonavitSignal": false,
+            "infonavitDeductionType": null
+          },
+          "estimatedData": {
+            "employerRfc": "ECC190605VA1",
+            "period": "2026-04",
+            "apparentAmount": null,
+            "apparentEffectiveDate": "2026-04-30",
+            "workerName": "EVOLUCION CREATIVA CAMREFLEX",
+            "employerName": null,
+            "jobTitle": null,
+            "contractDailySalary": null,
+            "socialSecurityBaseSalary": "331.45",
+            "integratedDailySalary": "331.45"
+          },
+          "guardrails": [
+            "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+            "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal."
+          ]
+        },
+        "bridgeConfigured": true
+      }
+    },
+    "heliosOpinionContract": {
+      "engine": "helios",
+      "mode": "remote",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "documentId": "DOC-6BCF366BE6A145E3",
+      "requestedOpinionType": "labor_preliminary_opinion",
+      "status": "processing",
+      "opinion": {
+        "documentId": "DOC-6BCF366BE6A145E3",
+        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "status": "processing",
+        "mode": "remote",
+        "summary": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+        "legalOpinion": "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente.",
+        "riskLevel": "low",
+        "recommendedNextStep": "Contrastar lo fiscalmente timbrado con nómina, depósitos y condiciones pactadas en el contrato.",
+        "recommendedActions": [
+          "Comparar lo timbrado con tus recibos de nómina y depósitos reales.",
+          "Identificar periodos o montos que no coincidan entre documentos.",
+          "Aportar contrato o soporte IMSS para reforzar el contexto laboral."
+        ],
+        "legalFoundations": [
+          {
+            "title": "Acreditación de pagos y deducciones",
+            "reference": "Recibos y comprobantes fiscales laborales",
+            "relevance": "Permite revisar si los pagos documentados coinciden con la relación laboral y con otros soportes del expediente."
+          },
+          {
+            "title": "Primacía de la realidad",
+            "reference": "Doctrina laboral aplicable",
+            "relevance": "Sirve para contrastar lo que se pactó documentalmente contra lo que realmente ocurrió en la relación de trabajo."
+          },
+          {
+            "title": "Protección de derechos laborales",
+            "reference": "Marco laboral mexicano",
+            "relevance": "La interpretación inicial debe favorecer una revisión suficiente de salario, jornada, prestaciones y seguridad social."
+          }
+        ],
+        "keyFactsUsed": [
+          "EVOLUCION CREATIVA CAMREFLEX",
+          "2026-04",
+          "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml"
+        ],
+        "uncertainties": [
+          "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo."
+        ],
+        "confidenceScore": 78,
+        "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
+        "generatedAt": "2026-05-28T22:35:25.616Z",
+        "resultCard": {
+          "headline": "Tu documento ya está en revisión avanzada",
+          "lead": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+          "keyFindings": [
+            {
+              "label": "Estado del motor",
+              "value": "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+              "source": "derived",
+              "tone": "support"
+            },
+            {
+              "label": "Qué sigue",
+              "value": "En cuanto el motor termine, esta vista se actualizará con hallazgos concretos, contexto del expediente y preguntas sugeridas.",
+              "source": "derived",
+              "tone": "neutral"
+            }
+          ],
+          "nextStepLabel": "Siguiente paso sugerido",
+          "nextStepSummary": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+          "dossierUpdateLabel": "Tu expediente ya se actualizó",
+          "dossierUpdateSummary": "Tu CFDI laboral ya quedó ordenado dentro de tu expediente y servirá para futuras comparaciones, respuestas y seguimientos.",
+          "assistantIntro": "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
+          "suggestedQuestions": [
+            "Explícame este CFDI con palabras simples.",
+            "¿Qué podría no coincidir con mis pagos reales?",
+            "¿Qué documento me conviene subir después?"
+          ],
+          "signalsChecked": [
+            "tipo de documento detectado",
+            "campos visibles del archivo",
+            "estado del motor Helios",
+            "contexto inmediato del expediente"
+          ],
+          "simpleExplanation": [
+            {
+              "label": "Qué ya revisé por ti",
+              "summary": "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+              "tone": "support"
+            },
+            {
+              "label": "Lo que sí pude concluir",
+              "summary": "Ya sabemos qué tipo de documento es y cómo puede ayudar dentro de tu expediente.",
+              "tone": "support"
+            },
+            {
+              "label": "Lo que todavía no puedo asegurar",
+              "summary": "La lectura jurídica fina todavía depende de que termine el procesamiento remoto del documento completo.",
+              "tone": "attention"
+            },
+            {
+              "label": "Si quieres más claridad, esto sigue",
+              "summary": "Mientras llega la respuesta final, puedes seguir subiendo archivos del mismo periodo para enriquecer el expediente.",
+              "tone": "neutral"
+            }
+          ]
+        },
+        "legalHighlights": {
+          "primaryConclusion": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+          "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+          "nextActionLabel": "Contrastar lo fiscalmente timbrado con nómina, depósitos y condiciones pactadas en el contrato."
+        },
+        "rawPayload": {
+          "tenantId": "balt-1",
+          "caseId": "CASE-BALT-1-MPQ2N1KZ",
+          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "documentId": "DOC-6BCF366BE6A145E3",
+          "documentType": "cfdi",
+          "jurisdiction": "México",
+          "caseTitle": "Revalidación E2E Jaime Santiago López",
+          "preliminaryAnalysis": {
+            "confirmedData": {
+              "fileName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+              "mimeType": "application/xml",
+              "internalDocumentType": "cfdi",
+              "normalizedDocType": "cfdi_nomina",
+              "processingProfile": "standard",
+              "structuredExtractionReady": true,
+              "benefitEstimationReady": true,
+              "hasInfonavitSignal": false,
+              "infonavitDeductionType": null
+            },
+            "estimatedData": {
+              "employerRfc": "ECC190605VA1",
+              "period": "2026-04",
+              "apparentAmount": null,
+              "apparentEffectiveDate": "2026-04-30",
+              "workerName": "EVOLUCION CREATIVA CAMREFLEX",
+              "employerName": null,
+              "jobTitle": null,
+              "contractDailySalary": null,
+              "socialSecurityBaseSalary": "331.45",
+              "integratedDailySalary": "331.45"
+            },
+            "guardrails": [
+              "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+              "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal."
+            ]
+          },
+          "bridgeConfigured": true
+        }
+      }
+    },
+    "engineDispatch": {
+      "status": "sent",
+      "dispatchedAt": "2026-05-28T22:35:28.132Z",
+      "timestamp": "1780007727",
+      "attempts": 1,
+      "httpStatus": 202,
+      "responseBody": "{\"verified\":true,\"received\":true,\"event\":\"document.uploaded\",\"documentId\":\"DOC-6BCF366BE6A145E3\",\"sourceUserId\":\"1\",\"receivedAt\":\"2026-05-28T22:35:27.954Z\",\"responseContract\":\"auditapatron.bridge.ack.v1\",\"processingStatus\":\"accepted\"}",
+      "responseAck": {
+        "verified": true,
+        "received": true,
+        "event": "document.uploaded",
+        "documentId": "DOC-6BCF366BE6A145E3",
+        "sourceUserId": "1",
+        "receivedAt": "2026-05-28T22:35:27.954Z",
+        "responseContract": "auditapatron.bridge.ack.v1",
+        "processingStatus": "accepted"
+      },
+      "payload": {
+        "providerId": 1,
+        "userId": 1,
+        "title": "cfdi_nomina",
+        "mimeType": "application/xml",
+        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+        "documentId": "DOC-6BCF366BE6A145E3",
+        "category": "cfdi_nomina",
+        "originalFileName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+        "sourceModule": "complilink_operativo",
+        "sourceCaseId": "CASE-BALT-1-MPQ2N1KZ",
+        "sourceDocumentId": "DOC-6BCF366BE6A145E3",
+        "uploadedAt": "2026-05-28T22:35:25.000Z",
+        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "processingStatus": "queued",
+        "eventName": "document.uploaded",
+        "eventId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
+        "idempotencyKey": "f15e28be-f523-4556-bbe4-7368d6aaa178",
+        "correlationId": "27e7efb0-7ac5-4e86-bb59-55595af56998",
+        "tags": [
+          "cfdi_nomina"
+        ],
+        "operationalContext": {
+          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "auditId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "caseId": "CASE-BALT-1-MPQ2N1KZ",
+          "dispatchId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
+          "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
+          "fileSizeBytes": 5780,
+          "documentType": "cfdi",
+          "sharedEnvelopeDocumentCount": 1
+        }
+      },
+      "observabilityEnvelope": {
+        "dispatchId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
+        "correlationId": "27e7efb0-7ac5-4e86-bb59-55595af56998",
+        "targetHost": "auditapatron.com",
+        "targetPath": "/api/auditapatron/webhook",
+        "outcomeCategory": "success",
+        "retryScheduled": false,
+        "retryDelayMs": null,
+        "remoteSmokeEnabled": false,
+        "httpStatusCode": 202
+      }
+    },
+    "scanAssistance": {
+      "readiness": "ready",
+      "documentPresence": "uncertain",
+      "issues": [
+        "Este formato seguirá su revisión automática sin bloquear tu carga."
+      ],
+      "userGuidance": "Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
+      "friendlyHeadline": "Tu archivo está listo para seguir al análisis",
+      "expectedTypeAlignment": "possible",
+      "confidence": 60
+    }
+  },
+  "contractUpload": {
+    "document": {
+      "id": 240002,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "documentId": "DOC-51B926625A434870",
+      "uploadedByUserId": 1,
+      "supersedesDocumentId": null,
+      "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "sizeBytes": 55101,
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
+      "documentType": "contract",
+      "sourceChannel": "manual",
+      "integrityStatus": "verified",
+      "consentStatus": "granted",
+      "visibility": "case_team",
+      "classificationConfidence": 84,
+      "processedAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z",
+      "updatedAt": "2026-05-28T22:35:29.000Z"
+    },
+    "classification": {
+      "documentType": "contract",
+      "normalizedDocType": "contrato_laboral",
+      "classificationConfidence": 84,
+      "reasons": [
+        "Se detectaron términos de contratación o relación laboral."
+      ],
+      "processingProfile": "contract_deep_dive",
+      "reviewRecommendation": "legal_review",
+      "supportsStructuredExtraction": true,
+      "supportsBenefitEstimation": true
+    },
+    "preliminaryAnalysis": {
+      "normalizedDocType": "contrato_laboral",
+      "simpleLabel": "contrato laboral",
+      "processingProfile": "contract_deep_dive",
+      "summary": "Parece un contrato laboral. Puede revisarse salario, puesto, jornada, vigencia y prestaciones, dejando por separado lo confirmado y lo estimado.",
+      "confirmedData": {
+        "fileName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "internalDocumentType": "contract",
+        "normalizedDocType": "contrato_laboral",
+        "processingProfile": "contract_deep_dive",
+        "structuredExtractionReady": true,
+        "benefitEstimationReady": true,
+        "hasInfonavitSignal": true,
+        "infonavitDeductionType": null
+      },
+      "estimatedData": {
+        "employerRfc": "ECC190605VA1",
+        "period": null,
+        "apparentAmount": "$207.44",
+        "apparentEffectiveDate": null,
+        "workerName": null,
+        "employerName": null,
+        "jobTitle": null,
+        "contractDailySalary": "$207.44",
+        "socialSecurityBaseSalary": null,
+        "integratedDailySalary": null
+      },
+      "extractionTargets": [
+        "puesto",
+        "salario pactado",
+        "jornada",
+        "fecha de ingreso",
+        "duración o vigencia",
+        "prestaciones",
+        "vacaciones",
+        "aguinaldo",
+        "prima vacacional",
+        "cláusulas de terminación"
+      ],
+      "guardrails": [
+        "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+        "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal.",
+        "Este documento requiere revisión humana antes de usar conclusiones sensibles en decisiones operativas o jurídicas.",
+        "Cualquier cálculo preliminar de prestaciones debe mostrarse como estimación y dependerá del contenido completo del documento."
+      ],
+      "structuredExtraction": {
+        "headline": "Esto es lo más importante que parece decir el contrato",
+        "summary": "Parece un contrato laboral. Puede revisarse salario, puesto, jornada, vigencia y prestaciones, dejando por separado lo confirmado y lo estimado.",
+        "fields": [
+          {
+            "key": "fileName",
+            "label": "Archivo",
+            "value": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "mimeType",
+            "label": "Formato",
+            "value": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "internalDocumentType",
+            "label": "Tipo de documento",
+            "value": "contract",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "normalizedDocType",
+            "label": "Detalle detectado",
+            "value": "contrato_laboral",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "processingProfile",
+            "label": "Nivel de revisión",
+            "value": "contract_deep_dive",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "structuredExtractionReady",
+            "label": "Puede leer detalles",
+            "value": "true",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "benefitEstimationReady",
+            "label": "Puede estimar prestaciones",
+            "value": "true",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "hasInfonavitSignal",
+            "label": "Has Infonavit Signal",
+            "value": "true",
+            "status": "confirmed",
+            "confidence": "high"
+          },
+          {
+            "key": "employerRfc",
+            "label": "RFC visible",
+            "value": "ECC190605VA1",
+            "status": "estimated",
+            "confidence": "medium"
+          },
+          {
+            "key": "apparentAmount",
+            "label": "Monto visible",
+            "value": "$207.44",
+            "status": "estimated",
+            "confidence": "medium"
+          }
+        ],
+        "missingFields": [
+          "puesto",
+          "salario pactado",
+          "jornada",
+          "fecha de ingreso",
+          "duración o vigencia",
+          "vacaciones"
+        ],
+        "reviewNotes": [
+          "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+          "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal.",
+          "Este documento requiere revisión humana antes de usar conclusiones sensibles en decisiones operativas o jurídicas."
+        ]
+      }
+    },
+    "documentContract": {
+      "contract_type": "document",
+      "schema_version": "v1",
+      "tenant_id": "balt-1",
+      "case_id": "CASE-BALT-1-MPQ2N1KZ",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "document_id": "DOC-51B926625A434870",
+      "document_type": "contract",
+      "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
+      "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "visibility": "case_team",
+      "consent_status": "granted",
+      "classification_confidence": 84,
+      "original_name": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "size_bytes": 55101,
+      "country": "MX"
+    },
+    "sharedEngineEnvelope": {
+      "contract_type": "shared_engine",
+      "schema_version": "v1",
+      "tenant_id": "balt-1",
+      "case_id": "CASE-BALT-1-MPQ2N1KZ",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "case_contract": {
+        "contract_type": "case",
+        "schema_version": "v1",
+        "tenant_id": "balt-1",
+        "case_id": "CASE-BALT-1-MPQ2N1KZ",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "title": "Revalidación E2E Jaime Santiago López",
+        "status": "intake",
+        "priority": "medium",
+        "employee_name": "JAIME SANTIAGO LOPEZ",
+        "employer_entity": "Validación operativa AuditaPatron",
+        "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
+        "jurisdiction": "MX"
+      },
+      "document_contracts": [
+        {
+          "contract_type": "document",
+          "schema_version": "v1",
+          "tenant_id": "balt-1",
+          "case_id": "CASE-BALT-1-MPQ2N1KZ",
+          "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "document_id": "DOC-51B926625A434870",
+          "document_type": "contract",
+          "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
+          "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+          "visibility": "case_team",
+          "consent_status": "granted",
+          "classification_confidence": 84,
+          "original_name": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+          "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "size_bytes": 55101,
+          "country": "MX"
+        }
+      ],
+      "ready_for_shared_engine": true
+    },
+    "heliosOpinion": {
+      "documentId": "DOC-51B926625A434870",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "status": "processing",
+      "mode": "remote",
+      "summary": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+      "legalOpinion": "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente.",
+      "riskLevel": "low",
+      "recommendedNextStep": "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias relevantes.",
+      "recommendedActions": [
+        "Comparar sueldo, jornada y prestaciones pactadas contra lo que realmente ocurrió.",
+        "Subir recibos de nómina o CFDI del mismo periodo para contrastar hechos y pagos.",
+        "Marcar cualquier cláusula ambigua o condición que haya cambiado en la práctica."
+      ],
+      "legalFoundations": [
+        {
+          "title": "Condiciones de trabajo pactadas",
+          "reference": "Contrato individual y condiciones iniciales",
+          "relevance": "Permite fijar el punto de partida para comparar sueldo, puesto y jornada con la práctica real."
+        },
+        {
+          "title": "Primacía de la realidad",
+          "reference": "Doctrina laboral aplicable",
+          "relevance": "Sirve para contrastar lo que se pactó documentalmente contra lo que realmente ocurrió en la relación de trabajo."
+        },
+        {
+          "title": "Protección de derechos laborales",
+          "reference": "Marco laboral mexicano",
+          "relevance": "La interpretación inicial debe favorecer una revisión suficiente de salario, jornada, prestaciones y seguridad social."
+        }
+      ],
+      "keyFactsUsed": [
+        "$207.44",
+        "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx"
+      ],
+      "uncertainties": [
+        "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo."
+      ],
+      "confidenceScore": 78,
+      "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
+      "generatedAt": "2026-05-28T22:35:29.061Z",
+      "resultCard": {
+        "headline": "Tu documento ya está en revisión avanzada",
+        "lead": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+        "keyFindings": [
+          {
+            "label": "Estado del motor",
+            "value": "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+            "source": "derived",
+            "tone": "support"
+          },
+          {
+            "label": "Qué sigue",
+            "value": "En cuanto el motor termine, esta vista se actualizará con hallazgos concretos, contexto del expediente y preguntas sugeridas.",
+            "source": "derived",
+            "tone": "neutral"
+          }
+        ],
+        "nextStepLabel": "Siguiente paso sugerido",
+        "nextStepSummary": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+        "dossierUpdateLabel": "Tu expediente ya se actualizó",
+        "dossierUpdateSummary": "Tu contrato laboral ya quedó ordenado dentro de tu expediente y servirá para futuras comparaciones, respuestas y seguimientos.",
+        "assistantIntro": "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
+        "suggestedQuestions": [
+          "Explícame qué dice este contrato en palabras simples.",
+          "¿Qué parte de este contrato conviene comparar con mi realidad?",
+          "¿Qué documento me conviene subir después?"
+        ],
+        "signalsChecked": [
+          "tipo de documento detectado",
+          "campos visibles del archivo",
+          "estado del motor Helios",
+          "contexto inmediato del expediente"
+        ],
+        "simpleExplanation": [
+          {
+            "label": "Qué ya revisé por ti",
+            "summary": "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+            "tone": "support"
+          },
+          {
+            "label": "Lo que sí pude concluir",
+            "summary": "Ya sabemos qué tipo de documento es y cómo puede ayudar dentro de tu expediente.",
+            "tone": "support"
+          },
+          {
+            "label": "Lo que todavía no puedo asegurar",
+            "summary": "La lectura jurídica fina todavía depende de que termine el procesamiento remoto del documento completo.",
+            "tone": "attention"
+          },
+          {
+            "label": "Si quieres más claridad, esto sigue",
+            "summary": "Mientras llega la respuesta final, puedes seguir subiendo archivos del mismo periodo para enriquecer el expediente.",
+            "tone": "neutral"
+          }
+        ]
+      },
+      "legalHighlights": {
+        "primaryConclusion": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+        "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+        "nextActionLabel": "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias relevantes."
+      },
+      "rawPayload": {
+        "tenantId": "balt-1",
+        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "documentId": "DOC-51B926625A434870",
+        "documentType": "contract",
+        "jurisdiction": "México",
+        "caseTitle": "Revalidación E2E Jaime Santiago López",
+        "preliminaryAnalysis": {
+          "confirmedData": {
+            "fileName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+            "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "internalDocumentType": "contract",
+            "normalizedDocType": "contrato_laboral",
+            "processingProfile": "contract_deep_dive",
+            "structuredExtractionReady": true,
+            "benefitEstimationReady": true,
+            "hasInfonavitSignal": true,
+            "infonavitDeductionType": null
+          },
+          "estimatedData": {
+            "employerRfc": "ECC190605VA1",
+            "period": null,
+            "apparentAmount": "$207.44",
+            "apparentEffectiveDate": null,
+            "workerName": null,
+            "employerName": null,
+            "jobTitle": null,
+            "contractDailySalary": "$207.44",
+            "socialSecurityBaseSalary": null,
+            "integratedDailySalary": null
+          },
+          "guardrails": [
+            "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+            "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal.",
+            "Este documento requiere revisión humana antes de usar conclusiones sensibles en decisiones operativas o jurídicas.",
+            "Cualquier cálculo preliminar de prestaciones debe mostrarse como estimación y dependerá del contenido completo del documento."
+          ]
+        },
+        "bridgeConfigured": true
+      }
+    },
+    "heliosOpinionContract": {
+      "engine": "helios",
+      "mode": "remote",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "documentId": "DOC-51B926625A434870",
+      "requestedOpinionType": "labor_preliminary_opinion",
+      "status": "processing",
+      "opinion": {
+        "documentId": "DOC-51B926625A434870",
+        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "status": "processing",
+        "mode": "remote",
+        "summary": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+        "legalOpinion": "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente.",
+        "riskLevel": "low",
+        "recommendedNextStep": "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias relevantes.",
+        "recommendedActions": [
+          "Comparar sueldo, jornada y prestaciones pactadas contra lo que realmente ocurrió.",
+          "Subir recibos de nómina o CFDI del mismo periodo para contrastar hechos y pagos.",
+          "Marcar cualquier cláusula ambigua o condición que haya cambiado en la práctica."
+        ],
+        "legalFoundations": [
+          {
+            "title": "Condiciones de trabajo pactadas",
+            "reference": "Contrato individual y condiciones iniciales",
+            "relevance": "Permite fijar el punto de partida para comparar sueldo, puesto y jornada con la práctica real."
+          },
+          {
+            "title": "Primacía de la realidad",
+            "reference": "Doctrina laboral aplicable",
+            "relevance": "Sirve para contrastar lo que se pactó documentalmente contra lo que realmente ocurrió en la relación de trabajo."
+          },
+          {
+            "title": "Protección de derechos laborales",
+            "reference": "Marco laboral mexicano",
+            "relevance": "La interpretación inicial debe favorecer una revisión suficiente de salario, jornada, prestaciones y seguridad social."
+          }
+        ],
+        "keyFactsUsed": [
+          "$207.44",
+          "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx"
+        ],
+        "uncertainties": [
+          "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo."
+        ],
+        "confidenceScore": 78,
+        "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
+        "generatedAt": "2026-05-28T22:35:29.061Z",
+        "resultCard": {
+          "headline": "Tu documento ya está en revisión avanzada",
+          "lead": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+          "keyFindings": [
+            {
+              "label": "Estado del motor",
+              "value": "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+              "source": "derived",
+              "tone": "support"
+            },
+            {
+              "label": "Qué sigue",
+              "value": "En cuanto el motor termine, esta vista se actualizará con hallazgos concretos, contexto del expediente y preguntas sugeridas.",
+              "source": "derived",
+              "tone": "neutral"
+            }
+          ],
+          "nextStepLabel": "Siguiente paso sugerido",
+          "nextStepSummary": "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+          "dossierUpdateLabel": "Tu expediente ya se actualizó",
+          "dossierUpdateSummary": "Tu contrato laboral ya quedó ordenado dentro de tu expediente y servirá para futuras comparaciones, respuestas y seguimientos.",
+          "assistantIntro": "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
+          "suggestedQuestions": [
+            "Explícame qué dice este contrato en palabras simples.",
+            "¿Qué parte de este contrato conviene comparar con mi realidad?",
+            "¿Qué documento me conviene subir después?"
+          ],
+          "signalsChecked": [
+            "tipo de documento detectado",
+            "campos visibles del archivo",
+            "estado del motor Helios",
+            "contexto inmediato del expediente"
+          ],
+          "simpleExplanation": [
+            {
+              "label": "Qué ya revisé por ti",
+              "summary": "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+              "tone": "support"
+            },
+            {
+              "label": "Lo que sí pude concluir",
+              "summary": "Ya sabemos qué tipo de documento es y cómo puede ayudar dentro de tu expediente.",
+              "tone": "support"
+            },
+            {
+              "label": "Lo que todavía no puedo asegurar",
+              "summary": "La lectura jurídica fina todavía depende de que termine el procesamiento remoto del documento completo.",
+              "tone": "attention"
+            },
+            {
+              "label": "Si quieres más claridad, esto sigue",
+              "summary": "Mientras llega la respuesta final, puedes seguir subiendo archivos del mismo periodo para enriquecer el expediente.",
+              "tone": "neutral"
+            }
+          ]
+        },
+        "legalHighlights": {
+          "primaryConclusion": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+          "primaryConcern": "La respuesta jurídica final depende de la lectura remota del motor sobre el documento completo.",
+          "nextActionLabel": "Comparar el contrato con nómina, CFDI y hechos reales para detectar diferencias relevantes."
+        },
+        "rawPayload": {
+          "tenantId": "balt-1",
+          "caseId": "CASE-BALT-1-MPQ2N1KZ",
+          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "documentId": "DOC-51B926625A434870",
+          "documentType": "contract",
+          "jurisdiction": "México",
+          "caseTitle": "Revalidación E2E Jaime Santiago López",
+          "preliminaryAnalysis": {
+            "confirmedData": {
+              "fileName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+              "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "internalDocumentType": "contract",
+              "normalizedDocType": "contrato_laboral",
+              "processingProfile": "contract_deep_dive",
+              "structuredExtractionReady": true,
+              "benefitEstimationReady": true,
+              "hasInfonavitSignal": true,
+              "infonavitDeductionType": null
+            },
+            "estimatedData": {
+              "employerRfc": "ECC190605VA1",
+              "period": null,
+              "apparentAmount": "$207.44",
+              "apparentEffectiveDate": null,
+              "workerName": null,
+              "employerName": null,
+              "jobTitle": null,
+              "contractDailySalary": "$207.44",
+              "socialSecurityBaseSalary": null,
+              "integratedDailySalary": null
+            },
+            "guardrails": [
+              "Los datos en 'confirmedData' solo reflejan lo efectivamente observado en metadatos y clasificación actual.",
+              "Los datos en 'estimatedData' son indicios preliminares y no deben presentarse como hechos confirmados ni como asesoría legal.",
+              "Este documento requiere revisión humana antes de usar conclusiones sensibles en decisiones operativas o jurídicas.",
+              "Cualquier cálculo preliminar de prestaciones debe mostrarse como estimación y dependerá del contenido completo del documento."
+            ]
+          },
+          "bridgeConfigured": true
+        }
+      }
+    },
+    "engineDispatch": {
+      "status": "sent",
+      "dispatchedAt": "2026-05-28T22:35:29.914Z",
+      "timestamp": "1780007729",
+      "attempts": 1,
+      "httpStatus": 202,
+      "responseBody": "{\"verified\":true,\"received\":true,\"event\":\"document.uploaded\",\"documentId\":\"DOC-51B926625A434870\",\"sourceUserId\":\"1\",\"receivedAt\":\"2026-05-28T22:35:29.739Z\",\"responseContract\":\"auditapatron.bridge.ack.v1\",\"processingStatus\":\"accepted\"}",
+      "responseAck": {
+        "verified": true,
+        "received": true,
+        "event": "document.uploaded",
+        "documentId": "DOC-51B926625A434870",
+        "sourceUserId": "1",
+        "receivedAt": "2026-05-28T22:35:29.739Z",
+        "responseContract": "auditapatron.bridge.ack.v1",
+        "processingStatus": "accepted"
+      },
+      "payload": {
+        "providerId": 1,
+        "userId": 1,
+        "title": "contrato_laboral",
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+        "documentId": "DOC-51B926625A434870",
+        "category": "contrato_laboral",
+        "originalFileName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+        "sourceModule": "complilink_operativo",
+        "sourceCaseId": "CASE-BALT-1-MPQ2N1KZ",
+        "sourceDocumentId": "DOC-51B926625A434870",
+        "uploadedAt": "2026-05-28T22:35:29.000Z",
+        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "processingStatus": "queued",
+        "eventName": "document.uploaded",
+        "eventId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
+        "idempotencyKey": "7d1ddb10-1490-4f77-9517-fc99119c095f",
+        "correlationId": "655d950e-d37a-4e2b-bf17-21baa84b463d",
+        "tags": [
+          "contrato_laboral"
+        ],
+        "operationalContext": {
+          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "auditId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+          "caseId": "CASE-BALT-1-MPQ2N1KZ",
+          "dispatchId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
+          "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
+          "fileSizeBytes": 55101,
+          "documentType": "contract",
+          "sharedEnvelopeDocumentCount": 1
+        }
+      },
+      "observabilityEnvelope": {
+        "dispatchId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
+        "correlationId": "655d950e-d37a-4e2b-bf17-21baa84b463d",
+        "targetHost": "auditapatron.com",
+        "targetPath": "/api/auditapatron/webhook",
+        "outcomeCategory": "success",
+        "retryScheduled": false,
+        "retryDelayMs": null,
+        "remoteSmokeEnabled": false,
+        "httpStatusCode": 202
+      }
+    },
+    "scanAssistance": {
+      "readiness": "ready",
+      "documentPresence": "uncertain",
+      "issues": [
+        "Este formato seguirá su revisión automática sin bloquear tu carga."
+      ],
+      "userGuidance": "Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
+      "friendlyHeadline": "Tu archivo está listo para seguir al análisis",
+      "expectedTypeAlignment": "possible",
+      "confidence": 60
+    }
+  },
+  "persistedDocuments": [
+    {
+      "id": 240001,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "documentId": "DOC-6BCF366BE6A145E3",
+      "uploadedByUserId": 1,
+      "supersedesDocumentId": null,
+      "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "mimeType": "application/xml",
+      "sizeBytes": 5780,
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
+      "documentType": "cfdi",
+      "sourceChannel": "manual",
+      "integrityStatus": "verified",
+      "consentStatus": "granted",
+      "visibility": "case_team",
+      "classificationConfidence": 91,
+      "processedAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z",
+      "updatedAt": "2026-05-28T22:35:25.000Z"
+    },
+    {
+      "id": 240002,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "documentId": "DOC-51B926625A434870",
+      "uploadedByUserId": 1,
+      "supersedesDocumentId": null,
+      "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "sizeBytes": 55101,
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
+      "documentType": "contract",
+      "sourceChannel": "manual",
+      "integrityStatus": "verified",
+      "consentStatus": "granted",
+      "visibility": "case_team",
+      "classificationConfidence": 84,
+      "processedAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z",
+      "updatedAt": "2026-05-28T22:35:29.000Z"
+    }
+  ],
+  "caseEvents": [
+    {
+      "id": 270001,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "case_created",
+      "title": "Caso creado",
+      "description": "Se creó el expediente CASE-BALT-1-MPQ2N1KZ con trazabilidad canónica inicial.",
+      "metadata": "{\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\"}",
+      "eventAt": "2026-05-28T22:35:24.000Z",
+      "createdAt": "2026-05-28T22:35:23.000Z"
+    },
+    {
+      "id": 270002,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "document_uploaded",
+      "title": "Documento cargado",
+      "description": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml fue cargado con hash SHA-256 y clasificación inicial cfdi.",
+      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"sha256\":\"da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59\",\"visibility\":\"case_team\",\"classification_confidence\":91,\"expected_document_type\":\"cfdi\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
+      "eventAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z"
+    },
+    {
+      "id": 270003,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "document_classified",
+      "title": "Documento clasificado",
+      "description": "Clasificación automática preliminar: cfdi_nomina.",
+      "metadata": "{\"reasons\":[\"El archivo XML contiene marcadores típicos de CFDI de nómina o timbrado fiscal.\"],\"normalized_doc_type\":\"cfdi_nomina\",\"processing_profile\":\"standard\",\"review_recommendation\":\"auto\",\"supports_structured_extraction\":true,\"supports_benefit_estimation\":true,\"expected_document_type\":\"cfdi\"}",
+      "eventAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z"
+    },
+    {
+      "id": 270004,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Escaneo asistido evaluó la captura",
+      "description": "Tu archivo está listo para seguir al análisis. Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
+      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
+      "eventAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z"
+    },
+    {
+      "id": 270005,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Helios preparó una opinión inicial",
+      "description": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
+      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-6BCF366BE6A145E3\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-05-28T22:35:25.616Z\"}",
+      "eventAt": "2026-05-28T22:35:26.000Z",
+      "createdAt": "2026-05-28T22:35:25.000Z"
+    },
+    {
+      "id": 270006,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Documento enviado a CompliLink",
+      "description": "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-05-28T22:35:28.132Z\",\"attempts\":1,\"http_status\":202,\"dispatch_id\":\"f15e28be-f523-4556-bbe4-7368d6aaa178\",\"correlation_id\":\"27e7efb0-7ac5-4e86-bb59-55595af56998\",\"outcome_category\":\"success\",\"target_host\":\"auditapatron.com\",\"target_path\":\"/api/auditapatron/webhook\"}",
+      "eventAt": "2026-05-28T22:35:28.000Z",
+      "createdAt": "2026-05-28T22:35:28.000Z"
+    },
+    {
+      "id": 270007,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "document_uploaded",
+      "title": "Documento cargado",
+      "description": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx fue cargado con hash SHA-256 y clasificación inicial contract.",
+      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"sha256\":\"0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f\",\"visibility\":\"case_team\",\"classification_confidence\":84,\"expected_document_type\":\"contract\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
+      "eventAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    },
+    {
+      "id": 270008,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "document_classified",
+      "title": "Documento clasificado",
+      "description": "Clasificación automática preliminar: contrato_laboral.",
+      "metadata": "{\"reasons\":[\"Se detectaron términos de contratación o relación laboral.\"],\"normalized_doc_type\":\"contrato_laboral\",\"processing_profile\":\"contract_deep_dive\",\"review_recommendation\":\"legal_review\",\"supports_structured_extraction\":true,\"supports_benefit_estimation\":true,\"expected_document_type\":\"contract\"}",
+      "eventAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    },
+    {
+      "id": 270009,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Escaneo asistido evaluó la captura",
+      "description": "Tu archivo está listo para seguir al análisis. Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
+      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
+      "eventAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    },
+    {
+      "id": 270010,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "alert_raised",
+      "title": "Discrepancia salarial detectada",
+      "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
+      "metadata": "{\"contractDocumentId\":\"DOC-51B926625A434870\",\"payrollDocumentId\":\"DOC-6BCF366BE6A145E3\",\"contractFileName\":\"CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx\",\"payrollFileName\":\"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\",\"contractDailySalary\":207.44,\"comparedField\":\"integratedDailySalary\",\"comparedValue\":331.45,\"absoluteDifference\":124.01,\"percentageDifference\":59.78,\"detectedAt\":\"2026-05-28T22:35:29.089Z\"}",
+      "eventAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    },
+    {
+      "id": 270011,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Helios preparó una opinión inicial",
+      "description": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
+      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-51B926625A434870\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-05-28T22:35:29.061Z\"}",
+      "eventAt": "2026-05-28T22:35:29.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    },
+    {
+      "id": 270012,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "actorUserId": 1,
+      "eventType": "note_added",
+      "title": "Documento enviado a CompliLink",
+      "description": "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-05-28T22:35:29.914Z\",\"attempts\":1,\"http_status\":202,\"dispatch_id\":\"7d1ddb10-1490-4f77-9517-fc99119c095f\",\"correlation_id\":\"655d950e-d37a-4e2b-bf17-21baa84b463d\",\"outcome_category\":\"success\",\"target_host\":\"auditapatron.com\",\"target_path\":\"/api/auditapatron/webhook\"}",
+      "eventAt": "2026-05-28T22:35:30.000Z",
+      "createdAt": "2026-05-28T22:35:29.000Z"
+    }
+  ],
+  "webhookEvents": [],
+  "persistedAlerts": [
+    {
+      "id": 180001,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "severity": "warning",
+      "category": "integrity_gap",
+      "title": "Discrepancia salarial detectada",
+      "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
+      "status": "open",
+      "raisedAt": "2026-05-28T22:35:29.000Z",
+      "resolvedAt": null,
+      "createdAt": "2026-05-28T22:35:29.000Z",
+      "updatedAt": "2026-05-28T22:35:29.000Z"
+    }
+  ],
+  "visibleAlerts": [
+    {
+      "id": 180001,
+      "tenantId": "balt-1",
+      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "severity": "warning",
+      "category": "integrity_gap",
+      "title": "Discrepancia salarial detectada",
+      "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
+      "status": "open",
+      "raisedAt": "2026-05-28T22:35:29.000Z",
+      "resolvedAt": null,
+      "createdAt": "2026-05-28T22:35:29.000Z",
+      "updatedAt": "2026-05-28T22:35:29.000Z"
+    }
+  ]
+}

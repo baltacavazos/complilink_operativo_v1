@@ -40,6 +40,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
+import { deriveBridgeCallbackAlerts } from "./operationalSignals";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _lockPool: Pool | null = null;
@@ -1436,7 +1437,7 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
     throw new Error("Case not found");
   }
 
-  const [events, documents, consents, alerts, policies, latestAuditarViewStateEntry] = await Promise.all([
+  const [events, documents, consents, alerts, policies, latestAuditarViewStateEntry, dispatchAuditLogs, webhookEvents] = await Promise.all([
     db
       .select()
       .from(caseEvents)
@@ -1476,18 +1477,55 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
       )
       .orderBy(desc(auditLogs.createdAt))
       .limit(1),
+    db
+      .select({
+        id: auditLogs.id,
+        documentId: auditLogs.documentId,
+        createdAt: auditLogs.createdAt,
+        afterState: auditLogs.afterState,
+      })
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.tenantId, params.tenantId),
+          eq(auditLogs.caseId, params.caseId),
+          eq(auditLogs.action, "document.engine_dispatch"),
+        ),
+      )
+      .orderBy(desc(auditLogs.createdAt)),
+    db
+      .select({
+        id: compliLinkWebhookEvents.id,
+        documentId: compliLinkWebhookEvents.documentId,
+        correlationId: compliLinkWebhookEvents.correlationId,
+        createdAt: compliLinkWebhookEvents.createdAt,
+      })
+      .from(compliLinkWebhookEvents)
+      .where(and(eq(compliLinkWebhookEvents.tenantId, params.tenantId), eq(compliLinkWebhookEvents.caseId, params.caseId)))
+      .orderBy(desc(compliLinkWebhookEvents.createdAt)),
   ]);
 
   const auditarViewStatePayload = latestAuditarViewStateEntry[0]?.afterState
     ? parseJsonSafely<{ viewState?: unknown }>(latestAuditarViewStateEntry[0].afterState)
     : null;
 
+  const derivedBridgeAlerts = deriveBridgeCallbackAlerts({
+    dispatchAuditLogs,
+    webhookEvents,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    traceId: caseRow.traceId,
+  });
+  const mergedAlerts = [...derivedBridgeAlerts, ...alerts].sort(
+    (left, right) => new Date(right.raisedAt).getTime() - new Date(left.raisedAt).getTime(),
+  );
+
   return {
     case: caseRow,
     events,
     documents,
     consents,
-    alerts,
+    alerts: mergedAlerts,
     policies,
     auditarViewState: normalizeAuditarViewState(auditarViewStatePayload?.viewState ?? auditarViewStatePayload),
   };

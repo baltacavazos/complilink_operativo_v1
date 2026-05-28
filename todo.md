@@ -1742,3 +1742,6 @@
 - [x] Ejecutar el contraste multi-IA del caso de Héctor Jovane Ortiz Hernández con ChatGPT, Grok y Gemini
 - [x] Ejecutar la revalidación end-to-end del expediente de Héctor Jovane Ortiz Hernández con XML y contrato DOCX
 - [x] Redactar y entregar el reporte final de revalidación de Héctor Jovane Ortiz Hernández con evidencia adjunta
+- [x] Implementar alerta automática de discrepancia salarial entre contrato y CFDI/SBC-SDI
+- [x] Implementar monitoreo y trazabilidad explícita del callback asíncrono del bridge con timeout visible
+- [x] Revalidar con el caso de Jaime Santiago López el flujo extremo a extremo en el runtime restaurado

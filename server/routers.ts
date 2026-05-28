@@ -104,6 +104,7 @@ import {
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { buildHeliosOpinionContract } from "./heliosIntegrationService";
+import { buildSalaryDiscrepancySignal, extractSalarySignalFromClassificationPayload } from "./operationalSignals";
 import {
   buildGuestPreviewOpinion,
   buildPublicHeliosHomeExamples,
@@ -199,6 +200,85 @@ function assertDocumentIdentityGuardrail(params: {
     code: "FORBIDDEN",
     message: SINGLE_CASE_IDENTITY_MESSAGE,
   });
+}
+
+function hasOpenSalaryDiscrepancyAlert(alerts: Array<{ title?: string | null; status?: string | null; category?: string | null }>) {
+  return alerts.some((alert) => {
+    const title = typeof alert.title === "string" ? alert.title.toLowerCase() : "";
+    return alert.status === "open" && alert.category === "integrity_gap" && title.includes("discrepancia salarial");
+  });
+}
+
+async function maybeRaiseSalaryDiscrepancyAlert(params: {
+  tenantId: string;
+  caseId: string;
+  traceId: string;
+  actorUserId: number;
+  existingAlerts: Array<{ title?: string | null; status?: string | null; category?: string | null }>;
+  currentClassificationPayload: Record<string, unknown>;
+}) {
+  if (hasOpenSalaryDiscrepancyAlert(params.existingAlerts)) {
+    return null;
+  }
+
+  const priorClassifications = await listCanonicalContractsByType({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    contractType: "classification",
+    schemaVersion: "v1",
+    status: "ready",
+  });
+  const snapshots = [
+    extractSalarySignalFromClassificationPayload(params.currentClassificationPayload),
+    ...priorClassifications.map((contract) => extractSalarySignalFromClassificationPayload(contract.payload)),
+  ].filter((snapshot): snapshot is NonNullable<ReturnType<typeof extractSalarySignalFromClassificationPayload>> => Boolean(snapshot));
+
+  const discrepancy = buildSalaryDiscrepancySignal({ snapshots });
+  if (!discrepancy) {
+    return null;
+  }
+
+  const comparedLabel = discrepancy.comparedField === "integratedDailySalary" ? "SDI" : "SBC";
+  const detectedAt = new Date();
+  const description = `Se detectó una diferencia de ${discrepancy.percentageDifference}% entre el salario contractual (${discrepancy.contract.contractDailySalary?.toFixed(2)}) y el ${comparedLabel} reportado en CFDI/IMSS (${discrepancy.comparedValue.toFixed(2)}). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.`;
+  const metadata = {
+    contractDocumentId: discrepancy.contract.documentId,
+    payrollDocumentId: discrepancy.payroll.documentId,
+    contractFileName: discrepancy.contract.fileName,
+    payrollFileName: discrepancy.payroll.fileName,
+    contractDailySalary: discrepancy.contract.contractDailySalary,
+    comparedField: discrepancy.comparedField,
+    comparedValue: discrepancy.comparedValue,
+    absoluteDifference: discrepancy.absoluteDifference,
+    percentageDifference: discrepancy.percentageDifference,
+    detectedAt: detectedAt.toISOString(),
+  };
+
+  await addOperationalAlert({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    traceId: params.traceId,
+    severity: "warning",
+    category: "integrity_gap",
+    title: "Discrepancia salarial detectada",
+    description,
+    status: "open",
+    raisedAt: detectedAt,
+  });
+
+  await addCaseEvent({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    traceId: params.traceId,
+    actorUserId: params.actorUserId,
+    eventType: "alert_raised",
+    title: "Discrepancia salarial detectada",
+    description,
+    metadata: JSON.stringify(metadata),
+    eventAt: detectedAt,
+  });
+
+  return metadata;
 }
 const ceoBridgePresetSchema = z.object({
   tenantId: z.string().trim().min(3).max(80).optional(),
@@ -874,6 +954,9 @@ function humanizeStructuredFieldLabel(key: string) {
     period: "Periodo visible",
     apparentAmount: "Monto visible",
     apparentEffectiveDate: "Fecha visible",
+    contractDailySalary: "Salario diario detectado en contrato",
+    socialSecurityBaseSalary: "SBC detectado en CFDI/IMSS",
+    integratedDailySalary: "SDI detectado en CFDI/IMSS",
     workerName: "Nombre visible de la persona trabajadora",
     employerName: "Nombre visible del patrón o empresa",
     jobTitle: "Puesto visible",
@@ -4931,6 +5014,16 @@ export const appRouter = router({
           });
         }
 
+        const classificationContractPayload = {
+          documentId,
+          classification,
+          preliminaryAnalysis,
+          confirmedData: preliminaryAnalysis.confirmedData,
+          estimatedData: preliminaryAnalysis.estimatedData,
+          extractionTargets: preliminaryAnalysis.extractionTargets,
+          generatedAt: processedAt.toISOString(),
+        };
+
         const contractsToPersist: Parameters<typeof upsertCanonicalContracts>[0] = [
           {
             tenantId: input.tenantId,
@@ -4947,15 +5040,7 @@ export const appRouter = router({
             traceId: detail.case.traceId,
             contractType: "classification" as const,
             schemaVersion: "v1",
-            payload: JSON.stringify({
-              documentId,
-              classification,
-              preliminaryAnalysis,
-              confirmedData: preliminaryAnalysis.confirmedData,
-              estimatedData: preliminaryAnalysis.estimatedData,
-              extractionTargets: preliminaryAnalysis.extractionTargets,
-              generatedAt: processedAt.toISOString(),
-            }),
+            payload: JSON.stringify(classificationContractPayload),
             status: "ready" as const,
           },
         ];
@@ -5017,6 +5102,15 @@ export const appRouter = router({
         });
 
         await upsertCanonicalContracts(contractsToPersist);
+
+        await maybeRaiseSalaryDiscrepancyAlert({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          existingAlerts: detail.alerts,
+          currentClassificationPayload: classificationContractPayload,
+        });
 
         await addCaseEvent({
           tenantId: input.tenantId,
