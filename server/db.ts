@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, asc, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2/promise";
 import {
@@ -2157,6 +2157,74 @@ export async function getDocumentById(documentId: string) {
 
   const rows = await db.select().from(caseDocuments).where(eq(caseDocuments.documentId, documentId)).limit(1);
   return rows[0];
+}
+
+export async function resolveCompliLinkDocument(params: {
+  documentId?: string | null;
+  sourceDocumentId?: string | null;
+  documentNumericId?: string | number | null;
+  remoteDocumentId?: string | number | null;
+  correlationId?: string | null;
+  traceId?: string | null;
+  eventId?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const directCandidates = [params.sourceDocumentId, params.documentId]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .map((value) => value.trim());
+
+  for (const candidate of directCandidates) {
+    const found = await getDocumentById(candidate);
+    if (found) return found;
+  }
+
+  const numericCandidates = [params.documentNumericId]
+    .map((value) => {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "string" && /^\d+$/.test(value.trim())) return Number.parseInt(value.trim(), 10);
+      return null;
+    })
+    .filter((value): value is number => Number.isFinite(value));
+
+  for (const numericId of numericCandidates) {
+    const rows = await db.select().from(caseDocuments).where(eq(caseDocuments.id, numericId)).limit(1);
+    if (rows[0]) return rows[0];
+  }
+
+  const fingerprintPatterns = [
+    params.remoteDocumentId != null ? `\"documentId\":${String(params.remoteDocumentId)}` : null,
+    params.eventId ? String(params.eventId).trim() : null,
+    params.correlationId ? String(params.correlationId).trim() : null,
+    params.traceId ? String(params.traceId).trim() : null,
+    params.sourceDocumentId ? String(params.sourceDocumentId).trim() : null,
+    numericCandidates[0] != null ? `\"documentNumericId\":${numericCandidates[0]}` : null,
+  ].filter((value): value is string => typeof value === "string" && value.length > 0);
+
+  if (fingerprintPatterns.length === 0) return null;
+
+  const matches = await db
+    .select({
+      documentId: auditLogs.documentId,
+    })
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.action, "document.engine_dispatch"),
+        or(...fingerprintPatterns.map((pattern) => like(auditLogs.afterState, `%${pattern}%`))),
+      ),
+    )
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(10);
+
+  for (const match of matches) {
+    if (!match.documentId) continue;
+    const found = await getDocumentById(match.documentId);
+    if (found) return found;
+  }
+
+  return null;
 }
 
 export async function registerCompliLinkWebhookEvent(entry: InsertCompliLinkWebhookEvent) {

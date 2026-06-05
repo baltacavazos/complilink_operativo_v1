@@ -103,6 +103,7 @@ import {
   sanitizeFileName,
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
+import { ingestCompliLinkReturnPayload } from "./auditaPatronReturnWebhook";
 import { buildHeliosOpinionContract } from "./heliosIntegrationService";
 import { buildSalaryDiscrepancySignal, extractSalarySignalFromClassificationPayload } from "./operationalSignals";
 import {
@@ -133,6 +134,80 @@ import {
   resolveCommerceHistory,
   resolveCommerceStatus,
 } from "./stripeBilling";
+
+async function ingestSynchronousCompliLinkAckEvent(params: {
+  engineDispatch: Awaited<ReturnType<typeof sendDocumentToAuditaPatronEngine>>;
+  documentId: string;
+  documentNumericId?: number | null;
+  traceId: string;
+}) {
+  const responseContract = params.engineDispatch.responseAck?.responseContract;
+  const contractRecord = responseContract && typeof responseContract === "object"
+    ? (responseContract as Record<string, unknown>)
+    : null;
+  const currentResponseEvent = contractRecord?.currentResponseEvent;
+  if (!currentResponseEvent || typeof currentResponseEvent !== "object") return;
+
+  const eventRecord = currentResponseEvent as Record<string, unknown>;
+  const rawEventName = typeof eventRecord.eventName === "string" ? eventRecord.eventName : null;
+  const eventName: "document.processed.v1" | "document.rejected.v1" | "document.retry_requested.v1" | null =
+    rawEventName === "document.processed.v1" ||
+    rawEventName === "document.rejected.v1" ||
+    rawEventName === "document.retry_requested.v1"
+      ? rawEventName
+      : null;
+  if (!eventName) return;
+
+  const remoteDocumentId =
+    typeof eventRecord.documentId === "number"
+      ? String(eventRecord.documentId)
+      : typeof eventRecord.documentId === "string"
+        ? eventRecord.documentId
+        : params.documentId;
+
+  const syntheticPayload = {
+    event: eventName,
+    documentId: remoteDocumentId,
+    eventId:
+      typeof eventRecord.eventId === "string"
+        ? eventRecord.eventId
+        : params.engineDispatch.responseAck?.remoteEventId ?? undefined,
+    compliLinkId:
+      typeof eventRecord.compliLinkId === "string"
+        ? eventRecord.compliLinkId
+        : params.engineDispatch.responseAck?.remoteEventId ?? undefined,
+    correlationId:
+      typeof eventRecord.correlationId === "string"
+        ? eventRecord.correlationId
+        : params.engineDispatch.responseAck?.correlationId ?? params.engineDispatch.observabilityEnvelope.correlationId,
+    timestamp:
+      typeof eventRecord.timestamp === "string"
+        ? eventRecord.timestamp
+        : params.engineDispatch.dispatchedAt,
+    status:
+      typeof eventRecord.finality === "string"
+        ? eventRecord.finality
+        : "transient",
+    metadata: {
+      sourceDocumentId: params.documentId,
+      documentNumericId: params.documentNumericId ?? null,
+      traceId:
+        typeof eventRecord.traceId === "string"
+          ? eventRecord.traceId
+          : params.engineDispatch.responseAck?.traceId ?? params.traceId,
+      correlationId: params.engineDispatch.observabilityEnvelope.correlationId,
+      dispatchId: params.engineDispatch.observabilityEnvelope.dispatchId,
+      remoteDocumentId,
+      syncAckIngested: true,
+    },
+  };
+
+  await ingestCompliLinkReturnPayload({
+    payload: syntheticPayload,
+    rawBody: JSON.stringify(syntheticPayload),
+    timestampHeader: new Date(params.engineDispatch.dispatchedAt).toISOString(),
+  });
+}
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
 const casePrioritySchema = z.enum(CASE_PRIORITIES);
@@ -4092,6 +4167,14 @@ export const appRouter = router({
           },
         });
 
+        if (engineDispatch.status === "sent") {
+          await ingestSynchronousCompliLinkAckEvent({
+            engineDispatch,
+            documentId,
+            traceId: detail.case.traceId,
+          });
+        }
+
         await createAuditLog({
           tenantId: input.tenantId,
           caseId: input.caseId,
@@ -4643,6 +4726,12 @@ export const appRouter = router({
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
         } else {
+          await ingestSynchronousCompliLinkAckEvent({
+            engineDispatch,
+            documentId,
+            documentNumericId: documentRecord.id,
+            traceId: detail.case.traceId,
+          });
           caseEventsToPersist.push({
             tenantId: input.tenantId,
             caseId: input.caseId,
@@ -5177,6 +5266,12 @@ export const appRouter = router({
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
         } else {
+          await ingestSynchronousCompliLinkAckEvent({
+            engineDispatch,
+            documentId,
+            documentNumericId: documentRecord.id,
+            traceId: detail.case.traceId,
+          });
           await addCaseEvent({
             tenantId: input.tenantId,
             caseId: input.caseId,

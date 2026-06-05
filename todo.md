@@ -1746,5 +1746,8 @@
 - [x] Implementar monitoreo y trazabilidad explícita del callback asíncrono del bridge con timeout visible
 - [x] Revalidar con el caso de Jaime Santiago López el flujo extremo a extremo en el runtime restaurado
 - [x] Corregir el dispatch hacia el bridge remoto canónico de CompliLink con Bearer, IDs remotos válidos y contrato de acuse aceptado
-- [ ] Revalidar con una corrida controlada que el retorno asíncrono final llene compliLinkWebhookEvents después del acuse transitorio retry_requested
-- [ ] Entregar el reporte final del arreglo del callback con evidencia operativa
+- [x] Revalidar con una corrida controlada que el currentResponseEvent transitorio de CompliLink llene compliLinkWebhookEvents localmente
+- [x] Entregar el reporte final del arreglo del callback con evidencia operativa
+- [x] Cerrar la persistencia local del callback final de CompliLink después del estado transitorio retry_requested
+- [x] Corregir cualquier desalineación restante entre correlationId, traceId e intakeId en el retorno remoto de CompliLink
+- [ ] Entregar el cierre técnico final del flujo AuditaPatron → CompliLink con evidencia de webhook events persistidos

@@ -1,0 +1,309 @@
+{
+  "context": {
+    "observed_facts": {
+      "local_return_handler_currently_requires": {
+        "supported_events": [
+          "document.processed.v1",
+          "document.rejected.v1",
+          "document.retry_requested.v1"
+        ],
+        "document_lookup": "The handler currently resolves the local document only with getDocumentById(payload.documentId).",
+        "auth": "Bearer shared secret or signed webhook are both accepted."
+      },
+      "last_remote_ack_for_xml": {
+        "local_document_id": "DOC-B5CA99C1DA264715",
+        "remote_document_id": 210005,
+        "dispatch_correlation_id": "6329d7e2-d469-4a26-8c56-dba0866b6161",
+        "ack_correlation_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "source_document_id_sent": "DOC-B5CA99C1DA264715",
+        "current_response_event": {
+          "eventName": "document.retry_requested.v1",
+          "finality": "transient",
+          "providerId": 30001,
+          "documentId": 210005,
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63"
+        }
+      },
+      "last_remote_ack_for_contract": {
+        "local_document_id": "DOC-29C11F6834974FD5",
+        "remote_document_id": 210006,
+        "dispatch_correlation_id": "ad46d102-ea94-4dd6-b7e5-82dc87339113",
+        "ack_correlation_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "source_document_id_sent": "DOC-29C11F6834974FD5",
+        "current_response_event": {
+          "eventName": "document.retry_requested.v1",
+          "finality": "transient",
+          "providerId": 30001,
+          "documentId": 210006,
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63"
+        }
+      },
+      "remote_contract_claims": {
+        "callback_delivery": "outbound_webhook",
+        "auth": "Authorization Bearer <shared-secret>",
+        "correlation_id_policy": "echo_exact_dispatch_correlation_id"
+      },
+      "actual_behavior_seen": {
+        "dispatch_status": "HTTP 200 sent for both documents",
+        "local_webhook_events_after_wait": "still empty",
+        "mismatch": "The ack says correlationId should echo dispatch correlation id, but actual ack correlationId equals traceId."
+      },
+      "suspected_gap": [
+        "The final webhook may arrive with remote documentId instead of local document UUID.",
+        "The final webhook may carry traceId or metadata/sourceDocumentId, but the handler does not use those fallbacks.",
+        "The synchronous currentResponseEvent in the ack is not being ingested into local webhook events."
+      ],
+      "goal": "Find the minimum safe local fix that closes webhook event persistence without fabricating remote finality and while remaining compatible with a later true outbound webhook."
+    }
+  },
+  "prompt": "You are a senior integration architect. Return valid JSON only with this schema: {\"root_cause\":{\"most_likely\":\"string\",\"confidence\":\"high|medium|low\",\"why\":[\"string\"]},\"recommended_fix\":{\"primary_action\":\"string\",\"secondary_actions\":[\"string\"],\"do_not_do\":[\"string\"],\"why\":[\"string\"]},\"resolution_strategy\":{\"document_resolution_order\":[\"string\"],\"event_ingestion_policy\":{\"ingest_sync_ack_current_response_event\":true,\"conditions\":[\"string\"],\"why\":\"string\"},\"idempotency_rules\":[\"string\"]},\"implementation_notes\":[\"string\"],\"test_plan\":[\"string\"],\"one_sentence_verdict\":\"string\"}. Use this factual context and infer the safest minimum change: {\"observed_facts\": {\"local_return_handler_currently_requires\": {\"supported_events\": [\"document.processed.v1\", \"document.rejected.v1\", \"document.retry_requested.v1\"], \"document_lookup\": \"The handler currently resolves the local document only with getDocumentById(payload.documentId).\", \"auth\": \"Bearer shared secret or signed webhook are both accepted.\"}, \"last_remote_ack_for_xml\": {\"local_document_id\": \"DOC-B5CA99C1DA264715\", \"remote_document_id\": 210005, \"dispatch_correlation_id\": \"6329d7e2-d469-4a26-8c56-dba0866b6161\", \"ack_correlation_id\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\", \"trace_id\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\", \"source_document_id_sent\": \"DOC-B5CA99C1DA264715\", \"current_response_event\": {\"eventName\": \"document.retry_requested.v1\", \"finality\": \"transient\", \"providerId\": 30001, \"documentId\": 210005, \"traceId\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\"}}, \"last_remote_ack_for_contract\": {\"local_document_id\": \"DOC-29C11F6834974FD5\", \"remote_document_id\": 210006, \"dispatch_correlation_id\": \"ad46d102-ea94-4dd6-b7e5-82dc87339113\", \"ack_correlation_id\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\", \"trace_id\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\", \"source_document_id_sent\": \"DOC-29C11F6834974FD5\", \"current_response_event\": {\"eventName\": \"document.retry_requested.v1\", \"finality\": \"transient\", \"providerId\": 30001, \"documentId\": 210006, \"traceId\": \"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\"}}, \"remote_contract_claims\": {\"callback_delivery\": \"outbound_webhook\", \"auth\": \"Authorization Bearer <shared-secret>\", \"correlation_id_policy\": \"echo_exact_dispatch_correlation_id\"}, \"actual_behavior_seen\": {\"dispatch_status\": \"HTTP 200 sent for both documents\", \"local_webhook_events_after_wait\": \"still empty\", \"mismatch\": \"The ack says correlationId should echo dispatch correlation id, but actual ack correlationId equals traceId.\"}, \"suspected_gap\": [\"The final webhook may arrive with remote documentId instead of local document UUID.\", \"The final webhook may carry traceId or metadata/sourceDocumentId, but the handler does not use those fallbacks.\", \"The synchronous currentResponseEvent in the ack is not being ingested into local webhook events.\"], \"goal\": \"Find the minimum safe local fix that closes webhook event persistence without fabricating remote finality and while remaining compatible with a later true outbound webhook.\"}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DnSl2HPGkQTkD1vufNASAIEebUBM3",
+        "object": "chat.completion",
+        "created": 1780680988,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "```json\n{\n  \"root_cause\": {\n    \"most_likely\": \"Local return handler does not ingest the synchronous currentResponseEvent from the remote ack and relies solely on local document lookup by local UUID, missing events keyed by remote documentId or traceId.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The handler only resolves documents by local UUID (getDocumentById(payload.documentId)) but remote final webhook events may reference remote documentId or traceId.\",\n      \"The ack correlationId is set to traceId, not dispatch correlationId as per remote contract, causing mismatch and ignored events.\",\n      \"Local webhook events remain empty after ack despite HTTP 200 responses, indicating synchronous event ingestion is missing.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"primary_action\": \"Enhance the local return handler to ingest and persist the synchronous currentResponseEvent from the remote ack, using remote documentId and traceId as fallback keys for document resolution.\",\n    \"secondary_actions\": [\n      \"Adjust correlationId validation to accept traceId in ack correlationId to align with actual remote behavior.\",\n      \"Log and monitor any future mismatches between dispatch correlationId and ack correlationId for further refinement.\"\n    ],\n    \"do_not_do\": [\n      \"Do not fabricate or alter remote finality events or their content.\",\n      \"Do not change the existing outbound webhook contract or authentication methods.\"\n    ],\n    \"why\": [\n      \"Ingesting the synchronous currentResponseEvent closes the gap of missing local webhook events without fabricating data.\",\n      \"Using remote documentId and traceId as fallback keys ensures compatibility with remote event metadata variations.\",\n      \"Maintaining existing contracts and auth avoids breaking downstream integrations.\"\n    ]\n  },\n  \"resolution_strategy\": {\n    \"document_resolution_order\": [\n      \"Try getDocumentById(payload.documentId) as primary lookup\",\n      \"If not found, fallback to lookup by remote documentId from currentResponseEvent\",\n      \"If still not found, fallback to lookup by traceId or sourceDocumentId metadata\"\n    ],\n    \"event_ingestion_policy\": {\n      \"ingest_sync_ack_current_response_event\": true,\n      \"conditions\": [\n        \"Event is part of the synchronous ack response from remote\",\n        \"Event finality is transient or final\",\n        \"Event contains remote documentId or traceId for fallback resolution\"\n      ],\n      \"why\": \"To ensure no remote finality or retry events are lost and local webhook event persistence is accurate without fabricating events.\"\n    },\n    \"idempotency_rules\": [\n      \"Ignore duplicate events with same eventName and correlationId\",\n      \"Use correlationId and traceId to detect and discard repeated synchronous ack events\"\n    ]\n  },\n  \"implementation_notes\": [\n    \"Modify local return handler to parse currentResponseEvent from ack payload and persist it as a local webhook event.\",\n    \"Extend document lookup logic to support remote documentId and traceId fallback keys.\",\n    \"Update correlationId validation logic to accept traceId as valid ack correlationId.\",\n    \"Add detailed logging around event ingestion and document resolution for monitoring.\"\n  ],\n  \"test_plan\": [\n    \"Simulate remote ack with currentResponseEvent containing remote documentId and traceId, verify local webhook event ingestion.\",\n    \"Test document lookup fallback order with missing local UUID but present remote documentId or traceId.\",\n    \"Verify correlationId validation accepts traceId and logs mismatches.\",\n    \"Confirm no duplicate events are ingested on repeated synchronous ack responses.\"\n  ],\n  \"one_sentence_verdict\": \"Safely ingesting the synchronous currentResponseEvent from remote acks with enhanced document resolution closes the webhook event persistence gap without altering remote contracts.\"\n}\n```",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 855,
+          "completion_tokens": 754,
+          "total_tokens": 1609,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_a98df2932f"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "b00c8bb3-9b64-413c-8e0a-e25cc4323320",
+        "object": "chat.completion",
+        "created": 1780681002,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause\": {\n    \"most_likely\": \"local_return_handler ignores the synchronous currentResponseEvent inside the HTTP-200 ack and only attempts lookup via payload.documentId (remote value) with no fallback to sourceDocumentId or dispatch_correlation_id\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"supported_events include document.retry_requested.v1 yet the ack's current_response_event is never written to local webhook events\",\n      \"document_lookup uses only getDocumentById(payload.documentId) while ack supplies remote 210005/210006\",\n      \"correlation_id_policy mismatch (traceId echoed instead of dispatch_correlation_id) is observed but does not block ingestion if sync event is consumed\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"primary_action\": \"extend local_return_handler to ingest the synchronous currentResponseEvent from the ack payload when no matching local webhook event exists\",\n    \"secondary_actions\": [\n      \"add document resolution fallback: source_document_id_sent or dispatch_correlation_id before remote documentId\",\n      \"store the ack event under the original local_document_id with finality=transient\"\n    ],\n    \"do_not_do\": [\n      \"do not synthesize a final processed/rejected event\",\n      \"do not change remote contract or force correlation_id rewrite\"\n    ],\n    \"why\": [\n      \"preserves existing outbound webhook path\",\n      \"minimum local change that satisfies goal without fabricating remote finality\"\n    ]\n  },\n  \"resolution_strategy\": {\n    \"document_resolution_order\": [\n      \"source_document_id_sent\",\n      \"dispatch_correlation_id -> local_document_id map\",\n      \"payload.documentId only if it matches a known local UUID\"\n    ],\n    \"event_ingestion_policy\": {\n      \"ingest_sync_ack_current_response_event\": true,\n      \"conditions\": [\n        \"eventName in supported_events\",\n        \"no prior local webhook event for the same trace_id + local_document_id\",\n        \"finality=transient\"\n      ],\n      \"why\": \"captures retry_requested immediately from ack while remaining idempotent for later true webhook\"\n    },\n    \"idempotency_rules\": [\n      \"ignore duplicate (trace_id, eventName, documentId) tuples\",\n      \"never overwrite an existing non-transient local event\"\n    ]\n  },\n  \"implementation_notes\": [\n    \"add optional lookup by source_document_id_sent inside getDocumentById wrapper\",\n    \"persist ack event with providerId and remote documentId as metadata only\"\n  ],\n  \"test_plan\": [\n    \"replay last_remote_ack_for_xml and verify document.retry_requested.v1 appears for DOC-B5CA99C1DA264715\",\n    \"confirm subsequent real webhook still succeeds and is not duplicated\",\n    \"assert no finality escalation occurs from transient ack\"\n  ],\n  \"one_sentence_verdict\": \"Ingest the synchronous currentResponseEvent from the ack using source_document_id_sent fallback for lookup; this is the smallest safe local change that closes persistence without altering remote behavior.\"\n}",
+              "reasoning_content": "The task is to return valid JSON only with a specific schema. I must act as a senior integration architect and use the factual context provided to infer the safest minimum change.\n",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 959,
+          "completion_tokens": 616,
+          "total_tokens": 2069,
+          "prompt_tokens_details": {
+            "text_tokens": 959,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 494,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 38393500
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed",
+        "service_tier": "default"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"root_cause\": {\n    \"most_likely\": \"The local return handler fails to resolve the local document because the 'documentId' in the 'current_response_event' from the synchronous ACK is the remote system's ID, while the handler exclusively uses 'getDocumentById(payload.documentId)' which expects the local UUID.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'current_response_event.documentId' in both ACKs (XML and Contract) is a numeric remote ID (e.g., 210005, 210006).\",\n      \"The local handler's 'document_lookup' explicitly states 'The handler currently resolves the local document only with getDocumentById(payload.documentId)'.\",\n      \"This mismatch prevents the handler from finding the corresponding local document, leading to the 'local webhook events after wait: still empty' observation.\",\n      \"The event name 'document.retry_requested.v1' is supported, and authentication is compatible, ruling out other immediate causes for event ingestion failure.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"primary_action\": \"Modify the local return handler's document lookup logic to first attempt resolution using 'payload.documentId' (i.e., 'current_response_event.documentId'), and if that fails and 'payload.documentId' appears to be a remote ID (e.g., numeric), then attempt to resolve the local document using the 'source_document_id_sent' field from the overall synchronous ACK payload.\",\n    \"secondary_actions\": [\n      \"Log the mismatch between 'ack_correlation_id' (traceId) and 'dispatch_correlation_id' for future investigation, but do not block the current fix on it.\",\n      \"Ensure the 'document.retry_requested.v1' event is persisted with its 'transient' finality, reflecting the remote system's current state accurately.\"\n    ],\n    \"do_not_do\": [\n      \"Do not fabricate a 'final' state for the document, as the received event 'document.retry_requested.v1' explicitly indicates 'transient' finality.\",\n      \"Do not modify the remote system's contract or expected behavior.\",\n      \"Do not rely on parsing the 'traceId' for document lookup, as 'source_document_id_sent' provides a more direct and robust identifier.\"\n    ],\n    \"why\": [\n      \"This fix directly addresses the document lookup failure by utilizing existing, accurate local document ID information ('source_document_id_sent') available in the synchronous ACK.\",\n      \"It is a minimum safe local change that enables event persistence without altering remote behavior or fabricating finality.\",\n      \"It maintains compatibility with a future true outbound webhook, which is likely to use the local UUID directly in its 'documentId' field, as the primary lookup path remains intact.\"\n    ]\n  },\n  \"resolution_strategy\": {\n    \"document_resolution_order\": [\n      \"Attempt to resolve local document using 'payload.documentId' (from 'current_response_event').\",\n      \"If resolution fails and 'payload.documentId' is numeric, attempt to resolve local document using 'source_document_id_sent' from the overall ACK payload.\",\n      \"If still unresolved, log a critical error and flag for manual intervention.\"\n    ],\n    \"event_ingestion_policy\": {\n      \"ingest_sync_ack_current_response_event\": true,\n      \"conditions\": [\n        \"The 'eventName' ('document.retry_requested.v1') is explicitly supported by the local handler.\",\n        \"The event's 'finality' is 'transient' and must be respected during persistence.\",\n        \"The authentication method ('Bearer shared secret') is compatible with the local handler.\"\n      ],\n      \"why\": \"The synchronous ACK provides a valid, supported event that represents the current, albeit transient, state of the document on the remote system. Ingesting this event is crucial for local state consistency and visibility.\"\n    },\n    \"idempotency_rules\": [\n      \"Use a combination of 'documentId' (local UUID after resolution) and 'eventName' or the 'traceId' from the ACK as a unique key for event idempotency.\",\n      \"If an event with the same unique key and state is already recorded, skip or update without creating duplicates.\",\n      \"Ensure that 'transient' events can update previous 'transient' states or be superseded by 'final' events, but not overwrite 'final' events with 'transient' ones.\"\n    ]\n  },\n  \"implementation_notes\": [\n    \"Modify the 'getDocumentById' method or its calling context within the local return handler to access the full ACK payload and prioritize 'source_document_id_sent' as a fallback.\",\n    \"Add robust logging to track which lookup path (payload.documentId vs. source_document_id_sent) successfully resolved the document.\",\n    \"Ensure the persistence layer correctly handles 'transient' finality for 'document.retry_requested.v1' events, preventing premature finalization of the local document state.\"\n  ],\n  \"test_plan\": [\n    \"Unit tests for the modified document lookup logic, covering cases where 'payload.documentId' is a local UUID, a remote ID requiring fallback, and scenarios where 'source_document_id_sent' is missing or invalid.\",\n    \"Integration tests: Send documents to the remote system and verify that 'document.retry_requested.v1' events from synchronous ACKs are correctly ingested and persisted locally for both XML and Contract types.\",\n    \"Verify that the local document's state accurately reflects the 'transient' nature of the 'retry_requested' event and that no 'final' state is fabricated.\",\n    \"Verify that the system remains capable of receiving and processing a subsequent true outbound webhook for the same document.\",\n    \"Negative tests: Simulate ACKs with unsupported event names or missing critical identifiers to ensure graceful error handling and logging.\"\n  ],\n  \"one_sentence_verdict\": \"The local return handler fails to persist synchronous ACK events because it cannot resolve the local document using the remote 'documentId' provided in the event payload, requiring a fallback lookup using the 'source_document_id_sent' from the overall ACK.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1017,
+          "candidatesTokenCount": 1388,
+          "totalTokenCount": 5554,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 1017
+            }
+          ],
+          "thoughtsTokenCount": 3149,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "MAkjas7DCuub_uMP2vTooQ4"
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "error": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "grok": {
+      "text": "{\n  \"root_cause\": {\n    \"most_likely\": \"local_return_handler ignores the synchronous currentResponseEvent inside the HTTP-200 ack and only attempts lookup via payload.documentId (remote value) with no fallback to sourceDocumentId or dispatch_correlation_id\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"supported_events include document.retry_requested.v1 yet the ack's current_response_event is never written to local webhook events\",\n      \"document_lookup uses only getDocumentById(payload.documentId) while ack supplies remote 210005/210006\",\n      \"correlation_id_policy mismatch (traceId echoed instead of dispatch_correlation_id) is observed but does not block ingestion if sync event is consumed\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"primary_action\": \"extend local_return_handler to ingest the synchronous currentResponseEvent from the ack payload when no matching local webhook event exists\",\n    \"secondary_actions\": [\n      \"add document resolution fallback: source_document_id_sent or dispatch_correlation_id before remote documentId\",\n      \"store the ack event under the original local_document_id with finality=transient\"\n    ],\n    \"do_not_do\": [\n      \"do not synthesize a final processed/rejected event\",\n      \"do not change remote contract or force correlation_id rewrite\"\n    ],\n    \"why\": [\n      \"preserves existing outbound webhook path\",\n      \"minimum local change that satisfies goal without fabricating remote finality\"\n    ]\n  },\n  \"resolution_strategy\": {\n    \"document_resolution_order\": [\n      \"source_document_id_sent\",\n      \"dispatch_correlation_id -> local_document_id map\",\n      \"payload.documentId only if it matches a known local UUID\"\n    ],\n    \"event_ingestion_policy\": {\n      \"ingest_sync_ack_current_response_event\": true,\n      \"conditions\": [\n        \"eventName in supported_events\",\n        \"no prior local webhook event for the same trace_id + local_document_id\",\n        \"finality=transient\"\n      ],\n      \"why\": \"captures retry_requested immediately from ack while remaining idempotent for later true webhook\"\n    },\n    \"idempotency_rules\": [\n      \"ignore duplicate (trace_id, eventName, documentId) tuples\",\n      \"never overwrite an existing non-transient local event\"\n    ]\n  },\n  \"implementation_notes\": [\n    \"add optional lookup by source_document_id_sent inside getDocumentById wrapper\",\n    \"persist ack event with providerId and remote documentId as metadata only\"\n  ],\n  \"test_plan\": [\n    \"replay last_remote_ack_for_xml and verify document.retry_requested.v1 appears for DOC-B5CA99C1DA264715\",\n    \"confirm subsequent real webhook still succeeds and is not duplicated\",\n    \"assert no finality escalation occurs from transient ack\"\n  ],\n  \"one_sentence_verdict\": \"Ingest the synchronous currentResponseEvent from the ack using source_document_id_sent fallback for lookup; this is the smallest safe local change that closes persistence without altering remote behavior.\"\n}",
+      "json": {
+        "root_cause": {
+          "most_likely": "local_return_handler ignores the synchronous currentResponseEvent inside the HTTP-200 ack and only attempts lookup via payload.documentId (remote value) with no fallback to sourceDocumentId or dispatch_correlation_id",
+          "confidence": "high",
+          "why": [
+            "supported_events include document.retry_requested.v1 yet the ack's current_response_event is never written to local webhook events",
+            "document_lookup uses only getDocumentById(payload.documentId) while ack supplies remote 210005/210006",
+            "correlation_id_policy mismatch (traceId echoed instead of dispatch_correlation_id) is observed but does not block ingestion if sync event is consumed"
+          ]
+        },
+        "recommended_fix": {
+          "primary_action": "extend local_return_handler to ingest the synchronous currentResponseEvent from the ack payload when no matching local webhook event exists",
+          "secondary_actions": [
+            "add document resolution fallback: source_document_id_sent or dispatch_correlation_id before remote documentId",
+            "store the ack event under the original local_document_id with finality=transient"
+          ],
+          "do_not_do": [
+            "do not synthesize a final processed/rejected event",
+            "do not change remote contract or force correlation_id rewrite"
+          ],
+          "why": [
+            "preserves existing outbound webhook path",
+            "minimum local change that satisfies goal without fabricating remote finality"
+          ]
+        },
+        "resolution_strategy": {
+          "document_resolution_order": [
+            "source_document_id_sent",
+            "dispatch_correlation_id -> local_document_id map",
+            "payload.documentId only if it matches a known local UUID"
+          ],
+          "event_ingestion_policy": {
+            "ingest_sync_ack_current_response_event": true,
+            "conditions": [
+              "eventName in supported_events",
+              "no prior local webhook event for the same trace_id + local_document_id",
+              "finality=transient"
+            ],
+            "why": "captures retry_requested immediately from ack while remaining idempotent for later true webhook"
+          },
+          "idempotency_rules": [
+            "ignore duplicate (trace_id, eventName, documentId) tuples",
+            "never overwrite an existing non-transient local event"
+          ]
+        },
+        "implementation_notes": [
+          "add optional lookup by source_document_id_sent inside getDocumentById wrapper",
+          "persist ack event with providerId and remote documentId as metadata only"
+        ],
+        "test_plan": [
+          "replay last_remote_ack_for_xml and verify document.retry_requested.v1 appears for DOC-B5CA99C1DA264715",
+          "confirm subsequent real webhook still succeeds and is not duplicated",
+          "assert no finality escalation occurs from transient ack"
+        ],
+        "one_sentence_verdict": "Ingest the synchronous currentResponseEvent from the ack using source_document_id_sent fallback for lookup; this is the smallest safe local change that closes persistence without altering remote behavior."
+      }
+    },
+    "gemini": {
+      "text": "{\n  \"root_cause\": {\n    \"most_likely\": \"The local return handler fails to resolve the local document because the 'documentId' in the 'current_response_event' from the synchronous ACK is the remote system's ID, while the handler exclusively uses 'getDocumentById(payload.documentId)' which expects the local UUID.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'current_response_event.documentId' in both ACKs (XML and Contract) is a numeric remote ID (e.g., 210005, 210006).\",\n      \"The local handler's 'document_lookup' explicitly states 'The handler currently resolves the local document only with getDocumentById(payload.documentId)'.\",\n      \"This mismatch prevents the handler from finding the corresponding local document, leading to the 'local webhook events after wait: still empty' observation.\",\n      \"The event name 'document.retry_requested.v1' is supported, and authentication is compatible, ruling out other immediate causes for event ingestion failure.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"primary_action\": \"Modify the local return handler's document lookup logic to first attempt resolution using 'payload.documentId' (i.e., 'current_response_event.documentId'), and if that fails and 'payload.documentId' appears to be a remote ID (e.g., numeric), then attempt to resolve the local document using the 'source_document_id_sent' field from the overall synchronous ACK payload.\",\n    \"secondary_actions\": [\n      \"Log the mismatch between 'ack_correlation_id' (traceId) and 'dispatch_correlation_id' for future investigation, but do not block the current fix on it.\",\n      \"Ensure the 'document.retry_requested.v1' event is persisted with its 'transient' finality, reflecting the remote system's current state accurately.\"\n    ],\n    \"do_not_do\": [\n      \"Do not fabricate a 'final' state for the document, as the received event 'document.retry_requested.v1' explicitly indicates 'transient' finality.\",\n      \"Do not modify the remote system's contract or expected behavior.\",\n      \"Do not rely on parsing the 'traceId' for document lookup, as 'source_document_id_sent' provides a more direct and robust identifier.\"\n    ],\n    \"why\": [\n      \"This fix directly addresses the document lookup failure by utilizing existing, accurate local document ID information ('source_document_id_sent') available in the synchronous ACK.\",\n      \"It is a minimum safe local change that enables event persistence without altering remote behavior or fabricating finality.\",\n      \"It maintains compatibility with a future true outbound webhook, which is likely to use the local UUID directly in its 'documentId' field, as the primary lookup path remains intact.\"\n    ]\n  },\n  \"resolution_strategy\": {\n    \"document_resolution_order\": [\n      \"Attempt to resolve local document using 'payload.documentId' (from 'current_response_event').\",\n      \"If resolution fails and 'payload.documentId' is numeric, attempt to resolve local document using 'source_document_id_sent' from the overall ACK payload.\",\n      \"If still unresolved, log a critical error and flag for manual intervention.\"\n    ],\n    \"event_ingestion_policy\": {\n      \"ingest_sync_ack_current_response_event\": true,\n      \"conditions\": [\n        \"The 'eventName' ('document.retry_requested.v1') is explicitly supported by the local handler.\",\n        \"The event's 'finality' is 'transient' and must be respected during persistence.\",\n        \"The authentication method ('Bearer shared secret') is compatible with the local handler.\"\n      ],\n      \"why\": \"The synchronous ACK provides a valid, supported event that represents the current, albeit transient, state of the document on the remote system. Ingesting this event is crucial for local state consistency and visibility.\"\n    },\n    \"idempotency_rules\": [\n      \"Use a combination of 'documentId' (local UUID after resolution) and 'eventName' or the 'traceId' from the ACK as a unique key for event idempotency.\",\n      \"If an event with the same unique key and state is already recorded, skip or update without creating duplicates.\",\n      \"Ensure that 'transient' events can update previous 'transient' states or be superseded by 'final' events, but not overwrite 'final' events with 'transient' ones.\"\n    ]\n  },\n  \"implementation_notes\": [\n    \"Modify the 'getDocumentById' method or its calling context within the local return handler to access the full ACK payload and prioritize 'source_document_id_sent' as a fallback.\",\n    \"Add robust logging to track which lookup path (payload.documentId vs. source_document_id_sent) successfully resolved the document.\",\n    \"Ensure the persistence layer correctly handles 'transient' finality for 'document.retry_requested.v1' events, preventing premature finalization of the local document state.\"\n  ],\n  \"test_plan\": [\n    \"Unit tests for the modified document lookup logic, covering cases where 'payload.documentId' is a local UUID, a remote ID requiring fallback, and scenarios where 'source_document_id_sent' is missing or invalid.\",\n    \"Integration tests: Send documents to the remote system and verify that 'document.retry_requested.v1' events from synchronous ACKs are correctly ingested and persisted locally for both XML and Contract types.\",\n    \"Verify that the local document's state accurately reflects the 'transient' nature of the 'retry_requested' event and that no 'final' state is fabricated.\",\n    \"Verify that the system remains capable of receiving and processing a subsequent true outbound webhook for the same document.\",\n    \"Negative tests: Simulate ACKs with unsupported event names or missing critical identifiers to ensure graceful error handling and logging.\"\n  ],\n  \"one_sentence_verdict\": \"The local return handler fails to persist synchronous ACK events because it cannot resolve the local document using the remote 'documentId' provided in the event payload, requiring a fallback lookup using the 'source_document_id_sent' from the overall ACK.\"\n}",
+      "json": {
+        "root_cause": {
+          "most_likely": "The local return handler fails to resolve the local document because the 'documentId' in the 'current_response_event' from the synchronous ACK is the remote system's ID, while the handler exclusively uses 'getDocumentById(payload.documentId)' which expects the local UUID.",
+          "confidence": "high",
+          "why": [
+            "The 'current_response_event.documentId' in both ACKs (XML and Contract) is a numeric remote ID (e.g., 210005, 210006).",
+            "The local handler's 'document_lookup' explicitly states 'The handler currently resolves the local document only with getDocumentById(payload.documentId)'.",
+            "This mismatch prevents the handler from finding the corresponding local document, leading to the 'local webhook events after wait: still empty' observation.",
+            "The event name 'document.retry_requested.v1' is supported, and authentication is compatible, ruling out other immediate causes for event ingestion failure."
+          ]
+        },
+        "recommended_fix": {
+          "primary_action": "Modify the local return handler's document lookup logic to first attempt resolution using 'payload.documentId' (i.e., 'current_response_event.documentId'), and if that fails and 'payload.documentId' appears to be a remote ID (e.g., numeric), then attempt to resolve the local document using the 'source_document_id_sent' field from the overall synchronous ACK payload.",
+          "secondary_actions": [
+            "Log the mismatch between 'ack_correlation_id' (traceId) and 'dispatch_correlation_id' for future investigation, but do not block the current fix on it.",
+            "Ensure the 'document.retry_requested.v1' event is persisted with its 'transient' finality, reflecting the remote system's current state accurately."
+          ],
+          "do_not_do": [
+            "Do not fabricate a 'final' state for the document, as the received event 'document.retry_requested.v1' explicitly indicates 'transient' finality.",
+            "Do not modify the remote system's contract or expected behavior.",
+            "Do not rely on parsing the 'traceId' for document lookup, as 'source_document_id_sent' provides a more direct and robust identifier."
+          ],
+          "why": [
+            "This fix directly addresses the document lookup failure by utilizing existing, accurate local document ID information ('source_document_id_sent') available in the synchronous ACK.",
+            "It is a minimum safe local change that enables event persistence without altering remote behavior or fabricating finality.",
+            "It maintains compatibility with a future true outbound webhook, which is likely to use the local UUID directly in its 'documentId' field, as the primary lookup path remains intact."
+          ]
+        },
+        "resolution_strategy": {
+          "document_resolution_order": [
+            "Attempt to resolve local document using 'payload.documentId' (from 'current_response_event').",
+            "If resolution fails and 'payload.documentId' is numeric, attempt to resolve local document using 'source_document_id_sent' from the overall ACK payload.",
+            "If still unresolved, log a critical error and flag for manual intervention."
+          ],
+          "event_ingestion_policy": {
+            "ingest_sync_ack_current_response_event": true,
+            "conditions": [
+              "The 'eventName' ('document.retry_requested.v1') is explicitly supported by the local handler.",
+              "The event's 'finality' is 'transient' and must be respected during persistence.",
+              "The authentication method ('Bearer shared secret') is compatible with the local handler."
+            ],
+            "why": "The synchronous ACK provides a valid, supported event that represents the current, albeit transient, state of the document on the remote system. Ingesting this event is crucial for local state consistency and visibility."
+          },
+          "idempotency_rules": [
+            "Use a combination of 'documentId' (local UUID after resolution) and 'eventName' or the 'traceId' from the ACK as a unique key for event idempotency.",
+            "If an event with the same unique key and state is already recorded, skip or update without creating duplicates.",
+            "Ensure that 'transient' events can update previous 'transient' states or be superseded by 'final' events, but not overwrite 'final' events with 'transient' ones."
+          ]
+        },
+        "implementation_notes": [
+          "Modify the 'getDocumentById' method or its calling context within the local return handler to access the full ACK payload and prioritize 'source_document_id_sent' as a fallback.",
+          "Add robust logging to track which lookup path (payload.documentId vs. source_document_id_sent) successfully resolved the document.",
+          "Ensure the persistence layer correctly handles 'transient' finality for 'document.retry_requested.v1' events, preventing premature finalization of the local document state."
+        ],
+        "test_plan": [
+          "Unit tests for the modified document lookup logic, covering cases where 'payload.documentId' is a local UUID, a remote ID requiring fallback, and scenarios where 'source_document_id_sent' is missing or invalid.",
+          "Integration tests: Send documents to the remote system and verify that 'document.retry_requested.v1' events from synchronous ACKs are correctly ingested and persisted locally for both XML and Contract types.",
+          "Verify that the local document's state accurately reflects the 'transient' nature of the 'retry_requested' event and that no 'final' state is fabricated.",
+          "Verify that the system remains capable of receiving and processing a subsequent true outbound webhook for the same document.",
+          "Negative tests: Simulate ACKs with unsupported event names or missing critical identifiers to ensure graceful error handling and logging."
+        ],
+        "one_sentence_verdict": "The local return handler fails to persist synchronous ACK events because it cannot resolve the local document using the remote 'documentId' provided in the event payload, requiring a fallback lookup using the 'source_document_id_sent' from the overall ACK."
+      }
+    }
+  }
+}

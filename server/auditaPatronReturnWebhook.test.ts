@@ -10,6 +10,7 @@ const { dbMocks } = vi.hoisted(() => ({
     addOperationalAlert: vi.fn(),
     createAuditLog: vi.fn(),
     getDocumentById: vi.fn(),
+    resolveCompliLinkDocument: vi.fn(),
     registerCompliLinkWebhookEvent: vi.fn(),
     upsertCanonicalContract: vi.fn(),
     updateCompliLinkWebhookEvent: vi.fn(),
@@ -89,7 +90,7 @@ function buildIncomingUploadPayload(overrides: Record<string, unknown> = {}) {
 describe("auditaPatronReturnWebhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    dbMocks.getDocumentById.mockResolvedValue({
+    const resolvedDocument = {
       id: 41,
       tenantId: "tenant-bridge",
       caseId: "CASE-BRIDGE-001",
@@ -101,7 +102,9 @@ describe("auditaPatronReturnWebhook", () => {
       classificationConfidence: 12,
       integrityStatus: "verified",
       consentStatus: "accepted",
-    });
+    };
+    dbMocks.getDocumentById.mockResolvedValue(resolvedDocument);
+    dbMocks.resolveCompliLinkDocument.mockResolvedValue(resolvedDocument);
     dbMocks.upsertCanonicalContract.mockResolvedValue(undefined);
     dbMocks.addCaseEvent.mockResolvedValue(undefined);
     dbMocks.addOperationalAlert.mockResolvedValue(undefined);
