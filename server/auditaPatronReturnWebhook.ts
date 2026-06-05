@@ -13,6 +13,7 @@ import {
 } from "./db";
 import { type DocumentType, classifyMexicanLaborDocument } from "./caseContracts";
 import {
+  buildAuditaPatronEngineSignature,
   type CompliLinkReturnEnvelope,
   isSupportedCompliLinkReturnEvent,
   verifySignedWebhook,
@@ -321,6 +322,89 @@ function buildEventDescriptor(payload: CompliLinkReturnEnvelope) {
   };
 }
 
+function deriveRemoteForwardWebhookUrl(req: RawBodyRequest) {
+  const configuredWebhookUrl = ENV.auditapatronEngineWebhookUrl?.trim();
+  if (!configuredWebhookUrl) return null;
+
+  try {
+    const parsed = new URL(configuredWebhookUrl);
+    if (parsed.hostname.startsWith("www.")) {
+      parsed.hostname = parsed.hostname.replace(/^www\./, "");
+    }
+
+    const requestHost = (req.header("x-forwarded-host") ?? req.header("host") ?? "")
+      .split(",")[0]
+      ?.trim()
+      .toLowerCase();
+    const requestProtocol = (req.header("x-forwarded-proto") ?? req.protocol ?? parsed.protocol.replace(":", ""))
+      .split(",")[0]
+      ?.trim()
+      .toLowerCase();
+    const requestOrigin = requestHost ? `${requestProtocol}://${requestHost}` : null;
+    const targetHost = parsed.hostname.toLowerCase();
+
+    if (targetHost === "127.0.0.1" || targetHost === "localhost") {
+      return null;
+    }
+
+    if (requestOrigin && parsed.origin.toLowerCase() === requestOrigin) {
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function forwardIncomingUploadToRemote(params: { req: RawBodyRequest; rawBody: string }) {
+  const targetUrl = deriveRemoteForwardWebhookUrl(params.req);
+  if (!targetUrl) {
+    return {
+      ok: false as const,
+      status: null,
+      targetUrl: null,
+      responseBody: null,
+      reason: "bridge_target_invalid",
+    };
+  }
+
+  const timestamp = params.req.header("X-AuditaPatron-Timestamp") ?? Math.floor(Date.now() / 1000).toString();
+  const signature = buildAuditaPatronEngineSignature(timestamp, params.rawBody, ENV.auditapatronEngineHmacSecret);
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+        "X-AuditaPatron-Forwarded-By": "auditapatron-intake",
+      },
+      body: params.rawBody,
+    });
+
+    const responseBody = await response.text();
+    return {
+      ok: response.ok,
+      status: response.status,
+      targetUrl,
+      responseBody,
+      reason: response.ok ? null : "bridge_forward_rejected",
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      status: null,
+      targetUrl,
+      responseBody: null,
+      reason: "bridge_forward_failed",
+      errorMessage: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 function handleAuditaPatronHealth(_req: Request, res: Response) {
   res.status(200).json({
     status: "ok",
@@ -378,6 +462,23 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
       return;
     }
 
+    const remoteForward = await forwardIncomingUploadToRemote({ req, rawBody });
+
+    if (!remoteForward.ok) {
+      res.status(502).json({
+        verified: false,
+        issues: buildWebhookIssues(
+          remoteForward.reason ?? "bridge_forward_failed",
+          "The validated upload could not be forwarded to the remote CompliLink bridge.",
+          "event",
+        ),
+        bridgeTarget: remoteForward.targetUrl,
+        upstreamStatus: remoteForward.status,
+        responseContract: RESPONSE_CONTRACT,
+      });
+      return;
+    }
+
     const receivedAt = new Date().toISOString();
     res.status(202).json({
       verified: true,
@@ -388,6 +489,9 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
       receivedAt,
       responseContract: RESPONSE_CONTRACT,
       processingStatus: "accepted",
+      forwarded: true,
+      bridgeTarget: remoteForward.targetUrl,
+      upstreamStatus: remoteForward.status,
     });
   } catch (error) {
     console.error("[AuditaPatron Intake Webhook]", error);

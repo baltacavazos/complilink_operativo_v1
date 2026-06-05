@@ -1745,3 +1745,6 @@
 - [x] Implementar alerta automática de discrepancia salarial entre contrato y CFDI/SBC-SDI
 - [x] Implementar monitoreo y trazabilidad explícita del callback asíncrono del bridge con timeout visible
 - [x] Revalidar con el caso de Jaime Santiago López el flujo extremo a extremo en el runtime restaurado
+- [x] Corregir el dispatch hacia el bridge remoto canónico de CompliLink con Bearer, IDs remotos válidos y contrato de acuse aceptado
+- [ ] Revalidar con una corrida controlada que el retorno asíncrono final llene compliLinkWebhookEvents después del acuse transitorio retry_requested
+- [ ] Entregar el reporte final del arreglo del callback con evidencia operativa

@@ -1,0 +1,204 @@
+{
+  "context": {
+    "observed_facts": {
+      "client_loopback_rule": "buildLoopbackWebhookUrl intentionally converts configured /api/auditapatron/webhook targets on allowed hosts into http://127.0.0.1:${PORT}/api/auditapatron/webhook.",
+      "candidate_order": "remote configured URL is considered, but local loopback is also a first-class candidate and is what succeeded in the controlled revalidation.",
+      "intake_handler_current_behavior": "handleAuditaPatronIncomingWebhook validates signed document.uploaded payloads and only returns 202 accepted; it does not forward to any remote bridge or processor.",
+      "final_return_handler_behavior": "handleCompliLinkReturnWebhook is the only path that persists compliLinkWebhookEvents and updates documents.",
+      "runtime_evidence": "After fixing the configured host, the controlled revalidation still dispatched successfully only to 127.0.0.1:3000/api/auditapatron/webhook and webhook events remained absent.",
+      "remote_contract_hint": "The canonical remote host is https://complilink.mx and it warns to avoid www redirects. Existing tests historically expect https://complilink.mx/api/auditapatron/webhook as the public bridge endpoint."
+    },
+    "goal": "Decide the most likely definitive fix: add forwarding in the local intake handler, disable loopback, or some combination.",
+    "constraints": {
+      "must_keep_health_contract": true,
+      "must_preserve_existing_signature_contract": true,
+      "must_work_in_dev_and_prod": true,
+      "must_be_minimal_but_reliable": true
+    }
+  },
+  "prompt": "You are a senior backend integration architect. Return valid JSON only using this schema: {\"root_cause_assessment\": {\"most_likely_root_cause\": \"string\", \"confidence\": \"high|medium|low\", \"why\": [\"string\"]}, \"recommended_fix\": {\"change_type\": \"config_only|code_and_config|code_only\", \"primary_action\": \"string\", \"secondary_actions\": [\"string\"], \"why\": [\"string\"]}, \"implementation_outline\": [\"string\"], \"test_plan\": [\"string\"], \"one_sentence_verdict\": \"string\"}. Decide the definitive fix from the factual context: {\"observed_facts\": {\"client_loopback_rule\": \"buildLoopbackWebhookUrl intentionally converts configured /api/auditapatron/webhook targets on allowed hosts into http://127.0.0.1:${PORT}/api/auditapatron/webhook.\", \"candidate_order\": \"remote configured URL is considered, but local loopback is also a first-class candidate and is what succeeded in the controlled revalidation.\", \"intake_handler_current_behavior\": \"handleAuditaPatronIncomingWebhook validates signed document.uploaded payloads and only returns 202 accepted; it does not forward to any remote bridge or processor.\", \"final_return_handler_behavior\": \"handleCompliLinkReturnWebhook is the only path that persists compliLinkWebhookEvents and updates documents.\", \"runtime_evidence\": \"After fixing the configured host, the controlled revalidation still dispatched successfully only to 127.0.0.1:3000/api/auditapatron/webhook and webhook events remained absent.\", \"remote_contract_hint\": \"The canonical remote host is https://complilink.mx and it warns to avoid www redirects. Existing tests historically expect https://complilink.mx/api/auditapatron/webhook as the public bridge endpoint.\"}, \"goal\": \"Decide the most likely definitive fix: add forwarding in the local intake handler, disable loopback, or some combination.\", \"constraints\": {\"must_keep_health_contract\": true, \"must_preserve_existing_signature_contract\": true, \"must_work_in_dev_and_prod\": true, \"must_be_minimal_but_reliable\": true}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DkeyE2pKFXwYcWAxgK8e67q9jWXna",
+        "object": "chat.completion",
+        "created": 1780012950,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The intake handler does not forward validated webhook payloads to the processing path, and the loopback URL conversion causes all webhook calls to be directed to localhost where no forwarding occurs.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"handleAuditaPatronIncomingWebhook only validates and returns 202 without forwarding to any processor.\",\n      \"buildLoopbackWebhookUrl converts configured remote URLs to 127.0.0.1 loopback addresses, which succeeded in revalidation but no events were persisted.\",\n      \"handleCompliLinkReturnWebhook is the only handler that persists events and updates documents, but it is not invoked by the intake handler.\",\n      \"Remote contract expects calls to https://complilink.mx/api/auditapatron/webhook, but loopback redirects to localhost, breaking event persistence.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Modify handleAuditaPatronIncomingWebhook to forward validated webhook payloads to handleCompliLinkReturnWebhook or equivalent processing logic.\",\n    \"secondary_actions\": [\n      \"Disable or conditionally bypass buildLoopbackWebhookUrl conversion in production to allow direct remote webhook calls.\",\n      \"Ensure configuration supports both dev (loopback) and prod (remote) environments without breaking contracts.\"\n    ],\n    \"why\": [\n      \"Forwarding in the intake handler ensures validated payloads reach the event persistence logic, fulfilling the webhook processing contract.\",\n      \"Disabling loopback in production prevents silent swallowing of events by localhost endpoints that do not process them.\",\n      \"Maintains existing signature and health contracts by preserving validation and response behavior.\",\n      \"Supports both dev and prod environments reliably with minimal but effective changes.\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"Update handleAuditaPatronIncomingWebhook to invoke the processing logic (handleCompliLinkReturnWebhook or shared internal method) after validation.\",\n    \"Add configuration flag to enable or disable loopback URL conversion based on environment (dev vs prod).\",\n    \"Refactor buildLoopbackWebhookUrl to respect the new configuration flag and avoid loopback in production.\",\n    \"Add logging to confirm forwarding and processing of webhook payloads.\",\n    \"Review and update tests to cover forwarding behavior and environment-specific URL handling.\"\n  ],\n  \"test_plan\": [\n    \"Unit test handleAuditaPatronIncomingWebhook to verify forwarding occurs after validation.\",\n    \"Integration test webhook flow end-to-end in dev environment with loopback enabled.\",\n    \"Integration test webhook flow end-to-end in prod environment with loopback disabled, ensuring events persist.\",\n    \"Regression test existing health and signature validation contracts remain intact.\",\n    \"Simulate remote webhook calls to https://complilink.mx/api/auditapatron/webhook and verify event persistence.\"\n  ],\n  \"one_sentence_verdict\": \"To reliably process webhook events, the intake handler must forward validated payloads to the processing logic and loopback URL conversion should be disabled in production, ensuring minimal, environment-aware changes that preserve existing contracts.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 468,
+          "completion_tokens": 638,
+          "total_tokens": 1106,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_1b65c29d25"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "524528df-8995-9153-be8b-092650a17cfc",
+        "object": "chat.completion",
+        "created": 1780012962,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"buildLoopbackWebhookUrl unconditionally rewrites the canonical remote target to 127.0.0.1, routing traffic to handleAuditaPatronIncomingWebhook which performs no forwarding to CompliLink.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Runtime evidence shows dispatch succeeds only to loopback after host correction\",\n      \"handleAuditaPatronIncomingWebhook returns 202 without persisting or bridging events\",\n      \"handleCompliLinkReturnWebhook is the sole persistence path and is never reached\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Make loopback conversion conditional on an explicit ALLOW_LOOPBACK or NODE_ENV=development flag so production uses the configured https://complilink.mx URL directly.\",\n    \"secondary_actions\": [\n      \"Add minimal forwarding stub in handleAuditaPatronIncomingWebhook only when loopback is active (dev-only) to preserve health contract\",\n      \"Update webhook URL config to https://complilink.mx/api/auditapatron/webhook without www\"\n    ],\n    \"why\": [\n      \"Preserves existing signature validation contract\",\n      \"Works identically in dev (loopback) and prod (remote)\",\n      \"Minimal change that keeps health checks and avoids new remote dependencies\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"Introduce ALLOW_LOOPBACK env flag defaulting to true only for development\",\n    \"Guard the host rewrite inside buildLoopbackWebhookUrl with the flag\",\n    \"Leave handleAuditaPatronIncomingWebhook unchanged for prod path\",\n    \"Document the canonical remote URL in config and tests\"\n  ],\n  \"test_plan\": [\n    \"Run controlled revalidation with ALLOW_LOOPBACK=false and assert outbound request targets complilink.mx\",\n    \"Verify webhook events appear in compliLinkWebhookEvents table\",\n    \"Confirm health-check and signature validation still pass\",\n    \"Repeat with flag=true to ensure local loopback path remains functional\"\n  ],\n  \"one_sentence_verdict\": \"Condition the loopback rewrite on an environment flag so the remote CompliLink contract is honored in production while the local intake path stays available for development.\"\n}",
+              "reasoning_content": "The task is to return valid JSON only using the specified schema. The schema is:\nFirst, the output must be valid JSON using exactly that schema. No other content.",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 609,
+          "completion_tokens": 464,
+          "total_tokens": 1629,
+          "prompt_tokens_details": {
+            "text_tokens": 609,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 556,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 31768500
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed"
+      }
+    },
+    "gemini": {
+      "status_code": 503,
+      "body": {
+        "error": {
+          "code": 503,
+          "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+          "status": "UNAVAILABLE"
+        }
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The intake handler does not forward validated webhook payloads to the processing path, and the loopback URL conversion causes all webhook calls to be directed to localhost where no forwarding occurs.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"handleAuditaPatronIncomingWebhook only validates and returns 202 without forwarding to any processor.\",\n      \"buildLoopbackWebhookUrl converts configured remote URLs to 127.0.0.1 loopback addresses, which succeeded in revalidation but no events were persisted.\",\n      \"handleCompliLinkReturnWebhook is the only handler that persists events and updates documents, but it is not invoked by the intake handler.\",\n      \"Remote contract expects calls to https://complilink.mx/api/auditapatron/webhook, but loopback redirects to localhost, breaking event persistence.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Modify handleAuditaPatronIncomingWebhook to forward validated webhook payloads to handleCompliLinkReturnWebhook or equivalent processing logic.\",\n    \"secondary_actions\": [\n      \"Disable or conditionally bypass buildLoopbackWebhookUrl conversion in production to allow direct remote webhook calls.\",\n      \"Ensure configuration supports both dev (loopback) and prod (remote) environments without breaking contracts.\"\n    ],\n    \"why\": [\n      \"Forwarding in the intake handler ensures validated payloads reach the event persistence logic, fulfilling the webhook processing contract.\",\n      \"Disabling loopback in production prevents silent swallowing of events by localhost endpoints that do not process them.\",\n      \"Maintains existing signature and health contracts by preserving validation and response behavior.\",\n      \"Supports both dev and prod environments reliably with minimal but effective changes.\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"Update handleAuditaPatronIncomingWebhook to invoke the processing logic (handleCompliLinkReturnWebhook or shared internal method) after validation.\",\n    \"Add configuration flag to enable or disable loopback URL conversion based on environment (dev vs prod).\",\n    \"Refactor buildLoopbackWebhookUrl to respect the new configuration flag and avoid loopback in production.\",\n    \"Add logging to confirm forwarding and processing of webhook payloads.\",\n    \"Review and update tests to cover forwarding behavior and environment-specific URL handling.\"\n  ],\n  \"test_plan\": [\n    \"Unit test handleAuditaPatronIncomingWebhook to verify forwarding occurs after validation.\",\n    \"Integration test webhook flow end-to-end in dev environment with loopback enabled.\",\n    \"Integration test webhook flow end-to-end in prod environment with loopback disabled, ensuring events persist.\",\n    \"Regression test existing health and signature validation contracts remain intact.\",\n    \"Simulate remote webhook calls to https://complilink.mx/api/auditapatron/webhook and verify event persistence.\"\n  ],\n  \"one_sentence_verdict\": \"To reliably process webhook events, the intake handler must forward validated payloads to the processing logic and loopback URL conversion should be disabled in production, ensuring minimal, environment-aware changes that preserve existing contracts.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "The intake handler does not forward validated webhook payloads to the processing path, and the loopback URL conversion causes all webhook calls to be directed to localhost where no forwarding occurs.",
+          "confidence": "high",
+          "why": [
+            "handleAuditaPatronIncomingWebhook only validates and returns 202 without forwarding to any processor.",
+            "buildLoopbackWebhookUrl converts configured remote URLs to 127.0.0.1 loopback addresses, which succeeded in revalidation but no events were persisted.",
+            "handleCompliLinkReturnWebhook is the only handler that persists events and updates documents, but it is not invoked by the intake handler.",
+            "Remote contract expects calls to https://complilink.mx/api/auditapatron/webhook, but loopback redirects to localhost, breaking event persistence."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "code_and_config",
+          "primary_action": "Modify handleAuditaPatronIncomingWebhook to forward validated webhook payloads to handleCompliLinkReturnWebhook or equivalent processing logic.",
+          "secondary_actions": [
+            "Disable or conditionally bypass buildLoopbackWebhookUrl conversion in production to allow direct remote webhook calls.",
+            "Ensure configuration supports both dev (loopback) and prod (remote) environments without breaking contracts."
+          ],
+          "why": [
+            "Forwarding in the intake handler ensures validated payloads reach the event persistence logic, fulfilling the webhook processing contract.",
+            "Disabling loopback in production prevents silent swallowing of events by localhost endpoints that do not process them.",
+            "Maintains existing signature and health contracts by preserving validation and response behavior.",
+            "Supports both dev and prod environments reliably with minimal but effective changes."
+          ]
+        },
+        "implementation_outline": [
+          "Update handleAuditaPatronIncomingWebhook to invoke the processing logic (handleCompliLinkReturnWebhook or shared internal method) after validation.",
+          "Add configuration flag to enable or disable loopback URL conversion based on environment (dev vs prod).",
+          "Refactor buildLoopbackWebhookUrl to respect the new configuration flag and avoid loopback in production.",
+          "Add logging to confirm forwarding and processing of webhook payloads.",
+          "Review and update tests to cover forwarding behavior and environment-specific URL handling."
+        ],
+        "test_plan": [
+          "Unit test handleAuditaPatronIncomingWebhook to verify forwarding occurs after validation.",
+          "Integration test webhook flow end-to-end in dev environment with loopback enabled.",
+          "Integration test webhook flow end-to-end in prod environment with loopback disabled, ensuring events persist.",
+          "Regression test existing health and signature validation contracts remain intact.",
+          "Simulate remote webhook calls to https://complilink.mx/api/auditapatron/webhook and verify event persistence."
+        ],
+        "one_sentence_verdict": "To reliably process webhook events, the intake handler must forward validated payloads to the processing logic and loopback URL conversion should be disabled in production, ensuring minimal, environment-aware changes that preserve existing contracts."
+      }
+    },
+    "grok": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"buildLoopbackWebhookUrl unconditionally rewrites the canonical remote target to 127.0.0.1, routing traffic to handleAuditaPatronIncomingWebhook which performs no forwarding to CompliLink.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Runtime evidence shows dispatch succeeds only to loopback after host correction\",\n      \"handleAuditaPatronIncomingWebhook returns 202 without persisting or bridging events\",\n      \"handleCompliLinkReturnWebhook is the sole persistence path and is never reached\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Make loopback conversion conditional on an explicit ALLOW_LOOPBACK or NODE_ENV=development flag so production uses the configured https://complilink.mx URL directly.\",\n    \"secondary_actions\": [\n      \"Add minimal forwarding stub in handleAuditaPatronIncomingWebhook only when loopback is active (dev-only) to preserve health contract\",\n      \"Update webhook URL config to https://complilink.mx/api/auditapatron/webhook without www\"\n    ],\n    \"why\": [\n      \"Preserves existing signature validation contract\",\n      \"Works identically in dev (loopback) and prod (remote)\",\n      \"Minimal change that keeps health checks and avoids new remote dependencies\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"Introduce ALLOW_LOOPBACK env flag defaulting to true only for development\",\n    \"Guard the host rewrite inside buildLoopbackWebhookUrl with the flag\",\n    \"Leave handleAuditaPatronIncomingWebhook unchanged for prod path\",\n    \"Document the canonical remote URL in config and tests\"\n  ],\n  \"test_plan\": [\n    \"Run controlled revalidation with ALLOW_LOOPBACK=false and assert outbound request targets complilink.mx\",\n    \"Verify webhook events appear in compliLinkWebhookEvents table\",\n    \"Confirm health-check and signature validation still pass\",\n    \"Repeat with flag=true to ensure local loopback path remains functional\"\n  ],\n  \"one_sentence_verdict\": \"Condition the loopback rewrite on an environment flag so the remote CompliLink contract is honored in production while the local intake path stays available for development.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "buildLoopbackWebhookUrl unconditionally rewrites the canonical remote target to 127.0.0.1, routing traffic to handleAuditaPatronIncomingWebhook which performs no forwarding to CompliLink.",
+          "confidence": "high",
+          "why": [
+            "Runtime evidence shows dispatch succeeds only to loopback after host correction",
+            "handleAuditaPatronIncomingWebhook returns 202 without persisting or bridging events",
+            "handleCompliLinkReturnWebhook is the sole persistence path and is never reached"
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "code_and_config",
+          "primary_action": "Make loopback conversion conditional on an explicit ALLOW_LOOPBACK or NODE_ENV=development flag so production uses the configured https://complilink.mx URL directly.",
+          "secondary_actions": [
+            "Add minimal forwarding stub in handleAuditaPatronIncomingWebhook only when loopback is active (dev-only) to preserve health contract",
+            "Update webhook URL config to https://complilink.mx/api/auditapatron/webhook without www"
+          ],
+          "why": [
+            "Preserves existing signature validation contract",
+            "Works identically in dev (loopback) and prod (remote)",
+            "Minimal change that keeps health checks and avoids new remote dependencies"
+          ]
+        },
+        "implementation_outline": [
+          "Introduce ALLOW_LOOPBACK env flag defaulting to true only for development",
+          "Guard the host rewrite inside buildLoopbackWebhookUrl with the flag",
+          "Leave handleAuditaPatronIncomingWebhook unchanged for prod path",
+          "Document the canonical remote URL in config and tests"
+        ],
+        "test_plan": [
+          "Run controlled revalidation with ALLOW_LOOPBACK=false and assert outbound request targets complilink.mx",
+          "Verify webhook events appear in compliLinkWebhookEvents table",
+          "Confirm health-check and signature validation still pass",
+          "Repeat with flag=true to ensure local loopback path remains functional"
+        ],
+        "one_sentence_verdict": "Condition the loopback rewrite on an environment flag so the remote CompliLink contract is honored in production while the local intake path stays available for development."
+      }
+    },
+    "gemini": {
+      "text": "__parse_error__: 'candidates'",
+      "json": {
+        "raw": "__parse_error__: 'candidates'"
+      }
+    }
+  }
+}

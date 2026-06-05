@@ -1,0 +1,246 @@
+{
+  "context": {
+    "observed_facts": {
+      "local_intake_now_forwards": true,
+      "local_loopback_dispatch": "sendDocumentToAuditaPatronEngine still dispatches to 127.0.0.1:3000/api/auditapatron/webhook in dev, but the local intake now forwards upstream synchronously.",
+      "wrong_public_path": {
+        "url": "https://complilink.mx/api/auditapatron/webhook",
+        "post_with_signature": {
+          "status": 200,
+          "content_type": "text/html",
+          "meaning": "frontend HTML, not API"
+        },
+        "post_with_bearer": {
+          "status": 200,
+          "content_type": "text/html",
+          "meaning": "frontend HTML, not API"
+        }
+      },
+      "candidate_api_path": {
+        "url": "https://complilink.mx/api/integrations/auditapatron/bridge",
+        "post_with_signature": {
+          "status": 403,
+          "body": "Auditapatrón bridge authentication failed"
+        },
+        "post_with_bearer": {
+          "status": 400,
+          "body": {
+            "error": "Invalid Auditapatrón bridge payload",
+            "issues": [
+              {
+                "path": "documentId",
+                "message": "Invalid input: expected number, received NaN"
+              },
+              {
+                "path": "category",
+                "message": "Invalid option: expected one of repse_certificate|imss_opinion|sat_certificate|contract|infonavit_opinion|other"
+              },
+              {
+                "path": "processingStatus",
+                "message": "Invalid option: expected one of received|pending|processing|accepted|failed"
+              }
+            ]
+          }
+        }
+      },
+      "other_candidate": {
+        "url": "https://complilink.mx/api/internal/helios/bridge",
+        "post_with_bearer": {
+          "status": 400,
+          "body": {
+            "error": "Invalid Helios bridge payload",
+            "issues": [
+              {
+                "path": "action",
+                "message": "Invalid input"
+              }
+            ]
+          }
+        }
+      },
+      "current_local_payload_sample": {
+        "documentId": "DOC-E5AD0B07DEA847AE",
+        "category": "cfdi_nomina",
+        "processingStatus": "queued",
+        "mimeType": "application/xml",
+        "fileUrl": "https://...cloudfront.../JAIME_SANTIAGO_LOPEZ.xml",
+        "sourceCaseId": "CASE-BALT-1-MPQ5YBNG",
+        "sourceDocumentId": "DOC-E5AD0B07DEA847AE",
+        "uploadedAt": "2026-05-29T00:08:11.000Z",
+        "eventName": "document.uploaded",
+        "correlationId": "9d950b8e-475c-4506-a422-59156315c061",
+        "operationalContext": {
+          "traceId": "trace...",
+          "sha256": "da9936...",
+          "documentType": "cfdi"
+        }
+      },
+      "goal": "Infer the minimum payload/auth adapter needed so the local intake can forward to the correct remote API and eventually receive async callbacks."
+    }
+  },
+  "prompt": "You are a senior integration architect. Return valid JSON only with this schema: {\"root_cause_assessment\":{\"most_likely_root_cause\":\"string\",\"confidence\":\"high|medium|low\",\"why\":[\"string\"]},\"recommended_fix\":{\"change_type\":\"config_only|code_and_config|code_only\",\"primary_action\":\"string\",\"secondary_actions\":[\"string\"],\"why\":[\"string\"]},\"payload_mapping\":{\"target_url\":\"string\",\"auth\":\"string\",\"field_map\":[{\"from\":\"string\",\"to\":\"string\",\"transform\":\"string\"}],\"assumptions\":[\"string\"]},\"implementation_outline\":[\"string\"],\"test_plan\":[\"string\"],\"one_sentence_verdict\":\"string\"}. Infer the minimum adapter from this factual context: {\"observed_facts\": {\"local_intake_now_forwards\": true, \"local_loopback_dispatch\": \"sendDocumentToAuditaPatronEngine still dispatches to 127.0.0.1:3000/api/auditapatron/webhook in dev, but the local intake now forwards upstream synchronously.\", \"wrong_public_path\": {\"url\": \"https://complilink.mx/api/auditapatron/webhook\", \"post_with_signature\": {\"status\": 200, \"content_type\": \"text/html\", \"meaning\": \"frontend HTML, not API\"}, \"post_with_bearer\": {\"status\": 200, \"content_type\": \"text/html\", \"meaning\": \"frontend HTML, not API\"}}, \"candidate_api_path\": {\"url\": \"https://complilink.mx/api/integrations/auditapatron/bridge\", \"post_with_signature\": {\"status\": 403, \"body\": \"Auditapatrón bridge authentication failed\"}, \"post_with_bearer\": {\"status\": 400, \"body\": {\"error\": \"Invalid Auditapatrón bridge payload\", \"issues\": [{\"path\": \"documentId\", \"message\": \"Invalid input: expected number, received NaN\"}, {\"path\": \"category\", \"message\": \"Invalid option: expected one of repse_certificate|imss_opinion|sat_certificate|contract|infonavit_opinion|other\"}, {\"path\": \"processingStatus\", \"message\": \"Invalid option: expected one of received|pending|processing|accepted|failed\"}]}}}, \"other_candidate\": {\"url\": \"https://complilink.mx/api/internal/helios/bridge\", \"post_with_bearer\": {\"status\": 400, \"body\": {\"error\": \"Invalid Helios bridge payload\", \"issues\": [{\"path\": \"action\", \"message\": \"Invalid input\"}]}}}, \"current_local_payload_sample\": {\"documentId\": \"DOC-E5AD0B07DEA847AE\", \"category\": \"cfdi_nomina\", \"processingStatus\": \"queued\", \"mimeType\": \"application/xml\", \"fileUrl\": \"https://...cloudfront.../JAIME_SANTIAGO_LOPEZ.xml\", \"sourceCaseId\": \"CASE-BALT-1-MPQ5YBNG\", \"sourceDocumentId\": \"DOC-E5AD0B07DEA847AE\", \"uploadedAt\": \"2026-05-29T00:08:11.000Z\", \"eventName\": \"document.uploaded\", \"correlationId\": \"9d950b8e-475c-4506-a422-59156315c061\", \"operationalContext\": {\"traceId\": \"trace...\", \"sha256\": \"da9936...\", \"documentType\": \"cfdi\"}}, \"goal\": \"Infer the minimum payload/auth adapter needed so the local intake can forward to the correct remote API and eventually receive async callbacks.\"}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-Dkf9LeG72uctGnmwNjLbFe6FusZBF",
+        "object": "chat.completion",
+        "created": 1780013639,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "```json\n{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"Payload format and authentication mismatch with the target Auditapatrón bridge API\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The current local payload fields do not match the expected types and values required by the Auditapatrón bridge API (e.g., documentId expects a number but receives a string).\",\n      \"Authentication attempts with signature or bearer tokens to the wrong public path return frontend HTML, indicating incorrect endpoint usage.\",\n      \"The candidate API path returns 403 or 400 errors with detailed validation issues, confirming payload and auth format problems.\",\n      \"Other candidate endpoints also reject the payload, confirming the need for a specific adapter to transform and authenticate correctly.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Implement a payload adapter that transforms local intake payload fields and values to match the Auditapatrón bridge API schema and apply correct authentication headers.\",\n    \"secondary_actions\": [\n      \"Update local intake forwarding URL to https://complilink.mx/api/integrations/auditapatron/bridge\",\n      \"Add validation and transformation logic for fields like documentId (string to number or correct ID), category (map to allowed enum), and processingStatus (map to allowed enum)\",\n      \"Configure authentication to use the expected bearer token or signature scheme as required by the Auditapatrón bridge\"\n    ],\n    \"why\": [\n      \"The Auditapatrón bridge API enforces strict payload validation and authentication, requiring transformation and proper auth setup.\",\n      \"Correct endpoint usage avoids receiving frontend HTML responses and ensures API-level interaction.\",\n      \"Transforming fields to expected types and values prevents 400 validation errors and enables successful asynchronous callbacks.\"\n    ]\n  },\n  \"payload_mapping\": {\n    \"target_url\": \"https://complilink.mx/api/integrations/auditapatron/bridge\",\n    \"auth\": \"bearer_token\",\n    \"field_map\": [\n      {\n        \"from\": \"documentId\",\n        \"to\": \"documentId\",\n        \"transform\": \"extract_numeric_id_or_map_string_to_number\"\n      },\n      {\n        \"from\": \"category\",\n        \"to\": \"category\",\n        \"transform\": \"map_cfdi_nomina_to_allowed_enum_or_other\"\n      },\n      {\n        \"from\": \"processingStatus\",\n        \"to\": \"processingStatus\",\n        \"transform\": \"map_queued_to_pending_or_allowed_enum\"\n      },\n      {\n        \"from\": \"mimeType\",\n        \"to\": \"mimeType\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"fileUrl\",\n        \"to\": \"fileUrl\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"sourceCaseId\",\n        \"to\": \"sourceCaseId\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"sourceDocumentId\",\n        \"to\": \"sourceDocumentId\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"uploadedAt\",\n        \"to\": \"uploadedAt\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"eventName\",\n        \"to\": \"eventName\",\n        \"transform\": \"passthrough\"\n      },\n      {\n        \"from\": \"correlationId\",\n        \"to\": \"correlationId\",\n        \"transform\": \"passthrough\"\n      }\n    ],\n    \"assumptions\": [\n      \"The Auditapatrón bridge API requires numeric or enumerated values for certain fields, necessitating transformation.\",\n      \"Authentication uses bearer tokens passed in the Authorization header.\",\n      \"The local intake system can synchronously forward transformed payloads to the target URL.\",\n      \"Async callbacks will be handled separately once the initial forwarding succeeds.\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"Create a transformation module to convert local payload fields to the Auditapatrón bridge API expected schema and types.\",\n    \"Implement authentication header injection using a configured bearer token.\",\n    \"Update local intake forwarding configuration to point to https://complilink.mx/api/integrations/auditapatron/bridge.\",\n    \"Add error handling and logging for payload validation failures and authentication errors.\",\n    \"Test the adapter with sample payloads to ensure acceptance by the remote API and correct error handling.\",\n    \"Document the adapter behavior and configuration for future maintenance.\"\n  ],\n  \"test_plan\": [\n    \"Send a valid transformed payload with correct bearer token to the Auditapatrón bridge API and verify 2xx response.\",\n    \"Send payloads with invalid fields to confirm proper error messages and handling.\",\n    \"Test authentication failures by sending requests with missing or invalid bearer tokens.\",\n    \"Verify that local intake forwards payloads synchronously and handles responses correctly.\",\n    \"Simulate async callback reception separately to confirm end-to-end integration.\"\n  ],\n  \"one_sentence_verdict\": \"A minimal adapter that transforms payload fields to match Auditapatrón bridge API requirements and applies bearer token authentication is needed to enable correct forwarding and async callback handling.\"\n}\n```",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 754,
+          "completion_tokens": 1069,
+          "total_tokens": 1823,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_44222b3f42"
+      }
+    },
+    "grok": {
+      "status_code": 400,
+      "body": {
+        "code": "Client specified an invalid argument",
+        "error": "Model not found: grok-4.1"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The local system is misconfigured to dispatch to a local loopback address instead of the correct upstream API endpoint. Additionally, the payload structure and data types sent by the local system are incompatible with the expected schema of the upstream Auditapatrón bridge API, and authentication needs to be correctly configured.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'local_loopback_dispatch' fact explicitly states the system 'still dispatches to 127.0.0.1:3000/api/auditapatron/webhook'.\",\n      \"The 'wrong_public_path' confirms that 'https://complilink.mx/api/auditapatron/webhook' returns frontend HTML, not an API response.\",\n      \"The 'candidate_api_path' 'https://complilink.mx/api/integrations/auditapatron/bridge' returns a 400 error with specific payload validation issues ('documentId', 'category', 'processingStatus') when using bearer authentication, indicating a schema mismatch.\",\n      \"The 'candidate_api_path' also returns a 403 error for signature authentication, indicating an authentication configuration issue.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Update the local system's dispatch configuration to point to 'https://complilink.mx/api/integrations/auditapatron/bridge' and implement a payload transformation adapter to align with the target API's schema.\",\n    \"secondary_actions\": [\n      \"Implement/configure the correct authentication mechanism for the Auditapatrón bridge API (likely Bearer token, but confirm requirements).\",\n      \"Map 'documentId' from string to a suitable numeric format (e.g., extract numeric part or generate a new numeric ID).\",\n      \"Map 'category' from 'cfdi_nomina' to one of the accepted values (e.g., 'other' or a more specific CompliLink category if available).\",\n      \"Map 'processingStatus' from 'queued' to one of the accepted values (e.g., 'received').\",\n      \"Define a strategy for handling asynchronous callbacks from the Auditapatrón bridge.\"\n    ],\n    \"why\": [\n      \"The local system is currently dispatching to a local loopback address, not the public upstream.\",\n      \"The initially identified public endpoint is not an API endpoint.\",\n      \"The correct API endpoint returns specific payload validation errors, necessitating data transformation.\",\n      \"Authentication needs to be correctly implemented for the target API.\"\n    ]\n  },\n  \"payload_mapping\": {\n    \"target_url\": \"https://complilink.mx/api/integrations/auditapatron/bridge\",\n    \"auth\": \"Bearer Token (needs to be sourced and configured)\",\n    \"field_map\": [\n      {\n        \"from\": \"documentId\",\n        \"to\": \"documentId\",\n        \"transform\": \"Extract numeric part from source string (e.g., 'DOC-E5AD0B07DEA847AE' to 'E5AD0B07DEA847AE' then convert to number if possible, or generate a new numeric ID if target expects internal ID).\"\n      },\n      {\n        \"from\": \"category\",\n        \"to\": \"category\",\n        \"transform\": \"Map 'cfdi_nomina' to 'other' or a specific CompliLink category like 'sat_certificate' if applicable.\"\n      },\n      {\n        \"from\": \"processingStatus\",\n        \"to\": \"processingStatus\",\n        \"transform\": \"Map 'queued' to 'received'.\"\n      }\n    ],\n    \"assumptions\": [\n      \"The 'documentId' in the target API is expected to be a numeric type, possibly an internal ID, requiring transformation from the source string ID.\",\n      \"The 'category' 'cfdi_nomina' can be mapped to 'other' or a more specific CompliLink category based on business context.\",\n      \"The 'processingStatus' 'queued' in the source system corresponds to 'received' in the target system's lifecycle.\",\n      \"Bearer token authentication is the intended and functional mechanism for the Auditapatrón bridge API, given the 400 response after a bearer token attempt.\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"1. Update the local system's dispatch configuration to use 'https://complilink.mx/api/integrations/auditapatron/bridge' as the target endpoint.\",\n    \"2. Develop a transformation module/function to adapt the 'current_local_payload_sample' to the Auditapatrón bridge API's expected schema.\",\n    \"   - Implement logic to transform 'documentId' from string to a suitable numeric format.\",\n    \"   - Implement a lookup or conditional logic to map 'category' values (e.g., 'cfdi_nomina' -> 'other').\",\n    \"   - Implement a lookup or conditional logic to map 'processingStatus' values (e.g., 'queued' -> 'received').\",\n    \"3. Integrate the Bearer token authentication mechanism into the dispatch process, ensuring the token is correctly generated and included.\",\n    \"4. Configure the local system to handle asynchronous callbacks from the Auditapatrón bridge for status updates, if applicable.\"\n  ],\n  \"test_plan\": [\n    \"1. Unit Tests: Verify the payload transformation logic correctly converts 'documentId', 'category', and 'processingStatus' according to the defined mapping rules. Verify authentication token generation/inclusion.\",\n    \"2. Integration Tests: Send a transformed payload with correct authentication to 'https://complilink.mx/api/integrations/auditapatron/bridge' and verify a successful (2xx) response. Test with various valid and invalid input values for 'documentId', 'category', 'processingStatus' to ensure robust transformation and error handling.\",\n    \"3. End-to-End Tests: Trigger a local intake event and verify that the transformed payload is successfully dispatched to the remote Auditapatrón bridge. Monitor for any expected asynchronous callbacks from the Auditapatrón bridge and verify their correct reception and processing by the local system.\"\n  ],\n  \"one_sentence_verdict\": \"The current local dispatch configuration points to an incorrect endpoint and sends an incompatible payload, requiring an update to the target URL, implementation of a payload transformation adapter, and correct authentication for the CompliLink Auditapatrón bridge API.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 833,
+          "candidatesTokenCount": 1441,
+          "totalTokenCount": 5074,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 833
+            }
+          ],
+          "thoughtsTokenCount": 2800,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "VtoYavCUJoj3jrEP5u_r6Ao"
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "error": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "grok": {
+      "error": "'choices'"
+    },
+    "gemini": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The local system is misconfigured to dispatch to a local loopback address instead of the correct upstream API endpoint. Additionally, the payload structure and data types sent by the local system are incompatible with the expected schema of the upstream Auditapatrón bridge API, and authentication needs to be correctly configured.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'local_loopback_dispatch' fact explicitly states the system 'still dispatches to 127.0.0.1:3000/api/auditapatron/webhook'.\",\n      \"The 'wrong_public_path' confirms that 'https://complilink.mx/api/auditapatron/webhook' returns frontend HTML, not an API response.\",\n      \"The 'candidate_api_path' 'https://complilink.mx/api/integrations/auditapatron/bridge' returns a 400 error with specific payload validation issues ('documentId', 'category', 'processingStatus') when using bearer authentication, indicating a schema mismatch.\",\n      \"The 'candidate_api_path' also returns a 403 error for signature authentication, indicating an authentication configuration issue.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"code_and_config\",\n    \"primary_action\": \"Update the local system's dispatch configuration to point to 'https://complilink.mx/api/integrations/auditapatron/bridge' and implement a payload transformation adapter to align with the target API's schema.\",\n    \"secondary_actions\": [\n      \"Implement/configure the correct authentication mechanism for the Auditapatrón bridge API (likely Bearer token, but confirm requirements).\",\n      \"Map 'documentId' from string to a suitable numeric format (e.g., extract numeric part or generate a new numeric ID).\",\n      \"Map 'category' from 'cfdi_nomina' to one of the accepted values (e.g., 'other' or a more specific CompliLink category if available).\",\n      \"Map 'processingStatus' from 'queued' to one of the accepted values (e.g., 'received').\",\n      \"Define a strategy for handling asynchronous callbacks from the Auditapatrón bridge.\"\n    ],\n    \"why\": [\n      \"The local system is currently dispatching to a local loopback address, not the public upstream.\",\n      \"The initially identified public endpoint is not an API endpoint.\",\n      \"The correct API endpoint returns specific payload validation errors, necessitating data transformation.\",\n      \"Authentication needs to be correctly implemented for the target API.\"\n    ]\n  },\n  \"payload_mapping\": {\n    \"target_url\": \"https://complilink.mx/api/integrations/auditapatron/bridge\",\n    \"auth\": \"Bearer Token (needs to be sourced and configured)\",\n    \"field_map\": [\n      {\n        \"from\": \"documentId\",\n        \"to\": \"documentId\",\n        \"transform\": \"Extract numeric part from source string (e.g., 'DOC-E5AD0B07DEA847AE' to 'E5AD0B07DEA847AE' then convert to number if possible, or generate a new numeric ID if target expects internal ID).\"\n      },\n      {\n        \"from\": \"category\",\n        \"to\": \"category\",\n        \"transform\": \"Map 'cfdi_nomina' to 'other' or a specific CompliLink category like 'sat_certificate' if applicable.\"\n      },\n      {\n        \"from\": \"processingStatus\",\n        \"to\": \"processingStatus\",\n        \"transform\": \"Map 'queued' to 'received'.\"\n      }\n    ],\n    \"assumptions\": [\n      \"The 'documentId' in the target API is expected to be a numeric type, possibly an internal ID, requiring transformation from the source string ID.\",\n      \"The 'category' 'cfdi_nomina' can be mapped to 'other' or a more specific CompliLink category based on business context.\",\n      \"The 'processingStatus' 'queued' in the source system corresponds to 'received' in the target system's lifecycle.\",\n      \"Bearer token authentication is the intended and functional mechanism for the Auditapatrón bridge API, given the 400 response after a bearer token attempt.\"\n    ]\n  },\n  \"implementation_outline\": [\n    \"1. Update the local system's dispatch configuration to use 'https://complilink.mx/api/integrations/auditapatron/bridge' as the target endpoint.\",\n    \"2. Develop a transformation module/function to adapt the 'current_local_payload_sample' to the Auditapatrón bridge API's expected schema.\",\n    \"   - Implement logic to transform 'documentId' from string to a suitable numeric format.\",\n    \"   - Implement a lookup or conditional logic to map 'category' values (e.g., 'cfdi_nomina' -> 'other').\",\n    \"   - Implement a lookup or conditional logic to map 'processingStatus' values (e.g., 'queued' -> 'received').\",\n    \"3. Integrate the Bearer token authentication mechanism into the dispatch process, ensuring the token is correctly generated and included.\",\n    \"4. Configure the local system to handle asynchronous callbacks from the Auditapatrón bridge for status updates, if applicable.\"\n  ],\n  \"test_plan\": [\n    \"1. Unit Tests: Verify the payload transformation logic correctly converts 'documentId', 'category', and 'processingStatus' according to the defined mapping rules. Verify authentication token generation/inclusion.\",\n    \"2. Integration Tests: Send a transformed payload with correct authentication to 'https://complilink.mx/api/integrations/auditapatron/bridge' and verify a successful (2xx) response. Test with various valid and invalid input values for 'documentId', 'category', 'processingStatus' to ensure robust transformation and error handling.\",\n    \"3. End-to-End Tests: Trigger a local intake event and verify that the transformed payload is successfully dispatched to the remote Auditapatrón bridge. Monitor for any expected asynchronous callbacks from the Auditapatrón bridge and verify their correct reception and processing by the local system.\"\n  ],\n  \"one_sentence_verdict\": \"The current local dispatch configuration points to an incorrect endpoint and sends an incompatible payload, requiring an update to the target URL, implementation of a payload transformation adapter, and correct authentication for the CompliLink Auditapatrón bridge API.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "The local system is misconfigured to dispatch to a local loopback address instead of the correct upstream API endpoint. Additionally, the payload structure and data types sent by the local system are incompatible with the expected schema of the upstream Auditapatrón bridge API, and authentication needs to be correctly configured.",
+          "confidence": "high",
+          "why": [
+            "The 'local_loopback_dispatch' fact explicitly states the system 'still dispatches to 127.0.0.1:3000/api/auditapatron/webhook'.",
+            "The 'wrong_public_path' confirms that 'https://complilink.mx/api/auditapatron/webhook' returns frontend HTML, not an API response.",
+            "The 'candidate_api_path' 'https://complilink.mx/api/integrations/auditapatron/bridge' returns a 400 error with specific payload validation issues ('documentId', 'category', 'processingStatus') when using bearer authentication, indicating a schema mismatch.",
+            "The 'candidate_api_path' also returns a 403 error for signature authentication, indicating an authentication configuration issue."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "code_and_config",
+          "primary_action": "Update the local system's dispatch configuration to point to 'https://complilink.mx/api/integrations/auditapatron/bridge' and implement a payload transformation adapter to align with the target API's schema.",
+          "secondary_actions": [
+            "Implement/configure the correct authentication mechanism for the Auditapatrón bridge API (likely Bearer token, but confirm requirements).",
+            "Map 'documentId' from string to a suitable numeric format (e.g., extract numeric part or generate a new numeric ID).",
+            "Map 'category' from 'cfdi_nomina' to one of the accepted values (e.g., 'other' or a more specific CompliLink category if available).",
+            "Map 'processingStatus' from 'queued' to one of the accepted values (e.g., 'received').",
+            "Define a strategy for handling asynchronous callbacks from the Auditapatrón bridge."
+          ],
+          "why": [
+            "The local system is currently dispatching to a local loopback address, not the public upstream.",
+            "The initially identified public endpoint is not an API endpoint.",
+            "The correct API endpoint returns specific payload validation errors, necessitating data transformation.",
+            "Authentication needs to be correctly implemented for the target API."
+          ]
+        },
+        "payload_mapping": {
+          "target_url": "https://complilink.mx/api/integrations/auditapatron/bridge",
+          "auth": "Bearer Token (needs to be sourced and configured)",
+          "field_map": [
+            {
+              "from": "documentId",
+              "to": "documentId",
+              "transform": "Extract numeric part from source string (e.g., 'DOC-E5AD0B07DEA847AE' to 'E5AD0B07DEA847AE' then convert to number if possible, or generate a new numeric ID if target expects internal ID)."
+            },
+            {
+              "from": "category",
+              "to": "category",
+              "transform": "Map 'cfdi_nomina' to 'other' or a specific CompliLink category like 'sat_certificate' if applicable."
+            },
+            {
+              "from": "processingStatus",
+              "to": "processingStatus",
+              "transform": "Map 'queued' to 'received'."
+            }
+          ],
+          "assumptions": [
+            "The 'documentId' in the target API is expected to be a numeric type, possibly an internal ID, requiring transformation from the source string ID.",
+            "The 'category' 'cfdi_nomina' can be mapped to 'other' or a more specific CompliLink category based on business context.",
+            "The 'processingStatus' 'queued' in the source system corresponds to 'received' in the target system's lifecycle.",
+            "Bearer token authentication is the intended and functional mechanism for the Auditapatrón bridge API, given the 400 response after a bearer token attempt."
+          ]
+        },
+        "implementation_outline": [
+          "1. Update the local system's dispatch configuration to use 'https://complilink.mx/api/integrations/auditapatron/bridge' as the target endpoint.",
+          "2. Develop a transformation module/function to adapt the 'current_local_payload_sample' to the Auditapatrón bridge API's expected schema.",
+          "   - Implement logic to transform 'documentId' from string to a suitable numeric format.",
+          "   - Implement a lookup or conditional logic to map 'category' values (e.g., 'cfdi_nomina' -> 'other').",
+          "   - Implement a lookup or conditional logic to map 'processingStatus' values (e.g., 'queued' -> 'received').",
+          "3. Integrate the Bearer token authentication mechanism into the dispatch process, ensuring the token is correctly generated and included.",
+          "4. Configure the local system to handle asynchronous callbacks from the Auditapatrón bridge for status updates, if applicable."
+        ],
+        "test_plan": [
+          "1. Unit Tests: Verify the payload transformation logic correctly converts 'documentId', 'category', and 'processingStatus' according to the defined mapping rules. Verify authentication token generation/inclusion.",
+          "2. Integration Tests: Send a transformed payload with correct authentication to 'https://complilink.mx/api/integrations/auditapatron/bridge' and verify a successful (2xx) response. Test with various valid and invalid input values for 'documentId', 'category', 'processingStatus' to ensure robust transformation and error handling.",
+          "3. End-to-End Tests: Trigger a local intake event and verify that the transformed payload is successfully dispatched to the remote Auditapatrón bridge. Monitor for any expected asynchronous callbacks from the Auditapatrón bridge and verify their correct reception and processing by the local system."
+        ],
+        "one_sentence_verdict": "The current local dispatch configuration points to an incorrect endpoint and sends an incompatible payload, requiring an update to the target URL, implementation of a payload transformation adapter, and correct authentication for the CompliLink Auditapatrón bridge API."
+      }
+    }
+  }
+}

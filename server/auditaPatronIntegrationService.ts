@@ -36,7 +36,7 @@ export type AuditaPatronMetadata = Record<string, AuditaPatronMetadataValue>;
 export type CompliLinkBridgeResponseAck = {
   received: boolean;
   intakeId?: string | null;
-  documentId?: string | null;
+  documentId?: string | number | null;
   processingStatus?: string | null;
   traceId?: string | null;
   correlationId?: string | null;
@@ -44,7 +44,7 @@ export type CompliLinkBridgeResponseAck = {
   receivedAt?: string | null;
   memoryLinks?: unknown;
   recommendedNextAction?: string | null;
-  responseContract?: string | null;
+  responseContract?: string | { contractVersion?: string | null } | null;
   issues?: Array<Record<string, unknown>>;
 };
 
@@ -260,6 +260,22 @@ function deriveBridgeHealthUrl(webhookUrl: string) {
   }
 }
 
+function shouldProbeBridgeHealth(webhookUrl: string, remoteSmokeEnabled: boolean) {
+  if (remoteSmokeEnabled) return true;
+
+  try {
+    const parsed = new URL(webhookUrl);
+    return (
+      parsed.hostname === "127.0.0.1" ||
+      parsed.hostname === "localhost" ||
+      parsed.hostname.endsWith(".manus.space") ||
+      parsed.hostname.includes(".manus.computer")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function hasValidBridgeHealthAck(value: BridgeHealthAck | null, webhookUrl: string) {
   if (value?.status !== "ok" || value?.responseContract !== COMPLILINK_BRIDGE_RESPONSE_CONTRACT) {
     return false;
@@ -427,7 +443,21 @@ function sanitizeResponseBody(value: string | null, maxLength = 2000) {
 }
 
 function hasValidBridgeAck(value: CompliLinkBridgeResponseAck | null) {
-  return value?.responseContract === "auditapatron.bridge.ack.v1";
+  if (!value?.received) return false;
+
+  if (value.responseContract === COMPLILINK_BRIDGE_RESPONSE_CONTRACT) {
+    return true;
+  }
+
+  if (
+    value.responseContract &&
+    typeof value.responseContract === "object" &&
+    value.responseContract.contractVersion === "auditapatron_return_contract_v1"
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function inferCompliLinkDocType(params: {
@@ -477,6 +507,31 @@ function inferCompliLinkDocType(params: {
   }
 }
 
+function mapCompliLinkBridgeCategory(params: {
+  documentContract: CanonicalDocumentContract;
+  metadata?: AuditaPatronMetadata;
+  inferredDocType: string;
+}) {
+  const haystack = [
+    params.inferredDocType,
+    params.documentContract.document_type,
+    params.documentContract.original_name ?? "",
+    ...Object.values(params.metadata ?? {}).filter((value): value is string => typeof value === "string"),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (haystack.includes("repse")) return "repse_certificate";
+  if (haystack.includes("infonavit")) return "infonavit_opinion";
+  if (params.documentContract.document_type === "imss" || haystack.includes("imss")) return "imss_opinion";
+  if (params.documentContract.document_type === "contract") return "contract";
+  if (haystack.includes("sat") || haystack.includes("constancia de situacion fiscal") || haystack.includes("opinion_cumplimiento")) {
+    return "sat_certificate";
+  }
+
+  return "other";
+}
+
 export function getAuditaPatronEngineConfig(overrides?: Partial<AuditaPatronEngineConfig>): AuditaPatronEngineConfig {
   return {
     webhookUrl: overrides?.webhookUrl ?? (ENV as typeof ENV & { auditapatronEngineWebhookUrl?: string }).auditapatronEngineWebhookUrl ?? "",
@@ -504,7 +559,10 @@ export function buildAuditaPatronEnginePayload(params: {
     toOptionalNumber(params.metadata?.providerId) ??
     toOptionalNumber(params.metadata?.sourceProviderId) ??
     Number(params.sourceUserId);
-  const userId = Number(params.sourceUserId);
+  const userId =
+    toOptionalNumber(params.metadata?.userId) ??
+    toOptionalNumber(params.metadata?.sourceUserId) ??
+    Number(params.sourceUserId);
   const inferredDocType = params.docType ?? inferCompliLinkDocType({
     documentContract: params.documentContract,
     metadata: params.metadata,
@@ -514,7 +572,13 @@ export function buildAuditaPatronEnginePayload(params: {
     toOptionalString(params.metadata?.descriptiveDocType) ??
     params.documentContract.original_name ??
     inferredDocType;
-  const category = toOptionalString(params.metadata?.category) ?? inferredDocType;
+  const category =
+    toOptionalString(params.metadata?.category) ??
+    mapCompliLinkBridgeCategory({
+      documentContract: params.documentContract,
+      metadata: params.metadata,
+      inferredDocType,
+    });
   const notes = toOptionalString(params.metadata?.notes);
   const obligation = toOptionalString(params.metadata?.obligation);
   const eventId = params.dispatchId ?? randomUUID();
@@ -537,7 +601,10 @@ export function buildAuditaPatronEnginePayload(params: {
     title,
     mimeType: params.documentContract.mime_type,
     fileUrl: params.documentContract.storage_url,
-    documentId: params.documentContract.document_id,
+    documentId:
+      toOptionalNumber(params.metadata?.documentNumericId)?.toString() ??
+      toOptionalNumber(params.metadata?.sourceNumericDocumentId)?.toString() ??
+      params.documentContract.document_id,
     category,
     obligation,
     originalFileName: params.documentContract.original_name ?? undefined,
@@ -547,7 +614,7 @@ export function buildAuditaPatronEnginePayload(params: {
     sourceDocumentId: params.documentContract.document_id,
     uploadedAt,
     traceId: params.caseContract.trace_id,
-    processingStatus: DEFAULT_PROCESSING_STATUS,
+    processingStatus: toOptionalString(params.metadata?.processingStatus) ?? "pending",
     eventName: AUDITAPATRON_ENGINE_EVENT_NAME,
     eventId,
     idempotencyKey: eventId,
@@ -688,13 +755,15 @@ export async function sendDocumentToAuditaPatronEngine(
     lastTargetHost = candidateTarget.targetHost;
     lastTargetPath = candidateTarget.targetPath;
 
-    const healthProbe = await probeBridgeHealth(webhookUrl);
-    if (!healthProbe.ok) {
-      lastHttpStatus = healthProbe.httpStatus;
-      lastResponseBody = healthProbe.responseBody;
-      lastErrorMessage = healthProbe.errorMessage;
-      lastReason = healthProbe.reason;
-      continue;
+    if (shouldProbeBridgeHealth(webhookUrl, remoteSmokeEnabled)) {
+      const healthProbe = await probeBridgeHealth(webhookUrl);
+      if (!healthProbe.ok) {
+        lastHttpStatus = healthProbe.httpStatus;
+        lastResponseBody = healthProbe.responseBody;
+        lastErrorMessage = healthProbe.errorMessage;
+        lastReason = healthProbe.reason;
+        continue;
+      }
     }
 
     for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
@@ -707,6 +776,8 @@ export async function sendDocumentToAuditaPatronEngine(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${config.hmacSecret}`,
             "X-AuditaPatron-Signature": signature,
             "X-AuditaPatron-Timestamp": finalTimestamp,
           },
@@ -714,8 +785,9 @@ export async function sendDocumentToAuditaPatronEngine(
         });
 
         lastHttpStatus = response.status;
-        lastResponseBody = sanitizeResponseBody(await response.text());
-        lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(lastResponseBody);
+        const rawResponseBody = await response.text();
+        lastResponseBody = sanitizeResponseBody(rawResponseBody);
+        lastResponseAck = safeJsonParse<CompliLinkBridgeResponseAck>(rawResponseBody);
         lastErrorMessage = undefined;
 
         if (response.ok && hasValidBridgeAck(lastResponseAck)) {

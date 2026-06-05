@@ -1,0 +1,60 @@
+{
+  "executedAt": "2026-05-29T00:13:04.309Z",
+  "timestamp": "1780013577",
+  "payloadSummary": {
+    "documentId": "DOC-E5AD0B07DEA847AE",
+    "category": "cfdi_nomina",
+    "eventName": "document.uploaded",
+    "correlationId": "9d950b8e-475c-4506-a422-59156315c061"
+  },
+  "results": [
+    {
+      "url": "https://complilink.mx/api/auditapatron/webhook",
+      "auth": "signature",
+      "status": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "location": null,
+      "bodySnippet": "<!doctype html>\n<html lang=\"en\">\n\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta\n      name=\"viewport\"\n      content=\"width=device-width, initial-scale=1.0, maximum-scale=1\" />\n    <title>CompliLink MX</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n    <link\n      href=\"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=Montserr"
+    },
+    {
+      "url": "https://complilink.mx/api/auditapatron/webhook",
+      "auth": "bearer",
+      "status": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "location": null,
+      "bodySnippet": "<!doctype html>\n<html lang=\"en\">\n\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta\n      name=\"viewport\"\n      content=\"width=device-width, initial-scale=1.0, maximum-scale=1\" />\n    <title>CompliLink MX</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n    <link\n      href=\"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=Montserr"
+    },
+    {
+      "url": "https://complilink.mx/api/integrations/auditapatron/bridge",
+      "auth": "signature",
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "location": null,
+      "bodySnippet": "{\"error\":\"Auditapatrón bridge authentication failed\"}"
+    },
+    {
+      "url": "https://complilink.mx/api/integrations/auditapatron/bridge",
+      "auth": "bearer",
+      "status": 400,
+      "contentType": "application/json; charset=utf-8",
+      "location": null,
+      "bodySnippet": "{\"error\":\"Invalid Auditapatrón bridge payload\",\"issues\":[{\"path\":\"documentId\",\"message\":\"Invalid input: expected number, received NaN\"},{\"path\":\"category\",\"message\":\"Invalid option: expected one of \\\"repse_certificate\\\"|\\\"imss_opinion\\\"|\\\"sat_certificate\\\"|\\\"contract\\\"|\\\"infonavit_opinion\\\"|\\\"other\\\"\"},{\"path\":\"processingStatus\",\"message\":\"Invalid option: expected one of \\\"received\\\"|\\\"pending\\\"|\\\"processing\\\"|\\\"accepted\\\"|\\\"failed\\\"\"}]}"
+    },
+    {
+      "url": "https://complilink.mx/api/internal/helios/bridge",
+      "auth": "signature",
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "location": null,
+      "bodySnippet": "{\"error\":\"Helios bridge authentication failed\"}"
+    },
+    {
+      "url": "https://complilink.mx/api/internal/helios/bridge",
+      "auth": "bearer",
+      "status": 400,
+      "contentType": "application/json; charset=utf-8",
+      "location": null,
+      "bodySnippet": "{\"error\":\"Invalid Helios bridge payload\",\"issues\":[{\"path\":\"action\",\"message\":\"Invalid input\"}]}"
+    }
+  ]
+}

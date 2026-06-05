@@ -1,5 +1,5 @@
 {
-  "executedAt": "2026-05-28T22:35:35.104Z",
+  "executedAt": "2026-06-05T17:14:53.542Z",
   "origin": "https://auditapatron.com",
   "actorUser": {
     "id": 1,
@@ -13,30 +13,30 @@
     "accessScope": "tenant"
   },
   "sourceCase": {
-    "caseId": "CASE-BALT-1-MPJ76XIT",
-    "title": "Revalidación real · Jaime Santiago López",
+    "caseId": "CASE-BALT-1-MQ16NUXF",
+    "title": "Revalidación E2E Jaime Santiago López",
     "employerEntity": "Validación operativa AuditaPatron",
-    "updatedAt": "2026-05-24T03:08:26.000Z"
+    "updatedAt": "2026-06-05T17:13:27.000Z"
   },
   "sourceDocuments": {
     "xml": {
-      "documentId": "DOC-220D066A10DF4CFF",
+      "documentId": "DOC-3D419D8AF33E4EDC",
       "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "mimeType": "application/xml",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPJ76XIT/DOC-220D066A10DF4CFF/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml"
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16NUXF/DOC-3D419D8AF33E4EDC/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml"
     },
     "contract": {
-      "documentId": "DOC-7247DDB7A1E447ED",
+      "documentId": "DOC-2B01555571D74198",
       "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPJ76XIT/DOC-7247DDB7A1E447ED/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx"
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16NUXF/DOC-2B01555571D74198/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx"
     }
   },
   "case": {
-    "id": 180001,
+    "id": 270005,
     "tenantId": "balt-1",
-    "caseId": "CASE-BALT-1-MPQ2N1KZ",
-    "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+    "caseId": "CASE-BALT-1-MQ16PGFO",
+    "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
     "title": "Revalidación E2E Jaime Santiago López",
     "employeeName": "JAIME SANTIAGO LOPEZ",
     "employerEntity": "Validación operativa AuditaPatron",
@@ -45,19 +45,19 @@
     "priority": "medium",
     "assignedUserId": 1,
     "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
-    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
-    "openedAt": "2026-05-28T22:35:23.000Z",
+    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MQ16PGFO\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
+    "openedAt": "2026-06-05T17:14:42.000Z",
     "dueAt": null,
     "closedAt": null,
-    "lastActivityAt": "2026-05-28T22:35:23.000Z",
-    "createdAt": "2026-05-28T22:35:23.000Z",
-    "updatedAt": "2026-05-28T22:35:23.000Z"
+    "lastActivityAt": "2026-06-05T17:14:42.000Z",
+    "createdAt": "2026-06-05T17:14:42.000Z",
+    "updatedAt": "2026-06-05T17:14:42.000Z"
   },
   "persistedCase": {
-    "id": 180001,
+    "id": 270005,
     "tenantId": "balt-1",
-    "caseId": "CASE-BALT-1-MPQ2N1KZ",
-    "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+    "caseId": "CASE-BALT-1-MQ16PGFO",
+    "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
     "title": "Revalidación E2E Jaime Santiago López",
     "employeeName": "JAIME SANTIAGO LOPEZ",
     "employerEntity": "Validación operativa AuditaPatron",
@@ -66,28 +66,28 @@
     "priority": "medium",
     "assignedUserId": 1,
     "summary": "Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.",
-    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
-    "openedAt": "2026-05-28T22:35:23.000Z",
+    "canonicalPayload": "{\"contract_type\":\"case\",\"schema_version\":\"v1\",\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MQ16PGFO\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"title\":\"Revalidación E2E Jaime Santiago López\",\"status\":\"intake\",\"priority\":\"medium\",\"employee_name\":\"JAIME SANTIAGO LOPEZ\",\"employer_entity\":\"Validación operativa AuditaPatron\",\"summary\":\"Corrida interna de revalidación usando CFDI y contrato reutilizados del caso histórico de Jaime para validar alerta salarial, Helios inicial, bridge y callback visible en el runtime restaurado.\",\"jurisdiction\":\"MX\"}",
+    "openedAt": "2026-06-05T17:14:42.000Z",
     "dueAt": null,
     "closedAt": null,
-    "lastActivityAt": "2026-05-28T22:35:23.000Z",
-    "createdAt": "2026-05-28T22:35:23.000Z",
-    "updatedAt": "2026-05-28T22:35:23.000Z"
+    "lastActivityAt": "2026-06-05T17:14:42.000Z",
+    "createdAt": "2026-06-05T17:14:42.000Z",
+    "updatedAt": "2026-06-05T17:14:42.000Z"
   },
   "xmlUpload": {
     "document": {
-      "id": 240001,
+      "id": 330009,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "documentId": "DOC-6BCF366BE6A145E3",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "documentId": "DOC-B5CA99C1DA264715",
       "uploadedByUserId": 1,
       "supersedesDocumentId": null,
       "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "mimeType": "application/xml",
       "sizeBytes": 5780,
-      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
       "documentType": "cfdi",
       "sourceChannel": "manual",
@@ -95,9 +95,9 @@
       "consentStatus": "granted",
       "visibility": "case_team",
       "classificationConfidence": 91,
-      "processedAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z",
-      "updatedAt": "2026-05-28T22:35:25.000Z"
+      "processedAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z",
+      "updatedAt": "2026-06-05T17:14:43.000Z"
     },
     "classification": {
       "documentType": "cfdi",
@@ -244,13 +244,13 @@
       "contract_type": "document",
       "schema_version": "v1",
       "tenant_id": "balt-1",
-      "case_id": "CASE-BALT-1-MPQ2N1KZ",
-      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "document_id": "DOC-6BCF366BE6A145E3",
+      "case_id": "CASE-BALT-1-MQ16PGFO",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "document_id": "DOC-B5CA99C1DA264715",
       "document_type": "cfdi",
       "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
-      "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
-      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storage_key": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "visibility": "case_team",
       "consent_status": "granted",
       "classification_confidence": 91,
@@ -263,14 +263,14 @@
       "contract_type": "shared_engine",
       "schema_version": "v1",
       "tenant_id": "balt-1",
-      "case_id": "CASE-BALT-1-MPQ2N1KZ",
-      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "case_id": "CASE-BALT-1-MQ16PGFO",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "case_contract": {
         "contract_type": "case",
         "schema_version": "v1",
         "tenant_id": "balt-1",
-        "case_id": "CASE-BALT-1-MPQ2N1KZ",
-        "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "case_id": "CASE-BALT-1-MQ16PGFO",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
         "title": "Revalidación E2E Jaime Santiago López",
         "status": "intake",
         "priority": "medium",
@@ -284,13 +284,13 @@
           "contract_type": "document",
           "schema_version": "v1",
           "tenant_id": "balt-1",
-          "case_id": "CASE-BALT-1-MPQ2N1KZ",
-          "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "document_id": "DOC-6BCF366BE6A145E3",
+          "case_id": "CASE-BALT-1-MQ16PGFO",
+          "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "document_id": "DOC-B5CA99C1DA264715",
           "document_type": "cfdi",
           "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
-          "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
-          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+          "storage_key": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
           "visibility": "case_team",
           "consent_status": "granted",
           "classification_confidence": 91,
@@ -303,8 +303,8 @@
       "ready_for_shared_engine": true
     },
     "heliosOpinion": {
-      "documentId": "DOC-6BCF366BE6A145E3",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "documentId": "DOC-B5CA99C1DA264715",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
       "status": "processing",
       "mode": "remote",
       "summary": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
@@ -343,7 +343,7 @@
       ],
       "confidenceScore": 78,
       "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
-      "generatedAt": "2026-05-28T22:35:25.616Z",
+      "generatedAt": "2026-06-05T17:14:43.237Z",
       "resultCard": {
         "headline": "Tu documento ya está en revisión avanzada",
         "lead": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
@@ -407,9 +407,9 @@
       },
       "rawPayload": {
         "tenantId": "balt-1",
-        "caseId": "CASE-BALT-1-MPQ2N1KZ",
-        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-        "documentId": "DOC-6BCF366BE6A145E3",
+        "caseId": "CASE-BALT-1-MQ16PGFO",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "documentId": "DOC-B5CA99C1DA264715",
         "documentType": "cfdi",
         "jurisdiction": "México",
         "caseTitle": "Revalidación E2E Jaime Santiago López",
@@ -448,15 +448,15 @@
     "heliosOpinionContract": {
       "engine": "helios",
       "mode": "remote",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "documentId": "DOC-6BCF366BE6A145E3",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "documentId": "DOC-B5CA99C1DA264715",
       "requestedOpinionType": "labor_preliminary_opinion",
       "status": "processing",
       "opinion": {
-        "documentId": "DOC-6BCF366BE6A145E3",
-        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "documentId": "DOC-B5CA99C1DA264715",
+        "caseId": "CASE-BALT-1-MQ16PGFO",
         "status": "processing",
         "mode": "remote",
         "summary": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
@@ -495,7 +495,7 @@
         ],
         "confidenceScore": 78,
         "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
-        "generatedAt": "2026-05-28T22:35:25.616Z",
+        "generatedAt": "2026-06-05T17:14:43.237Z",
         "resultCard": {
           "headline": "Tu documento ya está en revisión avanzada",
           "lead": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
@@ -559,9 +559,9 @@
         },
         "rawPayload": {
           "tenantId": "balt-1",
-          "caseId": "CASE-BALT-1-MPQ2N1KZ",
-          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "documentId": "DOC-6BCF366BE6A145E3",
+          "caseId": "CASE-BALT-1-MQ16PGFO",
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "documentId": "DOC-B5CA99C1DA264715",
           "documentType": "cfdi",
           "jurisdiction": "México",
           "caseTitle": "Revalidación E2E Jaime Santiago López",
@@ -600,48 +600,208 @@
     },
     "engineDispatch": {
       "status": "sent",
-      "dispatchedAt": "2026-05-28T22:35:28.132Z",
-      "timestamp": "1780007727",
+      "dispatchedAt": "2026-06-05T17:14:46.384Z",
+      "timestamp": "1780679683",
       "attempts": 1,
-      "httpStatus": 202,
-      "responseBody": "{\"verified\":true,\"received\":true,\"event\":\"document.uploaded\",\"documentId\":\"DOC-6BCF366BE6A145E3\",\"sourceUserId\":\"1\",\"receivedAt\":\"2026-05-28T22:35:27.954Z\",\"responseContract\":\"auditapatron.bridge.ack.v1\",\"processingStatus\":\"accepted\"}",
+      "httpStatus": 200,
+      "responseBody": "{\"received\":true,\"intakeId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"documentId\":210005,\"processingStatus\":\"pending\",\"traceId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"correlationId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"remoteEventId\":\"clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"receivedAt\":\"2026-06-05T17:14:46.048Z\",\"memoryLinks\":[\"provider_document:210005\",\"document_category:other\",\"legal_vault:helios\"],\"recommendedNextAction\":\"Completar los documentos críticos restantes para cerrar la bóveda legal.\",\"responseContract\":{\"contractVersion\":\"auditapatron_return_contract_v1\",\"webhook\":{\"deliveryMode\":\"outbound_webhook\",\"producer\":\"complilink_mx\",\"method\":\"POST\",\"contentType\":\"application/json\",\"authentication\":{\"primary\":{\"type\":\"bearer_token\",\"headerName\":\"Authorization\",\"format\":\"Bearer <shared-secret>\"},\"optionalSignature\":{\"type\":\"hmac_sha256\",\"headerName\":\"x-auditapatron-signature\",\"baseString\":\"raw_body\",\"status\":\"ready_to_enable_without_changing_payload_shape\"}}},\"deliverySemantics\":{\"correlationIdPolicy\":\"echo_exact_dispatch_correlation_id\",\"remoteEventId\":\"clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"idempotency\":{\"canonicalKey\":\"eventId\",\"duplicateFallbackKeys\":[\"correlationId\",\"eventName\"],\"retentionWindow\":\"7d\",\"duplicateBehavior\":\"return_same_ack_without_reprocessing\"}},\"currentResponseEvent\":{\"eventId\":\"clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"eventName\":\"document.retry_requested.v1\",\"correlationId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"finality\":\"transient\",\"retryable\":true,\"businessStatus\":\"retry_requested\",\"providerId\":30001,\"documentId\":210005,\"traceId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"emittedAt\":\"2026-06-05T17:14:46.122Z\",\"source\":{\"system\":\"complilink_mx\",\"orchestrator\":\"…[truncated]",
       "responseAck": {
-        "verified": true,
         "received": true,
-        "event": "document.uploaded",
-        "documentId": "DOC-6BCF366BE6A145E3",
-        "sourceUserId": "1",
-        "receivedAt": "2026-05-28T22:35:27.954Z",
-        "responseContract": "auditapatron.bridge.ack.v1",
-        "processingStatus": "accepted"
+        "intakeId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "documentId": 210005,
+        "processingStatus": "pending",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "remoteEventId": "clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+        "receivedAt": "2026-06-05T17:14:46.048Z",
+        "memoryLinks": [
+          "provider_document:210005",
+          "document_category:other",
+          "legal_vault:helios"
+        ],
+        "recommendedNextAction": "Completar los documentos críticos restantes para cerrar la bóveda legal.",
+        "responseContract": {
+          "contractVersion": "auditapatron_return_contract_v1",
+          "webhook": {
+            "deliveryMode": "outbound_webhook",
+            "producer": "complilink_mx",
+            "method": "POST",
+            "contentType": "application/json",
+            "authentication": {
+              "primary": {
+                "type": "bearer_token",
+                "headerName": "Authorization",
+                "format": "Bearer <shared-secret>"
+              },
+              "optionalSignature": {
+                "type": "hmac_sha256",
+                "headerName": "x-auditapatron-signature",
+                "baseString": "raw_body",
+                "status": "ready_to_enable_without_changing_payload_shape"
+              }
+            }
+          },
+          "deliverySemantics": {
+            "correlationIdPolicy": "echo_exact_dispatch_correlation_id",
+            "remoteEventId": "clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+            "idempotency": {
+              "canonicalKey": "eventId",
+              "duplicateFallbackKeys": [
+                "correlationId",
+                "eventName"
+              ],
+              "retentionWindow": "7d",
+              "duplicateBehavior": "return_same_ack_without_reprocessing"
+            }
+          },
+          "currentResponseEvent": {
+            "eventId": "clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+            "eventName": "document.retry_requested.v1",
+            "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+            "finality": "transient",
+            "retryable": true,
+            "businessStatus": "retry_requested",
+            "providerId": 30001,
+            "documentId": 210005,
+            "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+            "emittedAt": "2026-06-05T17:14:46.122Z",
+            "source": {
+              "system": "complilink_mx",
+              "orchestrator": "helios",
+              "bridgeVersion": "auditapatron_return_contract_v1"
+            },
+            "result": {
+              "summary": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+              "blockingReason": null,
+              "processingStatus": "pending"
+            }
+          },
+          "eventCatalog": [
+            {
+              "eventName": "document.processed.v1",
+              "finality": "final",
+              "retryable": false,
+              "canonicalBusinessStatus": "accepted",
+              "meaning": "CompliLink aceptó el documento y lo dejó utilizable dentro de Helios sin requerir reenvío técnico.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            },
+            {
+              "eventName": "document.rejected.v1",
+              "finality": "final",
+              "retryable": false,
+              "canonicalBusinessStatus": "rejected",
+              "meaning": "CompliLink rechazó el documento por una razón funcional o documental que debe corregirse antes de reenviar.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            },
+            {
+              "eventName": "document.retry_requested.v1",
+              "finality": "transient",
+              "retryable": true,
+              "canonicalBusinessStatus": "retry_requested",
+              "meaning": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            }
+          ],
+          "canonicalExamples": {
+            "success": {
+              "eventId": "clx-document-processed-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.processed.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "final",
+              "retryable": false,
+              "businessStatus": "accepted",
+              "providerId": 30001,
+              "documentId": 210005,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:46.123Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink aceptó el documento y lo dejó utilizable dentro de Helios sin requerir reenvío técnico.",
+                "blockingReason": null,
+                "processingStatus": "accepted"
+              }
+            },
+            "functionalRejection": {
+              "eventId": "clx-document-rejected-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.rejected.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "final",
+              "retryable": false,
+              "businessStatus": "rejected",
+              "providerId": 30001,
+              "documentId": 210005,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:46.123Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink rechazó el documento por una razón funcional o documental que debe corregirse antes de reenviar.",
+                "blockingReason": "document_rule_violation",
+                "processingStatus": "rejected"
+              }
+            },
+            "transientError": {
+              "eventId": "clx-document-retry_requested-v1-provider-30001-document-210005-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.retry_requested.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "transient",
+              "retryable": true,
+              "businessStatus": "retry_requested",
+              "providerId": 30001,
+              "documentId": 210005,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:46.123Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+                "blockingReason": "transient_upstream_error",
+                "processingStatus": "failed"
+              }
+            }
+          }
+        }
       },
       "payload": {
-        "providerId": 1,
+        "providerId": 30001,
         "userId": 1,
         "title": "cfdi_nomina",
         "mimeType": "application/xml",
-        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
-        "documentId": "DOC-6BCF366BE6A145E3",
-        "category": "cfdi_nomina",
+        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+        "documentId": "330009",
+        "category": "other",
         "originalFileName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
         "sourceModule": "complilink_operativo",
-        "sourceCaseId": "CASE-BALT-1-MPQ2N1KZ",
-        "sourceDocumentId": "DOC-6BCF366BE6A145E3",
-        "uploadedAt": "2026-05-28T22:35:25.000Z",
-        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-        "processingStatus": "queued",
+        "sourceCaseId": "CASE-BALT-1-MQ16PGFO",
+        "sourceDocumentId": "DOC-B5CA99C1DA264715",
+        "uploadedAt": "2026-06-05T17:14:43.000Z",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "processingStatus": "pending",
         "eventName": "document.uploaded",
-        "eventId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
-        "idempotencyKey": "f15e28be-f523-4556-bbe4-7368d6aaa178",
-        "correlationId": "27e7efb0-7ac5-4e86-bb59-55595af56998",
+        "eventId": "3255100b-9d6d-483e-9524-18f3d575a88f",
+        "idempotencyKey": "3255100b-9d6d-483e-9524-18f3d575a88f",
+        "correlationId": "6329d7e2-d469-4a26-8c56-dba0866b6161",
         "tags": [
-          "cfdi_nomina"
+          "other"
         ],
         "operationalContext": {
-          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "auditId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "caseId": "CASE-BALT-1-MPQ2N1KZ",
-          "dispatchId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "auditId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "caseId": "CASE-BALT-1-MQ16PGFO",
+          "dispatchId": "3255100b-9d6d-483e-9524-18f3d575a88f",
           "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
           "fileSizeBytes": 5780,
           "documentType": "cfdi",
@@ -649,15 +809,15 @@
         }
       },
       "observabilityEnvelope": {
-        "dispatchId": "f15e28be-f523-4556-bbe4-7368d6aaa178",
-        "correlationId": "27e7efb0-7ac5-4e86-bb59-55595af56998",
-        "targetHost": "auditapatron.com",
-        "targetPath": "/api/auditapatron/webhook",
+        "dispatchId": "3255100b-9d6d-483e-9524-18f3d575a88f",
+        "correlationId": "6329d7e2-d469-4a26-8c56-dba0866b6161",
+        "targetHost": "complilink.mx",
+        "targetPath": "/api/integrations/auditapatron/bridge",
         "outcomeCategory": "success",
         "retryScheduled": false,
         "retryDelayMs": null,
         "remoteSmokeEnabled": false,
-        "httpStatusCode": 202
+        "httpStatusCode": 200
       }
     },
     "scanAssistance": {
@@ -674,18 +834,18 @@
   },
   "contractUpload": {
     "document": {
-      "id": 240002,
+      "id": 330010,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "documentId": "DOC-51B926625A434870",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "documentId": "DOC-29C11F6834974FD5",
       "uploadedByUserId": 1,
       "supersedesDocumentId": null,
       "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "sizeBytes": 55101,
-      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
       "documentType": "contract",
       "sourceChannel": "manual",
@@ -693,9 +853,9 @@
       "consentStatus": "granted",
       "visibility": "case_team",
       "classificationConfidence": 84,
-      "processedAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z",
-      "updatedAt": "2026-05-28T22:35:29.000Z"
+      "processedAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z",
+      "updatedAt": "2026-06-05T17:14:46.000Z"
     },
     "classification": {
       "documentType": "contract",
@@ -849,13 +1009,13 @@
       "contract_type": "document",
       "schema_version": "v1",
       "tenant_id": "balt-1",
-      "case_id": "CASE-BALT-1-MPQ2N1KZ",
-      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "document_id": "DOC-51B926625A434870",
+      "case_id": "CASE-BALT-1-MQ16PGFO",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "document_id": "DOC-29C11F6834974FD5",
       "document_type": "contract",
       "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
-      "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
-      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storage_key": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "visibility": "case_team",
       "consent_status": "granted",
       "classification_confidence": 84,
@@ -868,14 +1028,14 @@
       "contract_type": "shared_engine",
       "schema_version": "v1",
       "tenant_id": "balt-1",
-      "case_id": "CASE-BALT-1-MPQ2N1KZ",
-      "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "case_id": "CASE-BALT-1-MQ16PGFO",
+      "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "case_contract": {
         "contract_type": "case",
         "schema_version": "v1",
         "tenant_id": "balt-1",
-        "case_id": "CASE-BALT-1-MPQ2N1KZ",
-        "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+        "case_id": "CASE-BALT-1-MQ16PGFO",
+        "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
         "title": "Revalidación E2E Jaime Santiago López",
         "status": "intake",
         "priority": "medium",
@@ -889,13 +1049,13 @@
           "contract_type": "document",
           "schema_version": "v1",
           "tenant_id": "balt-1",
-          "case_id": "CASE-BALT-1-MPQ2N1KZ",
-          "trace_id": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "document_id": "DOC-51B926625A434870",
+          "case_id": "CASE-BALT-1-MQ16PGFO",
+          "trace_id": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "document_id": "DOC-29C11F6834974FD5",
           "document_type": "contract",
           "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
-          "storage_key": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
-          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+          "storage_key": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+          "storage_url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
           "visibility": "case_team",
           "consent_status": "granted",
           "classification_confidence": 84,
@@ -908,8 +1068,8 @@
       "ready_for_shared_engine": true
     },
     "heliosOpinion": {
-      "documentId": "DOC-51B926625A434870",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
+      "documentId": "DOC-29C11F6834974FD5",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
       "status": "processing",
       "mode": "remote",
       "summary": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
@@ -947,7 +1107,7 @@
       ],
       "confidenceScore": 78,
       "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
-      "generatedAt": "2026-05-28T22:35:29.061Z",
+      "generatedAt": "2026-06-05T17:14:47.005Z",
       "resultCard": {
         "headline": "Tu documento ya está en revisión avanzada",
         "lead": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
@@ -1011,9 +1171,9 @@
       },
       "rawPayload": {
         "tenantId": "balt-1",
-        "caseId": "CASE-BALT-1-MPQ2N1KZ",
-        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-        "documentId": "DOC-51B926625A434870",
+        "caseId": "CASE-BALT-1-MQ16PGFO",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "documentId": "DOC-29C11F6834974FD5",
         "documentType": "contract",
         "jurisdiction": "México",
         "caseTitle": "Revalidación E2E Jaime Santiago López",
@@ -1054,15 +1214,15 @@
     "heliosOpinionContract": {
       "engine": "helios",
       "mode": "remote",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "documentId": "DOC-51B926625A434870",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "documentId": "DOC-29C11F6834974FD5",
       "requestedOpinionType": "labor_preliminary_opinion",
       "status": "processing",
       "opinion": {
-        "documentId": "DOC-51B926625A434870",
-        "caseId": "CASE-BALT-1-MPQ2N1KZ",
+        "documentId": "DOC-29C11F6834974FD5",
+        "caseId": "CASE-BALT-1-MQ16PGFO",
         "status": "processing",
         "mode": "remote",
         "summary": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
@@ -1100,7 +1260,7 @@
         ],
         "confidenceScore": 78,
         "disclaimer": "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.",
-        "generatedAt": "2026-05-28T22:35:29.061Z",
+        "generatedAt": "2026-06-05T17:14:47.005Z",
         "resultCard": {
           "headline": "Tu documento ya está en revisión avanzada",
           "lead": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
@@ -1164,9 +1324,9 @@
         },
         "rawPayload": {
           "tenantId": "balt-1",
-          "caseId": "CASE-BALT-1-MPQ2N1KZ",
-          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "documentId": "DOC-51B926625A434870",
+          "caseId": "CASE-BALT-1-MQ16PGFO",
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "documentId": "DOC-29C11F6834974FD5",
           "documentType": "contract",
           "jurisdiction": "México",
           "caseTitle": "Revalidación E2E Jaime Santiago López",
@@ -1207,48 +1367,208 @@
     },
     "engineDispatch": {
       "status": "sent",
-      "dispatchedAt": "2026-05-28T22:35:29.914Z",
-      "timestamp": "1780007729",
+      "dispatchedAt": "2026-06-05T17:14:48.410Z",
+      "timestamp": "1780679687",
       "attempts": 1,
-      "httpStatus": 202,
-      "responseBody": "{\"verified\":true,\"received\":true,\"event\":\"document.uploaded\",\"documentId\":\"DOC-51B926625A434870\",\"sourceUserId\":\"1\",\"receivedAt\":\"2026-05-28T22:35:29.739Z\",\"responseContract\":\"auditapatron.bridge.ack.v1\",\"processingStatus\":\"accepted\"}",
+      "httpStatus": 200,
+      "responseBody": "{\"received\":true,\"intakeId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"documentId\":210006,\"processingStatus\":\"pending\",\"traceId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"correlationId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"remoteEventId\":\"clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"receivedAt\":\"2026-06-05T17:14:48.113Z\",\"memoryLinks\":[\"provider_document:210006\",\"document_category:contract\",\"legal_vault:helios\"],\"recommendedNextAction\":\"Completar los documentos críticos restantes para cerrar la bóveda legal.\",\"responseContract\":{\"contractVersion\":\"auditapatron_return_contract_v1\",\"webhook\":{\"deliveryMode\":\"outbound_webhook\",\"producer\":\"complilink_mx\",\"method\":\"POST\",\"contentType\":\"application/json\",\"authentication\":{\"primary\":{\"type\":\"bearer_token\",\"headerName\":\"Authorization\",\"format\":\"Bearer <shared-secret>\"},\"optionalSignature\":{\"type\":\"hmac_sha256\",\"headerName\":\"x-auditapatron-signature\",\"baseString\":\"raw_body\",\"status\":\"ready_to_enable_without_changing_payload_shape\"}}},\"deliverySemantics\":{\"correlationIdPolicy\":\"echo_exact_dispatch_correlation_id\",\"remoteEventId\":\"clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"idempotency\":{\"canonicalKey\":\"eventId\",\"duplicateFallbackKeys\":[\"correlationId\",\"eventName\"],\"retentionWindow\":\"7d\",\"duplicateBehavior\":\"return_same_ack_without_reprocessing\"}},\"currentResponseEvent\":{\"eventId\":\"clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63\",\"eventName\":\"document.retry_requested.v1\",\"correlationId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"finality\":\"transient\",\"retryable\":true,\"businessStatus\":\"retry_requested\",\"providerId\":30001,\"documentId\":210006,\"traceId\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\",\"emittedAt\":\"2026-06-05T17:14:48.188Z\",\"source\":{\"system\":\"complilink_mx\",\"orchestrator…[truncated]",
       "responseAck": {
-        "verified": true,
         "received": true,
-        "event": "document.uploaded",
-        "documentId": "DOC-51B926625A434870",
-        "sourceUserId": "1",
-        "receivedAt": "2026-05-28T22:35:29.739Z",
-        "responseContract": "auditapatron.bridge.ack.v1",
-        "processingStatus": "accepted"
+        "intakeId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "documentId": 210006,
+        "processingStatus": "pending",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "remoteEventId": "clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+        "receivedAt": "2026-06-05T17:14:48.113Z",
+        "memoryLinks": [
+          "provider_document:210006",
+          "document_category:contract",
+          "legal_vault:helios"
+        ],
+        "recommendedNextAction": "Completar los documentos críticos restantes para cerrar la bóveda legal.",
+        "responseContract": {
+          "contractVersion": "auditapatron_return_contract_v1",
+          "webhook": {
+            "deliveryMode": "outbound_webhook",
+            "producer": "complilink_mx",
+            "method": "POST",
+            "contentType": "application/json",
+            "authentication": {
+              "primary": {
+                "type": "bearer_token",
+                "headerName": "Authorization",
+                "format": "Bearer <shared-secret>"
+              },
+              "optionalSignature": {
+                "type": "hmac_sha256",
+                "headerName": "x-auditapatron-signature",
+                "baseString": "raw_body",
+                "status": "ready_to_enable_without_changing_payload_shape"
+              }
+            }
+          },
+          "deliverySemantics": {
+            "correlationIdPolicy": "echo_exact_dispatch_correlation_id",
+            "remoteEventId": "clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+            "idempotency": {
+              "canonicalKey": "eventId",
+              "duplicateFallbackKeys": [
+                "correlationId",
+                "eventName"
+              ],
+              "retentionWindow": "7d",
+              "duplicateBehavior": "return_same_ack_without_reprocessing"
+            }
+          },
+          "currentResponseEvent": {
+            "eventId": "clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+            "eventName": "document.retry_requested.v1",
+            "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+            "finality": "transient",
+            "retryable": true,
+            "businessStatus": "retry_requested",
+            "providerId": 30001,
+            "documentId": 210006,
+            "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+            "emittedAt": "2026-06-05T17:14:48.188Z",
+            "source": {
+              "system": "complilink_mx",
+              "orchestrator": "helios",
+              "bridgeVersion": "auditapatron_return_contract_v1"
+            },
+            "result": {
+              "summary": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+              "blockingReason": null,
+              "processingStatus": "pending"
+            }
+          },
+          "eventCatalog": [
+            {
+              "eventName": "document.processed.v1",
+              "finality": "final",
+              "retryable": false,
+              "canonicalBusinessStatus": "accepted",
+              "meaning": "CompliLink aceptó el documento y lo dejó utilizable dentro de Helios sin requerir reenvío técnico.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            },
+            {
+              "eventName": "document.rejected.v1",
+              "finality": "final",
+              "retryable": false,
+              "canonicalBusinessStatus": "rejected",
+              "meaning": "CompliLink rechazó el documento por una razón funcional o documental que debe corregirse antes de reenviar.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            },
+            {
+              "eventName": "document.retry_requested.v1",
+              "finality": "transient",
+              "retryable": true,
+              "canonicalBusinessStatus": "retry_requested",
+              "meaning": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+              "idempotencyKey": "eventId",
+              "expectedCorrelationId": "echo_exact_dispatch_correlation_id"
+            }
+          ],
+          "canonicalExamples": {
+            "success": {
+              "eventId": "clx-document-processed-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.processed.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "final",
+              "retryable": false,
+              "businessStatus": "accepted",
+              "providerId": 30001,
+              "documentId": 210006,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:48.188Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink aceptó el documento y lo dejó utilizable dentro de Helios sin requerir reenvío técnico.",
+                "blockingReason": null,
+                "processingStatus": "accepted"
+              }
+            },
+            "functionalRejection": {
+              "eventId": "clx-document-rejected-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.rejected.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "final",
+              "retryable": false,
+              "businessStatus": "rejected",
+              "providerId": 30001,
+              "documentId": 210006,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:48.188Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink rechazó el documento por una razón funcional o documental que debe corregirse antes de reenviar.",
+                "blockingReason": "document_rule_violation",
+                "processingStatus": "rejected"
+              }
+            },
+            "transientError": {
+              "eventId": "clx-document-retry_requested-v1-provider-30001-document-210006-trace-balt-1-CASE-BALT-1-MQ16PGFO-mq16pgfoz2bi63",
+              "eventName": "document.retry_requested.v1",
+              "correlationId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "finality": "transient",
+              "retryable": true,
+              "businessStatus": "retry_requested",
+              "providerId": 30001,
+              "documentId": 210006,
+              "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+              "emittedAt": "2026-06-05T17:14:48.188Z",
+              "source": {
+                "system": "complilink_mx",
+                "orchestrator": "helios",
+                "bridgeVersion": "auditapatron_return_contract_v1"
+              },
+              "result": {
+                "summary": "CompliLink detectó una condición transitoria y recomienda reintentar sin abrir un caso nuevo.",
+                "blockingReason": "transient_upstream_error",
+                "processingStatus": "failed"
+              }
+            }
+          }
+        }
       },
       "payload": {
-        "providerId": 1,
+        "providerId": 30001,
         "userId": 1,
         "title": "contrato_laboral",
         "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
-        "documentId": "DOC-51B926625A434870",
-        "category": "contrato_laboral",
+        "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+        "documentId": "330010",
+        "category": "contract",
         "originalFileName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
         "sourceModule": "complilink_operativo",
-        "sourceCaseId": "CASE-BALT-1-MPQ2N1KZ",
-        "sourceDocumentId": "DOC-51B926625A434870",
-        "uploadedAt": "2026-05-28T22:35:29.000Z",
-        "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-        "processingStatus": "queued",
+        "sourceCaseId": "CASE-BALT-1-MQ16PGFO",
+        "sourceDocumentId": "DOC-29C11F6834974FD5",
+        "uploadedAt": "2026-06-05T17:14:46.000Z",
+        "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+        "processingStatus": "pending",
         "eventName": "document.uploaded",
-        "eventId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
-        "idempotencyKey": "7d1ddb10-1490-4f77-9517-fc99119c095f",
-        "correlationId": "655d950e-d37a-4e2b-bf17-21baa84b463d",
+        "eventId": "70061311-511a-4ac9-becc-d3a156874b71",
+        "idempotencyKey": "70061311-511a-4ac9-becc-d3a156874b71",
+        "correlationId": "ad46d102-ea94-4dd6-b7e5-82dc87339113",
         "tags": [
-          "contrato_laboral"
+          "contract"
         ],
         "operationalContext": {
-          "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "auditId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-          "caseId": "CASE-BALT-1-MPQ2N1KZ",
-          "dispatchId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
+          "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "auditId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+          "caseId": "CASE-BALT-1-MQ16PGFO",
+          "dispatchId": "70061311-511a-4ac9-becc-d3a156874b71",
           "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
           "fileSizeBytes": 55101,
           "documentType": "contract",
@@ -1256,15 +1576,15 @@
         }
       },
       "observabilityEnvelope": {
-        "dispatchId": "7d1ddb10-1490-4f77-9517-fc99119c095f",
-        "correlationId": "655d950e-d37a-4e2b-bf17-21baa84b463d",
-        "targetHost": "auditapatron.com",
-        "targetPath": "/api/auditapatron/webhook",
+        "dispatchId": "70061311-511a-4ac9-becc-d3a156874b71",
+        "correlationId": "ad46d102-ea94-4dd6-b7e5-82dc87339113",
+        "targetHost": "complilink.mx",
+        "targetPath": "/api/integrations/auditapatron/bridge",
         "outcomeCategory": "success",
         "retryScheduled": false,
         "retryDelayMs": null,
         "remoteSmokeEnabled": false,
-        "httpStatusCode": 202
+        "httpStatusCode": 200
       }
     },
     "scanAssistance": {
@@ -1281,18 +1601,18 @@
   },
   "persistedDocuments": [
     {
-      "id": 240001,
+      "id": 330009,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "documentId": "DOC-6BCF366BE6A145E3",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "documentId": "DOC-B5CA99C1DA264715",
       "uploadedByUserId": 1,
       "supersedesDocumentId": null,
       "originalName": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "mimeType": "application/xml",
       "sizeBytes": 5780,
-      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-6BCF366BE6A145E3/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-B5CA99C1DA264715/1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml",
       "sha256": "da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59",
       "documentType": "cfdi",
       "sourceChannel": "manual",
@@ -1300,23 +1620,23 @@
       "consentStatus": "granted",
       "visibility": "case_team",
       "classificationConfidence": 91,
-      "processedAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z",
-      "updatedAt": "2026-05-28T22:35:25.000Z"
+      "processedAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z",
+      "updatedAt": "2026-06-05T17:14:43.000Z"
     },
     {
-      "id": 240002,
+      "id": 330010,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
-      "documentId": "DOC-51B926625A434870",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
+      "documentId": "DOC-29C11F6834974FD5",
       "uploadedByUserId": 1,
       "supersedesDocumentId": null,
       "originalName": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "sizeBytes": 55101,
-      "storageKey": "complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
-      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MPQ2N1KZ/DOC-51B926625A434870/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageKey": "complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
+      "storageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/complilink/balt-1/CASE-BALT-1-MQ16PGFO/DOC-29C11F6834974FD5/CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx",
       "sha256": "0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f",
       "documentType": "contract",
       "sourceChannel": "manual",
@@ -1324,202 +1644,202 @@
       "consentStatus": "granted",
       "visibility": "case_team",
       "classificationConfidence": 84,
-      "processedAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z",
-      "updatedAt": "2026-05-28T22:35:29.000Z"
+      "processedAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z",
+      "updatedAt": "2026-06-05T17:14:46.000Z"
     }
   ],
   "caseEvents": [
     {
-      "id": 270001,
+      "id": 360041,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "case_created",
       "title": "Caso creado",
-      "description": "Se creó el expediente CASE-BALT-1-MPQ2N1KZ con trazabilidad canónica inicial.",
-      "metadata": "{\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MPQ2N1KZ\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43\"}",
-      "eventAt": "2026-05-28T22:35:24.000Z",
-      "createdAt": "2026-05-28T22:35:23.000Z"
+      "description": "Se creó el expediente CASE-BALT-1-MQ16PGFO con trazabilidad canónica inicial.",
+      "metadata": "{\"tenant_id\":\"balt-1\",\"case_id\":\"CASE-BALT-1-MQ16PGFO\",\"trace_id\":\"trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63\"}",
+      "eventAt": "2026-06-05T17:14:42.000Z",
+      "createdAt": "2026-06-05T17:14:42.000Z"
     },
     {
-      "id": 270002,
+      "id": 360042,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "document_uploaded",
       "title": "Documento cargado",
       "description": "1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml fue cargado con hash SHA-256 y clasificación inicial cfdi.",
-      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"sha256\":\"da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59\",\"visibility\":\"case_team\",\"classification_confidence\":91,\"expected_document_type\":\"cfdi\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
-      "eventAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z"
+      "metadata": "{\"document_id\":\"DOC-B5CA99C1DA264715\",\"sha256\":\"da9936f59b6ab7b09c728b365c20a35788836f9d47b8b78faadfde6f27129b59\",\"visibility\":\"case_team\",\"classification_confidence\":91,\"expected_document_type\":\"cfdi\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
+      "eventAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z"
     },
     {
-      "id": 270003,
+      "id": 360043,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "document_classified",
       "title": "Documento clasificado",
       "description": "Clasificación automática preliminar: cfdi_nomina.",
       "metadata": "{\"reasons\":[\"El archivo XML contiene marcadores típicos de CFDI de nómina o timbrado fiscal.\"],\"normalized_doc_type\":\"cfdi_nomina\",\"processing_profile\":\"standard\",\"review_recommendation\":\"auto\",\"supports_structured_extraction\":true,\"supports_benefit_estimation\":true,\"expected_document_type\":\"cfdi\"}",
-      "eventAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z"
+      "eventAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z"
     },
     {
-      "id": 270004,
+      "id": 360044,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Escaneo asistido evaluó la captura",
       "description": "Tu archivo está listo para seguir al análisis. Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
-      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
-      "eventAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z"
+      "metadata": "{\"document_id\":\"DOC-B5CA99C1DA264715\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
+      "eventAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z"
     },
     {
-      "id": 270005,
+      "id": 360045,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Helios preparó una opinión inicial",
       "description": "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.",
-      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-6BCF366BE6A145E3\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-05-28T22:35:25.616Z\"}",
-      "eventAt": "2026-05-28T22:35:26.000Z",
-      "createdAt": "2026-05-28T22:35:25.000Z"
+      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-B5CA99C1DA264715\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-06-05T17:14:43.237Z\"}",
+      "eventAt": "2026-06-05T17:14:43.000Z",
+      "createdAt": "2026-06-05T17:14:43.000Z"
     },
     {
-      "id": 270006,
+      "id": 360046,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Documento enviado a CompliLink",
       "description": "CompliLink recibió este documento y estamos esperando su respuesta automática.",
-      "metadata": "{\"document_id\":\"DOC-6BCF366BE6A145E3\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-05-28T22:35:28.132Z\",\"attempts\":1,\"http_status\":202,\"dispatch_id\":\"f15e28be-f523-4556-bbe4-7368d6aaa178\",\"correlation_id\":\"27e7efb0-7ac5-4e86-bb59-55595af56998\",\"outcome_category\":\"success\",\"target_host\":\"auditapatron.com\",\"target_path\":\"/api/auditapatron/webhook\"}",
-      "eventAt": "2026-05-28T22:35:28.000Z",
-      "createdAt": "2026-05-28T22:35:28.000Z"
+      "metadata": "{\"document_id\":\"DOC-B5CA99C1DA264715\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-06-05T17:14:46.384Z\",\"attempts\":1,\"http_status\":200,\"dispatch_id\":\"3255100b-9d6d-483e-9524-18f3d575a88f\",\"correlation_id\":\"6329d7e2-d469-4a26-8c56-dba0866b6161\",\"outcome_category\":\"success\",\"target_host\":\"complilink.mx\",\"target_path\":\"/api/integrations/auditapatron/bridge\"}",
+      "eventAt": "2026-06-05T17:14:46.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z"
     },
     {
-      "id": 270007,
+      "id": 360047,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "document_uploaded",
       "title": "Documento cargado",
       "description": "CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx fue cargado con hash SHA-256 y clasificación inicial contract.",
-      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"sha256\":\"0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f\",\"visibility\":\"case_team\",\"classification_confidence\":84,\"expected_document_type\":\"contract\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
-      "eventAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "metadata": "{\"document_id\":\"DOC-29C11F6834974FD5\",\"sha256\":\"0f7f1b85b930fffd2e1943fb3379988e9120d41f46d51c82ca10529c9fb73b5f\",\"visibility\":\"case_team\",\"classification_confidence\":84,\"expected_document_type\":\"contract\",\"capture_mode\":\"file\",\"scan_assistance\":{\"readiness\":\"ready\",\"documentPresence\":\"uncertain\",\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"userGuidance\":\"Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.\",\"friendlyHeadline\":\"Tu archivo está listo para seguir al análisis\",\"expectedTypeAlignment\":\"possible\",\"confidence\":60}}",
+      "eventAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z"
     },
     {
-      "id": 270008,
+      "id": 360048,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "document_classified",
       "title": "Documento clasificado",
       "description": "Clasificación automática preliminar: contrato_laboral.",
       "metadata": "{\"reasons\":[\"Se detectaron términos de contratación o relación laboral.\"],\"normalized_doc_type\":\"contrato_laboral\",\"processing_profile\":\"contract_deep_dive\",\"review_recommendation\":\"legal_review\",\"supports_structured_extraction\":true,\"supports_benefit_estimation\":true,\"expected_document_type\":\"contract\"}",
-      "eventAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "eventAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z"
     },
     {
-      "id": 270009,
+      "id": 360049,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Escaneo asistido evaluó la captura",
       "description": "Tu archivo está listo para seguir al análisis. Tu archivo ya puede subirse. Si después quieres una lectura más clara, intenta también con una foto o PDF nítido.",
-      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
-      "eventAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "metadata": "{\"document_id\":\"DOC-29C11F6834974FD5\",\"readiness\":\"ready\",\"document_presence\":\"uncertain\",\"expected_type_alignment\":\"possible\",\"confidence\":60,\"issues\":[\"Este formato seguirá su revisión automática sin bloquear tu carga.\"],\"capture_mode\":\"file\"}",
+      "eventAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:46.000Z"
     },
     {
-      "id": 270010,
+      "id": 360050,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "alert_raised",
       "title": "Discrepancia salarial detectada",
       "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
-      "metadata": "{\"contractDocumentId\":\"DOC-51B926625A434870\",\"payrollDocumentId\":\"DOC-6BCF366BE6A145E3\",\"contractFileName\":\"CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx\",\"payrollFileName\":\"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\",\"contractDailySalary\":207.44,\"comparedField\":\"integratedDailySalary\",\"comparedValue\":331.45,\"absoluteDifference\":124.01,\"percentageDifference\":59.78,\"detectedAt\":\"2026-05-28T22:35:29.089Z\"}",
-      "eventAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "metadata": "{\"contractDocumentId\":\"DOC-29C11F6834974FD5\",\"payrollDocumentId\":\"DOC-B5CA99C1DA264715\",\"contractFileName\":\"CONTRATOINDETERMINADO-SANTIAGOLOPEZJAIME.docx\",\"payrollFileName\":\"1F870DC0-BDF0-5227-A698-907D55E15F69_JAIME_SANTIAGO_LOPEZ.xml\",\"contractDailySalary\":207.44,\"comparedField\":\"integratedDailySalary\",\"comparedValue\":331.45,\"absoluteDifference\":124.01,\"percentageDifference\":59.78,\"detectedAt\":\"2026-06-05T17:14:47.030Z\"}",
+      "eventAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:47.000Z"
     },
     {
-      "id": 270011,
+      "id": 360051,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Helios preparó una opinión inicial",
       "description": "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.",
-      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-51B926625A434870\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-05-28T22:35:29.061Z\"}",
-      "eventAt": "2026-05-28T22:35:29.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "metadata": "{\"engine\":\"helios\",\"document_id\":\"DOC-29C11F6834974FD5\",\"risk_level\":\"low\",\"confidence_score\":78,\"generated_at\":\"2026-06-05T17:14:47.005Z\"}",
+      "eventAt": "2026-06-05T17:14:47.000Z",
+      "createdAt": "2026-06-05T17:14:47.000Z"
     },
     {
-      "id": 270012,
+      "id": 360052,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "actorUserId": 1,
       "eventType": "note_added",
       "title": "Documento enviado a CompliLink",
       "description": "CompliLink recibió este documento y estamos esperando su respuesta automática.",
-      "metadata": "{\"document_id\":\"DOC-51B926625A434870\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-05-28T22:35:29.914Z\",\"attempts\":1,\"http_status\":202,\"dispatch_id\":\"7d1ddb10-1490-4f77-9517-fc99119c095f\",\"correlation_id\":\"655d950e-d37a-4e2b-bf17-21baa84b463d\",\"outcome_category\":\"success\",\"target_host\":\"auditapatron.com\",\"target_path\":\"/api/auditapatron/webhook\"}",
-      "eventAt": "2026-05-28T22:35:30.000Z",
-      "createdAt": "2026-05-28T22:35:29.000Z"
+      "metadata": "{\"document_id\":\"DOC-29C11F6834974FD5\",\"stage\":\"complilink_dispatch\",\"dispatch_status\":\"sent\",\"dispatched_at\":\"2026-06-05T17:14:48.410Z\",\"attempts\":1,\"http_status\":200,\"dispatch_id\":\"70061311-511a-4ac9-becc-d3a156874b71\",\"correlation_id\":\"ad46d102-ea94-4dd6-b7e5-82dc87339113\",\"outcome_category\":\"success\",\"target_host\":\"complilink.mx\",\"target_path\":\"/api/integrations/auditapatron/bridge\"}",
+      "eventAt": "2026-06-05T17:14:48.000Z",
+      "createdAt": "2026-06-05T17:14:48.000Z"
     }
   ],
   "webhookEvents": [],
   "persistedAlerts": [
     {
-      "id": 180001,
+      "id": 270013,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "severity": "warning",
       "category": "integrity_gap",
       "title": "Discrepancia salarial detectada",
       "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
       "status": "open",
-      "raisedAt": "2026-05-28T22:35:29.000Z",
+      "raisedAt": "2026-06-05T17:14:47.000Z",
       "resolvedAt": null,
-      "createdAt": "2026-05-28T22:35:29.000Z",
-      "updatedAt": "2026-05-28T22:35:29.000Z"
+      "createdAt": "2026-06-05T17:14:47.000Z",
+      "updatedAt": "2026-06-05T17:14:47.000Z"
     }
   ],
   "visibleAlerts": [
     {
-      "id": 180001,
+      "id": 270013,
       "tenantId": "balt-1",
-      "caseId": "CASE-BALT-1-MPQ2N1KZ",
-      "traceId": "trace.balt-1.CASE-BALT-1-MPQ2N1KZ.mpq2n1kz4ypn43",
+      "caseId": "CASE-BALT-1-MQ16PGFO",
+      "traceId": "trace.balt-1.CASE-BALT-1-MQ16PGFO.mq16pgfoz2bi63",
       "severity": "warning",
       "category": "integrity_gap",
       "title": "Discrepancia salarial detectada",
       "description": "Se detectó una diferencia de 59.78% entre el salario contractual (207.44) y el SDI reportado en CFDI/IMSS (331.45). El flujo continúa, pero conviene revisar la congruencia salarial del expediente.",
       "status": "open",
-      "raisedAt": "2026-05-28T22:35:29.000Z",
+      "raisedAt": "2026-06-05T17:14:47.000Z",
       "resolvedAt": null,
-      "createdAt": "2026-05-28T22:35:29.000Z",
-      "updatedAt": "2026-05-28T22:35:29.000Z"
+      "createdAt": "2026-06-05T17:14:47.000Z",
+      "updatedAt": "2026-06-05T17:14:47.000Z"
     }
   ]
 }

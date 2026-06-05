@@ -21,12 +21,14 @@ vi.mock("./db", () => dbMocks);
 vi.mock("./_core/env", () => ({
   ENV: {
     auditapatronEngineHmacSecret: "return-webhook-secret-123456",
+    auditapatronEngineWebhookUrl: "https://complilink.mx/api/auditapatron/webhook",
   },
 }));
 
 import { registerCompliLinkReturnWebhook } from "./auditaPatronReturnWebhook";
 
 const serversToClose: Array<ReturnType<typeof createServer>> = [];
+const realFetch = globalThis.fetch;
 
 async function startWebhookServer() {
   const app = express();
@@ -135,11 +137,34 @@ describe("auditaPatronReturnWebhook", () => {
     });
   });
 
-  it("acepta el webhook público firmado de document.uploaded sin tocar la base de datos interna", async () => {
+  it("acepta el webhook público firmado de document.uploaded y lo reenvía al bridge remoto configurado", async () => {
     const payload = buildIncomingUploadPayload();
     const body = JSON.stringify(payload);
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+    const upstreamFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          verified: true,
+          received: true,
+          responseContract: "auditapatron.bridge.ack.v1",
+          processingStatus: "accepted",
+        }),
+        {
+          status: 202,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      ),
+    );
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+      const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (requestUrl.startsWith("https://complilink.mx/")) {
+        return upstreamFetch(input, init) as ReturnType<typeof fetch>;
+      }
+      return realFetch(input as Parameters<typeof fetch>[0], init as Parameters<typeof fetch>[1]);
+    });
 
     const server = await startWebhookServer();
     const address = server.address() as AddressInfo;
@@ -164,8 +189,77 @@ describe("auditaPatronReturnWebhook", () => {
       sourceUserId: "USER-UP-001",
       responseContract: "auditapatron.bridge.ack.v1",
       processingStatus: "accepted",
+      forwarded: true,
+      bridgeTarget: "https://complilink.mx/api/auditapatron/webhook",
+      upstreamStatus: 202,
     });
+    expect(upstreamFetch).toHaveBeenCalledTimes(1);
+    expect(upstreamFetch).toHaveBeenCalledWith(
+      "https://complilink.mx/api/auditapatron/webhook",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          "X-AuditaPatron-Timestamp": timestamp,
+          "X-AuditaPatron-Signature": signature,
+          "X-AuditaPatron-Forwarded-By": "auditapatron-intake",
+        }),
+        body,
+      }),
+    );
     expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  it("devuelve 502 si el bridge remoto rechaza el documento ya validado", async () => {
+    const payload = buildIncomingUploadPayload();
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+    const upstreamFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ issues: [{ code: "bridge_busy" }] }), {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+      const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (requestUrl.startsWith("https://complilink.mx/")) {
+        return upstreamFetch(input, init) as ReturnType<typeof fetch>;
+      }
+      return realFetch(input as Parameters<typeof fetch>[0], init as Parameters<typeof fetch>[1]);
+    });
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(502);
+    await expect(response.json()).resolves.toMatchObject({
+      verified: false,
+      bridgeTarget: "https://complilink.mx/api/auditapatron/webhook",
+      upstreamStatus: 503,
+      responseContract: "auditapatron.bridge.ack.v1",
+      issues: [
+        {
+          code: "bridge_forward_rejected",
+          field: "event",
+        },
+      ],
+    });
+    fetchSpy.mockRestore();
   });
 
   it("rechaza el webhook público con firma inválida y conserva el contrato de error", async () => {

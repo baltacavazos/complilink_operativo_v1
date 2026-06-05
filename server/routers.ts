@@ -4610,6 +4610,10 @@ export const appRouter = router({
           auditId: detail.case.traceId,
           caseId: detail.case.caseId,
           metadata: {
+            providerId: 30001,
+            userId: 1,
+            workspaceId: 1,
+            documentNumericId: documentRecord.id,
             employerRfc:
               getRecordStringValue(preliminaryAnalysis.confirmedData, "employerRfc") ??
               getRecordStringValue(preliminaryAnalysis.estimatedData, "employerRfc") ??
@@ -5140,6 +5144,10 @@ export const appRouter = router({
           auditId: detail.case.traceId,
           caseId: detail.case.caseId,
           metadata: {
+            providerId: 30001,
+            userId: 1,
+            workspaceId: 1,
+            documentNumericId: documentRecord.id,
             employerRfc:
               getRecordStringValue(preliminaryAnalysis.confirmedData, "employerRfc") ??
               getRecordStringValue(preliminaryAnalysis.estimatedData, "employerRfc") ??

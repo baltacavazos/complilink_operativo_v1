@@ -142,9 +142,11 @@ describe("auditaPatronIntegrationService", () => {
         descriptiveDocType: "Recibo Nómina",
         employerRfc: "AAA010101AAA",
         providerId: 501,
+        userId: 3001,
         title: "Recibo de nómina abril 2026",
         obligation: "nomina",
         notes: "Documento prioritario para validación contractual",
+        documentNumericId: 88001,
       },
       dispatchId: "dispatch-001",
       correlationId: "corr-001",
@@ -152,12 +154,12 @@ describe("auditaPatronIntegrationService", () => {
 
     expect(payload).toMatchObject({
       providerId: 501,
-      userId: 99,
+      userId: 3001,
       title: "Recibo de nómina abril 2026",
       mimeType: "application/pdf",
       fileUrl: "https://cdn.example.com/paystub.pdf",
-      documentId: "DOC-001",
-      category: "recibo_nomina",
+      documentId: "88001",
+      category: "other",
       obligation: "nomina",
       originalFileName: "paystub.pdf",
       notes: "Documento prioritario para validación contractual",
@@ -166,12 +168,12 @@ describe("auditaPatronIntegrationService", () => {
       sourceDocumentId: "DOC-001",
       uploadedAt: "2026-04-06T10:00:00.000Z",
       traceId: "trace-001",
-      processingStatus: "queued",
+      processingStatus: "pending",
       eventName: "document.uploaded",
       eventId: "dispatch-001",
       idempotencyKey: "dispatch-001",
       correlationId: "corr-001",
-      tags: ["recibo_nomina", "nomina"],
+      tags: ["other", "nomina"],
       operationalContext: {
         traceId: "trace-001",
         auditId: "trace-001",
@@ -222,12 +224,14 @@ describe("auditaPatronIntegrationService", () => {
       body: string;
       signature: string | undefined;
       timestamp: string | undefined;
+      authorization: string | undefined;
     }) => void) | null = null;
 
     const receivedPromise = new Promise<{
       body: string;
       signature: string | undefined;
       timestamp: string | undefined;
+      authorization: string | undefined;
     }>((resolve) => {
       resolveReceived = resolve;
     });
@@ -253,11 +257,13 @@ describe("auditaPatronIntegrationService", () => {
               responseContract: "auditapatron.bridge.ack.v1",
             }),
           );
-          resolveReceived?.({
-            body,
-            signature: req.headers["x-auditapatron-signature"] as string | undefined,
-            timestamp: req.headers["x-auditapatron-timestamp"] as string | undefined,
-          });
+                  resolveReceived?.({
+          body,
+          signature: req.headers["x-auditapatron-signature"] as string | undefined,
+          timestamp: req.headers["x-auditapatron-timestamp"] as string | undefined,
+          authorization: req.headers.authorization as string | undefined,
+        });
+
         });
       },
     });
@@ -283,6 +289,7 @@ describe("auditaPatronIntegrationService", () => {
     const [received, result] = await Promise.all([receivedPromise, resultPromise]);
 
     expect(received.timestamp).toBeTruthy();
+    expect(received.authorization).toBe("Bearer secret-for-engine-123456");
     expect(received.signature).toBe(
       buildAuditaPatronEngineSignature(String(received.timestamp), received.body, "secret-for-engine-123456"),
     );

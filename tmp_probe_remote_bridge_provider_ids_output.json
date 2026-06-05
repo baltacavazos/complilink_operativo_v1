@@ -1,0 +1,261 @@
+{
+  "executedAt": "2026-05-29T00:18:32.741Z",
+  "results": [
+    {
+      "source": "cfdi",
+      "providerId": 1,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 1,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 1,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 1,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 101,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 101,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 101,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 101,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300001,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300001,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300001,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300001,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300002,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300002,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300002,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "cfdi",
+      "providerId": 300002,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 1,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 1,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 1,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 1,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 101,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 101,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 101,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 101,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300001,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300001,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300001,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300001,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300002,
+      "userId": 1,
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"Provider not found or access denied\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300002,
+      "userId": 101,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300002,
+      "userId": 300001,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    },
+    {
+      "source": "contract",
+      "providerId": 300002,
+      "userId": 300002,
+      "status": 403,
+      "contentType": "application/json; charset=utf-8",
+      "bodySnippet": "{\"error\":\"No hay un workspace activo vinculado a tu usuario.\"}"
+    }
+  ]
+}

@@ -1,0 +1,279 @@
+{
+  "context": {
+    "observed_facts": {
+      "configured_dispatch_url": "https://auditapatron.com/api/auditapatron/webhook",
+      "client_contract_meaning": "AUDITAPATRON_ENGINE_WEBHOOK_URL is used by sendDocumentToAuditaPatronEngine as the outbound dispatch target after health preflight.",
+      "payload_has_no_callback_url": true,
+      "current_target_behavior": "The route /api/auditapatron/webhook only validates document.uploaded and returns accepted; it does not create compliLinkWebhookEvents or perform final processing.",
+      "final_return_handler_routes": [
+        "/api/auditapatron/complilink-webhook",
+        "/api/internal/helios/bridge",
+        "/api/integrations/auditapatron/bridge"
+      ],
+      "runtime_symptom": "Dispatch returns HTTP 202 with correlationId but final webhook events remain empty.",
+      "historical_test_expectation": "A bridge secret test expects https://www.complilink.mx/api/auditapatron/webhook as the configured bridge endpoint.",
+      "conflicting_local_test": "Another secret test currently expects https://auditapatron.com/api/auditapatron/webhook, which may be stale or wrong."
+    },
+    "goal": "Determine the most likely real fix to restore end-to-end processing and asynchronous final webhook persistence.",
+    "constraints": {
+      "must_be_safe": true,
+      "must_be_minimal": true,
+      "must_be_revalidated": true,
+      "user_requires_reliability": "100% working target behavior"
+    }
+  },
+  "prompt": "You are a senior backend integration architect. Respond with valid JSON only using this schema: {\"root_cause_assessment\": {\"most_likely_root_cause\": \"string\", \"confidence\": \"high|medium|low\", \"why\": [\"string\"]}, \"recommended_fix\": {\"change_type\": \"config_only|code_and_config|code_only\", \"target_url\": \"string\", \"should_add_compatibility_fallback\": true, \"why\": [\"string\"]}, \"test_reconciliation\": {\"which_test_is_probably_stale\": \"string\", \"how_to_update_tests\": [\"string\"]}, \"validation_plan\": {\"checks\": [\"string\"], \"expected_success_signal\": [\"string\"]}, \"one_sentence_verdict\": \"string\"}. Analyze the factual context and identify the most likely real fix. Context: {\"observed_facts\": {\"configured_dispatch_url\": \"https://auditapatron.com/api/auditapatron/webhook\", \"client_contract_meaning\": \"AUDITAPATRON_ENGINE_WEBHOOK_URL is used by sendDocumentToAuditaPatronEngine as the outbound dispatch target after health preflight.\", \"payload_has_no_callback_url\": true, \"current_target_behavior\": \"The route /api/auditapatron/webhook only validates document.uploaded and returns accepted; it does not create compliLinkWebhookEvents or perform final processing.\", \"final_return_handler_routes\": [\"/api/auditapatron/complilink-webhook\", \"/api/internal/helios/bridge\", \"/api/integrations/auditapatron/bridge\"], \"runtime_symptom\": \"Dispatch returns HTTP 202 with correlationId but final webhook events remain empty.\", \"historical_test_expectation\": \"A bridge secret test expects https://www.complilink.mx/api/auditapatron/webhook as the configured bridge endpoint.\", \"conflicting_local_test\": \"Another secret test currently expects https://auditapatron.com/api/auditapatron/webhook, which may be stale or wrong.\"}, \"goal\": \"Determine the most likely real fix to restore end-to-end processing and asynchronous final webhook persistence.\", \"constraints\": {\"must_be_safe\": true, \"must_be_minimal\": true, \"must_be_revalidated\": true, \"user_requires_reliability\": \"100% working target behavior\"}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DkeJceh0oyZRivePuiZagiMWeRAjy",
+        "object": "chat.completion",
+        "created": 1780010432,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"Misconfigured dispatch URL pointing to a preliminary validation endpoint instead of the final processing webhook endpoint.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The configured dispatch URL is https://auditapatron.com/api/auditapatron/webhook which only validates document.uploaded and returns accepted without final processing.\",\n      \"Final processing and webhook event creation happen on different routes such as /api/auditapatron/complilink-webhook.\",\n      \"The runtime symptom shows HTTP 202 with correlationId but no final webhook events, indicating incomplete processing.\",\n      \"Historical test expects https://www.complilink.mx/api/auditapatron/webhook as the correct bridge endpoint, suggesting the current URL is outdated or incorrect.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://www.complilink.mx/api/auditapatron/webhook\",\n    \"should_add_compatibility_fallback\": true,\n    \"why\": [\n      \"Switching the dispatch URL to the historically expected and final processing endpoint will restore end-to-end processing.\",\n      \"Adding a compatibility fallback to the current URL can ensure backward compatibility during rollout.\",\n      \"This fix is minimal, safe, and aligns with user requirement for 100% reliable target behavior.\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"The secret test expecting https://auditapatron.com/api/auditapatron/webhook\",\n    \"how_to_update_tests\": [\n      \"Update the stale test to expect https://www.complilink.mx/api/auditapatron/webhook as the bridge endpoint.\",\n      \"Add or modify tests to verify that final webhook events are created and persisted asynchronously.\",\n      \"Ensure tests cover both the legacy and new URLs if compatibility fallback is implemented.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify that dispatch requests are sent to https://www.complilink.mx/api/auditapatron/webhook.\",\n      \"Confirm that final webhook events are created and persisted after dispatch.\",\n      \"Check that HTTP 202 responses include correlationId and that subsequent processing completes successfully.\",\n      \"Run updated integration tests covering both URLs if fallback is enabled.\"\n    ],\n    \"expected_success_signal\": [\n      \"Final webhook events are present and correctly persisted.\",\n      \"No loss of asynchronous processing after dispatch.\",\n      \"All integration tests pass with updated URL configuration.\"\n    ]\n  },\n  \"one_sentence_verdict\": \"The dispatch URL must be corrected to the final processing endpoint https://www.complilink.mx/api/auditapatron/webhook with a compatibility fallback to restore full asynchronous webhook event processing reliably.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 493,
+          "completion_tokens": 577,
+          "total_tokens": 1070,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_2a0275e09e"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "c6bf1a2d-3ad9-93e6-8424-9b72514350d4",
+        "object": "chat.completion",
+        "created": 1780010443,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"Dispatch URL misconfigured to non-processing endpoint /api/auditapatron/webhook instead of a final handler route\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Route at configured URL only validates and returns 202 without creating compliLinkWebhookEvents\",\n      \"Final processing routes are explicitly listed as /api/auditapatron/complilink-webhook and bridges\",\n      \"Historical expectation points to complilink.mx variant for bridge behavior\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://www.complilink.mx/api/auditapatron/webhook\",\n    \"should_add_compatibility_fallback\": false,\n    \"why\": [\n      \"Minimal change restores async persistence without code edits\",\n      \"Payload lacks callback so target must itself be the final handler\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"local secret test expecting https://auditapatron.com/api/auditapatron/webhook\",\n    \"how_to_update_tests\": [\n      \"Replace auditapatron.com expectation with www.complilink.mx/api/auditapatron/webhook\",\n      \"Keep historical complilink test as canonical\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Trigger sendDocumentToAuditaPatronEngine and confirm 202 + correlationId\",\n      \"Verify compliLinkWebhookEvents row created for the document\"\n    ],\n    \"expected_success_signal\": [\n      \"Non-empty final webhook events table\",\n      \"No more dispatch to validation-only route\"\n    ]\n  },\n  \"one_sentence_verdict\": \"Re-point the AUDITAPATRON_ENGINE_WEBHOOK_URL config to the complilink bridge endpoint to enable final processing.\"\n}",
+              "reasoning_content": "The task is to respond with a single valid JSON object using the specified schema. No surrounding text.\n",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 630,
+          "completion_tokens": 393,
+          "total_tokens": 1612,
+          "prompt_tokens_details": {
+            "text_tokens": 630,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 589,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 31081000
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The AUDITAPATRON_ENGINE_WEBHOOK_URL is misconfigured to point to an initial validation endpoint that returns HTTP 202 but does not trigger the downstream final processing and persistence of compliLinkWebhookEvents.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'current_target_behavior' explicitly states that the configured dispatch URL only validates and returns accepted, without performing final processing or creating compliLinkWebhookEvents.\",\n      \"The 'runtime_symptom' of dispatch returning HTTP 202 with correlationId but empty final webhook events directly corroborates the described behavior of the misconfigured endpoint.\",\n      \"The existence of 'final_return_handler_routes' and a 'historical_test_expectation' for a different URL (https://www.complilink.mx/api/auditapatron/webhook) strongly suggests that the correct final processing endpoint is distinct from the currently configured one.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"AUDITAPATRON_ENGINE_WEBHOOK_URL\",\n    \"should_add_compatibility_fallback\": false,\n    \"why\": [\n      \"Updating the configuration parameter 'AUDITAPATRON_ENGINE_WEBHOOK_URL' to the correct final processing endpoint (likely https://www.complilink.mx/api/auditapatron/webhook, as per historical tests) will directly address the root cause.\",\n      \"This change is minimal and safe, as it involves correcting an existing configuration rather than altering core logic, aligning with the 'must_be_minimal' and 'must_be_safe' constraints.\",\n      \"It will enable the system to dispatch to the endpoint responsible for creating compliLinkWebhookEvents, thereby restoring end-to-end processing and asynchronous persistence.\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"The secret test currently expecting https://auditapatron.com/api/auditapatron/webhook as the configured bridge endpoint.\",\n    \"how_to_update_tests\": [\n      \"Update the stale secret test to expect the corrected AUDITAPATRON_ENGINE_WEBHOOK_URL (e.g., https://www.complilink.mx/api/auditapatron/webhook).\",\n      \"Verify that the historical bridge secret test expecting https://www.complilink.mx/api/auditapatron/webhook continues to pass with the new configuration.\",\n      \"Introduce or update an end-to-end integration test that specifically asserts the successful creation and persistence of compliLinkWebhookEvents after a document dispatch.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify that the AUDITAPATRON_ENGINE_WEBHOOK_URL configuration has been successfully updated to the correct final processing endpoint (e.g., https://www.complilink.mx/api/auditapatron/webhook).\",\n      \"Perform a test document dispatch through the system.\",\n      \"Monitor system logs for successful invocation of the new target URL and subsequent processing steps.\",\n      \"Query the database or relevant storage to confirm the creation and persistence of compliLinkWebhookEvents associated with the test dispatch.\"\n    ],\n    \"expected_success_signal\": [\n      \"The initial dispatch call returns HTTP 202 Accepted.\",\n      \"compliLinkWebhookEvents are successfully created and persisted in the database for the dispatched document.\",\n      \"No new errors, timeouts, or unexpected behaviors are observed in the system logs related to the dispatch or final processing.\",\n      \"All relevant automated tests, including the updated and historical bridge tests, pass successfully.\"\n    ]\n  },\n  \"one_sentence_verdict\": \"The system is dispatching to an intermediate validation endpoint; reconfiguring AUDITAPATRON_ENGINE_WEBHOOK_URL to the correct final processing bridge endpoint will restore end-to-end asynchronous webhook persistence.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 520,
+          "candidatesTokenCount": 896,
+          "totalTokenCount": 3219,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 520
+            }
+          ],
+          "thoughtsTokenCount": 1803,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "2c0Yap_fONCcjMcPu-e3kAU"
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"Misconfigured dispatch URL pointing to a preliminary validation endpoint instead of the final processing webhook endpoint.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The configured dispatch URL is https://auditapatron.com/api/auditapatron/webhook which only validates document.uploaded and returns accepted without final processing.\",\n      \"Final processing and webhook event creation happen on different routes such as /api/auditapatron/complilink-webhook.\",\n      \"The runtime symptom shows HTTP 202 with correlationId but no final webhook events, indicating incomplete processing.\",\n      \"Historical test expects https://www.complilink.mx/api/auditapatron/webhook as the correct bridge endpoint, suggesting the current URL is outdated or incorrect.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://www.complilink.mx/api/auditapatron/webhook\",\n    \"should_add_compatibility_fallback\": true,\n    \"why\": [\n      \"Switching the dispatch URL to the historically expected and final processing endpoint will restore end-to-end processing.\",\n      \"Adding a compatibility fallback to the current URL can ensure backward compatibility during rollout.\",\n      \"This fix is minimal, safe, and aligns with user requirement for 100% reliable target behavior.\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"The secret test expecting https://auditapatron.com/api/auditapatron/webhook\",\n    \"how_to_update_tests\": [\n      \"Update the stale test to expect https://www.complilink.mx/api/auditapatron/webhook as the bridge endpoint.\",\n      \"Add or modify tests to verify that final webhook events are created and persisted asynchronously.\",\n      \"Ensure tests cover both the legacy and new URLs if compatibility fallback is implemented.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify that dispatch requests are sent to https://www.complilink.mx/api/auditapatron/webhook.\",\n      \"Confirm that final webhook events are created and persisted after dispatch.\",\n      \"Check that HTTP 202 responses include correlationId and that subsequent processing completes successfully.\",\n      \"Run updated integration tests covering both URLs if fallback is enabled.\"\n    ],\n    \"expected_success_signal\": [\n      \"Final webhook events are present and correctly persisted.\",\n      \"No loss of asynchronous processing after dispatch.\",\n      \"All integration tests pass with updated URL configuration.\"\n    ]\n  },\n  \"one_sentence_verdict\": \"The dispatch URL must be corrected to the final processing endpoint https://www.complilink.mx/api/auditapatron/webhook with a compatibility fallback to restore full asynchronous webhook event processing reliably.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "Misconfigured dispatch URL pointing to a preliminary validation endpoint instead of the final processing webhook endpoint.",
+          "confidence": "high",
+          "why": [
+            "The configured dispatch URL is https://auditapatron.com/api/auditapatron/webhook which only validates document.uploaded and returns accepted without final processing.",
+            "Final processing and webhook event creation happen on different routes such as /api/auditapatron/complilink-webhook.",
+            "The runtime symptom shows HTTP 202 with correlationId but no final webhook events, indicating incomplete processing.",
+            "Historical test expects https://www.complilink.mx/api/auditapatron/webhook as the correct bridge endpoint, suggesting the current URL is outdated or incorrect."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "https://www.complilink.mx/api/auditapatron/webhook",
+          "should_add_compatibility_fallback": true,
+          "why": [
+            "Switching the dispatch URL to the historically expected and final processing endpoint will restore end-to-end processing.",
+            "Adding a compatibility fallback to the current URL can ensure backward compatibility during rollout.",
+            "This fix is minimal, safe, and aligns with user requirement for 100% reliable target behavior."
+          ]
+        },
+        "test_reconciliation": {
+          "which_test_is_probably_stale": "The secret test expecting https://auditapatron.com/api/auditapatron/webhook",
+          "how_to_update_tests": [
+            "Update the stale test to expect https://www.complilink.mx/api/auditapatron/webhook as the bridge endpoint.",
+            "Add or modify tests to verify that final webhook events are created and persisted asynchronously.",
+            "Ensure tests cover both the legacy and new URLs if compatibility fallback is implemented."
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "Verify that dispatch requests are sent to https://www.complilink.mx/api/auditapatron/webhook.",
+            "Confirm that final webhook events are created and persisted after dispatch.",
+            "Check that HTTP 202 responses include correlationId and that subsequent processing completes successfully.",
+            "Run updated integration tests covering both URLs if fallback is enabled."
+          ],
+          "expected_success_signal": [
+            "Final webhook events are present and correctly persisted.",
+            "No loss of asynchronous processing after dispatch.",
+            "All integration tests pass with updated URL configuration."
+          ]
+        },
+        "one_sentence_verdict": "The dispatch URL must be corrected to the final processing endpoint https://www.complilink.mx/api/auditapatron/webhook with a compatibility fallback to restore full asynchronous webhook event processing reliably."
+      }
+    },
+    "grok": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"Dispatch URL misconfigured to non-processing endpoint /api/auditapatron/webhook instead of a final handler route\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Route at configured URL only validates and returns 202 without creating compliLinkWebhookEvents\",\n      \"Final processing routes are explicitly listed as /api/auditapatron/complilink-webhook and bridges\",\n      \"Historical expectation points to complilink.mx variant for bridge behavior\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://www.complilink.mx/api/auditapatron/webhook\",\n    \"should_add_compatibility_fallback\": false,\n    \"why\": [\n      \"Minimal change restores async persistence without code edits\",\n      \"Payload lacks callback so target must itself be the final handler\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"local secret test expecting https://auditapatron.com/api/auditapatron/webhook\",\n    \"how_to_update_tests\": [\n      \"Replace auditapatron.com expectation with www.complilink.mx/api/auditapatron/webhook\",\n      \"Keep historical complilink test as canonical\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Trigger sendDocumentToAuditaPatronEngine and confirm 202 + correlationId\",\n      \"Verify compliLinkWebhookEvents row created for the document\"\n    ],\n    \"expected_success_signal\": [\n      \"Non-empty final webhook events table\",\n      \"No more dispatch to validation-only route\"\n    ]\n  },\n  \"one_sentence_verdict\": \"Re-point the AUDITAPATRON_ENGINE_WEBHOOK_URL config to the complilink bridge endpoint to enable final processing.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "Dispatch URL misconfigured to non-processing endpoint /api/auditapatron/webhook instead of a final handler route",
+          "confidence": "high",
+          "why": [
+            "Route at configured URL only validates and returns 202 without creating compliLinkWebhookEvents",
+            "Final processing routes are explicitly listed as /api/auditapatron/complilink-webhook and bridges",
+            "Historical expectation points to complilink.mx variant for bridge behavior"
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "https://www.complilink.mx/api/auditapatron/webhook",
+          "should_add_compatibility_fallback": false,
+          "why": [
+            "Minimal change restores async persistence without code edits",
+            "Payload lacks callback so target must itself be the final handler"
+          ]
+        },
+        "test_reconciliation": {
+          "which_test_is_probably_stale": "local secret test expecting https://auditapatron.com/api/auditapatron/webhook",
+          "how_to_update_tests": [
+            "Replace auditapatron.com expectation with www.complilink.mx/api/auditapatron/webhook",
+            "Keep historical complilink test as canonical"
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "Trigger sendDocumentToAuditaPatronEngine and confirm 202 + correlationId",
+            "Verify compliLinkWebhookEvents row created for the document"
+          ],
+          "expected_success_signal": [
+            "Non-empty final webhook events table",
+            "No more dispatch to validation-only route"
+          ]
+        },
+        "one_sentence_verdict": "Re-point the AUDITAPATRON_ENGINE_WEBHOOK_URL config to the complilink bridge endpoint to enable final processing."
+      }
+    },
+    "gemini": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The AUDITAPATRON_ENGINE_WEBHOOK_URL is misconfigured to point to an initial validation endpoint that returns HTTP 202 but does not trigger the downstream final processing and persistence of compliLinkWebhookEvents.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'current_target_behavior' explicitly states that the configured dispatch URL only validates and returns accepted, without performing final processing or creating compliLinkWebhookEvents.\",\n      \"The 'runtime_symptom' of dispatch returning HTTP 202 with correlationId but empty final webhook events directly corroborates the described behavior of the misconfigured endpoint.\",\n      \"The existence of 'final_return_handler_routes' and a 'historical_test_expectation' for a different URL (https://www.complilink.mx/api/auditapatron/webhook) strongly suggests that the correct final processing endpoint is distinct from the currently configured one.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"AUDITAPATRON_ENGINE_WEBHOOK_URL\",\n    \"should_add_compatibility_fallback\": false,\n    \"why\": [\n      \"Updating the configuration parameter 'AUDITAPATRON_ENGINE_WEBHOOK_URL' to the correct final processing endpoint (likely https://www.complilink.mx/api/auditapatron/webhook, as per historical tests) will directly address the root cause.\",\n      \"This change is minimal and safe, as it involves correcting an existing configuration rather than altering core logic, aligning with the 'must_be_minimal' and 'must_be_safe' constraints.\",\n      \"It will enable the system to dispatch to the endpoint responsible for creating compliLinkWebhookEvents, thereby restoring end-to-end processing and asynchronous persistence.\"\n    ]\n  },\n  \"test_reconciliation\": {\n    \"which_test_is_probably_stale\": \"The secret test currently expecting https://auditapatron.com/api/auditapatron/webhook as the configured bridge endpoint.\",\n    \"how_to_update_tests\": [\n      \"Update the stale secret test to expect the corrected AUDITAPATRON_ENGINE_WEBHOOK_URL (e.g., https://www.complilink.mx/api/auditapatron/webhook).\",\n      \"Verify that the historical bridge secret test expecting https://www.complilink.mx/api/auditapatron/webhook continues to pass with the new configuration.\",\n      \"Introduce or update an end-to-end integration test that specifically asserts the successful creation and persistence of compliLinkWebhookEvents after a document dispatch.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify that the AUDITAPATRON_ENGINE_WEBHOOK_URL configuration has been successfully updated to the correct final processing endpoint (e.g., https://www.complilink.mx/api/auditapatron/webhook).\",\n      \"Perform a test document dispatch through the system.\",\n      \"Monitor system logs for successful invocation of the new target URL and subsequent processing steps.\",\n      \"Query the database or relevant storage to confirm the creation and persistence of compliLinkWebhookEvents associated with the test dispatch.\"\n    ],\n    \"expected_success_signal\": [\n      \"The initial dispatch call returns HTTP 202 Accepted.\",\n      \"compliLinkWebhookEvents are successfully created and persisted in the database for the dispatched document.\",\n      \"No new errors, timeouts, or unexpected behaviors are observed in the system logs related to the dispatch or final processing.\",\n      \"All relevant automated tests, including the updated and historical bridge tests, pass successfully.\"\n    ]\n  },\n  \"one_sentence_verdict\": \"The system is dispatching to an intermediate validation endpoint; reconfiguring AUDITAPATRON_ENGINE_WEBHOOK_URL to the correct final processing bridge endpoint will restore end-to-end asynchronous webhook persistence.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "The AUDITAPATRON_ENGINE_WEBHOOK_URL is misconfigured to point to an initial validation endpoint that returns HTTP 202 but does not trigger the downstream final processing and persistence of compliLinkWebhookEvents.",
+          "confidence": "high",
+          "why": [
+            "The 'current_target_behavior' explicitly states that the configured dispatch URL only validates and returns accepted, without performing final processing or creating compliLinkWebhookEvents.",
+            "The 'runtime_symptom' of dispatch returning HTTP 202 with correlationId but empty final webhook events directly corroborates the described behavior of the misconfigured endpoint.",
+            "The existence of 'final_return_handler_routes' and a 'historical_test_expectation' for a different URL (https://www.complilink.mx/api/auditapatron/webhook) strongly suggests that the correct final processing endpoint is distinct from the currently configured one."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "AUDITAPATRON_ENGINE_WEBHOOK_URL",
+          "should_add_compatibility_fallback": false,
+          "why": [
+            "Updating the configuration parameter 'AUDITAPATRON_ENGINE_WEBHOOK_URL' to the correct final processing endpoint (likely https://www.complilink.mx/api/auditapatron/webhook, as per historical tests) will directly address the root cause.",
+            "This change is minimal and safe, as it involves correcting an existing configuration rather than altering core logic, aligning with the 'must_be_minimal' and 'must_be_safe' constraints.",
+            "It will enable the system to dispatch to the endpoint responsible for creating compliLinkWebhookEvents, thereby restoring end-to-end processing and asynchronous persistence."
+          ]
+        },
+        "test_reconciliation": {
+          "which_test_is_probably_stale": "The secret test currently expecting https://auditapatron.com/api/auditapatron/webhook as the configured bridge endpoint.",
+          "how_to_update_tests": [
+            "Update the stale secret test to expect the corrected AUDITAPATRON_ENGINE_WEBHOOK_URL (e.g., https://www.complilink.mx/api/auditapatron/webhook).",
+            "Verify that the historical bridge secret test expecting https://www.complilink.mx/api/auditapatron/webhook continues to pass with the new configuration.",
+            "Introduce or update an end-to-end integration test that specifically asserts the successful creation and persistence of compliLinkWebhookEvents after a document dispatch."
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "Verify that the AUDITAPATRON_ENGINE_WEBHOOK_URL configuration has been successfully updated to the correct final processing endpoint (e.g., https://www.complilink.mx/api/auditapatron/webhook).",
+            "Perform a test document dispatch through the system.",
+            "Monitor system logs for successful invocation of the new target URL and subsequent processing steps.",
+            "Query the database or relevant storage to confirm the creation and persistence of compliLinkWebhookEvents associated with the test dispatch."
+          ],
+          "expected_success_signal": [
+            "The initial dispatch call returns HTTP 202 Accepted.",
+            "compliLinkWebhookEvents are successfully created and persisted in the database for the dispatched document.",
+            "No new errors, timeouts, or unexpected behaviors are observed in the system logs related to the dispatch or final processing.",
+            "All relevant automated tests, including the updated and historical bridge tests, pass successfully."
+          ]
+        },
+        "one_sentence_verdict": "The system is dispatching to an intermediate validation endpoint; reconfiguring AUDITAPATRON_ENGINE_WEBHOOK_URL to the correct final processing bridge endpoint will restore end-to-end asynchronous webhook persistence."
+      }
+    }
+  }
+}

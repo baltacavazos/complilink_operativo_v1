@@ -1,0 +1,289 @@
+{
+  "context": {
+    "observed_facts": {
+      "configured_webhook_url": "https://auditapatron.com/api/auditapatron/webhook",
+      "initial_intake_route": "/api/auditapatron/webhook",
+      "final_return_route": "/api/auditapatron/complilink-webhook",
+      "aliases_for_final_return": [
+        "/api/internal/helios/bridge",
+        "/api/integrations/auditapatron/bridge"
+      ],
+      "runtime_evidence": "Los dispatches del bridge regresan HTTP 202 y queda correlationId auditado, pero webhookEvents permanece vacío en las corridas controladas.",
+      "final_handler_behavior": "Solo handleCompliLinkReturnWebhook inserta compliLinkWebhookEvents, actualiza documentos y agrega eventos finales al caso.",
+      "initial_handler_behavior": "handleAuditaPatronIncomingWebhook solo valida el evento document.uploaded y responde accepted."
+    },
+    "goal": "Confirmar si la causa más probable del callback faltante es un endpoint mal configurado y cuál es la corrección mínima y más segura.",
+    "constraints": {
+      "must_be_minimal": true,
+      "must_preserve_existing_dispatch_flow": true,
+      "must_be_validated_after_change": true,
+      "project_type": "Node web app with env-managed configuration"
+    }
+  },
+  "prompt": "Eres un arquitecto senior de integraciones backend. Analiza un problema de webhook asíncrono. Debes responder solo JSON válido siguiendo este esquema: {\"root_cause_assessment\": {\"most_likely_root_cause\": \"string\", \"confidence\": \"high|medium|low\", \"why\": [\"string\"]}, \"recommended_fix\": {\"change_type\": \"config_only|code_and_config|code_only\", \"target_url\": \"string\", \"need_backward_compatibility\": true, \"why\": [\"string\"]}, \"validation_plan\": {\"checks\": [\"string\"], \"expected_success_signal\": [\"string\"], \"rollback_condition\": [\"string\"]}, \"risks\": [\"string\"], \"one_sentence_verdict\": \"string\"}. Contexto factual: {\"observed_facts\": {\"configured_webhook_url\": \"https://auditapatron.com/api/auditapatron/webhook\", \"initial_intake_route\": \"/api/auditapatron/webhook\", \"final_return_route\": \"/api/auditapatron/complilink-webhook\", \"aliases_for_final_return\": [\"/api/internal/helios/bridge\", \"/api/integrations/auditapatron/bridge\"], \"runtime_evidence\": \"Los dispatches del bridge regresan HTTP 202 y queda correlationId auditado, pero webhookEvents permanece vacío en las corridas controladas.\", \"final_handler_behavior\": \"Solo handleCompliLinkReturnWebhook inserta compliLinkWebhookEvents, actualiza documentos y agrega eventos finales al caso.\", \"initial_handler_behavior\": \"handleAuditaPatronIncomingWebhook solo valida el evento document.uploaded y responde accepted.\"}, \"goal\": \"Confirmar si la causa más probable del callback faltante es un endpoint mal configurado y cuál es la corrección mínima y más segura.\", \"constraints\": {\"must_be_minimal\": true, \"must_preserve_existing_dispatch_flow\": true, \"must_be_validated_after_change\": true, \"project_type\": \"Node web app with env-managed configuration\"}}",
+  "responses": {
+    "chatgpt": {
+      "status_code": 200,
+      "body": {
+        "id": "chatcmpl-DkeFjd22gidsN6H0PS08T7mir4tjY",
+        "object": "chat.completion",
+        "created": 1780010191,
+        "model": "gpt-4.1-mini-2025-04-14",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"El endpoint final para el callback (final_return_route) está mal configurado o no es alcanzado correctamente desde el webhook inicial, causando que compliLinkWebhookEvents no se inserte.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Los dispatches del bridge regresan HTTP 202 con correlationId auditado, lo que indica que la llamada inicial es exitosa.\",\n      \"WebhookEvents permanece vacío, lo que sugiere que el handler final no está siendo invocado o no procesa eventos.\",\n      \"Solo handleCompliLinkReturnWebhook inserta compliLinkWebhookEvents y actualiza documentos, y este handler está asociado a final_return_route y sus aliases.\",\n      \"El initial_handler solo valida y responde accepted sin insertar eventos, por lo que la ausencia de eventos indica que el callback final no se ejecuta.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/integrations/auditapatron/bridge\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"El alias /api/integrations/auditapatron/bridge es uno de los endpoints finales configurados y debería ser usado para asegurar que el callback llegue al handler correcto.\",\n      \"Cambiar la configuración del webhook para apuntar a este alias garantiza que el flujo de dispatch se preserve y que el handler final se invoque correctamente.\",\n      \"No se requiere cambio de código, solo ajustar la URL configurada en el entorno para corregir la ruta del callback.\",\n      \"Mantener backward compatibility usando un alias conocido evita romper integraciones existentes.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Enviar un evento document.uploaded y verificar que el dispatch del bridge retorne HTTP 202.\",\n      \"Confirmar que compliLinkWebhookEvents se inserte en la base de datos tras el callback.\",\n      \"Verificar que el correlationId esté presente y auditado en logs.\",\n      \"Monitorear que no haya errores 404 o 500 en el endpoint final tras el cambio.\"\n    ],\n    \"expected_success_signal\": [\n      \"Inserción de compliLinkWebhookEvents confirmada.\",\n      \"Logs muestran ejecución exitosa de handleCompliLinkReturnWebhook.\",\n      \"No se reportan errores en el endpoint final.\"\n    ],\n    \"rollback_condition\": [\n      \"Persistencia de compliLinkWebhookEvents sigue vacía después del cambio.\",\n      \"Errores HTTP 4xx o 5xx aumentan en el endpoint final.\",\n      \"Impacto negativo en el flujo de dispatch o en otros handlers.\"\n    ]\n  },\n  \"risks\": [\n    \"Configuración incorrecta del URL puede causar pérdida temporal de eventos.\",\n    \"Cambiar la URL sin validar puede romper integraciones existentes si no se mantiene backward compatibility.\",\n    \"Dependencia en aliases puede generar confusión si no están bien documentados.\"\n  ],\n  \"one_sentence_verdict\": \"La causa más probable es una configuración incorrecta del endpoint final del callback, y la corrección mínima segura es actualizar la URL del webhook para usar un alias válido que apunte al handler final sin modificar código.\"\n}",
+              "refusal": null,
+              "annotations": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 438,
+          "completion_tokens": 673,
+          "total_tokens": 1111,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_e31ab61991"
+      }
+    },
+    "grok": {
+      "status_code": 200,
+      "body": {
+        "id": "b6efd008-50f9-90d2-890e-49123069ff60",
+        "object": "chat.completion",
+        "created": 1780010206,
+        "model": "grok-4.3",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"configured_webhook_url points to initial intake route instead of final return handler\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"initial handler only validates document.uploaded and never touches compliLinkWebhookEvents\",\n      \"final handler (handleCompliLinkReturnWebhook) is the only code path that inserts events\",\n      \"dispatches succeed (202 + correlationId) but events table stays empty\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/integrations/auditapatron/bridge\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"alias already exists and routes to final handler\",\n      \"only env var change required, no code or route modifications\",\n      \"preserves existing dispatch flow\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"trigger controlled dispatch after config update\",\n      \"verify correlationId reaches final handler\",\n      \"confirm compliLinkWebhookEvents row is inserted\"\n    ],\n    \"expected_success_signal\": [\n      \"webhookEvents populated with final event\",\n      \"document updated and case event added\"\n    ],\n    \"rollback_condition\": [\n      \"no events inserted after 2 test runs\",\n      \"HTTP 4xx/5xx on bridge alias\"\n    ]\n  },\n  \"risks\": [\n    \"external service must accept new callback URL\",\n    \"brief dual-URL window if old config cached\"\n  ],\n  \"one_sentence_verdict\": \"Change the env-managed webhook URL to the existing bridge alias to route callbacks to the final handler with zero code changes.\"\n}",
+              "reasoning_content": "The user wants a response ONLY as valid JSON following a specific schema. No surrounding text.\n",
+              "refusal": null
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 577,
+          "completion_tokens": 364,
+          "total_tokens": 1525,
+          "prompt_tokens_details": {
+            "text_tokens": 577,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 584,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "num_sources_used": 0,
+          "cost_in_usd_ticks": 29568500
+        },
+        "system_fingerprint": "fp_eb3c003fc66c14ed"
+      }
+    },
+    "gemini": {
+      "status_code": 200,
+      "body": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The external system's webhook is configured to send events to the initial intake endpoint (/api/auditapatron/webhook) which only validates and acknowledges, instead of the final processing endpoint (/api/auditapatron/complilink-webhook) responsible for inserting webhookEvents and updating documents.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'configured_webhook_url' matches the 'initial_intake_route' which is handled by 'handleAuditaPatronIncomingWebhook'.\",\n      \"The 'initial_handler_behavior' explicitly states it 'only validates the event document.uploaded and responds accepted', which aligns with the 'runtime_evidence' of HTTP 202 and audited correlationId, but empty 'webhookEvents'.\",\n      \"The 'final_handler_behavior' responsible for inserting 'compliLinkWebhookEvents' and updating documents is associated with a different route, '/api/auditapatron/complilink-webhook', which is not being hit by the incoming webhook.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/auditapatron/complilink-webhook\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"Changing the external system's webhook configuration to point to the 'final_return_route' directly ensures the event reaches the correct handler ('handleCompliLinkReturnWebhook') for full processing.\",\n      \"This is the most minimal and safest fix as it avoids modifying existing code or internal routing logic, adhering to the 'must_be_minimal' and 'must_preserve_existing_dispatch_flow' constraints.\",\n      \"The initial intake route can remain active for other potential uses or for a graceful transition period, ensuring backward compatibility.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify the external system's webhook configuration has been updated to 'https://auditapatron.com/api/auditapatron/complilink-webhook'.\",\n      \"Trigger a controlled 'document.uploaded' event from the external system.\",\n      \"Monitor application logs for successful receipt and processing at the '/api/auditapatron/complilink-webhook' endpoint.\",\n      \"Check the database for new entries in 'compliLinkWebhookEvents' corresponding to the triggered event.\",\n      \"Verify that associated documents are updated and final events are added to the case as expected.\"\n    ],\n    \"expected_success_signal\": [\n      \"The external system reports a successful (e.g., HTTP 200/202) response from 'https://auditapatron.com/api/auditapatron/complilink-webhook'.\",\n      \"New records are present in the 'compliLinkWebhookEvents' collection/table for the triggered event.\",\n      \"Related document statuses and fields are updated correctly.\",\n      \"Final events are logged within the case management system.\"\n    ],\n    \"rollback_condition\": [\n      \"If 'compliLinkWebhookEvents' remains empty after triggering the webhook.\",\n      \"If the external system reports errors when attempting to send to the new URL.\",\n      \"If the '/api/auditapatron/complilink-webhook' endpoint does not receive the webhook or returns an unexpected error code.\",\n      \"If any existing functionality relying on the old '/api/auditapatron/webhook' endpoint is negatively impacted.\"\n    ]\n  },\n  \"risks\": [\n    \"Coordination overhead with the external system's team to update their webhook configuration.\",\n    \"Potential for human error during manual configuration update on the external system's side.\",\n    \"External system caching issues might delay the propagation of the configuration change.\",\n    \"The external system might have specific requirements or limitations for changing webhook URLs.\",\n    \"The new endpoint might have different authentication/authorization requirements not currently met by the external system (though not indicated in context).\"\n  ],\n  \"one_sentence_verdict\": \"The missing callback is most likely due to the external system's webhook being configured to an initial validation endpoint, requiring a configuration update to point to the correct final processing endpoint.\"\n}"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 445,
+          "candidatesTokenCount": 942,
+          "totalTokenCount": 3517,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 445
+            }
+          ],
+          "thoughtsTokenCount": 2130,
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "6swYatOVJISV_uMP0qCCyQ4"
+      }
+    }
+  },
+  "parsed": {
+    "chatgpt": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"El endpoint final para el callback (final_return_route) está mal configurado o no es alcanzado correctamente desde el webhook inicial, causando que compliLinkWebhookEvents no se inserte.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"Los dispatches del bridge regresan HTTP 202 con correlationId auditado, lo que indica que la llamada inicial es exitosa.\",\n      \"WebhookEvents permanece vacío, lo que sugiere que el handler final no está siendo invocado o no procesa eventos.\",\n      \"Solo handleCompliLinkReturnWebhook inserta compliLinkWebhookEvents y actualiza documentos, y este handler está asociado a final_return_route y sus aliases.\",\n      \"El initial_handler solo valida y responde accepted sin insertar eventos, por lo que la ausencia de eventos indica que el callback final no se ejecuta.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/integrations/auditapatron/bridge\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"El alias /api/integrations/auditapatron/bridge es uno de los endpoints finales configurados y debería ser usado para asegurar que el callback llegue al handler correcto.\",\n      \"Cambiar la configuración del webhook para apuntar a este alias garantiza que el flujo de dispatch se preserve y que el handler final se invoque correctamente.\",\n      \"No se requiere cambio de código, solo ajustar la URL configurada en el entorno para corregir la ruta del callback.\",\n      \"Mantener backward compatibility usando un alias conocido evita romper integraciones existentes.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Enviar un evento document.uploaded y verificar que el dispatch del bridge retorne HTTP 202.\",\n      \"Confirmar que compliLinkWebhookEvents se inserte en la base de datos tras el callback.\",\n      \"Verificar que el correlationId esté presente y auditado en logs.\",\n      \"Monitorear que no haya errores 404 o 500 en el endpoint final tras el cambio.\"\n    ],\n    \"expected_success_signal\": [\n      \"Inserción de compliLinkWebhookEvents confirmada.\",\n      \"Logs muestran ejecución exitosa de handleCompliLinkReturnWebhook.\",\n      \"No se reportan errores en el endpoint final.\"\n    ],\n    \"rollback_condition\": [\n      \"Persistencia de compliLinkWebhookEvents sigue vacía después del cambio.\",\n      \"Errores HTTP 4xx o 5xx aumentan en el endpoint final.\",\n      \"Impacto negativo en el flujo de dispatch o en otros handlers.\"\n    ]\n  },\n  \"risks\": [\n    \"Configuración incorrecta del URL puede causar pérdida temporal de eventos.\",\n    \"Cambiar la URL sin validar puede romper integraciones existentes si no se mantiene backward compatibility.\",\n    \"Dependencia en aliases puede generar confusión si no están bien documentados.\"\n  ],\n  \"one_sentence_verdict\": \"La causa más probable es una configuración incorrecta del endpoint final del callback, y la corrección mínima segura es actualizar la URL del webhook para usar un alias válido que apunte al handler final sin modificar código.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "El endpoint final para el callback (final_return_route) está mal configurado o no es alcanzado correctamente desde el webhook inicial, causando que compliLinkWebhookEvents no se inserte.",
+          "confidence": "high",
+          "why": [
+            "Los dispatches del bridge regresan HTTP 202 con correlationId auditado, lo que indica que la llamada inicial es exitosa.",
+            "WebhookEvents permanece vacío, lo que sugiere que el handler final no está siendo invocado o no procesa eventos.",
+            "Solo handleCompliLinkReturnWebhook inserta compliLinkWebhookEvents y actualiza documentos, y este handler está asociado a final_return_route y sus aliases.",
+            "El initial_handler solo valida y responde accepted sin insertar eventos, por lo que la ausencia de eventos indica que el callback final no se ejecuta."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "https://auditapatron.com/api/integrations/auditapatron/bridge",
+          "need_backward_compatibility": true,
+          "why": [
+            "El alias /api/integrations/auditapatron/bridge es uno de los endpoints finales configurados y debería ser usado para asegurar que el callback llegue al handler correcto.",
+            "Cambiar la configuración del webhook para apuntar a este alias garantiza que el flujo de dispatch se preserve y que el handler final se invoque correctamente.",
+            "No se requiere cambio de código, solo ajustar la URL configurada en el entorno para corregir la ruta del callback.",
+            "Mantener backward compatibility usando un alias conocido evita romper integraciones existentes."
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "Enviar un evento document.uploaded y verificar que el dispatch del bridge retorne HTTP 202.",
+            "Confirmar que compliLinkWebhookEvents se inserte en la base de datos tras el callback.",
+            "Verificar que el correlationId esté presente y auditado en logs.",
+            "Monitorear que no haya errores 404 o 500 en el endpoint final tras el cambio."
+          ],
+          "expected_success_signal": [
+            "Inserción de compliLinkWebhookEvents confirmada.",
+            "Logs muestran ejecución exitosa de handleCompliLinkReturnWebhook.",
+            "No se reportan errores en el endpoint final."
+          ],
+          "rollback_condition": [
+            "Persistencia de compliLinkWebhookEvents sigue vacía después del cambio.",
+            "Errores HTTP 4xx o 5xx aumentan en el endpoint final.",
+            "Impacto negativo en el flujo de dispatch o en otros handlers."
+          ]
+        },
+        "risks": [
+          "Configuración incorrecta del URL puede causar pérdida temporal de eventos.",
+          "Cambiar la URL sin validar puede romper integraciones existentes si no se mantiene backward compatibility.",
+          "Dependencia en aliases puede generar confusión si no están bien documentados."
+        ],
+        "one_sentence_verdict": "La causa más probable es una configuración incorrecta del endpoint final del callback, y la corrección mínima segura es actualizar la URL del webhook para usar un alias válido que apunte al handler final sin modificar código."
+      }
+    },
+    "grok": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"configured_webhook_url points to initial intake route instead of final return handler\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"initial handler only validates document.uploaded and never touches compliLinkWebhookEvents\",\n      \"final handler (handleCompliLinkReturnWebhook) is the only code path that inserts events\",\n      \"dispatches succeed (202 + correlationId) but events table stays empty\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/integrations/auditapatron/bridge\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"alias already exists and routes to final handler\",\n      \"only env var change required, no code or route modifications\",\n      \"preserves existing dispatch flow\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"trigger controlled dispatch after config update\",\n      \"verify correlationId reaches final handler\",\n      \"confirm compliLinkWebhookEvents row is inserted\"\n    ],\n    \"expected_success_signal\": [\n      \"webhookEvents populated with final event\",\n      \"document updated and case event added\"\n    ],\n    \"rollback_condition\": [\n      \"no events inserted after 2 test runs\",\n      \"HTTP 4xx/5xx on bridge alias\"\n    ]\n  },\n  \"risks\": [\n    \"external service must accept new callback URL\",\n    \"brief dual-URL window if old config cached\"\n  ],\n  \"one_sentence_verdict\": \"Change the env-managed webhook URL to the existing bridge alias to route callbacks to the final handler with zero code changes.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "configured_webhook_url points to initial intake route instead of final return handler",
+          "confidence": "high",
+          "why": [
+            "initial handler only validates document.uploaded and never touches compliLinkWebhookEvents",
+            "final handler (handleCompliLinkReturnWebhook) is the only code path that inserts events",
+            "dispatches succeed (202 + correlationId) but events table stays empty"
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "https://auditapatron.com/api/integrations/auditapatron/bridge",
+          "need_backward_compatibility": true,
+          "why": [
+            "alias already exists and routes to final handler",
+            "only env var change required, no code or route modifications",
+            "preserves existing dispatch flow"
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "trigger controlled dispatch after config update",
+            "verify correlationId reaches final handler",
+            "confirm compliLinkWebhookEvents row is inserted"
+          ],
+          "expected_success_signal": [
+            "webhookEvents populated with final event",
+            "document updated and case event added"
+          ],
+          "rollback_condition": [
+            "no events inserted after 2 test runs",
+            "HTTP 4xx/5xx on bridge alias"
+          ]
+        },
+        "risks": [
+          "external service must accept new callback URL",
+          "brief dual-URL window if old config cached"
+        ],
+        "one_sentence_verdict": "Change the env-managed webhook URL to the existing bridge alias to route callbacks to the final handler with zero code changes."
+      }
+    },
+    "gemini": {
+      "text": "{\n  \"root_cause_assessment\": {\n    \"most_likely_root_cause\": \"The external system's webhook is configured to send events to the initial intake endpoint (/api/auditapatron/webhook) which only validates and acknowledges, instead of the final processing endpoint (/api/auditapatron/complilink-webhook) responsible for inserting webhookEvents and updating documents.\",\n    \"confidence\": \"high\",\n    \"why\": [\n      \"The 'configured_webhook_url' matches the 'initial_intake_route' which is handled by 'handleAuditaPatronIncomingWebhook'.\",\n      \"The 'initial_handler_behavior' explicitly states it 'only validates the event document.uploaded and responds accepted', which aligns with the 'runtime_evidence' of HTTP 202 and audited correlationId, but empty 'webhookEvents'.\",\n      \"The 'final_handler_behavior' responsible for inserting 'compliLinkWebhookEvents' and updating documents is associated with a different route, '/api/auditapatron/complilink-webhook', which is not being hit by the incoming webhook.\"\n    ]\n  },\n  \"recommended_fix\": {\n    \"change_type\": \"config_only\",\n    \"target_url\": \"https://auditapatron.com/api/auditapatron/complilink-webhook\",\n    \"need_backward_compatibility\": true,\n    \"why\": [\n      \"Changing the external system's webhook configuration to point to the 'final_return_route' directly ensures the event reaches the correct handler ('handleCompliLinkReturnWebhook') for full processing.\",\n      \"This is the most minimal and safest fix as it avoids modifying existing code or internal routing logic, adhering to the 'must_be_minimal' and 'must_preserve_existing_dispatch_flow' constraints.\",\n      \"The initial intake route can remain active for other potential uses or for a graceful transition period, ensuring backward compatibility.\"\n    ]\n  },\n  \"validation_plan\": {\n    \"checks\": [\n      \"Verify the external system's webhook configuration has been updated to 'https://auditapatron.com/api/auditapatron/complilink-webhook'.\",\n      \"Trigger a controlled 'document.uploaded' event from the external system.\",\n      \"Monitor application logs for successful receipt and processing at the '/api/auditapatron/complilink-webhook' endpoint.\",\n      \"Check the database for new entries in 'compliLinkWebhookEvents' corresponding to the triggered event.\",\n      \"Verify that associated documents are updated and final events are added to the case as expected.\"\n    ],\n    \"expected_success_signal\": [\n      \"The external system reports a successful (e.g., HTTP 200/202) response from 'https://auditapatron.com/api/auditapatron/complilink-webhook'.\",\n      \"New records are present in the 'compliLinkWebhookEvents' collection/table for the triggered event.\",\n      \"Related document statuses and fields are updated correctly.\",\n      \"Final events are logged within the case management system.\"\n    ],\n    \"rollback_condition\": [\n      \"If 'compliLinkWebhookEvents' remains empty after triggering the webhook.\",\n      \"If the external system reports errors when attempting to send to the new URL.\",\n      \"If the '/api/auditapatron/complilink-webhook' endpoint does not receive the webhook or returns an unexpected error code.\",\n      \"If any existing functionality relying on the old '/api/auditapatron/webhook' endpoint is negatively impacted.\"\n    ]\n  },\n  \"risks\": [\n    \"Coordination overhead with the external system's team to update their webhook configuration.\",\n    \"Potential for human error during manual configuration update on the external system's side.\",\n    \"External system caching issues might delay the propagation of the configuration change.\",\n    \"The external system might have specific requirements or limitations for changing webhook URLs.\",\n    \"The new endpoint might have different authentication/authorization requirements not currently met by the external system (though not indicated in context).\"\n  ],\n  \"one_sentence_verdict\": \"The missing callback is most likely due to the external system's webhook being configured to an initial validation endpoint, requiring a configuration update to point to the correct final processing endpoint.\"\n}",
+      "json": {
+        "root_cause_assessment": {
+          "most_likely_root_cause": "The external system's webhook is configured to send events to the initial intake endpoint (/api/auditapatron/webhook) which only validates and acknowledges, instead of the final processing endpoint (/api/auditapatron/complilink-webhook) responsible for inserting webhookEvents and updating documents.",
+          "confidence": "high",
+          "why": [
+            "The 'configured_webhook_url' matches the 'initial_intake_route' which is handled by 'handleAuditaPatronIncomingWebhook'.",
+            "The 'initial_handler_behavior' explicitly states it 'only validates the event document.uploaded and responds accepted', which aligns with the 'runtime_evidence' of HTTP 202 and audited correlationId, but empty 'webhookEvents'.",
+            "The 'final_handler_behavior' responsible for inserting 'compliLinkWebhookEvents' and updating documents is associated with a different route, '/api/auditapatron/complilink-webhook', which is not being hit by the incoming webhook."
+          ]
+        },
+        "recommended_fix": {
+          "change_type": "config_only",
+          "target_url": "https://auditapatron.com/api/auditapatron/complilink-webhook",
+          "need_backward_compatibility": true,
+          "why": [
+            "Changing the external system's webhook configuration to point to the 'final_return_route' directly ensures the event reaches the correct handler ('handleCompliLinkReturnWebhook') for full processing.",
+            "This is the most minimal and safest fix as it avoids modifying existing code or internal routing logic, adhering to the 'must_be_minimal' and 'must_preserve_existing_dispatch_flow' constraints.",
+            "The initial intake route can remain active for other potential uses or for a graceful transition period, ensuring backward compatibility."
+          ]
+        },
+        "validation_plan": {
+          "checks": [
+            "Verify the external system's webhook configuration has been updated to 'https://auditapatron.com/api/auditapatron/complilink-webhook'.",
+            "Trigger a controlled 'document.uploaded' event from the external system.",
+            "Monitor application logs for successful receipt and processing at the '/api/auditapatron/complilink-webhook' endpoint.",
+            "Check the database for new entries in 'compliLinkWebhookEvents' corresponding to the triggered event.",
+            "Verify that associated documents are updated and final events are added to the case as expected."
+          ],
+          "expected_success_signal": [
+            "The external system reports a successful (e.g., HTTP 200/202) response from 'https://auditapatron.com/api/auditapatron/complilink-webhook'.",
+            "New records are present in the 'compliLinkWebhookEvents' collection/table for the triggered event.",
+            "Related document statuses and fields are updated correctly.",
+            "Final events are logged within the case management system."
+          ],
+          "rollback_condition": [
+            "If 'compliLinkWebhookEvents' remains empty after triggering the webhook.",
+            "If the external system reports errors when attempting to send to the new URL.",
+            "If the '/api/auditapatron/complilink-webhook' endpoint does not receive the webhook or returns an unexpected error code.",
+            "If any existing functionality relying on the old '/api/auditapatron/webhook' endpoint is negatively impacted."
+          ]
+        },
+        "risks": [
+          "Coordination overhead with the external system's team to update their webhook configuration.",
+          "Potential for human error during manual configuration update on the external system's side.",
+          "External system caching issues might delay the propagation of the configuration change.",
+          "The external system might have specific requirements or limitations for changing webhook URLs.",
+          "The new endpoint might have different authentication/authorization requirements not currently met by the external system (though not indicated in context)."
+        ],
+        "one_sentence_verdict": "The missing callback is most likely due to the external system's webhook being configured to an initial validation endpoint, requiring a configuration update to point to the correct final processing endpoint."
+      }
+    }
+  }
+}

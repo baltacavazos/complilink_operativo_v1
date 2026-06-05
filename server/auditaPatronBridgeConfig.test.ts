@@ -51,7 +51,7 @@ afterEach(async () => {
 
 describe("auditaPatron bridge runtime configuration", () => {
   it("uses the published www webhook URL", () => {
-    expect(configuredWebhookUrl).toBe("https://www.complilink.mx/api/auditapatron/webhook");
+    expect(configuredWebhookUrl).toBe("https://complilink.mx/api/auditapatron/webhook");
   });
 
   it("authenticates the internal Helios contract route with the configured bridge secret", async () => {

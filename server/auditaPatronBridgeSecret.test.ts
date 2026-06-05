@@ -5,8 +5,8 @@ import { buildAuditaPatronEngineSignature } from "./auditaPatronIntegrationServi
 
 const webhookUrl = process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "";
 const hmacSecret = process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "";
-const expectedWebhookUrl = "https://www.complilink.mx/api/auditapatron/webhook";
-const expectedHealthUrl = "https://www.complilink.mx/api/internal/helios/bridge/contract";
+const expectedWebhookUrl = "https://complilink.mx/api/auditapatron/webhook";
+const expectedHealthUrl = "https://complilink.mx/api/internal/helios/bridge/contract";
 const allowLiveBridgeSmokeByEnv =
   process.env.ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === "TRUE";
 const allowLiveBridgeSmokeByRuntime = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
@@ -31,7 +31,7 @@ afterEach(async () => {
 describe("CompliLink MX bridge credentials", () => {
   it("validates the configured public bridge endpoint and HMAC secret shape", () => {
     expect(webhookUrl).toBe(expectedWebhookUrl);
-    expect(new URL(webhookUrl).origin).toBe("https://www.complilink.mx");
+    expect(new URL(webhookUrl).origin).toBe("https://complilink.mx");
     expect(hmacSecret.trim().length).toBeGreaterThan(0);
   });
 
