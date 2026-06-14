@@ -1,0 +1,184 @@
+{
+  "context_file": "/home/ubuntu/complilink_operativo_v1/platform_audit_multi_ai_context_2026-06-14.md",
+  "results": {
+    "chatgpt": {
+      "model": "ChatGPT-4o",
+      "global_score": 7.2,
+      "dimension_scores": {
+        "ux": 7,
+        "copy": 7.5,
+        "frontend_architecture": 6.5,
+        "visual_consistency": 6.5,
+        "human_feeling": 8
+      },
+      "strengths": [
+        "Propuesta de valor clara y directa en el hero: 'Sube tu recibo y te decimos qué revisar.'",
+        "Tono editorial cercano, útil y adaptado a la audiencia mexicana no técnica.",
+        "Sistema de tokens semánticos en index.css que sienta bases para escalabilidad visual.",
+        "Primer impacto de la home mejorado respecto a versiones anteriores.",
+        "Flujo de onboarding y explicación de privacidad bien cubiertos para generar confianza."
+      ],
+      "live_coded_signals": [
+        "Monolitos gigantes: Auditar.tsx (14k+ líneas) y Home.tsx (3k+ líneas) concentran demasiada lógica y narrativa.",
+        "IDs duplicados (por ejemplo, 'privacidad') en la landing.",
+        "A/B copy residual: variantes de hero coexistiendo en el código.",
+        "Acumulación de bloques funcionales independientes en la landing sin consolidación editorial.",
+        "Fondos hardcodeados en la home fuera del sistema de tokens."
+      ],
+      "repetition_signals": [
+        "Repetición de CTAs: 'Empezar auditoría gratis' aparece varias veces en la landing.",
+        "Promesa reiterada: múltiples bloques repiten que basta un recibo para empezar.",
+        "Sobre-explicación modular: secciones independientes que reiteran el flujo básico.",
+        "Narrativa de privacidad y confianza repetida en más de un bloque.",
+        "Estructura de bloques funcionales que parecen apilados en vez de integrados."
+      ],
+      "visual_consistency_findings": [
+        "Paleta fragmentada en la home: múltiples fondos hardcodeados (ej. bg-[#e7f2f0], bg-[#eef6f5], etc.) que no respetan tokens globales.",
+        "Desviación local respecto al sistema de design tokens, especialmente en la landing.",
+        "Inconsistencias cromáticas entre la home (fondos claros y variantes) y el resto de la app (tema dark por defecto).",
+        "Falta de uniformidad en el espaciado y jerarquía visual entre secciones de la landing.",
+        "Algunos componentes reutilizan estilos globales, pero otros los sobrescriben localmente."
+      ],
+      "frontend_architecture_findings": [
+        "Monolitos de página: archivos como Auditar.tsx y Home.tsx con miles de líneas y múltiples dominios mezclados.",
+        "Falta de modularización: lógica de branding, analítica, UI primitives, drawers, legal, pricing y más en un solo archivo.",
+        "Acumulación de variantes de copy y lógica condicional sin consolidación.",
+        "IDs duplicados y estructuras repetidas que dificultan el mantenimiento.",
+        "Dependencia de módulos auxiliares en CeoDashboard, pero sin una separación clara de dominios."
+      ],
+      "top_3_changes": [
+        "Refactorizar Home.tsx y Auditar.tsx extrayendo bloques/secciones funcionales a componentes independientes, consolidando variantes de copy y eliminando IDs duplicados.",
+        "Unificar la paleta cromática de la landing usando exclusivamente tokens del sistema global (index.css), eliminando fondos hardcodeados y normalizando el uso de colores.",
+        "Reducir la repetición editorial: fusionar bloques que repiten la promesa principal y los CTAs, y podar la sobre-explicación para que cada sección aporte valor único y no reiterativo."
+      ],
+      "what_to_preserve": [
+        "El tono claro, directo y humano del hero y los mensajes iniciales.",
+        "La estructura de onboarding y explicación de privacidad, que genera confianza.",
+        "El sistema de tokens semánticos en index.css como base para la consistencia visual.",
+        "La funcionalidad central de subir recibos y obtener una señal clara.",
+        "La orientación a la utilidad real para el usuario mexicano no técnico."
+      ],
+      "path_to_nine": "Priorizar la modularización de los monolitos Home.tsx y Auditar.tsx, extrayendo componentes y consolidando variantes de copy para eliminar acumulación y repetición. Normalizar la paleta cromática de la landing usando solo tokens globales, eliminando fondos hardcodeados y asegurando consistencia visual. Realizar una poda editorial de la landing para fusionar bloques redundantes y reducir la sobre-explicación, manteniendo solo las secciones que aportan valor único. Con estos tres cambios, la plataforma puede alcanzar una percepción de producto premium, humano y pulido sin necesidad de reescritura total.",
+      "confidence": "Alta: la evidencia estructural, visual y editorial es suficiente para priorizar cambios concretos y de alto impacto que pueden ejecutarse sin reescribir la plataforma desde cero.",
+      "notable_quotes": [
+        "\"Sube tu recibo y te decimos qué revisar.\"",
+        "\"Así de simple. Subes tu recibo. Ves una señal clara. Sabes qué hacer después.\"",
+        "\"La home sigue sintiéndose larga y acumulativa... la hipótesis actual es que el principal problema ya no es falta de claridad inicial, sino sobre-explicación modular.\""
+      ],
+      "source_api": "openai"
+    },
+    "grok": {
+      "model": "Grok",
+      "global_score": 6.7,
+      "dimension_scores": {
+        "ux": 7.2,
+        "copy": 8.1,
+        "frontend_architecture": 4.8,
+        "visual_consistency": 4.5,
+        "human_feeling": 6.3
+      },
+      "strengths": [
+        "Hero copy is concrete and audience-appropriate",
+        "Clear value proposition without jargon",
+        "Functional end-to-end audit flow already exists"
+      ],
+      "live_coded_signals": [
+        "Auditar.tsx at 14144 lines with mixed branding, drawers, pricing, PDF export and legal gate",
+        "20+ unique hardcoded light backgrounds in Home.tsx",
+        "Residual heroCopyVariants and duplicate id=\"privacidad\""
+      ],
+      "repetition_signals": [
+        "CTA \"Empezar auditoría gratis\" repeated across multiple sections",
+        "Same \"sube tu recibo y ves una señal\" promise restated in 5+ blocks",
+        "Multiple near-identical trust and privacy micro-sections"
+      ],
+      "visual_consistency_findings": [
+        "Design tokens exist in index.css but are bypassed by 11+ custom bg-[#e7f2f0] etc. values",
+        "Light home palette clashes with teal/slate dark app theme without transition logic"
+      ],
+      "frontend_architecture_findings": [
+        "Single-file pages concentrate too many product domains",
+        "No evident component extraction for reusable sections in Home.tsx"
+      ],
+      "top_3_changes": [
+        "Split Auditar.tsx into domain-specific modules (vault, calculator, export, legal) and lazy-load",
+        "Replace all hardcoded light backgrounds with OKLCH semantic tokens and enforce via lint rule",
+        "Collapse or merge 6–7 redundant landing sections (HeliosFirstEntry, ConfidenceMagic, MobilePriorityPath, etc.) into 3 focused blocks"
+      ],
+      "what_to_preserve": [
+        "Hero line \"Sube tu recibo y te decimos qué revisar\"",
+        "Tone of \"Primero ves qué revisar. Si te sirve, luego decides\"",
+        "Existing tRPC + Drizzle data layer and dark theme in authenticated app"
+      ],
+      "path_to_nine": "Component extraction + token enforcement + editorial pruning in two focused sprints can credibly reach 9/10 without full rewrite",
+      "confidence": "high",
+      "notable_quotes": [
+        "Sube tu recibo y te decimos qué revisar.",
+        "Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento."
+      ],
+      "source_api": "xai"
+    },
+    "gemini": {
+      "model": "Gemini",
+      "global_score": 4,
+      "dimension_scores": {
+        "ux": 5,
+        "copy": 6,
+        "frontend_architecture": 3,
+        "visual_consistency": 4,
+        "human_feeling": 4
+      },
+      "strengths": [
+        "Propuesta de valor clara y concreta: 'Sube tu recibo y te decimos qué revisar.'",
+        "Mensajes iniciales de valor que transmiten utilidad: 'Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.'",
+        "Base existente de design system con tokens semánticos OKLCH en `index.css`",
+        "Primer impacto del hero funcional y con mejor percepción que en iteraciones anteriores"
+      ],
+      "live_coded_signals": [
+        "Monolitos gigantes como `Auditar.tsx` (14,144 líneas) y `Home.tsx` (3,027 líneas) que concentran demasiada lógica y narrativa.",
+        "Paleta fragmentada con múltiples fondos hardcodeados (`bg-[#e7f2f0]`, etc.) en la Home, desviándose del sistema de tokens.",
+        "Variantes de copy tipo A/B (`heroCopyVariants`) coexistiendo en el código, sugiriendo exploración acumulada sin consolidación final.",
+        "IDs duplicados (ej. `id=\"privacidad\"`) que indican descuido estructural y acumulación.",
+        "Concentración excesiva de responsabilidades en `Auditar.tsx` (branding, analítica, UI primitives, drawers, legal gate, pricing, etc.) antes de la lógica profunda."
+      ],
+      "repetition_signals": [
+        "Repetición de CTAs como 'Empezar auditoría gratis' en múltiples bloques de la Home.",
+        "Múltiples bloques que repiten la promesa de que basta un recibo para empezar y ver una señal, debilitando la sofisticación editorial.",
+        "La 'sobre-explicación modular' en la Home, encadenando demasiadas secciones con mensajes similares."
+      ],
+      "visual_consistency_findings": [
+        "Fragmentación cromática severa en la Home con múltiples fondos hardcodeados que contradicen el sistema de tokens semánticos.",
+        "Inconsistencia entre el tema dark por defecto de la plataforma y los fondos claros y variantes cromáticas locales de la Home pública.",
+        "Desviación local de la aplicación del sistema de tokens semánticos en la Home, a pesar de su existencia en `index.css`."
+      ],
+      "frontend_architecture_findings": [
+        "`client/src/pages/Auditar.tsx` con 14,144 líneas es un monolito frontend extremo, indicando crecimiento incremental sin modularización adecuada.",
+        "`client/src/pages/Home.tsx` con 3,027 líneas y alrededor de 20 secciones es una landing page excesivamente larga y difícil de mantener.",
+        "`client/src/pages/CeoDashboard.tsx` con 4,637 líneas ya depende de múltiples módulos auxiliares, sugiriendo complejidad creciente y acoplamiento.",
+        "La concentración de demasiadas responsabilidades en archivos únicos genera alta complejidad, bajo reuso y dificultad para escalar o refactorizar."
+      ],
+      "top_3_changes": [
+        "Modularizar `Auditar.tsx` y `Home.tsx` en componentes y módulos con responsabilidades únicas para reducir la complejidad y mejorar la mantenibilidad.",
+        "Realizar una poda editorial y reestructuración drástica de `Home.tsx`, consolidando la narrativa, eliminando repeticiones y reduciendo el número de secciones a lo esencial (5-7 bloques clave).",
+        "Normalizar la paleta visual en la Home eliminando todos los fondos hardcodeados y aplicando estrictamente el sistema de tokens semánticos (OKLCH) para lograr una coherencia visual impecable."
+      ],
+      "what_to_preserve": [
+        "La claridad y concreción de la propuesta de valor inicial: 'Sube tu recibo y te decimos qué revisar.'",
+        "La explicación simple y directa del flujo: 'Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.'",
+        "La base del design system existente en `index.css` con tokens semánticos OKLCH, que es un buen punto de partida para la consistencia.",
+        "El tono general de utilidad y accesibilidad para una audiencia no técnica."
+      ],
+      "path_to_nine": "El camino a 9/10 implica una cirugía mayor de arquitectura frontend para modularizar los monolitos clave, una reingeniería editorial profunda de la landing para eliminar la sobre-explicación y la repetición, y una aplicación rigurosa del design system existente para lograr una consistencia visual impecable. Esto, combinado con una revisión de flujos de usuario para reducir la carga cognitiva, transformará la percepción de un producto ensamblado a uno premium y curado.",
+      "confidence": "High",
+      "notable_quotes": [
+        "Señal muy fuerte de monolito frontend y crecimiento incremental dentro de un único archivo",
+        "Landing extremadamente larga con alrededor de 20 secciones o bloques funcionales",
+        "Paleta fragmentada con múltiples fondos hardcodeados",
+        "El principal problema ya no es falta de claridad inicial, sino sobre-explicación modular.",
+        "Demasiadas responsabilidades en un solo archivo"
+      ],
+      "source_api": "gemini"
+    }
+  },
+  "errors": {}
+}
