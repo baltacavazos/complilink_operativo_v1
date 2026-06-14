@@ -10771,6 +10771,23 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                 <span className="rounded-full bg-white/90 px-3 py-1">Descargar reporte</span>
                                 <span className="rounded-full bg-white/90 px-3 py-1">Seguir con más contexto</span>
                               </div>
+                              <div className="mt-3 rounded-[0.95rem] border border-white/80 bg-white/85 px-3 py-3 text-xs leading-5 text-slate-700 shadow-sm sm:text-sm">
+                                <p className="font-semibold uppercase tracking-[0.14em] text-teal-800">Transparencia de esta sesión</p>
+                                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                                  <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
+                                    <p className="font-semibold text-slate-950">Borrador primero</p>
+                                    <p className="mt-1">Nada se guarda en tu expediente hasta que tú lo confirmas.</p>
+                                  </div>
+                                  <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
+                                    <p className="font-semibold text-slate-950">Rastro legal visible</p>
+                                    <p className="mt-1">La aceptación legal registra versión, fecha, IP y navegador.</p>
+                                  </div>
+                                  <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
+                                    <p className="font-semibold text-slate-950">Control de privacidad</p>
+                                    <p className="mt-1">Puedes borrar, exportar o pedir atención ARCO desde privacidad@auditapatron.com.</p>
+                                  </div>
+                                </div>
+                              </div>
                               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
                                   type="button"

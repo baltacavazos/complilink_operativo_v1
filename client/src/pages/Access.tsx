@@ -489,9 +489,16 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   />
                 </div>
 
-                <p className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
-                  Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.
-                </p>
+                <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
+                  <p>
+                    Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.
+                  </p>
+                  <div className="mt-3 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3">
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Sin correo comercial</span>
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal de acceso</span>
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Regreso directo a tu revisión</span>
+                  </div>
+                </div>
 
                 <Button
                   type="submit"

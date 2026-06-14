@@ -3,51 +3,53 @@
   "results": {
     "chatgpt": {
       "model": "AuditaPatron",
-      "strict_score_now": 8.3,
-      "trust_score_now": 8.5,
-      "finished_product_score": 8.2,
-      "verdict": "El producto ha mejorado notablemente en comunicación de privacidad y control, pero aún no alcanza el umbral de 9/10 bajo un estándar severo. La percepción de producto terminado es sólida, pero no impecable: la presencia del overlay 'Salida rápida' en el entorno de preview, aunque atribuible a la capa externa, introduce una duda perceptual que no puede ignorarse en una demo técnica. Además, la experiencia de privacidad visible y el blindaje psicológico, aunque reforzados, todavía pueden elevarse con microinteracciones o feedback visual más inmediato que refuerce la sensación de control absoluto. El microcopy es claro, pero falta una capa de validación externa (por ejemplo, sello de auditoría o enlace a revisión independiente) para maximizar la confianza. No hay errores técnicos, pero la excelencia en confianza y cierre aún no es total.",
+      "strict_score_now": 8.6,
+      "trust_score_now": 8.7,
+      "finished_product_score": 8.5,
+      "verdict": "El producto ha avanzado de forma significativa en percepción de privacidad, confianza y sensación de control, con señales visibles y microcopy reforzado en los puntos críticos. Sin embargo, aún no alcanza el umbral de 9/10+ en ninguna dimensión clave. Persisten detalles que impiden considerarlo un producto terminado de clase mundial: la presencia de overlays o artefactos en entornos de preview, aunque no estén en producción, afecta la percepción de pulido extremo y puede generar dudas en demos técnicas. El lenguaje y las señales de privacidad han mejorado, pero todavía hay margen para una capa adicional de validación visual (por ejemplo, un panel de auditoría de privacidad en tiempo real o feedback inmediato tras acciones críticas). El producto es sólido y confiable, pero no transmite aún la perfección y cierre absoluto que exige un 9/10+.",
       "ship_now_strict": false,
       "remaining_blockers": [
-        "El overlay 'Salida rápida' en preview, aunque externo, afecta la percepción de cierre en la demo técnica.",
-        "Falta una señal de validación externa o auditoría independiente visible para llevar la confianza al máximo.",
-        "La privacidad visible y el blindaje psicológico pueden reforzarse con feedback visual o microinteracciones adicionales."
+        "Artefactos visuales en entornos de preview afectan la percepción de pulido extremo, aunque no estén en producción.",
+        "Falta una capa de validación visual o feedback inmediato tras acciones críticas de privacidad (por ejemplo, confirmaciones explícitas tras borrar o guardar).",
+        "El panel de transparencia y control podría ser más interactivo o mostrar logs en tiempo real para reforzar la confianza.",
+        "Microcopy y señales de privacidad aún pueden ser más contundentes y diferenciadoras frente a alternativas premium."
       ],
-      "score_to_beat": 9.0,
-      "single_next_move": "Eliminar cualquier overlay residual en todos los entornos de demo y añadir una señal visible de auditoría externa o validación independiente en Home y /legal/privacidad.",
-      "confidence": "Alta en la evaluación; no hay errores técnicos, pero la percepción de cierre y confianza aún no es de producto terminado de clase mundial.",
+      "score_to_beat": 9,
+      "single_next_move": "Implementar una capa de feedback visual inmediato y auditable tras cada acción crítica de privacidad (borrado, guardado, exportación), y eliminar cualquier overlay o artefacto en todos los entornos, incluyendo preview.",
+      "confidence": "Alta en el diagnóstico; el producto es robusto pero no irrefutablemente terminado ni premium en percepción.",
       "source_api": "openai"
     },
     "grok": {
-      "model": "SevereProductDirector",
-      "strict_score_now": 8.1,
+      "model": "StrictEvaluator",
+      "strict_score_now": 8.3,
       "trust_score_now": 8.6,
-      "finished_product_score": 7.5,
-      "verdict": "Mejoras en privacidad visibles pero producto no terminado. Artefacto perceptual y pulido insuficiente bloquean cierre real.",
+      "finished_product_score": 8.1,
+      "verdict": "Mejoras notables en privacidad y microcopy pero aún no alcanza percepción de producto terminado",
       "ship_now_strict": false,
       "remaining_blockers": [
-        "Elemento flotante 'Salida rápida' visible en preview de desarrollo",
-        "Falta validación visual limpia en producción real sin overlays",
-        "Sensación de demo técnica en lugar de producto premium pulido"
+        "Artefacto de preview 'Salida rápida' genera duda perceptual sobre control del entorno de demo",
+        "Falta validación real en producción con usuarios externos",
+        "Pulido visual y consistencia de espaciado en mobile aún por revisar exhaustivamente",
+        "Ningún test de carga o edge-case de privacidad en condiciones reales"
       ],
-      "score_to_beat": 9.3,
-      "single_next_move": "Eliminar artefacto y ejecutar QA visual exhaustivo en entorno de producción limpio",
-      "confidence": "Severidad máxima aplicada sin complacencia",
+      "score_to_beat": 9.2,
+      "single_next_move": "Eliminar cualquier dependencia o rastro de instrumentación externa y realizar revisión final de UI en producción real con usuarios reales",
+      "confidence": "Evaluación con máxima severidad aplicada sin complacencia",
       "source_api": "xai"
     },
     "gemini": {
-      "model": "Product Director AI",
-      "strict_score_now": 9.0,
-      "trust_score_now": 9.5,
-      "finished_product_score": 8.8,
-      "verdict": "El producto ha logrado una mejora excepcional en la confianza y el control percibido, superando con creces las expectativas en esos frentes. La implementación de microcopy y señales de blindaje es de primer nivel. Sin embargo, la presencia de un artefacto visual flotante ('Salida rápida') en el entorno de preview, aunque se argumente como externo, es una falla crítica en la percepción de un producto *terminado* y pulido. Un producto listo para el mercado debe presentarse sin mácula, incluso en sus demos técnicas. Esto impacta directamente la sensación de control total y la impecabilidad que se espera de un producto premium.",
+      "model": "Director de Producto Severo",
+      "strict_score_now": 9.2,
+      "trust_score_now": 9.7,
+      "finished_product_score": 9.0,
+      "verdict": "Se han implementado los cambios con una ejecución notable, elevando significativamente la confianza y la percepción de control del usuario. Los tres frentes críticos identificados previamente han sido abordados con una profundidad y claridad que superan el umbral de lo aceptable. La comunicación de la privacidad es ahora un pilar fundamental y visible del producto, estableciendo un nuevo estándar.",
       "ship_now_strict": true,
       "remaining_blockers": [
-        "Artefacto visual 'Salida rápida' en el entorno de preview (impacta la percepción de producto terminado y el control de la demo). Este elemento, aunque no sea parte de la aplicación, es visible en la presentación y resta profesionalismo."
+        "El artefacto 'Salida rápida' en el entorno de preview, aunque no es parte del producto final, es un distractor perceptual crítico en cualquier demo técnica y debe ser erradicado de inmediato de dichos entornos. Compromete la percepción de un producto terminado y pulido."
       ],
       "score_to_beat": 7.8,
-      "single_next_move": "Asegurar que todos los entornos de presentación (incluyendo previews de desarrollo) estén completamente limpios y libres de artefactos externos o capas no controladas por la aplicación, garantizando una experiencia de demo impecable.",
-      "confidence": "Alta",
+      "single_next_move": "Priorizar la limpieza de todos los entornos de demostración para eliminar cualquier artefacto de desarrollo que pueda comprometer la percepción de un producto terminado y la seriedad de la presentación.",
+      "confidence": "Extremadamente alta. Los cambios son sustanciales, bien ejecutados y abordan directamente las debilidades previas con soluciones robustas.",
       "source_api": "gemini"
     }
   },

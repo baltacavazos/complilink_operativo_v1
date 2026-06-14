@@ -1898,7 +1898,7 @@ function QuickTrustSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
-              Privacidad visible y auditada
+              Privacidad visible y verificable
             </div>
             <h2 className="mt-3 text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.15rem]">
               Control total. Privacidad garantizada.
@@ -1906,6 +1906,23 @@ function QuickTrustSection() {
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
               Tu empresa nunca ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. No necesitas cuenta para tu primera lectura y puedes borrar tus documentos cuando quieras.
             </p>
+            <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Guardado manual</p>
+                  <p className="mt-1.5 leading-6">Nada entra a tu expediente hasta que tú lo confirmas.</p>
+                </div>
+                <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Acceso con rastro útil</p>
+                  <p className="mt-1.5 leading-6">La aceptación legal deja versión, fecha, IP y navegador para tu resguardo.</p>
+                </div>
+                <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Borrado y privacidad visibles</p>
+                  <p className="mt-1.5 leading-6">Puedes revisar el aviso, escribir a privacidad@auditapatron.com y pedir control sobre tus datos.</p>
+                </div>
+              </div>
+            </div>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
                 {PRIMARY_CTA_LABEL}
@@ -1918,7 +1935,7 @@ function QuickTrustSection() {
                   window.location.href = "/legal/privacidad";
                 }}
               >
-                Ver cómo protegemos tu información
+                Ver controles de privacidad
               </Button>
             </div>
           </div>
@@ -1931,6 +1948,10 @@ function QuickTrustSection() {
               {
                 title: "Tu empresa nunca recibe tus archivos",
                 body: "La privacidad no depende de letras chiquitas: lo que subes aquí no se comparte con tu empresa y puedes revisar el aviso completo cuando quieras.",
+              },
+              {
+                title: "Aceptación legal con versión visible",
+                body: "Cuando corresponda aceptar documentos legales, el sistema deja constancia versionada para que sepas con qué aviso operaste y cuándo lo hiciste.",
               },
             ].map((item) => (
               <article

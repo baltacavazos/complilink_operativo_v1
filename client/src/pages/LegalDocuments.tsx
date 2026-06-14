@@ -192,6 +192,20 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                   <p className="mt-3 inline-flex w-fit rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
                     Revisión vigente visible · sin cambios ocultos
                   </p>
+                  <div className="mt-4 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3 sm:text-sm">
+                    <div className="rounded-[1rem] border border-teal-200 bg-white/90 px-3 py-3 shadow-sm">
+                      <p className="font-semibold text-slate-950">Qué sí se registra</p>
+                      <p className="mt-1 font-normal leading-5 text-slate-700">Versión legal, fecha, IP y navegador cuando una aceptación debe quedar auditada.</p>
+                    </div>
+                    <div className="rounded-[1rem] border border-teal-200 bg-white/90 px-3 py-3 shadow-sm">
+                      <p className="font-semibold text-slate-950">Qué no ve tu empresa</p>
+                      <p className="mt-1 font-normal leading-5 text-slate-700">Tus archivos, tu revisión y tu expediente privado no se comparten con tu patrón desde esta superficie.</p>
+                    </div>
+                    <div className="rounded-[1rem] border border-teal-200 bg-white/90 px-3 py-3 shadow-sm">
+                      <p className="font-semibold text-slate-950">Dónde ejerces control</p>
+                      <p className="mt-1 font-normal leading-5 text-slate-700">Puedes pedir derechos ARCO, revocar finalidades secundarias o escribir a privacidad@auditapatron.com.</p>
+                    </div>
+                  </div>
                 </div>
               ) : null}
               {slug === "terminos" ? (

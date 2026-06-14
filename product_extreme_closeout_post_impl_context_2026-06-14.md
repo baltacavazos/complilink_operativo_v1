@@ -14,27 +14,41 @@ En la ronda anterior, ChatGPT, Grok y Gemini coincidieron en una calificación e
 
 El bloque de confianza fue reforzado y ahora comunica:
 
-> "Privacidad visible y auditada"
+> "Privacidad visible y verificable"
 >
 > "Control total. Privacidad garantizada."
 >
 > "Tu empresa nunca ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. No necesitas cuenta para tu primera lectura y puedes borrar tus documentos cuando quieras."
 >
-> CTA secundario: "Ver cómo protegemos tu información"
+> CTA secundario: "Ver controles de privacidad"
 
-También se reforzaron las tarjetas de apoyo:
+También se reforzaron las tarjetas de apoyo y se añadió una superficie de transparencia visible en el primer scroll:
 
+> "Transparencia visible"
+>
+> "Guardado manual"
+>
+> "Acceso con rastro útil"
+>
+> "Borrado y privacidad visibles"
+>
 > "Solo tú decides qué guardar"
 >
 > "Tu empresa nunca recibe tus archivos"
 >
-> "Si sí te sirve, luego lo aseguras en tu expediente privado."
+> "Aceptación legal con versión visible"
 
 ### /acceso
 
-Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo antes del CTA:
+Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo antes del CTA, junto con tres señales visibles de uso limitado:
 
 > "Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión."
+>
+> "Sin correo comercial"
+>
+> "Código temporal de acceso"
+>
+> "Regreso directo a tu revisión"
 
 ### /auditar
 
@@ -50,15 +64,31 @@ Se reforzó el bloque premium posterior al hallazgo con lenguaje y señales más
 >
 > CTA principal: "Asegurar evidencia en tu bóveda privada"
 
-Además, el guardrail persistente de subida ahora dice:
+Además, el bloque premium ahora añade una mini capa explícita de trazabilidad:
+
+> "Transparencia de esta sesión"
+>
+> "Borrador primero"
+>
+> "Rastro legal visible"
+>
+> "Control de privacidad"
+
+Y el guardrail persistente de subida ahora dice:
 
 > "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue privado, bajo tu control y puedes borrarlo cuando quieras."
 
 ### /legal/privacidad
 
-Se añadió una señal visible de vigencia y mantenimiento:
+Se añadió una señal visible de vigencia y mantenimiento, más una mini matriz pública de transparencia:
 
 > "Revisión vigente visible · sin cambios ocultos"
+>
+> "Qué sí se registra"
+>
+> "Qué no ve tu empresa"
+>
+> "Dónde ejerces control"
 
 ## Validación técnica ya realizada
 
@@ -70,7 +100,7 @@ Se añadió una señal visible de vigencia y mantenimiento:
 
 ## Observación crítica restante
 
-En la preview de desarrollo sigue apareciendo visualmente un elemento flotante con texto `Salida rápida` en la esquina inferior derecha. Ya se hizo una validación más fuerte: el navegador de preview sí lo ve como overlay, pero una solicitud directa al HTML servido por esa misma URL no devuelve ninguna coincidencia para `Salida rápida` ni `news.google.com`. Además, en navegación al dominio público `auditapatron.com` ese elemento no apareció. Trátalo como **artefacto del entorno de preview o capa externa no servida por la app**, aunque puedes decidir si aun así merece una penalización perceptual sobre la demo técnica.
+En la preview de desarrollo sigue apareciendo visualmente un elemento flotante con texto `Salida rápida` en la esquina inferior derecha. Ya se hizo una validación más fuerte: el navegador de preview sí lo ve como overlay, pero una solicitud directa al HTML servido por esa misma URL no devuelve ninguna coincidencia para `Salida rápida` ni `news.google.com`. Además, en la inspección del documento inicial sí apareció una referencia externa a `'/__manus__/debug-collector.js'`, lo que refuerza que existe una capa de instrumentación ajena al repositorio en ese entorno. En navegación al dominio público `auditapatron.com` ese elemento no apareció. Trátalo como **artefacto del entorno de preview o capa externa no servida por la app**, aunque puedes decidir si aun así merece una penalización perceptual sobre la demo técnica.
 
 ## Lo que necesito de ti
 
