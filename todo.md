@@ -1768,8 +1768,8 @@
 - [x] Ronda extrema final: reforzar confianza y privacidad visible en Home, /acceso y /auditar hasta eliminar sensación de riesgo o producto en construcción
 - [x] Ronda extrema final: validar con pruebas, revisión visual y reauditoría multi-IA estricta la nueva nota consolidada
 - [x] Trazar el origen del artefacto visual 'Salida rápida' visible en preview y aislar si proviene del proyecto, del runtime o del entorno de vista previa
-- [ ] Corregir o mitigar el artefacto perceptual que hoy bloquea la nota estricta 9/10+ en la demo
-- [ ] Revalidar con ChatGPT, Grok y Gemini la nota estricta una vez despejado el bloqueo visual de confianza
+- [x] Corregir o mitigar el artefacto perceptual que hoy bloquea la nota estricta 9/10+ en la demo
+- [x] Revalidar con ChatGPT, Grok y Gemini la nota estricta una vez despejado el bloqueo visual de confianza
 
 - [x] Micro-ronda final: sustituir cualquier promesa de privacidad 'auditada' no verificable por evidencia visible, verificable y más defendible en Home y superficies relacionadas
 - [x] Micro-ronda final: revalidar con pruebas, preview y ChatGPT, Grok y Gemini la nota estricta después de ajustar la promesa de confianza
