@@ -268,8 +268,9 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#como-funciona", label: "Cómo te ayuda" },
-  { href: "#preguntas", label: "Preguntas" },
+  { href: "#lectura-gratis", label: "Resultado real" },
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#privacidad", label: "Privacidad" },
 ];
 
 const tourSteps: TourStep[] = [
@@ -443,10 +444,10 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "¿Te están pagando bien? Sube tu recibo y te mostramos si hay algo raro en tu pago.",
-    microDescription: "Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.",
-    body: "Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.",
-    ctaPrimary: "Revisa tu recibo gratis",
+    supportLine: "Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.",
+    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    body: "Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
+    ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
   control: {
@@ -470,10 +471,10 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y entiende rápido qué revisar.",
     headline: "Sube tu recibo y entiende rápido qué revisar.",
-    supportLine: "Empieza gratis con un solo recibo y descubre si algo no cuadra en tu pago.",
+    supportLine: "Empieza con un solo recibo y descubre rápido si tu pago merece una revisión más seria.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir sin enredarte.",
-    body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues después.",
-    ctaPrimary: "Revisa tu recibo gratis",
+    body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues con más contexto.",
+    ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
   direct_money_check: {
@@ -483,10 +484,10 @@ const heroCopyVariants = {
     titleLead: "Revisa tu pago",
     titleAccent: "con una primera lectura útil.",
     headline: "Revisa tu pago con una primera lectura útil.",
-    supportLine: "Sube un recibo y detecta a tiempo si algo podría estar raro en tu pago.",
+    supportLine: "Sube un recibo y detecta a tiempo si tu pago tiene algo que sí conviene revisar.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
-    body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues.",
-    ctaPrimary: "Revisa tu recibo gratis",
+    body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues o lo guardas.",
+    ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
 } as const;
@@ -1202,10 +1203,10 @@ function HeroSection() {
     <section
       ref={heroSectionRef}
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-5 pt-4 sm:pb-12 sm:pt-12 lg:pt-16"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-3 pt-3 sm:pb-8 sm:pt-8 lg:pt-10"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
-      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-7 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
+      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
             className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
@@ -1217,28 +1218,28 @@ function HeroSection() {
           </div>
 
             <h1
-              className="motion-enter-soft mt-3.5 max-w-[15ch] text-balance text-[2.28rem] font-bold leading-[0.94] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-5 sm:max-w-[14ch] sm:text-[3.6rem] lg:max-w-[13ch] lg:text-[4.4rem]"
+              className="motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.9rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
               style={{ ["--motion-delay" as string]: "120ms" }}
             >
               {activeHeroVariant.headline}
             </h1>
 
             <p
-              className="motion-enter-soft mt-3 max-w-xl text-base leading-7 text-slate-700 max-[359px]:text-[0.96rem] max-[359px]:leading-6 sm:text-[1.02rem] sm:leading-8"
+              className="motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {activeHeroVariant.supportLine}
             </p>
 
             <p
-              className="motion-enter-soft mt-2 max-w-xl text-sm font-medium leading-6 text-slate-800 max-[359px]:text-[0.9rem] max-[359px]:leading-6 sm:text-[0.98rem] sm:leading-7"
+              className="motion-enter-soft mt-1.5 max-w-xl text-sm font-medium leading-6 text-slate-800 max-[359px]:text-[0.9rem] max-[359px]:leading-6 sm:text-[0.96rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "200ms" }}
             >
               {activeHeroVariant.microDescription}
             </p>
 
             <p
-              className="motion-enter-soft mt-2.5 max-w-xl text-base leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1.08rem] sm:leading-8"
+              className="motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "210ms" }}
             >
               {activeHeroVariant.body}
@@ -1248,7 +1249,7 @@ function HeroSection() {
               className={
                 isShortPaidCampaignHero
                   ? "hidden"
-                  : "motion-enter-soft order-3 mt-5 hidden w-full max-w-xl rounded-[1.6rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.28)] sm:order-none sm:block sm:p-5"
+                  : "motion-enter-soft order-3 mt-4 hidden w-full max-w-xl rounded-[1.45rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_20px_44px_-36px_rgba(15,23,42,0.24)] sm:order-none sm:block sm:p-4"
               }
               style={{ ["--motion-delay" as string]: "250ms" }}
             >
@@ -1330,107 +1331,9 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
               </div>
           </div>
 
-          <div
-            className="motion-enter-soft mt-3 w-full max-w-3xl rounded-[1.55rem] border border-slate-200 bg-white/94 p-4 shadow-[0_24px_54px_-42px_rgba(15,23,42,0.28)] sm:p-5"
-            style={{ ["--motion-delay" as string]: "330ms" }}
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Microvideo guiado</p>
-                <p className="mt-1 text-base font-semibold leading-7 text-slate-950 sm:text-[1.05rem]">
-                  Mira cómo funciona en segundos.
-                </p>
-              </div>
-              <span className="inline-flex w-fit rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                15 segundos aprox.
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)]">
-              <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
-                    {activeMicroDemoScene.step}
-                  </span>
-                  <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                    {activeMicroDemoScene.accent}
-                  </span>
-                </div>
-                <p className="mt-4 text-[1.35rem] font-semibold leading-8 tracking-[-0.03em] text-slate-950">
-                  {activeMicroDemoScene.title}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {activeMicroDemoScene.detail}
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  {heroMicroDemoScenes.map((scene, index) => {
-                    const isActive = index === activeMicroDemoSceneIndex;
-
-                    return (
-                      <button
-                        key={scene.title}
-                        type="button"
-                        aria-label={`Ver escena ${index + 1}`}
-                        aria-pressed={isActive}
-                        onClick={() => setActiveMicroDemoSceneIndex(index)}
-                        className={`h-2.5 rounded-full transition ${isActive ? "w-8 bg-teal-600" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="rounded-[1.45rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_44px_-30px_rgba(15,23,42,0.18)]">
-                <div className="mx-auto max-w-[18rem] rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.2)]">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Vista rápida</p>
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-2">
-                    {[
-                      { label: "Subir", icon: Upload, activeAt: 0 },
-                      { label: "Ver", icon: FileSearch, activeAt: 1 },
-                      { label: "Seguir", icon: CheckCircle2, activeAt: 2 },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeMicroDemoSceneIndex >= item.activeAt;
-
-                      return (
-                        <div
-                          key={item.label}
-                          className={`flex items-center gap-3 rounded-[1rem] border px-3 py-3 transition ${
-                            isActive ? "border-teal-200 bg-teal-50 text-teal-950" : "border-slate-200 bg-slate-50 text-slate-500"
-                          }`}
-                        >
-                          <div className={`rounded-full p-2 ${isActive ? "bg-white text-teal-700" : "bg-white text-slate-400"}`}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold leading-5">{item.label}</p>
-                            <p className="text-xs leading-5">{item.label === "Subir" ? "Foto o PDF" : item.label === "Ver" ? "Señal clara" : "Siguiente paso"}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-4 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Mensaje del momento</p>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{activeMicroDemoScene.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">{activeMicroDemoScene.detail}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div
-            className="motion-enter-soft mt-2.5 w-full max-w-xl rounded-[1.45rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] max-[359px]:p-3 sm:p-4"
+            className="motion-enter-soft mt-2 w-full max-w-xl rounded-[1.35rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_20px_42px_-34px_rgba(15,23,42,0.28)] max-[359px]:p-3 sm:p-4"
             style={{ ["--motion-delay" as string]: "360ms" }}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Así de simple</p>
@@ -1448,7 +1351,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
           </div>
 
           <div
-            className="motion-enter-soft mt-3.5 w-full max-w-3xl rounded-[1.6rem] border border-slate-200 bg-white/94 p-4 shadow-[0_24px_54px_-42px_rgba(15,23,42,0.28)] sm:p-5"
+            className="motion-enter-soft mt-2.5 w-full max-w-3xl rounded-[1.5rem] border border-slate-200 bg-white/94 p-4 shadow-[0_22px_46px_-38px_rgba(15,23,42,0.24)] sm:p-5"
             style={{ ["--motion-delay" as string]: "390ms" }}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -1807,10 +1710,10 @@ function HeliosFirstEntrySection() {
             Primera lectura sin correo
           </div>
           <h2 className="mt-4 max-w-[14ch] text-[2rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:text-[2.65rem]">
-            Sube un archivo y recibe una primera lectura clara.
+            Sube un archivo y mira una señal real antes de decidir.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
-            Primero ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si decides guardarlo te pedimos tu correo para llevarlo a tu expediente privado.
+            Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si te aporta valor te pedimos tu correo para guardarlo dentro de tu expediente privado.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -1830,10 +1733,10 @@ function HeliosFirstEntrySection() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Primera lectura sin correo
+                  Resultado real desde el primer archivo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF. No necesitas reunir todo ni abrir una cuenta. Si este primer resultado te sirve, lo guardas después en tu expediente privado.
+                  Empieza con una foto o PDF. No necesitas reunir todo ni abrir una cuenta. Primero ves el valor; después decides si quieres convertirlo en expediente.
                 </p>
               </div>
               <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
@@ -1989,7 +1892,7 @@ function HeliosFirstEntrySection() {
 
 function QuickTrustSection() {
   return (
-    <section id="privacidad" className="bg-[#e7f2f0] py-6 sm:bg-[#eef6f5] sm:py-8">
+    <section id="privacidad" className="bg-muted/35 py-8 sm:py-10">
       <div className="container mx-auto max-w-6xl">
         <div className="grid gap-4 rounded-[1.7rem] border border-teal-100 bg-white/96 p-4 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.28)] sm:p-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
@@ -1998,10 +1901,10 @@ function QuickTrustSection() {
               Privacidad visible y humana
             </div>
             <h2 className="mt-3 text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.15rem]">
-              Nadie de tu empresa puede ver lo que subes.
+              Tu información sigue bajo tu control.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tus documentos son tuyos. Nadie de tu empresa puede verlos desde aquí, puedes borrarlos cuando quieras y primero ves el resultado antes de decidir si lo guardas.
+              Tu empresa no ve lo que subes. Primero ves el resultado, después decides si lo guardas, y cuando quieras puedes revisar nuestras políticas y borrar lo que ya no necesites.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -2038,6 +1941,20 @@ function QuickTrustSection() {
                 <p className="mt-1.5 leading-6">{item.body}</p>
               </article>
             ))}
+          </div>
+          <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm lg:col-span-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              {[
+                "No necesitas cuenta para ver la primera lectura.",
+                "Tu empresa no ve lo que subes aquí.",
+                "Si sí te sirve, luego lo guardas en tu expediente.",
+              ].map((item) => (
+                <div key={item} className="rounded-[1rem] border border-white bg-white px-3 py-3 shadow-sm">
+                  <p className="leading-6 text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -2221,17 +2138,17 @@ function CopilotPreviewSection() {
 
 function HowItWorksSection() {
   return (
-    <section id="como-funciona" className="bg-[#f2f5f7] py-12 sm:py-14">
+    <section id="como-funciona" className="bg-background py-12 sm:py-14">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
             Cómo funciona en 3 pasos
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Entiende tu situación sin complicarte.
+            Así pasas de duda a claridad sin enredos.
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-            Sube, entiende la señal y decide si quieres guardarla.
+            Subes un archivo, entiendes la señal y decides si quieres convertirla en evidencia útil.
           </p>
         </div>
 
@@ -2239,18 +2156,18 @@ function HowItWorksSection() {
           {[
             {
               number: "01",
-              title: "Sube el primer documento útil",
-              description: "Empieza con un recibo, CFDI o contrato sin preparar nada antes.",
+              title: "Sube el documento que ya tienes",
+              description: "Empieza con un recibo, CFDI o contrato sin preparar todo el expediente antes.",
             },
             {
               number: "02",
-              title: "Detecta señales y te las explica claro",
-              description: "Detecta señales y te dice qué conviene revisar primero.",
+              title: "Recibe una señal clara y accionable",
+              description: "Te mostramos qué apareció, qué significa y qué conviene revisar primero.",
             },
             {
               number: "03",
-              title: "Guárdalo en tu bóveda y sigue con más contexto",
-              description: "Si te sirve, lo guardas en tu Bóveda laboral privada y después sumas más contexto.",
+              title: "Guárdalo solo si te aporta valor",
+              description: "Si te sirve, lo llevas a tu expediente privado y luego sumas más contexto con calma.",
             },
           ].map((item) => (
             <article
@@ -2906,7 +2823,7 @@ function FinalCtaSection() {
   const pricingExperience = getAuditapatronPricingExperience(0);
 
   return (
-    <section className="bg-[#e8f1f0] py-12 sm:bg-[#f3f7f7] sm:py-14">
+    <section className="bg-muted/35 py-12 sm:py-14">
       <div className="container">
         <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] max-[359px]:px-4 max-[359px]:py-7 sm:px-10 sm:py-12">
           <div className="max-w-3xl">
@@ -2931,9 +2848,9 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto"
-                onClick={() => scrollToId("boveda")}
+                onClick={() => scrollToId("privacidad")}
               >
-                Entender la bóveda laboral
+                Ver cómo cuidamos tu información
               </Button>
             </div>
 
@@ -2963,7 +2880,7 @@ function FinalCtaSection() {
 
 function SiteFooter() {
   return (
-    <footer className="bg-[#f7faf9] py-8">
+    <footer className="bg-background py-8">
       <div className="container flex flex-col gap-6 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-3">
           <AuditaPatronLogoWordmark
@@ -2976,11 +2893,11 @@ function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
+          <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
+            Resultado real
+          </a>
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona
-          </a>
-          <a href="#boveda" className="transition-colors hover:text-slate-900">
-            Bóveda Laboral
           </a>
           <a href="#privacidad" className="transition-colors hover:text-slate-900">
             Privacidad
@@ -3007,18 +2924,12 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="audita-home min-h-screen bg-[#f9fcfb] font-sans text-slate-950">
+    <main className="audita-home min-h-screen bg-background font-sans text-slate-950">
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
-      <SectionDivider />
-      <ConfidenceMagicSection />
-      <QuickTrustSection />
-      <SectionDivider />
       <HowItWorksSection />
-      <SectionDivider />
-      <FAQSection />
-      <SectionDivider />
+      <QuickTrustSection />
       <FinalCtaSection />
       <SiteFooter />
     </main>

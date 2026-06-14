@@ -59,6 +59,18 @@ function getReturnToLabel(returnTo: string) {
   return "la pantalla que dejaste abierta";
 }
 
+function getReturnToValueCopy(returnTo: string) {
+  if (returnTo.startsWith("/auditar")) {
+    return "Tu revisión sigue lista para que continúes con el mismo documento o el siguiente paso útil.";
+  }
+
+  if (returnTo.startsWith("/ceo")) {
+    return "Tu expediente privado y las acciones pendientes te esperan del otro lado.";
+  }
+
+  return "Tu avance sigue disponible para que vuelvas sin empezar de cero.";
+}
+
 function getAccessErrorFromSearch() {
   if (typeof window === "undefined") return null;
 
@@ -146,6 +158,7 @@ function getFriendlyAuthMessage(parsed: ParsedAuthMessage) {
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
   const returnToLabel = useMemo(() => getReturnToLabel(returnTo), [returnTo]);
+  const returnToValueCopy = useMemo(() => getReturnToValueCopy(returnTo), [returnTo]);
   const nativeApp = useMemo(() => isNativeApp(), []);
   const manusLoginAvailable = useMemo(() => !nativeApp && canUseManusLogin(), [nativeApp]);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
@@ -404,16 +417,34 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Entra y sigue donde te quedaste
+                Vuelve a tu revisión sin empezar de cero
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al {returnToLabel}. Aquí solo resolvemos el acceso.
+                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a {returnToLabel}. Tu avance te espera del otro lado.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
                   Dentro de la app, el acceso por correo sigue siendo la ruta más estable. Si prefieres Google, ya puedes usarlo abajo y te regresamos aquí al terminar.
                 </p>
               ) : null}
+            </div>
+
+            <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Tu avance sigue listo</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">Entras una vez y sigues directo a {returnToLabel}.</p>
+                </div>
+                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  1 paso para volver
+                </span>
+              </div>
+              <p className="mt-3 leading-6 text-slate-600">{returnToValueCopy}</p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Correo seguro</span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Código de 6 dígitos</span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Regreso directo</span>
+              </div>
             </div>
 
             {rememberedEmail && emailStep === "request" ? (
@@ -486,6 +517,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Código enviado</p>
                       <p className="mt-2 break-all text-sm font-medium text-slate-900">{submittedEmail || email}</p>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">En cuanto lo confirmes, vuelves directo a {returnToLabel}.</p>
                     </div>
                     <button
                       type="button"
@@ -529,7 +561,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   disabled={verifyEmailCode.isPending || loading || code.trim().length < 6}
                 >
                   {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-Iniciar sesión
+                  Entrar y continuar
                 </Button>
 
                 <div className="flex items-center justify-between gap-3 text-sm">

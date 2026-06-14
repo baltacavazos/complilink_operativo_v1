@@ -1,0 +1,221 @@
+{
+  "context_file": "/home/ubuntu/complilink_operativo_v1/product_closeout_multi_ai_context_2026-06-14.md",
+  "results": {
+    "chatgpt": {
+      "model": "AuditaPatron-CierreTotal-v1",
+      "global_finish_score": 9.1,
+      "conversion_score": 9.3,
+      "trust_score": 9.0,
+      "premium_feel_score": 9.2,
+      "top_5_changes": [
+        "Reducir la home a la mínima expresión: eliminar bloques repetidos y fusionar justificaciones, dejando solo lo esencial para conversión.",
+        "Mostrar un bloque de resultado real y anonimizado (sin datos personales) en el primer scroll, demostrando el valor concreto del análisis.",
+        "Unificar visualmente todos los colores y estilos de la home y el flujo, usando solo los tokens globales definidos en index.css.",
+        "Transformar la pantalla de acceso en una continuación directa del valor: mostrar el documento subido y el progreso, no solo el formulario.",
+        "En /auditar, separar visualmente el análisis principal de las opciones avanzadas, y destacar el resultado clave como bloque premium digno de pago."
+      ],
+      "home_keep": [
+        "Hero con promesa clara",
+        "Ejemplo de resultado real (anonimizado)",
+        "CTA principal para subir documento",
+        "Bloque de privacidad y seguridad"
+      ],
+      "home_cut_or_merge": [
+        "Fusionar microvideo y ejemplo de resultado en un solo bloque demostrativo",
+        "Eliminar bloques de justificación repetida de la promesa",
+        "Comprimir FAQ a solo 2-3 preguntas clave",
+        "Eliminar invitaciones redundantes a subir documento",
+        "Fusionar casos anonimizados en el bloque de ejemplo de resultado"
+      ],
+      "home_new_hierarchy": [
+        "Hero con promesa y CTA",
+        "Ejemplo de resultado real (anonimizado, visual y breve)",
+        "Bloque de privacidad y seguridad",
+        "FAQ comprimido",
+        "CTA final"
+      ],
+      "home_copy_upgrades": [
+        "De: 'Sube tu recibo y te decimos qué revisar.' A: '¿Tu recibo tiene errores? Sube tu archivo y en segundos te mostramos lo importante.'",
+        "En el bloque de resultado: 'Así se ve un hallazgo real (sin tus datos personales)'",
+        "En privacidad: 'Tus documentos se procesan de forma segura y nunca se comparten.'",
+        "En CTA: 'Revisa tu nómina ahora — sin compromiso.'"
+      ],
+      "trust_mechanisms": [
+        "Mostrar ejemplo real y anonimizado de hallazgo en el primer scroll",
+        "Breve explicación técnica de seguridad (p.ej. 'Procesamiento local, sin compartir datos')",
+        "Enlace visible a política de privacidad y términos",
+        "Indicador visual de progreso y éxito en el flujo"
+      ],
+      "access_upgrades": [
+        "Mostrar el documento que el usuario subió antes de pedir el código",
+        "Mensaje de continuidad: 'Tu análisis está listo. Solo verifica tu correo para verlo.'",
+        "Visual de progreso (barra o check) para reforzar avance",
+        "Reducir campos y pasos al mínimo"
+      ],
+      "auditar_upgrades": [
+        "Separar el resultado principal en un bloque destacado, con iconografía premium",
+        "Opciones avanzadas colapsadas por defecto, solo expandibles si el usuario lo desea",
+        "Botón claro de 'Guardar hallazgo' o 'Descargar reporte' con microcopy de valor",
+        "Visual consistente con tokens globales",
+        "Mensaje de valor: 'Este análisis detectó X posibles errores — revisa antes de tomar decisiones.'"
+      ],
+      "must_fix_now": [
+        "Eliminar cualquier enlace externo irrelevante como 'Salida rápida' a news.google.com",
+        "Eliminar colores hardcodeados en la home y migrar todo a tokens globales",
+        "Reducir la longitud de la home eliminando bloques repetidos",
+        "Asegurar que el ejemplo de resultado real sea visible y anonimizado",
+        "Corregir cualquier fuga de datos o ambigüedad en privacidad"
+      ],
+      "must_preserve": [
+        "Promesa inicial clara y directa",
+        "Flujo de acceso por correo con código",
+        "Sistema de tokens visuales en index.css",
+        "Bloque de privacidad y seguridad",
+        "Ejemplo de resultado real (anonimizado)"
+      ],
+      "north_star": "AuditaPatron debe sentirse como la forma más rápida, segura y confiable de saber si tu nómina tiene errores, con una experiencia tan clara y premium que el usuario quiera pagar por el resultado sin dudar.",
+      "confidence": "Muy alta: los cambios propuestos son ejecutables, priorizan impacto en conversión y percepción premium, y no requieren reescritura total ni prueba social falsa.",
+      "source_api": "openai"
+    },
+    "grok": {
+      "model": "ProductDirector-v1",
+      "global_finish_score": 8.7,
+      "conversion_score": 9.1,
+      "trust_score": 8.4,
+      "premium_feel_score": 8.5,
+      "top_5_changes": [
+        "Comprimir Home a 5 bloques máximo: Hero + Valor inmediato + Flujo de 3 pasos + Demo real de resultado + CTA final de acceso",
+        "Corregir anomalía de 'Salida rápida' que apunta a news.google.com y unificar todos los colores a tokens OKLCH de index.css",
+        "Reducir Auditar.tsx a componentes modulares con vista previa de hallazgos en los primeros 3 segundos",
+        "Convertir /acceso en pantalla de continuidad con resumen del documento analizado y botón 'Continuar con este documento'",
+        "Añadir barra de progreso visual de valor (0-100%) que se actualiza en tiempo real durante la auditoría"
+      ],
+      "home_keep": [
+        "Frase exacta: 'Sube tu recibo y te decimos qué revisar'",
+        "Frase: 'Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento'",
+        "Mensaje de /acceso: 'Entra y sigue donde te quedaste'"
+      ],
+      "home_cut_or_merge": [
+        "Eliminar bloques de microvideo, casos anonimizados y FAQ extensa",
+        "Fusionar 'documento sugerido' + 'invitación a subir' en un solo bloque de acción",
+        "Comprimir privacidad y ejemplo de resultado en un solo footer compacto"
+      ],
+      "home_new_hierarchy": [
+        "Hero con promesa y botón principal de subida",
+        "Valor inmediato (qué obtienes en 30 segundos)",
+        "Flujo de 3 pasos visual",
+        "Demo real de resultado con datos anonimizados estructurales",
+        "CTA final de acceso con continuidad"
+      ],
+      "home_copy_upgrades": [
+        "Cambiar 'Sube tu recibo' por 'Sube tu recibo de nómina y ve en 30 segundos qué revisar'",
+        "Reemplazar justificaciones por 'Sin guardar nada hasta que decidas'",
+        "CTA final: 'Accede para guardar y comparar documentos'"
+      ],
+      "trust_mechanisms": [
+        "Mostrar contador real de documentos procesados hoy (dato backend)",
+        "Iconos de seguridad con enlaces a políticas reales de encriptación",
+        "Barra de progreso de auditoría visible desde el primer segundo"
+      ],
+      "access_upgrades": [
+        "Añadir resumen del último documento analizado arriba del formulario",
+        "Mensaje: 'Tu análisis anterior está listo. Continúa donde lo dejaste'",
+        "Botón secundario 'Subir nuevo documento' junto al login con código"
+      ],
+      "auditar_upgrades": [
+        "Extraer componentes de hallazgos a archivos separados con lazy loading",
+        "Mostrar primeros 3 hallazgos expandidos por defecto con opción de ver más",
+        "Añadir estado 'Guardado automáticamente' cada 10 segundos"
+      ],
+      "must_fix_now": [
+        "Corregir enlace 'Salida rápida' que apunta a news.google.com",
+        "Reemplazar todos los colores hardcodeados por tokens OKLCH",
+        "Dividir Auditar.tsx en componentes < 500 líneas cada uno"
+      ],
+      "must_preserve": [
+        "Promesa inicial clara de 'Sube tu recibo y te decimos qué revisar'",
+        "Flujo de correo con código en /acceso",
+        "Sistema de tokens visuales ya existente en index.css"
+      ],
+      "north_star": "Convertir la primera interacción en una demostración instantánea de valor que hace natural el paso a acceso y pago sin fricción.",
+      "confidence": "high",
+      "source_api": "xai"
+    },
+    "gemini": {
+      "model": "ProductDirectorAI",
+      "global_finish_score": 9.2,
+      "conversion_score": 9.0,
+      "trust_score": 9.5,
+      "premium_feel_score": 9.0,
+      "top_5_changes": [
+        "Reducir drásticamente la Home a 4-5 bloques esenciales, eliminando repeticiones y justificaciones excesivas para enfocar la conversión.",
+        "Modularizar el componente `Auditar.tsx` (14k líneas) en sub-componentes más pequeños y manejables para mejorar la percepción de producto curado y premium.",
+        "Eliminar todas las instancias de colores hardcodeados en la landing y asegurar la aplicación estricta del sistema de tokens globales de `index.css` en toda la plataforma.",
+        "Integrar un mecanismo de prueba de realidad en el primer scroll de la Home, como una demostración interactiva o un flujo visual 'cómo funciona', sin testimonios falsos.",
+        "Transformar la experiencia de `/acceso` para que se sienta como una continuación natural y valiosa del flujo, no como un trámite aislado."
+      ],
+      "home_keep": [
+        "La promesa inicial fuerte y clara: `Sube tu recibo y te decimos qué revisar.`",
+        "La frase de valor progresivo: `Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.`",
+        "El enfoque en trabajadores mexicanos no técnicos."
+      ],
+      "home_cut_or_merge": [
+        "Bloques de microvideo (integrar el concepto en un flujo visual estático si es esencial).",
+        "Casos anonimizados como bloques separados (integrar el concepto en la sección 'cómo funciona' o 'ejemplo de resultado').",
+        "Ejemplo de resultado como bloque extenso (comprimir a una visual concisa y explicativa).",
+        "Múltiples invitaciones a subir documentos dispersas.",
+        "Repetición narrativa y justificaciones excesivas de la misma promesa.",
+        "Bloque de FAQ separado (integrar preguntas clave en secciones relevantes o en un pie de página conciso)."
+      ],
+      "home_new_hierarchy": [
+        "**Hero Section:** Promesa principal (`Sube tu recibo y te decimos qué revisar.`) con CTA principal y un visual impactante.",
+        "**Propuesta de Valor Inmediata:** `Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.` (Con un visual que refuerce la simplicidad).",
+        "**Cómo Funciona (Prueba de Realidad):** Un flujo visual de 3 pasos (Subir -> Analizar -> Revisar) que demuestre la mecánica sin revelar datos sensibles.",
+        "**Confianza y Seguridad:** Un bloque conciso sobre privacidad de datos y seguridad (`Tu información está segura. Auditamos, no almacenamos sin tu consentimiento.`).",
+        "**Beneficio Central y CTA Final:** Un bloque que resuma el impacto (`Tu nómina, bajo tu control. Sin sorpresas.`) con un CTA claro y prominente."
+      ],
+      "home_copy_upgrades": [
+        "\"Tu nómina, bajo tu control. Descubre en segundos si algo no cuadra.\"",
+        "\"Claridad instantánea para tu recibo. Sin complicaciones, sin letra pequeña.\"",
+        "\"Resultados que entiendes, decisiones que empoderan. Protege tu dinero.\"",
+        "\"Tu privacidad es nuestra prioridad. Auditamos, no almacenamos sin tu permiso.\"",
+        "\"¿Listo para la tranquilidad? Sube tu recibo y compruébalo ahora.\""
+      ],
+      "trust_mechanisms": [
+        "**Flujo Visual 'Cómo Funciona':** Un diagrama de 3 pasos (Subir, Analizar, Ver Resultados) con iconos claros y texto mínimo, visible en el primer scroll.",
+        "**Declaración de Privacidad Prominente:** Un bloque conciso y directo en la Home que explique el manejo de datos: 'Tu recibo se procesa al instante y no se guarda. Tú decides qué hacer con el resultado.'",
+        "**Simulador de Auditoría Anónimo (Opcional):** Un pequeño widget interactivo que permita al usuario 'simular' una auditoría con un recibo genérico pre-cargado para ver la interfaz de resultados sin subir datos reales.",
+        "**Sello de Tecnología/Seguridad:** Un sutil badge o icono que indique el uso de tecnología avanzada o estándares de seguridad (ej. 'Procesado con IA', 'Conexión Segura')."
+      ],
+      "access_upgrades": [
+        "**Continuidad Visual y de Mensaje:** Asegurar que `/acceso` mantenga la misma estética premium y el tono de voz de la Home, sintiéndose como el siguiente paso lógico.",
+        "**Mensaje Contextualizado:** Cambiar `Entra y sigue donde te quedaste` por algo más personal y orientado al valor, como `Bienvenido de nuevo. Tu auditoría te espera.` o `Continúa protegiendo tu nómina.`",
+        "**Indicador de Progreso/Estado:** Si el usuario ya inició una auditoría, mostrar sutilmente '1 documento en espera' o 'Continúa tu revisión' para reforzar la continuidad.",
+        "**Micro-interacciones Premium:** Añadir animaciones sutiles o transiciones suaves al cargar la página o al introducir el código, elevando la sensación de calidad."
+      ],
+      "auditar_upgrades": [
+        "**Descomposición de Componentes:** Dividir `Auditar.tsx` en componentes más pequeños y especializados (ej. `UploadArea`, `ProcessingIndicator`, `AuditResultsSummary`, `DetailView`, `ActionButtons`).",
+        "**Revelación Progresiva de Resultados:** Mostrar primero un resumen de los hallazgos clave (ej. '2 puntos a revisar', 'Nómina correcta') y permitir al usuario 'expandir' para ver los detalles de cada punto.",
+        "**Visualización Clara y Codificada por Color:** Utilizar un sistema de colores (ej. verde para OK, rojo/naranja para alertas) y tipografía clara para que los hallazgos sean comprensibles al instante para usuarios no técnicos.",
+        "**Explicaciones 'Por Qué Importa':** Para cada hallazgo, ofrecer una explicación concisa de por qué es relevante y qué podría significar para el usuario, junto con posibles acciones.",
+        "**CTA Post-Auditoría Claros:** Después de mostrar los resultados, presentar opciones claras: 'Guardar este resultado', 'Auditar otro recibo', 'Compartir (opcional)', 'Contactar experto (si aplica)'."
+      ],
+      "must_fix_now": [
+        "Corregir la anomalía del enlace `Salida rápida` que apunta a `https://news.google.com/` en el navegador. Esto es crítico para la confianza.",
+        "Eliminar todos los colores hardcodeados en la landing y asegurar que el sistema de tokens de `index.css` sea el único utilizado para la consistencia visual."
+      ],
+      "must_preserve": [
+        "La promesa inicial: `Sube tu recibo y te decimos qué revisar.`",
+        "La propuesta de valor: `Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.`",
+        "El enfoque en la audiencia de trabajadores mexicanos no técnicos.",
+        "El sistema global de tokens visuales existente en `index.css`.",
+        "La claridad y entendimiento del flujo de acceso y correo con código.",
+        "La voz y el tono de la plataforma, que ya han sido bien recibidos."
+      ],
+      "north_star": "Transformar la incertidumbre de la nómina en claridad y control financiero para cada trabajador mexicano, con una experiencia tan simple y confiable que se sienta indispensable.",
+      "confidence": "Extremadamente alta. Las recomendaciones se basan en principios de UX, conversión y arquitectura de software, priorizando impacto y ejecutabilidad dentro de las restricciones dadas para lograr un producto premium y deseable.",
+      "source_api": "gemini"
+    }
+  },
+  "errors": {}
+}

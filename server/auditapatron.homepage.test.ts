@@ -2,206 +2,84 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-describe("Auditapatron homepage and audit flow content", () => {
+describe("Auditapatron closeout experience", () => {
   const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+  const accessSource = readFileSync(resolve(process.cwd(), "client/src/pages/Access.tsx"), "utf8");
   const auditFlowSource = readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8");
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
   const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");
-  const heliosSheetSource = readFileSync(resolve(process.cwd(), "client/src/components/HeliosCopilotSheet.tsx"), "utf8");
-  it("shows a clearer worker-centered value proposition focused on document auditing", () => {
-    expect(homeSource).toContain("getAuditapatronPricingExperience(0)");
-    expect(pricingSource).toContain("Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.");
-    expect(pricingSource).toContain("AuditaPatron te deja entrar sin tarjeta, revisar tu primer contexto y decidir después si te conviene activar más profundidad o un entregable puntual.");
-    expect(homeSource).toContain("Tu recibo puede mostrar si te pagan de menos.");
-    expect(homeSource).toContain("Revísalo gratis y detecta diferencias en tu pago, deducciones o CFDI.");
-    expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
-    expect(homeSource).toContain("Sin tarjeta para empezar");
-    expect(homeSource).toContain("Privado desde el inicio");
-    expect(homeSource).toContain("Borra tu archivo cuando quieras");
-    expect(homeSource).toContain("Empezar auditoría gratis");
-    expect(homeSource).not.toContain("Subir mi documento gratis");
-    expect(homeSource).not.toContain("Ir a mi primera auditoría");
-  });
 
-
-  it("keeps the educational journey in 3 steps and routes the main CTA to the audit workspace", () => {
-    expect(homeSource).toContain("Sube el primer documento útil");
-    expect(homeSource).toContain("Detecta señales y te las explica claro");
-    expect(homeSource).toContain("Guárdalo en tu bóveda y sigue con más contexto");
-    expect(homeSource).toContain("Empezar auditoría gratis");
-    expect(homeSource).toContain("Sube tu recibo y descubre si hay errores o dinero que podrías estar dejando pasar.");
-    expect(homeSource).toContain("Empieza con una foto o PDF y recibe una primera lectura con el siguiente paso útil para seguir.");
-    expect(homeSource).toContain("Lo que otras personas alcanzaron a ver en su primera lectura.");
-    expect(homeSource).toContain("Diferencia estimada: $3,240 MXN");
-    expect(homeSource).toContain("Siguiente acción sugerida");
-    expect(homeSource).toContain('bullets: ["Desde tu celular"]');
-    expect(homeSource).toContain("Hallazgos claros prioritarios.");
-    expect(homeSource).toContain("Breves y urgentes primero.");
-    expect(homeSource).toContain("Guardar solo si te sirve.");
-    expect(homeSource).toContain("Primero ves la lectura. Si te ayuda, guardas el documento y el hallazgo dentro de tu Bóveda Laboral para volver a ellos cuando lo necesites.");
-    expect(homeSource).toContain("Guardas solo lo útil.");
-    expect(homeSource).toContain("Privacidad y control visibles.");
-    expect(homeSource).toContain("Bóveda laboral privada");
-    expect(homeSource).toContain("Tu primer hallazgo también puede convertirse en tu archivo laboral.");
-    expect(homeSource).toContain("Entender la bóveda laboral");
-    expect(homeSource).toContain("Empezar auditoría gratis");
-    expect(homeSource).toContain("Leer aviso de privacidad");
-    expect(homeSource).toContain("Nadie de tu empresa puede ver lo que subes.");
+  it("ships a shorter landing focused on value proof, clarity and trust", () => {
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Resultado real" }');
+    expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
+    expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
+    expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
+    expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
+    expect(homeSource).toContain("Resultado real desde el primer archivo");
+    expect(homeSource).toContain("Primero ves el valor; después decides si quieres convertirlo en expediente.");
+    expect(homeSource).toContain("Así pasas de duda a claridad sin enredos.");
+    expect(homeSource).toContain("Tu información sigue bajo tu control.");
+    expect(homeSource).toContain("Respuestas rápidas");
+    expect(homeSource).toContain("No necesitas cuenta para ver la primera lectura.");
+    expect(homeSource).toContain("Ver cómo cuidamos tu información");
+    expect(homeSource).toContain("<HeroSection />");
+    expect(homeSource).toContain("<HeliosFirstEntrySection />");
+    expect(homeSource).toContain("<HowItWorksSection />");
+    expect(homeSource).toContain("<QuickTrustSection />");
+    expect(homeSource).toContain("<FinalCtaSection />");
+    expect(homeSource).not.toContain("<ConfidenceMagicSection />");
+    expect(homeSource).not.toContain("<FAQSection />");
     expect(homeSource).toContain('window.location.href = "/auditar"');
     expect(appSource).toContain('Route path={"/auditar"} component={Auditar}');
   });
 
-  it("preserves trust, privacy and guided FAQs while keeping Helios out of the public homepage copy", () => {
-    expect(homeSource).toContain("Ahí vi dónde podía estar perdiendo dinero.");
-    expect(homeSource).toContain("Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.");
-    expect(homeSource).toContain("Ver ejemplo de resultado");
-    expect(homeSource).toContain("Guía rápida para empezar");
-    expect(homeSource).toContain("Elige tu caso principal y te sugerimos el documento que más suele abrir contexto con baja fricción.");
-    expect(homeSource).toContain("Caso anónimo 01");
-    expect(homeSource).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
-    expect(homeSource).toContain("Privacidad visible y humana");
-    expect(homeSource).toContain("Tus documentos son tuyos. Puedes borrarlos cuando quieras.");
-    expect(homeSource).toContain("nivel de cuidado comparable al de un servicio bancario digital");
-    expect(homeSource).toContain("Tu recibo de nómina más reciente o un CFDI del mismo periodo");
-    expect(homeSource).toContain("Un recibo reciente o tu contrato actual");
-    expect(homeSource).not.toContain("<DossierSection />");
-    expect(homeSource).not.toContain("<CopilotPreviewSection />");
-    expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
-    expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
-  });
-
-  it("includes the new hero instrumentation for variant changes, scroll depth, report states, finding navigation and paid-campaign activation", () => {
-    expect(homeSource).toContain("audipatron_hero_variant_changed");
-    expect(homeSource).toContain("audipatron_hero_scroll_depth_reached");
-    expect(homeSource).toContain("audipatron_hero_finding_changed");
-    expect(homeSource).toContain("audipatron_hero_finding_viewed");
-    expect(homeSource).toContain("audipatron_report_demo_state_selected");
-    expect(homeSource).toContain("audipatron_hero_paid_variant_activated");
-    expect(homeSource).toContain("audipatron_hero_direct_variant_activated");
-    expect(homeSource).toContain('variant: "short_paid_campaign"');
-    expect(homeSource).toContain('variant: "direct_money_check"');
-    expect(homeSource).toContain("¿Te están pagando de menos?");
-  });
-
-  it("ships an audit workspace with expediente clarity, revalidation and guided saving for the V1 flow", () => {
-    expect(auditFlowSource).toContain("Lectura visible");
-    expect(auditFlowSource).toContain("Asegura tu recibo de nómina");
-    expect(auditFlowSource).toContain("qué documento recibió");
-    expect(auditFlowSource).toContain("qué señal encontró y qué conviene revisar después.");
-    expect(auditFlowSource).toContain("Así va tu expediente laboral");
-    expect(auditFlowSource).toContain("Cruce IMSS e Infonavit hoy");
-    expect(auditFlowSource).toContain("Claridad actual del expediente");
-    expect(auditFlowSource).toContain("Revalidar IMSS e Infonavit");
-    expect(auditFlowSource).toContain("Aún no has revalidado este cruce desde tu expediente.");
-    expect(auditFlowSource).toContain("Empieza con una foto. No necesitas reunir todo. Si no tienes recibo, también puedes subir PDF, XML o una imagen clara. Cifrado AES-256, control de borrado visible y un resguardo serio pensado con nivel bancario de cuidado.");
-    expect(auditFlowSource).toContain("Carga inmediata");
-    expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
-    expect(auditFlowSource).toContain("Confirmar y guardar documento");
-    expect(auditFlowSource).toContain("Calculadora guiada");
-    expect(auditFlowSource).toContain("Compara tu nómina contra tu CFDI");
-    expect(auditFlowSource).toContain("Comparación rápida entre periodos");
-    expect(auditFlowSource).toContain("Periodo a comparar");
-    expect(auditFlowSource).toContain("Histórico comparable por periodo");
-    expect(auditFlowSource).toContain("Qué significa jurídicamente");
-    expect(auditFlowSource).toContain("Protege este hallazgo");
-    expect(auditFlowSource).toContain("Tu nivel de protección legal");
-    expect(auditFlowSource).toContain("Asegurar la siguiente pieza");
-    expect(auditFlowSource).toContain("Exportar hallazgo en PDF");
-    expect(auditFlowSource).toContain("Reporte de hallazgo laboral");
-    expect(auditFlowSource).toContain("Guardar este hallazgo en mi bóveda");
-    expect(auditFlowSource).toContain("Tu bóveda laboral ya empezó");
-    expect(auditFlowSource).toContain("Ver mi bóveda");
-    expect(auditFlowSource).toContain("Bóveda Laboral");
-    expect(auditFlowSource).toContain("Aquí están tus documentos protegidos");
-    expect(auditFlowSource).toContain("Resumen visible de tu bóveda");
-    expect(auditFlowSource).toContain("Exportaciones recientes");
-    expect(auditFlowSource).toContain("Tus PDFs quedan a la mano en este equipo");
-    expect(auditFlowSource).toContain("Abrir mi bóveda");
-    expect(auditFlowSource).toContain("Filtrar tu bóveda por tipo o fecha");
-    expect(auditFlowSource).toContain("Tu expediente se va volviendo más claro con cada documento");
-    expect(auditFlowSource).toContain("getAuditapatronPricingExperience(documents.length)");
-    expect(auditFlowSource).toContain("pricingExperience.platform.priceLabel");
-    expect(auditFlowSource).toContain("Cerrar y seguir gratis");
-    expect(pricingSource).toContain("oneShots: COMMERCE_ONE_SHOTS.map((item) => ({");
-    expect(pricingSource).toContain("formatCommercePriceMx(item.priceMx)");
-    expect(auditFlowSource).not.toContain("Helios-first, para trabajadores y sin lenguaje complicado");
-    expect(auditFlowSource).not.toContain("Helios recibe tu documento, lo analiza, lo resguarda y te devuelve resultados útiles dentro de AuditaPatron.");
-    expect(auditFlowSource).not.toContain("CompliLink Operativo");
-  });
-
-  it("keeps the first homepage block mobile-first and exposes the audit CTA early", () => {
-    expect(homeSource).toContain("pb-5 pt-4 sm:pb-12 sm:pt-12 lg:pt-16");
-    expect(homeSource).toContain("Sube una foto o PDF y revisa tu pago");
-    expect(homeSource).toContain("order-3 mt-5 hidden w-full max-w-xl");
-    expect(homeSource).toContain("order-2 mt-3 flex w-full max-w-sm");
-    expect(homeSource).toContain("goToAuditFlow({");
+  it("keeps the conversion promise strong and routes the primary CTA to the audit flow", () => {
+    expect(homeSource).toContain("Sube tu recibo y te decimos qué revisar.");
+    expect(homeSource).toContain("Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.");
+    expect(homeSource).toContain("Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
+    expect(homeSource).toContain("Cómo funciona en 3 pasos");
+    expect(homeSource).toContain("Sube el documento que ya tienes");
+    expect(homeSource).toContain("Recibe una señal clara y accionable");
+    expect(homeSource).toContain("Guárdalo solo si te aporta valor");
     expect(homeSource).toContain('placement: "hero_primary"');
     expect(homeSource).toContain('placement: "final_block_cta"');
-    expect(homeSource).toContain("Ver ejemplo de resultado");
-    expect(homeSource).toContain("mt-2.5 w-full max-w-xl rounded-[1.45rem]");
-    expect(homeSource).toContain("rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm");
+    expect(pricingSource).toContain("Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.");
   });
 
-  it("keeps the header navigation wired to unique section targets and mounts the assistant preview", () => {
-    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Asegurar evidencia" }');
-    expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
-    expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
-    expect(homeSource).toContain('const candidateIds = SCROLL_TARGET_FALLBACKS[id] ?? [id];');
-    expect(homeSource).toContain('const sectionMatch = document.querySelector<HTMLElement>(`section#${CSS.escape(candidateId)}`);');
-    expect(homeSource).toContain('window.history.replaceState(null, "", `#${id}`)');
-    expect(homeSource).not.toContain('<CopilotPreviewSection />');
-    expect(homeSource).toContain('id: "ruta-movil-como-funciona"');
-    expect(homeSource).toContain('id: "ruta-movil-expediente"');
-    expect(homeSource).not.toContain('id: "como-funciona",\n      eyebrow: "Qué pasa cuando empiezas"');
-    expect(homeSource).not.toContain('id: "expediente",\n      eyebrow: "Qué gana tu expediente"');
+  it("turns access into continuity instead of an isolated login form", () => {
+    expect(accessSource).toContain("function getReturnToValueCopy");
+    expect(accessSource).toContain("Vuelve a tu revisión sin empezar de cero");
+    expect(accessSource).toContain("Tu avance sigue listo");
+    expect(accessSource).toContain("1 paso para volver");
+    expect(accessSource).toContain("Correo seguro");
+    expect(accessSource).toContain("Código de 6 dígitos");
+    expect(accessSource).toContain("Regreso directo");
+    expect(accessSource).toContain("Tu avance te espera del otro lado.");
+    expect(accessSource).toContain("Entrar y continuar");
+    expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel}.");
   });
 
-  it("keeps the first mobile upload touchpoint guided, automatic and connected to the expediente flow", () => {
-    expect(auditFlowSource).toContain("COMPACT_UPLOAD_GUARDRAILS");
-    expect(auditFlowSource).toContain("Elegir cámara o archivo");
-    expect(auditFlowSource).toContain("Toma una foto o elige un archivo para empezar.");
-    expect(auditFlowSource).toContain("Toma una foto o elige un archivo para empezar.");
-    expect(auditFlowSource).toContain("PDF, XML, JPG, PNG o WEBP · máximo 12 MB.");
-    expect(auditFlowSource).toContain("upload_mode_selected");
-    expect(auditFlowSource).toContain("compact_mobile_toggle");
-    expect(auditFlowSource).toContain("preference_panel");
-    expect(auditFlowSource).toContain("recommendedStepRef.current?.scrollIntoView");
-    expect(auditFlowSource).toContain("Siguiente paso sugerido");
-    expect(auditFlowSource).toContain("La carga empieza sola. Tú decides si se guarda.");
-    expect(auditFlowSource).toContain("Volver al expediente");
-    expect(heliosSheetSource).toContain("Tu asesor laboral ya entendió lo visible de tu expediente");
-    expect(heliosSheetSource).toContain("Preguntas rápidas para seguir contigo");
-    expect(heliosSheetSource).toContain("Te traduce lo complejo a lenguaje claro");
-    expect(heliosSheetSource).toContain("Evidencia de tu caso");
-    expect(heliosSheetSource).toContain("Volver al expediente");
+  it("keeps the audit workspace oriented to defendable value after the first visible finding", () => {
+    expect(auditFlowSource).toContain("Lectura visible");
+    expect(auditFlowSource).toContain("Resultado listo para cuidar");
+    expect(auditFlowSource).toContain("Ya tienes una señal seria para guardar, exportar o reforzar con más contexto.");
+    expect(auditFlowSource).toContain("Guardar evidencia útil");
+    expect(auditFlowSource).toContain("Descargar reporte");
+    expect(auditFlowSource).toContain("Seguir con más contexto");
+    expect(auditFlowSource).toContain("Guardar evidencia en mi bóveda");
+    expect(auditFlowSource).toContain("Descargar reporte PDF");
+    expect(auditFlowSource).toContain("Reforzar con otro documento");
+    expect(auditFlowSource).toContain("Qué tan defendible va tu caso");
+    expect(auditFlowSource).toContain("Hoy tu respaldo visible va en {dossierStatus.percent}%.");
+    expect(auditFlowSource).toContain("tu evidencia quedará más sólida para reclamar con más contexto");
   });
 
-  it("keeps the post-upload state lighter by surfacing a compact result summary before secondary modules", () => {
-    expect(auditFlowSource).toContain("const shouldCompactPostUploadExperience =");
-    expect(auditFlowSource).toContain("Documento incorporado");
-    expect(auditFlowSource).toContain("lastUploadResultHeadline");
-    expect(auditFlowSource).toContain("Subir otro documento");
-    expect(auditFlowSource).toContain("condensedDossierTargets");
-    expect(auditFlowSource).toContain("condensedPriorityUploadGuides");
-    expect(auditFlowSource).toContain("Documento incorporado");
-    expect(auditFlowSource).toContain("lastUploadVerdict.label");
-  });
-
-  it("reduces mobile post-upload noise by hiding the harness from the first viewport and shrinking secondary surfaces", () => {
-    expect(auditFlowSource).toContain(
-      'className={shouldCompactPostUploadExperience\n              ? "hidden"',
-    );
-    expect(auditFlowSource).toContain(
-      'shouldCompactPostUploadExperience ? "hidden" : ""',
-    );
-    expect(auditFlowSource).toContain(
-      'shouldCompactPostUploadExperience ? "hidden rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4 shadow-sm sm:block sm:p-5"',
-    );
-    expect(auditFlowSource).toContain(
-      "Tu expediente ya quedó guardado y lo puedes abrir cuando quieras.",
-    );
-    expect(auditFlowSource).not.toContain(
-      "Tu siguiente paso principal está justo abajo.",
-    );
+  it("preserves the worker-centered voice and keeps internal engine branding out of public marketing copy", () => {
+    expect(homeSource).toContain("Tu empresa no ve lo que subes.");
+    expect(homeSource).toContain("Primero ves el resultado, después decides si lo guardas");
+    expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
+    expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
+    expect(homeSource).not.toContain("CompliLink Operativo");
   });
 });

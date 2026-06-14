@@ -10752,10 +10752,10 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                                    Protege este hallazgo
+                                    Resultado listo para cuidar
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Si esta señal te importa, guárdala en tu bóveda laboral.
+                                    Ya tienes una señal seria para guardar, exportar o reforzar con más contexto.
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-teal-800">
@@ -10763,8 +10763,13 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma o sumar otros documentos.
+                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma, exportarlo como respaldo o sumar otros documentos para fortalecer tu caso.
                               </p>
+                              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
+                                <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
+                                <span className="rounded-full bg-white/90 px-3 py-1">Descargar reporte</span>
+                                <span className="rounded-full bg-white/90 px-3 py-1">Seguir con más contexto</span>
+                              </div>
                               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
                                   type="button"
@@ -10781,7 +10786,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                     });
                                   }}
                                 >
-                                  Guardar este hallazgo en mi bóveda
+Guardar evidencia en mi bóveda
                                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                                 </Button>
                                 <Button
@@ -10790,7 +10795,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                   className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
                                   onClick={exportQuickHallazgoPdf}
                                 >
-                                  Exportar hallazgo en PDF
+Descargar reporte PDF
                                 </Button>
                                 <Button
                                   type="button"
@@ -10803,7 +10808,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                     openPreferredPicker();
                                   }}
                                 >
-                                  Ver qué más conviene subir
+Reforzar con otro documento
                                 </Button>
                               </div>
                             </div>
@@ -10812,10 +10817,10 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-800">
-                                    Tu nivel de protección legal
+                                    Qué tan defendible va tu caso
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Hoy tu protección va en {dossierStatus.percent}%.
+                                    Hoy tu respaldo visible va en {dossierStatus.percent}%.
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-800">
@@ -10831,8 +10836,8 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                               <p className="mt-3 text-sm leading-6 text-slate-700">
                                 Ya cubres {dossierStatus.completed} de {dossierStatus.total} piezas clave del expediente.
                                 {selectedRecommendedTargetType && effectiveRecommendedTarget
-                                  ? ` Si aseguras ${effectiveRecommendedTarget.label.toLowerCase()}, tu bóveda quedará más fuerte para reclamar con más contexto.`
-                                  : " Tu bóveda ya tiene una base útil para reclamar con más contexto."}
+                                  ? ` Si aseguras ${effectiveRecommendedTarget.label.toLowerCase()}, tu evidencia quedará más sólida para reclamar con más contexto.`
+                                  : " Tu evidencia ya tiene una base útil para reclamar con más contexto."}
                               </p>
                               {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
                                 <button
