@@ -18,10 +18,10 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Resultado real desde el primer archivo");
     expect(homeSource).toContain("Primero ves el valor; después decides si quieres convertirlo en expediente.");
     expect(homeSource).toContain("Así pasas de duda a claridad sin enredos.");
-    expect(homeSource).toContain("Tu información sigue bajo tu control.");
+    expect(homeSource).toContain("Control total. Privacidad garantizada.");
     expect(homeSource).toContain("Respuestas rápidas");
     expect(homeSource).toContain("No necesitas cuenta para ver la primera lectura.");
-    expect(homeSource).toContain("Ver cómo cuidamos tu información");
+    expect(homeSource).toContain("Ver cómo protegemos tu información");
     expect(homeSource).toContain("<HeroSection />");
     expect(homeSource).toContain("<HeliosFirstEntrySection />");
     expect(homeSource).toContain("<HowItWorksSection />");
@@ -57,17 +57,19 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Regreso directo");
     expect(accessSource).toContain("Tu avance te espera del otro lado.");
     expect(accessSource).toContain("Entrar y continuar");
+    expect(accessSource).toContain("Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.");
     expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel}.");
   });
 
   it("keeps the audit workspace oriented to defendable value after the first visible finding", () => {
     expect(auditFlowSource).toContain("Lectura visible");
-    expect(auditFlowSource).toContain("Resultado listo para cuidar");
-    expect(auditFlowSource).toContain("Ya tienes una señal seria para guardar, exportar o reforzar con más contexto.");
+    expect(auditFlowSource).toContain("Hallazgo protegido y listo para cuidar");
+    expect(auditFlowSource).toContain("Ya tienes una señal seria para asegurar en tu bóveda privada, exportar o reforzar con más contexto.");
     expect(auditFlowSource).toContain("Guardar evidencia útil");
+    expect(auditFlowSource).toContain("Privacidad bajo tu control");
     expect(auditFlowSource).toContain("Descargar reporte");
     expect(auditFlowSource).toContain("Seguir con más contexto");
-    expect(auditFlowSource).toContain("Guardar evidencia en mi bóveda");
+    expect(auditFlowSource).toContain("Asegurar evidencia en tu bóveda privada");
     expect(auditFlowSource).toContain("Descargar reporte PDF");
     expect(auditFlowSource).toContain("Reforzar con otro documento");
     expect(auditFlowSource).toContain("Qué tan defendible va tu caso");
@@ -76,8 +78,8 @@ describe("Auditapatron closeout experience", () => {
   });
 
   it("preserves the worker-centered voice and keeps internal engine branding out of public marketing copy", () => {
-    expect(homeSource).toContain("Tu empresa no ve lo que subes.");
-    expect(homeSource).toContain("Primero ves el resultado, después decides si lo guardas");
+    expect(homeSource).toContain("Tu empresa nunca ve lo que subes.");
+    expect(homeSource).toContain("Primero revisas el resultado, luego decides si lo guardas");
     expect(homeSource).not.toContain("Sube tu documento y Helios lo recibe");
     expect(homeSource).not.toContain("Helios te devuelve hallazgos claros");
     expect(homeSource).not.toContain("CompliLink Operativo");

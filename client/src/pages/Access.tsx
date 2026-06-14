@@ -489,6 +489,10 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   />
                 </div>
 
+                <p className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
+                  Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.
+                </p>
+
                 <Button
                   type="submit"
                   size="lg"

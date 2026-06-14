@@ -1763,3 +1763,10 @@
 - [x] Ronda de cierre total: rediseñar la landing pública para que la propuesta de valor, la prueba social funcional y el CTA principal se sientan inevitables y terminados
 - [x] Ronda de cierre total: pulir /acceso y /auditar para que la continuidad hacia el expediente y el valor percibido se sientan fluidos, premium y listos para pagar
 - [x] Ronda de cierre total: validar con pruebas, revisión visual y nueva moderación multi-IA que la experiencia ya se perciba como producto terminado
+
+- [x] Ronda extrema final: contrastar con ChatGPT, Grok y Gemini los cambios mínimos de mayor impacto para subir la nota estricta hacia 9/10+
+- [x] Ronda extrema final: reforzar confianza y privacidad visible en Home, /acceso y /auditar hasta eliminar sensación de riesgo o producto en construcción
+- [x] Ronda extrema final: validar con pruebas, revisión visual y reauditoría multi-IA estricta la nueva nota consolidada
+- [x] Trazar el origen del artefacto visual 'Salida rápida' visible en preview y aislar si proviene del proyecto, del runtime o del entorno de vista previa
+- [ ] Corregir o mitigar el artefacto perceptual que hoy bloquea la nota estricta 9/10+ en la demo
+- [ ] Revalidar con ChatGPT, Grok y Gemini la nota estricta una vez despejado el bloqueo visual de confianza

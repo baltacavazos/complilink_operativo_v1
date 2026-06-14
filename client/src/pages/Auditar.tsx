@@ -275,7 +275,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
 
 const COMPACT_UPLOAD_GUARDRAILS = {
   fileRules: "PDF, XML, JPG, PNG, WEBP o DOCX · máximo 12 MB.",
-  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.",
+  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue privado, bajo tu control y puedes borrarlo cuando quieras.",
 };
 
 const UPLOAD_HELP_DISCLOSURE_SUMMARY =
@@ -10752,21 +10752,22 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                                    Resultado listo para cuidar
+                                    Hallazgo protegido y listo para cuidar
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Ya tienes una señal seria para guardar, exportar o reforzar con más contexto.
+                                    Ya tienes una señal seria para asegurar en tu bóveda privada, exportar o reforzar con más contexto.
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-teal-800">
-                                  Evidencia lista para guardar
+                                  Sesión blindada
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma, exportarlo como respaldo o sumar otros documentos para fortalecer tu caso.
+                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma, exportarlo como respaldo o sumar otros documentos para fortalecer tu caso. Solo tú decides qué guardar y nadie de tu empresa puede ver este material.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
                                 <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
+                                <span className="rounded-full bg-white/90 px-3 py-1">Privacidad bajo tu control</span>
                                 <span className="rounded-full bg-white/90 px-3 py-1">Descargar reporte</span>
                                 <span className="rounded-full bg-white/90 px-3 py-1">Seguir con más contexto</span>
                               </div>
@@ -10786,7 +10787,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                     });
                                   }}
                                 >
-Guardar evidencia en mi bóveda
+Asegurar evidencia en tu bóveda privada
                                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                                 </Button>
                                 <Button

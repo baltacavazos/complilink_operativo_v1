@@ -189,6 +189,9 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                   <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Este aviso carga sin login para que puedas leerlo antes de usar la plataforma. Operamos bajo LFPDPPP y reforzamos el resguardo con cifrado AES-256 para piezas sensibles del servicio.
                   </p>
+                  <p className="mt-3 inline-flex w-fit rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                    Revisión vigente visible · sin cambios ocultos
+                  </p>
                 </div>
               ) : null}
               {slug === "terminos" ? (

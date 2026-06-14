@@ -25,3 +25,9 @@ La home ya se ve más compacta desde el primer pantallazo. El header cambió a `
 La pantalla `/acceso?returnTo=/auditar` sí mejoró. El nuevo bloque `Tu avance sigue listo` aporta continuidad, baja ansiedad y hace que el login parezca una puerta de retorno al valor, no un formulario aislado.
 
 La anomalía del enlace `Salida rápida` sigue apareciendo en la extracción del navegador apuntando a `https://news.google.com/`. No apareció en el código mediante búsqueda textual, por lo que probablemente sea un artefacto del entorno de extracción; aun así, debe quedar registrada como anomalía observacional para futuras revisiones visuales.
+
+## Rastreo técnico del artefacto en la ronda extrema
+
+La inspección más reciente confirmó que en la **preview técnica** el navegador sí ve un enlace flotante con texto `Salida rápida` en la esquina inferior derecha y lo lista como elemento interactivo. Sin embargo, una solicitud directa al HTML servido por esa misma URL no devolvió ninguna coincidencia para `Salida rápida` ni `news.google.com`.
+
+La conclusión provisional es más fuerte que antes: el artefacto **sí aparece visualmente en la preview**, pero **no forma parte del HTML entregado por la aplicación**, por lo que muy probablemente proviene de una capa externa del entorno de visualización. En una navegación al dominio público `auditapatron.com` tampoco apareció este elemento; allí se abrió una pantalla de login de Manus sin ese overlay. Eso permite tratar el problema como un contaminante del entorno de preview, no como un bug confirmado del repositorio.

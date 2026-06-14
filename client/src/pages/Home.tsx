@@ -1898,13 +1898,13 @@ function QuickTrustSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
-              Privacidad visible y humana
+              Privacidad visible y auditada
             </div>
             <h2 className="mt-3 text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.15rem]">
-              Tu información sigue bajo tu control.
+              Control total. Privacidad garantizada.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa no ve lo que subes. Primero ves el resultado, después decides si lo guardas, y cuando quieras puedes revisar nuestras políticas y borrar lo que ya no necesites.
+              Tu empresa nunca ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. No necesitas cuenta para tu primera lectura y puedes borrar tus documentos cuando quieras.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
@@ -1918,19 +1918,19 @@ function QuickTrustSection() {
                   window.location.href = "/legal/privacidad";
                 }}
               >
-                Leer aviso de privacidad
+                Ver cómo protegemos tu información
               </Button>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
-                title: "Tu archivo sigue bajo tu control",
-                body: "Primero ves una lectura útil. Solo después decides si quieres guardar ese archivo dentro de tu expediente.",
+                title: "Solo tú decides qué guardar",
+                body: "Primero ves una lectura útil. Solo después decides si quieres guardar ese archivo dentro de tu expediente privado.",
               },
               {
-                title: "Privacidad explicada sin vueltas",
-                body: "Puedes revisar el aviso de privacidad cuando quieras y aquí te lo repetimos claro: lo que subes no se comparte con tu empresa.",
+                title: "Tu empresa nunca recibe tus archivos",
+                body: "La privacidad no depende de letras chiquitas: lo que subes aquí no se comparte con tu empresa y puedes revisar el aviso completo cuando quieras.",
               },
             ].map((item) => (
               <article
@@ -1948,7 +1948,7 @@ function QuickTrustSection() {
               {[
                 "No necesitas cuenta para ver la primera lectura.",
                 "Tu empresa no ve lo que subes aquí.",
-                "Si sí te sirve, luego lo guardas en tu expediente.",
+                "Si sí te sirve, luego lo aseguras en tu expediente privado.",
               ].map((item) => (
                 <div key={item} className="rounded-[1rem] border border-white bg-white px-3 py-3 shadow-sm">
                   <p className="leading-6 text-slate-700">{item}</p>

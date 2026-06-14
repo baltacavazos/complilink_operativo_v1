@@ -1,0 +1,105 @@
+{
+  "context_file": "/home/ubuntu/complilink_operativo_v1/product_extreme_closeout_multi_ai_context_2026-06-14.md",
+  "results": {
+    "chatgpt": {
+      "model": "AuditaPatron v1.0",
+      "strict_score_now": 7.8,
+      "trust_score_now": 7.8,
+      "verdict": "El producto está muy cerca de un cierre premium, pero aún carece de señales visuales y micro-interacciones que refuercen la confianza y la privacidad percibida en el momento crítico de uso. Hay oportunidad de elevar la sensación de producto terminado y confianza con pequeños cambios de alto retorno, especialmente en los puntos de contacto donde el usuario toma decisiones sensibles.",
+      "ship_now_strict": false,
+      "highest_leverage_changes": [
+        {
+          "surface": "/auditar (workspace)",
+          "change": "Agregar un banner o micro-modal visual (no intrusivo) que confirme explícitamente la privacidad y control del usuario justo después de subir un documento o al guardar evidencia, con un check visual y copy breve: 'Tu archivo sigue siendo privado. Nadie más puede verlo. Puedes borrarlo cuando quieras.'",
+          "why_it_matters": "Refuerza la confianza en el momento exacto de mayor sensibilidad (subida/guardado de documentos), cerrando la brecha entre promesa y percepción real de privacidad. Reduce ansiedad y eleva la sensación de producto premium y terminado.",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "Home (bloque de confianza)",
+          "change": "Agregar un micro-sello visual de 'Privacidad auditada' o 'Revisión de privacidad visible' con tooltip o enlace corto a la política, usando un ícono reconocible (ej. candado o escudo) y copy: 'Ver cómo protegemos tu información'.",
+          "why_it_matters": "Un sello visual y accesible eleva la percepción de confianza y profesionalismo, y da una señal inmediata de producto serio y terminado, especialmente para usuarios nuevos o escépticos.",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "/acceso (pantalla de login)",
+          "change": "Agregar debajo del campo de correo un microcopy persistente: 'Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro.' acompañado de un pequeño ícono de privacidad.",
+          "why_it_matters": "Refuerza la confianza justo antes de entregar datos personales, reduciendo fricción y dudas en el punto de entrada más sensible.",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ],
+      "single_best_move": "Agregar un banner o micro-modal visual en /auditar que confirme explícitamente la privacidad y control del usuario justo después de subir o guardar un documento.",
+      "confidence": "Muy alta. Estos cambios son pequeños, rápidos de implementar y directamente atacan los puntos de mayor sensibilidad perceptual, elevando la nota estricta sin riesgo ni deuda técnica.",
+      "source_api": "openai"
+    },
+    "grok": {
+      "model": "AuditaPatron",
+      "strict_score_now": 7.8,
+      "trust_score_now": 7.6,
+      "verdict": "Almost premium; trust signals still feel slightly generic",
+      "ship_now_strict": false,
+      "highest_leverage_changes": [
+        {
+          "surface": "/auditar",
+          "change": "Add persistent one-line footer: \"Este documento permanece en tu dispositivo hasta que confirmes guardar\"",
+          "why_it_matters": "Makes privacy concrete and visible exactly when the user sees results, directly addressing the core trust gap",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "Home",
+          "change": "Replace second trust paragraph with: \"Tu empresa nunca recibe tus archivos. Solo tú decides qué guardar.\"",
+          "why_it_matters": "Removes repetition and delivers the strongest privacy claim in plain language at first contact",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "/legal/privacidad",
+          "change": "Add small line under the human summary: \"Última revisión: Octubre 2024 · Sin cambios desde el último uso\"",
+          "why_it_matters": "Creates finished-product sensation and signals ongoing maintenance without new pages",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ],
+      "single_best_move": "Add the persistent privacy footer line in /auditar",
+      "confidence": "high",
+      "source_api": "xai"
+    },
+    "gemini": {
+      "model": "AuditaPatron Product Director",
+      "strict_score_now": 7.8,
+      "trust_score_now": 7.5,
+      "verdict": "El producto ha avanzado significativamente, pero el riesgo perceptual de la 'Salida rápida' es un ancla crítica para el 9/10+. Los ajustes propuestos son quirúrgicos y esenciales para solidificar la confianza y el cierre premium, moviendo la percepción de un producto 'bueno' a 'excepcional y blindado'. Sin estos cambios, el 9/10+ es inalcanzable.",
+      "ship_now_strict": false,
+      "highest_leverage_changes": [
+        {
+          "surface": "/auditar (Workspace) - Elemento persistente",
+          "change": "Implementar un 'badge' o icono persistente (ej. en el footer o esquina inferior) con el texto visible o en tooltip: 'Sesión Blindada. Tu privacidad es nuestra prioridad. Tus documentos están seguros y bajo tu control.'",
+          "why_it_matters": "Este es el punto de mayor riesgo perceptual. Aunque la anomalía de 'Salida rápida' sea externa, el usuario la atribuirá al producto. Este cambio contrarresta proactivamente cualquier duda, sobre-comunicando seguridad y control visible en todo momento. Es un blindaje psicológico esencial para el 9/10+.",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "Home - Bloque de confianza",
+          "change": "Reescribir el copy del bloque de confianza para mayor concisión y autoridad. Propuesta: Título: 'Control Total. Privacidad Garantizada.' Cuerpo: 'Tu empresa no ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. Sin cuenta para tu primera lectura. Borra tus documentos cuando quieras. Tu información, siempre tuya.'",
+          "why_it_matters": "La primera impresión es crítica. Un mensaje de confianza más directo, conciso y autoritario elimina redundancias y establece un tono premium desde el inicio, reforzando la sensación de producto terminado y la promesa de privacidad.",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "surface": "/auditar (Workspace) - Mensajes post-hallazgo y CTAs",
+          "change": "1. Reemplazar 'Resultado listo para cuidar' por 'Hallazgo crítico. Protegido.' 2. Cambiar 'Guardar evidencia en mi bóveda' por 'Asegurar evidencia en tu Bóveda Privada.' 3. Asegurar que el copy persistente 'Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.' tenga una distinción visual (ej. negrita, fondo sutil) para mayor prominencia.",
+          "why_it_matters": "En el punto de interacción más sensible con los datos, el lenguaje debe ser inequívoco y premium. 'Protegido' y 'Bóveda Privada' elevan la percepción de seguridad y valor, mientras que la visibilidad constante del control de archivo refuerza la confianza en el 'cierre premium'.",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ],
+      "single_best_move": "Implementar el 'badge' persistente de 'Sesión Blindada' en el workspace /auditar para contrarrestar el riesgo perceptual de la 'Salida rápida'.",
+      "confidence": "Extremadamente alta. Estos cambios son quirúrgicos, de bajo esfuerzo y abordan directamente los puntos más críticos para alcanzar la percepción de 9/10+.",
+      "source_api": "gemini"
+    }
+  },
+  "errors": {}
+}
