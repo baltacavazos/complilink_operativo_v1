@@ -69,13 +69,13 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Regreso directo");
     expect(accessSource).toContain("Tu avance te espera del otro lado.");
     expect(accessSource).toContain("Entrar y continuar");
-    expect(accessSource).toContain("Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.");
-    expect(accessSource).toContain("Sin correo comercial");
-    expect(accessSource).toContain("Código temporal de acceso");
-    expect(accessSource).toContain("Regreso directo a tu revisión");
+    expect(accessSource).toContain("Tu correo solo abre tu acceso y te devuelve a tu revisión.");
+    expect(accessSource).toContain("Solo para entrar");
+    expect(accessSource).toContain("Código temporal");
+    expect(accessSource).toContain("Regreso a tu revisión");
     expect(accessSource).toContain("Qué pasará después");
     expect(accessSource).toContain("Te llega un código temporal.");
-    expect(accessSource).toContain("Lo confirmas y vuelves directo a tu revisión.");
+    expect(accessSource).toContain("Lo confirmas y vuelves a tu revisión.");
     expect(accessSource).toContain("Señal visible de control");
     expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel}.");
   });

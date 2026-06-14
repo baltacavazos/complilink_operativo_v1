@@ -490,13 +490,11 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </div>
 
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
-                  <p>
-                    Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión.
-                  </p>
+                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve a tu revisión.</p>
                   <div className="mt-3 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3">
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Sin correo comercial</span>
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal de acceso</span>
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Regreso directo a tu revisión</span>
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Solo para entrar</span>
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal</span>
+                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Regreso a tu revisión</span>
                   </div>
                 </div>
 
@@ -517,9 +515,9 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Qué pasará después</p>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">1. Te llega un código temporal.</p>
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">2. Lo confirmas y vuelves directo a tu revisión.</p>
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">3. Si no sigues, puedes volver a entrar con el mismo correo.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">1.</span> Te llega un código temporal.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">2.</span> Lo confirmas y vuelves a tu revisión.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">3.</span> Si sales, retomas con el mismo correo.</p>
                   </div>
                 </div>
 
