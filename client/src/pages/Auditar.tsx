@@ -11333,6 +11333,10 @@ Reforzar con otro documento
                                 <p className="mt-1 text-sm leading-7 text-slate-700">
                                   {engineStatus.description}
                                 </p>
+                                <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/85 px-3 py-3 text-sm leading-6 text-slate-700">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible de control</p>
+                                  <p className="mt-1.5">Aquí mismo te confirmamos si el documento quedó resguardado, si sigue en análisis o si hace falta retomar algo. No tienes que adivinar qué pasó con tu archivo.</p>
+                                </div>
                               </div>
                             </div>
                           </div>

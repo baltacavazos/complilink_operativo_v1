@@ -25,6 +25,12 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Guardado manual");
     expect(homeSource).toContain("Acceso con rastro útil");
     expect(homeSource).toContain("Borrado y privacidad visibles");
+    expect(homeSource).toContain("Qué verás en tu primer uso");
+    expect(homeSource).toContain("Si guardas, lo verás");
+    expect(homeSource).toContain("Si borras o sales, también");
+    expect(homeSource).toContain("Registro visible de tu control");
+    expect(homeSource).toContain("Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente.");
+    expect(homeSource).toContain("Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador.");
     expect(homeSource).toContain("Respuestas rápidas");
     expect(homeSource).toContain("No necesitas cuenta para ver la primera lectura.");
     expect(homeSource).toContain("Ver controles de privacidad");
@@ -67,6 +73,10 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Sin correo comercial");
     expect(accessSource).toContain("Código temporal de acceso");
     expect(accessSource).toContain("Regreso directo a tu revisión");
+    expect(accessSource).toContain("Qué pasará después");
+    expect(accessSource).toContain("Te llega un código temporal.");
+    expect(accessSource).toContain("Lo confirmas y vuelves directo a tu revisión.");
+    expect(accessSource).toContain("Señal visible de control");
     expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel}.");
   });
 
@@ -82,6 +92,8 @@ describe("Auditapatron closeout experience", () => {
     expect(auditFlowSource).toContain("Borrador primero");
     expect(auditFlowSource).toContain("Rastro legal visible");
     expect(auditFlowSource).toContain("Control de privacidad");
+    expect(auditFlowSource).toContain("Señal visible de control");
+    expect(auditFlowSource).toContain("No tienes que adivinar qué pasó con tu archivo.");
     expect(auditFlowSource).toContain("Asegurar evidencia en tu bóveda privada");
     expect(auditFlowSource).toContain("Descargar reporte PDF");
     expect(auditFlowSource).toContain("Reforzar con otro documento");

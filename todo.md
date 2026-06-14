@@ -1773,3 +1773,7 @@
 
 - [x] Micro-ronda final: sustituir cualquier promesa de privacidad 'auditada' no verificable por evidencia visible, verificable y más defendible en Home y superficies relacionadas
 - [x] Micro-ronda final: revalidar con pruebas, preview y ChatGPT, Grok y Gemini la nota estricta después de ajustar la promesa de confianza
+
+- [x] Micro-ronda premium final: añadir una superficie guiada de primer uso y feedback visible de acciones críticas para elevar control percibido y sensación de producto terminado
+- [x] Micro-ronda final: reforzar ayuda contextual visible y feedback inmediato en puntos de decisión clave para subir la sensación de producto terminado premium
+- [x] Micro-ronda final: crear una superficie visible de auditoría personal con historial claro de guardado, revisión y control para que la privacidad no dependa solo del copy

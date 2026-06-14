@@ -1923,6 +1923,37 @@ function QuickTrustSection() {
                 </div>
               </div>
             </div>
+            <div className="mt-3 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4 text-sm text-slate-700 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">Qué verás en tu primer uso</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Subes y revisas</p>
+                  <p className="mt-1.5 leading-6">Primero ves una señal clara. Todavía no guardas nada.</p>
+                </div>
+                <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Si guardas, lo verás</p>
+                  <p className="mt-1.5 leading-6">El sistema te confirma que el archivo ya entró a tu expediente privado.</p>
+                </div>
+                <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
+                  <p className="font-semibold text-slate-950">Si borras o sales, también</p>
+                  <p className="mt-1.5 leading-6">Siempre sabes si quedó en borrador, si se eliminó o si debes volver a entrar con tu correo.</p>
+                </div>
+              </div>
+              <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/95 px-4 py-4 text-sm text-slate-700 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
+                <div className="mt-3 grid gap-2">
+                  {[
+                    "Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente.",
+                    "Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador.",
+                    "Si guardas un archivo, la interfaz te confirma que quedó resguardado y listo para seguimiento.",
+                  ].map((item) => (
+                    <div key={item} className="rounded-[0.9rem] border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <p className="leading-6 text-slate-700">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button className="rounded-full bg-slate-950 px-6 text-white hover:bg-slate-900" onClick={goToAuditFlow}>
                 {PRIMARY_CTA_LABEL}

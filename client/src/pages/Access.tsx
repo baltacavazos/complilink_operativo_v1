@@ -514,6 +514,15 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                       : "Enviar código"}
                 </Button>
 
+                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Qué pasará después</p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">1. Te llega un código temporal.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">2. Lo confirmas y vuelves directo a tu revisión.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2">3. Si no sigues, puedes volver a entrar con el mismo correo.</p>
+                  </div>
+                </div>
+
                 {requestEmailCode.isPending ? (
                   <p className="flex items-center gap-2 text-sm text-slate-500">
                     <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
@@ -574,6 +583,11 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Entrar y continuar
                 </Button>
+
+                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible de control</p>
+                  <p className="mt-2">No cambias nada de tu expediente hasta confirmar este código. Si algo falla, puedes pedir otro y retomar desde aquí sin perder el hilo.</p>
+                </div>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-slate-500">

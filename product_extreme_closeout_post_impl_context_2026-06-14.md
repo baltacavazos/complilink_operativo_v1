@@ -38,9 +38,37 @@ También se reforzaron las tarjetas de apoyo y se añadió una superficie de tra
 >
 > "Aceptación legal con versión visible"
 
+Además, la home ahora incluye una guía explícita de primer uso para que el control no dependa solo de inferencias:
+
+> "Qué verás en tu primer uso"
+>
+> "Subes y revisas"
+>
+> "Primero ves una señal clara. Todavía no guardas nada."
+>
+> "Si guardas, lo verás"
+>
+> "El sistema te confirma que el archivo ya entró a tu expediente privado."
+>
+> "Si borras o sales, también"
+>
+> "Siempre sabes si quedó en borrador, si se eliminó o si debes volver a entrar con tu correo."
+
+Esta guía ya fue validada visualmente en la preview: el primer scroll exhibe la nueva superficie y la esquina inferior derecha permanece limpia, sin `Salida rápida`.
+
+Además, la home ahora añade una capa más tangible de auditoría personal:
+
+> "Registro visible de tu control"
+>
+> "Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente."
+>
+> "Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador."
+>
+> "Si guardas un archivo, la interfaz te confirma que quedó resguardado y listo para seguimiento."
+
 ### /acceso
 
-Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo antes del CTA, junto con tres señales visibles de uso limitado:
+Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo antes del CTA, junto con tres señales visibles de uso limitado y una ayuda contextual nueva en el punto de decisión:
 
 > "Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión."
 >
@@ -49,6 +77,16 @@ Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo
 > "Código temporal de acceso"
 >
 > "Regreso directo a tu revisión"
+>
+> "Qué pasará después"
+>
+> "1. Te llega un código temporal."
+>
+> "2. Lo confirmas y vuelves directo a tu revisión."
+>
+> "3. Si no sigues, puedes volver a entrar con el mismo correo."
+>
+> "Señal visible de control"
 
 ### /auditar
 
@@ -73,6 +111,12 @@ Además, el bloque premium ahora añade una mini capa explícita de trazabilidad
 > "Rastro legal visible"
 >
 > "Control de privacidad"
+
+Y en la confirmación posterior al guardado ahora aparece una ayuda contextual visible:
+
+> "Señal visible de control"
+>
+> "Aquí mismo te confirmamos si el documento quedó resguardado, si sigue en análisis o si hace falta retomar algo. No tienes que adivinar qué pasó con tu archivo."
 
 Y el guardrail persistente de subida ahora dice:
 
