@@ -41,3 +41,30 @@ Validación visual posterior a la eliminación de `QuickExitButton` en `client/s
 Validación visual tras la micro-ronda premium final: la home ahora muestra la superficie `Qué verás en tu primer uso` dentro del primer scroll útil. El navegador extrajo explícitamente `Subes y revisas` y `Primero ves una señal clara. Todavía no guardas nada`, confirmando que el flujo de control ya no depende solo del microcopy disperso. La esquina inferior derecha sigue limpia; el botón `Salida rápida` no reapareció. El primer scroll se siente más guiado y más pedagógico sobre guardar, borrar o salir.
 
 Validación visual tras añadir `Registro visible de tu control`: la home ya exhibe en el primer scroll una capa más tangible de auditoría personal. El navegador extrajo explícitamente `Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente` y `Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador`, lo que confirma que la nueva superficie sí quedó visible sin romper la jerarquía principal. La esquina inferior derecha permanece limpia.
+
+## Validación visual adicional de /acceso tras compactación
+
+La tarjeta principal de `/acceso` ya se siente más corta y más escaneable en móvil. El bloque de correo explica su uso con menos texto y con tres cápsulas más fáciles de leer: `Solo para entrar`, `Código temporal` y `Regreso a tu revisión`.
+
+El bloque `Qué pasará después` mantiene continuidad operativa con menos ruido visual y con pasos más fáciles de recorrer de izquierda a derecha. En conjunto, la jerarquía del flujo por correo se percibe más premium y menos administrativa que en la iteración anterior.
+
+## Validación visual de la micro-ronda final de control verificable
+
+Fecha de validación: 2026-06-14
+Preview revisada: https://3000-iia5azgm81nj07x51v6pm-df2623bd.us2.manus.computer
+
+La home mantiene un primer viewport limpio, sin el artefacto `Salida rápida`, y el header sigue transmitiendo foco con `Resultado real`, `Cómo funciona` y `Privacidad`.
+
+La extracción del navegador confirmó la presencia del nuevo bloque de confianza con el copy exacto `Control visible desde el primer archivo.` y la línea `Tu empresa nunca ve lo que subes. Primero revisas la señal, luego decides si la guardas en tu expediente.`. Esto confirma que la última micro-ronda sí quedó publicada en preview y no solo en el código fuente.
+
+También quedó confirmada la continuidad del patrón de valor antes del expediente mediante la presencia visible de `Sube un archivo y mira una señal real antes de decidir.`. La sensación general del primer scroll sigue siendo más limpia y más seria que en rondas previas, con menos ruido lateral y mejor lectura de confianza.
+
+Para la siguiente mesa crítica externa, el punto a validar ya no es si existe control visible, sino si la nueva superficie compacta (`Nada se guarda solo`, `Rastro legal versionado`, `Privacidad accionable`, `3 señales claras`) ya basta para mover la percepción estricta de producto terminado hacia 9/10.
+
+## Validación visual de la demo interactiva de control
+
+La preview ya muestra los tres estados clicables `Antes de guardar`, `Si aceptas` y `Si resguardas` como botones reales dentro del bloque `Registro visible de tu control`.
+
+Al activar `Si aceptas`, la interfaz sí cambia de estado y la tarjeta inferior actualiza el contenido a `Aceptación registrada` con badge `Versión visible`. También aparecen campos explícitos de lectura: `Qué queda visible para ti`, `Qué no ve tu empresa`, `Rastro verificable` y `Siguiente estado`.
+
+Esto confirma que la última micro-ronda ya no es solo copy estático: ahora existe una demostración tangible de qué cambia, qué queda privado y qué se traza para la propia persona usuaria. Visualmente, el bloque sigue cabiendo en la narrativa premium sin romper la jerarquía general ni reintroducir el artefacto `Salida rápida`.

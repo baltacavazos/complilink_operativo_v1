@@ -382,6 +382,7 @@
 - [x] Mostrar sustento documental breve en las respuestas del copiloto cuando exista evidencia visible
 - [x] Incorporar un historial corto de conversación por expediente dentro del copiloto
 - [x] Validar con Vitest, revisión técnica y comprobación funcional la corrección del asistente y estas mejoras
+- [x] Añadir una micro-interacción visual y verificable de control/privacidad en Home y/o Auditar para reducir la dependencia de microcopy y elevar la percepción premium antes del checkpoint final.
 - [x] Corregir en `/auditar` el bucle de render `Maximum update depth exceeded` del copiloto laboral de Helios al abrir o usar el asistente.
 - [x] Validar con pruebas y revisión técnica que el copiloto de `/auditar` ya no dispara resets infinitos ni errores de React al interactuar con sus botones.
 - [x] Corregir en `/auditar` el bucle de render `Maximum update depth exceeded` del copiloto laboral de Helios al abrir o usar el asistente.
@@ -1777,3 +1778,5 @@
 - [x] Micro-ronda premium final: añadir una superficie guiada de primer uso y feedback visible de acciones críticas para elevar control percibido y sensación de producto terminado
 - [x] Micro-ronda final: reforzar ayuda contextual visible y feedback inmediato en puntos de decisión clave para subir la sensación de producto terminado premium
 - [x] Micro-ronda final: crear una superficie visible de auditoría personal con historial claro de guardado, revisión y control para que la privacidad no dependa solo del copy
+
+- [ ] Última micro-ronda visual final: detectar e implementar el ajuste de interfaz de mayor retorno para reducir densidad, subir señal premium y empujar la nota estricta final

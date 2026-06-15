@@ -12,31 +12,33 @@ En la ronda anterior, ChatGPT, Grok y Gemini coincidieron en una calificación e
 
 ### Home
 
-El bloque de confianza fue reforzado y ahora comunica:
+El bloque de confianza fue refinado de nuevo para verse menos denso, más premium y más verificable en un solo scroll. Ahora comunica:
 
 > "Privacidad visible y verificable"
 >
-> "Control total. Privacidad garantizada."
+> "Control visible desde el primer archivo."
 >
-> "Tu empresa nunca ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. No necesitas cuenta para tu primera lectura y puedes borrar tus documentos cuando quieras."
+> "Tu empresa nunca ve lo que subes. Primero revisas la señal, luego decides si la guardas en tu expediente. La primera lectura aparece sin cuenta y el control se mantiene visible durante todo el flujo."
 >
 > CTA secundario: "Ver controles de privacidad"
 
-También se reforzaron las tarjetas de apoyo y se añadió una superficie de transparencia visible en el primer scroll:
+También se compactaron las tarjetas de apoyo y se volvió más evidente la trazabilidad visible en el primer scroll:
 
 > "Transparencia visible"
 >
-> "Guardado manual"
+> "Nada se guarda solo"
 >
-> "Acceso con rastro útil"
+> "Rastro legal versionado"
 >
-> "Borrado y privacidad visibles"
+> "Privacidad accionable"
 >
-> "Solo tú decides qué guardar"
+> eyebrow: "Lectura primero"
 >
-> "Tu empresa nunca recibe tus archivos"
+> eyebrow: "Privacidad real"
 >
-> "Aceptación legal con versión visible"
+> eyebrow: "Rastro útil"
+>
+> badge: "Antes de abrir expediente"
 
 Además, la home ahora incluye una guía explícita de primer uso para que el control no dependa solo de inferencias:
 
@@ -56,37 +58,65 @@ Además, la home ahora incluye una guía explícita de primer uso para que el co
 
 Esta guía ya fue validada visualmente en la preview: el primer scroll exhibe la nueva superficie y la esquina inferior derecha permanece limpia, sin `Salida rápida`.
 
-Además, la home ahora añade una capa más tangible de auditoría personal:
+Además, la home ahora añade una capa más tangible y más escaneable de auditoría personal:
 
 > "Registro visible de tu control"
 >
-> "Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente."
+> badge: "3 señales claras"
 >
-> "Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador."
+> "Antes de guardar"
 >
-> "Si guardas un archivo, la interfaz te confirma que quedó resguardado y listo para seguimiento."
+> "Ves una lectura preliminar sin integrar nada a tu expediente."
+>
+> "Si aceptas"
+>
+> "Queda rastro visible de versión, fecha y navegador."
+>
+> "Si resguardas"
+>
+> "La interfaz te confirma que el archivo quedó listo para seguimiento."
+
+Y en esta última micro-ronda se convirtió esa superficie en una **demo interactiva** dentro de la propia Home:
+
+> "Toca una señal y mira qué quedaría visible para ti antes de abrir expediente."
+>
+> "Prueba tu control aquí"
+>
+> "Borrador preliminar activo"
+>
+> "Qué queda visible para ti"
+>
+> "Qué no ve tu empresa"
+>
+> "Rastro verificable"
+>
+> "Siguiente estado"
+
+La intención no es sumar más copy sino volver **más experimentable** la promesa de privacidad: el usuario ya no solo lee que hay control, sino que puede tocar tres estados del flujo y ver qué cambia, qué permanece privado y qué queda trazado para su propio resguardo.
 
 ### /acceso
 
-Se mantuvo la continuidad del valor y se añadió un microcopy persistente justo antes del CTA, junto con tres señales visibles de uso limitado y una ayuda contextual nueva en el punto de decisión:
+Se mantuvo la continuidad del valor y se compactó todavía más el punto de decisión del correo, de modo que la confianza ya depende menos de párrafos largos y más de señales breves, visibles y escaneables:
 
-> "Nunca compartimos tu correo. Solo lo usamos para tu acceso seguro y para devolverte a tu revisión."
+> "Tu correo solo abre tu acceso y te devuelve a tu revisión."
 >
-> "Sin correo comercial"
+> "Solo para entrar"
 >
-> "Código temporal de acceso"
+> "Código temporal"
 >
-> "Regreso directo a tu revisión"
+> "Regreso a tu revisión"
 >
 > "Qué pasará después"
 >
 > "1. Te llega un código temporal."
 >
-> "2. Lo confirmas y vuelves directo a tu revisión."
+> "2. Lo confirmas y vuelves a tu revisión."
 >
-> "3. Si no sigues, puedes volver a entrar con el mismo correo."
+> "3. Si sales, retomas con el mismo correo."
 >
 > "Señal visible de control"
+
+La validación visual posterior confirmó que la tarjeta de `/acceso` ahora se siente más corta, más premium y más fácil de escanear en móvil.
 
 ### /auditar
 
@@ -138,9 +168,9 @@ Se añadió una señal visible de vigencia y mantenimiento, más una mini matriz
 
 | Validación | Estado |
 | --- | --- |
-| Vitest focalizado de cierre | Aprobado |
-| TypeScript | Sin errores |
-| Estado del proyecto | Running, sin errores de LSP ni TypeScript |
+| Vitest focalizado de cierre | Aprobado después de fijar la nueva demo interactiva de control en Home |
+| TypeScript | Sin errores después de la micro-ronda de control tangible |
+| Estado del proyecto | Running, con la nueva interacción visible en preview y sin errores de TypeScript reportados en esta validación |
 
 ## Observación crítica restante
 

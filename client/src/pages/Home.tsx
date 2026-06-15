@@ -1891,6 +1891,41 @@ function HeliosFirstEntrySection() {
 }
 
 function QuickTrustSection() {
+  const controlMoments = [
+    {
+      label: "Antes de guardar",
+      detail: "Ves una lectura preliminar sin integrar nada a tu expediente.",
+      title: "Borrador preliminar activo",
+      badge: "Sin guardado",
+      visibleForYou: "Documento recibido, señal preliminar y siguiente paso sugerido.",
+      hiddenFromCompany: "Tus archivos y esta lectura no se comparten con tu empresa.",
+      trace: "Todavía no se integra nada a tu expediente.",
+      next: "Tú decides si borrar, salir o resguardar.",
+    },
+    {
+      label: "Si aceptas",
+      detail: "Queda rastro visible de versión, fecha y navegador.",
+      title: "Aceptación registrada",
+      badge: "Versión visible",
+      visibleForYou: "Versión del aviso, fecha de aceptación y navegador.",
+      hiddenFromCompany: "El contenido del archivo sigue fuera del alcance de tu empresa.",
+      trace: "Rastro legal versionado para tu resguardo.",
+      next: "Puedes continuar y decidir después si resguardar.",
+    },
+    {
+      label: "Si resguardas",
+      detail: "La interfaz te confirma que el archivo quedó listo para seguimiento.",
+      title: "Archivo listo para seguimiento",
+      badge: "Resguardado",
+      visibleForYou: "Confirmación de resguardo, estado del archivo y acceso posterior.",
+      hiddenFromCompany: "Tu documento sigue privado y solo accesible dentro de tu expediente.",
+      trace: "El sistema deja constancia visible de que quedó listo para seguimiento.",
+      next: "Puedes exportar, seguir reuniendo evidencia o volver luego.",
+    },
+  ] as const;
+  const [activeControlMoment, setActiveControlMoment] = useState(0);
+  const selectedControlMoment = controlMoments[activeControlMoment] ?? controlMoments[0];
+
   return (
     <section id="privacidad" className="bg-muted/35 py-8 sm:py-10">
       <div className="container mx-auto max-w-6xl">
@@ -1901,24 +1936,24 @@ function QuickTrustSection() {
               Privacidad visible y verificable
             </div>
             <h2 className="mt-3 text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.15rem]">
-              Control total. Privacidad garantizada.
+              Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa nunca ve lo que subes. Primero revisas el resultado, luego decides si lo guardas en tu expediente. No necesitas cuenta para tu primera lectura y puedes borrar tus documentos cuando quieras.
+              Tu empresa nunca ve lo que subes. Primero revisas la señal, luego decides si la guardas en tu expediente. La primera lectura aparece sin cuenta y el control se mantiene visible durante todo el flujo.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
-                  <p className="font-semibold text-slate-950">Guardado manual</p>
-                  <p className="mt-1.5 leading-6">Nada entra a tu expediente hasta que tú lo confirmas.</p>
+                  <p className="font-semibold text-slate-950">Nada se guarda solo</p>
+                  <p className="mt-1.5 leading-6">Tu expediente solo cambia cuando tú confirmas.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
-                  <p className="font-semibold text-slate-950">Acceso con rastro útil</p>
-                  <p className="mt-1.5 leading-6">La aceptación legal deja versión, fecha, IP y navegador para tu resguardo.</p>
+                  <p className="font-semibold text-slate-950">Rastro legal versionado</p>
+                  <p className="mt-1.5 leading-6">Si aceptas, queda versión, fecha y navegador visibles para tu resguardo.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
-                  <p className="font-semibold text-slate-950">Borrado y privacidad visibles</p>
+                  <p className="font-semibold text-slate-950">Privacidad accionable</p>
                   <p className="mt-1.5 leading-6">Puedes revisar el aviso, escribir a privacidad@auditapatron.com y pedir control sobre tus datos.</p>
                 </div>
               </div>
@@ -1940,17 +1975,68 @@ function QuickTrustSection() {
                 </div>
               </div>
               <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/95 px-4 py-4 text-sm text-slate-700 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
+                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                    3 señales claras
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-slate-600 sm:text-sm">Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.</p>
                 <div className="mt-3 grid gap-2">
-                  {[
-                    "Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente.",
-                    "Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador.",
-                    "Si guardas un archivo, la interfaz te confirma que quedó resguardado y listo para seguimiento.",
-                  ].map((item) => (
-                    <div key={item} className="rounded-[0.9rem] border border-slate-200 bg-slate-50 px-3 py-2.5">
-                      <p className="leading-6 text-slate-700">{item}</p>
+                  {controlMoments.map((item, index) => {
+                    const isActive = index === activeControlMoment;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => setActiveControlMoment(index)}
+                        className={`flex items-start gap-3 rounded-[0.9rem] border px-3 py-3 text-left transition-all ${
+                          isActive
+                            ? "border-teal-300 bg-teal-50 shadow-sm"
+                            : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
+                        }`}
+                      >
+                        <div className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                          isActive
+                            ? "border border-teal-300 bg-white text-teal-900"
+                            : "border border-teal-200 bg-white text-teal-800"
+                        }`}>
+                          {item.label}
+                        </div>
+                        <p className="min-w-0 leading-6 text-slate-700">{item.detail}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-950/[0.03] px-4 py-4 text-sm text-slate-700 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prueba tu control aquí</p>
+                      <p className="mt-1 text-base font-semibold text-slate-950">{selectedControlMoment.title}</p>
                     </div>
-                  ))}
+                    <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-900">
+                      {selectedControlMoment.badge}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Qué queda visible para ti</p>
+                      <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.visibleForYou}</p>
+                    </div>
+                    <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Qué no ve tu empresa</p>
+                      <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.hiddenFromCompany}</p>
+                    </div>
+                    <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Rastro verificable</p>
+                      <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.trace}</p>
+                    </div>
+                    <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Siguiente estado</p>
+                      <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.next}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1973,29 +2059,38 @@ function QuickTrustSection() {
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
+                eyebrow: "Lectura primero",
                 title: "Solo tú decides qué guardar",
-                body: "Primero ves una lectura útil. Solo después decides si quieres guardar ese archivo dentro de tu expediente privado.",
+                body: "Primero ves la lectura útil. Solo después decides si ese archivo entra a tu expediente privado.",
               },
               {
+                eyebrow: "Privacidad real",
                 title: "Tu empresa nunca recibe tus archivos",
-                body: "La privacidad no depende de letras chiquitas: lo que subes aquí no se comparte con tu empresa y puedes revisar el aviso completo cuando quieras.",
+                body: "Lo que subes aquí no se comparte con tu empresa y el aviso completo sigue visible cuando lo necesites.",
               },
               {
+                eyebrow: "Rastro útil",
                 title: "Aceptación legal con versión visible",
-                body: "Cuando corresponda aceptar documentos legales, el sistema deja constancia versionada para que sepas con qué aviso operaste y cuándo lo hiciste.",
+                body: "Cuando corresponda aceptar documentos legales, ves con qué aviso operaste y cuándo lo hiciste.",
               },
             ].map((item) => (
               <article
                 key={item.title}
                 className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm"
               >
-                <p className="font-semibold text-slate-950">{item.title}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.eyebrow}</p>
+                <p className="mt-2 font-semibold text-slate-950">{item.title}</p>
                 <p className="mt-1.5 leading-6">{item.body}</p>
               </article>
             ))}
           </div>
           <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm lg:col-span-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
+              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                Antes de abrir expediente
+              </span>
+            </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {[
                 "No necesitas cuenta para ver la primera lectura.",

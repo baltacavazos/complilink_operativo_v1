@@ -19,18 +19,31 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Resultado real desde el primer archivo");
     expect(homeSource).toContain("Primero ves el valor; después decides si quieres convertirlo en expediente.");
     expect(homeSource).toContain("Así pasas de duda a claridad sin enredos.");
-    expect(homeSource).toContain("Control total. Privacidad garantizada.");
+    expect(homeSource).toContain("Control visible desde el primer archivo.");
     expect(homeSource).toContain("Privacidad visible y verificable");
     expect(homeSource).toContain("Transparencia visible");
-    expect(homeSource).toContain("Guardado manual");
-    expect(homeSource).toContain("Acceso con rastro útil");
-    expect(homeSource).toContain("Borrado y privacidad visibles");
+    expect(homeSource).toContain("Nada se guarda solo");
+    expect(homeSource).toContain("Rastro legal versionado");
+    expect(homeSource).toContain("Privacidad accionable");
     expect(homeSource).toContain("Qué verás en tu primer uso");
     expect(homeSource).toContain("Si guardas, lo verás");
     expect(homeSource).toContain("Si borras o sales, también");
     expect(homeSource).toContain("Registro visible de tu control");
-    expect(homeSource).toContain("Antes de guardar, ves una lectura preliminar sin integrar nada a tu expediente.");
-    expect(homeSource).toContain("Si aceptas el paquete legal, queda rastro visible de versión, fecha y navegador.");
+    expect(homeSource).toContain("3 señales claras");
+    expect(homeSource).toContain("Antes de guardar");
+    expect(homeSource).toContain("Ves una lectura preliminar sin integrar nada a tu expediente.");
+    expect(homeSource).toContain("Si aceptas");
+    expect(homeSource).toContain("Queda rastro visible de versión, fecha y navegador.");
+    expect(homeSource).toContain("Si resguardas");
+    expect(homeSource).toContain("La interfaz te confirma que el archivo quedó listo para seguimiento.");
+    expect(homeSource).toContain("Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.");
+    expect(homeSource).toContain("Prueba tu control aquí");
+    expect(homeSource).toContain("Qué queda visible para ti");
+    expect(homeSource).toContain("Qué no ve tu empresa");
+    expect(homeSource).toContain("Rastro verificable");
+    expect(homeSource).toContain("Borrador preliminar activo");
+    expect(homeSource).toContain("Documento recibido, señal preliminar y siguiente paso sugerido.");
+    expect(homeSource).toContain("Tus archivos y esta lectura no se comparten con tu empresa.");
     expect(homeSource).toContain("Respuestas rápidas");
     expect(homeSource).toContain("No necesitas cuenta para ver la primera lectura.");
     expect(homeSource).toContain("Ver controles de privacidad");
@@ -104,7 +117,7 @@ describe("Auditapatron closeout experience", () => {
 
   it("preserves the worker-centered voice and keeps internal engine branding out of public marketing copy", () => {
     expect(homeSource).toContain("Tu empresa nunca ve lo que subes.");
-    expect(homeSource).toContain("Primero revisas el resultado, luego decides si lo guardas");
+    expect(homeSource).toContain("Primero revisas la señal, luego decides si la guardas en tu expediente.");
     expect(legalSource).toContain("Qué sí se registra");
     expect(legalSource).toContain("Qué no ve tu empresa");
     expect(legalSource).toContain("Dónde ejerces control");
