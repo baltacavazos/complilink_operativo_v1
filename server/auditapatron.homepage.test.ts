@@ -101,6 +101,11 @@ describe("Auditapatron closeout experience", () => {
     expect(auditFlowSource).toContain("Privacidad bajo tu control");
     expect(auditFlowSource).toContain("Descargar reporte");
     expect(auditFlowSource).toContain("Seguir con más contexto");
+    expect(auditFlowSource).toContain("Privacidad activa en este expediente");
+    expect(auditFlowSource).toContain("Privacidad activa dentro del expediente");
+    expect(auditFlowSource).toContain("Empresa sin acceso");
+    expect(auditFlowSource).toContain("Tú conservas el mando");
+    expect(auditFlowSource).toContain("Versión y estado visibles");
     expect(auditFlowSource).toContain("Transparencia de esta sesión");
     expect(auditFlowSource).toContain("Borrador primero");
     expect(auditFlowSource).toContain("Rastro legal visible");

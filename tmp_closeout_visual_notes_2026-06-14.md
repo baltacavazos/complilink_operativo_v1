@@ -68,3 +68,9 @@ La preview ya muestra los tres estados clicables `Antes de guardar`, `Si aceptas
 Al activar `Si aceptas`, la interfaz sí cambia de estado y la tarjeta inferior actualiza el contenido a `Aceptación registrada` con badge `Versión visible`. También aparecen campos explícitos de lectura: `Qué queda visible para ti`, `Qué no ve tu empresa`, `Rastro verificable` y `Siguiente estado`.
 
 Esto confirma que la última micro-ronda ya no es solo copy estático: ahora existe una demostración tangible de qué cambia, qué queda privado y qué se traza para la propia persona usuaria. Visualmente, el bloque sigue cabiendo en la narrativa premium sin romper la jerarquía general ni reintroducir el artefacto `Salida rápida`.
+
+## Validación visual de /auditar en esta ronda
+
+La preview pública de `/auditar` sin sesión no entra al workspace autenticado; solo muestra la capa inicial `Revisión rápida y privada` con CTAs de `Empezar gratis` y `Ya tengo cuenta · iniciar sesión`. Por lo tanto, la nueva señal persistente de privacidad activa no pudo validarse visualmente en navegador dentro del workspace real usando esta sesión anónima.
+
+Aun así, la intervención quedó confirmada por código y pruebas: `/auditar` ahora contiene una banda persistente con el copy `Privacidad activa en este expediente`, más estados explícitos como `Privacidad activa dentro del expediente`, `Empresa sin acceso`, `Tú conservas el mando` y `Versión y estado visibles`.

@@ -4975,6 +4975,75 @@ export default function Auditar() {
     lastUpload?.engineDispatch?.status ?? undefined,
     lastUpload?.engineDispatch?.reason ?? undefined
   );
+  const privacySignal = useMemo(() => {
+    if (pendingDraft) {
+      return {
+        badge: "Sin guardar",
+        title: "Privacidad activa en borrador",
+        detail:
+          "Tu archivo sigue en revisión privada. Nada entra al expediente hasta que tú lo confirmes.",
+        company: "Empresa sin acceso",
+        control: "Tú decides si guardar",
+        trace: "Rastro solo al confirmar",
+        cardClass: "border-teal-200 bg-teal-50/95",
+        badgeClass: "border-teal-200 bg-white text-teal-900",
+        eyebrowClass: "text-teal-800",
+      };
+    }
+
+    if (
+      lastUpload?.engineDispatch?.status === "sent" ||
+      visibleHeliosOpinion?.status === "processing" ||
+      visibleHeliosOpinion?.status === "sent"
+    ) {
+      return {
+        badge: "Protegido",
+        title: "Privacidad activa mientras analizamos",
+        detail:
+          "El documento ya quedó protegido mientras vuelve la lectura. Aquí mismo verás si sigue en análisis o si ya quedó listo.",
+        company: "Empresa sin acceso",
+        control: "Sin cambios automáticos",
+        trace: "Seguimiento visible aquí",
+        cardClass: "border-sky-200 bg-sky-50/95",
+        badgeClass: "border-sky-200 bg-white text-sky-900",
+        eyebrowClass: "text-sky-800",
+      };
+    }
+
+    if (documents.length > 0 || engineStatus.tone === "success") {
+      return {
+        badge: "Resguardado",
+        title: "Privacidad activa dentro del expediente",
+        detail:
+          "El archivo ya está en tu expediente privado y la interfaz mantiene visible el estado para que no tengas que adivinar qué pasó.",
+        company: "Empresa sin acceso",
+        control: "Tú conservas el mando",
+        trace: "Versión y estado visibles",
+        cardClass: "border-emerald-200 bg-emerald-50/95",
+        badgeClass: "border-emerald-200 bg-white text-emerald-900",
+        eyebrowClass: "text-emerald-800",
+      };
+    }
+
+    return {
+      badge: "Lista",
+      title: "Privacidad activa desde el primer intento",
+      detail:
+        "Puedes subir un archivo, revisar la primera señal y decidir después si te conviene guardarlo.",
+      company: "Empresa sin acceso",
+      control: "Nada se guarda solo",
+      trace: "Rastro visible al confirmar",
+      cardClass: "border-slate-200 bg-white/95",
+      badgeClass: "border-slate-200 bg-white text-slate-700",
+      eyebrowClass: "text-slate-500",
+    };
+  }, [
+    documents.length,
+    engineStatus.tone,
+    lastUpload?.engineDispatch?.status,
+    pendingDraft,
+    visibleHeliosOpinion?.status,
+  ]);
   const uploadInsight = lastUpload
     ? getUploadInsight(lastUpload.classification.documentType)
     : null;
@@ -7495,6 +7564,43 @@ Tu recibo está seguro y solo tú lo ves
             {shouldCompactPostUploadExperience ? null : null}
    </div>
         </div>
+
+        <section className="sticky top-3 z-30 mt-4 hidden sm:block">
+          <div
+            className={`rounded-[1.15rem] border px-4 py-3 shadow-[0_16px_38px_-30px_rgba(15,23,42,0.4)] backdrop-blur ${privacySignal.cardClass}`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className={`inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] ${privacySignal.eyebrowClass}`}>
+                  <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+                  Privacidad activa en este expediente
+                </div>
+                <p className="mt-1 text-sm font-semibold text-slate-950">
+                  {privacySignal.title}
+                </p>
+              </div>
+              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${privacySignal.badgeClass}`}>
+                {privacySignal.badge}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <p className="max-w-3xl text-sm leading-6 text-slate-700">
+                {privacySignal.detail}
+              </p>
+              <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
+                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
+                  {privacySignal.company}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
+                  {privacySignal.control}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
+                  {privacySignal.trace}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -14030,6 +14136,29 @@ Reforzar con otro documento
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
+          <div className={`mb-3 rounded-[1.15rem] border px-3.5 py-3 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="pr-1">
+                <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${privacySignal.eyebrowClass}`}>
+                  Privacidad activa en este expediente
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-950">
+                  {privacySignal.title}
+                </p>
+              </div>
+              <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold ${privacySignal.badgeClass}`}>
+                {privacySignal.badge}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">
+              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1 shadow-sm">
+                {privacySignal.company}
+              </span>
+              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1 shadow-sm">
+                {privacySignal.trace}
+              </span>
+            </div>
+          </div>
           {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
             <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {

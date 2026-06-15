@@ -1780,3 +1780,4 @@
 - [x] Micro-ronda final: crear una superficie visible de auditoría personal con historial claro de guardado, revisión y control para que la privacidad no dependa solo del copy
 
 - [ ] Última micro-ronda visual final: detectar e implementar el ajuste de interfaz de mayor retorno para reducir densidad, subir señal premium y empujar la nota estricta final
+- [x] Añadir una señal persistente y silenciosa de privacidad activa dentro de `/auditar` para elevar la percepción de control sin depender de bloques explicativos al final del flujo.

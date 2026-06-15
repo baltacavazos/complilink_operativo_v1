@@ -94,6 +94,20 @@ Y en esta última micro-ronda se convirtió esa superficie en una **demo interac
 
 La intención no es sumar más copy sino volver **más experimentable** la promesa de privacidad: el usuario ya no solo lee que hay control, sino que puede tocar tres estados del flujo y ver qué cambia, qué permanece privado y qué queda trazado para su propio resguardo.
 
+En la ronda más reciente se reforzó además `/auditar` con una **señal persistente y silenciosa de privacidad activa** dentro del workspace. Ya no depende solo del bloque de cierre `Transparencia de esta sesión`, porque ahora el flujo incorpora una banda persistente con estado contextual y copy explícito como:
+
+> "Privacidad activa en este expediente"
+>
+> "Privacidad activa dentro del expediente"
+>
+> "Empresa sin acceso"
+>
+> "Tú conservas el mando"
+>
+> "Versión y estado visibles"
+
+La intención estratégica de esta última intervención es responder directamente a la crítica de que la confianza seguía apareciendo solo al final o demasiado explicada. Ahora la privacidad aparece como una condición activa del sistema, no solo como una explicación posterior.
+
 ### /acceso
 
 Se mantuvo la continuidad del valor y se compactó todavía más el punto de decisión del correo, de modo que la confianza ya depende menos de párrafos largos y más de señales breves, visibles y escaneables:
@@ -168,9 +182,9 @@ Se añadió una señal visible de vigencia y mantenimiento, más una mini matriz
 
 | Validación | Estado |
 | --- | --- |
-| Vitest focalizado de cierre | Aprobado después de fijar la nueva demo interactiva de control en Home |
-| TypeScript | Sin errores después de la micro-ronda de control tangible |
-| Estado del proyecto | Running, con la nueva interacción visible en preview y sin errores de TypeScript reportados en esta validación |
+| Vitest focalizado de cierre | Aprobado después de fijar la señal persistente de privacidad en `/auditar` y la demo interactiva en Home |
+| TypeScript | Sin errores después de la nueva ronda para subir la calificación |
+| Estado del proyecto | Running, sin errores de TypeScript y con la nueva señal persistente ya integrada en `/auditar` |
 
 ## Observación crítica restante
 
