@@ -3,7 +3,8 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getGoogleLoginUrl, getManusLoginUrl } from "@/const";
-import { isNativeApp, openExternalUrl } from "@/lib/nativeRuntime";
+import { openPlatformExternalUrl } from "@/lib/platformAuthNavigation";
+import { isNativeApp } from "@/lib/nativeRuntime";
 import { trpc } from "@/lib/trpc";
 import {
   getStableUserIdentifier,
@@ -620,7 +621,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                       variant="outline"
                       className="h-11 w-full rounded-2xl border-slate-200 bg-white"
                       onClick={() => {
-                        void openExternalUrl(manusLoginUrl);
+                        void openPlatformExternalUrl(manusLoginUrl);
                       }}
                     >
                       Continuar con Manus
@@ -634,7 +635,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                       className="h-11 w-full rounded-2xl border-slate-200 bg-white"
                       disabled={googleStatusQuery.isLoading || !googleEnabled}
                       onClick={() => {
-                        void openExternalUrl(getGoogleLoginUrl(returnTo));
+                        void openPlatformExternalUrl(getGoogleLoginUrl(returnTo));
                       }}
                     >
                       {googleStatusQuery.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

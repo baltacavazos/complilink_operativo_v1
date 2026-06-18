@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
-import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { openPlatformLogin } from "@/lib/platformAuthNavigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,7 +99,7 @@ export default function DashboardLayout({
                 size="lg"
                 className="shadow-lg shadow-primary/15"
                 onClick={() => {
-                  window.location.href = getLoginUrl();
+                  void openPlatformLogin();
                 }}
               >
                 Iniciar sesión

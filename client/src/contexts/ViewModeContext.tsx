@@ -12,6 +12,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { platformSessionStorageGetSync, platformSessionStorageSetSync } from "@/lib/platformStorage";
 
 type ViewModeContextValue = {
   viewMode: UserViewMode;
@@ -23,8 +24,7 @@ type ViewModeContextValue = {
 const ViewModeContext = createContext<ViewModeContextValue | null>(null);
 
 function readInitialViewMode(): UserViewMode {
-  if (typeof window === "undefined") return "native";
-  const stored = window.sessionStorage.getItem(VIEW_MODE_SESSION_KEY);
+  const stored = platformSessionStorageGetSync(VIEW_MODE_SESSION_KEY);
   return stored === "demo-user" ? "demo-user" : "native";
 }
 
@@ -32,8 +32,7 @@ export function ViewModeProvider({ children }: { children: React.ReactNode }) {
   const [viewMode, setViewMode] = useState<UserViewMode>(() => readInitialViewMode());
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(VIEW_MODE_SESSION_KEY, viewMode);
+    platformSessionStorageSetSync(VIEW_MODE_SESSION_KEY, viewMode);
   }, [viewMode]);
 
   const setNativeView = useCallback(() => {

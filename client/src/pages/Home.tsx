@@ -8,6 +8,7 @@ import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/Aud
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowRight,
@@ -215,17 +216,10 @@ type StoredHomeGuestPreview = {
 const HOME_GUEST_PREVIEW_STORAGE_KEY = "auditapatron_home_guest_preview_v1";
 const HOME_GUEST_PREVIEW_RETURN_TO = "/?resume=guest-preview";
 
-function fileToBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      const [, base64Content = ""] = result.split(",");
-      resolve(base64Content);
-    };
-    reader.onerror = () => reject(new Error("No pudimos leer el archivo seleccionado."));
-    reader.readAsDataURL(file);
-  });
+async function fileToBase64(file: File) {
+  const result = await readWebFileAsDataUrl(file);
+  const [, base64Content = ""] = result.split(",");
+  return base64Content;
 }
 
 function readStoredHomeGuestPreview() {

@@ -1789,3 +1789,7 @@
 - [x] Validar que la incorporación del scaffolding móvil no rompa TypeScript ni la app web actual.
 - [x] Actualizar la documentación móvil con el estado real del scaffolding creado y los siguientes pasos técnicos.
 - [x] Inventariar los puntos browser-first críticos que deberán migrarse a adaptadores nativos para login, deep links, cámara, archivos y persistencia móvil.
+- [x] Crear `platformStorage` para encapsular `localStorage` y `sessionStorage` con fallback móvil.
+- [x] Crear `platformAuthNavigation` para encapsular login, deep links y aperturas externas entre web y app.
+- [x] Crear `platformDocumentInput` para preparar la entrada documental compartida entre archivo web y cámara/galería nativas.
+- [x] Integrar la primera ola de adaptadores en las superficies críticas sin romper la experiencia web actual.
