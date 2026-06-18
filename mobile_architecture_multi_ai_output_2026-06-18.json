@@ -1,0 +1,116 @@
+{
+  "prompt_file": "/home/ubuntu/complilink_operativo_v1/mobile_architecture_multi_ai_prompt_2026-06-18.md",
+  "results": {
+    "chatgpt": {
+      "recommended_strategy": "C",
+      "confidence": "alta",
+      "why_this_strategy": "La base actual es web-first pero ya tiene integración parcial con Capacitor y lógica móvil; avanzar con Capacitor permite lanzar rápido y aprovechar el código existente, mientras se identifican y aíslan superficies críticas que podrían migrarse a React Native solo si surgen limitaciones técnicas o UX graves.",
+      "main_reuse_opportunities": [
+        "Todo el frontend React y lógica de negocio existente",
+        "Integración tRPC y Drizzle",
+        "Flujo de captura documental y componentes de UI",
+        "Lógica de rutas y parsing de esquemas nativos",
+        "Infraestructura de autenticación y manejo de URLs"
+      ],
+      "main_risks": [
+        "Dependencia de APIs browser-first que pueden fallar o comportarse distinto en entornos nativos",
+        "Limitaciones de performance y UX en flujos intensivos de cámara y archivos",
+        "Complejidad incremental si se requiere migrar partes a React Native más adelante",
+        "Gestión de permisos y edge cases nativos no cubiertos por la lógica actual"
+      ],
+      "what_must_be_built_first": [
+        "Agregar y configurar capacitor.config.ts/js",
+        "Inicializar carpetas ios/ y android/ con Capacitor",
+        "Configurar Universal Links/App Links y archivos de asociación en /.well-known/",
+        "Ajustar el flujo de autenticación y deep linking para soportar esquemas nativos y HTTPS",
+        "Refactorizar acceso a window/document/navigator/localStorage para usar wrappers compatibles con Capacitor y fallback web",
+        "Agregar permisos y descripciones requeridas para cámara y archivos en ambos sistemas"
+      ],
+      "what_can_wait_until_phase_2": [
+        "Optimización de performance en flujos de cámara y archivos",
+        "Migración de superficies críticas a React Native si surgen limitaciones",
+        "Implementación avanzada de notificaciones push",
+        "Mejoras de UX específicas para mobile nativo",
+        "PWA manifiesto y soporte offline avanzado"
+      ],
+      "auth_and_deeplinks_recommendation": "Implementar Universal Links (iOS) y App Links (Android) usando el dominio principal; configurar archivos de asociación y settings nativos; asegurar que el flujo de autenticación y restauración de sesión funcione tanto con esquemas nativos como HTTPS; usar Browser.open() y escuchar appRestoredResult para continuidad.",
+      "camera_and_files_recommendation": "Usar @capacitor/camera y @capacitor/filesystem exclusivamente en entorno nativo; abstraer la lógica de captura y subida para detectar entorno y fallback a APIs web solo en browser; manejar permisos y edge cases nativos explícitamente; evitar FileReader y APIs browser-only en mobile.",
+      "offline_and_local_state_recommendation": "Reemplazar localStorage/sessionStorage por @capacitor/preferences o almacenamiento seguro; crear una capa de acceso local multiplataforma; planificar manejo de estado offline y sincronización para continuidad de expediente.",
+      "app_store_readiness_recommendation": "Completar configuración de permisos, descripciones y deep links; probar exhaustivamente flujos críticos en dispositivos reales; preparar assets y metadata para ambos stores; validar cumplimiento de políticas de privacidad y manejo de datos.",
+      "single_best_next_move": "Configurar capacitor.config.ts, inicializar ios/ y android/, y refactorizar todos los accesos a APIs browser-only para usar wrappers multiplataforma.",
+      "anti_pattern_to_avoid": "No encapsular lógica nativa en hacks condicionales ni dejar dependencias directas a window/document/navigator en código compartido; evitar mezclar lógica web y nativa sin una capa de abstracción clara."
+    },
+    "grok": {
+      "recommended_strategy": "A",
+      "confidence": "alta",
+      "why_this_strategy": "Capacitor ya está parcialmente integrado, el flujo de captura y listeners nativos existen, y se evita reescribir la base React + tRPC; la migración a RN costaría meses innecesarios.",
+      "main_reuse_opportunities": [
+        "nativeRuntime.ts",
+        "AppUrlListener.tsx",
+        "flujo /auditar con preferredCaptureMode",
+        "tRPC + Drizzle backend",
+        "Browser.open() para auth"
+      ],
+      "main_risks": [
+        "Uso directo de window/document/localStorage sin abstracción",
+        "falta capacitor.config y carpetas nativas",
+        "deep links aún sin Associated Domains ni intent-filter"
+      ],
+      "what_must_be_built_first": [
+        "capacitor.config.ts con server y plugins",
+        "npx cap add ios && npx cap add android",
+        "abstracción de APIs web en nativeRuntime",
+        "configuración de Universal Links / App Links en /.well-known/"
+      ],
+      "what_can_wait_until_phase_2": [
+        "notificaciones push",
+        "modo offline avanzado con sincronización",
+        "mejoras de performance nativa específicas"
+      ],
+      "auth_and_deeplinks_recommendation": "Usar Universal Links (iOS) y App Links (Android) sobre https://auditapatron.com con archivos de asociación y autoVerify; mantener Browser.open() para OAuth.",
+      "camera_and_files_recommendation": "Forzar @capacitor/camera y Filesystem; declarar permisos NSCameraUsageDescription y PhotoLibrary en Info.plist, escuchar appRestoredResult.",
+      "offline_and_local_state_recommendation": "Usar @capacitor/preferences para estado local; envolver localStorage/sessionStorage detrás de nativeRuntime con fallback web.",
+      "app_store_readiness_recommendation": "Añadir descripciones de permisos, Associated Domains y android:exported/intent-filter antes de primer build; firmar y subir a TestFlight/Play Internal primero.",
+      "single_best_next_move": "Ejecutar npx cap init, crear capacitor.config.ts y generar las carpetas ios/android esta misma semana.",
+      "anti_pattern_to_avoid": "Seguir llamando window/document directamente en componentes sin pasar por nativeRuntime ni Platform checks."
+    },
+    "gemini": {
+      "recommended_strategy": "A",
+      "confidence": "alta",
+      "why_this_strategy": "La base de código React 19 + Vite existente, la inclusión de dependencias de Capacitor y la lógica móvil parcial ya implementada hacen de Capacitor la ruta más directa y rentable. Minimiza el retrabajo, aprovecha al máximo la inversión actual y permite una llegada rápida al mercado en iOS y Android, cumpliendo con las restricciones de negocio.",
+      "main_reuse_opportunities": [
+        "Toda la lógica de negocio y componentes React del cliente.",
+        "Integración con tRPC y Express/Drizzle.",
+        "Lógica de soporte móvil existente (`nativeRuntime.ts`, `AppUrlListener.tsx`).",
+        "Construcción de URLs públicas y parsing de rutas entrantes.",
+        "Flujo de captura documental en `/auditar` (adaptando APIs)."
+      ],
+      "main_risks": [
+        "Refactorización intensiva de APIs browser-first (`window`, `document`, `localStorage`, `FileReader`) para compatibilidad nativa.",
+        "Posibles limitaciones de rendimiento o experiencia de usuario en UI/UX complejas que no se sientan 'nativas'.",
+        "Complejidad en la configuración de Universal Links/App Links y archivos de asociación.",
+        "Manejo de permisos nativos y estados de la aplicación (ej. `appRestoredResult` para cámara)."
+      ],
+      "what_must_be_built_first": [
+        "Inicialización de Capacitor (`capacitor.config.ts`, `npx cap add ios/android`).",
+        "Refactorización de todas las APIs browser-first a plugins de Capacitor o abstracciones multiplataforma.",
+        "Implementación completa de Universal Links (iOS) y App Links (Android) con archivos `/.well-known/` y configuración nativa.",
+        "Migración del flujo de captura documental a `@capacitor/camera` y `@capacitor/filesystem`, incluyendo manejo de permisos y `appRestoredResult`.",
+        "Configuración de permisos nativos en `Info.plist` (iOS) y `AndroidManifest.xml` (Android)."
+      ],
+      "what_can_wait_until_phase_2": [
+        "Notificaciones Push (si no son críticas para el MVP inicial).",
+        "Capacidades offline avanzadas (más allá de la persistencia básica de preferencias).",
+        "Optimización de componentes UI/UX para una apariencia más 'nativa' (ej. pickers de fecha, navegación).",
+        "Integración de analíticas y crash reporting específicos para apps nativas.",
+        "Tareas en segundo plano complejas."
+      ],
+      "auth_and_deeplinks_recommendation": "Mantener el flujo de autenticación web existente. Para autenticación externa, usar `Browser.open()` con Capacitor. Implementar Universal Links (iOS) y App Links (Android) utilizando el dominio `https://auditapatron.com` y los archivos de asociación requeridos. Configurar `Associated Domains` en iOS y `intent-filter` con `android:autoVerify='true'` en Android. `AppUrlListener.tsx` debe ser el punto central para manejar los deep links entrantes.",
+      "camera_and_files_recommendation": "Migrar completamente el flujo de captura documental en `/auditar` a `@capacitor/camera` y `@capacitor/filesystem`. Esto implica reemplazar `FileReader` y las APIs de archivo del navegador. Asegurar la solicitud de permisos en tiempo de ejecución y la configuración de descripciones de uso en `Info.plist` (NSCameraUsageDescription, NSPhotoLibraryAddUsageDescription, NSPhotoLibraryUsageDescription). Implementar la escucha de `appRestoredResult` para manejar interrupciones de la cámara.",
+      "offline_and_local_state_recommendation": "Reemplazar `localStorage` y `sessionStorage` con `@capacitor/preferences` para la persistencia de datos clave-valor. Para datos más complejos, evaluar el uso de `@capacitor-community/sqlite` o una solución similar si se requiere una base de datos local. Inicialmente, la estrategia offline puede limitarse a la persistencia de preferencias y caché del navegador, posponiendo una sincronización offline robusta para una fase posterior.",
+      "app_store_readiness_recommendation": "Preparar íconos de alta resolución, splash screens y descripciones para ambas tiendas. Asegurar una política de privacidad accesible. Realizar pruebas exhaustivas en dispositivos físicos para validar rendimiento, UI/UX y funcionalidad de plugins. Familiarizarse con las guías de revisión de Apple y Google para evitar rechazos, prestando especial atención al uso de permisos y la funcionalidad principal.",
+      "single_best_next_move": "Inicializar Capacitor (`npx cap init`, `npx cap add ios`, `npx cap add android`) y comenzar inmediatamente la refactorización de todas las referencias directas a `window`, `document`, `localStorage`, `sessionStorage` y `FileReader`, reemplazándolas por plugins de Capacitor o abstracciones multiplataforma.",
+      "anti_pattern_to_avoid": "Evitar la tentación de 'parchear' o ignorar las APIs browser-first. Intentar que `window` o `document` funcionen directamente en un WebView nativo sin abstracción adecuada es una fuente constante de errores, inestabilidad y problemas de seguridad. La abstracción temprana es clave para la robustez."
+    }
+  }
+}

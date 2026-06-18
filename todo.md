@@ -1781,3 +1781,7 @@
 
 - [ ] Última micro-ronda visual final: detectar e implementar el ajuste de interfaz de mayor retorno para reducir densidad, subir señal premium y empujar la nota estricta final
 - [x] Añadir una señal persistente y silenciosa de privacidad activa dentro de `/auditar` para elevar la percepción de control sin depender de bloques explicativos al final del flujo.
+- [x] Auditar la base actual de AuditaPatron para identificar qué partes ya son reutilizables en una app real de iOS y Android.
+- [x] Definir la arquitectura móvil objetivo para iOS y Android, incluyendo estrategia de código compartido, autenticación, navegación, cámara, archivos y notificaciones.
+- [x] Preparar una hoja de ruta de migración por fases desde la web actual hacia una app móvil publicable.
+- [x] Crear documentación inicial del frente móvil con dependencias, riesgos, decisiones y siguientes pasos de implementación.
