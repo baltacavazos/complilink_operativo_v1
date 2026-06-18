@@ -1788,3 +1788,4 @@
 - [x] Crear el scaffolding móvil real de AuditaPatron con `capacitor.config.ts` y proyectos base `ios/` y `android/`.
 - [x] Validar que la incorporación del scaffolding móvil no rompa TypeScript ni la app web actual.
 - [x] Actualizar la documentación móvil con el estado real del scaffolding creado y los siguientes pasos técnicos.
+- [x] Inventariar los puntos browser-first críticos que deberán migrarse a adaptadores nativos para login, deep links, cámara, archivos y persistencia móvil.
