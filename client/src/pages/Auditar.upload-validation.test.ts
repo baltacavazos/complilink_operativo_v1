@@ -8,6 +8,14 @@ const auditarSource = readFileSync(
 );
 
 describe("Auditar DOCX support markers", () => {
+  it("routes document reading and persistence through mobile-ready adapters", () => {
+    expect(auditarSource).toContain('import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput"');
+    expect(auditarSource).toContain('platformStorageGetJSON');
+    expect(auditarSource).toContain('platformStorageSetJSON');
+    expect(auditarSource).toContain('async function fileToBase64(file: File)');
+    expect(auditarSource).toContain('return readWebFileAsDataUrl(file);');
+  });
+
   it("keeps DOCX in the upload picker and validation copy", () => {
     expect(auditarSource).toContain(".docx");
     expect(auditarSource).toContain(

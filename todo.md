@@ -1793,3 +1793,6 @@
 - [x] Crear `platformAuthNavigation` para encapsular login, deep links y aperturas externas entre web y app.
 - [x] Crear `platformDocumentInput` para preparar la entrada documental compartida entre archivo web y cámara/galería nativas.
 - [x] Integrar la primera ola de adaptadores en las superficies críticas sin romper la experiencia web actual.
+- [x] Integrar `platformDocumentInput` en puntos acotados del flujo central de `/auditar` para reducir lectura documental web directa.
+- [x] Migrar persistencias locales prioritarias de `/auditar` y superficies relacionadas hacia `platformStorage`.
+- [x] Validar con TypeScript y pruebas focales la segunda ola de adaptación móvil sobre el flujo central.

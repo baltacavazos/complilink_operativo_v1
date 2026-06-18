@@ -123,3 +123,9 @@ El inventario técnico preparado en `references/mobile-adapter-inventory.md` ya 
 
 [1]: https://capacitorjs.com/docs/guides/deep-links "Deep Links | Capacitor Documentation"
 [2]: https://capacitorjs.com/docs/apis/camera "Camera Capacitor Plugin API | Capacitor Documentation"
+
+## Estado real de la segunda ola de adaptación móvil
+
+Quedó completada una segunda ola enfocada en el flujo central. `platformDocumentInput` ya se conectó a helpers puntuales de `Home` y `/auditar`, sustituyendo lecturas web directas por una capa reutilizable para la futura captura nativa. En paralelo, `platformStorage` ya gobierna persistencias prioritarias en `ViewModeContext` y en el estado persistido de `/auditar`, reduciendo dependencia directa de `localStorage` y `sessionStorage` en superficies críticas.
+
+La validación técnica de esta ola quedó limpia con `tsc --noEmit`, y además se fijó cobertura focal con Vitest sobre `platformStorage` y sobre los marcadores de integración móvil en `Auditar.upload-validation.test.ts`. El siguiente paso natural es ampliar `platformDocumentInput` desde helpers puntuales hacia los disparadores de cámara/galería y continuar retirando accesos browser-first residuales del workspace principal.

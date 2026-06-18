@@ -11,6 +11,12 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
+import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
+import {
+  platformStorageGetJSON,
+  platformStorageRemove,
+  platformStorageSetJSON,
+} from "@/lib/platformStorage";
 import { trpc } from "@/lib/trpc";
 import {
   trackCommerceCheckoutStarted,
@@ -1911,20 +1917,8 @@ function matchesArchiveDateFilter(
   return date.getFullYear() < currentYear;
 }
 
-function fileToBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-      reject(new Error("No fue posible convertir el archivo."));
-    };
-    reader.onerror = () =>
-      reject(reader.error ?? new Error("No fue posible leer el archivo."));
-    reader.readAsDataURL(file);
-  });
+async function fileToBase64(file: File) {
+  return readWebFileAsDataUrl(file);
 }
 
 function humanizeSnakeCase(value: string) {
@@ -3846,35 +3840,38 @@ export default function Auditar() {
       return;
     }
 
-    try {
-      const rawValue = window.localStorage.getItem(auditarPersistenceKey);
-      const persistedState = sanitizePersistedAuditarViewState(
-        rawValue ? JSON.parse(rawValue) : null
-      );
+    void (async () => {
+      try {
+        const storedValue = await platformStorageGetJSON<unknown>(
+          "local",
+          auditarPersistenceKey
+        );
+        const persistedState = sanitizePersistedAuditarViewState(storedValue);
 
-      setHistoryFilter(persistedState.historyFilter ?? "all");
-      setMobileOnboardingIndex(persistedState.mobileOnboardingIndex ?? 0);
-      setSelectedRecommendedTargetType(
-        persistedState.selectedRecommendedTargetType === undefined
-          ? null
-          : persistedState.selectedRecommendedTargetType
-      );
-      setPreferredCaptureMode(
-        persistedState.preferredCaptureMode === undefined
-          ? null
-          : persistedState.preferredCaptureMode
-      );
-      setPreferredTone(persistedState.preferredTone ?? "brief");
-    } catch {
-      window.localStorage.removeItem(auditarPersistenceKey);
-      setHistoryFilter("all");
-      setMobileOnboardingIndex(0);
-      setSelectedRecommendedTargetType(null);
-      setPreferredCaptureMode(null);
-      setPreferredTone("brief");
-    } finally {
-      setPersistenceReady(true);
-    }
+        setHistoryFilter(persistedState.historyFilter ?? "all");
+        setMobileOnboardingIndex(persistedState.mobileOnboardingIndex ?? 0);
+        setSelectedRecommendedTargetType(
+          persistedState.selectedRecommendedTargetType === undefined
+            ? null
+            : persistedState.selectedRecommendedTargetType
+        );
+        setPreferredCaptureMode(
+          persistedState.preferredCaptureMode === undefined
+            ? null
+            : persistedState.preferredCaptureMode
+        );
+        setPreferredTone(persistedState.preferredTone ?? "brief");
+      } catch {
+        await platformStorageRemove("local", auditarPersistenceKey);
+        setHistoryFilter("all");
+        setMobileOnboardingIndex(0);
+        setSelectedRecommendedTargetType(null);
+        setPreferredCaptureMode(null);
+        setPreferredTone("brief");
+      } finally {
+        setPersistenceReady(true);
+      }
+    })();
   }, [auditarPersistenceKey]);
 
   useEffect(() => {
@@ -3886,16 +3883,13 @@ export default function Auditar() {
       return;
     }
 
-    window.localStorage.setItem(
-      auditarPersistenceKey,
-      JSON.stringify({
-        historyFilter,
-        mobileOnboardingIndex,
-        selectedRecommendedTargetType,
-        preferredCaptureMode,
-        preferredTone,
-      })
-    );
+    void platformStorageSetJSON("local", auditarPersistenceKey, {
+      historyFilter,
+      mobileOnboardingIndex,
+      selectedRecommendedTargetType,
+      preferredCaptureMode,
+      preferredTone,
+    });
   }, [
     auditarPersistenceKey,
     historyFilter,
