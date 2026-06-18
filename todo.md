@@ -1785,3 +1785,6 @@
 - [x] Definir la arquitectura móvil objetivo para iOS y Android, incluyendo estrategia de código compartido, autenticación, navegación, cámara, archivos y notificaciones.
 - [x] Preparar una hoja de ruta de migración por fases desde la web actual hacia una app móvil publicable.
 - [x] Crear documentación inicial del frente móvil con dependencias, riesgos, decisiones y siguientes pasos de implementación.
+- [x] Crear el scaffolding móvil real de AuditaPatron con `capacitor.config.ts` y proyectos base `ios/` y `android/`.
+- [x] Validar que la incorporación del scaffolding móvil no rompa TypeScript ni la app web actual.
+- [x] Actualizar la documentación móvil con el estado real del scaffolding creado y los siguientes pasos técnicos.

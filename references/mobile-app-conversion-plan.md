@@ -5,7 +5,7 @@
 
 ## Resumen ejecutivo
 
-La ruta recomendada para convertir **AuditaPatron** en una app real de **iOS y Android** es **construir sobre la base actual con Capacitor**, no reescribir el producto ahora mismo en React Native o Expo. Esta decisión se apoya en dos hechos. Primero, el repositorio ya contiene dependencias y señales de integración móvil parcial, incluyendo soporte para abrir autenticación externa, parseo de rutas nativas y uso de un dominio público estable. Segundo, la documentación oficial de Capacitor encaja con el modelo operativo de AuditaPatron, especialmente en **deep links HTTPS** y **captura documental con cámara** [1] [2].
+La ruta recomendada para convertir **AuditaPatron** en una app real de **iOS y Android** es **construir sobre la base actual con Capacitor**, no reescribir el producto ahora mismo en React Native o Expo. Además, esta preparación ya no es solo teórica: el proyecto cuenta ya con `capacitor.config.ts` y con proyectos nativos base `ios/` y `android/`, por lo que la siguiente iteración puede concentrarse en flujos críticos como autenticación, deep links, cámara, archivos y persistencia multiplataforma. Esta decisión se apoya en dos hechos. Primero, el repositorio ya contiene dependencias y señales de integración móvil parcial, incluyendo soporte para abrir autenticación externa, parseo de rutas nativas y uso de un dominio público estable. Segundo, la documentación oficial de Capacitor encaja con el modelo operativo de AuditaPatron, especialmente en **deep links HTTPS** y **captura documental con cámara** [1] [2].
 
 La conclusión práctica es que la estrategia con mejor relación entre velocidad, riesgo y reutilización es una **migración móvil por fases**. La web actual no debe tratarse como un experimento aislado, sino como el núcleo compartido de una primera app publicable, endurecida con adaptadores nativos, permisos correctos, deep links formales y una política clara de almacenamiento local.
 
@@ -19,7 +19,7 @@ La base del proyecto ya ofrece un punto de partida mejor de lo normal para una a
 | Dependencias nativas | Capacitor ya está en `package.json` | La ruta móvil ya está insinuada dentro del repositorio |
 | Deep links | Existe soporte parcial de runtime y listener de URLs | Hay base para cerrar autenticación y navegación nativa |
 | Captura documental | `/auditar` ya modela cámara/archivo como decisiones de producto | La experiencia principal ya está diseñada con mentalidad móvil |
-| Configuración nativa | No existen `capacitor.config.*`, `ios/` ni `android/` | Aún no hay arranque operativo real de app |
+| Configuración nativa | Ya existe `capacitor.config.ts` y ya están presentes `ios/` y `android/` | El proyecto ya tiene scaffolding móvil base y puede pasar a integración funcional |
 | APIs browser-first | Persisten referencias a `window`, `document`, `localStorage`, `sessionStorage`, `FileReader` | Deben encapsularse antes de confiar en un runtime nativo |
 
 ## Decisión arquitectónica
@@ -104,6 +104,8 @@ La migración debe dividirse en fases de producto, no solo de ingeniería. El ob
 | --- | --- | --- |
 | Fase 0 | Preparación arquitectónica | Decisión de stack, backlog, auditoría y plan de implementación cerrados |
 | Fase 1 | Arranque operativo móvil | `capacitor.config.ts`, carpetas `ios/` y `android/`, build local inicial |
+
+La **Fase 1** ya quedó iniciada en el repositorio actual: la configuración de Capacitor y los proyectos nativos base ya existen. Eso reduce el riesgo de la siguiente iteración, porque el foco ya no es crear el cascarón móvil, sino conectar correctamente los flujos del producto al runtime nativo.
 | Fase 2 | Núcleo funcional | Login, deep links, captura documental, selección de archivos y continuidad básica funcionando |
 | Fase 3 | Endurecimiento móvil | Persistencia local limpia, permisos, recuperación de estado, pruebas en dispositivos |
 | Fase 4 | Preparación de stores | Assets, textos, política de privacidad, bundle/package IDs, pruebas internas |
