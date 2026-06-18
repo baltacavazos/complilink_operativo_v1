@@ -113,7 +113,9 @@ La **Fase 1** ya quedó iniciada en el repositorio actual: la configuración de 
 
 ## Próximos pasos concretos
 
-La siguiente ejecución técnica debería enfocarse en dejar la **base móvil operativa** y no en perseguir todavía el pulido final. El mejor siguiente movimiento es **formalizar Capacitor en el repositorio** y empezar la abstracción de dependencias web críticas.
+La siguiente ejecución técnica ya no debe enfocarse en crear el cascarón móvil, porque esa base ya existe. El siguiente movimiento correcto es **migrar las dependencias browser-first más sensibles hacia adaptadores de plataforma**, empezando por autenticación, deep links, entrada documental y persistencia local.
+
+El inventario técnico preparado en `references/mobile-adapter-inventory.md` ya dejó trazadas las superficies críticas y su prioridad de ataque. Eso permite pasar de una preparación arquitectónica a una implementación móvil incremental, con menos incertidumbre y mejor control del riesgo.
 
 > El antipatrón a evitar es intentar que el código compartido siga llamando directamente a `window`, `document`, `navigator`, `localStorage` o `FileReader` dentro de una app nativa. Esa mezcla tiende a romper la confiabilidad del producto y vuelve más costosa cualquier publicación futura.
 
