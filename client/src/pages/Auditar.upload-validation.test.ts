@@ -26,6 +26,16 @@ describe("Auditar DOCX support markers", () => {
     expect(auditarSource).toContain('getNativeDocumentSelectionErrorMessage("file")');
   });
 
+  it("persists a lightweight pending draft snapshot for mobile recovery without reviving binary payloads", () => {
+    expect(auditarSource).toContain('type AuditarPersistedDraftSnapshot = {');
+    expect(auditarSource).toContain('pendingDraftSnapshot?: AuditarPersistedDraftSnapshot | null;');
+    expect(auditarSource).toContain('setRestoredDraftSnapshot(persistedState.pendingDraftSnapshot ?? null);');
+    expect(auditarSource).toContain('pendingDraftSnapshot: pendingDraft');
+    expect(auditarSource).toContain('fileName: pendingDraft.previewAsset.fileName');
+    expect(auditarSource).toContain('summary: pendingDraft.preliminaryAnalysis.summary');
+    expect(auditarSource).toContain('Recuperamos tu contexto. Había una revisión sin confirmar de ${restoredDraftSnapshot.fileName}.');
+  });
+
   it("keeps DOCX in the upload picker and validation copy", () => {
     expect(auditarSource).toContain(".docx");
     expect(auditarSource).toContain(

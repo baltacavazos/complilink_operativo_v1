@@ -1361,6 +1361,16 @@ const mobileOnboardingSteps: MobileOnboardingStep[] = [
   },
 ];
 
+type AuditarPersistedDraftSnapshot = {
+  draftId: string;
+  fileName: string;
+  sizeBytes: number;
+  documentType: string;
+  captureMode: AuditarCaptureMode | null;
+  summary: string;
+  createdAt: string;
+};
+
 type AuditarPersistedViewState = {
   historyFilter?: DossierHistoryFilter;
   mobileOnboardingIndex?: number;
@@ -1369,6 +1379,7 @@ type AuditarPersistedViewState = {
   preferredTone?: HeliosCopilotResponseTone;
   pendingMobileCaptureMode?: AuditarCaptureMode | null;
   workspaceSection?: AuditarWorkspaceSection;
+  pendingDraftSnapshot?: AuditarPersistedDraftSnapshot | null;
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
@@ -1445,6 +1456,46 @@ export function sanitizePersistedAuditarViewState(
     record.workspaceSection === "herramientas"
       ? (record.workspaceSection as AuditarWorkspaceSection)
       : undefined;
+  const pendingDraftSnapshotRecord =
+    record.pendingDraftSnapshot && typeof record.pendingDraftSnapshot === "object"
+      ? (record.pendingDraftSnapshot as Record<string, unknown>)
+      : null;
+  const pendingDraftSnapshot = pendingDraftSnapshotRecord
+    ? {
+        draftId:
+          typeof pendingDraftSnapshotRecord.draftId === "string"
+            ? pendingDraftSnapshotRecord.draftId
+            : "",
+        fileName:
+          typeof pendingDraftSnapshotRecord.fileName === "string"
+            ? pendingDraftSnapshotRecord.fileName
+            : "",
+        sizeBytes:
+          typeof pendingDraftSnapshotRecord.sizeBytes === "number" &&
+          Number.isFinite(pendingDraftSnapshotRecord.sizeBytes)
+            ? pendingDraftSnapshotRecord.sizeBytes
+            : 0,
+        documentType:
+          typeof pendingDraftSnapshotRecord.documentType === "string"
+            ? pendingDraftSnapshotRecord.documentType
+            : "",
+        captureMode:
+          pendingDraftSnapshotRecord.captureMode === null
+            ? null
+            : pendingDraftSnapshotRecord.captureMode === "camera" ||
+                pendingDraftSnapshotRecord.captureMode === "file"
+              ? (pendingDraftSnapshotRecord.captureMode as AuditarCaptureMode)
+              : null,
+        summary:
+          typeof pendingDraftSnapshotRecord.summary === "string"
+            ? pendingDraftSnapshotRecord.summary
+            : "",
+        createdAt:
+          typeof pendingDraftSnapshotRecord.createdAt === "string"
+            ? pendingDraftSnapshotRecord.createdAt
+            : "",
+      }
+    : undefined;
 
   return {
     historyFilter,
@@ -1454,6 +1505,12 @@ export function sanitizePersistedAuditarViewState(
     preferredTone,
     pendingMobileCaptureMode,
     workspaceSection,
+    pendingDraftSnapshot:
+      pendingDraftSnapshot && pendingDraftSnapshot.draftId && pendingDraftSnapshot.fileName
+        ? pendingDraftSnapshot
+        : pendingDraftSnapshotRecord === null
+          ? undefined
+          : null,
   };
 }
 
@@ -3624,6 +3681,8 @@ export default function Auditar() {
     useState<AuditarCaptureMode | null>(null);
   const [mobileRecoveryNoticeShown, setMobileRecoveryNoticeShown] =
     useState(false);
+  const [restoredDraftSnapshot, setRestoredDraftSnapshot] =
+    useState<AuditarPersistedDraftSnapshot | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
     string | null
@@ -3894,6 +3953,7 @@ export default function Auditar() {
             : persistedState.pendingMobileCaptureMode
         );
         setWorkspaceSection(persistedState.workspaceSection ?? "resumen");
+        setRestoredDraftSnapshot(persistedState.pendingDraftSnapshot ?? null);
       } catch {
         await platformStorageRemove("local", auditarPersistenceKey);
         setHistoryFilter("all");
@@ -3903,6 +3963,7 @@ export default function Auditar() {
         setPreferredTone("brief");
         setPendingMobileRecoveryMode(null);
         setWorkspaceSection("resumen");
+        setRestoredDraftSnapshot(null);
       } finally {
         setPersistenceReady(true);
       }
@@ -3926,18 +3987,43 @@ export default function Auditar() {
       preferredTone,
       pendingMobileCaptureMode: pendingMobileRecoveryMode,
       workspaceSection,
+      pendingDraftSnapshot: pendingDraft
+        ? {
+            draftId: pendingDraft.draftId,
+            fileName: pendingDraft.previewAsset.fileName,
+            sizeBytes: pendingDraft.previewAsset.sizeBytes,
+            documentType: pendingDraft.classification.documentType,
+            captureMode: pendingDraft.previewAsset.captureMode,
+            summary: pendingDraft.preliminaryAnalysis.summary,
+            createdAt: pendingDraft.createdAt,
+          }
+        : restoredDraftSnapshot,
     });
   }, [
     auditarPersistenceKey,
     historyFilter,
     mobileOnboardingIndex,
+    pendingDraft,
     pendingMobileRecoveryMode,
     persistenceReady,
     preferredCaptureMode,
     preferredTone,
+    restoredDraftSnapshot,
     selectedRecommendedTargetType,
     workspaceSection,
   ]);
+
+  useEffect(() => {
+    if (!persistenceReady || pendingDraft || !restoredDraftSnapshot) {
+      return;
+    }
+
+    sonnerToast(
+      `Recuperamos tu contexto. Había una revisión sin confirmar de ${restoredDraftSnapshot.fileName}.`
+    );
+    setWorkspaceSection("resumen");
+    setRestoredDraftSnapshot(null);
+  }, [pendingDraft, persistenceReady, restoredDraftSnapshot]);
 
   useEffect(() => {
     if (

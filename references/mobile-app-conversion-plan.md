@@ -155,3 +155,11 @@ La sexta ola ya introdujo una **recuperación mínima de estado** para `/auditar
 Esta recuperación se diseñó con una regla de seguridad clara: **no intenta reconstruir archivos parciales ni fingir una selección inexistente**. En vez de eso, rehidrata el contexto operativo, reabre la superficie adecuada y muestra una señal breve para continuar desde un punto entendible. Con ello se reduce fricción post-interrupción sin introducir estados ambiguos dentro del expediente.
 
 La validación de esta ola quedó limpia con **TypeScript en verde** y con una **prueba focal aislada** de `Auditar.upload-validation.test.ts` en verde. La suite completa de Vitest sigue presentando ruido histórico no relacionado, por lo que el indicador útil de esta ronda es la validación focal del flujo documental móvil y no el resultado agregado de toda la base existente.
+
+## Estado real de la séptima ola de continuidad móvil
+
+La séptima ola añadió una capa más sólida de continuidad operativa en `/auditar`. Además de la rehidratación mínima que ya existía para sección activa e intención de captura, ahora el workspace conserva un **snapshot ligero del borrador pendiente** con metadatos seguros: `draftId`, nombre del archivo, tamaño, tipo documental, modo de captura, resumen y fecha de creación. Esta decisión permite recordar el contexto útil del trabajo sin intentar persistir binarios, respuestas pesadas ni estructuras frágiles que podrían romperse al volver desde una interrupción del runtime.
+
+La restauración se diseñó con un criterio deliberadamente conservador. Cuando la app detecta que había un borrador previo sin confirmar, muestra una notificación breve indicando que el contexto fue recuperado, devuelve a la persona a una zona segura del workspace y luego limpia el snapshot restaurado para evitar bucles de rehidratación o estados fantasma. Con esto la experiencia móvil gana continuidad real, pero sin fingir que puede revivir por completo un archivo local o un análisis en memoria que ya no existe.
+
+La validación técnica de esta séptima ola quedó limpia. El proyecto volvió a pasar `tsc --noEmit` y la prueba focal `client/src/pages/Auditar.upload-validation.test.ts` quedó en verde con un contrato nuevo para el snapshot ligero y la restauración segura del contexto operativo.

@@ -1808,3 +1808,6 @@
 - [x] Mapear las persistencias profundas y puntos de rehidratación crítica del workspace móvil en `/auditar`.
 - [x] Introducir una primera recuperación de estado tras interrupciones del runtime nativo o cierres parciales de la app.
 - [x] Validar con TypeScript y pruebas focales la sexta ola de rehidratación móvil.
+- [x] Identificar qué partes del borrador operativo de `/auditar` pueden persistirse de forma segura para continuidad móvil.
+- [x] Implementar una primera restauración segura de contexto operativo tras cierres parciales o interrupciones del runtime nativo.
+- [x] Validar con TypeScript y pruebas focales la séptima ola de continuidad móvil.
