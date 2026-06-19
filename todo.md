@@ -1811,3 +1811,6 @@
 - [x] Identificar qué partes del borrador operativo de `/auditar` pueden persistirse de forma segura para continuidad móvil.
 - [x] Implementar una primera restauración segura de contexto operativo tras cierres parciales o interrupciones del runtime nativo.
 - [x] Validar con TypeScript y pruebas focales la séptima ola de continuidad móvil.
+- [x] Identificar qué campos editables del borrador y preferencias de revisión pueden persistirse de forma segura en `/auditar`.
+- [x] Implementar una primera rehidratación segura de contexto editable y preferencias de revisión tras cierres parciales.
+- [x] Validar con TypeScript y pruebas focales la octava ola de continuidad editable móvil.

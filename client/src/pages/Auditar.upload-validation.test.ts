@@ -36,6 +36,17 @@ describe("Auditar DOCX support markers", () => {
     expect(auditarSource).toContain('Recuperamos tu contexto. Había una revisión sin confirmar de ${restoredDraftSnapshot.fileName}.');
   });
 
+  it("persists editable draft context and restores the note safely during the eighth mobile wave", () => {
+    expect(auditarSource).toContain('type AuditarPersistedEditableDraftContext = {');
+    expect(auditarSource).toContain('textHint?: string;');
+    expect(auditarSource).toContain('editableDraftContext?: AuditarPersistedEditableDraftContext | null;');
+    expect(auditarSource).toContain('setTextHint(persistedState.textHint ?? "");');
+    expect(auditarSource).toContain('setRestoredEditableDraftContext(');
+    expect(auditarSource).toContain('editableDraftContext: pendingDraft');
+    expect(auditarSource).toContain('manualFieldValues: Object.fromEntries(');
+    expect(auditarSource).toContain('Recuperamos tu nota y tus ajustes editables para que sigas sin empezar de cero.');
+  });
+
   it("keeps DOCX in the upload picker and validation copy", () => {
     expect(auditarSource).toContain(".docx");
     expect(auditarSource).toContain(

@@ -1371,6 +1371,12 @@ type AuditarPersistedDraftSnapshot = {
   createdAt: string;
 };
 
+type AuditarPersistedEditableDraftContext = {
+  draftId: string;
+  textHint: string;
+  manualFieldValues: Record<string, string>;
+};
+
 type AuditarPersistedViewState = {
   historyFilter?: DossierHistoryFilter;
   mobileOnboardingIndex?: number;
@@ -1379,7 +1385,9 @@ type AuditarPersistedViewState = {
   preferredTone?: HeliosCopilotResponseTone;
   pendingMobileCaptureMode?: AuditarCaptureMode | null;
   workspaceSection?: AuditarWorkspaceSection;
+  textHint?: string;
   pendingDraftSnapshot?: AuditarPersistedDraftSnapshot | null;
+  editableDraftContext?: AuditarPersistedEditableDraftContext | null;
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
@@ -1456,6 +1464,8 @@ export function sanitizePersistedAuditarViewState(
     record.workspaceSection === "herramientas"
       ? (record.workspaceSection as AuditarWorkspaceSection)
       : undefined;
+  const textHint =
+    typeof record.textHint === "string" ? record.textHint.slice(0, 800) : undefined;
   const pendingDraftSnapshotRecord =
     record.pendingDraftSnapshot && typeof record.pendingDraftSnapshot === "object"
       ? (record.pendingDraftSnapshot as Record<string, unknown>)
@@ -1496,6 +1506,33 @@ export function sanitizePersistedAuditarViewState(
             : "",
       }
     : undefined;
+  const editableDraftContextRecord =
+    record.editableDraftContext && typeof record.editableDraftContext === "object"
+      ? (record.editableDraftContext as Record<string, unknown>)
+      : null;
+  const editableDraftContext = editableDraftContextRecord
+    ? {
+        draftId:
+          typeof editableDraftContextRecord.draftId === "string"
+            ? editableDraftContextRecord.draftId
+            : "",
+        textHint:
+          typeof editableDraftContextRecord.textHint === "string"
+            ? editableDraftContextRecord.textHint.slice(0, 800)
+            : "",
+        manualFieldValues: Object.fromEntries(
+          Object.entries(
+            editableDraftContextRecord.manualFieldValues &&
+              typeof editableDraftContextRecord.manualFieldValues === "object"
+              ? (editableDraftContextRecord.manualFieldValues as Record<string, unknown>)
+              : {}
+          )
+            .filter(([, value]) => typeof value === "string")
+            .slice(0, 5)
+            .map(([key, value]) => [key, (value as string).slice(0, 400)])
+        ),
+      }
+    : undefined;
 
   return {
     historyFilter,
@@ -1505,10 +1542,17 @@ export function sanitizePersistedAuditarViewState(
     preferredTone,
     pendingMobileCaptureMode,
     workspaceSection,
+    textHint,
     pendingDraftSnapshot:
       pendingDraftSnapshot && pendingDraftSnapshot.draftId && pendingDraftSnapshot.fileName
         ? pendingDraftSnapshot
         : pendingDraftSnapshotRecord === null
+          ? undefined
+          : null,
+    editableDraftContext:
+      editableDraftContext && editableDraftContext.draftId
+        ? editableDraftContext
+        : editableDraftContextRecord === null
           ? undefined
           : null,
   };
@@ -3683,6 +3727,8 @@ export default function Auditar() {
     useState(false);
   const [restoredDraftSnapshot, setRestoredDraftSnapshot] =
     useState<AuditarPersistedDraftSnapshot | null>(null);
+  const [restoredEditableDraftContext, setRestoredEditableDraftContext] =
+    useState<AuditarPersistedEditableDraftContext | null>(null);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
     string | null
@@ -3941,6 +3987,7 @@ export default function Auditar() {
             ? null
             : persistedState.selectedRecommendedTargetType
         );
+        setTextHint(persistedState.textHint ?? "");
         setPreferredCaptureMode(
           persistedState.preferredCaptureMode === undefined
             ? null
@@ -3954,16 +4001,21 @@ export default function Auditar() {
         );
         setWorkspaceSection(persistedState.workspaceSection ?? "resumen");
         setRestoredDraftSnapshot(persistedState.pendingDraftSnapshot ?? null);
+        setRestoredEditableDraftContext(
+          persistedState.editableDraftContext ?? null
+        );
       } catch {
         await platformStorageRemove("local", auditarPersistenceKey);
         setHistoryFilter("all");
         setMobileOnboardingIndex(0);
         setSelectedRecommendedTargetType(null);
+        setTextHint("");
         setPreferredCaptureMode(null);
         setPreferredTone("brief");
         setPendingMobileRecoveryMode(null);
         setWorkspaceSection("resumen");
         setRestoredDraftSnapshot(null);
+        setRestoredEditableDraftContext(null);
       } finally {
         setPersistenceReady(true);
       }
@@ -3987,6 +4039,7 @@ export default function Auditar() {
       preferredTone,
       pendingMobileCaptureMode: pendingMobileRecoveryMode,
       workspaceSection,
+      textHint,
       pendingDraftSnapshot: pendingDraft
         ? {
             draftId: pendingDraft.draftId,
@@ -3998,10 +4051,25 @@ export default function Auditar() {
             createdAt: pendingDraft.createdAt,
           }
         : restoredDraftSnapshot,
+      editableDraftContext: pendingDraft
+        ? {
+            draftId: pendingDraft.draftId,
+            textHint,
+            manualFieldValues: Object.fromEntries(
+              buildPreviewEditableFields(pendingDraft)
+                .map(field => [
+                  field.key,
+                  (manualFieldValues[field.key] ?? field.value).slice(0, 400),
+                ])
+                .filter(([, value]) => value.trim().length > 0)
+            ),
+          }
+        : restoredEditableDraftContext,
     });
   }, [
     auditarPersistenceKey,
     historyFilter,
+    manualFieldValues,
     mobileOnboardingIndex,
     pendingDraft,
     pendingMobileRecoveryMode,
@@ -4009,7 +4077,9 @@ export default function Auditar() {
     preferredCaptureMode,
     preferredTone,
     restoredDraftSnapshot,
+    restoredEditableDraftContext,
     selectedRecommendedTargetType,
+    textHint,
     workspaceSection,
   ]);
 
@@ -4024,6 +4094,44 @@ export default function Auditar() {
     setWorkspaceSection("resumen");
     setRestoredDraftSnapshot(null);
   }, [pendingDraft, persistenceReady, restoredDraftSnapshot]);
+
+  useEffect(() => {
+    if (!persistenceReady || !pendingDraft || !restoredEditableDraftContext) {
+      return;
+    }
+
+    if (restoredEditableDraftContext.draftId !== pendingDraft.draftId) {
+      return;
+    }
+
+    setManualFieldValues(current => {
+      const nextValues = Object.fromEntries(
+        buildPreviewEditableFields(pendingDraft).map(field => [
+          field.key,
+          current[field.key] ?? field.value,
+        ])
+      );
+
+      Object.entries(restoredEditableDraftContext.manualFieldValues).forEach(
+        ([key, value]) => {
+          if (key in nextValues && value.trim()) {
+            nextValues[key] = value;
+          }
+        }
+      );
+
+      return nextValues;
+    });
+    setTextHint(current =>
+      current.trim() || !restoredEditableDraftContext.textHint.trim()
+        ? current
+        : restoredEditableDraftContext.textHint
+    );
+    sonnerToast(
+      "Recuperamos tu nota y tus ajustes editables para que sigas sin empezar de cero."
+    );
+    setRestoredEditableDraftContext(null);
+  }, [pendingDraft, persistenceReady, restoredEditableDraftContext]);
 
   useEffect(() => {
     if (
