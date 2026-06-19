@@ -8,6 +8,13 @@ export type PlatformDocumentSelection = {
   formatHint: "image";
 };
 
+export type PlatformCaptureMode = "camera" | "file";
+
+export function canUseNativeDocumentInput() {
+  return isNativeApp();
+}
+
+
 async function normalizePhoto(
   photo: Photo | GalleryPhoto,
   source: PlatformDocumentSelection["source"],
@@ -84,4 +91,14 @@ export async function selectDocumentFromWebFile(file: File): Promise<PlatformDoc
     dataUrl,
     formatHint: "image",
   };
+}
+
+export async function selectNativeDocumentForCaptureMode(
+  mode: PlatformCaptureMode,
+): Promise<PlatformDocumentSelection> {
+  if (mode === "camera") {
+    return selectDocumentFromNativeCamera();
+  }
+
+  return selectDocumentFromNativeGallery();
 }

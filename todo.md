@@ -1796,3 +1796,6 @@
 - [x] Integrar `platformDocumentInput` en puntos acotados del flujo central de `/auditar` para reducir lectura documental web directa.
 - [x] Migrar persistencias locales prioritarias de `/auditar` y superficies relacionadas hacia `platformStorage`.
 - [x] Validar con TypeScript y pruebas focales la segunda ola de adaptación móvil sobre el flujo central.
+- [x] Preparar disparadores multiplataforma de cámara y galería sobre `platformDocumentInput` para el siguiente salto funcional móvil.
+- [x] Endurecer el flujo de autenticación móvil con navegación externa y retorno controlado entre dominio web y runtime nativo.
+- [x] Validar con TypeScript y pruebas focales la tercera ola de adaptación móvil.
