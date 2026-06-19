@@ -1,4 +1,10 @@
-import { Camera, CameraResultType, CameraSource, type GalleryPhoto, type Photo } from "@capacitor/camera";
+import {
+  Camera,
+  CameraResultType,
+  CameraSource,
+  type GalleryPhoto,
+  type Photo,
+} from "@capacitor/camera";
 
 import { isNativeApp } from "./nativeRuntime";
 
@@ -11,10 +17,93 @@ export type PlatformDocumentSelection = {
 
 export type PlatformCaptureMode = "camera" | "file";
 
+const DOCUMENT_SELECTION_CANCELLED_CODE = "AUDITAPATRON_DOCUMENT_SELECTION_CANCELLED";
+
 export function canUseNativeDocumentInput() {
   return isNativeApp();
 }
 
+function normalizePermissionState(state: string | undefined) {
+  return state === "granted" || state === "limited";
+}
+
+function createDocumentSelectionError(message: string, code?: string) {
+  const error = new Error(message);
+  if (code) {
+    Object.assign(error, { code });
+  }
+  return error;
+}
+
+function isSelectionCancellationMessage(message: string) {
+  const normalizedMessage = message.toLowerCase();
+  return (
+    normalizedMessage.includes("cancel") ||
+    normalizedMessage.includes("cancell") ||
+    normalizedMessage.includes("no image picked") ||
+    normalizedMessage.includes("user did not capture")
+  );
+}
+
+export function isNativeDocumentSelectionCancelled(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    (error as Error & { code?: string }).code === DOCUMENT_SELECTION_CANCELLED_CODE ||
+    isSelectionCancellationMessage(error.message)
+  );
+}
+
+export function getNativeDocumentSelectionErrorMessage(mode: PlatformCaptureMode) {
+  return mode === "camera"
+    ? "No pudimos abrir la cámara en este momento. Revisa permisos e inténtalo de nuevo."
+    : "No pudimos abrir tu galería en este momento. Revisa permisos e inténtalo de nuevo.";
+}
+
+async function ensureNativeDocumentPermissions(mode: PlatformCaptureMode) {
+  const permissions = await Camera.checkPermissions();
+
+  if (mode === "camera") {
+    if (!normalizePermissionState(permissions.camera)) {
+      const requested = await Camera.requestPermissions({ permissions: ["camera"] });
+      if (!normalizePermissionState(requested.camera)) {
+        throw createDocumentSelectionError(
+          "Necesitamos permiso para usar tu cámara dentro de la app.",
+        );
+      }
+    }
+
+    return;
+  }
+
+  if (!normalizePermissionState(permissions.photos)) {
+    const requested = await Camera.requestPermissions({ permissions: ["photos"] });
+    if (!normalizePermissionState(requested.photos)) {
+      throw createDocumentSelectionError(
+        "Necesitamos permiso para abrir tu galería dentro de la app.",
+      );
+    }
+  }
+}
+
+function normalizeNativeSelectionError(error: unknown, mode: PlatformCaptureMode): Error {
+  if (error instanceof Error && isSelectionCancellationMessage(error.message)) {
+    return createDocumentSelectionError(
+      mode === "camera"
+        ? "Selección de cámara cancelada por la persona usuaria."
+        : "Selección de galería cancelada por la persona usuaria.",
+      DOCUMENT_SELECTION_CANCELLED_CODE,
+    );
+  }
+
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return createDocumentSelectionError(getNativeDocumentSelectionErrorMessage(mode));
+}
 
 async function normalizePhoto(
   photo: Photo | GalleryPhoto,
@@ -49,14 +138,20 @@ export async function selectDocumentFromNativeCamera() {
     throw new Error("La cámara nativa solo está disponible dentro de la app móvil.");
   }
 
-  const photo = await Camera.getPhoto({
-    source: CameraSource.Camera,
-    resultType: CameraResultType.Uri,
-    quality: 92,
-    correctOrientation: true,
-  });
+  await ensureNativeDocumentPermissions("camera");
 
-  return normalizePhoto(photo, "native-camera");
+  try {
+    const photo = await Camera.getPhoto({
+      source: CameraSource.Camera,
+      resultType: CameraResultType.Uri,
+      quality: 92,
+      correctOrientation: true,
+    });
+
+    return normalizePhoto(photo, "native-camera");
+  } catch (error) {
+    throw normalizeNativeSelectionError(error, "camera");
+  }
 }
 
 export async function selectDocumentFromNativeGallery() {
@@ -64,14 +159,20 @@ export async function selectDocumentFromNativeGallery() {
     throw new Error("La galería nativa solo está disponible dentro de la app móvil.");
   }
 
-  const photo = await Camera.getPhoto({
-    source: CameraSource.Photos,
-    resultType: CameraResultType.Uri,
-    quality: 92,
-    correctOrientation: true,
-  });
+  await ensureNativeDocumentPermissions("file");
 
-  return normalizePhoto(photo, "native-gallery");
+  try {
+    const photo = await Camera.getPhoto({
+      source: CameraSource.Photos,
+      resultType: CameraResultType.Uri,
+      quality: 92,
+      correctOrientation: true,
+    });
+
+    return normalizePhoto(photo, "native-gallery");
+  } catch (error) {
+    throw normalizeNativeSelectionError(error, "file");
+  }
 }
 
 export async function readWebFileAsDataUrl(file: File) {

@@ -13,6 +13,8 @@ import {
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import {
   canUseNativeDocumentInput,
+  getNativeDocumentSelectionErrorMessage,
+  isNativeDocumentSelectionCancelled,
   readWebFileAsDataUrl,
   selectNativeDocumentForCaptureMode,
 } from "@/lib/platformDocumentInput";
@@ -7004,11 +7006,21 @@ export default function Auditar() {
           handleSelectedDocumentFile(selection.file ?? null);
         })
         .catch(error => {
+          if (isNativeDocumentSelectionCancelled(error)) {
+            setSubmitError(null);
+            setUploadSourceOpen(false);
+            return;
+          }
+
+          setSelectedFile(null);
+          setAutoAnalyzeRequested(false);
+          setPendingDraft(null);
           setSubmitError(
             error instanceof Error
               ? error.message
-              : "No pudimos abrir la cámara en este momento."
+              : getNativeDocumentSelectionErrorMessage("camera")
           );
+          setUploadSourceOpen(false);
         });
       return;
     }
@@ -7026,11 +7038,21 @@ export default function Auditar() {
           handleSelectedDocumentFile(selection.file ?? null);
         })
         .catch(error => {
+          if (isNativeDocumentSelectionCancelled(error)) {
+            setSubmitError(null);
+            setUploadSourceOpen(false);
+            return;
+          }
+
+          setSelectedFile(null);
+          setAutoAnalyzeRequested(false);
+          setPendingDraft(null);
           setSubmitError(
             error instanceof Error
               ? error.message
-              : "No pudimos abrir tu galería en este momento."
+              : getNativeDocumentSelectionErrorMessage("file")
           );
+          setUploadSourceOpen(false);
         });
       return;
     }

@@ -21,6 +21,9 @@ describe("Auditar DOCX support markers", () => {
     expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("camera")');
     expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("file")');
     expect(auditarSource).toContain('handleSelectedDocumentFile(selection.file ?? null);');
+    expect(auditarSource).toContain('isNativeDocumentSelectionCancelled(error)');
+    expect(auditarSource).toContain('getNativeDocumentSelectionErrorMessage("camera")');
+    expect(auditarSource).toContain('getNativeDocumentSelectionErrorMessage("file")');
   });
 
   it("keeps DOCX in the upload picker and validation copy", () => {

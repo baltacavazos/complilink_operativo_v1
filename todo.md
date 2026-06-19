@@ -1802,3 +1802,6 @@
 - [x] Integrar disparadores nativos de cámara y galería directamente en `/auditar` usando `platformDocumentInput`.
 - [x] Reducir los `click()` browser-first residuales en la apertura documental del flujo central.
 - [x] Validar con TypeScript y pruebas focales la cuarta ola de integración nativa en `/auditar`.
+- [x] Endurecer permisos y manejo de cancelaciones en la selección nativa de cámara y galería dentro de `/auditar`.
+- [x] Mejorar la restauración de estado y los mensajes del flujo móvil cuando la selección nativa falle o se cancele.
+- [x] Validar con TypeScript y pruebas focales la quinta ola de robustez móvil.
