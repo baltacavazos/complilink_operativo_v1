@@ -1799,3 +1799,6 @@
 - [x] Preparar disparadores multiplataforma de cámara y galería sobre `platformDocumentInput` para el siguiente salto funcional móvil.
 - [x] Endurecer el flujo de autenticación móvil con navegación externa y retorno controlado entre dominio web y runtime nativo.
 - [x] Validar con TypeScript y pruebas focales la tercera ola de adaptación móvil.
+- [x] Integrar disparadores nativos de cámara y galería directamente en `/auditar` usando `platformDocumentInput`.
+- [x] Reducir los `click()` browser-first residuales en la apertura documental del flujo central.
+- [x] Validar con TypeScript y pruebas focales la cuarta ola de integración nativa en `/auditar`.

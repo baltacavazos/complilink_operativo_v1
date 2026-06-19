@@ -6,6 +6,7 @@ export type PlatformDocumentSelection = {
   source: "web-file" | "native-camera" | "native-gallery";
   dataUrl: string;
   formatHint: "image";
+  file?: File;
 };
 
 export type PlatformCaptureMode = "camera" | "file";
@@ -19,23 +20,28 @@ async function normalizePhoto(
   photo: Photo | GalleryPhoto,
   source: PlatformDocumentSelection["source"],
 ): Promise<PlatformDocumentSelection> {
-  if (photo.webPath) {
-    return {
-      source,
-      dataUrl: photo.webPath,
-      formatHint: "image",
-    };
+  const resolvedPath = photo.webPath ?? photo.path;
+
+  if (!resolvedPath) {
+    throw new Error("No fue posible normalizar la imagen seleccionada.");
   }
 
-  if (photo.path) {
-    return {
-      source,
-      dataUrl: photo.path,
-      formatHint: "image",
-    };
-  }
+  const response = await fetch(resolvedPath);
+  const blob = await response.blob();
+  const normalizedFormat = (photo.format ?? blob.type.split("/")[1] ?? "jpeg")
+    .toLowerCase()
+    .replace(/^jpg$/, "jpeg");
+  const mimeType = blob.type || `image/${normalizedFormat}`;
+  const file = new File([blob], `auditapatron-${source}.${normalizedFormat}`, {
+    type: mimeType,
+  });
 
-  throw new Error("No fue posible normalizar la imagen seleccionada.");
+  return {
+    source,
+    dataUrl: resolvedPath,
+    formatHint: "image",
+    file,
+  };
 }
 
 export async function selectDocumentFromNativeCamera() {
@@ -90,6 +96,7 @@ export async function selectDocumentFromWebFile(file: File): Promise<PlatformDoc
     source: "web-file",
     dataUrl,
     formatHint: "image",
+    file,
   };
 }
 

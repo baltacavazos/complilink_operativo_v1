@@ -11,7 +11,11 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
-import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
+import {
+  canUseNativeDocumentInput,
+  readWebFileAsDataUrl,
+  selectNativeDocumentForCaptureMode,
+} from "@/lib/platformDocumentInput";
 import {
   platformStorageGetJSON,
   platformStorageRemove,
@@ -6922,8 +6926,7 @@ export default function Auditar() {
     setUploadSourceOpen(false);
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
+  const handleSelectedDocumentFile = (file: File | null) => {
     const validationMessage = validateDocumentUploadFile(file);
 
     if (validationMessage) {
@@ -6987,15 +6990,51 @@ export default function Auditar() {
     setUploadSourceOpen(false);
   };
 
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSelectedDocumentFile(event.target.files?.[0] ?? null);
+  };
+
   const openCameraPicker = () => {
     setPreferredCaptureMode("camera");
     setSelectedCaptureMode("camera");
+
+    if (canUseNativeDocumentInput()) {
+      void selectNativeDocumentForCaptureMode("camera")
+        .then(selection => {
+          handleSelectedDocumentFile(selection.file ?? null);
+        })
+        .catch(error => {
+          setSubmitError(
+            error instanceof Error
+              ? error.message
+              : "No pudimos abrir la cámara en este momento."
+          );
+        });
+      return;
+    }
+
     cameraInputRef.current?.click();
   };
 
   const openFilePicker = () => {
     setPreferredCaptureMode("file");
     setSelectedCaptureMode("file");
+
+    if (canUseNativeDocumentInput()) {
+      void selectNativeDocumentForCaptureMode("file")
+        .then(selection => {
+          handleSelectedDocumentFile(selection.file ?? null);
+        })
+        .catch(error => {
+          setSubmitError(
+            error instanceof Error
+              ? error.message
+              : "No pudimos abrir tu galería en este momento."
+          );
+        });
+      return;
+    }
+
     fileInputRef.current?.click();
   };
 

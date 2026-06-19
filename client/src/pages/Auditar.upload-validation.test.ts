@@ -9,11 +9,18 @@ const auditarSource = readFileSync(
 
 describe("Auditar DOCX support markers", () => {
   it("routes document reading and persistence through mobile-ready adapters", () => {
-    expect(auditarSource).toContain('import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput"');
+    expect(auditarSource).toContain('readWebFileAsDataUrl');
     expect(auditarSource).toContain('platformStorageGetJSON');
     expect(auditarSource).toContain('platformStorageSetJSON');
     expect(auditarSource).toContain('async function fileToBase64(file: File)');
     expect(auditarSource).toContain('return readWebFileAsDataUrl(file);');
+  });
+
+  it("connects native camera and gallery triggers through the platform document adapter", () => {
+    expect(auditarSource).toContain('canUseNativeDocumentInput');
+    expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("camera")');
+    expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("file")');
+    expect(auditarSource).toContain('handleSelectedDocumentFile(selection.file ?? null);');
   });
 
   it("keeps DOCX in the upload picker and validation copy", () => {
