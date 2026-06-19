@@ -1805,3 +1805,6 @@
 - [x] Endurecer permisos y manejo de cancelaciones en la selección nativa de cámara y galería dentro de `/auditar`.
 - [x] Mejorar la restauración de estado y los mensajes del flujo móvil cuando la selección nativa falle o se cancele.
 - [x] Validar con TypeScript y pruebas focales la quinta ola de robustez móvil.
+- [x] Mapear las persistencias profundas y puntos de rehidratación crítica del workspace móvil en `/auditar`.
+- [x] Introducir una primera recuperación de estado tras interrupciones del runtime nativo o cierres parciales de la app.
+- [x] Validar con TypeScript y pruebas focales la sexta ola de rehidratación móvil.

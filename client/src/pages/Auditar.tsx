@@ -1367,6 +1367,8 @@ type AuditarPersistedViewState = {
   selectedRecommendedTargetType?: DossierTarget["type"] | null;
   preferredCaptureMode?: AuditarCaptureMode | null;
   preferredTone?: HeliosCopilotResponseTone;
+  pendingMobileCaptureMode?: AuditarCaptureMode | null;
+  workspaceSection?: AuditarWorkspaceSection;
 };
 
 function isDossierTargetType(value: unknown): value is DossierTarget["type"] {
@@ -1430,6 +1432,19 @@ export function sanitizePersistedAuditarViewState(
     record.preferredTone === "brief" || record.preferredTone === "explained"
       ? (record.preferredTone as HeliosCopilotResponseTone)
       : undefined;
+  const pendingMobileCaptureMode =
+    record.pendingMobileCaptureMode === null
+      ? null
+      : record.pendingMobileCaptureMode === "camera" ||
+          record.pendingMobileCaptureMode === "file"
+        ? (record.pendingMobileCaptureMode as AuditarCaptureMode)
+        : undefined;
+  const workspaceSection =
+    record.workspaceSection === "resumen" ||
+    record.workspaceSection === "expediente" ||
+    record.workspaceSection === "herramientas"
+      ? (record.workspaceSection as AuditarWorkspaceSection)
+      : undefined;
 
   return {
     historyFilter,
@@ -1437,6 +1452,8 @@ export function sanitizePersistedAuditarViewState(
     selectedRecommendedTargetType,
     preferredCaptureMode,
     preferredTone,
+    pendingMobileCaptureMode,
+    workspaceSection,
   };
 }
 
@@ -3603,6 +3620,10 @@ export default function Auditar() {
     }
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pendingMobileRecoveryMode, setPendingMobileRecoveryMode] =
+    useState<AuditarCaptureMode | null>(null);
+  const [mobileRecoveryNoticeShown, setMobileRecoveryNoticeShown] =
+    useState(false);
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [remoteViewStateReadyKey, setRemoteViewStateReadyKey] = useState<
     string | null
@@ -3867,6 +3888,12 @@ export default function Auditar() {
             : persistedState.preferredCaptureMode
         );
         setPreferredTone(persistedState.preferredTone ?? "brief");
+        setPendingMobileRecoveryMode(
+          persistedState.pendingMobileCaptureMode === undefined
+            ? null
+            : persistedState.pendingMobileCaptureMode
+        );
+        setWorkspaceSection(persistedState.workspaceSection ?? "resumen");
       } catch {
         await platformStorageRemove("local", auditarPersistenceKey);
         setHistoryFilter("all");
@@ -3874,6 +3901,8 @@ export default function Auditar() {
         setSelectedRecommendedTargetType(null);
         setPreferredCaptureMode(null);
         setPreferredTone("brief");
+        setPendingMobileRecoveryMode(null);
+        setWorkspaceSection("resumen");
       } finally {
         setPersistenceReady(true);
       }
@@ -3895,15 +3924,53 @@ export default function Auditar() {
       selectedRecommendedTargetType,
       preferredCaptureMode,
       preferredTone,
+      pendingMobileCaptureMode: pendingMobileRecoveryMode,
+      workspaceSection,
     });
   }, [
     auditarPersistenceKey,
     historyFilter,
     mobileOnboardingIndex,
+    pendingMobileRecoveryMode,
     persistenceReady,
     preferredCaptureMode,
     preferredTone,
     selectedRecommendedTargetType,
+    workspaceSection,
+  ]);
+
+  useEffect(() => {
+    if (
+      !persistenceReady ||
+      !pendingMobileRecoveryMode ||
+      !canUseNativeDocumentInput() ||
+      selectedFile ||
+      pendingDraft
+    ) {
+      return;
+    }
+
+    setSelectedCaptureMode(pendingMobileRecoveryMode);
+    setPreferredCaptureMode(pendingMobileRecoveryMode);
+    setWorkspaceSection("resumen");
+    setUploadSourceOpen(true);
+
+    if (!mobileRecoveryNoticeShown) {
+      sonnerToast(
+        pendingMobileRecoveryMode === "camera"
+          ? "Retomamos tu flujo. Si la cámara se cerró antes de terminar, puedes intentarlo otra vez desde aquí."
+          : "Retomamos tu flujo. Si la galería se cerró antes de terminar, puedes intentarlo otra vez desde aquí."
+      );
+      setMobileRecoveryNoticeShown(true);
+    }
+
+    setPendingMobileRecoveryMode(null);
+  }, [
+    mobileRecoveryNoticeShown,
+    pendingDraft,
+    pendingMobileRecoveryMode,
+    persistenceReady,
+    selectedFile,
   ]);
 
   useEffect(() => {
@@ -6918,6 +6985,7 @@ export default function Auditar() {
     trackFirstDossierReviewOutcome("cleared");
     documentSelectionStartedAtRef.current = null;
     previewReviewStartedAtRef.current = null;
+    setPendingMobileRecoveryMode(null);
     setSelectedFile(null);
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
@@ -6945,6 +7013,7 @@ export default function Auditar() {
       }
       documentSelectionStartedAtRef.current = null;
       previewReviewStartedAtRef.current = null;
+      setPendingMobileRecoveryMode(null);
       setSelectedFile(null);
       setAutoAnalyzeRequested(false);
       setPendingDraft(null);
@@ -6955,6 +7024,7 @@ export default function Auditar() {
       return;
     }
 
+    setPendingMobileRecoveryMode(null);
     setSelectedFile(file);
     setAutoAnalyzeRequested(Boolean(file));
     setPendingDraft(null);
@@ -6999,19 +7069,24 @@ export default function Auditar() {
   const openCameraPicker = () => {
     setPreferredCaptureMode("camera");
     setSelectedCaptureMode("camera");
+    setMobileRecoveryNoticeShown(false);
 
     if (canUseNativeDocumentInput()) {
+      setPendingMobileRecoveryMode("camera");
       void selectNativeDocumentForCaptureMode("camera")
         .then(selection => {
+          setPendingMobileRecoveryMode(null);
           handleSelectedDocumentFile(selection.file ?? null);
         })
         .catch(error => {
           if (isNativeDocumentSelectionCancelled(error)) {
+            setPendingMobileRecoveryMode(null);
             setSubmitError(null);
             setUploadSourceOpen(false);
             return;
           }
 
+          setPendingMobileRecoveryMode(null);
           setSelectedFile(null);
           setAutoAnalyzeRequested(false);
           setPendingDraft(null);
@@ -7031,19 +7106,24 @@ export default function Auditar() {
   const openFilePicker = () => {
     setPreferredCaptureMode("file");
     setSelectedCaptureMode("file");
+    setMobileRecoveryNoticeShown(false);
 
     if (canUseNativeDocumentInput()) {
+      setPendingMobileRecoveryMode("file");
       void selectNativeDocumentForCaptureMode("file")
         .then(selection => {
+          setPendingMobileRecoveryMode(null);
           handleSelectedDocumentFile(selection.file ?? null);
         })
         .catch(error => {
           if (isNativeDocumentSelectionCancelled(error)) {
+            setPendingMobileRecoveryMode(null);
             setSubmitError(null);
             setUploadSourceOpen(false);
             return;
           }
 
+          setPendingMobileRecoveryMode(null);
           setSelectedFile(null);
           setAutoAnalyzeRequested(false);
           setPendingDraft(null);
