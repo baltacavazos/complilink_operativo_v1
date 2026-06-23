@@ -1,0 +1,50 @@
+{
+  "openai": {
+    "stance": "C",
+    "verdict": "Una estrategia híbrida es la más efectiva para equilibrar claridad y usabilidad.",
+    "why": [
+      "Permite a los usuarios avanzar rápidamente sin sentirse abrumados por información innecesaria.",
+      "Las ayudas contextuales pueden guiar a los usuarios en momentos clave, mejorando la experiencia sin saturar la interfaz.",
+      "Facilita la adopción al ofrecer información adicional solo cuando es realmente necesaria."
+    ],
+    "risks": [
+      "Si las ayudas contextuales no son claras, pueden frustrar a los usuarios.",
+      "Demasiadas interacciones pueden distraer y hacer que los usuarios se sientan perdidos.",
+      "La falta de información persistente puede dejar a algunos usuarios sin el contexto necesario para aprovechar la app."
+    ],
+    "recommended_ui_rule": "Implementar ayudas contextuales que se activen en función del comportamiento del usuario y permitir que se oculten o muestren según su preferencia.",
+    "confidence": "high"
+  },
+  "grok": {
+    "stance": "C",
+    "verdict": "Estrategia híbrida maximiza adopción y claridad en móvil.",
+    "why": [
+      "Usuarios que instalan ya conocen el propósito, pero necesitan guías puntuales.",
+      "Pantallas móviles exigen minimalismo para evitar abandono.",
+      "Ayudas contextuales reducen fricción sin sobrecargar la interfaz."
+    ],
+    "risks": [
+      "Usuarios primerizos pueden bloquearse sin onboarding inicial.",
+      "Ayudas mal diseñadas pueden pasar desapercibidas.",
+      "Inconsistencia con la web puede generar confusión cross-platform."
+    ],
+    "recommended_ui_rule": "Ocultar explicaciones por defecto; mostrar tooltips o sheets al primer tap en iconos de ayuda.",
+    "confidence": "high"
+  },
+  "gemini": {
+    "stance": "C",
+    "verdict": "La estrategia híbrida optimiza la experiencia móvil, combinando eficiencia con soporte contextual.",
+    "why": [
+      "**Eficiencia Móvil:** Los usuarios de apps esperan interacciones rápidas y directas. Recortar explicaciones persistentes reduce la carga cognitiva y acelera la adopción, alineándose con los patrones de uso móvil.",
+      "**Soporte Contextual:** Aunque el usuario conozca el propósito general, puede necesitar ayuda específica para funciones complejas, recordatorios o para descubrir nuevas características. Las ayudas contextuales (tooltips, tours, FAQs in-app) ofrecen soporte justo cuando y donde se necesita, sin saturar la interfaz.",
+      "**Adaptabilidad al Usuario:** Esta estrategia atiende tanto a usuarios novatos (que pueden necesitar más guía inicial) como a expertos (que buscan una experiencia sin fricciones), permitiendo que cada uno acceda al nivel de detalle que requiere sin imponerlo a todos."
+    ],
+    "risks": [
+      "**Implementación Compleja:** Diseñar y desarrollar ayudas contextuales efectivas requiere un esfuerzo significativo en UX/UI y desarrollo para asegurar que sean útiles, no intrusivas y se activen en el momento adecuado.",
+      "**Falta de Descubrimiento:** Si las ayudas no son fácilmente accesibles, su presencia no es clara o no se activan intuitivamente, algunos usuarios podrían no encontrarlas cuando las necesiten, llevando a frustración o abandono de funciones.",
+      "**Sobrecarga de Ayudas:** Un exceso de tooltips, pop-ups o tours puede volverse tan molesto como una explicación persistente si no se gestiona con criterio, limitándose a los puntos críticos y permitiendo al usuario descartarlas."
+    ],
+    "recommended_ui_rule": "Priorizar la claridad y la acción directa en la interfaz principal, complementando con iconos de información ('i') discretos, tooltips al primer uso de una función, tours guiados para nuevas características o secciones complejas, y una sección de ayuda/FAQ accesible desde el perfil o ajustes.",
+    "confidence": "high"
+  }
+}

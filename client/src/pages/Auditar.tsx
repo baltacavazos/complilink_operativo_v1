@@ -6151,6 +6151,7 @@ export default function Auditar() {
       : priorityUploadGuides.slice(0, 2);
   const activeMobileOnboardingStep =
     mobileOnboardingSteps[mobileOnboardingIndex] ?? mobileOnboardingSteps[0];
+  const isNativeAppExperience = canUseNativeDocumentInput();
   const isFirstDocumentFlow =
     documents.length === 0 && !pendingDraft && !lastUpload;
   const shouldCompactPostUploadExperience =
@@ -7753,13 +7754,15 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                Revisión rápida y privada
+                {isNativeAppExperience ? "Directo desde tu app" : "Revisión rápida y privada"}
               </div>
               <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                Sube tu primer documento
+                {isNativeAppExperience ? "Sube tu documento" : "Sube tu primer documento"}
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
-                Empieza con una foto, PDF, XML o contrato en DOCX. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo.
+                {isNativeAppExperience
+                  ? "Toma una foto o elige un archivo. Primero ves la señal y después decides si quieres guardarla."
+                  : "Empieza con una foto, PDF, XML o contrato en DOCX. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -7793,14 +7796,19 @@ export default function Auditar() {
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
-                Qué pasa después de subirlo
+                {isNativeAppExperience ? "Ruta corta dentro de la app" : "Qué pasa después de subirlo"}
               </p>
               <div className="mt-4 space-y-3">
-                {[
-                  "Subes un solo archivo desde tu celular o computadora.",
-                  "Te mostramos qué detectamos y si ya apareció una señal para revisar.",
-                  "Si quieres guardarlo o seguir después, entonces activas tu acceso por correo.",
-                ].map(item => (
+                {(isNativeAppExperience
+                  ? [
+                      "Subes un archivo o tomas una foto desde tu celular.",
+                      "Ves de inmediato la señal principal y qué conviene revisar después.",
+                    ]
+                  : [
+                      "Subes un solo archivo desde tu celular o computadora.",
+                      "Te mostramos qué detectamos y si ya apareció una señal para revisar.",
+                      "Si quieres guardarlo o seguir después, entonces activas tu acceso por correo.",
+                    ]).map(item => (
                   <div
                     key={item}
                     className="flex min-w-0 items-start gap-3 rounded-[1.1rem] border border-white bg-white p-3.5"
@@ -7862,11 +7870,20 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                Sube tu recibo o comprobante
+                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo o comprobante"}
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
-              {shouldCompactPostUploadExperience ? null : (
+              {shouldCompactPostUploadExperience ? null : isNativeAppExperience ? (
+                <>
+                  <span className="sm:hidden">
+                    Sube una foto o archivo. Primero revisas la señal y luego decides si guardas.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Sube una foto, PDF, XML o contrato en DOCX. Primero revisas la señal y luego decides si la guardas.
+                  </span>
+                </>
+              ) : (
                 <>
                   <span className="sm:hidden">
                       Sube una foto, PDF o contrato en DOCX. Primero te mostraremos lo importante y qué hacer después.
@@ -7884,7 +7901,9 @@ export default function Auditar() {
                   className="h-3.5 w-3.5 text-teal-300"
                   strokeWidth={1.8}
                 />
-Tu recibo está seguro y solo tú lo ves
+                {isNativeAppExperience
+                  ? "Tu documento sigue privado dentro de la app"
+                  : "Tu recibo está seguro y solo tú lo ves"}
               </div>
             ) : null}
           </div>
@@ -8330,7 +8349,7 @@ Tu recibo está seguro y solo tú lo ves
               </div>
             ) : null}
 
-            <div className={shouldCompactPostUploadExperience ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
+            <div className={shouldCompactPostUploadExperience || (isNativeAppExperience && shouldCompactMobileUploadEntry) ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
               {shouldCompactPostUploadExperience ? (
                 <details className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 shadow-sm sm:hidden">
                   <summary className="flex list-none items-center justify-between gap-3 text-left">
@@ -8469,7 +8488,9 @@ Tu recibo está seguro y solo tú lo ves
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
                         ? "Elige un archivo o toma una foto cuando quieras sumar otra pieza útil."
-                        : "Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil."}
+                        : isNativeAppExperience
+                          ? "Toma una foto o elige un archivo. Primero revisas y luego decides si lo guardas."
+                          : "Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil."}
                     </p>
                   </div>
                 </div>
@@ -9159,15 +9180,17 @@ Tu recibo está seguro y solo tú lo ves
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                      Sube tu archivo
+                      {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
                     </p>
                       <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                        Sube tu recibo y revisa lo importante
+                        {isNativeAppExperience ? "Sube y revisa lo importante" : "Sube tu recibo y revisa lo importante"}
                       </h2>
 
                 </div>
                   <p className="max-w-lg text-sm leading-6 text-slate-600">
-                    Primero ves lo importante y después decides si lo guardas.
+                    {isNativeAppExperience
+                      ? "Primero revisas. Guardas solo si te sirve."
+                      : "Primero ves lo importante y después decides si lo guardas."}
 
                 </p>
               </div>

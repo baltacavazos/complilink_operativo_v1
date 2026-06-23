@@ -1,0 +1,42 @@
+{
+  "openai": {
+    "agree_level": "high",
+    "core_verdict": "La separación de contenido entre la app y la web es adecuada.",
+    "app_recommendation": "La app debe ser intuitiva y centrarse en la funcionalidad principal, evitando explicaciones extensas.",
+    "web_recommendation": "La web debe ofrecer información detallada sobre la app, sus características y beneficios para atraer a los usuarios.",
+    "download_links_recommendation": "Incluir enlaces visibles para descargar la app en iOS y Android en la web es esencial para facilitar la conversión.",
+    "risks": [
+      "Los usuarios pueden sentirse perdidos si la app no es lo suficientemente intuitiva.",
+      "La falta de información en la app puede llevar a una baja adopción inicial.",
+      "Si la web no comunica claramente los beneficios, puede perder potenciales usuarios."
+    ],
+    "final_stance": "Es crucial mantener un equilibrio entre simplicidad en la app y claridad en la web para maximizar la conversión."
+  },
+  "grok": {
+    "agree_level": "medium",
+    "core_verdict": "La separación es parcialmente correcta pero requiere onboarding mínimo en app para evitar abandono.",
+    "app_recommendation": "Mantener explicaciones mínimas pero añadir un flujo de onboarding opcional de 2-3 pantallas y tooltips contextuales.",
+    "web_recommendation": "Ofrecer explicación completa con beneficios, casos de uso y testimonios para atraer y educar visitantes.",
+    "download_links_recommendation": "Incluir botones de descarga iOS/Android visibles y centrados en la web, con tracking de clics.",
+    "risks": [
+      "Usuarios que descargan sin entender la app y la desinstalan rápido",
+      "Baja retención por falta de contexto inicial",
+      "Pérdida de conversión si la web no dirige claramente a la app"
+    ],
+    "final_stance": "Aplicar separación con ajustes: web educativa + app con onboarding ligero para equilibrar UX y conversión."
+  },
+  "gemini": {
+    "agree_level": "high",
+    "core_verdict": "La separación de contenido web y app es correcta, pero la app necesita un onboarding mínimo y contextual.",
+    "app_recommendation": "Aunque el usuario ya entienda el propósito, la app debe ofrecer un onboarding progresivo y contextual. Esto incluye: 1. Breves tours guiados para nuevas funcionalidades. 2. Tooltips o 'hotspots' para elementos clave. 3. Estados vacíos (empty states) con instrucciones claras. 4. Un diseño UI/UX intuitivo que minimice la necesidad de texto. El objetivo es 'mostrar, no contar', facilitando la acción y el descubrimiento.",
+    "web_recommendation": "La web debe ser el hub principal para la educación y la conversión. Incluir: 1. Explicaciones detalladas de funcionalidades y casos de uso. 2. Beneficios claros y propuesta de valor. 3. FAQs extensas. 4. Testimonios y casos de éxito. 5. Screenshots y videos de la app en acción. 6. Contenido SEO optimizado para atraer tráfico orgánico. El objetivo es convencer al usuario de la descarga y resolver cualquier duda antes de que llegue a la app.",
+    "download_links_recommendation": "Los enlaces de descarga en la web deben ser prominentes y fáciles de encontrar, preferiblemente en la cabecera, pie de página y en CTAs estratégicos. Utilizar los logos oficiales de App Store y Google Play. Considerar banners inteligentes (smart banners) para usuarios móviles que visitan la web, que los dirijan directamente a la tienda correspondiente. Implementar tracking para medir la efectividad de estos enlaces.",
+    "risks": [
+      "Asumir que el usuario 'ya debería entender' puede llevar a una experiencia de usuario frustrante si la interfaz no es perfectamente intuitiva, resultando en abandono temprano de la app.",
+      "La falta total de guías o explicaciones en la app podría dificultar la adopción de nuevas funcionalidades o el uso óptimo de la herramienta, incluso para usuarios experimentados.",
+      "Si la web no es lo suficientemente persuasiva o clara, y la app no ofrece ninguna ayuda inicial, la tasa de conversión de visita a descarga y de descarga a usuario activo podría verse afectada negativamente."
+    ],
+    "final_stance": "La estrategia de diferenciar el contenido entre web (marketing/educación profunda) y app (utilidad/acción) es sólida. Sin embargo, es crucial no confundir 'no demasiadas explicaciones' con 'ninguna explicación'. La app debe ser autoexplicativa en su diseño y ofrecer ayudas mínimas y contextuales para asegurar una adopción exitosa y una experiencia de usuario fluida.",
+    "_model": "gemini-2.5-flash"
+  }
+}

@@ -1814,3 +1814,13 @@
 - [x] Identificar qué campos editables del borrador y preferencias de revisión pueden persistirse de forma segura en `/auditar`.
 - [x] Implementar una primera rehidratación segura de contexto editable y preferencias de revisión tras cierres parciales.
 - [x] Validar con TypeScript y pruebas focales la octava ola de continuidad editable móvil.
+- [x] Novena ola móvil: contrastar con ChatGPT, Grok y Gemini si la app de AuditaPatron debe recortar explicaciones visibles y asumir mayor familiaridad del usuario que ya la descargó.
+- [x] Novena ola móvil: definir la recomendación de producto para una experiencia app más directa, con menos explicación y más acción, sin perder claridad ni confianza.
+- [x] Novena ola móvil: presentar al usuario una propuesta priorizada para aprobación antes de implementar cambios en la UI móvil.
+- [x] Novena ola móvil/web: consensuar con ChatGPT, Grok y Gemini una separación clara entre app directa y web más explicativa para AuditaPatron.
+- [x] Novena ola móvil/web: definir la recomendación de contenido para que la app reduzca explicaciones persistentes y la web conserve explicación útil de valor y confianza.
+- [x] Novena ola móvil/web: definir el criterio correcto para incorporar links de descarga a iOS y Android en la web solo cuando existan destinos reales y confiables.
+- [x] Novena ola móvil: simplificar la superficie principal de `/auditar` para que en app priorice acción inmediata y reduzca explicación persistente.
+- [x] Novena ola web: reforzar en la home la explicación de valor, confianza y continuidad entre web y futura app.
+- [x] Novena ola web: preparar una zona visible de descarga móvil con estado honesto mientras no existan URLs reales de App Store y Google Play.
+- [x] Novena ola: actualizar pruebas focales y validar TypeScript/Vitest tras la nueva separación app directa + web explicativa.

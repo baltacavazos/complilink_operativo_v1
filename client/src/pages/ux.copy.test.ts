@@ -100,6 +100,16 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<DossierSection />");
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
+    expect(source).toContain('id="app"');
+    expect(source).toContain('Web explicativa · app directa');
+    expect(source).toContain('En la web entiendes el valor. En la app avanzas más rápido.');
+    expect(source).toContain('Los botones de descarga aparecerán aquí cuando existan destinos reales y confiables para iOS y Android.');
+    expect(source).toContain('Próximamente en iOS y Android');
+    expect(source).toContain('App Store');
+    expect(source).toContain('Google Play');
+    expect(source).toContain('Botón reservado para la publicación oficial en iPhone.');
+    expect(source).toContain('Botón reservado para la publicación oficial en Android.');
+    expect(source).toContain('placement: "app_download_section_primary"');
     expect(source).toContain('id="privacidad"');
     expect(source).toContain('id="boveda"');
     expect(source).toContain('Guárdalo en tu bóveda y sigue con más contexto');
@@ -112,6 +122,15 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Abrir copiloto laboral");
     expect(source).not.toContain("ThemeToggle");
     expect(source).toContain("function warmVisibleNamingCopy");
+    expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
+    expect(source).toContain("Directo desde tu app");
+    expect(source).toContain("Ruta corta dentro de la app");
+    expect(source).toContain("Toma una foto o elige un archivo. Primero ves la señal y después decides si quieres guardarla.");
+    expect(source).toContain("Subes un archivo o tomas una foto desde tu celular.");
+    expect(source).toContain("Ves de inmediato la señal principal y qué conviene revisar después.");
+    expect(source).toContain("Sube una foto o archivo. Primero revisas la señal y luego decides si guardas.");
+    expect(source).toContain("Tu documento sigue privado dentro de la app");
+    expect(source).toContain("Primero revisas. Guardas solo si te sirve.");
     expect(source).toContain("Carga inmediata");
     expect(source).toContain("Asegura tu recibo de nómina");
     expect(source).toContain("Lectura visible");
@@ -320,12 +339,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("AuditaPatron y Helios");
   });
 
-  it("mantiene el modo oscuro por defecto con salida rápida global", () => {
+  it("mantiene el modo oscuro por defecto con router global y guardas de navegación", () => {
     const appSource = fs.readFileSync(path.resolve(import.meta.dirname, "../App.tsx"), "utf8");
 
     expect(appSource).toContain('<ThemeProvider defaultTheme="dark" switchable>');
-    expect(appSource).toContain('function QuickExitButton()');
-    expect(appSource).toContain('aria-label="Salida rápida"');
-    expect(appSource).toContain('href="https://news.google.com/"');
+    expect(appSource).toContain('function DemoViewGuard()');
+    expect(appSource).toContain('<AppUrlListener />');
+    expect(appSource).toContain('function RouteLoadingFallback()');
+    expect(appSource).toContain('path={"/legal/privacidad"}');
+    expect(appSource).toContain('path={"/legal/terminos"}');
   });
 });
