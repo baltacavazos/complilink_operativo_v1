@@ -7780,7 +7780,7 @@ export default function Auditar() {
                 </Button>
                   <button
                     type="button"
-                    className="inline-flex w-fit items-center justify-center px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                    className="inline-flex w-fit items-center justify-center px-1 py-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
                     onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -7788,7 +7788,7 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Ya tengo cuenta
+                  Entrar si ya empezaste
                 </button>
               </div>
             </div>
