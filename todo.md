@@ -1835,3 +1835,5 @@
 - [x] Micro-ronda de confianza: simplificar la transición entre la lectura gratuita y `/acceso` para que guardar o retomar el expediente se perciba más claro y confiable.
 - [x] Micro-ronda de confianza: reforzar en `/auditar` la continuidad del expediente después de la primera lectura con un siguiente paso más tranquilizador y obvio.
 - [x] Micro-ronda de confianza: actualizar pruebas focales, validar TypeScript/Vitest y preparar un nuevo checkpoint estable.
+- [x] Micro-ajuste de continuidad: suavizar en `/auditar` el paso que explica cuándo se activa el acceso por correo para que suene más opcional y menos friccional.
+- [x] Micro-ajuste de continuidad: revalidar TypeScript y pruebas focales tras el nuevo wording de acceso y continuidad.

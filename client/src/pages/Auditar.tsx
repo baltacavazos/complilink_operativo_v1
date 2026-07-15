@@ -7778,10 +7778,10 @@ export default function Auditar() {
                   Sube tu documento gratis
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
-                <button
-                  type="button"
-                  className="inline-flex w-fit items-center justify-center px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
-                  onClick={() => {
+                  <button
+                    type="button"
+                    className="inline-flex w-fit items-center justify-center px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+                    onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
                     });
@@ -7806,7 +7806,7 @@ export default function Auditar() {
                   : [
                       "Subes un solo archivo desde tu celular o computadora.",
                       "Te mostramos qué detectamos y si ya apareció una señal para revisar.",
-                      "Si quieres guardarlo o seguir después, entonces activas tu acceso por correo.",
+                      "Si decides guardarlo o retomar tu expediente después, activas tu acceso por correo en ese momento.",
                     ]).map(item => (
                   <div
                     key={item}
