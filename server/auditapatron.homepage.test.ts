@@ -17,7 +17,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
     expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
     expect(homeSource).toContain("Resultado real desde el primer archivo");
-    expect(homeSource).toContain("Primero ves el valor; después decides si quieres convertirlo en expediente.");
+    expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu expediente.");
     expect(homeSource).toContain("Así pasas de duda a claridad sin enredos.");
     expect(homeSource).toContain("Control visible desde el primer archivo.");
     expect(homeSource).toContain("Privacidad visible y verificable");

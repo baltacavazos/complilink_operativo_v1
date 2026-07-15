@@ -1728,7 +1728,7 @@ function HeliosFirstEntrySection() {
                   Resultado real desde el primer archivo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF. No necesitas reunir todo ni abrir una cuenta. Primero ves el valor; después decides si quieres convertirlo en expediente.
+                  Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu expediente.
                 </p>
               </div>
               <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
@@ -1781,7 +1781,7 @@ function HeliosFirstEntrySection() {
                       {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.friendlyHeadline) ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
                     </p>
                     <p>
-                        {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.userGuidance) ?? "Si quieres conservar esta lectura, el siguiente paso es guardarla en tu expediente privado con acceso por correo."}
+                        {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.userGuidance) ?? "Si quieres conservar esta lectura, la guardas en tu expediente privado con acceso por correo."}
 
                     </p>
                   </div>
@@ -1797,7 +1797,7 @@ function HeliosFirstEntrySection() {
                       </Button>
                     )}
                     <p className="text-xs leading-5 text-slate-500">
-                      Primero ves la lectura. El correo solo se usa cuando decides guardar el hallazgo y seguir dentro de tu expediente.
+                      El correo solo se usa cuando decides guardar el hallazgo y seguir.
                     </p>
                   </div>
                 </div>
