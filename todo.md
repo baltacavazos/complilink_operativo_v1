@@ -1907,3 +1907,4 @@
 - [x] Micro-ronda app-first XXXII: compactar la ayuda del correo visible bajo `Cómo guardarlo si te sirve` en Home para que guardar y seguir se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XXXIII: compactar la explicación bajo el ejemplo destacado en Home para que la primera lectura se entienda con menos apoyo textual.
 - [x] Micro-ronda app-first XXXIV: compactar la ayuda bajo el CTA contextual del documento recomendado en Home para que subir el primer archivo se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XXXV: compactar la ayuda de revisión preliminar automática al elegir un archivo en `/auditar` para que el siguiente paso se entienda con menos lectura secundaria.

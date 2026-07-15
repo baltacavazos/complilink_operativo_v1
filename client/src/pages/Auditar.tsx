@@ -1928,7 +1928,7 @@ function getSelectedFilePreparationCopy(params: {
     return "En cuanto elijas el PDF iniciaremos una revisión preliminar para validar que sus páginas se vean completas y claras antes de pedirte confirmación.";
   }
 
-  return "En cuanto elijas el archivo haremos una revisión preliminar automática y te avisaremos si conviene complementarlo con una foto o PDF más claro antes de guardarlo.";
+  return "En cuanto elijas el archivo haremos una revisión preliminar y te diremos si conviene repetirlo o subir una versión más clara antes de guardarlo.";
 }
 
 const analysisFieldLabels: Record<string, string> = {
