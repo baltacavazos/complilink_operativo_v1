@@ -650,9 +650,8 @@ const prediagnosticRecommendations: Record<
   "primer-documento": {
     badge: "Documento exacto sugerido",
     document: "El archivo que ya tienes a la mano; si dudas, un recibo de nómina reciente",
-    reason:
-      "Es fácil de ubicar y normalmente entrega una primera lectura útil sin esperar a reunir todo el expediente.",
-    nextStep: "Con uno o dos documentos más, AuditaPatron puede comparar mejor y devolverte una lectura más rica.",
+    reason: "Es el archivo más fácil de ubicar y suele dar una primera lectura útil.",
+    nextStep: "Si luego sumas uno o dos documentos, la lectura mejora.",
     resultTitle: "Si quieres avanzar hoy, este suele ser el archivo con más tracción para arrancar.",
     ctaLabel: "Empezar con ese archivo",
   },
