@@ -1859,3 +1859,5 @@
 - [x] Micro-ronda de valor tangible: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de Home.
 - [x] Micro-ronda acceso directo III: acortar el mensaje de control del código, simplificar el reenvío y volver más claros los métodos alternos sin competir con el correo.
 - [x] Micro-ronda acceso directo III: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de recuperación en `/acceso`.
+- [x] Micro-ronda post-hallazgo IV: volver más concreto el estado de lectura visible para que guardar o reforzar con otro documento se entienda de inmediato.
+- [x] Micro-ronda post-hallazgo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de continuidad en `/auditar`.

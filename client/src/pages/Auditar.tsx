@@ -2364,9 +2364,9 @@ function getHeliosStageCopy(params: {
       description:
         params.documentsWithOpinion > 1
           ? `Ya ves una lectura inicial en ${params.documentsWithOpinion} documentos y eso te da más contexto para decidir qué revisar primero.`
-          : "Ya ves una lectura inicial y desde aquí puedes decidir si te conviene guardarla o reforzarla con más contexto.",
+          : "Ya ves una lectura inicial y el siguiente paso ya es claro: guardarla o reforzarla con otro documento.",
       detail:
-        "La interfaz ya te muestra lo importante y te deja seguir con un siguiente paso claro.",
+        "Ya tienes lo importante a la vista y puedes seguir sin perder tiempo entre opciones parecidas.",
       tone: "success" as const,
     };
   }
