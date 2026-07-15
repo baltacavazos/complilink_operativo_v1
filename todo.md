@@ -1863,3 +1863,5 @@
 - [x] Micro-ronda post-hallazgo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de continuidad en `/auditar`.
 - [x] Micro-ronda web directa II: volver más directas las respuestas rápidas de Home sobre privacidad y guardado para reducir ambigüedad antes del expediente.
 - [x] Micro-ronda web directa II: revalidar TypeScript y pruebas focales tras el nuevo wording de respuestas rápidas.
+- [x] Micro-ronda acceso directo IV: volver todavía más evidente el regreso en un paso y simplificar el bloque de reenvío del código en `/acceso`.
+- [x] Micro-ronda acceso directo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de retorno por código.
