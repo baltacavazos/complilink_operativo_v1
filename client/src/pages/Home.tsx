@@ -452,8 +452,8 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube un solo recibo y detecta rápido si hay algo que sí conviene revisar.",
-    microDescription: "Empieza en segundos. Sin cuenta, sin pago y sin guardar nada al principio.",
+    supportLine: "Sube un solo recibo y detecta rápido si aparece una señal que sí conviene revisar.",
+    microDescription: "Empieza gratis en segundos. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -1935,7 +1935,7 @@ function QuickTrustSection() {
               Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa nunca ve lo que subes. Primero revisas la señal, luego decides si la guardas en tu expediente. La primera lectura aparece sin cuenta y el control se mantiene visible durante todo el flujo.
+              Tu empresa nunca ve lo que subes. Primero revisas la señal y luego decides si quieres guardarla. La primera lectura aparece sin cuenta y el control sigue visible durante todo el flujo.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>

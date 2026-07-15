@@ -1851,3 +1851,7 @@
 - [x] Micro-ronda de acceso directo: volver más corta y clara la promesa de regreso en `/acceso`, reduciendo copy competidor y dejando el flujo en un paso más evidente.
 - [x] Micro-ronda de acceso directo: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo copy de regreso.
 - [x] Micro-ronda post-hallazgo III: priorizar reforzar evidencia con otro documento como siguiente paso principal después del primer hallazgo visible.
+- [x] Micro-ronda web directa: reforzar el hero de Home con una promesa más concreta sobre detectar una señal útil desde el primer recibo.
+- [x] Micro-ronda web directa: compactar el bloque de control visible para que la decisión de guardar se entienda más rápido y con menos copy.
+- [x] Micro-ronda acceso directo II: acortar la promesa de regreso en `/acceso` y dejar el retorno a la revisión todavía más directo.
+- [x] Micro-ronda web/acceso: alinear pruebas focales y revalidar TypeScript/Vitest tras los nuevos microcopies en Home y `/acceso`.
