@@ -1896,3 +1896,4 @@
 - [x] Micro-ronda app-first XXI: compactar la ayuda bajo el ejemplo principal de Home para que el bloque visual se explique con menos apoyo accesorio.
 - [x] Micro-ronda app-first XXII: compactar el encabezado explicativo del estado post-carga en `/auditar` para que el siguiente paso se lea con menos palabras.
 - [x] Micro-ronda app-first XXIII: compactar el chip explicativo del ejemplo principal en Home para que la lectura visual arranque con menos texto accesorio.
+- [x] Micro-ronda app-first XXIV: compactar la guía del documento recomendado en Home para que el arranque útil se entienda con menos palabras.
