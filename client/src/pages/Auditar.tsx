@@ -7875,19 +7875,20 @@ export default function Auditar() {
               {shouldCompactPostUploadExperience ? null : isNativeAppExperience ? (
                 <>
                   <span className="sm:hidden">
-                    Sube una foto o archivo. Primero revisas la señal y luego decides si guardas.
+                    Sube foto o archivo. Revisas la señal y decides si guardas.
                   </span>
                   <span className="hidden sm:inline">
-                    Sube una foto, PDF, XML o contrato en DOCX. Primero revisas la señal y luego decides si la guardas.
+                                          Sube foto, PDF, XML o DOCX. Revisas la señal y decides si la guardas.
+
                   </span>
                 </>
               ) : (
                 <>
                                       <span className="sm:hidden">
-                      Sube foto o archivo. Primero ves la señal y luego decides si lo guardas.
+                      Sube foto o archivo. Ves la señal y decides si lo guardas.
                     </span>
                     <span className="hidden sm:inline">
-                      Sube foto, PDF, XML o contrato en DOCX. Primero ves la señal y luego decides si lo guardas.
+                      Sube foto, PDF, XML o DOCX. Ves la señal y decides si lo guardas.
                     </span>
 
                 </>

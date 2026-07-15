@@ -1885,3 +1885,4 @@
 - [x] Micro-ronda app-first X: compactar la ayuda accesoria bajo el ejemplo principal de Home para que el resultado hable con menos explicación duplicada.
 - [x] Micro-ronda app-first XI: compactar la confirmación de control en el paso de código de `/acceso` para que tranquilice con menos lectura.
 - [x] Micro-ronda app-first XII: compactar el bloque de transición a expediente en Home para reducir repetición entre ver valor, guardar y continuar.
+- [x] Micro-ronda app-first XIII: compactar el copy de arranque visible en `/auditar` para que subir el archivo se entienda en menos palabras.
