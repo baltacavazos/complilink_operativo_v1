@@ -285,7 +285,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "inicio"');
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
-    expect(source).toContain("sigues sin perder avance.");
+    expect(source).toContain("Nada cambia hasta confirmarlo. Si falla, pides otro y sigues.");
     expect(source).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
     expect(source).not.toContain("Después de entrar: ");
     expect(source).not.toContain('Vuelves al ');

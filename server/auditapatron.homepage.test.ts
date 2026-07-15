@@ -89,7 +89,7 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Entras y sigues");
     expect(accessSource).toContain("Pides tu código, entras y vuelves con el mismo correo si sales.");
     expect(accessSource).toContain("Control visible");
-    expect(accessSource).toContain("Nada cambia hasta confirmar este código. Si falla, pides otro y sigues sin perder avance.");
+    expect(accessSource).toContain("Nada cambia hasta confirmarlo. Si falla, pides otro y sigues.");
   });
 
   it("keeps the audit workspace oriented to defendable value after the first visible finding", () => {
