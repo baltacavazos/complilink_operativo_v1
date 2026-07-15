@@ -1705,7 +1705,7 @@ function HeliosFirstEntrySection() {
             Sube un archivo y mira una señal real antes de decidir.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
-            Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si te aporta valor te pedimos tu correo para guardarlo dentro de tu expediente privado.
+            Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si sí te sirve te pedimos tu correo para guardarlo.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -1781,7 +1781,7 @@ function HeliosFirstEntrySection() {
                       {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.friendlyHeadline) ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
                     </p>
                     <p>
-                        {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.userGuidance) ?? "Si quieres conservar esta lectura, la guardas en tu expediente privado con acceso por correo."}
+                        {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.userGuidance) ?? "Si quieres conservar esta lectura, la guardas por correo."}
 
                     </p>
                   </div>
