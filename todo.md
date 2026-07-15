@@ -1908,3 +1908,4 @@
 - [x] Micro-ronda app-first XXXIII: compactar la explicación bajo el ejemplo destacado en Home para que la primera lectura se entienda con menos apoyo textual.
 - [x] Micro-ronda app-first XXXIV: compactar la ayuda bajo el CTA contextual del documento recomendado en Home para que subir el primer archivo se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XXXV: compactar la ayuda de revisión preliminar automática al elegir un archivo en `/auditar` para que el siguiente paso se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XXXVI: compactar la ayuda de continuidad al volver a `/auditar` desde `/acceso` para que el regreso al mismo documento se entienda con menos lectura secundaria.
