@@ -1932,7 +1932,7 @@ function QuickTrustSection() {
               Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa nunca ve lo que subes. Primero revisas la señal y luego decides si quieres guardarla. La primera lectura aparece sin cuenta y el control sigue visible durante todo el flujo.
+              Tu empresa nunca ve lo que subes. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>

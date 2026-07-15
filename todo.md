@@ -1910,3 +1910,4 @@
 - [x] Micro-ronda app-first XXXV: compactar la ayuda de revisión preliminar automática al elegir un archivo en `/auditar` para que el siguiente paso se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XXXVI: compactar la ayuda de continuidad al volver a `/auditar` desde `/acceso` para que el regreso al mismo documento se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XXXVII: compactar la ayuda de continuidad del regreso al expediente CEO en `/acceso` para que el retorno se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XXXVIII: compactar la explicación del bloque de privacidad visible en Home para que el control desde el primer archivo se entienda con menos lectura secundaria.
