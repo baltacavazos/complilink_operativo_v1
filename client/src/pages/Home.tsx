@@ -1839,9 +1839,10 @@ function HeliosFirstEntrySection() {
             <h3 className="mt-3 text-[1.5rem] font-semibold leading-8 tracking-[-0.04em] text-slate-950">
               {featuredExample?.title ?? "Así se ve una primera lectura real antes de guardar nada."}
             </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
-              {featuredExample?.summary ?? "Aquí verás el tipo de resumen, señal principal y siguiente paso que suele aparecer desde el primer documento."}
-            </p>
+                          <p className="mt-3 text-sm leading-6 text-slate-700">
+                {featuredExample?.summary ?? "Aquí verás el resumen, la señal principal y el siguiente paso desde el primer documento."}
+              </p>
+
             <div className="mt-4 rounded-[1.2rem] border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible de ejemplo</p>
               <p className="mt-2 text-sm leading-6 text-amber-950">
