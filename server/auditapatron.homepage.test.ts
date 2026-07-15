@@ -88,8 +88,8 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Regreso a tu revisión");
     expect(accessSource).toContain("Entras y sigues");
     expect(accessSource).toContain("Pides tu código, lo confirmas y regresas directo.");
-    expect(accessSource).toContain("Señal visible de control");
-    expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel} con tu avance intacto.");
+    expect(accessSource).toContain("Control visible");
+    expect(accessSource).toContain("Nada cambia hasta confirmar este código. Si falla, pides otro y sigues sin perder avance.");
   });
 
   it("keeps the audit workspace oriented to defendable value after the first visible finding", () => {
