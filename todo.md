@@ -1878,3 +1878,4 @@
 - [x] Micro-ronda app-first III: compactar el bloque de privacidad visible en `/auditar` para que confirme control y estado con menos chips y menos carga visual.
 - [x] Micro-ronda app-first IV: bajar la promesa de descarga inmediata en la navegación principal para no competir con la acción real de empezar hoy.
 - [x] Micro-ronda app-first V: compactar la sección `#app` para que funcione como promesa futura breve y no como bloque competidor frente a empezar hoy.
+- [x] Micro-ronda app-first VI: bajar la competencia visual de `Otros métodos` en `/acceso` para reforzar el camino principal de correo y código.
