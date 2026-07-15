@@ -519,7 +519,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Entras y sigues</p>
                   <p className="mt-2">
-                    Pides tu código, lo confirmas y regresas directo. Si sales, puedes volver con el mismo correo.
+                    Pides tu código, entras y vuelves con el mismo correo si sales.
                   </p>
                 </div>
 

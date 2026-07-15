@@ -1889,3 +1889,4 @@
 - [x] Micro-ronda app-first XIV: compactar la ayuda de reenvío y respaldo en `/acceso` para que el camino principal se sostenga con menos lectura secundaria.
 - [x] Micro-ronda app-first XV: compactar la explicación de guardado por correo en Home para reforzar que el correo solo aparece si la lectura sí aporta valor.
 - [x] Micro-ronda app-first XVI: compactar el bloque del primer hallazgo guardado en Home para reducir repetición entre retomarlo después y seguir reuniendo evidencia.
+- [x] Micro-ronda app-first XVII: compactar el bloque `Entras y sigues` en `/acceso` para explicar el regreso con menos palabras.

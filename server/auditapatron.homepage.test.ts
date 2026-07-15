@@ -87,7 +87,7 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Código temporal");
     expect(accessSource).toContain("Regreso a tu revisión");
     expect(accessSource).toContain("Entras y sigues");
-    expect(accessSource).toContain("Pides tu código, lo confirmas y regresas directo.");
+    expect(accessSource).toContain("Pides tu código, entras y vuelves con el mismo correo si sales.");
     expect(accessSource).toContain("Control visible");
     expect(accessSource).toContain("Nada cambia hasta confirmar este código. Si falla, pides otro y sigues sin perder avance.");
   });
