@@ -105,12 +105,12 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('id="app"');
     expect(source).toContain('App móvil en camino');
     expect(source).toContain('Empieza hoy aquí. La app viene después.');
-    expect(source).toContain('No necesitas esperar: la revisión gratuita ya funciona aquí.');
-    expect(source).toContain('Próximamente en iPhone y Android');
+    expect(source).toContain('La vía más rápida hoy es esta web. Cuando exista la descarga oficial, la verás aquí sin confusiones.');
+    expect(source).toContain('Descarga oficial más adelante');
     expect(source).toContain('App Store');
     expect(source).toContain('Google Play');
-    expect(source).toContain('Botón reservado para la publicación oficial en iPhone.');
-    expect(source).toContain('Botón reservado para la publicación oficial en Android.');
+    expect(source).toContain('Se activará cuando exista la publicación oficial en iPhone.');
+    expect(source).toContain('Se activará cuando exista la publicación oficial en Android.');
     expect(source).toContain('Empezar aquí gratis');
     expect(source).toContain('Ver cómo funciona');
     expect(source).toContain('placement: "app_download_section_primary"');

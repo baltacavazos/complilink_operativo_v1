@@ -2965,8 +2965,7 @@ function FAQSection() {
 function AppDownloadSection() {
   const webBenefits = [
     "Empieza hoy mismo desde esta web con un solo recibo o documento.",
-    "Tu avance y tu expediente podrán seguirte en la app cuando esté lista.",
-    "No necesitas esperar: la revisión gratuita ya funciona aquí.",
+    "Cuando la app exista, tu avance podrá seguir contigo sin volver a empezar.",
   ] as const;
 
   return (
@@ -2982,9 +2981,9 @@ function AppDownloadSection() {
               Empieza hoy aquí. La app viene después.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              La forma más rápida de empezar hoy es esta web. Cuando la app esté lista, aquí mismo verás los accesos reales para iPhone y Android.
+              La vía más rápida hoy es esta web. Cuando exista la descarga oficial, la verás aquí sin confusiones.
             </p>
-            <div className="mt-5 grid gap-3">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {webBenefits.map((item, index) => (
                 <article
                   key={item}
@@ -3004,23 +3003,23 @@ function AppDownloadSection() {
               App móvil
             </p>
             <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-              Próximamente en iPhone y Android
+              Descarga oficial más adelante
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Cuando exista la descarga real, la verás aquí. Por ahora, empieza tu auditoría en esta web sin esperar la app.
+              Este espacio se activará cuando exista la publicación real. Por ahora, empieza tu auditoría aquí mismo.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
                 <p className="font-semibold text-slate-950">App Store</p>
-                <p className="mt-2 leading-6">Botón reservado para la publicación oficial en iPhone.</p>
+                <p className="mt-2 leading-6">Se activará cuando exista la publicación oficial en iPhone.</p>
                 <div className="mt-4 inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
                   Próximamente
                 </div>
               </div>
               <div className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
                 <p className="font-semibold text-slate-950">Google Play</p>
-                <p className="mt-2 leading-6">Botón reservado para la publicación oficial en Android.</p>
+                <p className="mt-2 leading-6">Se activará cuando exista la publicación oficial en Android.</p>
                 <div className="mt-4 inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
                   Próximamente
                 </div>

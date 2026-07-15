@@ -14,8 +14,8 @@ describe("novena ola móvil/web", () => {
     expect(source).toContain('id="app"');
     expect(source).toContain("App móvil en camino");
     expect(source).toContain("Empieza hoy aquí. La app viene después.");
-    expect(source).toContain("No necesitas esperar: la revisión gratuita ya funciona aquí.");
-    expect(source).toContain("Próximamente en iPhone y Android");
+    expect(source).toContain("La vía más rápida hoy es esta web. Cuando exista la descarga oficial, la verás aquí sin confusiones.");
+    expect(source).toContain("Descarga oficial más adelante");
     expect(source).toContain("App Store");
     expect(source).toContain("Google Play");
     expect(source).toContain('placement: "app_download_section_primary"');
