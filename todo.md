@@ -1898,3 +1898,4 @@
 - [x] Micro-ronda app-first XXIII: compactar el chip explicativo del ejemplo principal en Home para que la lectura visual arranque con menos texto accesorio.
 - [x] Micro-ronda app-first XXIV: compactar la guía del documento recomendado en Home para que el arranque útil se entienda con menos palabras.
 - [x] Micro-ronda app-first XXV: compactar el bloque de respaldo en `/acceso` para que el camino principal por correo y código cargue menos lectura secundaria.
+- [x] Micro-ronda app-first XXVI: compactar el mensaje del `siguiente paso útil` en `/auditar` para que fortalecer el expediente se entienda con menos lectura.
