@@ -297,7 +297,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Reenviar código");
     expect(source).toContain("Control visible");
     expect(source).toContain("Si el correo falla");
-    expect(source).toContain("Esto queda como respaldo. La ruta principal sigue siendo tu correo y código.");
+    expect(source).toContain("Esto es solo respaldo. Tu ruta principal sigue siendo correo y código.");
     expect(source).toContain("Acceso base con salida CEO");
     expect(source).toContain("Acceso normal con salida CEO");
     expect(source).toContain('data-testid="access-ceo-header-toggle"');
