@@ -8362,8 +8362,7 @@ export default function Auditar() {
                     </span>
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-700">
-                    Tu resultado ya está arriba. Aquí puedes sumar otra pieza
-                    útil para fortalecer tu expediente.
+                    Tu resultado ya está arriba. Aquí puedes sumar otra pieza útil.
                   </p>
                   {selectedRecommendedTargetType &&
                   effectiveRecommendedTarget ? (
@@ -8398,7 +8397,7 @@ export default function Auditar() {
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
-                      ? "Úsalo solo si quieres fortalecer tu expediente con otra pieza útil."
+                      ? "Úsalo solo si quieres sumar otra pieza útil."
                       : "Empieza con una foto o PDF. Primero subes, luego ves la señal y después decides si sigues."}
                   </p>
                   <div

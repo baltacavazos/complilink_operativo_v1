@@ -1890,3 +1890,4 @@
 - [x] Micro-ronda app-first XV: compactar la explicación de guardado por correo en Home para reforzar que el correo solo aparece si la lectura sí aporta valor.
 - [x] Micro-ronda app-first XVI: compactar el bloque del primer hallazgo guardado en Home para reducir repetición entre retomarlo después y seguir reuniendo evidencia.
 - [x] Micro-ronda app-first XVII: compactar el bloque `Entras y sigues` en `/acceso` para explicar el regreso con menos palabras.
+- [x] Micro-ronda app-first XVIII: compactar la ayuda de `Agregar otro documento` en `/auditar` para que fortalecer el expediente se entienda con menos líneas.
