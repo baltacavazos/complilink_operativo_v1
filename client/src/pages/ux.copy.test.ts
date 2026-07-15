@@ -158,10 +158,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Sube foto, PDF, XML o DOCX. Ves la señal y decides si lo guardas.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Sube otro archivo si lo necesitas.');
-    expect(source).toContain('Tu resultado ya está arriba. Aquí puedes sumar otra pieza');
-    expect(source).toContain('útil para fortalecer tu expediente.');
+    expect(source).toContain('Tu resultado ya está arriba. Suma otra pieza útil si quieres fortalecer tu expediente.');
     expect(source).toContain('Agregar otro documento');
-    expect(source).toContain('Elige un archivo o toma una foto para sumar una pieza útil.');
+    expect(source).toContain('Elige un archivo o toma una foto para sumar otra pieza útil.');
     expect(source).toContain('Asegura tu recibo de nómina');
     expect(source).toContain('Calculadora guiada');
     expect(source).toContain('Compara tu nómina contra tu CFDI');

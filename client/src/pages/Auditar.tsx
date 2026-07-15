@@ -92,8 +92,7 @@ max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600
 Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
 Elegir cámara o archivo
 Sube otro archivo si lo necesitas.
-Tu resultado ya está arriba. Aquí puedes sumar otra pieza
-útil para fortalecer tu expediente.
+Tu resultado ya está arriba. Suma otra pieza útil si quieres fortalecer tu expediente.
 Agregar otro documento
 Elige un archivo o toma una foto para sumar una pieza útil.
 Calculadora guiada
@@ -8378,7 +8377,7 @@ export default function Auditar() {
                       {selectedFile ? "Cambiar documento" : "Agregar otro documento"}
                     </Button>
                     <p className="text-xs leading-5 text-slate-500">
-                      Elige un archivo o toma una foto para sumar una pieza útil.
+                      Elige un archivo o toma una foto para sumar otra pieza útil.
                     </p>
                   </div>
                 </details>
