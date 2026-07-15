@@ -1861,3 +1861,5 @@
 - [x] Micro-ronda acceso directo III: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de recuperación en `/acceso`.
 - [x] Micro-ronda post-hallazgo IV: volver más concreto el estado de lectura visible para que guardar o reforzar con otro documento se entienda de inmediato.
 - [x] Micro-ronda post-hallazgo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de continuidad en `/auditar`.
+- [x] Micro-ronda web directa II: volver más directas las respuestas rápidas de Home sobre privacidad y guardado para reducir ambigüedad antes del expediente.
+- [x] Micro-ronda web directa II: revalidar TypeScript y pruebas focales tras el nuevo wording de respuestas rápidas.

@@ -2090,8 +2090,8 @@ function QuickTrustSection() {
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {[
                 "No necesitas cuenta para ver la primera lectura.",
-                "Tu empresa no ve lo que subes aquí.",
-                "Si sí te sirve, luego lo aseguras en tu expediente privado.",
+                "Tu empresa no ve ni recibe lo que subes aquí.",
+                "Si sí te sirve, luego lo guardas en tu expediente privado.",
               ].map((item) => (
                 <div key={item} className="rounded-[1rem] border border-white bg-white px-3 py-3 shadow-sm">
                   <p className="leading-6 text-slate-700">{item}</p>
