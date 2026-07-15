@@ -1396,10 +1396,10 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
                     {selectedReportDemoState === "hallazgo-preliminar"
-                      ? "Ejemplo simple: una sola señal clara."
+                      ? "Una señal clara."
                       : selectedReportDemoState === "documento-recibido"
-                        ? "Ejemplo simple: primero vemos tu recibo."
-                        : "Ejemplo simple: te decimos qué revisar primero."}
+                        ? "Primero vemos tu recibo."
+                        : "Te decimos qué revisar primero."}
                   </p>
                 </div>
                 <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
