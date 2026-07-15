@@ -264,7 +264,7 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 const navLinks = [
   { href: "#lectura-gratis", label: "Ver un ejemplo" },
   { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#app", label: "Descarga app" },
+  { href: "#app", label: "App móvil" },
   { href: "#privacidad", label: "Privacidad" },
 ];
 
