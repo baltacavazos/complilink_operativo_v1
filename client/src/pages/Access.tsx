@@ -455,7 +455,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <div className="mt-5 rounded-[1.35rem] border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-950">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Te reconocimos en este equipo</p>
                 <p className="mt-2 break-all font-medium">{rememberedEmail}</p>
-                <p className="mt-1 leading-6 text-teal-900/80">Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.</p>
+                <p className="mt-1 leading-6 text-teal-900/80">Sigue con ese correo o cámbialo antes de pedir el código.</p>
               </div>
             ) : null}
 

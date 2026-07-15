@@ -1903,3 +1903,4 @@
 - [x] Micro-ronda app-first XXVIII: compactar la promesa de regreso directo en el bloque de app de `/acceso` para que se lea más rápido y compita menos con el camino principal.
 - [x] Micro-ronda app-first XXIX: compactar la ayuda del bloque `Cómo guardarlo si te sirve` en Home para que guardar y continuar se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XXX: compactar la ayuda de continuidad tras el primer resultado visible en `/auditar` para que sumar otra pieza útil se entienda con menos lectura.
+- [x] Micro-ronda app-first XXXI: compactar la ayuda del correo recordado en `/acceso` para que seguir con el mismo correo se entienda con menos lectura secundaria.

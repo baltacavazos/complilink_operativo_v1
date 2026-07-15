@@ -276,7 +276,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("En la app entras con correo o Google y vuelves directo donde te quedaste.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
-    expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
+    expect(source).toContain("Sigue con ese correo o cámbialo antes de pedir el código.");
     expect(source).not.toContain("Luego vuelves a");
     expect(source).toContain("function getReturnToLabel");
     expect(source).toContain('return "tu auditoría"');
