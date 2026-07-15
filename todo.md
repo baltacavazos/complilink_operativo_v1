@@ -1848,3 +1848,6 @@
 - [x] Micro-ronda post-hallazgo: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint incremental si el ajuste queda estable.
 - [x] Micro-ronda post-hallazgo II: convertir en principal la acción de subir otro documento cuando ya existe un hallazgo inicial y dejar guardar en bóveda como opción secundaria.
 - [x] Micro-ronda post-hallazgo II: revalidar TypeScript y pruebas focales después de reordenar la tarjeta violeta de continuidad.
+- [x] Micro-ronda de acceso directo: volver más corta y clara la promesa de regreso en `/acceso`, reduciendo copy competidor y dejando el flujo en un paso más evidente.
+- [x] Micro-ronda de acceso directo: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo copy de regreso.
+- [x] Micro-ronda post-hallazgo III: priorizar reforzar evidencia con otro documento como siguiente paso principal después del primer hallazgo visible.

@@ -421,14 +421,14 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Vuelve a tu revisión sin empezar de cero
+                Vuelve a tu revisión en un paso
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a {returnToLabel}. No tienes que rehacer tu revisión: tu avance te espera del otro lado.
+                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a {returnToLabel}. Tu avance sigue esperándote.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
-                  Dentro de la app puedes entrar con tu correo o con Google y volver directo a tu revisión al terminar.
+                  Dentro de la app puedes entrar con tu correo o con Google y volver directo al punto donde te quedaste.
                 </p>
               ) : null}
             </div>
@@ -437,7 +437,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Tu avance sigue listo</p>
-                  <p className="mt-2 text-base font-semibold text-slate-950">Entras una vez y sigues directo a {returnToLabel} sin rehacer pasos.</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">Entras una vez y sigues directo a {returnToLabel}.</p>
                 </div>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                   1 paso para volver
@@ -494,7 +494,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </div>
 
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
-                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve a tu revisión o expediente donde lo dejaste.</p>
+                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve a tu revisión donde la dejaste.</p>
                   <div className="mt-3 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3">
                     <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Solo para entrar</span>
                     <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal</span>
@@ -520,7 +520,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Qué pasará después</p>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
                     <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">1.</span> Te llega un código temporal.</p>
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">2.</span> Lo confirmas y vuelves a tu revisión.</p>
+                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">2.</span> Lo confirmas y vuelves directo.</p>
                     <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">3.</span> Si sales, retomas con el mismo correo.</p>
                   </div>
                 </div>
