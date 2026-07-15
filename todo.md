@@ -1875,3 +1875,4 @@
 - [x] Micro-ronda post-hallazgo VI: revalidar TypeScript y pruebas focales tras el nuevo microcopy de claridad y veredicto.
 - [x] Micro-ronda app-first II: compactar `/acceso` para dejar una sola promesa visible de retorno y menos repetición de apoyo.
 - [x] Micro-ronda app-first II: bajar redundancia en la entrada principal para que empezar y continuar se sienta todavía más obvio.
+- [x] Micro-ronda app-first III: compactar el bloque de privacidad visible en `/auditar` para que confirme control y estado con menos chips y menos carga visual.

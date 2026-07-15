@@ -11,7 +11,7 @@ describe("Auditapatron closeout experience", () => {
   const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");
 
   it("ships a shorter landing focused on value proof, clarity and trust", () => {
-    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Resultado real" }');
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Ver un ejemplo" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
@@ -64,9 +64,9 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.");
     expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Cómo funciona en 3 pasos");
-    expect(homeSource).toContain("Sube el documento que ya tienes");
-    expect(homeSource).toContain("Recibe una señal clara y accionable");
-    expect(homeSource).toContain("Guárdalo solo si te aporta valor");
+    expect(homeSource).toContain("Sube tu recibo o contrato");
+    expect(homeSource).toContain("Recibe una señal clara");
+    expect(homeSource).toContain("Guárdalo solo si te sirve");
     expect(homeSource).toContain('placement: "hero_primary"');
     expect(homeSource).toContain('placement: "final_block_cta"');
     expect(pricingSource).toContain("Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.");
@@ -74,29 +74,28 @@ describe("Auditapatron closeout experience", () => {
 
   it("turns access into continuity instead of an isolated login form", () => {
     expect(accessSource).toContain("function getReturnToValueCopy");
-    expect(accessSource).toContain("Vuelve a tu revisión sin empezar de cero");
+    expect(accessSource).toContain("Vuelve a tu revisión en un paso");
     expect(accessSource).toContain("Tu avance sigue listo");
     expect(accessSource).toContain("1 paso para volver");
     expect(accessSource).toContain("Correo seguro");
     expect(accessSource).toContain("Código de 6 dígitos");
     expect(accessSource).toContain("Regreso directo");
-    expect(accessSource).toContain("Tu avance te espera del otro lado.");
+    expect(accessSource).toContain("Tu avance sigue esperándote.");
     expect(accessSource).toContain("Entrar y continuar");
-    expect(accessSource).toContain("Tu correo solo abre tu acceso y te devuelve a tu revisión.");
+    expect(accessSource).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
     expect(accessSource).toContain("Solo para entrar");
     expect(accessSource).toContain("Código temporal");
     expect(accessSource).toContain("Regreso a tu revisión");
-    expect(accessSource).toContain("Qué pasará después");
-    expect(accessSource).toContain("Te llega un código temporal.");
-    expect(accessSource).toContain("Lo confirmas y vuelves a tu revisión.");
+    expect(accessSource).toContain("Entras y sigues");
+    expect(accessSource).toContain("Pides tu código, lo confirmas y regresas directo.");
     expect(accessSource).toContain("Señal visible de control");
-    expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel}.");
+    expect(accessSource).toContain("En cuanto lo confirmes, vuelves directo a {returnToLabel} con tu avance intacto.");
   });
 
   it("keeps the audit workspace oriented to defendable value after the first visible finding", () => {
     expect(auditFlowSource).toContain("Lectura visible");
     expect(auditFlowSource).toContain("Hallazgo protegido y listo para cuidar");
-    expect(auditFlowSource).toContain("Ya tienes una señal seria para asegurar en tu bóveda privada, exportar o reforzar con más contexto.");
+    expect(auditFlowSource).toContain("Ya tienes algo concreto que puedes guardar, descargar o reforzar con otro documento.");
     expect(auditFlowSource).toContain("Guardar evidencia útil");
     expect(auditFlowSource).toContain("Privacidad bajo tu control");
     expect(auditFlowSource).toContain("Descargar reporte");
@@ -112,7 +111,7 @@ describe("Auditapatron closeout experience", () => {
     expect(auditFlowSource).toContain("Control de privacidad");
     expect(auditFlowSource).toContain("Señal visible de control");
     expect(auditFlowSource).toContain("No tienes que adivinar qué pasó con tu archivo.");
-    expect(auditFlowSource).toContain("Asegurar evidencia en tu bóveda privada");
+    expect(auditFlowSource).toContain("Guardar en mi bóveda privada");
     expect(auditFlowSource).toContain("Descargar reporte PDF");
     expect(auditFlowSource).toContain("Reforzar con otro documento");
     expect(auditFlowSource).toContain("Qué tan defendible va tu caso");
@@ -122,7 +121,7 @@ describe("Auditapatron closeout experience", () => {
 
   it("preserves the worker-centered voice and keeps internal engine branding out of public marketing copy", () => {
     expect(homeSource).toContain("Tu empresa nunca ve lo que subes.");
-    expect(homeSource).toContain("Primero revisas la señal, luego decides si la guardas en tu expediente.");
+    expect(homeSource).toContain("Primero revisas la señal y luego decides si quieres guardarla.");
     expect(legalSource).toContain("Qué sí se registra");
     expect(legalSource).toContain("Qué no ve tu empresa");
     expect(legalSource).toContain("Dónde ejerces control");

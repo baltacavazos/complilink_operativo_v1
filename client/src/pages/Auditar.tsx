@@ -5242,7 +5242,7 @@ export default function Auditar() {
         badge: "Sin guardar",
         title: "Privacidad activa en borrador",
         detail:
-          "Tu archivo sigue en revisión privada. Nada entra al expediente hasta que tú lo confirmes.",
+          "Tu archivo sigue en revisión privada. Solo entra al expediente si tú lo confirmas.",
         company: "Empresa sin acceso",
         control: "Tú decides si guardar",
         trace: "Rastro solo al confirmar",
@@ -5261,7 +5261,7 @@ export default function Auditar() {
         badge: "Protegido",
         title: "Privacidad activa mientras analizamos",
         detail:
-          "El documento ya quedó protegido mientras vuelve la lectura. Aquí mismo verás si sigue en análisis o si ya quedó listo.",
+          "El documento ya quedó protegido mientras vuelve la lectura. Aquí ves si sigue en análisis o si ya quedó listo.",
         company: "Empresa sin acceso",
         control: "Sin cambios automáticos",
         trace: "Seguimiento visible aquí",
@@ -5276,7 +5276,7 @@ export default function Auditar() {
         badge: "Resguardado",
         title: "Privacidad activa dentro del expediente",
         detail:
-          "El archivo ya está en tu expediente privado y la interfaz mantiene visible el estado para que no tengas que adivinar qué pasó.",
+          "El archivo ya está en tu expediente privado y aquí ves su estado sin tener que adivinar qué pasó.",
         company: "Empresa sin acceso",
         control: "Tú conservas el mando",
         trace: "Versión y estado visibles",
@@ -7930,7 +7930,7 @@ export default function Auditar() {
               </span>
             </div>
             <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <p className="max-w-3xl text-sm leading-6 text-slate-700">
+              <p className="max-w-2xl text-sm leading-6 text-slate-700">
                 {privacySignal.detail}
               </p>
               <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
@@ -7938,10 +7938,7 @@ export default function Auditar() {
                   {privacySignal.company}
                 </span>
                 <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
-                  {privacySignal.control}
-                </span>
-                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
-                  {privacySignal.trace}
+                  {privacySignal.control} · {privacySignal.trace}
                 </span>
               </div>
             </div>
