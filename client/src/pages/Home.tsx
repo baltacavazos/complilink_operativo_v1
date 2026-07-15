@@ -1433,7 +1433,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Cambia entre tres ejemplos simples. En cada vista solo aparece una idea principal.
+                Tres vistas simples para entender rápido qué verías.
               </p>
 
               <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">

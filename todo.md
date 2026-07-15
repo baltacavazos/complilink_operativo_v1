@@ -1882,3 +1882,4 @@
 - [x] Micro-ronda app-first VII: bajar la competencia visual de `Ya tengo cuenta` en el primer CTA de `/auditar` para que subir el documento siga siendo el camino dominante.
 - [x] Micro-ronda app-first VIII: simplificar el bloque `Si no sabes con qué empezar` en Home para dejar una sola guía visible y menos etiquetas redundantes.
 - [x] Micro-ronda app-first IX: compactar la explicación secundaria del primer documento sugerido en Home para que el bloque se lea todavía más rápido.
+- [x] Micro-ronda app-first X: compactar la ayuda accesoria bajo el ejemplo principal de Home para que el resultado hable con menos explicación duplicada.
