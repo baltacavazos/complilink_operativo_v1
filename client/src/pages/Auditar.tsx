@@ -11322,7 +11322,7 @@ Reforzar con otro documento
                                     )
                                   }
                                 >
-                                  Asegurar la siguiente pieza
+                                  Subir la siguiente pieza
                                   <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
                                 </button>
                               ) : null}
@@ -11330,10 +11330,10 @@ Reforzar con otro documento
 
                             <div className="mt-4 rounded-[0.95rem] border border-slate-200 bg-white px-4 py-4">
                               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                Mensajes listos para actuar
+                                Si quieres avisar o pedir respuesta
                               </p>
                               <p className="mt-2 text-base font-semibold text-slate-950">
-                                Si quieres avanzar con firmeza y dejar constancia, aquí tienes dos borradores listos
+                                Tienes dos borradores listos para copiar.
                               </p>
                               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                                 <div className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3">
@@ -11374,7 +11374,7 @@ Reforzar con otro documento
                                 </div>
                               </div>
                               <p className="mt-3 text-xs leading-5 text-slate-500">
-                                Si te responden por correo o WhatsApp, guarda también esa respuesta en tu Bóveda Laboral para no perder el contexto del hallazgo.
+                                Si te responden, guarda también esa respuesta en tu Bóveda Laboral para mantener el contexto del hallazgo.
                               </p>
                             </div>
 

@@ -1842,4 +1842,7 @@
 - [x] Micro-ronda tri-IA: actualizar pruebas focales, validar TypeScript/Vitest y preparar un checkpoint incremental si el ajuste queda estable.
 - [x] Ronda de resultado y continuidad: simplificar la UI posterior a la primera lectura para que el valor detectado y el siguiente paso se entiendan de inmediato.
 - [x] Ronda de resultado y continuidad: hacer más obvia y tranquila la transición entre ver la señal, guardar la revisión y retomar el expediente después.
-- [ ] Ronda de resultado y continuidad: contrastar la propuesta con ChatGPT, Grok y Gemini, luego validar TypeScript/Vitest y guardar checkpoint si queda estable.
+- [x] Ronda de resultado y continuidad: contrastar la propuesta con ChatGPT, Grok y Gemini, luego validar TypeScript/Vitest y guardar checkpoint si queda estable.
+- [x] Micro-ronda post-hallazgo: simplificar las tarjetas y CTAs que aparecen después del primer resultado para que no compitan entre sí.
+- [x] Micro-ronda post-hallazgo: volver más obvio cuándo conviene guardar, descargar o reforzar con otro documento.
+- [ ] Micro-ronda post-hallazgo: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint incremental si el ajuste queda estable.
