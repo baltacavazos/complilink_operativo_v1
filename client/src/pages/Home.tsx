@@ -1797,7 +1797,7 @@ function HeliosFirstEntrySection() {
                       </Button>
                     )}
                     <p className="text-xs leading-5 text-slate-500">
-                      El correo aparece solo si decides guardar y seguir.
+                      El correo solo aparece si decides guardar.
                     </p>
                   </div>
                 </div>
