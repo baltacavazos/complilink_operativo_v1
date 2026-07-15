@@ -591,7 +591,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-slate-500">
-                      {emailCooldownActive ? `Puedes reenviar en ${emailCooldownSecondsRemaining}s` : "Si todavía no llegó"}
+                      {emailCooldownActive ? `Reenvío en ${emailCooldownSecondsRemaining}s` : "Si no llegó"}
                   </span>
                   <button
                     type="button"
@@ -615,7 +615,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <details className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-700">
                 <summary className="cursor-pointer text-sm font-semibold text-slate-700">Si el correo falla</summary>
                 <div className="mt-3 flex flex-col gap-3">
-                  <p className="text-sm leading-6 text-slate-600">Estas opciones quedan como respaldo. La ruta principal sigue siendo entrar con tu correo y código.</p>
+                  <p className="text-sm leading-6 text-slate-600">Esto queda como respaldo. La ruta principal sigue siendo tu correo y código.</p>
                   {manusLoginAvailable && manusLoginUrl ? (
                     <Button
                       type="button"

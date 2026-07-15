@@ -1886,3 +1886,4 @@
 - [x] Micro-ronda app-first XI: compactar la confirmación de control en el paso de código de `/acceso` para que tranquilice con menos lectura.
 - [x] Micro-ronda app-first XII: compactar el bloque de transición a expediente en Home para reducir repetición entre ver valor, guardar y continuar.
 - [x] Micro-ronda app-first XIII: compactar el copy de arranque visible en `/auditar` para que subir el archivo se entienda en menos palabras.
+- [x] Micro-ronda app-first XIV: compactar la ayuda de reenvío y respaldo en `/acceso` para que el camino principal se sostenga con menos lectura secundaria.
