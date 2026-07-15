@@ -12,10 +12,10 @@ describe("novena ola móvil/web", () => {
     const source = readPage("Home");
 
     expect(source).toContain('id="app"');
-    expect(source).toContain("Descarga móvil de AuditaPatron");
-    expect(source).toContain("Lleva tu auditoría laboral en el celular.");
-    expect(source).toContain("Organiza tus documentos laborales y retoma tu revisión desde cualquier lugar cuando la app esté disponible.");
-    expect(source).toContain("Próximamente en iOS y Android");
+    expect(source).toContain("App móvil en camino");
+    expect(source).toContain("Empieza hoy aquí. La app viene después.");
+    expect(source).toContain("No necesitas esperar: la revisión gratuita ya funciona aquí.");
+    expect(source).toContain("Próximamente en iPhone y Android");
     expect(source).toContain("App Store");
     expect(source).toContain("Google Play");
     expect(source).toContain('placement: "app_download_section_primary"');
@@ -28,11 +28,13 @@ describe("novena ola móvil/web", () => {
 
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
+    expect(source).toContain("Sube y revisa en segundos");
     expect(source).toContain("Ruta corta dentro de la app");
     expect(source).toContain("Sube foto o archivo. Ves la señal en segundos.");
     expect(source).toContain("Subes foto o archivo desde tu celular.");
     expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
-    expect(source).toContain("Sube tu documento gratis");
+    expect(source).toContain("Sube tu documento");
+    expect(source).toContain("Sube tu recibo gratis");
     expect(source).toContain("Tu documento sigue privado dentro de la app");
     expect(source).toContain("Primero revisas. Guardas solo si te sirve.");
   });

@@ -7754,15 +7754,15 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                {isNativeAppExperience ? "Directo desde tu app" : "Revisión rápida y privada"}
+                {isNativeAppExperience ? "Directo desde tu app" : "Sube y revisa en segundos"}
               </div>
               <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                {isNativeAppExperience ? "Sube tu documento" : "Sube tu primer documento"}
+                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
                   ? "Sube foto o archivo. Ves la señal en segundos."
-                  : "Empieza con una foto, PDF, XML o contrato en DOCX. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo."}
+                  : "Sube foto o archivo. Recibes una revisión gratis en segundos."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -7775,7 +7775,7 @@ export default function Auditar() {
                     focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null);
                   }}
                 >
-                  Sube tu documento gratis
+                  {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                   <button
@@ -7788,14 +7788,14 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  Ya tengo cuenta · iniciar sesión
+                  Ya tengo cuenta
                 </button>
               </div>
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
-                {isNativeAppExperience ? "Ruta corta dentro de la app" : "Qué pasa después de subirlo"}
+                {isNativeAppExperience ? "Ruta corta dentro de la app" : "Qué pasa al subirlo"}
               </p>
               <div className="mt-4 space-y-3">
                 {(isNativeAppExperience
@@ -7805,8 +7805,7 @@ export default function Auditar() {
                     ]
                   : [
                       "Subes un solo archivo desde tu celular o computadora.",
-                      "Te mostramos qué detectamos y si ya apareció una señal para revisar.",
-                      "Si decides guardarlo o retomar tu expediente después, activas tu acceso por correo en ese momento.",
+                      "Ves la señal y decides si quieres guardarlo o seguir con otro documento.",
                     ]).map(item => (
                   <div
                     key={item}
@@ -7884,13 +7883,13 @@ export default function Auditar() {
                 </>
               ) : (
                 <>
-                  <span className="sm:hidden">
-                      Sube una foto, PDF o contrato en DOCX. Primero te mostraremos lo importante y qué hacer después.
+                                      <span className="sm:hidden">
+                      Sube foto o archivo. Primero ves la señal y luego decides si lo guardas.
+                    </span>
+                    <span className="hidden sm:inline">
+                      Sube foto, PDF, XML o contrato en DOCX. Primero ves la señal y luego decides si lo guardas.
+                    </span>
 
-                  </span>
-                  <span className="hidden sm:inline">
-                    Sube una foto, PDF, XML o contrato en DOCX. Primero te mostraremos lo importante y qué hacer después.
-                  </span>
                 </>
               )}
             </p>

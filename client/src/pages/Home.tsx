@@ -2964,9 +2964,9 @@ function FAQSection() {
 
 function AppDownloadSection() {
   const webBenefits = [
-    "Sube una foto o un PDF desde tu celular y revisa la señal sin perder tiempo en pasos de más.",
-    "Retoma tu avance y tu expediente desde donde te quedaste, sin volver a empezar de cero.",
-    "Organiza tus documentos laborales y retoma tu revisión desde cualquier lugar cuando la app esté disponible.",
+    "Empieza hoy mismo desde esta web con un solo recibo o documento.",
+    "Tu avance y tu expediente podrán seguirte en la app cuando esté lista.",
+    "No necesitas esperar: la revisión gratuita ya funciona aquí.",
   ] as const;
 
   return (
@@ -2976,13 +2976,13 @@ function AppDownloadSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-              Descarga móvil de AuditaPatron
+              App móvil en camino
             </div>
             <h2 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.3rem]">
-              Lleva tu auditoría laboral en el celular.
+              Empieza hoy aquí. La app viene después.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Si prefieres revisar desde tu teléfono, la app está pensada para avanzar más rápido: subir documentos, retomar tu avance y seguir tu expediente sin enredos.
+              La forma más rápida de empezar hoy es esta web. Cuando la app esté lista, aquí mismo verás los accesos reales para iPhone y Android.
             </p>
             <div className="mt-5 grid gap-3">
               {webBenefits.map((item, index) => (
@@ -3004,10 +3004,10 @@ function AppDownloadSection() {
               App móvil
             </p>
             <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-              Próximamente en iOS y Android
+              Próximamente en iPhone y Android
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Muy pronto podrás descargar AuditaPatron desde las tiendas oficiales. Mientras tanto, esta página ya deja reservado el espacio correcto para esos accesos reales y confiables.
+              Cuando exista la descarga real, la verás aquí. Por ahora, empieza tu auditoría en esta web sin esperar la app.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -3032,7 +3032,7 @@ function AppDownloadSection() {
                 className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
                 onClick={() => goToAuditFlow({ placement: "app_download_section_primary" })}
               >
-                Empezar auditoría gratis
+                Empezar aquí gratis
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
               <Button
@@ -3041,7 +3041,7 @@ function AppDownloadSection() {
                 className="h-12 w-full rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50 sm:w-auto"
                 onClick={() => scrollToId("como-funciona")}
               >
-                Ver un ejemplo primero
+                Ver cómo funciona
               </Button>
             </div>
           </div>

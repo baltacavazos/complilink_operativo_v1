@@ -627,6 +627,10 @@
 - [x] Contrastar con OpenAI, Grok y Gemini el diseño mínimo útil de reportes ejecutivos exportables para la Consola CEO
 - [x] Implementar reportes ejecutivos exportables de la Consola CEO con alcance inicial
 - [x] Mantener al usuario propietario como CEO maestro sin degradar permisos ni el perímetro actual.
+- [x] Ola app-first: simplificar aún más los flujos de `/auditar` y `/acceso` para que entrar, subir, revisar y continuar se sienta natural en móvil.
+- [x] Ola app-first: compactar la web explicativa para que apoye la descarga futura sin competir con la experiencia directa de la app.
+- [x] Ola app-first: revisar superficies de continuidad del expediente y dejar la navegación preparada para transición a app real.
+- [x] Ola app-first: correr contraste tri-IA para priorizar los ajustes de mayor impacto en facilidad de uso móvil.
 - [x] Añadir un modo seguro de visualización como usuario normal para demos, con retorno inmediato al contexto CEO.
 - [x] Completar la cobertura E2E de la convivencia entre el rol CEO maestro y la vista de usuario normal; la cobertura unitaria ya quedó implementada.
 - [x] Añadir pruebas Vitest y validación técnica del bloque de reportes ejecutivos exportables de la Consola CEO

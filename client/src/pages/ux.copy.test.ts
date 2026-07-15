@@ -103,14 +103,16 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control")');
     expect(source).toContain('Sube un solo recibo y detecta rápido si aparece una señal que sí conviene revisar.');
     expect(source).toContain('id="app"');
-    expect(source).toContain('Descarga móvil de AuditaPatron');
-    expect(source).toContain('Lleva tu auditoría laboral en el celular.');
-    expect(source).toContain('Organiza tus documentos laborales y retoma tu revisión desde cualquier lugar cuando la app esté disponible.');
-    expect(source).toContain('Próximamente en iOS y Android');
+    expect(source).toContain('App móvil en camino');
+    expect(source).toContain('Empieza hoy aquí. La app viene después.');
+    expect(source).toContain('No necesitas esperar: la revisión gratuita ya funciona aquí.');
+    expect(source).toContain('Próximamente en iPhone y Android');
     expect(source).toContain('App Store');
     expect(source).toContain('Google Play');
     expect(source).toContain('Botón reservado para la publicación oficial en iPhone.');
     expect(source).toContain('Botón reservado para la publicación oficial en Android.');
+    expect(source).toContain('Empezar aquí gratis');
+    expect(source).toContain('Ver cómo funciona');
     expect(source).toContain('placement: "app_download_section_primary"');
     expect(source).toContain('id="privacidad"');
     expect(source).toContain('id="boveda"');
@@ -126,11 +128,14 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("function warmVisibleNamingCopy");
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
+    expect(source).toContain("Sube y revisa en segundos");
     expect(source).toContain("Ruta corta dentro de la app");
     expect(source).toContain("Sube foto o archivo. Ves la señal en segundos.");
+    expect(source).toContain("Sube foto o archivo. Recibes una revisión gratis en segundos.");
     expect(source).toContain("Subes foto o archivo desde tu celular.");
     expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
-    expect(source).toContain("Sube tu documento gratis");
+    expect(source).toContain("Sube tu documento");
+    expect(source).toContain("Sube tu recibo gratis");
     expect(source).toContain("Tu documento sigue privado dentro de la app");
     expect(source).toContain("Primero revisas. Guardas solo si te sirve.");
     expect(source).toContain("Carga inmediata");
@@ -150,7 +155,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Elegir documento');
     expect(source).toContain('mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700');
     expect(source).toContain('max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600');
-    expect(source).toContain('Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.');
+    expect(source).toContain('Sube foto, PDF, XML o contrato en DOCX. Primero ves la señal y luego decides si lo guardas.');
     expect(source).toContain('Elegir cámara o archivo');
     expect(source).toContain('Sube otro archivo si lo necesitas.');
     expect(source).toContain('Tu resultado ya está arriba. Aquí puedes sumar otra pieza');
@@ -267,9 +272,9 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Vuelve a tu revisión en un paso");
-    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a ");
+    expect(source).toContain("Escribe tu correo, recibe tu código y vuelves directo a ");
     expect(source).toContain("Tu avance sigue esperándote.");
-    expect(source).toContain("Dentro de la app puedes entrar con tu correo o con Google y volver directo al punto donde te quedaste.");
+    expect(source).toContain("En la app puedes entrar con tu correo o con Google y volver directo al punto donde te quedaste.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");
@@ -281,7 +286,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
     expect(source).toContain("sin perder tu avance.");
-    expect(source).toContain("Tu correo solo abre tu acceso y te devuelve a tu revisión donde la dejaste.");
+    expect(source).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
     expect(source).not.toContain("Después de entrar: ");
     expect(source).not.toContain('Vuelves al ');
     expect(source).toContain("Enviar código");
