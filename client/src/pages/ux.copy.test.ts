@@ -105,7 +105,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('id="app"');
     expect(source).toContain('Descarga móvil de AuditaPatron');
     expect(source).toContain('Lleva tu auditoría laboral en el celular.');
-    expect(source).toContain('Cuando existan las tiendas oficiales, aquí aparecerán los accesos reales para iPhone y Android.');
+    expect(source).toContain('Organiza tus documentos laborales y retoma tu revisión desde cualquier lugar cuando la app esté disponible.');
     expect(source).toContain('Próximamente en iOS y Android');
     expect(source).toContain('App Store');
     expect(source).toContain('Google Play');

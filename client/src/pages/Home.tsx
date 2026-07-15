@@ -453,9 +453,9 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube un solo recibo y detecta rápido si hay algo que sí conviene revisar.",
-    microDescription: "Empieza gratis. No necesitas cuenta para ver la primera lectura.",
+    microDescription: "Empieza en segundos. Sin cuenta, sin pago y sin guardar nada al principio.",
     body: "",
-    ctaPrimary: "Revisa tu recibo gratis",
+    ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",
   },
   short_paid_campaign: {
@@ -2299,18 +2299,18 @@ function HowItWorksSection() {
           {[
             {
               number: "01",
-              title: "Sube el documento que ya tienes",
-              description: "Empieza con un recibo, CFDI o contrato sin preparar todo el expediente antes.",
+              title: "Sube tu recibo o contrato",
+              description: "Empieza con un solo archivo, sin preparar todo el expediente.",
             },
             {
               number: "02",
-              title: "Recibe una señal clara y accionable",
-              description: "Te mostramos qué apareció, qué significa y qué conviene revisar primero.",
+              title: "Recibe una señal clara",
+              description: "Te decimos qué encontramos y qué revisar primero.",
             },
             {
               number: "03",
-              title: "Guárdalo solo si te aporta valor",
-              description: "Si te sirve, lo llevas a tu expediente privado y luego sumas más contexto con calma.",
+              title: "Guárdalo solo si te sirve",
+              description: "Si te aporta valor, lo pasas a tu expediente privado.",
             },
           ].map((item) => (
             <article
@@ -2966,7 +2966,7 @@ function AppDownloadSection() {
   const webBenefits = [
     "Sube una foto o un PDF desde tu celular y revisa la señal sin perder tiempo en pasos de más.",
     "Retoma tu avance y tu expediente desde donde te quedaste, sin volver a empezar de cero.",
-    "Cuando existan las tiendas oficiales, aquí aparecerán los accesos reales para iPhone y Android.",
+    "Organiza tus documentos laborales y retoma tu revisión desde cualquier lugar cuando la app esté disponible.",
   ] as const;
 
   return (

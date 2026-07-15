@@ -1837,3 +1837,6 @@
 - [x] Micro-ronda de confianza: actualizar pruebas focales, validar TypeScript/Vitest y preparar un nuevo checkpoint estable.
 - [x] Micro-ajuste de continuidad: suavizar en `/auditar` el paso que explica cuándo se activa el acceso por correo para que suene más opcional y menos friccional.
 - [x] Micro-ajuste de continuidad: revalidar TypeScript y pruebas focales tras el nuevo wording de acceso y continuidad.
+- [x] Micro-ronda tri-IA: reforzar el CTA principal del hero web con microcopy más directo sobre gratuidad, rapidez y ausencia de registro inicial.
+- [x] Micro-ronda tri-IA: compactar el bloque "Cómo funciona" y la sección de app para que hablen más de valor real para el trabajador y menos de estructura interna.
+- [x] Micro-ronda tri-IA: actualizar pruebas focales, validar TypeScript/Vitest y preparar un checkpoint incremental si el ajuste queda estable.
