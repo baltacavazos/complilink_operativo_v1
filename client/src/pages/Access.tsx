@@ -69,7 +69,7 @@ function getReturnToValueCopy(returnTo: string) {
   }
 
   if (returnTo.startsWith("/ceo")) {
-    return "Tu expediente privado y las acciones pendientes te esperan del otro lado.";
+    return "Tu expediente privado y tus pendientes siguen listos del otro lado.";
   }
 
   return "Tu avance sigue disponible para que vuelvas sin empezar de cero.";
