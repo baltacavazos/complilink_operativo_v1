@@ -2360,13 +2360,13 @@ function getHeliosStageCopy(params: {
   ) {
     return {
       badge: "Lectura visible",
-      title: "Tu expediente ya empezó a devolverte respuestas útiles",
+      title: "Ya apareció una señal inicial para revisar",
       description:
         params.documentsWithOpinion > 1
-          ? `Ya hay una lectura preliminar visible en ${params.documentsWithOpinion} documentos y eso ayuda a darte más contexto entre ellos.`
-          : "Ya hay una lectura preliminar visible y puede seguir conectándose con el resto de tu expediente.",
+          ? `Ya ves una lectura inicial en ${params.documentsWithOpinion} documentos y eso te da más contexto para decidir qué revisar primero.`
+          : "Ya ves una lectura inicial y desde aquí puedes decidir si te conviene guardarla o reforzarla con más contexto.",
       detail:
-        "La revisión ya separa lo claro de lo preliminar y te orienta sobre el siguiente paso útil dentro del caso.",
+        "La interfaz ya te muestra lo importante y te deja seguir con un siguiente paso claro.",
       tone: "success" as const,
     };
   }
@@ -11210,7 +11210,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                     Hallazgo protegido y listo para cuidar
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Ya tienes una señal seria para asegurar en tu bóveda privada, exportar o reforzar con más contexto.
+                                    Ya tienes algo concreto que puedes guardar, descargar o reforzar con otro documento.
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-teal-800">
@@ -11218,7 +11218,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Puedes conservar este documento, el hallazgo visible y el contexto del periodo dentro de tu archivo privado para revisarlo después con más calma, exportarlo como respaldo o sumar otros documentos para fortalecer tu caso. Solo tú decides qué guardar y nadie de tu empresa puede ver este material.
+                                Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar y tu empresa no puede ver este material.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
                                 <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
@@ -11259,7 +11259,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                                     });
                                   }}
                                 >
-Asegurar evidencia en tu bóveda privada
+Guardar en mi bóveda privada
                                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                                 </Button>
                                 <Button
@@ -11393,7 +11393,7 @@ Reforzar con otro documento
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Desde aquí puedes seguir subiendo documentos, guardar este hallazgo y preguntarle al asesor con más contexto sobre lo que ya apareció.
+                                Desde aquí puedes guardar este hallazgo, subir otro documento o pedir una explicación más clara sobre lo que ya apareció.
                               </p>
                               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
