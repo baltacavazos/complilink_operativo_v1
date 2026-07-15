@@ -101,9 +101,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('id="app"');
-    expect(source).toContain('Web explicativa · app directa');
-    expect(source).toContain('En la web entiendes el valor. En la app avanzas más rápido.');
-    expect(source).toContain('Los botones de descarga aparecerán aquí cuando existan destinos reales y confiables para iOS y Android.');
+    expect(source).toContain('Descarga móvil de AuditaPatron');
+    expect(source).toContain('Lleva tu auditoría laboral en el celular.');
+    expect(source).toContain('Cuando existan las tiendas oficiales, aquí aparecerán los accesos reales para iPhone y Android.');
     expect(source).toContain('Próximamente en iOS y Android');
     expect(source).toContain('App Store');
     expect(source).toContain('Google Play');
@@ -125,10 +125,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
     expect(source).toContain("Ruta corta dentro de la app");
-    expect(source).toContain("Toma una foto o elige un archivo. Primero ves la señal y después decides si quieres guardarla.");
-    expect(source).toContain("Subes un archivo o tomas una foto desde tu celular.");
-    expect(source).toContain("Ves de inmediato la señal principal y qué conviene revisar después.");
-    expect(source).toContain("Sube una foto o archivo. Primero revisas la señal y luego decides si guardas.");
+    expect(source).toContain("Sube foto o archivo. Ves la señal en segundos.");
+    expect(source).toContain("Subes foto o archivo desde tu celular.");
+    expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
+    expect(source).toContain("Sube tu documento gratis");
     expect(source).toContain("Tu documento sigue privado dentro de la app");
     expect(source).toContain("Primero revisas. Guardas solo si te sirve.");
     expect(source).toContain("Carga inmediata");
@@ -264,9 +264,9 @@ describe("copy visible de la experiencia", () => {
     const source = readPage("Access");
 
     expect(source).toContain("Iniciar sesión");
-    expect(source).toContain("Entra y sigue donde te quedaste");
-    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y vuelves directo al ");
-    expect(source).toContain("Aquí solo resolvemos el acceso.");
+    expect(source).toContain("Vuelve a tu revisión sin empezar de cero");
+    expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a ");
+    expect(source).toContain("Dentro de la app puedes entrar con tu correo o con Google y volver directo a tu revisión al terminar.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
     expect(source).toContain("Si quieres, sigue con ese correo. Si no, cámbialo antes de pedir el código.");

@@ -428,7 +428,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
-                  Dentro de la app, el acceso por correo sigue siendo la ruta más estable. Si prefieres Google, ya puedes usarlo abajo y te regresamos aquí al terminar.
+                  Dentro de la app puedes entrar con tu correo o con Google y volver directo a tu revisión al terminar.
                 </p>
               ) : null}
             </div>

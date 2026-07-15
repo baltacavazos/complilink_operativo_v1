@@ -1824,3 +1824,8 @@
 - [x] Novena ola web: reforzar en la home la explicación de valor, confianza y continuidad entre web y futura app.
 - [x] Novena ola web: preparar una zona visible de descarga móvil con estado honesto mientras no existan URLs reales de App Store y Google Play.
 - [x] Novena ola: actualizar pruebas focales y validar TypeScript/Vitest tras la nueva separación app directa + web explicativa.
+- [x] Ronda de conversión premium: contrastar con ChatGPT, Grok y Gemini los cambios de mayor impacto para volver AuditaPatron más intuitiva, deseable y fácil de usar para trabajadores de México.
+- [x] Ronda de conversión premium: auditar los primeros minutos de Home, /auditar y /acceso para detectar fricciones, exceso de copy y oportunidades de conversión.
+- [x] Ronda de conversión premium: implementar los ajustes de UX y copy de mayor impacto priorizando claridad, velocidad y confianza en móvil.
+- [x] Ronda de conversión premium: reforzar la conversión web hacia la app y la auditoría gratuita sin usar promesas vacías ni enlaces falsos.
+- [ ] Ronda de conversión premium: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint estable.

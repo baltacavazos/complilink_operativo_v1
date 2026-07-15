@@ -7761,26 +7761,26 @@ export default function Auditar() {
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
-                  ? "Toma una foto o elige un archivo. Primero ves la señal y después decides si quieres guardarla."
+                  ? "Sube foto o archivo. Ves la señal en segundos."
                   : "Empieza con una foto, PDF, XML o contrato en DOCX. Te diremos rápido qué encontramos y qué conviene hacer después. El correo solo hace falta si decides guardarlo."}
               </p>
 
-              <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
+              <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
                 <Button
                   className="h-auto min-h-12 w-full rounded-full bg-teal-600 px-5 py-3 text-sm leading-5 text-white hover:bg-teal-700 sm:h-12 sm:w-auto sm:px-7 sm:py-0 sm:text-base"
                   onClick={() => {
                     trackFunnelStep("auditar_guest_entry_clicked", {
                       source: "auditar_guard",
                     });
-                    window.location.href = "/#lectura-gratis";
+                    focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null);
                   }}
                 >
-                  Empezar gratis
+                  Sube tu documento gratis
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="h-auto min-h-12 w-full whitespace-normal rounded-full px-5 py-3 text-sm leading-5 text-slate-600 hover:bg-slate-100 sm:h-12 sm:w-auto sm:px-4 sm:py-0 sm:text-[0.95rem]"
+                <button
+                  type="button"
+                  className="inline-flex w-fit items-center justify-center px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
                   onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -7788,9 +7788,8 @@ export default function Auditar() {
                     window.location.href = getLoginUrl();
                   }}
                 >
-                  <span className="sm:hidden">Ya tengo cuenta</span>
-                  <span className="hidden sm:inline">Ya tengo cuenta · iniciar sesión</span>
-                </Button>
+                  Ya tengo cuenta · iniciar sesión
+                </button>
               </div>
             </div>
 
@@ -7801,8 +7800,8 @@ export default function Auditar() {
               <div className="mt-4 space-y-3">
                 {(isNativeAppExperience
                   ? [
-                      "Subes un archivo o tomas una foto desde tu celular.",
-                      "Ves de inmediato la señal principal y qué conviene revisar después.",
+                      "Subes foto o archivo desde tu celular.",
+                      "Ves la señal principal y el siguiente paso útil.",
                     ]
                   : [
                       "Subes un solo archivo desde tu celular o computadora.",
@@ -9183,7 +9182,7 @@ export default function Auditar() {
                       {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
                     </p>
                       <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                        {isNativeAppExperience ? "Sube y revisa lo importante" : "Sube tu recibo y revisa lo importante"}
+                        {isNativeAppExperience ? "Sube y revisa" : "Sube tu recibo y revisa lo importante"}
                       </h2>
 
                 </div>

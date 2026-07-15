@@ -262,9 +262,9 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#lectura-gratis", label: "Resultado real" },
+  { href: "#lectura-gratis", label: "Ver un ejemplo" },
   { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#app", label: "App" },
+  { href: "#app", label: "Descarga app" },
   { href: "#privacidad", label: "Privacidad" },
 ];
 
@@ -2963,9 +2963,9 @@ function FAQSection() {
 
 function AppDownloadSection() {
   const webBenefits = [
-    "La web explica el valor, los beneficios y las preguntas frecuentes antes de que la persona descargue nada.",
-    "La app debe sentirse más directa: entras, subes, revisas y continúas sin repetir una landing dentro del flujo.",
-    "Los botones de descarga aparecerán aquí cuando existan destinos reales y confiables para iOS y Android.",
+    "Sube una foto o un PDF desde tu celular y revisa la señal sin perder tiempo en pasos de más.",
+    "Retoma tu avance y tu expediente desde donde te quedaste, sin volver a empezar de cero.",
+    "Cuando existan las tiendas oficiales, aquí aparecerán los accesos reales para iPhone y Android.",
   ] as const;
 
   return (
@@ -2975,13 +2975,13 @@ function AppDownloadSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-              Web explicativa · app directa
+              Descarga móvil de AuditaPatron
             </div>
             <h2 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2.3rem]">
-              En la web entiendes el valor. En la app avanzas más rápido.
+              Lleva tu auditoría laboral en el celular.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Auditapatron puede explicar mejor el contexto, la confianza y el beneficio en la web. Cuando la persona ya entra a la app, la experiencia debe sentirse más directa: menos discurso persistente y más acción clara desde el primer documento.
+              Si prefieres revisar desde tu teléfono, la app está pensada para avanzar más rápido: subir documentos, retomar tu avance y seguir tu expediente sin enredos.
             </p>
             <div className="mt-5 grid gap-3">
               {webBenefits.map((item, index) => (
@@ -3000,13 +3000,13 @@ function AppDownloadSection() {
 
           <div className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] p-5 shadow-[0_22px_50px_-40px_rgba(15,23,42,0.26)] sm:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-              Descarga móvil
+              App móvil
             </p>
             <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
               Próximamente en iOS y Android
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Esta zona ya prepara la transición correcta: la web explica y la app resuelve. En cuanto existan páginas reales de descarga, aquí aparecerán los accesos oficiales a App Store y Google Play.
+              Muy pronto podrás descargar AuditaPatron desde las tiendas oficiales. Mientras tanto, esta página ya deja reservado el espacio correcto para esos accesos reales y confiables.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -3040,7 +3040,7 @@ function AppDownloadSection() {
                 className="h-12 w-full rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50 sm:w-auto"
                 onClick={() => scrollToId("como-funciona")}
               >
-                Ver cómo funciona primero
+                Ver un ejemplo primero
               </Button>
             </div>
           </div>
@@ -3124,9 +3124,10 @@ function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
-          <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
-            Resultado real
-          </a>
+                      <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
+              Ver un ejemplo
+            </a>
+
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona
           </a>
