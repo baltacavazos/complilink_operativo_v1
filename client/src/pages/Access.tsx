@@ -428,7 +428,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
-                  En la app puedes entrar con tu correo o con Google y volver directo al punto donde te quedaste.
+                  En la app entras con correo o Google y vuelves directo donde te quedaste.
                 </p>
               ) : null}
             </div>
