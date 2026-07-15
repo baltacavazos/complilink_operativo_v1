@@ -1832,3 +1832,6 @@
 - [x] Micro-ronda de conversión: consolidar la experiencia principal del hero web para reducir mensajes competidores y dejar una ruta más obvia hacia la auditoría gratuita.
 - [x] Micro-ronda de conversión: recortar copy y fricción visual después de la primera carga en `/auditar`, dejando el siguiente paso más limpio y accionable.
 - [x] Micro-ronda de conversión: actualizar pruebas focales, validar TypeScript/Vitest y guardar el siguiente checkpoint estable.
+- [x] Micro-ronda de confianza: simplificar la transición entre la lectura gratuita y `/acceso` para que guardar o retomar el expediente se perciba más claro y confiable.
+- [x] Micro-ronda de confianza: reforzar en `/auditar` la continuidad del expediente después de la primera lectura con un siguiente paso más tranquilizador y obvio.
+- [x] Micro-ronda de confianza: actualizar pruebas focales, validar TypeScript/Vitest y preparar un nuevo checkpoint estable.

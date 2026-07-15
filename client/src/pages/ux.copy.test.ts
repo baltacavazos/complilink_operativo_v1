@@ -268,6 +268,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Vuelve a tu revisión sin empezar de cero");
     expect(source).toContain("Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a ");
+    expect(source).toContain("No tienes que rehacer tu revisión: tu avance te espera del otro lado.");
     expect(source).toContain("Dentro de la app puedes entrar con tu correo o con Google y volver directo a tu revisión al terminar.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
@@ -279,7 +280,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "inicio"');
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
-    expect(source).not.toContain("sin perder tu avance.");
+    expect(source).toContain("sin perder tu avance.");
+    expect(source).toContain("Tu correo solo abre tu acceso y te devuelve a tu revisión o expediente donde lo dejaste.");
     expect(source).not.toContain("Después de entrar: ");
     expect(source).not.toContain('Vuelves al ');
     expect(source).toContain("Enviar código");

@@ -65,7 +65,7 @@ function getReturnToLabel(returnTo: string) {
 
 function getReturnToValueCopy(returnTo: string) {
   if (returnTo.startsWith("/auditar")) {
-    return "Tu revisión sigue lista para que continúes con el mismo documento o el siguiente paso útil.";
+    return "Tu revisión y tu avance siguen listos para que vuelvas al mismo documento o al siguiente paso útil sin empezar de cero.";
   }
 
   if (returnTo.startsWith("/ceo")) {
@@ -424,7 +424,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 Vuelve a tu revisión sin empezar de cero
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a {returnToLabel}. Tu avance te espera del otro lado.
+                Escribe tu correo, recibe un código de 6 dígitos y vuelves directo a {returnToLabel}. No tienes que rehacer tu revisión: tu avance te espera del otro lado.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
@@ -437,7 +437,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Tu avance sigue listo</p>
-                  <p className="mt-2 text-base font-semibold text-slate-950">Entras una vez y sigues directo a {returnToLabel}.</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">Entras una vez y sigues directo a {returnToLabel} sin rehacer pasos.</p>
                 </div>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                   1 paso para volver
@@ -494,7 +494,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </div>
 
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
-                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve a tu revisión.</p>
+                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve a tu revisión o expediente donde lo dejaste.</p>
                   <div className="mt-3 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3">
                     <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Solo para entrar</span>
                     <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal</span>
@@ -539,7 +539,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Código enviado</p>
                       <p className="mt-2 break-all text-sm font-medium text-slate-900">{submittedEmail || email}</p>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">En cuanto lo confirmes, vuelves directo a {returnToLabel}.</p>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">En cuanto lo confirmes, vuelves directo a {returnToLabel} con tu avance intacto.</p>
                     </div>
                     <button
                       type="button"
@@ -588,7 +588,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible de control</p>
-                  <p className="mt-2">No cambias nada de tu expediente hasta confirmar este código. Si algo falla, puedes pedir otro y retomar desde aquí sin perder el hilo.</p>
+                  <p className="mt-2">No cambias nada de tu expediente hasta confirmar este código. Si algo falla, puedes pedir otro y retomar desde aquí sin perder tu avance.</p>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
