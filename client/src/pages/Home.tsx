@@ -2128,10 +2128,10 @@ function ConfidenceMagicSection() {
           <div className="mt-7 grid gap-3 lg:grid-cols-2">
             {[
               {
-                title: "Orden en un solo lugar",
+                title: "Todo en un solo lugar",
                 description:
-                  "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar una bóveda laboral fácil de consultar.",
-                detail: "Tú decides qué conservar y qué quieres tener disponible cuando necesites respaldo.",
+                  "Tus recibos, contratos y CFDI dejan de vivir separados y empiezan a formar un archivo laboral fácil de consultar.",
+                detail: "Tú decides qué conservar para volver a verlo rápido cuando necesites respaldo, reclamar o retomar tu caso.",
                 icon: Upload,
               },
               {
@@ -2161,8 +2161,8 @@ function ConfidenceMagicSection() {
 
           <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-teal-100 bg-teal-50/85 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
             <div className="text-sm leading-6 text-teal-950">
-              <p className="font-semibold">Tu primer hallazgo también puede convertirse en tu archivo laboral.</p>
-              <p className="mt-1">El orden llega después del primer hallazgo: empiezas con un solo documento y, si vale la pena, luego sigues construyendo tu expediente con más calma.</p>
+              <p className="font-semibold">Tu primer hallazgo puede quedarse guardado para retomarlo cuando quieras.</p>
+              <p className="mt-1">Empiezas con un solo documento, ves si vale la pena y después decides si lo guardas para seguir reuniendo evidencia con más calma.</p>
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
               <Button

@@ -1855,3 +1855,5 @@
 - [x] Micro-ronda web directa: compactar el bloque de control visible para que la decisión de guardar se entienda más rápido y con menos copy.
 - [x] Micro-ronda acceso directo II: acortar la promesa de regreso en `/acceso` y dejar el retorno a la revisión todavía más directo.
 - [x] Micro-ronda web/acceso: alinear pruebas focales y revalidar TypeScript/Vitest tras los nuevos microcopies en Home y `/acceso`.
+- [x] Micro-ronda de valor tangible: convertir la sección de expediente/app en beneficios más concretos sobre guardar, retomar y reclamar con respaldo.
+- [x] Micro-ronda de valor tangible: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de Home.
