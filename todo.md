@@ -1894,3 +1894,4 @@
 - [x] Micro-ronda app-first XIX: compactar la razón del documento recomendado en Home para que la guía inicial se lea todavía más rápido.
 - [x] Micro-ronda app-first XX: compactar el bloque `Control visible` en `/acceso` para reforzar confianza con menos lectura secundaria.
 - [x] Micro-ronda app-first XXI: compactar la ayuda bajo el ejemplo principal de Home para que el bloque visual se explique con menos apoyo accesorio.
+- [x] Micro-ronda app-first XXII: compactar el encabezado explicativo del estado post-carga en `/auditar` para que el siguiente paso se lea con menos palabras.

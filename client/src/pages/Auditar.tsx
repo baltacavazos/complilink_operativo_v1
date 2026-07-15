@@ -8392,13 +8392,15 @@ export default function Auditar() {
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:mt-3 sm:text-[2rem]">
                     {shouldCompactPostUploadExperience
-                      ? "Tu resultado ya está arriba. Aquí puedes agregar otro documento."
+                                              ? "Tu resultado ya está arriba. Puedes sumar otro documento."
+
                       : "Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Úsalo solo si quieres sumar otra pieza útil."
-                      : "Empieza con una foto o PDF. Primero subes, luego ves la señal y después decides si sigues."}
+                                                : "Empieza con una foto o PDF. Subes, ves la señal y luego decides si sigues."}
+
                   </p>
                   <div
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
