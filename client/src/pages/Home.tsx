@@ -2115,7 +2115,7 @@ function ConfidenceMagicSection() {
               Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              AuditaPatron no te obliga a reunir todo desde el inicio. Puedes empezar con un recibo, un CFDI o un contrato, ver una lectura útil y después decidir qué más conservar dentro de tu expediente laboral.
+              No necesitas reunir todo desde el inicio. Puedes empezar con un recibo, un CFDI o un contrato, ver una lectura útil y después decidir qué más guardar.
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
               Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.
