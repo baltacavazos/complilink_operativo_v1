@@ -1891,3 +1891,4 @@
 - [x] Micro-ronda app-first XVI: compactar el bloque del primer hallazgo guardado en Home para reducir repetición entre retomarlo después y seguir reuniendo evidencia.
 - [x] Micro-ronda app-first XVII: compactar el bloque `Entras y sigues` en `/acceso` para explicar el regreso con menos palabras.
 - [x] Micro-ronda app-first XVIII: compactar la ayuda de `Agregar otro documento` en `/auditar` para que fortalecer el expediente se entienda con menos líneas.
+- [x] Micro-ronda app-first XIX: compactar la razón del documento recomendado en Home para que la guía inicial se lea todavía más rápido.

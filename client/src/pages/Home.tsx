@@ -650,8 +650,8 @@ const prediagnosticRecommendations: Record<
   "primer-documento": {
     badge: "Documento exacto sugerido",
     document: "El archivo que ya tienes a la mano; si dudas, un recibo de nómina reciente",
-    reason: "Es el archivo más fácil de ubicar y suele dar una primera lectura útil.",
-    nextStep: "Si luego sumas uno o dos documentos, la lectura mejora.",
+    reason: "Suele ser el archivo más fácil para una primera lectura útil.",
+    nextStep: "Si luego sumas uno o dos documentos, ves más contexto.",
     resultTitle: "Si quieres avanzar hoy, este suele ser el archivo con más tracción para arrancar.",
     ctaLabel: "Empezar con ese archivo",
   },
