@@ -11382,10 +11382,10 @@ Reforzar con otro documento
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-800">
-                                    Tu bóveda laboral ya empezó
+                                    Siguiente paso recomendado
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Este documento ya puede formar parte de tu archivo privado.
+                                    Ahora puedes reforzar tu caso o guardar lo que ya apareció.
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-violet-800">
@@ -11393,12 +11393,26 @@ Reforzar con otro documento
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Desde aquí puedes guardar este hallazgo, subir otro documento o pedir una explicación más clara sobre lo que ya apareció.
+                                Si tienes otro archivo útil, súbelo ahora. Si no, también puedes guardar este hallazgo o pedir una explicación más clara.
                               </p>
                               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
                                   type="button"
                                   className="rounded-full bg-violet-700 px-5 text-white hover:bg-violet-800"
+                                  onClick={() => {
+                                    trackEvent("vault_upload_more_clicked", {
+                                      location: "auditar_post_upload_microstate",
+                                    });
+                                    openPreferredPicker();
+                                  }}
+                                >
+                                  <FileUp className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                                  Subir otro documento
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-full border-violet-200 bg-white px-5 text-violet-900 hover:bg-violet-100"
                                   onClick={() => {
                                     trackEvent("vault_view_requested", {
                                       location: "auditar_post_upload_microstate",
@@ -11410,12 +11424,12 @@ Reforzar con otro documento
                                   }}
                                 >
                                   <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                                  Ver mi bóveda
+                                  Guardar en mi bóveda
                                 </Button>
                                 <Button
                                   type="button"
                                   variant="outline"
-                                  className="rounded-full border-violet-200 bg-white px-5 text-violet-900 hover:bg-violet-100"
+                                  className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
                                   onClick={() => {
                                     trackEvent("vault_advisor_clicked", {
                                       location: "auditar_post_upload_microstate",
@@ -11425,20 +11439,6 @@ Reforzar con otro documento
                                 >
                                   <Sparkles className="mr-2 h-4 w-4" strokeWidth={1.8} />
                                   Preguntar al asesor
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100"
-                                  onClick={() => {
-                                    trackEvent("vault_upload_more_clicked", {
-                                      location: "auditar_post_upload_microstate",
-                                    });
-                                    openPreferredPicker();
-                                  }}
-                                >
-                                  <FileUp className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                                  Subir otro documento
                                 </Button>
                               </div>
                             </div>

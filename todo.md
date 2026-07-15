@@ -1845,4 +1845,6 @@
 - [x] Ronda de resultado y continuidad: contrastar la propuesta con ChatGPT, Grok y Gemini, luego validar TypeScript/Vitest y guardar checkpoint si queda estable.
 - [x] Micro-ronda post-hallazgo: simplificar las tarjetas y CTAs que aparecen después del primer resultado para que no compitan entre sí.
 - [x] Micro-ronda post-hallazgo: volver más obvio cuándo conviene guardar, descargar o reforzar con otro documento.
-- [ ] Micro-ronda post-hallazgo: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint incremental si el ajuste queda estable.
+- [x] Micro-ronda post-hallazgo: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint incremental si el ajuste queda estable.
+- [x] Micro-ronda post-hallazgo II: convertir en principal la acción de subir otro documento cuando ya existe un hallazgo inicial y dejar guardar en bóveda como opción secundaria.
+- [x] Micro-ronda post-hallazgo II: revalidar TypeScript y pruebas focales después de reordenar la tarjeta violeta de continuidad.
