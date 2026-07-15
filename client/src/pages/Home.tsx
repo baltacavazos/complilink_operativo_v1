@@ -452,10 +452,9 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "¿Te están pagando bien? Sube tu recibo y te mostramos si hay algo raro en tu pago.",
-    microDescription: "Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.",
-    body:
-      "Primero ves qué revisar. Si te sirve, luego decides si lo guardas o sigues con otro documento.",
+    supportLine: "Sube un solo recibo y detecta rápido si hay algo que sí conviene revisar.",
+    microDescription: "Empieza gratis. No necesitas cuenta para ver la primera lectura.",
+    body: "",
     ctaPrimary: "Revisa tu recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
@@ -912,7 +911,7 @@ function SiteHeader() {
 }
 
 function HeroSection() {
-  const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("alert");
+  const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control");
   const [selectedHeroPrediagnostic, setSelectedHeroPrediagnostic] = useState<(typeof heroPrediagnosticOptions)[number]["id"]>("primer-documento");
   const [activeFindingIndex, setActiveFindingIndex] = useState(0);
   const [selectedReportDemoState, setSelectedReportDemoState] = useState<(typeof reportDemoStates)[number]["id"]>("hallazgo-preliminar");
@@ -1233,12 +1232,14 @@ function HeroSection() {
               {activeHeroVariant.microDescription}
             </p>
 
-            <p
-              className="motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
-              style={{ ["--motion-delay" as string]: "210ms" }}
-            >
-              {activeHeroVariant.body}
-            </p>
+            {activeHeroVariant.body ? (
+              <p
+                className="motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
+                style={{ ["--motion-delay" as string]: "210ms" }}
+              >
+                {activeHeroVariant.body}
+              </p>
+            ) : null}
 
             <div
               className={

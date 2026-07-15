@@ -8529,13 +8529,13 @@ export default function Auditar() {
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
                     {shouldCompactPostUploadExperience
-                      ? "Tu expediente sigue tomando forma"
+                      ? "Tu expediente ya avanzó"
                       : "Hoy tu expediente laboral va en:"}{" "}
                     {heliosExpediente?.stageLabel ?? dossierStatus.label}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                     {shouldCompactPostUploadExperience
-                      ? `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"} y ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles cubiertos. Si sigues hoy, prioriza ${uploadPrimaryActionLabel.toLowerCase()}.`
+                      ? `Ya cargaste ${documents.length} documento${documents.length === 1 ? "" : "s"}. Si quieres seguir hoy, prioriza ${uploadPrimaryActionLabel.toLowerCase()}.`
                       : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
                   </p>
                 </div>
@@ -8579,10 +8579,10 @@ export default function Auditar() {
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-950">
-                        Más opciones si quieres seguir
+                        Más opciones si quieres profundizar
                       </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
-                        Aquí dejamos solo lo secundario para que no compita con tu resultado principal.
+                        Dejamos aquí lo secundario para no distraerte del siguiente paso principal.
                       </p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -8705,9 +8705,7 @@ export default function Auditar() {
                       : uploadPrimaryActionLabel}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Prioriza un documento con mayor contexto antes de revisar
-                    módulos secundarios. El expediente se vuelve más útil en
-                    cuanto entra la siguiente pieza clave.
+                    Prioriza la siguiente pieza clave para darle más contexto al expediente.
                   </p>
                 </div>
                 <div className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-900">

@@ -42,8 +42,8 @@ describe("compact mobile upload entry", () => {
       '"bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"',
     );
     expect(auditarSource).toContain('"bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"');
-    expect(auditarSource).toContain('"Toma foto"');
-    expect(auditarSource).toContain('"Elige archivo"');
+    expect(auditarSource).toContain('"Abrir cámara para subirlo"');
+    expect(auditarSource).toContain('"Elegir archivo ahora"');
   });
 
   it("bloquea temporalmente los controles y explica el análisis automático en móvil", () => {
@@ -56,7 +56,7 @@ describe("compact mobile upload entry", () => {
 
   it("mantiene visibles los selectores del primer upload móvil hasta tener contexto suficiente", () => {
     expect(auditarSource).toContain("shouldHideUploadContextSelectors");
-    expect(auditarSource).toContain("Primero confirma tu espacio y expediente.");
+    expect(auditarSource).toContain("Al tocar el botón abriremos tu selector de archivos para subirlo sin salir del flujo.");
 
     expect(
       shouldHideUploadContextSelectors({
@@ -131,7 +131,7 @@ describe("digital archive access", () => {
     );
     expect(auditarSource).toContain('id="mi-archivo-digital"');
     expect(auditarSource).toContain("Ver todo mi archivo");
-    expect(auditarSource).toContain("Más opciones si quieres seguir");
+    expect(auditarSource).toContain("Más opciones si quieres profundizar");
     expect(auditarSource).toContain("Ver informe completo");
     expect(auditarSource).toContain("shouldCompactPostUploadExperience ? \"hidden\"");
     expect(auditarSource).toContain("shouldCompactPostUploadExperience ? \"hidden rounded-[1.25rem]");
@@ -400,7 +400,7 @@ describe("validateDocumentUploadFile", () => {
   });
 
   it("rechaza formatos no compatibles, HEIC y archivos que exceden 12 MB", () => {
-    const unsupported = new File(["hola"], "contrato.exe", { type: "application/octet-stream" });
+    const unsupported = new File(["hola"], "contrato.txt", { type: "text/plain" });
     expect(validateDocumentUploadFile(unsupported)).toContain("no es compatible");
 
     const heic = new File(["hola"], "foto.heic", { type: "image/heic" });
@@ -438,8 +438,8 @@ describe("getUploadStepAriaLabel", () => {
 describe("getUploadCompactGuardrails", () => {
   it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
     expect(getUploadCompactGuardrails()).toEqual({
-      fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB.",
-      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue bajo tu control.",
+      fileRules: "PDF, XML, JPG, PNG, WEBP o DOCX · máximo 12 MB.",
+      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue privado, bajo tu control y puedes borrarlo cuando quieras.",
     });
   });
 });
@@ -499,7 +499,7 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Guardando",
       progress: 92,
-      stageLabel: "Etapa 3 de 4 · Guardando con control",
+      stageLabel: "Guardando tu revisión",
       etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
       humanMessages: [
@@ -521,7 +521,7 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Control del documento",
       progress: 12,
-      stageLabel: "Etapa 1 de 4 · Preparación segura",
+      stageLabel: "Preparando tu archivo",
       stepKey: "prepare",
     });
 
@@ -551,7 +551,7 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Analizando",
       progress: 72,
-      stageLabel: "Etapa 2 de 4 · Analizando contenido",
+      stageLabel: "Revisando tu archivo",
       stepKey: "analyze",
       humanMessages: [
         "Revisando tu documento...",
@@ -570,7 +570,7 @@ describe("buildUploadProgressState", () => {
     ).toMatchObject({
       eyebrow: "Revisión lista",
       progress: 100,
-      stageLabel: "Etapa 4 de 4 · Revisión lista",
+      stageLabel: "Listo para revisar",
       etaLabel: "Siguiente acción: revisar lo importante y confirmar solo si quieres guardarlo.",
       stepKey: "review",
     });

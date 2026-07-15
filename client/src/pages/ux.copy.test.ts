@@ -100,6 +100,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<DossierSection />");
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
+    expect(source).toContain('const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control")');
+    expect(source).toContain('Sube un solo recibo y detecta rápido si hay algo que sí conviene revisar.');
     expect(source).toContain('id="app"');
     expect(source).toContain('Descarga móvil de AuditaPatron');
     expect(source).toContain('Lleva tu auditoría laboral en el celular.');

@@ -1828,4 +1828,7 @@
 - [x] Ronda de conversión premium: auditar los primeros minutos de Home, /auditar y /acceso para detectar fricciones, exceso de copy y oportunidades de conversión.
 - [x] Ronda de conversión premium: implementar los ajustes de UX y copy de mayor impacto priorizando claridad, velocidad y confianza en móvil.
 - [x] Ronda de conversión premium: reforzar la conversión web hacia la app y la auditoría gratuita sin usar promesas vacías ni enlaces falsos.
-- [ ] Ronda de conversión premium: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint estable.
+- [x] Ronda de conversión premium: actualizar pruebas focales, validar TypeScript/Vitest y guardar checkpoint estable.
+- [x] Micro-ronda de conversión: consolidar la experiencia principal del hero web para reducir mensajes competidores y dejar una ruta más obvia hacia la auditoría gratuita.
+- [x] Micro-ronda de conversión: recortar copy y fricción visual después de la primera carga en `/auditar`, dejando el siguiente paso más limpio y accionable.
+- [x] Micro-ronda de conversión: actualizar pruebas focales, validar TypeScript/Vitest y guardar el siguiente checkpoint estable.
