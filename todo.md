@@ -1880,3 +1880,4 @@
 - [x] Micro-ronda app-first V: compactar la sección `#app` para que funcione como promesa futura breve y no como bloque competidor frente a empezar hoy.
 - [x] Micro-ronda app-first VI: bajar la competencia visual de `Otros métodos` en `/acceso` para reforzar el camino principal de correo y código.
 - [x] Micro-ronda app-first VII: bajar la competencia visual de `Ya tengo cuenta` en el primer CTA de `/auditar` para que subir el documento siga siendo el camino dominante.
+- [x] Micro-ronda app-first VIII: simplificar el bloque `Si no sabes con qué empezar` en Home para dejar una sola guía visible y menos etiquetas redundantes.

@@ -1265,9 +1265,6 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
 
             <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-white bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm">
-                  {activePrediagnostic.badge}
-                </span>
                 <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                   Documento recomendado para arrancar
                 </span>
