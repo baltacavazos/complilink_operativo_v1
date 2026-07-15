@@ -81,7 +81,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Modo CEO activo");
     expect(source).toContain('data-testid="home-ceo-header-toggle"');
     expect(source).toContain('baseLabel="la home privada"');
-    expect(source).toContain("Empiezas con un solo documento, ves si vale la pena y después decides si lo guardas para seguir reuniendo evidencia con más calma.");
+    expect(source).toContain("Empiezas con un documento, ves si vale la pena y luego decides si lo guardas para seguir con más evidencia.");
     expect(source).toContain("Guardas solo lo útil.");
     expect(source).toContain("Privacidad y control visibles.");
     expect(source).toContain("Si no sabes con qué empezar");

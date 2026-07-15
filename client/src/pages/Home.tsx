@@ -2157,8 +2157,8 @@ function ConfidenceMagicSection() {
 
           <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-teal-100 bg-teal-50/85 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
             <div className="text-sm leading-6 text-teal-950">
-              <p className="font-semibold">Tu primer hallazgo puede quedarse guardado para retomarlo cuando quieras.</p>
-              <p className="mt-1">Empiezas con un solo documento, ves si vale la pena y después decides si lo guardas para seguir reuniendo evidencia con más calma.</p>
+              <p className="font-semibold">Tu primer hallazgo puede quedar listo para retomarlo después.</p>
+              <p className="mt-1">Empiezas con un documento, ves si vale la pena y luego decides si lo guardas para seguir con más evidencia.</p>
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
               <Button
