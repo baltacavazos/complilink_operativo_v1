@@ -1857,3 +1857,5 @@
 - [x] Micro-ronda web/acceso: alinear pruebas focales y revalidar TypeScript/Vitest tras los nuevos microcopies en Home y `/acceso`.
 - [x] Micro-ronda de valor tangible: convertir la sección de expediente/app en beneficios más concretos sobre guardar, retomar y reclamar con respaldo.
 - [x] Micro-ronda de valor tangible: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de Home.
+- [x] Micro-ronda acceso directo III: acortar el mensaje de control del código, simplificar el reenvío y volver más claros los métodos alternos sin competir con el correo.
+- [x] Micro-ronda acceso directo III: alinear pruebas focales y revalidar TypeScript/Vitest tras el nuevo wording de recuperación en `/acceso`.

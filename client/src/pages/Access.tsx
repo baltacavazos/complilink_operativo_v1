@@ -588,7 +588,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible de control</p>
-                  <p className="mt-2">No cambias nada de tu expediente hasta confirmar este código. Si algo falla, puedes pedir otro y retomar desde aquí sin perder tu avance.</p>
+                  <p className="mt-2">Nada cambia hasta confirmar este código. Si algo falla, puedes pedir otro y volver aquí sin perder tu avance.</p>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
@@ -607,7 +607,8 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                       });
                     }}
                   >
-                    {requestEmailCode.isPending ? "Enviando..." : emailCooldownActive ? `Reenviar en ${emailCooldownSecondsRemaining}s` : "Volver a enviar código"}
+                                          {requestEmailCode.isPending ? "Enviando..." : emailCooldownActive ? `Reenviar en ${emailCooldownSecondsRemaining}s` : "Reenviar código"}
+
                   </button>
                 </div>
               </form>
@@ -617,7 +618,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <details className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
                 <summary className="cursor-pointer font-semibold text-slate-900">Otros métodos</summary>
                 <div className="mt-3 flex flex-col gap-3">
-                  <p className="text-sm leading-6 text-slate-600">Úsalos solo si tu correo no es la mejor ruta para entrar.</p>
+                  <p className="text-sm leading-6 text-slate-600">Úsalos solo si el correo no te funciona bien para entrar.</p>
                   {manusLoginAvailable && manusLoginUrl ? (
                     <Button
                       type="button"

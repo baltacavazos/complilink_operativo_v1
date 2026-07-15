@@ -289,9 +289,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Estamos enviando tu código.");
     expect(source).toContain("Código enviado");
     expect(source).toContain("Iniciar sesión");
-    expect(source).toContain("Volver a enviar código");
+    expect(source).toContain("Reenviar código");
     expect(source).toContain("Otros métodos");
-    expect(source).toContain("Úsalos solo si tu correo no es la mejor ruta para entrar.");
+    expect(source).toContain("Úsalos solo si el correo no te funciona bien para entrar.");
     expect(source).toContain("Acceso base con salida CEO");
     expect(source).toContain("Acceso normal con salida CEO");
     expect(source).toContain('data-testid="access-ceo-header-toggle"');
