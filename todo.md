@@ -1901,3 +1901,4 @@
 - [x] Micro-ronda app-first XXVI: compactar el mensaje del `siguiente paso útil` en `/auditar` para que fortalecer el expediente se entienda con menos lectura.
 - [x] Micro-ronda app-first XXVII: compactar la explicación del siguiente paso bajo el ejemplo destacado en Home para que el valor visual se entienda con menos apoyo textual.
 - [x] Micro-ronda app-first XXVIII: compactar la promesa de regreso directo en el bloque de app de `/acceso` para que se lea más rápido y compita menos con el camino principal.
+- [x] Micro-ronda app-first XXIX: compactar la ayuda del bloque `Cómo guardarlo si te sirve` en Home para que guardar y continuar se entienda con menos lectura secundaria.
