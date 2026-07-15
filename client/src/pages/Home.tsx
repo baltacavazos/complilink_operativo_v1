@@ -453,7 +453,7 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube un solo recibo y detecta rápido si aparece una señal que sí conviene revisar.",
-    microDescription: "Empieza gratis en segundos. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    microDescription: "Gratis, sin cuenta al principio y sin guardar nada hasta que tú decidas.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",

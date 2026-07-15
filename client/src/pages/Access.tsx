@@ -517,13 +517,10 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </Button>
 
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">En un paso vuelves</p>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">1.</span> Te llega un código temporal.</p>
-                                          <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">2.</span> Lo confirmas y regresas directo.</p>
-
-                    <p className="rounded-[0.9rem] border border-white bg-white px-3 py-2"><span className="font-semibold text-slate-950">3.</span> Si sales, vuelves con el mismo correo.</p>
-                  </div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Entras y sigues</p>
+                  <p className="mt-2">
+                    Pides tu código, lo confirmas y regresas directo. Si sales, puedes volver con el mismo correo.
+                  </p>
                 </div>
 
                 {requestEmailCode.isPending ? (

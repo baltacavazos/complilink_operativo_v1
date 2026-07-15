@@ -1873,3 +1873,5 @@
 - [x] Micro-ronda post-hallazgo V: revalidar TypeScript y pruebas focales tras el nuevo wording de seguimiento automático.
 - [x] Micro-ronda post-hallazgo VI: volver más directos los estados de claridad y veredicto en `/auditar` para que el valor del primer resultado se entienda más rápido.
 - [x] Micro-ronda post-hallazgo VI: revalidar TypeScript y pruebas focales tras el nuevo microcopy de claridad y veredicto.
+- [x] Micro-ronda app-first II: compactar `/acceso` para dejar una sola promesa visible de retorno y menos repetición de apoyo.
+- [x] Micro-ronda app-first II: bajar redundancia en la entrada principal para que empezar y continuar se sienta todavía más obvio.
