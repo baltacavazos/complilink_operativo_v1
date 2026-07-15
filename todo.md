@@ -1867,3 +1867,5 @@
 - [x] Micro-ronda acceso directo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de retorno por código.
 - [x] Micro-ronda post-hallazgo V: simplificar el copy del estado automático en `/auditar` para que el guardado y la espera del detalle se entiendan con menos fricción.
 - [x] Micro-ronda post-hallazgo V: revalidar TypeScript y pruebas focales tras el nuevo wording de seguimiento automático.
+- [x] Micro-ronda post-hallazgo VI: volver más directos los estados de claridad y veredicto en `/auditar` para que el valor del primer resultado se entienda más rápido.
+- [x] Micro-ronda post-hallazgo VI: revalidar TypeScript y pruebas focales tras el nuevo microcopy de claridad y veredicto.

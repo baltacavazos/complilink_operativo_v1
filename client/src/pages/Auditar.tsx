@@ -2144,7 +2144,7 @@ function getDocumentReadiness(confidence?: number | null) {
       label: "Lectura clara",
       classes: "bg-emerald-100 text-emerald-800",
       description:
-        "Este documento ya deja señales bastante claras para empezar a usarlo en el expediente.",
+        "Este documento ya deja una señal bastante clara para empezar a usarlo en el expediente.",
     } as const;
   }
 
@@ -2153,7 +2153,7 @@ function getDocumentReadiness(confidence?: number | null) {
       label: "Lectura útil con revisión",
       classes: "bg-amber-100 text-amber-800",
       description:
-        "Ya encontramos señales útiles, aunque todavía conviene revisar algunos detalles antes de sacar conclusiones.",
+        "Ya hay una señal útil, aunque todavía conviene revisar algunos detalles antes de cerrar criterio.",
     } as const;
   }
 
@@ -2172,7 +2172,7 @@ function getDocumentVerdictState(confidence?: number | null) {
       shortLabel: "Bien",
       classes: "bg-emerald-100 text-emerald-800 border border-emerald-200",
       panelClasses: "border-emerald-100 bg-emerald-50",
-      description: "Se puede usar ya como una señal fuerte dentro del expediente.",
+      description: "Ya funciona como una señal fuerte dentro del expediente.",
     } as const;
   }
 
@@ -2182,7 +2182,7 @@ function getDocumentVerdictState(confidence?: number | null) {
       shortLabel: "Revisar",
       classes: "bg-amber-100 text-amber-900 border border-amber-200",
       panelClasses: "border-amber-100 bg-amber-50",
-      description: "Ya aporta contexto, pero conviene revisar detalles antes de confiar por completo.",
+      description: "Ya aporta contexto, pero conviene revisar detalles antes de tomarlo como base.",
     } as const;
   }
 
