@@ -1769,7 +1769,7 @@ function HeliosFirstEntrySection() {
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Siguiente paso sugerido</p>
                     <p className="mt-2 text-sm leading-6 text-emerald-950">
-                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.resultCard?.nextStepSummary) ?? sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.recommendedNextStep) ?? "Ya tienes un siguiente paso útil para continuar con más contexto."}
+                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.resultCard?.nextStepSummary) ?? sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.recommendedNextStep) ?? "Ya tienes el siguiente paso útil para seguir."}
                     </p>
                   </div>
                 </div>
@@ -1811,7 +1811,7 @@ function HeliosFirstEntrySection() {
                     documentLabel: "Recibo de nómina",
                     title: "Un recibo ya puede revelar una señal clara de pago o deducción.",
                     summary: "Con un solo documento puedes obtener una lectura breve y útil para empezar.",
-                    nextStep: "Después te sugerimos qué archivo complementa mejor tu bóveda laboral.",
+                    nextStep: "Después te sugerimos el archivo que mejor la complementa.",
                     primaryConcern: "Señal inicial lista para revisarse con palabras simples.",
                   },
                 ]).slice(0, 3).map((example) => (
