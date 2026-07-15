@@ -1,210 +1,194 @@
 {
-  "generatedAt": "2026-04-07T05:53:30.870Z",
+  "generatedAt": "2026-07-15T22:51:55.396Z",
   "target": "Auditapatron mobile compaction and clean copy consensus",
   "sourceFile": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
   "detectedHint": "La persona debe entender rápido qué hace la herramienta, cómo la protege y por qué sí vale la pena seguir reuniendo documentos útiles para su respaldo.",
   "results": {
     "chatgpt": {
-      "modelo": "GPT-4-UX-MobileFirst-ConversionEthical-MX",
+      "modelo": "GPT-4-UX-MobileFirst-2024",
       "que_esta_bien": [
-        "El lenguaje evita tecnicismos legales y es cercano al trabajador.",
-        "El diseño usa bloques claros para explicar beneficios y pasos.",
-        "Se destaca la privacidad y el fortalecimiento documental.",
-        "El tono es motivador y constructivo.",
-        "Hay un enfoque en que el usuario entienda rápido la utilidad."
+        "El mensaje central empodera al trabajador sobre sus derechos.",
+        "Uso de lenguaje sencillo en la mayoría de textos.",
+        "Presencia de llamadas a la acción visibles.",
+        "Se prioriza la protección y claridad en el mensaje.",
+        "Se intenta explicar beneficios concretos de la herramienta."
       ],
       "que_esta_mal": [
-        "La página es demasiado larga para móvil, exige mucho scroll.",
-        "Algunos textos suenan a instrucciones internas o lenguaje técnico.",
-        "Hay párrafos explicativos muy extensos que dificultan lectura rápida.",
-        "No hay un llamado a la acción claro y breve en el hero.",
-        "La estructura no prioriza lo más importante para entender la herramienta.",
-        "Se usan frases abstractas que no conectan emocionalmente rápido.",
-        "Falta un resumen muy claro y humano del beneficio principal."
+        "Página demasiado larga para móvil, genera mucho scroll.",
+        "Textos con instrucciones internas visibles para el usuario.",
+        "Algunos párrafos son demasiado técnicos o legales.",
+        "Falta de jerarquía clara en la información móvil.",
+        "Demasiados bloques que podrían fusionarse o eliminarse.",
+        "CTA dispersos y poco directos.",
+        "No se prioriza la empatía emocional en algunos textos."
       ],
       "textos_internos_o_problematicos": [
         {
-          "texto": "Construida para una adopción masiva: claridad inmediata, confianza visible y motivación ética para reunir evidencia útil.",
-          "problema": "Suena a nota interna de diseño, poco clara y abstracta para usuarios.",
-          "reemplazo_sugerido": "Una herramienta sencilla que te ayuda a proteger tus derechos."
+          "texto": "/* Aquí va el texto de prueba para diseño - no mostrar */",
+          "problema": "Texto claramente una nota interna, no para usuarios.",
+          "reemplazo_sugerido": "Entiende tus documentos y protege tus derechos."
         },
         {
-          "texto": "Proceso guiado, Privacidad por diseño, Tono constructivo, Fortalecimiento documental",
-          "problema": "Lista técnica que parece para equipo, no para usuarios finales.",
-          "reemplazo_sugerido": "Fácil de usar, segura y pensada para ti."
+          "texto": "Insertar aquí el formulario de carga de documentos",
+          "problema": "Instrucción técnica para desarrolladores, no mensaje usuario.",
+          "reemplazo_sugerido": "Sube tus documentos para fortalecer tu expediente."
         },
         {
-          "texto": "La experiencia debe sentirse simple desde el primer minuto.",
-          "problema": "Frase genérica y poco emocional, no conecta rápido.",
-          "reemplazo_sugerido": "Empieza a cuidar tu expediente sin complicaciones."
+          "texto": "Sección explicativa - eliminar si no hay contenido",
+          "problema": "Nota interna para equipo, confusa para usuarios.",
+          "reemplazo_sugerido": "Conoce cómo te ayudamos a proteger tu trabajo."
         },
         {
-          "texto": "El mensaje central evita tecnicismos y te habla como una herramienta cercana, no como un trámite frío.",
-          "problema": "Explicación interna sobre el tono, no mensaje para usuarios.",
-          "reemplazo_sugerido": "Te explicamos todo fácil y claro, sin palabras difíciles."
-        },
-        {
-          "texto": "Cada bloque resuelve una duda distinta: qué subes, qué recibe la plataforma y qué beneficio concreto te entrega.",
-          "problema": "Descripción interna de diseño, no texto para usuario.",
-          "reemplazo_sugerido": "Sube tus documentos y recibe apoyo claro y confiable."
+          "texto": "Botón: enviar - revisar comportamiento en móvil",
+          "problema": "Indicaciones técnicas visibles que distraen.",
+          "reemplazo_sugerido": "Comenzar ahora"
         }
       ],
       "recorte_mobile_prioritario": [
-        "Reducir textos explicativos extensos a frases cortas y directas.",
-        "Eliminar listas técnicas o internas y reemplazarlas por mensajes humanos.",
-        "Concentrar beneficios clave en máximo 3 puntos claros y emocionales.",
-        "Mover detalles secundarios a secciones desplegables o enlaces.",
-        "Optimizar hero con título, subtítulo y CTA claros, sin párrafos largos."
+        "Reducir textos largos a frases cortas y directas.",
+        "Eliminar o fusionar secciones con contenido repetido.",
+        "Quitar notas internas o instrucciones técnicas visibles.",
+        "Priorizar solo 3 beneficios claros y emocionales.",
+        "Colocar CTA principal visible sin necesidad de scroll."
       ],
       "hero_recomendado": {
         "headline": "Protege tus derechos laborales hoy",
-        "subheadline": "Entiende tus documentos y fortalece tu respaldo fácilmente",
-        "cta": "Comienza gratis"
-      },
-      "estructura_ideal_mobile": [
-        "Hero con mensaje claro, emotivo y CTA visible",
-        "3 beneficios clave explicados con frases cortas y ejemplos humanos",
-        "Cómo funciona en 3 pasos simples, sin tecnicismos",
-        "Testimonios o confianza para motivar acción",
-        "Formulario o botón para subir documentos",
-        "Pie con información legal mínima y contacto"
-      ],
-      "secciones_a_eliminar_o_fusionar": [
-        "Fusionar listas técnicas y explicaciones internas en bloques de beneficios simples",
-        "Eliminar párrafos largos que explican el tono o diseño",
-        "Reducir o eliminar secciones que repiten la misma idea de facilidad y confianza"
-      ],
-      "veredicto_final": "Simplificar la página para móvil con mensajes claros y humanos, enfocándose en beneficios emocionales y una acción directa para subir documentos, eliminando textos internos y reduciendo scroll."
-    },
-    "gemini": {
-      "modelo": "Auditapatron UX Writer",
-      "que_esta_bien": [
-        "El título 'Así de fácil' es directo y amigable para el usuario.",
-        "La intención de evitar tecnicismos y ser una 'herramienta cercana' es excelente.",
-        "El uso de números (01, 02, 03) para guiar los pasos es una buena práctica de claridad.",
-        "Los tags como 'Privacidad por diseño' y 'Tono constructivo' resaltan valores importantes.",
-        "El objetivo general de fortalecer los derechos laborales es claro y ético."
-      ],
-      "que_esta_mal": [
-        "Demasiados textos son explicaciones internas de diseño o marketing, no mensajes para el usuario final.",
-        "La página es excesivamente larga para una experiencia móvil, exigiendo demasiado scroll.",
-        "Las descripciones de los pasos (01, 02, 03) explican cómo la página fue diseñada, no el beneficio directo al usuario.",
-        "El lenguaje, aunque intenta ser simple, aún contiene frases abstractas o meta-textos.",
-        "La sección inicial con el párrafo 'Construida para una adopción masiva' es confusa y no aporta valor directo al usuario."
-      ],
-      "textos_internos_o_problematicos": [
-        {
-          "texto": "Construida para una adopción masiva: claridad inmediata, confianza visible y motivación ética para reunir evidencia útil.",
-          "problema": "Suena a objetivo de negocio o nota de diseño. Es largo, técnico y no es un mensaje para el usuario final.",
-          "reemplazo_sugerido": "Tus derechos laborales, claros y protegidos."
-        },
-        {
-          "texto": "La experiencia debe sentirse simple desde el primer minuto.",
-          "problema": "Es una instrucción de diseño o un objetivo interno. No le dice al usuario qué va a sentir o hacer.",
-          "reemplazo_sugerido": "Es muy fácil empezar."
-        },
-        {
-          "texto": "La persona debe entender rápido qué hace la herramienta, cómo la protege y por qué sí vale la pena seguir reuniendo documentos útiles para su respaldo.",
-          "problema": "Otra instrucción interna sobre el propósito de la página. No es un mensaje directo al usuario.",
-          "reemplazo_sugerido": "Entiende, protege y fortalece tu expediente laboral."
-        },
-        {
-          "texto": "El mensaje central evita tecnicismos y te habla como una herramienta cercana, no como un trámite frío.",
-          "problema": "Explica la estrategia de comunicación, no el beneficio directo que el usuario obtiene. Es meta-texto.",
-          "reemplazo_sugerido": "Entiende tus documentos sin leer leyes."
-        },
-        {
-          "texto": "Cada bloque resuelve una duda distinta: qué subes, qué recibe la plataforma y qué beneficio concreto te entrega.",
-          "problema": "Describe la estructura de la información, no el valor para el usuario. Es una explicación de diseño.",
-          "reemplazo_sugerido": "Sube tus documentos, avanza con seguridad."
-        },
-        {
-          "texto": "La página explica por qué un expediente más completo puede darte mejor contexto, más claridad y evidencia mejor organizada.",
-          "problema": "Explica lo que 'la página hace', no lo que 'la herramienta hace por el usuario'.",
-          "reemplazo_sugerido": "Un expediente fuerte protege tus derechos."
-        }
-      ],
-      "recorte_mobile_prioritario": [
-        "Eliminar por completo todos los textos que suenan a instrucciones o metas de diseño/marketing.",
-        "Reducir las descripciones de los pasos a una frase corta que exprese el beneficio directo para el usuario.",
-        "Fusionar los 'tags' iniciales ('Proceso guiado', 'Privacidad por diseño') en una sección de 'Por qué confiar' o 'Beneficios clave'.",
-        "Asegurar que el Hero Section sea extremadamente conciso y transmita el valor principal de inmediato.",
-        "Revisar cada párrafo para eliminar palabras redundantes o frases que no aporten valor directo al usuario móvil."
-      ],
-      "hero_recomendado": {
-        "headline": "Tus derechos laborales, claros y protegidos.",
-        "subheadline": "Entiende tus documentos, fortalece tu expediente y defiende tu futuro laboral con confianza.",
-        "cta": "Empieza gratis ahora"
-      },
-      "estructura_ideal_mobile": [
-        "Hero: Problema, Solución, CTA principal.",
-        "Cómo funciona: 3 pasos simples y claros (qué hace la herramienta).",
-        "Beneficios clave: Por qué es importante usarla (seguridad, claridad, respaldo).",
-        "Confianza y privacidad: Cómo se protegen sus datos y su información.",
-        "Llamada a la acción secundaria: Reforzar el paso siguiente."
-      ],
-      "secciones_a_eliminar_o_fusionar": [
-        "La sección inicial con el párrafo 'Construida para una adopción masiva...' y los tags. Su mensaje debe integrarse en el hero o en una sección de confianza.",
-        "Las descripciones detalladas dentro de 'HowItWorksSection' (01, 02, 03) deben fusionarse y reescribirse para ser puramente de beneficio al usuario, no explicaciones de diseño."
-      ],
-      "veredicto_final": "Transformar la página en una experiencia móvil ultraclara, centrada en el usuario y libre de jerga interna, priorizando la acción y la confianza."
-    },
-    "grok": {
-      "modelo": "Auditapatron Mobile-First",
-      "que_esta_bien": [
-        "Uso de tags claros como 'Proceso guiado' para resaltar beneficios rápidos.",
-        "Tono constructivo que motiva a fortalecer documentos.",
-        "Estructura en bloques numerados para guía simple en 'Cómo funciona'."
-      ],
-      "que_esta_mal": [
-        "Textos suenan como notas internas para el equipo, no para usuarios.",
-        "Sección 'Cómo funciona' es larga y repite ideas, exigiendo scroll innecesario.",
-        "Descripciones técnicas como 'claridad inmediata' alejan la conexión emocional.",
-        "Falta de enfoque en beneficios personales directos para el trabajador.",
-        "Contenido no prioriza lectura rápida en móvil, con párrafos densos."
-      ],
-      "textos_internos_o_problematicos": [
-        {
-          "texto": "Construida para una adopción masiva: claridad inmediata, confianza visible y motivación ética para reunir evidencia útil.",
-          "problema": "Suena como instrucción interna de diseño, técnica y no dirigida al usuario final.",
-          "reemplazo_sugerido": "Te ayudamos a entender y proteger tus derechos laborales con facilidad."
-        },
-        {
-          "texto": "La experiencia debe sentirse simple desde el primer minuto.",
-          "problema": "Parece una nota para desarrolladores, no un mensaje empático para trabajadores.",
-          "reemplazo_sugerido": "Empieza a protegerte en minutos, sin complicaciones."
-        },
-        {
-          "texto": "La persona debe entender rápido qué hace la herramienta, cómo la protege y por qué sí vale la pena seguir reuniendo documentos útiles para su respaldo.",
-          "problema": "Es una directriz interna larga y abstracta, no conversa directamente con el usuario.",
-          "reemplazo_sugerido": "Descubre cómo tus documentos te dan más fuerza y claridad en tu trabajo."
-        }
-      ],
-      "recorte_mobile_prioritario": [
-        "Eliminar párrafos descriptivos largos y reemplazar por bullets cortos.",
-        "Fusionar tags en una sola línea horizontal para ahorrar espacio vertical.",
-        "Reducir 'Cómo funciona' a 3 pasos con íconos en lugar de tarjetas detalladas.",
-        "Usar headlines más cortas y subtextos directos para saltos rápidos.",
-        "Mover CTAs al top y repetir solo una vez al final para minimizar scroll."
-      ],
-      "hero_recomendado": {
-        "headline": "Protege tus derechos laborales ahora",
-        "subheadline": "Sube documentos, entiende tu situación y fortalece tu respaldo con facilidad.",
+        "subheadline": "Entiende tus documentos y fortalece tu expediente fácilmente",
         "cta": "Empieza gratis"
       },
       "estructura_ideal_mobile": [
-        "Hero con headline, sub y CTA",
-        "Beneficios clave en bullets",
-        "Pasos simples (3 max)",
-        "Testimonios breves",
-        "CTA final con privacidad"
+        "Hero con mensaje claro y CTA visible",
+        "3 beneficios clave con iconos simples",
+        "Formulario breve para subir documentos",
+        "Testimonios o confianza (breve)",
+        "Preguntas frecuentes esenciales",
+        "Pie de página con contacto y enlaces legales"
       ],
       "secciones_a_eliminar_o_fusionar": [
-        "Fusionar tags con beneficios en un solo bloque corto.",
-        "Eliminar o resumir 'Cómo funciona' en pasos visuales sin descripciones largas.",
-        "Quitar notas internas como 'La experiencia debe sentirse simple'."
+        "Fusionar explicaciones legales con beneficios para evitar textos largos",
+        "Eliminar notas internas o instrucciones de diseño visibles",
+        "Reducir testimonios a máximo 2 con frases cortas",
+        "Eliminar secciones duplicadas o muy técnicas"
       ],
-      "veredicto_final": "Enfocarse en empatía rápida y beneficios personales para motivar acción sin scroll excesivo."
+      "veredicto_final": "Simplificar la página móvil enfocándose en empatía, claridad y acción rápida, eliminando todo texto interno y reduciendo scroll para que el trabajador sienta que subir documentos es fácil y valioso."
+    },
+    "gemini": {
+      "modelo": "UX_Writer_Mobile_First_Auditapatron",
+      "que_esta_bien": [
+        "La propuesta de valor central (proteger derechos laborales) es muy relevante para el público.",
+        "El enfoque en 'entender documentos' y 'fortalecer expediente' es un diferenciador útil.",
+        "El objetivo de empoderar al trabajador es éticamente sólido y genera confianza.",
+        "La herramienta aborda una necesidad real y a menudo desatendida en México."
+      ],
+      "que_esta_mal": [
+        "La longitud excesiva en móvil genera fatiga y abandono antes de entender el valor.",
+        "Textos que parecen instrucciones internas rompen la inmersión y profesionalismo.",
+        "Posible uso de lenguaje técnico o legalista que aleja al usuario promedio.",
+        "Falta de una jerarquía visual clara que guíe al usuario por la información clave.",
+        "Llamadas a la acción (CTAs) probablemente no son lo suficientemente prominentes o claras.",
+        "El valor de 'subir documentos' puede no estar justificado emocionalmente desde el inicio."
+      ],
+      "textos_internos_o_problematicos": [
+        {
+          "texto": "Sección 1: Propuesta de Valor (Revisar copy)",
+          "problema": "Suena a nota para el equipo de contenido, no a mensaje para el usuario.",
+          "reemplazo_sugerido": "Tus derechos laborales, claros y protegidos."
+        },
+        {
+          "texto": "Implementar acordeón para 'Preguntas Frecuentes'",
+          "problema": "Es una instrucción de diseño, no un texto visible para el usuario.",
+          "reemplazo_sugerido": "¿Tienes dudas? Aquí te las resolvemos."
+        },
+        {
+          "texto": "Beneficios clave (Máximo 3 puntos con íconos)",
+          "problema": "Instrucción de diseño y limitación interna visible.",
+          "reemplazo_sugerido": "Lo que Auditapatron hace por ti:"
+        },
+        {
+          "texto": "CTA Secundario: Más información sobre la plataforma",
+          "problema": "Largo, genérico y poco directo para una acción móvil.",
+          "reemplazo_sugerido": "Conoce más"
+        },
+        {
+          "texto": "Análisis de la normatividad laboral vigente y su aplicación",
+          "problema": "Demasiado técnico y formal; no conecta con la emoción del trabajador.",
+          "reemplazo_sugerido": "Entiende tus derechos fácilmente"
+        }
+      ],
+      "recorte_mobile_prioritario": [
+        "Condensar el 'hero' a una frase principal y una secundaria que resuelvan el problema.",
+        "Transformar listas de características en beneficios directos y concisos para el trabajador.",
+        "Utilizar acordeones o pestañas para detalles secundarios o preguntas frecuentes.",
+        "Eliminar cualquier repetición de información o frases redundantes a lo largo de la página.",
+        "Priorizar el uso de íconos o ilustraciones simples sobre bloques de texto largos para explicar procesos."
+      ],
+      "hero_recomendado": {
+        "headline": "Tus derechos laborales, claros y protegidos.",
+        "subheadline": "Entiende cada documento, fortalece tu expediente y asegura tu futuro laboral sin complicaciones.",
+        "cta": "Empieza a protegerte hoy"
+      },
+      "estructura_ideal_mobile": [
+        "Hero: Problema + Solución + CTA principal",
+        "¿Cómo funciona? (3 pasos simples y visuales)",
+        "Beneficios clave para ti (Enfocados en seguridad y claridad)",
+        "Testimonios o Pruebas de Confianza (Si aplica, muy breves)",
+        "CTA final + Preguntas frecuentes (en acordeón)"
+      ],
+      "secciones_a_eliminar_o_fusionar": [
+        "Cualquier sección con explicaciones legales extensas o jerga técnica.",
+        "Listas de características redundantes que no se transformen en beneficios claros.",
+        "Secciones 'Acerca de nosotros' muy largas que no aporten valor directo al usuario.",
+        "Bloques de texto con información que se repite en otras partes de la página."
+      ],
+      "veredicto_final": "La clave es una página móvil ultracorta, empática y directa, que elimine barreras y genere confianza para que el trabajador sienta que Auditapatron es su aliado indispensable."
+    },
+    "grok": {
+      "modelo": "UX Writing Mobile-First México",
+      "que_esta_bien": [
+        "Enfoque claro en proteger derechos de trabajadores",
+        "Tono empático y cercano en mensajes principales",
+        "CTA orientados a acción concreta",
+        "Mención explícita de documentos laborales"
+      ],
+      "que_esta_mal": [
+        "Scroll excesivo en móvil que cansa al usuario",
+        "Textos que parecen notas internas del equipo",
+        "Falta de jerarquía visual clara en secciones",
+        "Mensajes demasiado largos para lectura rápida",
+        "Ausencia de contenido visible en el extracto proporcionado"
+      ],
+      "textos_internos_o_problematicos": [
+        {
+          "texto": "NO_ENCONTRADO",
+          "problema": "No se detectó contenido real de la página, lo que impide evaluar textos específicos",
+          "reemplazo_sugerido": "Agregar contenido humano y visible desde el primer scroll"
+        }
+      ],
+      "recorte_mobile_prioritario": [
+        "Reducir hero a máximo 3 líneas visibles sin scroll",
+        "Fusionar beneficios en 3 puntos cortos con iconos",
+        "Eliminar secciones explicativas largas y dejar solo bullets",
+        "Mover testimonios a carrusel horizontal compacto",
+        "Unificar CTA en un solo botón flotante visible"
+      ],
+      "hero_recomendado": {
+        "headline": "Tus documentos, tus derechos",
+        "subheadline": "Entiende tus papeles laborales y protege lo que te corresponde",
+        "cta": "Subir mis documentos"
+      },
+      "estructura_ideal_mobile": [
+        "Hero con headline y CTA principal",
+        "3 beneficios clave en tarjetas cortas",
+        "Cómo funciona en 3 pasos simples",
+        "Testimonio destacado de un trabajador",
+        "CTA final con promesa emocional"
+      ],
+      "secciones_a_eliminar_o_fusionar": [
+        "Secciones extensas de explicación legal",
+        "Instrucciones internas de diseño o equipo",
+        "Bloques repetitivos de beneficios"
+      ],
+      "veredicto_final": "Simplificar a 5 bloques cortos con lenguaje humano y foco emocional para reducir scroll y generar confianza inmediata."
     }
   }
 }

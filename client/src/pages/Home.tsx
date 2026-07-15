@@ -1502,7 +1502,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-teal-800">
-                Entra aquí para subir ese archivo gratis y recibir una primera lectura útil. Tu revisión se mantiene confidencial y el siguiente paso aparece dentro de tu expediente solo si te hace sentido.
+                Entra aquí, súbelo gratis y recibe una primera lectura confidencial. Si te sirve, después decides si lo guardas.
               </p>
             </button>
           </div>
