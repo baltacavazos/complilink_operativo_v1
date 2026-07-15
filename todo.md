@@ -1865,3 +1865,5 @@
 - [x] Micro-ronda web directa II: revalidar TypeScript y pruebas focales tras el nuevo wording de respuestas rápidas.
 - [x] Micro-ronda acceso directo IV: volver todavía más evidente el regreso en un paso y simplificar el bloque de reenvío del código en `/acceso`.
 - [x] Micro-ronda acceso directo IV: revalidar TypeScript y pruebas focales tras el nuevo microcopy de retorno por código.
+- [x] Micro-ronda post-hallazgo V: simplificar el copy del estado automático en `/auditar` para que el guardado y la espera del detalle se entiendan con menos fricción.
+- [x] Micro-ronda post-hallazgo V: revalidar TypeScript y pruebas focales tras el nuevo wording de seguimiento automático.

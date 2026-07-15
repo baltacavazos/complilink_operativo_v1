@@ -2645,7 +2645,7 @@ function getEngineStatusCopy(status?: string, reason?: string | null) {
     return {
       title: "Tu documento ya está en análisis",
       description:
-        "Quedó guardado, siguió su proceso automático y ahora esperamos la respuesta de vuelta para completar más detalle.",
+        "Ya quedó guardado. Ahora esperamos el detalle automático para completar la lectura.",
       tone: "success",
     } as const;
   }
@@ -2666,7 +2666,7 @@ function getEngineStatusCopy(status?: string, reason?: string | null) {
     description:
       reason === "engine_not_configured"
         ? "Tu documento ya está protegido dentro del expediente. En este entorno, la parte automática todavía no está encendida por completo."
-        : "Tu documento ya quedó guardado y listo para continuar con su revisión.",
+        : "Tu documento ya quedó guardado y listo para seguir con la revisión.",
     tone: "neutral",
   } as const;
 }
