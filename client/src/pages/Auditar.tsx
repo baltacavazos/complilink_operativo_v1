@@ -9118,8 +9118,8 @@ export default function Auditar() {
                       </p>
                       <p className="mt-2 text-sm leading-6 text-slate-700">
                         Esta preparación es opcional. Si por ahora solo quieres
-                        seguir con tu expediente y los documentos sugeridos,
-                        puedes continuar sin pagar ni desbloquear nada.
+                        seguir con tu expediente, puedes continuar sin pagar ni
+                        desbloquear nada.
                       </p>
                     </div>
 
