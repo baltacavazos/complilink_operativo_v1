@@ -9165,7 +9165,7 @@ export default function Auditar() {
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {effectiveRecommendedTarget
-                  ? `Siguiente útil: ${effectiveRecommendedTarget.label}. Súbelo justo debajo.`
+                  ? `Siguiente útil: ${effectiveRecommendedTarget.label}. Súbelo abajo.`
                   : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}. El siguiente paso está justo debajo.`}
               </p>
             </div>

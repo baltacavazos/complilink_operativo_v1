@@ -1928,3 +1928,4 @@
 - [x] Micro-ronda app-first LIII: compactar el mensaje del bloque de control visible en `/acceso` para que la confirmación y el reintento se entiendan con menos lectura secundaria.
 - [x] Micro-ronda app-first LIV: compactar la ayuda del bloque de respaldo en `/acceso` para que la ruta secundaria por fallo de correo se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LV: compactar la ayuda de preparación opcional en `/auditar` para que seguir con el expediente sin pagar se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first LVI: compactar la ayuda del siguiente paso sugerido en `/auditar` para que la recomendación inmediata se entienda con menos lectura secundaria.
