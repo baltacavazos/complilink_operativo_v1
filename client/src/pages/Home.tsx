@@ -2118,7 +2118,7 @@ function ConfidenceMagicSection() {
               No necesitas reunir todo desde el inicio. Puedes empezar con un recibo, un CFDI o un contrato, ver una lectura útil y después decidir qué más guardar.
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
-              Así el primer paso sigue siendo simple y el orden llega después, solo si de verdad te aporta valor.
+              Empiezas simple y ordenas después, solo si de verdad te aporta valor.
             </p>
           </div>
 
@@ -2420,7 +2420,7 @@ function PriorityDocumentsSection() {
             Si quieres darle más valor a tu bóveda laboral, empieza por los archivos con más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No todos los documentos aportan lo mismo. Si todavía no los has subido, estos suelen ser de los primeros archivos que más conviene reunir para darle a AuditaPatron mejor contexto, ordenar tu caso y hacer que el expediente te devuelva una lectura más completa.
+            No todos los documentos aportan lo mismo. Estos suelen ser de los primeros que más ayudan a ordenar tu caso y a darle al expediente una lectura más completa.
           </p>
         </div>
 
