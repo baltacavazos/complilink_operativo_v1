@@ -2341,7 +2341,7 @@ function DossierSection() {
             Cada documento útil se convierte en orden, claridad y respaldo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No se trata de subir por subir. Se trata de reunir piezas para que AuditaPatron te dé más claridad, mejor orden y un expediente digital disponible 24/7 si después necesitas revisar, reclamar o respaldar algo con calma.
+            No se trata de subir por subir. Se trata de reunir piezas para tener más claridad, mejor orden y un expediente digital listo cuando lo necesites.
           </p>
 
           <div className="mt-6 space-y-3">
