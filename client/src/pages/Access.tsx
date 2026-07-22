@@ -615,7 +615,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <details className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-700">
                 <summary className="cursor-pointer text-sm font-semibold text-slate-700">Si el correo falla</summary>
                 <div className="mt-3 flex flex-col gap-3">
-                  <p className="text-sm leading-6 text-slate-600">Esto es solo respaldo. Tu ruta principal sigue siendo correo y código.</p>
+                  <p className="text-sm leading-6 text-slate-600">Esto es solo respaldo. La ruta principal sigue siendo correo y código.</p>
                   {manusLoginAvailable && manusLoginUrl ? (
                     <Button
                       type="button"
