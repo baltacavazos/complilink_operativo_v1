@@ -1922,3 +1922,4 @@
 - [x] Micro-ronda app-first XLVII: compactar el principio visible del expediente básico en Home para que el alcance gratuito se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLVIII: compactar la línea final del bloque de pricing en Home para que la disponibilidad futura dentro del expediente se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLIX: compactar el mensaje de cierre del footer en Home para que la promesa de claridad, orden y respaldo se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first L: compactar la ayuda de continuidad en `/acceso` al volver a la auditoría para que el regreso al mismo documento se entienda con menos lectura secundaria.

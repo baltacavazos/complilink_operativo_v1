@@ -65,7 +65,7 @@ function getReturnToLabel(returnTo: string) {
 
 function getReturnToValueCopy(returnTo: string) {
   if (returnTo.startsWith("/auditar")) {
-    return "Tu revisión sigue lista para volver al mismo documento o al siguiente paso sin empezar de cero.";
+    return "Tu revisión sigue lista para volver al mismo documento o al siguiente paso.";
   }
 
   if (returnTo.startsWith("/ceo")) {
