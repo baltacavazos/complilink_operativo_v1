@@ -8425,7 +8425,7 @@ export default function Auditar() {
                         Borrado visible
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tus documentos son tuyos, puedes pedir borrado cuando lo necesites y reforzamos su resguardo con un nivel de cuidado comparable al de una banca digital.
+                        Tus documentos son tuyos. Puedes pedir borrado cuando lo necesites.
                       </p>
                     </article>
                   </div>

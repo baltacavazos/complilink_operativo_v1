@@ -1931,3 +1931,4 @@
 - [x] Micro-ronda app-first LVI: compactar la ayuda del siguiente paso sugerido en `/auditar` para que la recomendación inmediata se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LVII: compactar la ayuda del bloque opcional de sumar otra pieza en `/auditar` para que reforzar el expediente se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LVIII: compactar la ayuda del bloque postresultado en `/auditar` para que decidir si sumar otra pieza se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first LIX: compactar la ayuda del bloque de borrado visible en `/auditar` para que el control sobre los documentos se entienda con menos lectura secundaria.
