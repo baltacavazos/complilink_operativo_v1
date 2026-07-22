@@ -56,7 +56,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
       eyebrow: "Freemium laboral pensado para México",
       title: "Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.",
       description:
-        "AuditaPatron te deja entrar sin tarjeta, revisar tu primer contexto y decidir después si te conviene activar más profundidad o un entregable puntual.",
+        "Entras sin tarjeta, revisas tu primer contexto y después decides si te conviene activar más profundidad o un entregable puntual.",
       principles: [
         "La primera lectura sigue siendo gratis.",
         `El expediente básico incluye hasta ${freePlan.limits.maxDocumentsPerCase} documentos por caso.`,
