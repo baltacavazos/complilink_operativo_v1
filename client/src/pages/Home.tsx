@@ -3117,7 +3117,7 @@ function SiteFooter() {
             subtitleClassName="text-[0.75rem] tracking-[0.14em]"
           />
           <p className="max-w-md text-sm leading-6 text-slate-500">
-            Recupera claridad, orden y respaldo con un expediente digital simple, privado y útil para revisar tu situación laboral.
+            Recupera claridad, orden y respaldo con un expediente digital simple y privado para revisar tu situación laboral.
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
