@@ -537,7 +537,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Código enviado</p>
                       <p className="mt-2 break-all text-sm font-medium text-slate-900">{submittedEmail || email}</p>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">En cuanto lo confirmes, vuelves directo a {returnToLabel} con tu avance intacto.</p>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">Lo confirmas y vuelves directo a {returnToLabel} con tu avance intacto.</p>
                     </div>
                     <button
                       type="button"
