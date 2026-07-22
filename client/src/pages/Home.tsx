@@ -3097,7 +3097,7 @@ function FinalCtaSection() {
             </div>
 
             <p className="mt-6 max-w-2xl text-sm leading-6 text-slate-600">
-              Si más adelante quieres avanzar, esa opción estará disponible dentro de tu expediente.
+              Si más adelante quieres avanzar, lo activas dentro de tu expediente.
             </p>
           </div>
         </div>
