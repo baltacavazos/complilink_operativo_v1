@@ -2640,7 +2640,7 @@ function FindingsExamplesSection() {
             Algunos patrones se entienden mejor cuando tu expediente tiene más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Varios documentos juntos ayudan a ver diferencias, repeticiones y señales que un solo archivo puede dejar ocultas, y además fortalecen un expediente digital que puedes consultar cuando lo necesites.
+            Varios documentos juntos ayudan a ver diferencias y señales que un solo archivo puede dejar ocultas, y además fortalecen tu expediente digital.
           </p>
         </div>
 

@@ -1915,3 +1915,4 @@
 - [x] Micro-ronda app-first XL: compactar la línea de apoyo bajo el bloque de arranque con un solo documento en Home para que el valor de empezar simple se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLI: compactar la explicación del bloque de archivos con más contexto en Home para que el valor de reunir mejores documentos se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLII: compactar la explicación sobre reunir piezas en Home para que el valor del expediente digital se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XLIII: compactar la explicación sobre el valor de varios documentos juntos en Home para que el refuerzo del expediente se entienda con menos lectura secundaria.
