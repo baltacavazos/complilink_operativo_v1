@@ -8361,7 +8361,7 @@ export default function Auditar() {
                     </span>
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-700">
-                    Tu resultado ya está arriba. Aquí puedes sumar otra pieza útil.
+                    Tu resultado ya está arriba. Aquí puedes sumar otra pieza.
                   </p>
                   {selectedRecommendedTargetType &&
                   effectiveRecommendedTarget ? (
