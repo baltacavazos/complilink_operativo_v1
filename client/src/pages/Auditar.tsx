@@ -8397,7 +8397,7 @@ export default function Auditar() {
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
-                      ? "Úsalo solo si quieres sumar otra pieza útil."
+                      ? "Úsalo solo si quieres sumar otra pieza."
                                                 : "Empieza con una foto o PDF. Subes, ves la señal y luego decides si sigues."}
 
                   </p>
