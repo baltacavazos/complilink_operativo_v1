@@ -1919,3 +1919,4 @@
 - [x] Micro-ronda app-first XLIV: compactar la explicación sobre el expediente disponible desde el primer momento en Home para que la idea de respaldo continuo se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLV: compactar el mensaje del bloque App móvil en Home para que la activación futura y el arranque web se entiendan con menos lectura secundaria.
 - [x] Micro-ronda app-first XLVI: compactar la descripción del bloque de pricing/valor en Home para que la propuesta freemium se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XLVII: compactar el principio visible del expediente básico en Home para que el alcance gratuito se entienda con menos lectura secundaria.

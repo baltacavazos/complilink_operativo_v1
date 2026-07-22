@@ -59,7 +59,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         "Entras sin tarjeta, revisas tu primer contexto y después decides si te conviene activar más profundidad o un entregable puntual.",
       principles: [
         "La primera lectura sigue siendo gratis.",
-        `El expediente básico incluye hasta ${freePlan.limits.maxDocumentsPerCase} documentos por caso.`,
+        `El expediente básico incluye hasta ${freePlan.limits.maxDocumentsPerCase} documentos.`,
         "Los upgrades aparecen solo cuando el usuario ya entendió para qué le sirven.",
       ],
     },
