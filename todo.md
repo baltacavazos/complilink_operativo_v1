@@ -1916,3 +1916,4 @@
 - [x] Micro-ronda app-first XLI: compactar la explicación del bloque de archivos con más contexto en Home para que el valor de reunir mejores documentos se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLII: compactar la explicación sobre reunir piezas en Home para que el valor del expediente digital se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLIII: compactar la explicación sobre el valor de varios documentos juntos en Home para que el refuerzo del expediente se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XLIV: compactar la explicación sobre el expediente disponible desde el primer momento en Home para que la idea de respaldo continuo se entienda con menos lectura secundaria.

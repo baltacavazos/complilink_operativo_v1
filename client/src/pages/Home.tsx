@@ -2678,7 +2678,7 @@ function PrivacySection() {
             Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cada archivo suma orden, contexto y una explicación más clara de tu situación. La idea es simple: que puedas volver a tu expediente cuando lo necesites y sentir que tus documentos están de tu lado desde el primer momento.
+            Cada archivo suma orden, contexto y una explicación más clara de tu situación. La idea es simple: que puedas volver a tu expediente cuando lo necesites y sentir tus documentos de tu lado.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
