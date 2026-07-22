@@ -80,7 +80,7 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Correo seguro");
     expect(accessSource).toContain("Código de 6 dígitos");
     expect(accessSource).toContain("Regreso directo");
-    expect(accessSource).toContain("Tu avance sigue esperándote.");
+    expect(accessSource).toContain("Escribes tu correo, recibes tu código y vuelves directo a ");
     expect(accessSource).toContain("Entrar y continuar");
     expect(accessSource).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
     expect(accessSource).toContain("Solo para entrar");

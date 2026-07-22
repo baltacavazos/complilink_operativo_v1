@@ -424,7 +424,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 Vuelve a tu revisión en un paso
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribe tu correo, recibe tu código y vuelves directo a {returnToLabel}. Tu avance sigue esperándote.
+                Escribes tu correo, recibes tu código y vuelves directo a {returnToLabel}.
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">

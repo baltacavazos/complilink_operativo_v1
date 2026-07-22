@@ -271,8 +271,7 @@ describe("copy visible de la experiencia", () => {
 
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Vuelve a tu revisión en un paso");
-    expect(source).toContain("Escribe tu correo, recibe tu código y vuelves directo a ");
-    expect(source).toContain("Tu avance sigue esperándote.");
+    expect(source).toContain("Escribes tu correo, recibes tu código y vuelves directo a ");
     expect(source).toContain("En la app entras con correo o Google y vuelves directo donde te quedaste.");
     expect(source).not.toContain("Si ya habías usado este equipo, te mostramos el último correo para avanzar más rápido.");
     expect(source).toContain("Te reconocimos en este equipo");
