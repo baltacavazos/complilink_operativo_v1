@@ -1917,3 +1917,4 @@
 - [x] Micro-ronda app-first XLII: compactar la explicación sobre reunir piezas en Home para que el valor del expediente digital se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLIII: compactar la explicación sobre el valor de varios documentos juntos en Home para que el refuerzo del expediente se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first XLIV: compactar la explicación sobre el expediente disponible desde el primer momento en Home para que la idea de respaldo continuo se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first XLV: compactar el mensaje del bloque App móvil en Home para que la activación futura y el arranque web se entiendan con menos lectura secundaria.

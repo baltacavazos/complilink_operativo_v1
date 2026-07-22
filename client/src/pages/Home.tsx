@@ -3003,7 +3003,7 @@ function AppDownloadSection() {
               Descarga oficial más adelante
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Este espacio se activará cuando exista la publicación real. Por ahora, empieza tu auditoría aquí mismo.
+              Este espacio se activará cuando exista la publicación real. Por ahora, empieza aquí tu auditoría.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
