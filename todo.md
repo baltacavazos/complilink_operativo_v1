@@ -1925,3 +1925,4 @@
 - [x] Micro-ronda app-first L: compactar la ayuda de continuidad en `/acceso` al volver a la auditoría para que el regreso al mismo documento se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LI: compactar el mensaje bajo el estado de código enviado en `/acceso` para que el retorno con el avance intacto se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LII: compactar la línea introductoria en `/acceso` antes del envío de código para que el regreso directo al avance se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first LIII: compactar el mensaje del bloque de control visible en `/acceso` para que la confirmación y el reintento se entiendan con menos lectura secundaria.

@@ -586,7 +586,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
                 <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Control visible</p>
-                  <p className="mt-2">Nada cambia hasta confirmarlo. Si falla, pides otro y sigues.</p>
+                  <p className="mt-2">Nada cambia hasta confirmarlo. Si falla, pides otro.</p>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
