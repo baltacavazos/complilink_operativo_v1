@@ -1932,3 +1932,4 @@
 - [x] Micro-ronda app-first LVII: compactar la ayuda del bloque opcional de sumar otra pieza en `/auditar` para que reforzar el expediente se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LVIII: compactar la ayuda del bloque postresultado en `/auditar` para que decidir si sumar otra pieza se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LIX: compactar la ayuda del bloque de borrado visible en `/auditar` para que el control sobre los documentos se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first LX: compactar la ayuda bajo el CTA de agregar otro documento en `/auditar` para que sumar otra pieza útil se entienda con menos lectura secundaria.

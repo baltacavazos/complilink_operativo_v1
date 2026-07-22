@@ -8483,7 +8483,7 @@ export default function Auditar() {
                     </Button>
                     <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
-                        ? "Elige un archivo o toma una foto cuando quieras sumar otra pieza útil."
+                        ? "Elige un archivo o toma una foto para sumar otra pieza."
                         : isNativeAppExperience
                           ? "Toma una foto o elige un archivo. Primero revisas y luego decides si lo guardas."
                           : "Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil."}
