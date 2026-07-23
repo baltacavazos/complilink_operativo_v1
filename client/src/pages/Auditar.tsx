@@ -8943,44 +8943,47 @@ export default function Auditar() {
                 </div>
 
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      Qué está pasando ahora
-                    </p>
-                    <p className="mt-2 font-semibold text-slate-950">
-                      Tu expediente se ordena, resguarda y revisa por ti
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {heliosStage.detail}
-                    </p>
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Qué está pasando ahora
+                        </p>
+                        <p className="mt-1.5 font-semibold leading-5 text-slate-950">
+                          Tu expediente se ordena, resguarda y revisa por ti
+                        </p>
+                        <p className="mt-1.5 text-sm leading-5 text-slate-700">
+                          {heliosStage.detail}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Tipo de revisión
+                        </p>
+                        <p className="mt-1.5 font-semibold leading-5 text-slate-950">
+                          {visibleHeliosOpinion
+                            ? getHeliosModeLabel(visibleHeliosOpinion.mode)
+                            : "Modo inicial preparado"}
+                        </p>
+                        <p className="mt-1.5 text-sm leading-5 text-slate-700">
+                          {getHeliosActivationCopy(visibleHeliosOpinion?.mode)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      Tipo de revisión
-                    </p>
-                    <p className="mt-2 font-semibold text-slate-950">
-                      {visibleHeliosOpinion
-                        ? getHeliosModeLabel(visibleHeliosOpinion.mode)
-                        : "Modo inicial preparado"}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
-                      {getHeliosActivationCopy(visibleHeliosOpinion?.mode)}
-                    </p>
-                  </div>
-
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4 md:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                       Cruce IMSS e Infonavit
                     </p>
-                    <p className="mt-2 font-semibold text-slate-950">
+                    <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                       {socialSecurityStatusLabel}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                    <p className="mt-1.5 text-sm leading-5 text-slate-700">
                       {effectiveSocialSecurityValidation?.lastRevalidationSummary ??
                         socialSecurityRecommendedNextStep}
                     </p>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                    <p className="mt-1.5 text-xs leading-4 text-slate-500">
                       {socialSecurityLastCheckLabel}
                     </p>
                   </div>
