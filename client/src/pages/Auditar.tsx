@@ -9337,21 +9337,19 @@ export default function Auditar() {
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-                  <div className="mt-4 rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-2.5 text-sm leading-6 text-sky-950">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="mt-3 rounded-[1.1rem] border border-sky-100 bg-sky-50 px-3.5 py-2 text-sm leading-5 text-sky-950">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-semibold">
                           Documento sugerido preparado
                         </p>
-                        <p className="mt-1">
-                          Enfocado en{" "}
-                          {effectiveRecommendedTarget.label.toLowerCase()}. Sube
-                          tu archivo para aplicar.
+                        <p className="mt-0.5">
+                          Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="mt-1 text-sm font-semibold text-sky-700 underline-offset-4 hover:underline sm:mt-0"
+                        className="text-sm font-semibold text-sky-700 underline-offset-4 hover:underline"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque
@@ -9361,23 +9359,23 @@ export default function Auditar() {
                 ) : null}
 
                 <div
-                  className={`mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft || shouldCompactMobileUploadEntry ? "hidden sm:grid" : ""}`}
+                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft || shouldCompactMobileUploadEntry ? "hidden sm:grid" : ""}`}
                 >
-                  <div className="rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
-                        <FileSearch className="h-5 w-5" strokeWidth={1.8} />
+                  <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
+                        <FileSearch className="h-4.5 w-4.5" strokeWidth={1.8} />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-950">
+                        <p className="font-semibold leading-5 text-slate-950">
                           {shouldCompactMobileUploadEntry
                             ? "Sube tu primer documento"
                             : "Revisión automática"}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-700">
+                        <p className="mt-0.5 text-sm leading-5 text-slate-700">
                           {shouldCompactMobileUploadEntry
-                            ? "El análisis empieza solo en cuanto captures o elijas el documento. Tus datos siguen protegidos durante todo el flujo."
-                            : "En cuanto lo subas, lo revisamos y te mostramos lo importante. Si algo falta o no se ve bien, te diremos cómo corregirlo."}
+                            ? "El análisis empieza en cuanto captures o elijas el documento."
+                            : "En cuanto lo subas, lo revisamos y te mostramos lo importante."}
                         </p>
                       </div>
                     </div>
