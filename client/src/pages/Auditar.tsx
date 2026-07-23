@@ -9138,16 +9138,16 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="sm:hidden rounded-[1.3rem] border border-slate-200 bg-white px-3.5 py-3 shadow-sm">
+            <div className="sm:hidden rounded-[1.2rem] border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                <span className="rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-800">
                   Expediente en {mobileDossierStageLabel}
                 </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
                   {dossierStatus.completed}/{dossierStatus.total}
                 </span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-1.5 text-sm leading-5 text-slate-600">
                 {effectiveRecommendedTarget
                   ? `Siguiente útil: ${effectiveRecommendedTarget.label}. Súbelo abajo.`
                   : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}. El siguiente paso está justo debajo.`}
