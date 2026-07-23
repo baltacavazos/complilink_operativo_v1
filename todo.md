@@ -1992,3 +1992,4 @@
 - [x] Macro-bloque Recorte 44: compactar el apoyo y el estado bajo los botones de cámara/archivo en `/auditar` para reducir más scrolling móvil sin perder orientación del flujo.
 - [x] Macro-bloque Recorte 45: compactar el bloque de guardrails y progreso de carga en `/auditar` para reducir más scrolling móvil sin perder señales de estado y validación.
 - [x] Macro-bloque Recorte 46: compactar las tarjetas de estado previas al borrador en `/auditar` para reducir más scrolling móvil antes de la vista de análisis.
+- [x] Macro-bloque Recorte 47: compactar el bloque de análisis listo y siguiente paso en `/auditar` para reducir más scrolling móvil tras la vista previa sin perder claridad de decisión.

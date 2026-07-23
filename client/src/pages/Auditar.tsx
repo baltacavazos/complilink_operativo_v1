@@ -9901,16 +9901,16 @@ export default function Auditar() {
                       </div>
                     </div>
 
-                    <div className="rounded-[1.35rem] border border-emerald-100 bg-emerald-50 p-4 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                    <div className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-3.5 shadow-sm">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800">
                         Siguiente paso
                       </p>
-                      <p className="mt-2 text-base font-semibold text-slate-950">
+                      <p className="mt-1.5 text-[0.98rem] font-semibold leading-5 text-slate-950">
                         {previewNextTarget
                           ? previewNextDocumentCopy.headline
                           : "Si esto se ve bien, ya puedes guardarlo."}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-emerald-950">
+                      <p className="mt-1.5 text-sm leading-5 text-emerald-950">
                         {previewNextTarget
                           ? previewNextDocumentCopy.intro
                           : "El botón de abajo lo integra a tu expediente. Si algo importante no se leyó bien, corrígelo o vuelve a subirlo antes de guardar."}
@@ -9918,7 +9918,7 @@ export default function Auditar() {
                       {previewNextTarget ? (
                         <Button
                           variant="outline"
-                          className="mt-4 h-11 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
+                          className="mt-3 h-10 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
                           onClick={() =>
                             focusRecommendedUpload(previewNextTarget.type)
                           }
