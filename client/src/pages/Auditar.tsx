@@ -8890,10 +8890,10 @@ export default function Auditar() {
                         : "border-teal-100 bg-teal-50"
                 }`}
               >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex items-start gap-3">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex items-start gap-2.5">
                     <div
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
                         heliosStage.tone === "success"
                           ? "bg-white text-emerald-700"
                           : heliosStage.tone === "processing"
@@ -8914,15 +8914,15 @@ export default function Auditar() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Estado de tu expediente laboral
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Estado de tu expediente
                       </p>
-                      <h3 className="mt-2 text-xl font-semibold text-slate-950">
+                      <h3 className="mt-1.5 text-lg font-semibold text-slate-950 sm:text-xl">
                         {heliosExpediente?.stageLabel
                           ? `${heliosStage.title} · ${heliosExpediente.stageLabel}`
                           : heliosStage.title}
                       </h3>
-                      <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-700">
+                      <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-700">
                         {heliosExpediente?.summary ?? heliosStage.description}
                       </p>
                     </div>
@@ -8942,7 +8942,7 @@ export default function Auditar() {
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
                   <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                       Qué está pasando ahora

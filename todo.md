@@ -1979,3 +1979,4 @@
 - [x] Macro-bloque Recorte 31: compactar la tarjeta `Siguiente paso recomendado` en `/auditar` para reducir altura visible postresultado sin perder foco en la acción principal.
 - [x] Macro-bloque Recorte 32: compactar el encabezado del bloque de recomendaciones de refuerzo en `/auditar` para reducir altura postresultado sin perder claridad.
 - [x] Macro-bloque Recorte 33: compactar el bloque de faltantes reales detectados en `/auditar` para reducir altura postresultado sin perder claridad sobre lo que falta.
+- [x] Macro-bloque Recorte 34: compactar la tarjeta de estado del expediente en `/auditar` para reducir altura postresultado sin perder claridad sobre el estado actual.
