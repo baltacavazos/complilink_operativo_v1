@@ -14456,26 +14456,18 @@ Reforzar con otro documento
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
-          <div className={`mb-3 rounded-[1.15rem] border px-3.5 py-3 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="pr-1">
+          <div className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 pr-1">
                 <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${privacySignal.eyebrowClass}`}>
                   Privacidad activa en este expediente
                 </p>
-                <p className="mt-1 text-sm font-semibold text-slate-950">
-                  {privacySignal.title}
+                <p className="mt-1 truncate text-sm font-semibold text-slate-950">
+                  {privacySignal.company} · {privacySignal.trace}
                 </p>
               </div>
-              <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold ${privacySignal.badgeClass}`}>
+              <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${privacySignal.badgeClass}`}>
                 {privacySignal.badge}
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">
-              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1 shadow-sm">
-                {privacySignal.company}
-              </span>
-              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1 shadow-sm">
-                {privacySignal.trace}
               </span>
             </div>
           </div>
