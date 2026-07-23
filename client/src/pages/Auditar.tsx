@@ -9648,7 +9648,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft ? "mt-4 hidden sm:block" : "mt-4"} rounded-[1.1rem] border p-4 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft ? "mt-3 hidden sm:block" : "mt-3"} rounded-[1rem] border px-3.5 py-3 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"
@@ -9662,12 +9662,12 @@ export default function Auditar() {
                     </p>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] opacity-80">
                           {uploadProgressState.eyebrow}
                         </p>
-                          <p className="mt-2 break-words font-semibold">
-                            {uploadProgressHumanMessage}
-                          </p>
+                        <p className="mt-1.5 break-words text-sm font-semibold leading-5">
+                          {uploadProgressHumanMessage}
+                        </p>
                       </div>
                       <span className="hidden">
                         {uploadProgressState.progress}%

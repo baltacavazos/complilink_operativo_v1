@@ -1961,3 +1961,4 @@
 - [x] Macro-bloque Recorte 13: fusionar las dos ayudas de arranque del hero en `Home` para dejar un solo bloque más corto arriba del pliegue.
 - [x] Macro-bloque Recorte 14: compactar el apoyo bajo la CTA principal del hero en `Home` para mantener garantías clave con menos altura arriba del pliegue.
 - [x] Macro-bloque Recorte 15: compactar el apoyo bajo los botones de cámara/archivo en `/auditar` para reducir scroll móvil inicial sin perder orientación.
+- [x] Macro-bloque Recorte 16: compactar la tarjeta de estado de carga y análisis en `/auditar` para mantener orientación con menos altura y menos scroll móvil inicial.
