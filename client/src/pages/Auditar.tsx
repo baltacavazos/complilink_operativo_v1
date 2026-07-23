@@ -8677,21 +8677,21 @@ export default function Auditar() {
                 <span>{socialSecurityCoveragePercent}%</span>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 rounded-[1.35rem] border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-4 flex flex-col gap-2.5 rounded-[1.25rem] border border-slate-200 bg-white p-3.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                     Siguiente paso recomendado
                   </p>
-                  <p className="mt-2 text-base font-semibold text-slate-950">
+                  <p className="mt-1.5 text-base font-semibold leading-5 text-slate-950">
                     {selectedFile
                       ? "Ya elegiste un archivo: sólo falta subirlo para reflejarlo en el expediente."
                       : uploadPrimaryActionLabel}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Prioriza la siguiente pieza clave para darle más contexto al expediente sin perder lo que ya avanzaste.
+                  <p className="mt-1 text-sm leading-5 text-slate-600">
+                    Prioriza la siguiente pieza clave para dar más contexto sin perder tu avance.
                   </p>
                 </div>
-                <div className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-900">
+                <div className="rounded-full bg-teal-50 px-3.5 py-1.5 text-sm font-semibold text-teal-900">
                   Acción principal primero
                 </div>
               </div>
