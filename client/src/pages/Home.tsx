@@ -1388,10 +1388,6 @@ function HeroSection() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-[1.3rem] border border-slate-200 bg-white/96 p-4 text-sm leading-6 text-slate-700 shadow-[0_20px_44px_-34px_rgba(15,23,42,0.34)]">
-              Empiezas con un solo archivo, ves una lectura simple y decides después si quieres seguir.
-            </div>
-
             <button
               type="button"
               onClick={() => {
@@ -1427,9 +1423,12 @@ function HeroSection() {
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
                   Documento sugerido: {activePrediagnostic.badge}
                 </span>
+                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
+                  Lo ves primero y decides después
+                </span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-teal-800">
-                Entra aquí, súbelo gratis y recibe una primera lectura confidencial. Si te sirve, después decides si lo guardas.
+              <p className="mt-2 text-sm leading-6 text-teal-800">
+                Sube un solo archivo gratis, recibe una lectura simple y decide después si quieres seguir o guardarlo.
               </p>
             </button>
           </div>
