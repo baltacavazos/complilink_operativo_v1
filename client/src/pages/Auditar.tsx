@@ -9441,30 +9441,23 @@ export default function Auditar() {
                 {activeCaptureMode === "camera" &&
                 !shouldCompactMobileUploadEntry &&
                 !pendingDraft ? (
-                  <div className="mt-4 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
-                    <div className="rounded-[1.2rem] border border-teal-100 bg-white p-4">
+                  <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+                    <div className="rounded-[1.1rem] border border-teal-100 bg-white p-3.5">
                       <p className="text-sm font-semibold text-slate-950">
-                        Guía visual para encuadrar el documento
+                        Guía rápida para tu foto
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Usa este marco como referencia al tomar la foto. Intenta
-                        que se vean las cuatro esquinas, evita sombras intensas
-                        y procura que el texto quede derecho.
-                      </p>
-                      <p className="mt-3 text-xs leading-5 text-slate-500">
-                        Es una ayuda visual ligera. Si tu celular no sigue el
-                        borde perfecto, igual puedes continuar mientras el
-                        documento se vea completo y legible.
+                      <p className="mt-1.5 text-sm leading-5 text-slate-600">
+                        Procura mostrar las cuatro esquinas, evitar sombras fuertes y dejar el texto derecho.
                       </p>
                     </div>
-                    <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
-                      <div className="mx-auto aspect-[4/5] max-w-[220px] rounded-[1.7rem] border border-white/80 bg-white/70 p-4 shadow-inner">
-                        <div className="relative h-full rounded-[1.35rem] border-2 border-dashed border-teal-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(240,253,250,0.75))]">
-                          <div className="absolute left-3 top-3 h-8 w-8 rounded-tl-[1rem] border-l-4 border-t-4 border-teal-500" />
-                          <div className="absolute right-3 top-3 h-8 w-8 rounded-tr-[1rem] border-r-4 border-t-4 border-teal-500" />
-                          <div className="absolute bottom-3 left-3 h-8 w-8 rounded-bl-[1rem] border-b-4 border-l-4 border-teal-500" />
-                          <div className="absolute bottom-3 right-3 h-8 w-8 rounded-br-[1rem] border-b-4 border-r-4 border-teal-500" />
-                          <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700 shadow-sm">
+                    <div className="rounded-[1.1rem] border border-teal-100 bg-teal-50 p-3">
+                      <div className="mx-auto aspect-[4/5] max-w-[188px] rounded-[1.45rem] border border-white/80 bg-white/70 p-3 shadow-inner">
+                        <div className="relative h-full rounded-[1.2rem] border-2 border-dashed border-teal-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(240,253,250,0.75))]">
+                          <div className="absolute left-2.5 top-2.5 h-7 w-7 rounded-tl-[0.9rem] border-l-4 border-t-4 border-teal-500" />
+                          <div className="absolute right-2.5 top-2.5 h-7 w-7 rounded-tr-[0.9rem] border-r-4 border-t-4 border-teal-500" />
+                          <div className="absolute bottom-2.5 left-2.5 h-7 w-7 rounded-bl-[0.9rem] border-b-4 border-l-4 border-teal-500" />
+                          <div className="absolute bottom-2.5 right-2.5 h-7 w-7 rounded-br-[0.9rem] border-b-4 border-r-4 border-teal-500" />
+                          <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm">
                             Centra aquí tu documento
                           </div>
                         </div>

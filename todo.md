@@ -1988,3 +1988,4 @@
 - [x] Macro-bloque Recorte 40: compactar la tarjeta de resumen móvil del expediente en `/auditar` para reducir más scrolling inicial sin perder contexto del siguiente paso.
 - [x] Macro-bloque Recorte 41: compactar la tarjeta introductoria de subida en `/auditar` para reducir más scrolling móvil inicial sin perder claridad sobre foto o archivo.
 - [x] Macro-bloque Recorte 42: compactar el bloque de revisión automática y el aviso de documento sugerido en `/auditar` para reducir más scrolling antes de la carga efectiva.
+- [x] Macro-bloque Recorte 43: compactar la guía visual de cámara en `/auditar` para reducir scroll móvil antes de la carga efectiva sin perder orientación básica.
