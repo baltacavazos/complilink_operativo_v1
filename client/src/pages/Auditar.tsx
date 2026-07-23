@@ -8816,7 +8816,7 @@ export default function Auditar() {
                     return (
                       <article
                         key={item.type}
-                        className={`rounded-[1.2rem] border bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
+                        className={`rounded-[1.1rem] border bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
                           isFocused
                             ? "border-teal-200 shadow-sm"
                             : "border-white"
@@ -8824,15 +8824,15 @@ export default function Auditar() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-700">
                               Alta utilidad para tu expediente
                             </p>
-                            <p className="mt-2 font-semibold text-slate-950">
+                            <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                               {item.title}
                             </p>
                           </div>
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                               isPresent
                                 ? "bg-emerald-100 text-emerald-700"
                                 : isFocused
@@ -8847,15 +8847,15 @@ export default function Auditar() {
                                 : "Te falta y conviene subirlo"}
                           </span>
                         </div>
-                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                        <p className="mt-2 text-sm leading-5 text-slate-600">
                           {item.summary}
                         </p>
-                        <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                        <div className="mt-2 rounded-[0.95rem] border border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-700">
                           {item.value}
                         </div>
                         <Button
                           variant="outline"
-                          className="mt-4 h-11 w-full rounded-full border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
+                          className="mt-3 h-10 w-full rounded-full border-teal-200 bg-teal-50 text-sm text-teal-900 hover:bg-teal-100"
                           onClick={() => focusRecommendedUpload(item.type)}
                         >
                           Subir este documento

@@ -1981,3 +1981,4 @@
 - [x] Macro-bloque Recorte 33: compactar el bloque de faltantes reales detectados en `/auditar` para reducir altura postresultado sin perder claridad sobre lo que falta.
 - [x] Macro-bloque Recorte 34: compactar la tarjeta de estado del expediente en `/auditar` para reducir altura postresultado sin perder claridad sobre el estado actual.
 - [x] Macro-bloque Recorte 35: compactar las tarjetas explicativas del estado del expediente en `/auditar` para reducir altura postresultado sin perder orientación clave.
+- [x] Macro-bloque Recorte 36: compactar las tarjetas de documentos recomendados en `/auditar` para reducir más altura postresultado sin perder claridad de acción.
