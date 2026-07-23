@@ -11,7 +11,7 @@ describe("Auditapatron closeout experience", () => {
   const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");
 
   it("ships a shorter landing focused on value proof, clarity and trust", () => {
-    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Ver un ejemplo" }');
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Empezar" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
@@ -82,13 +82,9 @@ describe("Auditapatron closeout experience", () => {
     expect(accessSource).toContain("Regreso directo");
     expect(accessSource).toContain("Escribes tu correo, recibes tu código y vuelves directo a ");
     expect(accessSource).toContain("Entrar y continuar");
-    expect(accessSource).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
-    expect(accessSource).toContain("Solo para entrar");
-    expect(accessSource).toContain("Código temporal");
-    expect(accessSource).toContain("Regreso a tu revisión");
-    expect(accessSource).toContain("Entras y sigues");
-    expect(accessSource).toContain("Pides tu código, entras y vuelves con el mismo correo si sales.");
-    expect(accessSource).toContain("Control visible");
+    expect(accessSource).toContain("Tu correo solo abre tu acceso. Entras y vuelves directo a tu revisión.");
+    expect(accessSource).toContain("¿No llegó?");
+    expect(accessSource).toContain("Esto es solo respaldo. El camino principal sigue siendo correo y código.");
     expect(accessSource).toContain("Nada cambia hasta confirmarlo. Si falla, pides otro.");
   });
 

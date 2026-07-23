@@ -8431,32 +8431,11 @@ export default function Auditar() {
                   </div>
 
                   <div
-                    className={`mt-4 hidden gap-3 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
+                    className={`mt-4 hidden ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : "sm:block"}`}
                   >
-                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Paso 1
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Documento recibido
-                      </p>
-                    </article>
-                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Paso 2
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Señal encontrada
-                      </p>
-                    </article>
-                    <article className="rounded-[1.1rem] border border-white bg-white/90 p-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Paso 3
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-slate-950">
-                        Qué revisar después
-                      </p>
-                    </article>
+                    <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm">
+                      Documento recibido → señal encontrada → qué revisar después.
+                    </div>
                   </div>
 
                   {selectedRecommendedTargetType &&
@@ -8495,20 +8474,15 @@ export default function Auditar() {
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                      <p className="text-sm font-semibold text-slate-950">
-                        Qué pasa con tu archivo
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Se revisa dentro de un espacio privado, no se integra sin tu confirmación y luego alimenta la comparación progresiva con el resto de tus piezas.
-                      </p>
-                  </article>
-                  <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
-                      <p className="text-sm font-semibold text-slate-950">
-                        Cómo seguir después
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el siguiente documento útil sin obligarte a reunir todo desde el inicio.
-                      </p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Qué sigue ahora
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Se revisa en privado y no se integra sin tu confirmación.
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">
+                      Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el documento más útil para seguir.
+                    </p>
                   </article>
                 </div>
               </div>

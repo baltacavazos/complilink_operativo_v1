@@ -1,0 +1,732 @@
+{
+  "generated_at": "2026-07-22T21:40:43.575Z",
+  "source_paths": {
+    "home": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
+    "access": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Access.tsx",
+    "auditar": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Auditar.tsx",
+    "pricing": "/home/ubuntu/complilink_operativo_v1/client/src/lib/pricingExperience.ts"
+  },
+  "providers": [
+    {
+      "provider": "chatgpt",
+      "model": "gpt-4.1-mini-2025-04-14",
+      "data": {
+        "north_star": "Simplificar la experiencia para que cualquier persona pueda subir un documento laboral, entender rápidamente la señal principal, saber qué sigue y decidir si guardar o continuar, con un flujo claro y listo para app móvil.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Unificar y priorizar la acción principal de subir documento con foco claro y navegación de una mano",
+            "surface": "home",
+            "problem": "La home tiene muchos bloques informativos y opciones que pueden dispersar la atención y dificultar la activación rápida, especialmente en móvil.",
+            "change": "Reducir la home a un flujo claro: subir un documento (foto o archivo), mostrar señal principal, siguiente paso y llamada a la acción única para empezar la auditoría, con navegación y botones accesibles para una mano.",
+            "why_it_matters": "El usuario objetivo no técnico necesita un camino directo y sin distracciones para activar la revisión sin ansiedad ni confusión.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Base clara para app móvil con foco en acción primaria y navegación simple."
+          },
+          {
+            "priority": 2,
+            "name": "Simplificar /acceso para continuidad sin ansiedad con mensaje claro y un solo camino",
+            "surface": "access",
+            "problem": "El flujo de acceso tiene múltiples estados, mensajes y opciones que pueden generar ansiedad o confusión al volver a la revisión.",
+            "change": "Reducir el acceso a un solo camino claro: ingresar correo, recibir código, validar y volver directo al documento o siguiente paso, con mensajes simples y sin tecnicismos.",
+            "why_it_matters": "El usuario debe sentir que su avance está seguro y que volver es fácil, sin pasos técnicos ni mensajes confusos.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Flujo de login sencillo y confiable para app móvil con continuidad clara."
+          },
+          {
+            "priority": 3,
+            "name": "En /auditar, mostrar resultado primero con señal clara, siguiente paso obvio y control visible",
+            "surface": "auditar",
+            "problem": "La pantalla de auditoría es muy densa, con muchos bloques y opciones que pueden saturar y dificultar entender qué hacer después.",
+            "change": "Priorizar mostrar el resultado principal (señal encontrada o estado del documento), explicar con lenguaje simple qué significa y cuál es el siguiente paso útil, con botones claros para guardar, subir otro documento o preguntar al asesor laboral.",
+            "why_it_matters": "El usuario necesita entender rápido el resultado y la acción siguiente sin perderse en detalles técnicos o secundarios.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Pantalla base para app con flujo claro de resultado y acción primaria."
+          },
+          {
+            "priority": 4,
+            "name": "Consolidar mensajes secundarios y explicaciones en bloques progresivos y opcionales",
+            "surface": "cross_app",
+            "problem": "Hay demasiada explicación secundaria y detalles técnicos dispersos que pueden abrumar o distraer al usuario.",
+            "change": "Agrupar explicaciones, detalles legales, privacidad y guías en bloques colapsables o pantallas secundarias accesibles desde la navegación, dejando visible solo lo esencial para avanzar.",
+            "why_it_matters": "Reduce la sobrecarga cognitiva y permite que el usuario se enfoque en lo que importa para avanzar rápido.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Base para app con estructura modular y progresiva de información."
+          },
+          {
+            "priority": 5,
+            "name": "Priorizar experiencia móvil con estructura clara y navegación optimizada para una mano",
+            "surface": "cross_app",
+            "problem": "La experiencia actual no está optimizada para móvil, con muchos bloques visibles simultáneamente y navegación compleja.",
+            "change": "Reorganizar la estructura para móvil con pasos claros, botones grandes, navegación simple y continuidad visible, usando secciones prioritarias y ocultando lo secundario hasta que sea necesario.",
+            "why_it_matters": "El usuario objetivo usa principalmente celular y necesita una experiencia intuitiva, rápida y sin confusión.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Experiencia móvil lista para app iOS/Android con foco en usabilidad y simplicidad."
+          }
+        ],
+        "remove_or_reduce": [
+          {
+            "surface": "home",
+            "current_pattern": "Bloques informativos múltiples y navegación dispersa en hero y secciones",
+            "reason": "Genera dispersión y dificulta activación rápida en usuarios no técnicos."
+          },
+          {
+            "surface": "access",
+            "current_pattern": "Múltiples mensajes de error y opciones secundarias que pueden generar ansiedad",
+            "reason": "Complica la continuidad y el regreso a la revisión sin fricción."
+          },
+          {
+            "surface": "auditar",
+            "current_pattern": "Demasiados bloques de información técnica y detalles legales visibles simultáneamente",
+            "reason": "Satura al usuario y dificulta entender el resultado principal y siguiente paso."
+          },
+          {
+            "surface": "cross_app",
+            "current_pattern": "Explicaciones técnicas y legales dispersas sin jerarquía clara",
+            "reason": "Aumenta la complejidad y reduce la claridad para usuarios no técnicos."
+          },
+          {
+            "surface": "cross_app",
+            "current_pattern": "Navegación y acciones no optimizadas para móvil y uso con una mano",
+            "reason": "Reduce la usabilidad y puede frustrar al usuario en dispositivos móviles."
+          }
+        ],
+        "mobile_first_structure": {
+          "home": [
+            "Hero con CTA único para subir documento",
+            "Señal principal visible y siguiente paso claro",
+            "Bloques colapsables para guía rápida y privacidad",
+            "Ejemplos y casos anonimizados resumidos",
+            "Footer con navegación simple y acceso a privacidad"
+          ],
+          "access": [
+            "Formulario simple para ingresar correo",
+            "Mensaje claro de código enviado y validación",
+            "Un solo camino para volver a la revisión",
+            "Opciones secundarias ocultas bajo detalles",
+            "Mensajes de error amigables y sin tecnicismos"
+          ],
+          "auditar": [
+            "Resultado principal con señal y explicación simple",
+            "Siguiente paso sugerido con botón claro",
+            "Control visible de privacidad y guardado",
+            "Acciones para subir otro documento o preguntar asesor",
+            "Historial resumido y alertas prioritarias accesibles"
+          ]
+        },
+        "app_ready_foundations": [
+          {
+            "name": "Foco en acción primaria y navegación simple",
+            "why_now": "Fundamental para que la experiencia móvil sea intuitiva y escalable a app nativa."
+          },
+          {
+            "name": "Lectura clara y lenguaje sin tecnicismos",
+            "why_now": "Clave para usuarios no técnicos y para mantener coherencia en app futura."
+          },
+          {
+            "name": "Control visible de privacidad y guardado",
+            "why_now": "Garantiza confianza y cumplimiento legal desde el inicio, base para app."
+          },
+          {
+            "name": "Estructura modular con bloques colapsables",
+            "why_now": "Permite escalar la experiencia sin saturar al usuario, ideal para app."
+          },
+          {
+            "name": "Persistencia y continuidad entre dispositivos",
+            "why_now": "Prepara la base para sincronización y experiencia fluida en app móvil."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Reducir bloques informativos en home para destacar CTA principal",
+          "Simplificar mensajes de error y estados en /acceso",
+          "Mostrar resultado principal y siguiente paso claro en /auditar",
+          "Agrupar explicaciones legales y privacidad en bloques colapsables",
+          "Optimizar botones y navegación para uso con una mano en móvil",
+          "Eliminar microcopys redundantes y consolidar textos clave"
+        ],
+        "do_not_spend_time_on": [
+          "Rediseños complejos o cambios visuales mayores no implementables ya",
+          "Optimización microcopy uno por uno sin impacto estructural",
+          "Funcionalidades avanzadas no relacionadas con flujo principal",
+          "Integraciones o cambios backend que no mejoren la experiencia inmediata",
+          "Personalización excesiva que complique la continuidad entre web y app",
+          "Experimentos con navegación secundaria que distraigan del flujo principal"
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "data": {
+        "north_star": "Convertir la incertidumbre laboral en claridad accionable y confianza, con un flujo simple y continuo que se sienta nativo en cualquier dispositivo.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Simplificar la Home a un solo flujo de activación",
+            "surface": "home",
+            "problem": "La Home actual tiene demasiadas secciones, variantes de copy y CTAs que diluyen el mensaje principal y la acción de 'empezar'. Esto genera fatiga de decisión y reduce la tasa de activación.",
+            "change": "Consolidar la sección 'Hero' y 'Primera lectura sin correo' en un único bloque dominante que invite a 'Sube tu documento' como la acción principal. Eliminar variantes de copy y reducir la cantidad de bloques explicativos visibles inicialmente, dejando solo lo esencial para generar confianza y dirigir al flujo de auditoría.",
+            "why_it_matters": "Reduce drásticamente la fricción para el primer uso, enfoca al usuario en el valor central (obtener una señal útil) y mejora la tasa de conversión a la auditoría.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una Home simple y enfocada en la acción principal es la base para una experiencia de onboarding fluida en una app móvil."
+          },
+          {
+            "priority": 2,
+            "name": "Centralizar el 'Veredicto' post-subida",
+            "surface": "auditar",
+            "problem": "Después de subir un documento, el usuario recibe mucha información (análisis, guardrails, calculadora, etc.) que compite con el mensaje principal: '¿qué significa esto y qué hago ahora?'. Esto puede abrumar y dificultar la identificación del siguiente paso.",
+            "change": "Diseñar un 'Veredicto' post-subida que sea el elemento más prominente y claro. Este veredicto debe resumir la señal encontrada, su implicación y el siguiente paso más útil (ej. 'subir CFDI del mismo periodo'). Las herramientas secundarias (calculadora, scripts) deben ser accesibles pero no competir con este mensaje principal.",
+            "why_it_matters": "Asegura que el usuario entienda inmediatamente el valor de la plataforma y la acción más relevante, reduciendo la confusión y la necesidad de interpretar información compleja.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una pantalla de resultados clara y accionable es fundamental para la retención y el engagement en una app móvil."
+          },
+          {
+            "priority": 3,
+            "name": "Flujo de Acceso: Continuidad sin ansiedad",
+            "surface": "access",
+            "problem": "El flujo de acceso actual es funcional pero no enfatiza lo suficiente la continuidad del progreso del usuario ni genera confianza sobre el retorno a su estado anterior. Los mensajes de error o cooldown pueden generar ansiedad.",
+            "change": "Reforzar el copy y la UI para comunicar claramente que el usuario está 'volviendo a su revisión' o 'retomando su avance'. Consolidar los mensajes de estado y error en un área única y con un tono tranquilizador. Hacer más prominente el correo recordado y la acción de 'continuar'.",
+            "why_it_matters": "Reduce la fricción y la ansiedad en el punto crítico de re-engagement, fortaleciendo la confianza del usuario en que su información y progreso están seguros y accesibles.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Un acceso confiable y que promueve la continuidad es vital para la experiencia multi-dispositivo y la retención en una app."
+          },
+          {
+            "priority": 4,
+            "name": "Dashboard de Expediente como vista principal",
+            "surface": "auditar",
+            "problem": "La sección /auditar puede volverse densa con muchos documentos y herramientas. Un usuario que regresa necesita un resumen rápido de su situación, no una lista exhaustiva de todo.",
+            "change": "Establecer una vista 'Resumen' o 'Dashboard' como la pantalla predeterminada en /auditar para usuarios con documentos. Este dashboard debe mostrar el estado general del expediente, el último documento subido, la señal más relevante y el siguiente paso recomendado. Las vistas detalladas (historial, herramientas) deben ser accesibles mediante navegación clara (ej. tabs).",
+            "why_it_matters": "Mejora la usabilidad para usuarios recurrentes, permitiéndoles entender su progreso de un vistazo y acceder a detalles solo cuando sea necesario, reduciendo la sobrecarga de información.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Un dashboard personalizado es un patrón UX clave para apps móviles, ofreciendo una experiencia de 'un vistazo' y puntos de entrada claros a funcionalidades más profundas."
+          },
+          {
+            "priority": 5,
+            "name": "Unificar la experiencia de subida de documentos",
+            "surface": "auditar",
+            "problem": "La elección entre 'cámara' y 'archivo' puede ser un paso extra o confuso, especialmente en móvil. La validación de archivos y los mensajes de error pueden ser abruptos.",
+            "change": "Simplificar la elección de origen del documento (cámara/archivo) en un solo punto de entrada claro. Integrar la validación de archivos de forma más fluida, con mensajes proactivos y claros sobre formatos y tamaños. Priorizar la captura con cámara en móvil para el primer documento si es un recibo físico.",
+            "why_it_matters": "Reduce la fricción en el punto de entrada más crítico, mejora la calidad de los documentos subidos y hace que el proceso se sienta más guiado y menos propenso a errores.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una experiencia de captura de documentos optimizada para móvil (cámara, galería) es un diferenciador clave para una app."
+          }
+        ],
+        "remove_or_reduce": [
+          {
+            "surface": "home",
+            "current_pattern": "Múltiples variantes de copy y CTAs en la sección Hero.",
+            "reason": "Generan fatiga de decisión y diluyen el mensaje principal de activación. El usuario no necesita ver 4 formas de decir lo mismo antes de actuar."
+          },
+          {
+            "surface": "home",
+            "current_pattern": "Bloques de 'prediagnóstico' y 'ejemplos de hallazgos' en la Home antes de la acción principal.",
+            "reason": "Añaden una capa de complejidad y lectura antes de que el usuario experimente el valor real. La 'primera lectura sin correo' ya cumple la función de ejemplo práctico."
+          },
+          {
+            "surface": "auditar",
+            "current_pattern": "Explicaciones redundantes de privacidad y seguridad en múltiples tarjetas y bloques.",
+            "reason": "Aunque la privacidad es clave, repetir el mismo mensaje en diferentes formatos satura la interfaz. Un bloque consolidado y accesible es más eficiente."
+          },
+          {
+            "surface": "auditar",
+            "current_pattern": "La 'calculadora guiada' y 'mensajes listos para actuar' como elementos prominentes en la vista post-subida.",
+            "reason": "Compiten con el mensaje principal del 'veredicto' y el 'siguiente paso'. Deben ser herramientas secundarias, accesibles bajo demanda o después de que el usuario asimile el resultado principal."
+          },
+          {
+            "surface": "auditar",
+            "current_pattern": "La sección 'Mobile Onboarding Steps' como un carrusel visible en la vista principal de auditoría.",
+            "reason": "Es un patrón de onboarding que debería ser contextual y de una sola vez, no un elemento persistente que ocupe espacio en la interfaz principal de la herramienta."
+          }
+        ],
+        "mobile_first_structure": {
+          "home": [
+            "Hero (CTA principal: 'Sube tu documento')",
+            "Sección 'Cómo funciona' (3 pasos)",
+            "Sección 'Privacidad y control'",
+            "CTA final"
+          ],
+          "access": [
+            "Encabezado (Logo, 'Volver')",
+            "Mensaje de bienvenida/continuidad",
+            "Formulario de correo y código",
+            "Opciones secundarias (Google, Manus - si aplica)"
+          ],
+          "auditar": [
+            "Dashboard/Resumen (último veredicto, siguiente paso)",
+            "Expediente (documentos, historial, progreso)",
+            "Herramientas (comparaciones, calculadora, asesor)"
+          ]
+        },
+        "app_ready_foundations": [
+          {
+            "name": "API unificada de carga de documentos con pre-validación",
+            "why_now": "Asegura que la lógica de validación (tamaño, tipo, formato) y el proceso de carga sean consistentes y robustos, independientemente del origen (cámara, galería, web). Esto es crítico para la fiabilidad de la app."
+          },
+          {
+            "name": "Gestión de estado de usuario y expediente persistente",
+            "why_now": "La capacidad de guardar y retomar el progreso (documentos en borrador, preferencias de vista, historial de chat) entre sesiones y dispositivos es fundamental para una experiencia de app fluida y confiable."
+          },
+          {
+            "name": "Componentes UI/UX modulares y atómicos para resultados y acciones",
+            "why_now": "Permite reutilizar bloques de información (veredicto, siguiente paso, alertas, tarjetas de documento) en diferentes contextos (web, iOS, Android) con un diseño consistente y adaptable, acelerando el desarrollo de la app."
+          },
+          {
+            "name": "Estrategia de privacidad y consentimiento legal explícita y progresiva",
+            "why_now": "Establecer un modelo claro de cuándo y cómo se solicita el consentimiento legal (antes de analizar, antes de guardar) y cómo se comunica la privacidad, es esencial para cumplir normativas y generar confianza en la app."
+          },
+          {
+            "name": "Arquitectura de contenido dinámico para recomendaciones y explicaciones",
+            "why_now": "Permite que las sugerencias de documentos, los resúmenes de hallazgos y las explicaciones del asesor laboral se adapten al contexto del usuario y del expediente, sin requerir actualizaciones de código en la app para cada cambio de copy o lógica."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Consolidar el CTA principal de la Home en la sección Hero, eliminando duplicados y variantes.",
+          "Simplificar el copy inicial de la sección de carga de documentos en /auditar para enfocarse en 'Sube tu recibo y revisa lo importante'.",
+          "Asegurar que el 'Veredicto' post-subida sea el elemento más prominente y claro en /auditar, con un siguiente paso obvio.",
+          "Mejorar el copy del flujo de /acceso para enfatizar 'Volver a tu revisión' y 'Continuidad sin ansiedad'.",
+          "Reducir la redundancia de los mensajes de privacidad y seguridad en /auditar, consolidándolos en un solo bloque accesible.",
+          "Desactivar o mover los 'Mobile Onboarding Steps' del flujo principal de /auditar a una guía contextual de un solo uso."
+        ],
+        "do_not_spend_time_on": [
+          "Optimización de microcopys individuales en elementos secundarios de la Home.",
+          "Rediseños visuales completos o cambios de marca que no impacten directamente la claridad del flujo.",
+          "Implementación de nuevas funcionalidades complejas (ej. nuevos tipos de calculadora, integraciones externas) que no sean críticas para el ciclo 'señal útil, qué sigue, cómo volver'.",
+          "Optimización o mantenimiento de variantes de la sección Hero en la Home que no se utilicen activamente.",
+          "Añadir más opciones de personalización de la interfaz en /auditar antes de estabilizar los flujos principales.",
+          "Desarrollo de funcionalidades de 'compartir' o 'colaborar' en el expediente antes de consolidar la experiencia individual."
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    },
+    {
+      "provider": "grok",
+      "model": "grok-4.3",
+      "data": {
+        "north_star": "Make the first useful signal instantly visible and actionable with zero friction, while keeping privacy and control obvious from the first tap.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Consolidate Home into single activation flow",
+            "surface": "home",
+            "problem": "Hero variants, multiple CTAs, guest preview, social proof and tour steps compete for attention and delay the first upload.",
+            "change": "Replace hero + first-entry section with one prominent upload card that triggers the same /auditar flow, shows privacy signals inline and removes all secondary blocks above the fold.",
+            "why_it_matters": "Activation is the only metric that matters; everything else is noise until the user sees a real signal.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Creates the exact same entry point that will be used in the native app."
+          },
+          {
+            "priority": 2,
+            "name": "Simplify /acceso to single continuity path",
+            "surface": "access",
+            "problem": "Multiple login options, remembered email, CEO panel and returnTo logic create anxiety about where the user will land.",
+            "change": "Keep only email + 6-digit code flow, show a single clear line 'You will return directly to your review' and remove Google/Manus/CEO toggles for normal users.",
+            "why_it_matters": "Users must feel they will continue exactly where they left without cognitive load.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Same flow works identically in native auth."
+          },
+          {
+            "priority": 3,
+            "name": "Make /auditar result-first with obvious next step",
+            "surface": "auditar",
+            "problem": "Too many sections (workspace tabs, calculator, monitoring, archive, commerce drawer) compete with the core upload-preview-confirm loop.",
+            "change": "Default to a single-column result view: upload → preview → confirm. Move everything else behind 'More options' or bottom sheet. Show only the next recommended document as primary action.",
+            "why_it_matters": "Result first, next step obvious, reusable component for app.",
+            "implementation_scope": "high",
+            "app_readiness_value": "This becomes the reusable screen component for iOS/Android."
+          },
+          {
+            "priority": 4,
+            "name": "Gate commerce and legal only after value is shown",
+            "surface": "cross_app",
+            "problem": "Legal gate and commerce drawer appear too early and break flow before the user sees any signal.",
+            "change": "Show legal acceptance only at the exact moment of confirming the first document. Show commerce only after the user has at least one confirmed document and the next-target recommendation.",
+            "why_it_matters": "Value must be experienced before any monetization or legal friction.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Same conditional logic works in app purchase flows."
+          },
+          {
+            "priority": 5,
+            "name": "Remove CEO panel and hero variants for normal users",
+            "surface": "cross_app",
+            "problem": "CEO toggles and multiple hero variants add complexity and maintenance without serving the target non-technical user.",
+            "change": "Hide CEO panel behind a hidden query param. Reduce hero variants to a single control version. Keep only the direct money-check messaging.",
+            "why_it_matters": "Reduces cognitive load and technical debt while keeping the experience clean for the real user.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Removes code paths that would never exist in a native app."
+          }
+        ],
+        "remove_or_reduce": [
+          {
+            "surface": "home",
+            "current_pattern": "Multiple hero variants + social proof blocks + tour steps + guided FAQ",
+            "reason": "They delay activation and create decision fatigue before the first upload."
+          },
+          {
+            "surface": "access",
+            "current_pattern": "Google, Manus and CEO options shown by default",
+            "reason": "They create anxiety about which path to choose and where the user will land."
+          },
+          {
+            "surface": "auditar",
+            "current_pattern": "Workspace tabs, calculator, monitoring drawer and commerce upsell visible from the start",
+            "reason": "They compete with the core upload-preview-confirm loop and hide the obvious next step."
+          },
+          {
+            "surface": "cross_app",
+            "current_pattern": "Legal gate shown before any document is analyzed",
+            "reason": "Breaks flow before the user has seen value."
+          },
+          {
+            "surface": "cross_app",
+            "current_pattern": "Excessive microcopy and repeated privacy explanations across sections",
+            "reason": "Dilutes the single clear message that privacy is visible and under user control."
+          }
+        ],
+        "mobile_first_structure": {
+          "home": [
+            "Single upload card with privacy line",
+            "One primary CTA",
+            "No secondary navigation above the fold"
+          ],
+          "access": [
+            "Email input",
+            "6-digit code input",
+            "Single line: 'You will return directly to your review'"
+          ],
+          "auditar": [
+            "Upload → Preview → Confirm as main column",
+            "Next recommended document as primary action",
+            "Everything else in bottom sheet or 'More'"
+          ]
+        },
+        "app_ready_foundations": [
+          {
+            "name": "Guest preview + draft state persistence",
+            "why_now": "Already implemented in web; becomes the exact same mechanism for offline-first app drafts."
+          },
+          {
+            "name": "Legal gate as reusable component",
+            "why_now": "Can be triggered at the exact confirmation moment in both web and native."
+          },
+          {
+            "name": "Next-target recommendation engine",
+            "why_now": "Already calculates the best next document; will power the app's primary action."
+          },
+          {
+            "name": "Upload progress + scan assist states",
+            "why_now": "Gives the app clear loading, error and success states without new design."
+          },
+          {
+            "name": "Helios copilot conversation history",
+            "why_now": "Already stored per case; will be the same chat component in the app."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Reduce hero to single control variant",
+          "Hide CEO panel behind query param only",
+          "Move legal gate to confirmation moment only",
+          "Collapse workspace tabs into bottom sheet on mobile",
+          "Show only the single next recommended document as primary action",
+          "Remove all secondary CTAs above the first upload"
+        ],
+        "do_not_spend_time_on": [
+          "New microcopy variations",
+          "Additional hero variants or A/B tests",
+          "New social proof or case studies",
+          "Extra FAQ entries",
+          "New animations or visual polish",
+          "Additional commerce upsell placements"
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    }
+  ],
+  "consensus": {
+    "provider_count": 3,
+    "ranked_consensus_changes": [
+      {
+        "priority": 1,
+        "name": "Unificar y priorizar la acción principal de subir documento con foco claro y navegación de una mano",
+        "support": 1,
+        "surface": "home",
+        "problem": "La home tiene muchos bloques informativos y opciones que pueden dispersar la atención y dificultar la activación rápida, especialmente en móvil.",
+        "change": "Reducir la home a un flujo claro: subir un documento (foto o archivo), mostrar señal principal, siguiente paso y llamada a la acción única para empezar la auditoría, con navegación y botones accesibles para una mano.",
+        "why_it_matters": "El usuario objetivo no técnico necesita un camino directo y sin distracciones para activar la revisión sin ansiedad ni confusión.",
+        "implementation_scope": "high",
+        "app_readiness_value": "Base clara para app móvil con foco en acción primaria y navegación simple."
+      },
+      {
+        "priority": 2,
+        "name": "Simplificar /acceso para continuidad sin ansiedad con mensaje claro y un solo camino",
+        "support": 1,
+        "surface": "access",
+        "problem": "El flujo de acceso tiene múltiples estados, mensajes y opciones que pueden generar ansiedad o confusión al volver a la revisión.",
+        "change": "Reducir el acceso a un solo camino claro: ingresar correo, recibir código, validar y volver directo al documento o siguiente paso, con mensajes simples y sin tecnicismos.",
+        "why_it_matters": "El usuario debe sentir que su avance está seguro y que volver es fácil, sin pasos técnicos ni mensajes confusos.",
+        "implementation_scope": "medium",
+        "app_readiness_value": "Flujo de login sencillo y confiable para app móvil con continuidad clara."
+      },
+      {
+        "priority": 3,
+        "name": "En /auditar, mostrar resultado primero con señal clara, siguiente paso obvio y control visible",
+        "support": 1,
+        "surface": "auditar",
+        "problem": "La pantalla de auditoría es muy densa, con muchos bloques y opciones que pueden saturar y dificultar entender qué hacer después.",
+        "change": "Priorizar mostrar el resultado principal (señal encontrada o estado del documento), explicar con lenguaje simple qué significa y cuál es el siguiente paso útil, con botones claros para guardar, subir otro documento o preguntar al asesor laboral.",
+        "why_it_matters": "El usuario necesita entender rápido el resultado y la acción siguiente sin perderse en detalles técnicos o secundarios.",
+        "implementation_scope": "high",
+        "app_readiness_value": "Pantalla base para app con flujo claro de resultado y acción primaria."
+      },
+      {
+        "priority": 4,
+        "name": "Consolidar mensajes secundarios y explicaciones en bloques progresivos y opcionales",
+        "support": 1,
+        "surface": "cross_app",
+        "problem": "Hay demasiada explicación secundaria y detalles técnicos dispersos que pueden abrumar o distraer al usuario.",
+        "change": "Agrupar explicaciones, detalles legales, privacidad y guías en bloques colapsables o pantallas secundarias accesibles desde la navegación, dejando visible solo lo esencial para avanzar.",
+        "why_it_matters": "Reduce la sobrecarga cognitiva y permite que el usuario se enfoque en lo que importa para avanzar rápido.",
+        "implementation_scope": "medium",
+        "app_readiness_value": "Base para app con estructura modular y progresiva de información."
+      },
+      {
+        "priority": 5,
+        "name": "Priorizar experiencia móvil con estructura clara y navegación optimizada para una mano",
+        "support": 1,
+        "surface": "cross_app",
+        "problem": "La experiencia actual no está optimizada para móvil, con muchos bloques visibles simultáneamente y navegación compleja.",
+        "change": "Reorganizar la estructura para móvil con pasos claros, botones grandes, navegación simple y continuidad visible, usando secciones prioritarias y ocultando lo secundario hasta que sea necesario.",
+        "why_it_matters": "El usuario objetivo usa principalmente celular y necesita una experiencia intuitiva, rápida y sin confusión.",
+        "implementation_scope": "high",
+        "app_readiness_value": "Experiencia móvil lista para app iOS/Android con foco en usabilidad y simplicidad."
+      }
+    ],
+    "representative_views": [
+      {
+        "provider": "chatgpt",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "north_star": "Simplificar la experiencia para que cualquier persona pueda subir un documento laboral, entender rápidamente la señal principal, saber qué sigue y decidir si guardar o continuar, con un flujo claro y listo para app móvil.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Unificar y priorizar la acción principal de subir documento con foco claro y navegación de una mano",
+            "surface": "home",
+            "problem": "La home tiene muchos bloques informativos y opciones que pueden dispersar la atención y dificultar la activación rápida, especialmente en móvil.",
+            "change": "Reducir la home a un flujo claro: subir un documento (foto o archivo), mostrar señal principal, siguiente paso y llamada a la acción única para empezar la auditoría, con navegación y botones accesibles para una mano.",
+            "why_it_matters": "El usuario objetivo no técnico necesita un camino directo y sin distracciones para activar la revisión sin ansiedad ni confusión.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Base clara para app móvil con foco en acción primaria y navegación simple."
+          },
+          {
+            "priority": 2,
+            "name": "Simplificar /acceso para continuidad sin ansiedad con mensaje claro y un solo camino",
+            "surface": "access",
+            "problem": "El flujo de acceso tiene múltiples estados, mensajes y opciones que pueden generar ansiedad o confusión al volver a la revisión.",
+            "change": "Reducir el acceso a un solo camino claro: ingresar correo, recibir código, validar y volver directo al documento o siguiente paso, con mensajes simples y sin tecnicismos.",
+            "why_it_matters": "El usuario debe sentir que su avance está seguro y que volver es fácil, sin pasos técnicos ni mensajes confusos.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Flujo de login sencillo y confiable para app móvil con continuidad clara."
+          },
+          {
+            "priority": 3,
+            "name": "En /auditar, mostrar resultado primero con señal clara, siguiente paso obvio y control visible",
+            "surface": "auditar",
+            "problem": "La pantalla de auditoría es muy densa, con muchos bloques y opciones que pueden saturar y dificultar entender qué hacer después.",
+            "change": "Priorizar mostrar el resultado principal (señal encontrada o estado del documento), explicar con lenguaje simple qué significa y cuál es el siguiente paso útil, con botones claros para guardar, subir otro documento o preguntar al asesor laboral.",
+            "why_it_matters": "El usuario necesita entender rápido el resultado y la acción siguiente sin perderse en detalles técnicos o secundarios.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Pantalla base para app con flujo claro de resultado y acción primaria."
+          },
+          {
+            "priority": 4,
+            "name": "Consolidar mensajes secundarios y explicaciones en bloques progresivos y opcionales",
+            "surface": "cross_app",
+            "problem": "Hay demasiada explicación secundaria y detalles técnicos dispersos que pueden abrumar o distraer al usuario.",
+            "change": "Agrupar explicaciones, detalles legales, privacidad y guías en bloques colapsables o pantallas secundarias accesibles desde la navegación, dejando visible solo lo esencial para avanzar.",
+            "why_it_matters": "Reduce la sobrecarga cognitiva y permite que el usuario se enfoque en lo que importa para avanzar rápido.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Base para app con estructura modular y progresiva de información."
+          },
+          {
+            "priority": 5,
+            "name": "Priorizar experiencia móvil con estructura clara y navegación optimizada para una mano",
+            "surface": "cross_app",
+            "problem": "La experiencia actual no está optimizada para móvil, con muchos bloques visibles simultáneamente y navegación compleja.",
+            "change": "Reorganizar la estructura para móvil con pasos claros, botones grandes, navegación simple y continuidad visible, usando secciones prioritarias y ocultando lo secundario hasta que sea necesario.",
+            "why_it_matters": "El usuario objetivo usa principalmente celular y necesita una experiencia intuitiva, rápida y sin confusión.",
+            "implementation_scope": "high",
+            "app_readiness_value": "Experiencia móvil lista para app iOS/Android con foco en usabilidad y simplicidad."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Reducir bloques informativos en home para destacar CTA principal",
+          "Simplificar mensajes de error y estados en /acceso",
+          "Mostrar resultado principal y siguiente paso claro en /auditar",
+          "Agrupar explicaciones legales y privacidad en bloques colapsables",
+          "Optimizar botones y navegación para uso con una mano en móvil",
+          "Eliminar microcopys redundantes y consolidar textos clave"
+        ],
+        "do_not_spend_time_on": [
+          "Rediseños complejos o cambios visuales mayores no implementables ya",
+          "Optimización microcopy uno por uno sin impacto estructural",
+          "Funcionalidades avanzadas no relacionadas con flujo principal",
+          "Integraciones o cambios backend que no mejoren la experiencia inmediata",
+          "Personalización excesiva que complique la continuidad entre web y app",
+          "Experimentos con navegación secundaria que distraigan del flujo principal"
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-2.5-flash",
+        "north_star": "Convertir la incertidumbre laboral en claridad accionable y confianza, con un flujo simple y continuo que se sienta nativo en cualquier dispositivo.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Simplificar la Home a un solo flujo de activación",
+            "surface": "home",
+            "problem": "La Home actual tiene demasiadas secciones, variantes de copy y CTAs que diluyen el mensaje principal y la acción de 'empezar'. Esto genera fatiga de decisión y reduce la tasa de activación.",
+            "change": "Consolidar la sección 'Hero' y 'Primera lectura sin correo' en un único bloque dominante que invite a 'Sube tu documento' como la acción principal. Eliminar variantes de copy y reducir la cantidad de bloques explicativos visibles inicialmente, dejando solo lo esencial para generar confianza y dirigir al flujo de auditoría.",
+            "why_it_matters": "Reduce drásticamente la fricción para el primer uso, enfoca al usuario en el valor central (obtener una señal útil) y mejora la tasa de conversión a la auditoría.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una Home simple y enfocada en la acción principal es la base para una experiencia de onboarding fluida en una app móvil."
+          },
+          {
+            "priority": 2,
+            "name": "Centralizar el 'Veredicto' post-subida",
+            "surface": "auditar",
+            "problem": "Después de subir un documento, el usuario recibe mucha información (análisis, guardrails, calculadora, etc.) que compite con el mensaje principal: '¿qué significa esto y qué hago ahora?'. Esto puede abrumar y dificultar la identificación del siguiente paso.",
+            "change": "Diseñar un 'Veredicto' post-subida que sea el elemento más prominente y claro. Este veredicto debe resumir la señal encontrada, su implicación y el siguiente paso más útil (ej. 'subir CFDI del mismo periodo'). Las herramientas secundarias (calculadora, scripts) deben ser accesibles pero no competir con este mensaje principal.",
+            "why_it_matters": "Asegura que el usuario entienda inmediatamente el valor de la plataforma y la acción más relevante, reduciendo la confusión y la necesidad de interpretar información compleja.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una pantalla de resultados clara y accionable es fundamental para la retención y el engagement en una app móvil."
+          },
+          {
+            "priority": 3,
+            "name": "Flujo de Acceso: Continuidad sin ansiedad",
+            "surface": "access",
+            "problem": "El flujo de acceso actual es funcional pero no enfatiza lo suficiente la continuidad del progreso del usuario ni genera confianza sobre el retorno a su estado anterior. Los mensajes de error o cooldown pueden generar ansiedad.",
+            "change": "Reforzar el copy y la UI para comunicar claramente que el usuario está 'volviendo a su revisión' o 'retomando su avance'. Consolidar los mensajes de estado y error en un área única y con un tono tranquilizador. Hacer más prominente el correo recordado y la acción de 'continuar'.",
+            "why_it_matters": "Reduce la fricción y la ansiedad en el punto crítico de re-engagement, fortaleciendo la confianza del usuario en que su información y progreso están seguros y accesibles.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Un acceso confiable y que promueve la continuidad es vital para la experiencia multi-dispositivo y la retención en una app."
+          },
+          {
+            "priority": 4,
+            "name": "Dashboard de Expediente como vista principal",
+            "surface": "auditar",
+            "problem": "La sección /auditar puede volverse densa con muchos documentos y herramientas. Un usuario que regresa necesita un resumen rápido de su situación, no una lista exhaustiva de todo.",
+            "change": "Establecer una vista 'Resumen' o 'Dashboard' como la pantalla predeterminada en /auditar para usuarios con documentos. Este dashboard debe mostrar el estado general del expediente, el último documento subido, la señal más relevante y el siguiente paso recomendado. Las vistas detalladas (historial, herramientas) deben ser accesibles mediante navegación clara (ej. tabs).",
+            "why_it_matters": "Mejora la usabilidad para usuarios recurrentes, permitiéndoles entender su progreso de un vistazo y acceder a detalles solo cuando sea necesario, reduciendo la sobrecarga de información.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Un dashboard personalizado es un patrón UX clave para apps móviles, ofreciendo una experiencia de 'un vistazo' y puntos de entrada claros a funcionalidades más profundas."
+          },
+          {
+            "priority": 5,
+            "name": "Unificar la experiencia de subida de documentos",
+            "surface": "auditar",
+            "problem": "La elección entre 'cámara' y 'archivo' puede ser un paso extra o confuso, especialmente en móvil. La validación de archivos y los mensajes de error pueden ser abruptos.",
+            "change": "Simplificar la elección de origen del documento (cámara/archivo) en un solo punto de entrada claro. Integrar la validación de archivos de forma más fluida, con mensajes proactivos y claros sobre formatos y tamaños. Priorizar la captura con cámara en móvil para el primer documento si es un recibo físico.",
+            "why_it_matters": "Reduce la fricción en el punto de entrada más crítico, mejora la calidad de los documentos subidos y hace que el proceso se sienta más guiado y menos propenso a errores.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Una experiencia de captura de documentos optimizada para móvil (cámara, galería) es un diferenciador clave para una app."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Consolidar el CTA principal de la Home en la sección Hero, eliminando duplicados y variantes.",
+          "Simplificar el copy inicial de la sección de carga de documentos en /auditar para enfocarse en 'Sube tu recibo y revisa lo importante'.",
+          "Asegurar que el 'Veredicto' post-subida sea el elemento más prominente y claro en /auditar, con un siguiente paso obvio.",
+          "Mejorar el copy del flujo de /acceso para enfatizar 'Volver a tu revisión' y 'Continuidad sin ansiedad'.",
+          "Reducir la redundancia de los mensajes de privacidad y seguridad en /auditar, consolidándolos en un solo bloque accesible.",
+          "Desactivar o mover los 'Mobile Onboarding Steps' del flujo principal de /auditar a una guía contextual de un solo uso."
+        ],
+        "do_not_spend_time_on": [
+          "Optimización de microcopys individuales en elementos secundarios de la Home.",
+          "Rediseños visuales completos o cambios de marca que no impacten directamente la claridad del flujo.",
+          "Implementación de nuevas funcionalidades complejas (ej. nuevos tipos de calculadora, integraciones externas) que no sean críticas para el ciclo 'señal útil, qué sigue, cómo volver'.",
+          "Optimización o mantenimiento de variantes de la sección Hero en la Home que no se utilicen activamente.",
+          "Añadir más opciones de personalización de la interfaz en /auditar antes de estabilizar los flujos principales.",
+          "Desarrollo de funcionalidades de 'compartir' o 'colaborar' en el expediente antes de consolidar la experiencia individual."
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "grok",
+        "model": "grok-4.3",
+        "north_star": "Make the first useful signal instantly visible and actionable with zero friction, while keeping privacy and control obvious from the first tap.",
+        "top_5_changes": [
+          {
+            "priority": 1,
+            "name": "Consolidate Home into single activation flow",
+            "surface": "home",
+            "problem": "Hero variants, multiple CTAs, guest preview, social proof and tour steps compete for attention and delay the first upload.",
+            "change": "Replace hero + first-entry section with one prominent upload card that triggers the same /auditar flow, shows privacy signals inline and removes all secondary blocks above the fold.",
+            "why_it_matters": "Activation is the only metric that matters; everything else is noise until the user sees a real signal.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Creates the exact same entry point that will be used in the native app."
+          },
+          {
+            "priority": 2,
+            "name": "Simplify /acceso to single continuity path",
+            "surface": "access",
+            "problem": "Multiple login options, remembered email, CEO panel and returnTo logic create anxiety about where the user will land.",
+            "change": "Keep only email + 6-digit code flow, show a single clear line 'You will return directly to your review' and remove Google/Manus/CEO toggles for normal users.",
+            "why_it_matters": "Users must feel they will continue exactly where they left without cognitive load.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Same flow works identically in native auth."
+          },
+          {
+            "priority": 3,
+            "name": "Make /auditar result-first with obvious next step",
+            "surface": "auditar",
+            "problem": "Too many sections (workspace tabs, calculator, monitoring, archive, commerce drawer) compete with the core upload-preview-confirm loop.",
+            "change": "Default to a single-column result view: upload → preview → confirm. Move everything else behind 'More options' or bottom sheet. Show only the next recommended document as primary action.",
+            "why_it_matters": "Result first, next step obvious, reusable component for app.",
+            "implementation_scope": "high",
+            "app_readiness_value": "This becomes the reusable screen component for iOS/Android."
+          },
+          {
+            "priority": 4,
+            "name": "Gate commerce and legal only after value is shown",
+            "surface": "cross_app",
+            "problem": "Legal gate and commerce drawer appear too early and break flow before the user sees any signal.",
+            "change": "Show legal acceptance only at the exact moment of confirming the first document. Show commerce only after the user has at least one confirmed document and the next-target recommendation.",
+            "why_it_matters": "Value must be experienced before any monetization or legal friction.",
+            "implementation_scope": "medium",
+            "app_readiness_value": "Same conditional logic works in app purchase flows."
+          },
+          {
+            "priority": 5,
+            "name": "Remove CEO panel and hero variants for normal users",
+            "surface": "cross_app",
+            "problem": "CEO toggles and multiple hero variants add complexity and maintenance without serving the target non-technical user.",
+            "change": "Hide CEO panel behind a hidden query param. Reduce hero variants to a single control version. Keep only the direct money-check messaging.",
+            "why_it_matters": "Reduces cognitive load and technical debt while keeping the experience clean for the real user.",
+            "implementation_scope": "low",
+            "app_readiness_value": "Removes code paths that would never exist in a native app."
+          }
+        ],
+        "fast_wins_this_week": [
+          "Reduce hero to single control variant",
+          "Hide CEO panel behind query param only",
+          "Move legal gate to confirmation moment only",
+          "Collapse workspace tabs into bottom sheet on mobile",
+          "Show only the single next recommended document as primary action",
+          "Remove all secondary CTAs above the first upload"
+        ],
+        "do_not_spend_time_on": [
+          "New microcopy variations",
+          "Additional hero variants or A/B tests",
+          "New social proof or case studies",
+          "Extra FAQ entries",
+          "New animations or visual polish",
+          "Additional commerce upsell placements"
+        ],
+        "confidence": "high"
+      }
+    ]
+  }
+}

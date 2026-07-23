@@ -284,7 +284,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('return "la pantalla que dejaste abierta"');
     expect(source).not.toContain("Usa el correo con el que quieres entrar hoy.");
     expect(source).toContain("Nada cambia hasta confirmarlo. Si falla, pides otro.");
-    expect(source).toContain("Tu correo solo abre tu acceso y te devuelve directo a tu revisión.");
+    expect(source).toContain("Tu correo solo abre tu acceso. Entras y vuelves directo a tu revisión.");
     expect(source).not.toContain("Después de entrar: ");
     expect(source).not.toContain('Vuelves al ');
     expect(source).toContain("Enviar código");
@@ -293,9 +293,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Código enviado");
     expect(source).toContain("Iniciar sesión");
     expect(source).toContain("Reenviar código");
-    expect(source).toContain("Control visible");
-    expect(source).toContain("Si el correo falla");
-    expect(source).toContain("Esto es solo respaldo. La ruta principal sigue siendo correo y código.");
+    expect(source).toContain("¿No llegó?");
+    expect(source).toContain("Esto es solo respaldo. El camino principal sigue siendo correo y código.");
     expect(source).toContain("Acceso base con salida CEO");
     expect(source).toContain("Acceso normal con salida CEO");
     expect(source).toContain('data-testid="access-ceo-header-toggle"');

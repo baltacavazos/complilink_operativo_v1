@@ -262,9 +262,8 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#lectura-gratis", label: "Ver un ejemplo" },
+  { href: "#lectura-gratis", label: "Empezar" },
   { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#app", label: "App móvil" },
   { href: "#privacidad", label: "Privacidad" },
 ];
 
@@ -1283,22 +1282,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
           >
             <Button
               className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
-              onClick={() => {
-                trackEvent("audipatron_home_primary_cta_redirected_to_guest_preview", {
-                  entry_point: "hero_primary",
-                  placement: "hero_primary",
-                  hero_variant: trackedHeroVariant,
-                  prediagnostic: selectedHeroPrediagnostic,
-                  cta_label: activeHeroVariant.ctaPrimary,
-                });
-                trackFunnelStep("home_primary_cta_redirected_to_guest_preview", {
-                  entry_point: "hero_primary",
-                  placement: "hero_primary",
-                  hero_variant: trackedHeroVariant,
-                  prediagnostic: selectedHeroPrediagnostic,
-                });
-                scrollToId("lectura-gratis");
-              }}
+              onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
             >
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -1324,57 +1308,6 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
           </div>
 
 
-          <div
-            className="motion-enter-soft mt-2 w-full max-w-xl rounded-[1.35rem] border border-slate-200 bg-white/92 p-3.5 shadow-[0_20px_42px_-34px_rgba(15,23,42,0.28)] max-[359px]:p-3 sm:p-4"
-            style={{ ["--motion-delay" as string]: "360ms" }}
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Así de simple</p>
-            <div className="mt-2.5 grid gap-2.5 sm:grid-cols-3">
-              {[
-                "Subes tu recibo.",
-                "Ves una señal clara.",
-                "Sabes qué hacer después.",
-              ].map((item) => (
-                <div key={item} className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3.5 py-3 shadow-sm">
-                  <p className="text-sm font-semibold leading-6 text-slate-900">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div
-            className="motion-enter-soft mt-2.5 w-full max-w-3xl rounded-[1.5rem] border border-slate-200 bg-white/94 p-4 shadow-[0_22px_46px_-38px_rgba(15,23,42,0.24)] sm:p-5"
-            style={{ ["--motion-delay" as string]: "390ms" }}
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Casos anonimizados</p>
-                <p className="mt-2 text-base font-semibold leading-7 text-slate-950 sm:text-[1.05rem]">
-                  Lo que otras personas alcanzaron a ver en su primera lectura.
-                </p>
-              </div>
-              <p className="text-xs leading-5 text-slate-500">
-                Montos y rutas mostrados como referencia orientativa para explicar el tipo de salida inicial.
-              </p>
-            </div>
-            <div className="mt-4 grid gap-3 lg:grid-cols-3">
-              {socialProofItems.map((item) => (
-                <article key={item.caseId} className="rounded-[1.25rem] border border-slate-200 bg-slate-50/85 p-4 shadow-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.caseId}</p>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{item.label}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">“{item.quote}”</p>
-                  <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900">
-                    {item.amountHighlight}
-                  </p>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.supportingDetail}</p>
-                  <div className="mt-3 rounded-[1rem] border border-white bg-white px-3.5 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">Siguiente acción sugerida</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-700">{item.nextAction}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="relative lg:pl-2">
@@ -3157,9 +3090,9 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
+      <QuickTrustSection />
       <HowItWorksSection />
       <AppDownloadSection />
-      <QuickTrustSection />
       <FinalCtaSection />
       <SiteFooter />
     </main>

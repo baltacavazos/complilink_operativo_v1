@@ -494,12 +494,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </div>
 
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3.5 py-3 text-sm leading-6 text-teal-950">
-                  <p className="font-medium">Tu correo solo abre tu acceso y te devuelve directo a tu revisión.</p>
-                  <div className="mt-3 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3">
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Solo para entrar</span>
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Código temporal</span>
-                    <span className="rounded-full border border-teal-200 bg-white/80 px-3 py-1.5">Regreso a tu revisión</span>
-                  </div>
+                  <p className="font-medium">Tu correo solo abre tu acceso. Entras y vuelves directo a tu revisión.</p>
                 </div>
 
                 <Button
@@ -516,13 +511,6 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                       : "Enviar código"}
                 </Button>
 
-                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Entras y sigues</p>
-                  <p className="mt-2">
-                    Pides tu código, entras y vuelves con el mismo correo si sales.
-                  </p>
-                </div>
-
                 {requestEmailCode.isPending ? (
                   <p className="flex items-center gap-2 text-sm text-slate-500">
                     <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
@@ -537,7 +525,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Código enviado</p>
                       <p className="mt-2 break-all text-sm font-medium text-slate-900">{submittedEmail || email}</p>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">Lo confirmas y vuelves directo a {returnToLabel} con tu avance intacto.</p>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">Lo confirmas y vuelves directo a {returnToLabel}.</p>
                     </div>
                     <button
                       type="button"
@@ -584,10 +572,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   Entrar y continuar
                 </Button>
 
-                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm leading-6 text-slate-700">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Control visible</p>
-                  <p className="mt-2">Nada cambia hasta confirmarlo. Si falla, pides otro.</p>
-                </div>
+                <p className="text-sm leading-6 text-slate-600">Nada cambia hasta confirmarlo. Si falla, pides otro.</p>
 
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-slate-500">
@@ -613,9 +598,9 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
 
             {secondaryOptionsAvailable ? (
               <details className="mt-6 rounded-[1.35rem] border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-700">
-                <summary className="cursor-pointer text-sm font-semibold text-slate-700">Si el correo falla</summary>
+                <summary className="cursor-pointer text-sm font-semibold text-slate-700">¿No llegó?</summary>
                 <div className="mt-3 flex flex-col gap-3">
-                  <p className="text-sm leading-6 text-slate-600">Esto es solo respaldo. La ruta principal sigue siendo correo y código.</p>
+                  <p className="text-sm leading-6 text-slate-600">Esto es solo respaldo. El camino principal sigue siendo correo y código.</p>
                   {manusLoginAvailable && manusLoginUrl ? (
                     <Button
                       type="button"
