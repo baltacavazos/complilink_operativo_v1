@@ -9751,37 +9751,35 @@ export default function Auditar() {
                 </div>
 
                 {pendingDraft ? (
-                  <div className="mt-4 hidden rounded-[1.2rem] border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950 sm:block">
+                  <div className="mt-3 hidden rounded-[1.1rem] border border-sky-200 bg-sky-50 p-3 text-sm text-sky-950 sm:block">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold">Vista previa lista</p>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-sky-900">
+                      <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-sky-900">
                         Revisar y confirmar
                       </span>
                     </div>
-                    <p className="mt-1">
-                      {pendingDraft.previewAsset.fileName} ·{" "}
-                      {formatVisibleFileSize(
+                    <p className="mt-1 text-sm leading-5">
+                      {pendingDraft.previewAsset.fileName} · {formatVisibleFileSize(
                         pendingDraft.previewAsset.sizeBytes
                       )}
                     </p>
                   </div>
                 ) : selectedFile ? (
-                  <div className="mt-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
+                  <div className="mt-3 rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold">
                         Documento listo para análisis
                       </p>
-                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-900">
+                      <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-emerald-900">
                         En cola
                       </span>
                     </div>
-                    <p className="mt-1">
-                      {selectedFile.name} ·{" "}
-                      {formatVisibleFileSize(selectedFile.size)}
+                    <p className="mt-1 text-sm leading-5">
+                      {selectedFile.name} · {formatVisibleFileSize(selectedFile.size)}
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
+                  <div className="mt-3 rounded-[1.1rem] border border-slate-200 bg-white p-3 text-sm leading-5 text-slate-600">
                     Elige el documento más claro que tengas a la mano.
                   </div>
                 )}
