@@ -8790,18 +8790,18 @@ export default function Auditar() {
 
                 <div className="mt-4 flex flex-col gap-2 rounded-[1rem] border border-slate-200 bg-white/70 p-4 text-sm leading-6 text-slate-700 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-semibold text-slate-950">
+                    <p className="font-semibold leading-5 text-slate-950">
                       {missingPriorityUploadGuides.length > 0
                         ? `Hoy te conviene reforzar ${missingPriorityUploadGuides.length} tipo${missingPriorityUploadGuides.length === 1 ? "" : "s"} de documento.`
                         : "Tu expediente ya cubre los documentos más estratégicos de esta guía."}
                     </p>
-                    <p className="mt-1">
+                    <p className="mt-1 text-sm leading-5">
                       {missingPriorityUploadGuides.length > 0
-                        ? "Estas recomendaciones ya están ligadas a lo que todavía hace falta dentro de tu expediente, para que no subas archivos de más ni repitas esfuerzos."
-                        : "Si tienes más evidencia específica de tu caso, también puede ayudar a afinar todavía más la lectura y el respaldo de tu expediente."}
+                        ? "Estas recomendaciones ya siguen lo que todavía hace falta para no subir archivos de más."
+                        : "Si tienes más evidencia específica, puede afinar todavía más la lectura del expediente."}
                     </p>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
                     {missingPriorityUploadGuides.length > 0
                       ? "Faltantes reales detectados"
                       : "Base prioritaria cubierta"}
