@@ -9303,17 +9303,16 @@ export default function Auditar() {
                 ref={uploadSectionRef}
                 className="mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 rounded-[1.1rem] border border-slate-200 bg-white px-3 py-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
                     <FileUp className="h-5 w-5" strokeWidth={1.8} />
                   </div>
                   <div>
                     <p className="font-semibold text-slate-950">
-                      Tu recibo o comprobante
+                      Sube tu recibo o comprobante
                     </p>
-                    <p className="text-sm text-slate-600">
-                      Puede ser foto, PDF o el archivo que te mandaron. Lo
-                      revisamos primero y tú decides si se guarda, incluso si es un contrato en DOCX.
+                    <p className="text-sm leading-5 text-slate-600">
+                      Foto o archivo. Lo revisas primero y decides después si se guarda.
                     </p>
                   </div>
                 </div>
@@ -9532,26 +9531,6 @@ export default function Auditar() {
                 <div
                   className={`mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4 ${pendingDraft ? "hidden sm:block" : ""}`}
                 >
-                  <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-950">
-Sube tu recibo y empieza en menos de un minuto
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-slate-600">
-Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
-                        </p>
-                      </div>
-                      <div className="hidden">
-                        <span className="rounded-full bg-white px-3 py-1">
-                          12 MB
-                        </span>
-                        <span className="rounded-full bg-white px-3 py-1">
-                          PDF · XML · DOCX · imagen
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
                   <div className="mt-4 space-y-2.5 sm:hidden">
                     {shouldCompactMobileUploadEntry ? (

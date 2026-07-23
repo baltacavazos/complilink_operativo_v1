@@ -1950,3 +1950,4 @@
 - [x] Macro-bloque Recorte 2: aplicar el recorte estructural de mayor impacto en `Home` para dejar menos altura total arriba del pliegue.
 - [x] Macro-bloque Recorte 3: aplicar el recorte estructural de mayor impacto en `/auditar` para dejar menos scroll y menos bloques compitiendo.
 - [x] Macro-bloque Recorte 4: compactar `HowItWorksSection` en `Home` para conservar la explicación de 3 pasos con menos altura total y menos scroll.
+- [x] Macro-bloque Recorte 5: fusionar las dos introducciones consecutivas del bloque de carga en `/auditar` para dejar una sola antes de cámara/archivo y reducir scroll redundante.
