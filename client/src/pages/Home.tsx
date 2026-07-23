@@ -1620,17 +1620,17 @@ function HeliosFirstEntrySection() {
   }
 
   return (
-    <section id="lectura-gratis" className="bg-white py-12 sm:py-14">
-      <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
+    <section id="lectura-gratis" className="bg-white py-10 sm:py-12">
+      <div className="container mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
             Primera lectura sin correo
           </div>
-          <h2 className="mt-4 max-w-[14ch] text-[2rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:text-[2.65rem]">
+          <h2 className="mt-3 max-w-[14ch] text-[1.9rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:mt-4 sm:text-[2.5rem]">
             Sube un archivo y mira una señal real antes de decidir.
           </h2>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-[1.04rem] sm:leading-8">
+          <p className="mt-3 max-w-2xl text-[0.98rem] leading-7 text-slate-600 sm:text-[1.02rem] sm:leading-7">
             Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si sí te sirve te pedimos tu correo para guardarlo.
           </p>
 
@@ -1646,7 +1646,7 @@ function HeliosFirstEntrySection() {
             </span>
           </div>
 
-          <div className="mt-6 rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f6fbfa_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)] sm:p-6">
+          <div className="mt-5 rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f6fbfa_100%)] p-4 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)] sm:p-5">
             <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.xml,.jpg,.jpeg,.png,.webp" onChange={handleFileSelection} />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
