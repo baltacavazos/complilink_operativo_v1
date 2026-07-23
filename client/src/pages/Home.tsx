@@ -2211,51 +2211,55 @@ function CopilotPreviewSection() {
 
 function HowItWorksSection() {
   return (
-    <section id="como-funciona" className="bg-background py-12 sm:py-14">
+    <section id="como-funciona" className="bg-background py-8 sm:py-10">
       <div className="container">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Cómo funciona en 3 pasos
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Así pasas de duda a claridad sin enredos.
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-            Subes un archivo, entiendes la señal y decides si quieres convertirla en evidencia útil.
-          </p>
-        </div>
+        <div className="mx-auto max-w-3xl rounded-[1.8rem] border border-slate-200 bg-white p-4 shadow-[0_22px_60px_-46px_rgba(15,23,42,0.35)] sm:p-5">
+          <div className="flex flex-col gap-2 text-center sm:text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+              Cómo funciona
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-[2rem]">
+                Tres pasos. Una lectura clara.
+              </h2>
+              <p className="text-sm leading-6 text-slate-600">
+                Subes, entiendes la señal y decides si lo guardas.
+              </p>
+            </div>
+          </div>
 
-        <div className="mt-8 grid gap-3 md:grid-cols-3">
-          {[
-            {
-              number: "01",
-              title: "Sube tu recibo o contrato",
-              description: "Empieza con un solo archivo, sin preparar todo el expediente.",
-            },
-            {
-              number: "02",
-              title: "Recibe una señal clara",
-              description: "Te decimos qué encontramos y qué revisar primero.",
-            },
-            {
-              number: "03",
-              title: "Guárdalo solo si te sirve",
-              description: "Si te aporta valor, lo pasas a tu expediente privado.",
-            },
-          ].map((item) => (
-            <article
-              key={item.number}
-              className="rounded-[1.8rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.35)]"
-            >
-              <div className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
-                {item.number}
-              </div>
-              <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-slate-950">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{item.description}</p>
-            </article>
-          ))}
+          <div className="mt-4 grid gap-2.5 md:grid-cols-3">
+            {[
+              {
+                number: "01",
+                title: "Sube un archivo",
+                description: "Empieza con un recibo, foto o contrato.",
+              },
+              {
+                number: "02",
+                title: "Mira la señal",
+                description: "Te decimos qué revisar primero.",
+              },
+              {
+                number: "03",
+                title: "Guárdalo si sirve",
+                description: "Solo pasa al expediente si te aporta valor.",
+              },
+            ].map((item) => (
+              <article
+                key={item.number}
+                className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4"
+              >
+                <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm">
+                  {item.number}
+                </div>
+                <h3 className="mt-3 text-base font-semibold tracking-[-0.02em] text-slate-950">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-5 text-slate-600">{item.description}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

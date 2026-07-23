@@ -18,7 +18,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
     expect(homeSource).toContain("Resultado real desde el primer archivo");
     expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu expediente.");
-    expect(homeSource).toContain("Así pasas de duda a claridad sin enredos.");
+    expect(homeSource).toContain("Tres pasos. Una lectura clara.");
     expect(homeSource).toContain("Control visible desde el primer archivo.");
     expect(homeSource).toContain("Privacidad visible y verificable");
     expect(homeSource).toContain("Transparencia visible");
@@ -63,10 +63,10 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.");
     expect(homeSource).toContain("Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.");
     expect(homeSource).toContain("Revisar mi recibo gratis");
-    expect(homeSource).toContain("Cómo funciona en 3 pasos");
-    expect(homeSource).toContain("Sube tu recibo o contrato");
-    expect(homeSource).toContain("Recibe una señal clara");
-    expect(homeSource).toContain("Guárdalo solo si te sirve");
+    expect(homeSource).toContain("Cómo funciona");
+    expect(homeSource).toContain("Sube un archivo");
+    expect(homeSource).toContain("Mira la señal");
+    expect(homeSource).toContain("Guárdalo si sirve");
     expect(homeSource).toContain('placement: "hero_primary"');
     expect(homeSource).toContain('placement: "final_block_cta"');
     expect(pricingSource).toContain("Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.");
