@@ -1945,3 +1945,4 @@
 - [x] Macro-bloque App-ready 2: simplificar la barra fija móvil de `/auditar` para dejar menos altura, menos densidad y un foco más claro en la acción principal.
 - [x] Macro-bloque App shell móvil 1: consolidar navegación, jerarquía y accesos rápidos móviles para que la experiencia se sienta más tipo app.
 - [x] Macro-bloque Cámara/Subida 1: priorizar captura y subida desde celular con un flujo más inmediato, claro y de una sola intención principal.
+- [x] Macro-bloque App shell móvil 2: extender el app shell a la entrada no autenticada de `/auditar` para que el flujo móvil conserve una jerarquía tipo app desde el inicio.

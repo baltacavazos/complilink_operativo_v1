@@ -7730,11 +7730,16 @@ export default function Auditar() {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
         <div className="container mx-auto max-w-6xl">
+          <MobileAppShell
+            current="auditar"
+            title="Empieza tu auditoría"
+            subtitle="Sube tu documento y mira primero la señal."
+          />
           <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <a
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 Volver al inicio
