@@ -1343,7 +1343,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                 {activeReportDemoCopy.description}
               </p>
 
-              <div className="mt-4 grid gap-2 max-[359px]:gap-1.5 sm:grid-cols-3">
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
                 {reportDemoStates.map((state) => {
                   const isActive = selectedReportDemoState === state.id;
 
@@ -1352,7 +1352,7 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                       key={state.id}
                       type="button"
                       onClick={() => handleReportDemoStateChange(state.id)}
-                      className={`rounded-[1.1rem] border px-3 py-3 text-left transition max-[359px]:px-2.5 max-[359px]:py-2.5 ${
+                      className={`rounded-full border px-3 py-2 text-left transition ${
                         isActive
                           ? "border-teal-300 bg-teal-50 text-teal-950 shadow-[0_18px_42px_-34px_rgba(13,148,136,0.34)]"
                           : "border-slate-200 bg-white/88 text-slate-700 hover:border-teal-200 hover:bg-white"
@@ -1360,12 +1360,11 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                       aria-pressed={isActive}
                     >
                       <p className="text-sm font-semibold leading-5">{state.label}</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">{state.badge}</p>
                     </button>
                   );
                 })}
               </div>
-              <p className="mt-3 text-xs leading-5 text-slate-500">
+              <p className="mt-2 text-[11px] leading-5 text-slate-500">
                 Tres vistas simples para ubicar rápido la señal.
               </p>
 

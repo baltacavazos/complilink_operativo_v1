@@ -1956,3 +1956,4 @@
 - [x] Macro-bloque Recorte 8: compactar la columna derecha de `Home` para reducir altura del ejemplo de lectura y de las tarjetas de continuidad sin perder claridad.
 - [x] Macro-bloque Recorte 9: compactar `FinalCtaSection` en `Home` para mantener el cierre de conversión con menos altura y menos duplicación respecto al hero.
 - [x] Macro-bloque Recorte 10: fusionar la tarjeta introductoria con la tarjeta de revisión automática en `/auditar` para dejar una sola entrada más corta antes de capturar o subir.
+- [x] Macro-bloque Recorte 11: compactar el selector de estados del ejemplo en el hero de `Home` para reducir altura arriba del pliegue sin perder la lectura comparativa.
