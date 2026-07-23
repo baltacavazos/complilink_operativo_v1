@@ -1984,3 +1984,4 @@
 - [x] Macro-bloque Recorte 36: compactar las tarjetas de documentos recomendados en `/auditar` para reducir más altura postresultado sin perder claridad de acción.
 - [x] Macro-bloque Recorte 37: compactar el bloque de historial de revalidaciones en `/auditar` para reducir altura postresultado sin perder trazabilidad útil.
 - [x] Macro-bloque Recorte 38: compactar el bloque opcional de preparación de plataforma en `/auditar` para reducir altura antes del área de carga sin perder claridad sobre que es opcional.
+- [x] Macro-bloque Recorte 39: compactar el encabezado del área principal de carga en `/auditar` para reducir más scrolling móvil inicial sin perder claridad de acción.

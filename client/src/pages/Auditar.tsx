@@ -9154,22 +9154,20 @@ export default function Auditar() {
               </p>
             </div>
 
-            <div className={shouldCompactPostUploadExperience || (showWorkspaceSectionSelector && !isSummaryWorkspaceSection) ? "hidden" : "motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className={shouldCompactPostUploadExperience || (showWorkspaceSectionSelector && !isSummaryWorkspaceSection) ? "hidden" : "motion-hover-lift rounded-[1.55rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
                 <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                      {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
-                    </p>
-                      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                        {isNativeAppExperience ? "Sube y revisa" : "Sube tu recibo y revisa lo importante"}
-                      </h2>
-
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
+                  </p>
+                  <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
+                    {isNativeAppExperience ? "Sube y revisa" : "Sube tu recibo y revisa lo importante"}
+                  </h2>
                 </div>
-                  <p className="max-w-lg text-sm leading-6 text-slate-600">
-                    {isNativeAppExperience
-                      ? "Primero revisas. Guardas solo si te sirve."
-                      : "Primero ves lo importante y después decides si lo guardas."}
-
+                <p className="max-w-lg text-sm leading-5 text-slate-600">
+                  {isNativeAppExperience
+                    ? "Primero revisas. Guardas solo si te sirve."
+                    : "Primero ves lo importante y después decides si lo guardas."}
                 </p>
               </div>
 
