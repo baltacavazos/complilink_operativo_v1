@@ -1967,3 +1967,4 @@
 - [x] Macro-bloque Recorte 19: reducir padding y separación vertical en `HeliosFirstEntrySection` para bajar scrolling en `Home` sin eliminar contenido útil.
 - [x] Macro-bloque Recorte 20: compactar `FinalCtaSection` aún más, fusionando principios y nota final para reducir altura al cierre de `Home`.
 - [x] Macro-bloque Recorte 21: compactar aún más `HowItWorksSection` en `Home`, reduciendo padding y altura de cada paso sin perder claridad.
+- [x] Macro-bloque Recorte 22: compactar `SiteFooter` en `Home` para reducir altura al cierre móvil sin perder acceso legal básico.
