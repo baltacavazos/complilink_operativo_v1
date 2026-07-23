@@ -1941,3 +1941,4 @@
 - [x] Macro-bloque Home 1: dejar Home con una activación más directa, menos bloques compitiendo arriba y foco en una sola acción principal.
 - [x] Macro-bloque Acceso 1: convertir `/acceso` en continuidad sin ansiedad, con un solo camino y menos estados visibles compitiendo.
 - [x] Macro-bloque Auditar 1: convertir `/auditar` en un veredicto primero con siguiente paso obvio y secundarios progresivos.
+- [x] Macro-bloque App-ready 1: añadir una acción primaria móvil más accesible en Home para reforzar uso con una mano y transición futura a app.

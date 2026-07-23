@@ -3039,6 +3039,20 @@ function FinalCtaSection() {
   );
 }
 
+function MobileStickyCta() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/96 px-4 py-3 shadow-[0_-18px_40px_-28px_rgba(15,23,42,0.35)] backdrop-blur sm:hidden">
+      <Button
+        className="h-12 w-full rounded-full bg-slate-950 text-base font-semibold text-white hover:bg-slate-900"
+        onClick={() => goToAuditFlow({ placement: "mobile_sticky_cta", source: "home_mobile_sticky" })}
+      >
+        {PRIMARY_CTA_LABEL}
+        <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+      </Button>
+    </div>
+  );
+}
+
 function SiteFooter() {
   return (
     <footer className="bg-background py-8">
@@ -3054,9 +3068,9 @@ function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
-                      <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
-              Ver un ejemplo
-            </a>
+          <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
+            Empezar
+          </a>
 
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona
@@ -3086,7 +3100,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="audita-home min-h-screen bg-background font-sans text-slate-950">
+    <main className="audita-home min-h-screen bg-background pb-20 font-sans text-slate-950 sm:pb-0">
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
@@ -3095,6 +3109,7 @@ export default function Home() {
       <AppDownloadSection />
       <FinalCtaSection />
       <SiteFooter />
+      <MobileStickyCta />
     </main>
   );
 }
