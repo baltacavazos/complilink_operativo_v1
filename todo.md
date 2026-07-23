@@ -1965,3 +1965,4 @@
 - [x] Macro-bloque Recorte 17: fusionar la tarjeta resumen blanca con la CTA inferior del ejemplo en el hero de `Home` para reducir duplicación vertical y altura total.
 - [x] Macro-bloque Recorte 18: fusionar las dos tarjetas inferiores de contexto en `HeliosFirstEntrySection` para reducir altura lateral en `Home` sin perder continuidad ni propósito del flujo.
 - [x] Macro-bloque Recorte 19: reducir padding y separación vertical en `HeliosFirstEntrySection` para bajar scrolling en `Home` sin eliminar contenido útil.
+- [x] Macro-bloque Recorte 20: compactar `FinalCtaSection` aún más, fusionando principios y nota final para reducir altura al cierre de `Home`.

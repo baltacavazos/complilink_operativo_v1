@@ -3006,20 +3006,19 @@ function FinalCtaSection() {
               </Button>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               {pricingExperience.landing.principles.slice(0, 2).map((principle) => (
                 <span
                   key={principle}
-                  className="rounded-full border border-white/80 bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
+                  className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
                 >
                   {principle}
                 </span>
               ))}
+              <span className="text-sm leading-6 text-slate-600">
+                Si más adelante quieres avanzar, lo activas dentro de tu expediente.
+              </span>
             </div>
-
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              Si más adelante quieres avanzar, lo activas dentro de tu expediente.
-            </p>
           </div>
         </div>
       </div>
