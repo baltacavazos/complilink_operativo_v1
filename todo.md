@@ -1973,3 +1973,4 @@
 - [x] Macro-bloque Recorte 25: compactar la tarjeta de documento recomendado dentro del hero de `Home` para reducir más altura arriba del pliegue sin perder la recomendación principal.
 - [x] Macro-bloque Recorte 26: compactar la CTA lateral del hero en `Home` para reducir más altura del ejemplo arriba del pliegue sin perder claridad de acción.
 - [x] Macro-bloque Recorte 27: condensar el bloque `Lo primero que verás` dentro del ejemplo del hero en `Home` para reducir más altura arriba del pliegue.
+- [x] Macro-bloque Recorte 28: compactar la altura del header móvil en `Home` para ganar espacio arriba del pliegue sin perder navegación esencial.

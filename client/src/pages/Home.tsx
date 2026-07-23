@@ -772,7 +772,7 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/45 bg-slate-900/82 text-white shadow-[0_8px_22px_-22px_rgba(2,6,23,0.55)] backdrop-blur-lg">
-      <div className="container mx-auto flex h-[4.55rem] max-w-[1380px] items-center justify-between gap-2 sm:h-[5rem] lg:gap-3">
+      <div className="container mx-auto flex h-[4.15rem] max-w-[1380px] items-center justify-between gap-2 sm:h-[5rem] lg:gap-3">
         <a
           href="#top"
           aria-label="Ir al inicio de AuditaPatron"
@@ -781,7 +781,7 @@ function SiteHeader() {
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="!h-8 w-auto max-w-[min(34vw,7.8rem)] object-contain max-[359px]:!h-7 max-[359px]:max-w-[min(31vw,6.85rem)] sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
+            imageClassName="!h-7.5 w-auto max-w-[min(33vw,7.4rem)] object-contain max-[359px]:!h-6.75 max-[359px]:max-w-[min(30vw,6.5rem)] sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
           />
         </a>
 
@@ -822,7 +822,7 @@ function SiteHeader() {
 
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
-            className="motion-hover-lift h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem] rounded-full bg-teal-400 px-3 text-[0.78rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.7rem] max-[359px]:px-2.75 max-[359px]:text-[0.72rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
+            className="motion-hover-lift h-10 min-h-10 min-w-[6.45rem] max-w-[7rem] rounded-full bg-teal-400 px-3 text-[0.76rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.45rem] max-[359px]:px-2.5 max-[359px]:text-[0.7rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
             onClick={() => goToAuditFlow({ placement: "header_primary" })}
           >
             <span className="truncate sm:hidden">Empezar</span>
@@ -830,7 +830,7 @@ function SiteHeader() {
           </Button>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
