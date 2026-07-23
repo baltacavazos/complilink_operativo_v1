@@ -1971,3 +1971,5 @@
 - [x] Macro-bloque Recorte 23: condensar la guía bajo el botón principal de `/auditar` para reducir scroll inicial sin perder orientación sobre foto o archivo.
 - [x] Macro-bloque Recorte 24: fusionar las ayudas bajo la CTA principal del hero en `Home` para reducir más altura arriba del pliegue sin perder garantías clave.
 - [x] Macro-bloque Recorte 25: compactar la tarjeta de documento recomendado dentro del hero de `Home` para reducir más altura arriba del pliegue sin perder la recomendación principal.
+- [x] Macro-bloque Recorte 26: compactar la CTA lateral del hero en `Home` para reducir más altura del ejemplo arriba del pliegue sin perder claridad de acción.
+- [x] Macro-bloque Recorte 27: condensar el bloque `Lo primero que verás` dentro del ejemplo del hero en `Home` para reducir más altura arriba del pliegue.

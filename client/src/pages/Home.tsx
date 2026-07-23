@@ -1380,13 +1380,8 @@ function HeroSection() {
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
-                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Lo primero que verás
-                  </p>
-                  <p className="mt-1.5 text-sm leading-5 text-slate-700">
-                    Una señal clara, una explicación breve y el siguiente paso útil.
-                  </p>
+                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm leading-5 text-slate-700">
+                  <span className="font-semibold text-slate-900">Lo primero que verás:</span> una señal clara, una explicación breve y el siguiente paso útil.
                 </div>
               </div>
             </div>
@@ -1403,15 +1398,15 @@ function HeroSection() {
                 });
                 scrollToId("lectura-gratis");
               }}
-              className="mt-5 block w-full rounded-[1.35rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-4 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
+              className="mt-4 block w-full rounded-[1.25rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-3.5 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
                     Sube tu documento gratis
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-teal-950">
-                    Empieza con {activePrediagnostic.document.toLowerCase()} y recibe una primera lectura clara, confidencial y visible desde el primer intento.
+                  <p className="mt-1 text-sm font-semibold leading-5 text-teal-950">
+                    Empieza con {activePrediagnostic.document.toLowerCase()} y recibe una primera lectura clara desde el primer intento.
                   </p>
                 </div>
                 <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -1424,14 +1419,14 @@ function HeroSection() {
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Documento sugerido: {activePrediagnostic.badge}
+                  {activePrediagnostic.badge}
                 </span>
                 <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
                   Lo ves primero y decides después
                 </span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-teal-800">
-                Sube un solo archivo gratis, recibe una lectura simple y decide después si quieres seguir o guardarlo.
+              <p className="mt-2 text-sm leading-5 text-teal-800">
+                Un solo archivo gratis y luego decides si sigues o lo guardas.
               </p>
             </button>
           </div>
