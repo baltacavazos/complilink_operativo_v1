@@ -2215,7 +2215,7 @@ function HowItWorksSection() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-2.5 md:grid-cols-3">
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
             {[
               {
                 number: "01",
@@ -2235,15 +2235,15 @@ function HowItWorksSection() {
             ].map((item) => (
               <article
                 key={item.number}
-                className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4"
+                className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-3.5 py-3"
               >
                 <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm">
                   {item.number}
                 </div>
-                <h3 className="mt-3 text-base font-semibold tracking-[-0.02em] text-slate-950">
+                <h3 className="mt-2 text-[0.98rem] font-semibold tracking-[-0.02em] text-slate-950">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-5 text-slate-600">{item.description}</p>
+                <p className="mt-1.5 text-sm leading-5 text-slate-600">{item.description}</p>
               </article>
             ))}
           </div>
