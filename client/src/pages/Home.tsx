@@ -1382,12 +1382,12 @@ Empieza por el papel que tengas más a la mano: un recibo reciente, una foto cla
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
-                <div className="mt-4 rounded-[1.05rem] border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Lo primero que verás
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    Una sola señal clara, una explicación breve y el siguiente paso más útil para salir de dudas.
+                  <p className="mt-1.5 text-sm leading-5 text-slate-700">
+                    Una señal clara, una explicación breve y el siguiente paso útil.
                   </p>
                 </div>
               </div>
