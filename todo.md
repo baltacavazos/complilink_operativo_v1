@@ -1977,3 +1977,4 @@
 - [x] Macro-bloque Recorte 29: condensar el resumen visible del bloque `Más opciones si quieres profundizar` en `/auditar` para reducir scroll postresultado sin perder contexto.
 - [x] Macro-bloque Recorte 30: fusionar las dos líneas de apoyo del hero en `Home` para reducir más altura arriba del pliegue sin perder claridad de valor.
 - [x] Macro-bloque Recorte 31: compactar la tarjeta `Siguiente paso recomendado` en `/auditar` para reducir altura visible postresultado sin perder foco en la acción principal.
+- [x] Macro-bloque Recorte 32: compactar el encabezado del bloque de recomendaciones de refuerzo en `/auditar` para reducir altura postresultado sin perder claridad.

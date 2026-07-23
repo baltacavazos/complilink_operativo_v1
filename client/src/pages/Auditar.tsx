@@ -8770,21 +8770,21 @@ export default function Auditar() {
               </div>
 
               <div className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Documentos que más enriquecen tu expediente laboral
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Documentos que más enriquecen tu expediente
                     </p>
-                    <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                    <h3 className="mt-1.5 text-lg font-semibold tracking-[-0.03em] text-slate-950 sm:text-xl">
                       {shouldCompactPostUploadExperience
-                        ? "Si vas a subir algo más, empieza por esto."
-                        : "Si vas a subir algo más, empieza por los archivos con más contexto."}
+                        ? "Si subes algo más, empieza por esto."
+                        : "Si subes algo más, empieza por los archivos con más contexto."}
                     </h3>
                   </div>
-                  <p className="max-w-xl text-sm leading-6 text-slate-600">
+                  <p className="max-w-xl text-sm leading-5 text-slate-600">
                     {shouldCompactPostUploadExperience
-                      ? "Te dejamos solo las recomendaciones con más valor inmediato para no saturarte después del resultado."
-                      : "Estos suelen ser de los documentos más útiles para darte una lectura más completa y dejar tu expediente mejor respaldado con el tiempo."}
+                      ? "Dejamos solo las recomendaciones con más valor inmediato."
+                      : "Son los archivos que más suelen reforzar la lectura y el respaldo del expediente."}
                   </p>
                 </div>
 
