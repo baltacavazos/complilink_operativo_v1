@@ -1969,3 +1969,4 @@
 - [x] Macro-bloque Recorte 21: compactar aún más `HowItWorksSection` en `Home`, reduciendo padding y altura de cada paso sin perder claridad.
 - [x] Macro-bloque Recorte 22: compactar `SiteFooter` en `Home` para reducir altura al cierre móvil sin perder acceso legal básico.
 - [x] Macro-bloque Recorte 23: condensar la guía bajo el botón principal de `/auditar` para reducir scroll inicial sin perder orientación sobre foto o archivo.
+- [x] Macro-bloque Recorte 24: fusionar las ayudas bajo la CTA principal del hero en `Home` para reducir más altura arriba del pliegue sin perder garantías clave.
