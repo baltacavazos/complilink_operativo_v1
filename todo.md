@@ -1963,3 +1963,4 @@
 - [x] Macro-bloque Recorte 15: compactar el apoyo bajo los botones de cámara/archivo en `/auditar` para reducir scroll móvil inicial sin perder orientación.
 - [x] Macro-bloque Recorte 16: compactar la tarjeta de estado de carga y análisis en `/auditar` para mantener orientación con menos altura y menos scroll móvil inicial.
 - [x] Macro-bloque Recorte 17: fusionar la tarjeta resumen blanca con la CTA inferior del ejemplo en el hero de `Home` para reducir duplicación vertical y altura total.
+- [x] Macro-bloque Recorte 18: fusionar las dos tarjetas inferiores de contexto en `HeliosFirstEntrySection` para reducir altura lateral en `Home` sin perder continuidad ni propósito del flujo.

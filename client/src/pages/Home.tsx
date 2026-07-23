@@ -1785,26 +1785,18 @@ function HeliosFirstEntrySection() {
             </div>
           </article>
 
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
-                {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, podemos retomar tu lectura y guardarla dentro de tu bóveda."}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal y la guardamos dentro de tu cuenta sin pedirte volver a subir el archivo."}
-              </p>
-            </article>
-            <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Por qué este flujo existe</p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
-                Primero recibes valor y después decides si quieres conservarlo en tu bóveda laboral.
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                La Home deja ver una primera lectura clara. El acceso por correo entra sólo cuando quieres guardar, proteger y continuar con más contexto.
-              </p>
-            </article>
-          </div>
+          <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">Primero ves valor y luego decides</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
+              {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal sin pedirte volver a subir el archivo. El acceso por correo aparece solo cuando quieres guardar, proteger y continuar."}
+            </p>
+          </article>
         </div>
       </div>
     </section>
