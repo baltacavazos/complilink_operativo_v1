@@ -9018,30 +9018,30 @@ export default function Auditar() {
                     </Button>
                   </div>
 
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-4">
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5">
+                    <div className="flex items-center justify-between gap-2.5">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                           Historial de revalidaciones
                         </p>
-                        <p className="mt-2 font-semibold text-slate-950">
+                        <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                           {socialSecurityRevalidationHistory.length
                             ? `${socialSecurityRevalidationHistory.length} revalidación${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
                             : "Todavía no hay revalidaciones guardadas"}
                         </p>
                       </div>
                       {effectiveSocialSecurityValidation?.clarityChangeLabel ? (
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
                           {effectiveSocialSecurityValidation.clarityChangeLabel}
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-3">
                       {socialSecurityRevalidationHistory.length ? (
-                        <details className="group rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+                        <details className="group rounded-[0.95rem] border border-slate-200 bg-slate-50 p-2.5">
                           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-slate-900">
-                            <span>Ver historial detallado</span>
-                            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-600">
+                            <span>Ver historial</span>
+                            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600">
                               {socialSecurityRevalidationHistory.length}{" "}
                               registro
                               {socialSecurityRevalidationHistory.length === 1
@@ -9049,11 +9049,11 @@ export default function Auditar() {
                                 : "s"}
                             </span>
                           </summary>
-                          <div className="mt-3 space-y-3">
+                          <div className="mt-2.5 space-y-2.5">
                             {socialSecurityRevalidationHistory.map(entry => (
                               <div
                                 key={`${entry.recordedAt}-${entry.summary}`}
-                                className="rounded-[1rem] border border-slate-200 bg-white p-3"
+                                className="rounded-[0.95rem] border border-slate-200 bg-white p-2.5"
                               >
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <p className="font-semibold text-slate-900">
@@ -9063,10 +9063,10 @@ export default function Auditar() {
                                     {formatDate(entry.recordedAt)}
                                   </span>
                                 </div>
-                                <p className="mt-2 text-sm leading-6 text-slate-700">
+                                <p className="mt-1.5 text-sm leading-5 text-slate-700">
                                   {entry.summary}
                                 </p>
-                                <p className="mt-2 text-xs leading-5 text-slate-500">
+                                <p className="mt-1.5 text-xs leading-4 text-slate-500">
                                   {entry.coverageScore
                                     ? `Cobertura estimada: ${entry.coverageScore}%`
                                     : "Cobertura registrada en esta revalidación."}
@@ -9079,10 +9079,8 @@ export default function Auditar() {
                           </div>
                         </details>
                       ) : (
-                        <div className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-                          Cuando revalides IMSS e Infonavit desde tu expediente,
-                          aquí verás la fecha, el estado y el cambio detectado
-                          entre revisiones.
+                        <div className="rounded-[0.95rem] border border-dashed border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-600">
+                          Cuando revalides IMSS e Infonavit, aquí verás fecha, estado y cambios.
                         </div>
                       )}
                     </div>
