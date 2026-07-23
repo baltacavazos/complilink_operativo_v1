@@ -9087,46 +9087,43 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[1.25rem] border border-teal-100 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-4 shadow-sm">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="mt-4 rounded-[1.2rem] border border-teal-100 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-3.5 shadow-sm">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                           {pricingExperience.platform.eyebrow}
                         </span>
                         {pricingExperience.platform.showPrice ? (
-                          <span className="rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white">
+                          <span className="rounded-full bg-teal-600 px-3 py-1 text-[11px] font-semibold text-white">
                             {pricingExperience.platform.priceLabel}
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-3 text-lg font-semibold text-slate-950">
+                      <p className="mt-2 text-base font-semibold text-slate-950 sm:text-lg">
                         {pricingExperience.platform.title}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">
-                        Esta preparación es opcional. Si por ahora solo quieres
-                        seguir con tu expediente, puedes continuar sin pagar ni
-                        desbloquear nada.
+                      <p className="mt-1.5 text-sm leading-5 text-slate-700">
+                        Esta preparación es opcional. Si hoy solo quieres seguir con tu expediente, continúa sin pagar.
                       </p>
                     </div>
 
-                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[240px]">
-                        <Button
-                          className="h-11 rounded-full bg-slate-900 text-white hover:bg-slate-800"
-                          onClick={() => {
-                            setCommercePromptContext(
-                              buildManualCommercePromptContext(activeCommercePlanKey)
-                            );
-                            setCasePreparationDrawerOpen(true);
-                          }}
-                        >
-
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[224px]">
+                      <Button
+                        className="h-10 rounded-full bg-slate-900 text-sm text-white hover:bg-slate-800"
+                        onClick={() => {
+                          setCommercePromptContext(
+                            buildManualCommercePromptContext(activeCommercePlanKey)
+                          );
+                          setCasePreparationDrawerOpen(true);
+                        }}
+                      >
                         {pricingExperience.platform.primaryCtaLabel}
                         <Sparkles className="ml-2 h-4 w-4" strokeWidth={1.8} />
                       </Button>
                       <Button
                         variant="outline"
-                        className="h-11 rounded-full border-teal-200 bg-white text-teal-900 hover:bg-teal-50"
+                        className="h-10 rounded-full border-teal-200 bg-white text-sm text-teal-900 hover:bg-teal-50"
                         onClick={() =>
                           focusRecommendedUpload(
                             effectiveRecommendedTarget?.type ?? null
