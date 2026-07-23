@@ -1224,17 +1224,10 @@ function HeroSection() {
             </p>
 
             <p
-              className="motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-7 text-slate-700 sm:block sm:text-[1rem] sm:leading-7"
+              className="motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-6 text-slate-700 sm:block sm:text-[1rem] sm:leading-6"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
-              {activeHeroVariant.supportLine}
-            </p>
-
-            <p
-              className="motion-enter-soft mt-1.5 hidden max-w-xl text-sm font-medium leading-6 text-slate-800 sm:block sm:text-[0.96rem] sm:leading-7"
-              style={{ ["--motion-delay" as string]: "200ms" }}
-            >
-              {activeHeroVariant.microDescription}
+              {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
             </p>
 
             {activeHeroVariant.body ? (
@@ -1250,16 +1243,16 @@ function HeroSection() {
               className={
                 isShortPaidCampaignHero
                   ? "hidden"
-                  : "motion-enter-soft order-3 mt-4 hidden w-full max-w-xl rounded-[1.35rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_20px_44px_-36px_rgba(15,23,42,0.24)] sm:order-none sm:block"
+                  : "motion-enter-soft order-3 mt-3.5 hidden w-full max-w-xl rounded-[1.25rem] border border-teal-100/80 bg-white/96 p-3.5 shadow-[0_20px_44px_-36px_rgba(15,23,42,0.24)] sm:order-none sm:block"
               }
               style={{ ["--motion-delay" as string]: "250ms" }}
             >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
                     Empieza por el documento que ya tengas
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-700">
+                  <p className="mt-1 text-sm leading-5 text-slate-700">
                     Un recibo reciente, una foto clara o el comprobante del mismo mes suele bastar para arrancar.
                   </p>
                 </div>
@@ -1268,7 +1261,7 @@ function HeroSection() {
                 </span>
               </div>
 
-              <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-slate-50/90 px-4 py-2.5">
+              <div className="mt-2.5 rounded-[1rem] border border-slate-200 bg-slate-50/90 px-3.5 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                     Documento recomendado
@@ -1284,7 +1277,7 @@ function HeroSection() {
             </div>
 
           <div
-            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2.5 max-[359px]:gap-2 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
+            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2 max-[359px]:gap-2 sm:order-none sm:mt-5 sm:max-w-none sm:items-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
@@ -1294,19 +1287,19 @@ function HeroSection() {
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <div className="space-y-1.5 max-[359px]:space-y-1">
+              <div className="space-y-1 max-[359px]:space-y-1">
                 <div className="flex flex-wrap gap-2">
                   {[
                     "Gratis para empezar",
                     "Tu empresa no lo ve",
                     "Borras tu archivo cuando quieras",
                   ].map((item) => (
-                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-teal-800 shadow-sm">
                       {item}
                     </span>
                   ))}
                 </div>
-                <p className="text-sm leading-6 text-slate-700">
+                <p className="text-sm leading-5 text-slate-700">
                   Empieza con una foto o PDF y en segundos ves si tu pago merece una revisión más a fondo, sin cuenta al inicio.
                 </p>
               </div>
@@ -1369,20 +1362,20 @@ function HeroSection() {
                   );
                 })}
               </div>
-              <p className="mt-2 text-[11px] leading-5 text-slate-500">
+              <p className="mt-2 hidden text-[11px] leading-5 text-slate-500 sm:block">
                 Tres vistas simples para ubicar rápido la señal.
               </p>
 
-              <div className="mt-5 rounded-[1.3rem] border border-white/90 bg-white/92 p-4 shadow-sm">
+              <div className="mt-4 rounded-[1.2rem] border border-white/90 bg-white/92 p-3.5 shadow-sm">
                 <p className="text-[1.28rem] font-semibold leading-7 tracking-[-0.03em] text-slate-950 sm:text-[1.35rem]">{activeReportDemoCopy.title}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-700">{activeReportDemoCopy.description}</p>
+                <p className="mt-2 text-sm leading-5 text-slate-700">{activeReportDemoCopy.description}</p>
 
-                <div className={`mt-4 rounded-[1.1rem] border px-4 py-3 ${activeReportDemoCopy.focusClass}`}>
+                <div className={`mt-3 rounded-[1rem] border px-3.5 py-2.5 ${activeReportDemoCopy.focusClass}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.focusLabel}</p>
                   <p className="mt-1 text-sm font-semibold leading-6">{activeReportDemoCopy.focusValue}</p>
                 </div>
 
-                <div className={`mt-4 rounded-[1.1rem] border px-4 py-3 ${activeReportDemoCopy.secondaryClass}`}>
+                <div className={`mt-3 rounded-[1rem] border px-3.5 py-2.5 ${activeReportDemoCopy.secondaryClass}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.secondaryLabel}</p>
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>

@@ -10220,13 +10220,11 @@ export default function Auditar() {
                         </div>
 
                         {previewEditableFields.length === 0 ? (
-                          <p className="mt-4 text-sm leading-7 text-teal-900">
-                            Esta vista previa no detectó campos prioritarios
-                            para corrección manual. Si la foto quedó floja,
-                            conviene repetir la captura.
+                          <p className="mt-3 text-sm leading-5 text-teal-900">
+                            Esta vista previa no detectó campos prioritarios para corrección manual. Si la foto quedó floja, conviene repetir la captura.
                           </p>
                         ) : (
-                          <div className="mt-4 space-y-3">
+                          <div className="mt-3 space-y-2.5">
                             {previewEditableFields.map(field => {
                               const currentValue =
                                 manualFieldValues[field.key] ?? field.value;
@@ -10236,7 +10234,7 @@ export default function Auditar() {
                               return (
                                 <label
                                   key={field.key}
-                                  className="block rounded-[1rem] border border-white/80 bg-white p-3 shadow-sm transition-all duration-300"
+                                  className="block rounded-[0.95rem] border border-white/80 bg-white p-2.5 shadow-sm transition-all duration-300"
                                 >
                                   <div className="flex flex-wrap items-center justify-between gap-2">
                                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
@@ -10267,7 +10265,7 @@ export default function Auditar() {
                                       )
                                     }
                                     placeholder={field.value}
-                                    className="mt-3 h-11 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
+                                    className="mt-2.5 h-10 w-full rounded-2xl border border-teal-100 bg-teal-50/60 px-3.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"
                                   />
                                   <p className="mt-2 text-xs leading-5 text-teal-900">
                                     {getEditableFieldSupportCopy(field.key)}

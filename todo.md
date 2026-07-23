@@ -1993,3 +1993,6 @@
 - [x] Macro-bloque Recorte 45: compactar el bloque de guardrails y progreso de carga en `/auditar` para reducir más scrolling móvil sin perder señales de estado y validación.
 - [x] Macro-bloque Recorte 46: compactar las tarjetas de estado previas al borrador en `/auditar` para reducir más scrolling móvil antes de la vista de análisis.
 - [x] Macro-bloque Recorte 47: compactar el bloque de análisis listo y siguiente paso en `/auditar` para reducir más scrolling móvil tras la vista previa sin perder claridad de decisión.
+- [x] Pase grande final A: consolidar en una sola intervención el recorte pendiente del hero y de los bloques redundantes de Home para bajar scrolling sin perder claridad.
+- [x] Pase grande final B: consolidar en una sola intervención la simplificación pendiente del flujo de /auditar, especialmente estado, revisión, sugerencias y controles previos al guardado.
+- [ ] Pase grande final C: revalidar TypeScript y pruebas focales una sola vez al terminar el lote completo, y guardar un único checkpoint del pase grande.
