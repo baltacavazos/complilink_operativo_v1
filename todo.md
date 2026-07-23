@@ -1955,3 +1955,4 @@
 - [x] Macro-bloque Recorte 7: compactar el bloque de respuestas rápidas en `Home` para mantener las garantías clave con menos altura y menos scroll.
 - [x] Macro-bloque Recorte 8: compactar la columna derecha de `Home` para reducir altura del ejemplo de lectura y de las tarjetas de continuidad sin perder claridad.
 - [x] Macro-bloque Recorte 9: compactar `FinalCtaSection` en `Home` para mantener el cierre de conversión con menos altura y menos duplicación respecto al hero.
+- [x] Macro-bloque Recorte 10: fusionar la tarjeta introductoria con la tarjeta de revisión automática en `/auditar` para dejar una sola entrada más corta antes de capturar o subir.

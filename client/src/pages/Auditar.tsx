@@ -9312,7 +9312,7 @@ export default function Auditar() {
                       Sube tu recibo o comprobante
                     </p>
                     <p className="text-sm leading-5 text-slate-600">
-                      Foto o archivo. Lo revisas primero y decides después si se guarda.
+                      Foto o archivo. Lo revisamos al momento y decides después si se guarda.
                     </p>
                   </div>
                 </div>
@@ -9365,7 +9365,7 @@ export default function Auditar() {
                 ) : null}
 
                 <div
-                  className={`mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft ? "hidden sm:grid" : ""}`}
+                  className={`mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft || shouldCompactMobileUploadEntry ? "hidden sm:grid" : ""}`}
                 >
                   <div className="rounded-[1.2rem] border border-sky-100 bg-sky-50 p-4">
                     <div className="flex items-start gap-3">
