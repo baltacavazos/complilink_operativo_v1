@@ -1975,3 +1975,4 @@
 - [x] Macro-bloque Recorte 27: condensar el bloque `Lo primero que verás` dentro del ejemplo del hero en `Home` para reducir más altura arriba del pliegue.
 - [x] Macro-bloque Recorte 28: compactar la altura del header móvil en `Home` para ganar espacio arriba del pliegue sin perder navegación esencial.
 - [x] Macro-bloque Recorte 29: condensar el resumen visible del bloque `Más opciones si quieres profundizar` en `/auditar` para reducir scroll postresultado sin perder contexto.
+- [x] Macro-bloque Recorte 30: fusionar las dos líneas de apoyo del hero en `Home` para reducir más altura arriba del pliegue sin perder claridad de valor.

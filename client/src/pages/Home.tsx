@@ -1217,14 +1217,21 @@ function HeroSection() {
             </h1>
 
             <p
-              className="motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
+              className="motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:hidden"
+              style={{ ["--motion-delay" as string]: "180ms" }}
+            >
+              {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
+            </p>
+
+            <p
+              className="motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-7 text-slate-700 sm:block sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {activeHeroVariant.supportLine}
             </p>
 
             <p
-              className="motion-enter-soft mt-1.5 max-w-xl text-sm font-medium leading-6 text-slate-800 max-[359px]:text-[0.9rem] max-[359px]:leading-6 sm:text-[0.96rem] sm:leading-7"
+              className="motion-enter-soft mt-1.5 hidden max-w-xl text-sm font-medium leading-6 text-slate-800 sm:block sm:text-[0.96rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "200ms" }}
             >
               {activeHeroVariant.microDescription}
