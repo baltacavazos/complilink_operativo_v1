@@ -1261,13 +1261,18 @@ function HeroSection() {
                 </span>
               </div>
 
-              <div className="mt-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Documento recomendado
-                </p>
+              <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-slate-50/90 px-4 py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                    Documento recomendado
+                  </p>
+                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                    Más útil para empezar
+                  </span>
+                </div>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{activePrediagnostic.document}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
-                <p className="mt-2 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
+                <p className="mt-1.5 text-sm leading-5 text-slate-700">{activePrediagnostic.reason}</p>
+                <p className="mt-1.5 text-sm font-medium leading-5 text-teal-800">{activePrediagnostic.nextStep}</p>
               </div>
             </div>
 

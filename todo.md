@@ -1970,3 +1970,4 @@
 - [x] Macro-bloque Recorte 22: compactar `SiteFooter` en `Home` para reducir altura al cierre móvil sin perder acceso legal básico.
 - [x] Macro-bloque Recorte 23: condensar la guía bajo el botón principal de `/auditar` para reducir scroll inicial sin perder orientación sobre foto o archivo.
 - [x] Macro-bloque Recorte 24: fusionar las ayudas bajo la CTA principal del hero en `Home` para reducir más altura arriba del pliegue sin perder garantías clave.
+- [x] Macro-bloque Recorte 25: compactar la tarjeta de documento recomendado dentro del hero de `Home` para reducir más altura arriba del pliegue sin perder la recomendación principal.
