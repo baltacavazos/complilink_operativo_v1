@@ -9571,16 +9571,16 @@ export default function Auditar() {
                       </Button>
                     )}
                     <div className="space-y-3">
-                      <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500">
+                      <p className="mx-auto max-w-[22rem] text-center text-[12px] leading-5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                            ? "Empieza con foto si lo tienes en papel. Si ya lo descargaste, sube el archivo directo."
+                            ? "Foto si está en papel. Archivo si ya lo descargaste."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
                                 ? "Abriremos tus archivos primero."
-                                : "Abriremos tus archivos; si prefieres foto puedes cambiarlo aquí."}
+                                : "Abriremos tus archivos primero; aquí puedes cambiarlo."}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[1rem] border border-teal-200 bg-teal-50/80 px-4 py-3 text-teal-950 shadow-sm">
