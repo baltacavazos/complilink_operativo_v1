@@ -9635,7 +9635,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft ? "mt-3 hidden sm:block" : "mt-3"} rounded-[1rem] border px-3.5 py-3 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"
@@ -9647,12 +9647,12 @@ export default function Auditar() {
                         uploadProgressState.title
                       )}
                     </p>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-2.5">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] opacity-80">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] opacity-80">
                           {uploadProgressState.eyebrow}
                         </p>
-                        <p className="mt-1.5 break-words text-sm font-semibold leading-5">
+                        <p className="mt-1 break-words text-sm font-semibold leading-5">
                           {uploadProgressHumanMessage}
                         </p>
                       </div>
@@ -9708,7 +9708,7 @@ export default function Auditar() {
                         style={{ width: `${uploadProgressState.progress}%` }}
                       />
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs opacity-90">
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] opacity-90">
                       <span className="font-semibold uppercase tracking-[0.14em]">
                         {uploadProgressState.stageLabel}
                       </span>
@@ -9722,12 +9722,11 @@ export default function Auditar() {
                       </span>
                     </div>
                     {isAutoAnalyzingSelectedFile ? (
-                      <p className="mt-2 text-sm leading-5 opacity-90">
-                        Ya recibimos tu documento. Enseguida abriremos la vista
-                        previa.
+                      <p className="mt-1.5 text-sm leading-5 opacity-90">
+                        Ya recibimos tu documento. Enseguida abriremos la vista previa.
                       </p>
                     ) : (
-                      <p className="mt-2 text-sm leading-5 opacity-90">
+                      <p className="mt-1.5 text-sm leading-5 opacity-90">
                         {uploadProgressState.description}
                       </p>
                     )}
@@ -9740,7 +9739,7 @@ export default function Auditar() {
 
                   <div
                     id="upload-guardrails-summary"
-                    className={`mt-3 ${pendingDraft ? "hidden sm:flex" : "flex"} flex-wrap items-center gap-2 rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-700`}
+                    className={`mt-2.5 ${pendingDraft ? "hidden sm:flex" : "flex"} flex-wrap items-center gap-1.5 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[11px] leading-4.5 text-slate-700`}
                   >
                     <span className="font-semibold text-slate-900">
                       Límites:

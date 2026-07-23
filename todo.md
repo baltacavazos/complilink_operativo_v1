@@ -1990,3 +1990,4 @@
 - [x] Macro-bloque Recorte 42: compactar el bloque de revisión automática y el aviso de documento sugerido en `/auditar` para reducir más scrolling antes de la carga efectiva.
 - [x] Macro-bloque Recorte 43: compactar la guía visual de cámara en `/auditar` para reducir scroll móvil antes de la carga efectiva sin perder orientación básica.
 - [x] Macro-bloque Recorte 44: compactar el apoyo y el estado bajo los botones de cámara/archivo en `/auditar` para reducir más scrolling móvil sin perder orientación del flujo.
+- [x] Macro-bloque Recorte 45: compactar el bloque de guardrails y progreso de carga en `/auditar` para reducir más scrolling móvil sin perder señales de estado y validación.
