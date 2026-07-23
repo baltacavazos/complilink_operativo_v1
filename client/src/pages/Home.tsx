@@ -1283,21 +1283,21 @@ function HeroSection() {
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
               <div className="space-y-2 max-[359px]:space-y-1.5">
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="flex flex-wrap gap-2">
                   {[
                     "Gratis para empezar",
-                    "Nadie de tu empresa lo ve",
+                    "Tu empresa no lo ve",
                   ].map((item) => (
-                    <div key={item} className="rounded-[1.05rem] border border-teal-100 bg-white/92 px-3 py-2 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{item}</p>
-                    </div>
+                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                      {item}
+                    </span>
                   ))}
                 </div>
                 <p className="text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF del documento que ya tengas. En unos segundos ves si tu pago merece una revisión más a fondo.
+                  Empieza con una foto o PDF y en segundos ves si tu pago merece una revisión más a fondo.
                 </p>
-                <p className="text-xs leading-5 text-slate-500">
-                  No necesitas cuenta para empezar y puedes borrar tu archivo cuando quieras.
+                <p className="text-[11px] leading-5 text-slate-500">
+                  Sin cuenta para empezar. Puedes borrar tu archivo cuando quieras.
                 </p>
               </div>
           </div>

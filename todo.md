@@ -1959,3 +1959,4 @@
 - [x] Macro-bloque Recorte 11: compactar el selector de estados del ejemplo en el hero de `Home` para reducir altura arriba del pliegue sin perder la lectura comparativa.
 - [x] Macro-bloque Recorte 12: compactar el detalle `Lo primero que verás` dentro del ejemplo del hero en `Home` para reducir altura arriba del pliegue sin perder claridad.
 - [x] Macro-bloque Recorte 13: fusionar las dos ayudas de arranque del hero en `Home` para dejar un solo bloque más corto arriba del pliegue.
+- [x] Macro-bloque Recorte 14: compactar el apoyo bajo la CTA principal del hero en `Home` para mantener garantías clave con menos altura arriba del pliegue.
