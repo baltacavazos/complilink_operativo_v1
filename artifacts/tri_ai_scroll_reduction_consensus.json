@@ -1,0 +1,985 @@
+{
+  "generated_at": "2026-07-23T01:51:23.647Z",
+  "source_paths": {
+    "home": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Home.tsx",
+    "access": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Access.tsx",
+    "auditar": "/home/ubuntu/complilink_operativo_v1/client/src/pages/Auditar.tsx",
+    "pricing": "/home/ubuntu/complilink_operativo_v1/client/src/lib/pricingExperience.ts"
+  },
+  "providers": [
+    {
+      "provider": "chatgpt",
+      "model": "gpt-4.1-mini-2025-04-14",
+      "data": {
+        "north_star": "Reducir bloques y scrolling en Home y /auditar para experiencia móvil más directa, priorizando claridad, confianza y conversión al primer documento.",
+        "home_scroll_reduction": {
+          "current_problem": "Home tiene demasiada altura visual con muchos bloques informativos y explicativos antes del primer scroll importante, lo que genera fatiga y dispersión.",
+          "blocks_to_remove": [
+            "MobilePriorityPathSection",
+            "GuidedTourSection",
+            "FindingsExamplesSection",
+            "PrivacySection",
+            "AppDownloadSection"
+          ],
+          "blocks_to_merge": [
+            "QuickTrustSection",
+            "HowItWorksSection"
+          ],
+          "blocks_to_keep_above_fold": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "FinalCtaSection"
+          ],
+          "recommended_order": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection",
+            "HowItWorksSection",
+            "FinalCtaSection",
+            "SiteFooter"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "/auditar tiene demasiados paneles, detalles y explicaciones visibles antes de la acción principal de subir o confirmar un documento, lo que genera mucho scrolling y dispersión en móvil.",
+          "blocks_to_remove": [
+            "HeliosCopilotSheet",
+            "comparisonHighlightCards",
+            "comparisonAlerts",
+            "commercePlans",
+            "commerceOneShots"
+          ],
+          "blocks_to_merge": [
+            "previewStructuredExtraction",
+            "previewEditableFields"
+          ],
+          "blocks_to_keep_first": [
+            "UploadSection",
+            "PreviewSection",
+            "NextStepSuggestion"
+          ],
+          "recommended_order": [
+            "UploadSection",
+            "PreviewSection",
+            "NextStepSuggestion",
+            "DossierSummary",
+            "TimelineEntries",
+            "DigitalArchive",
+            "LegalGateSection"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "/acceso tiene un flujo simple, pero la sección de opciones secundarias (Google, Manus) y mensajes puede extender la altura innecesariamente.",
+          "blocks_to_reduce": [
+            "secondaryOptions",
+            "statusAndErrorMessages"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Eliminar bloques secundarios y explicativos que no aportan valor inmediato para empezar, como MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection y AppDownloadSection.",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Estos bloques generan mucho scroll y no son críticos para la primera conversión ni para la confianza inicial."
+          },
+          {
+            "priority": 2,
+            "surface": "home",
+            "action": "Fusionar QuickTrustSection y HowItWorksSection en un solo bloque compacto para reducir altura y mejorar foco.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Ambos bloques tienen mensajes relacionados sobre confianza y proceso que pueden condensarse sin perder claridad."
+          },
+          {
+            "priority": 3,
+            "surface": "auditar",
+            "action": "Ocultar o mover a detalles el asesor laboral (HeliosCopilotSheet) y las comparaciones avanzadas para que no compitan con la acción principal de subir o confirmar documentos.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Estas secciones son valiosas pero no deben saturar la pantalla inicial de auditoría móvil."
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Fusionar vista previa estructurada y campos editables en un solo bloque compacto para revisión rápida antes de guardar.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce bloques y scrolling sin sacrificar la capacidad de corrección y revisión."
+          },
+          {
+            "priority": 5,
+            "surface": "auditar",
+            "action": "Mantener visible solo la sección de subida, vista previa y siguiente paso sugerido al inicio, relegando historial y bóveda a secciones colapsables o secundarias.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Prioriza la acción principal y reduce distracciones."
+          },
+          {
+            "priority": 6,
+            "surface": "access",
+            "action": "Reducir altura de opciones secundarias y mensajes de estado para que el foco sea el formulario principal de correo y código.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Mejora foco y reduce scroll en pantalla de acceso sin afectar funcionalidad."
+          },
+          {
+            "priority": 7,
+            "surface": "home|auditar",
+            "action": "Eliminar duplicación de señales entre bloques de privacidad y control visible, consolidando mensajes para evitar repetición.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Duplicación de mensajes de privacidad y control visible aparece en varios bloques, puede condensarse para ahorrar espacio."
+          }
+        ],
+        "do_not_cut": [
+          "HeroSection",
+          "HeliosFirstEntrySection",
+          "UploadSection",
+          "PreviewSection",
+          "FinalCtaSection",
+          "LegalGateSection",
+          "Primary CTA buttons",
+          "Privacy visible and control elements",
+          "First document upload flow"
+        ],
+        "quick_win_sequence": [
+          "Eliminar bloques secundarios en Home (MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection, AppDownloadSection)",
+          "Fusionar QuickTrustSection y HowItWorksSection en Home",
+          "Ocultar HeliosCopilotSheet y comparaciones avanzadas en /auditar",
+          "Fusionar vista previa estructurada y campos editables en /auditar",
+          "Reducir opciones secundarias en /acceso",
+          "Mantener solo subida, vista previa y siguiente paso arriba en /auditar",
+          "Consolidar mensajes duplicados de privacidad y control"
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "data": {
+        "north_star": "Convertir la sospecha en acción clara y protegida, con la menor fricción posible en móvil, fomentando la confianza y la conversión hacia la primera subida de documento.",
+        "home_scroll_reduction": {
+          "current_problem": "La página de inicio presenta una altura visual excesiva y demasiados bloques de información, lo que resulta en un scrolling prolongado y una experiencia móvil saturada antes de la acción principal.",
+          "blocks_to_remove": [
+            "AppDownloadSection (información de app en camino)",
+            "QuickTrustSection (detalles interactivos de privacidad)",
+            "MobileOnboardingSection (recorrido móvil)",
+            "GuidedTourSection (recorrido guiado)"
+          ],
+          "blocks_to_merge": [
+            "HeroSection + HeliosFirstEntrySection (consolidar propuesta de valor, carga inicial y demo rápida)"
+          ],
+          "blocks_to_keep_above_fold": [
+            "SiteHeader",
+            "Sección combinada 'Empezar Auditoría y Vista Previa' (titular, CTA principal, señales de confianza, demo simple, input de archivo)",
+            "MobileStickyCta"
+          ],
+          "recommended_order": [
+            "SiteHeader",
+            "Sección combinada 'Empezar Auditoría y Vista Previa'",
+            "FinalCtaSection (como punto de conversión secundario)",
+            "SiteFooter",
+            "MobileStickyCta"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "La experiencia /auditar muestra demasiados paneles y explicaciones detalladas antes de que el usuario pueda realizar la acción principal de subir o confirmar un documento.",
+          "blocks_to_remove": [
+            "Secciones detalladas de 'Ciclo de valor visible' y 'Lo que cuidamos al revisar' (en sidebar/footer de desktop)",
+            "Sección 'Qué suele aclararse mejor' (en sidebar/footer de desktop)",
+            "MobileOnboardingSteps (si estuviera activo)"
+          ],
+          "blocks_to_merge": [
+            "Bloques de carga de documentos (ej. 'Tu recibo o comprobante' y 'Sube tu recibo y empieza en menos de un minuto')",
+            "Detalles de 'Quick Calculator' y 'Mensajes listos para actuar' (ocultar tras un 'details' o botón 'Ver más')"
+          ],
+          "blocks_to_keep_first": [
+            "MobileAppShell (o encabezado equivalente)",
+            "Selectores de Tenant/Caso (si aplica)",
+            "Componente de Carga Principal (botones de cámara/archivo, reglas concisas, progreso)",
+            "Legal Gate (si es requerido)",
+            "Vista Previa del Borrador (si existe)"
+          ],
+          "recommended_order": [
+            "MobileAppShell (o encabezado equivalente)",
+            "Selectores de Tenant/Caso",
+            "Componente de Carga Principal",
+            "Legal Gate (si es requerido)",
+            "Vista Previa del Borrador (si existe)",
+            "Veredicto Post-Carga (si existe)",
+            "MobileStickyCta"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "La página de acceso tiene elementos visuales que añaden altura innecesaria, como la tarjeta de propuesta de valor y el mensaje de reconocimiento de correo.",
+          "blocks_to_reduce": [
+            "Tarjeta 'Tu avance sigue listo' (integrar mensaje principal y 'pills' de forma más compacta)",
+            "Tarjeta 'Te reconocimos en este equipo' (condensar a un mensaje inline menos prominente)"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Fusionar HeroSection y HeliosFirstEntrySection en un único bloque 'Empezar Auditoría y Vista Previa'.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Reduce el scroll inicial, clarifica la acción principal y consolida elementos clave de confianza y conversión."
+          },
+          {
+            "priority": 2,
+            "surface": "home",
+            "action": "Eliminar AppDownloadSection.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "La información sobre la app en camino es una distracción y puede reubicarse en el footer o una página 'Acerca de'."
+          },
+          {
+            "priority": 3,
+            "surface": "home",
+            "action": "Eliminar QuickTrustSection y PrivacySection, integrando las señales de confianza críticas en el bloque principal.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Demasiado detalle para la página de inicio. La confianza se puede transmitir de forma más concisa en el flujo de conversión principal."
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Simplificar el componente de carga de documentos, fusionando bloques redundantes y priorizando botones directos de cámara/archivo.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce el desorden visual antes de la acción principal, haciendo el proceso de carga más directo y similar a una app."
+          },
+          {
+            "priority": 5,
+            "surface": "auditar",
+            "action": "Ocultar el selector de workspaceSection para el flujo del primer documento (isFirstDocumentFlow), por defecto en 'Resumen'.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce la carga cognitiva para nuevos usuarios, enfocándolos en la tarea principal de subir y revisar su primer documento."
+          },
+          {
+            "priority": 6,
+            "surface": "access",
+            "action": "Condensar la tarjeta 'Tu avance sigue listo' en un banner más pequeño o texto inline.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Reduce la altura vertical y el peso visual, haciendo que el campo de correo electrónico sea el foco inmediato."
+          },
+          {
+            "priority": 7,
+            "surface": "auditar",
+            "action": "Presentar una versión compacta de la 'Quick Calculator' y 'Quick Scripts' post-carga, ocultando detalles tras un 'details' o botón 'Ver informe completo'.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce la sobrecarga visual inmediata después de una carga exitosa, permitiendo al usuario centrarse en el veredicto principal y los siguientes pasos."
+          }
+        ],
+        "do_not_cut": [
+          "SiteHeader (Home y Auditar)",
+          "MobileStickyCta (Home)",
+          "Botones CTA principales (Home y Auditar)",
+          "Legal Gate (Auditar)",
+          "Funcionalidad de carga de documentos (Auditar)",
+          "Vista previa y confirmación del borrador (Auditar)",
+          "Mensajes de error/estado (todas las superficies)",
+          "HeliosCopilotSheet (Auditar)",
+          "CasePreparationDrawer (Auditar)"
+        ],
+        "quick_win_sequence": [
+          "Eliminar AppDownloadSection de Home.",
+          "Integrar señales de confianza clave de QuickTrustSection en HeroSection y eliminar QuickTrustSection.",
+          "Condensar la tarjeta 'Tu avance sigue listo' en /acceso.",
+          "Simplificar el componente de carga de documentos en /auditar.",
+          "Ocultar el selector de workspaceSection para el flujo del primer documento en /auditar.",
+          "Condensar la 'Quick Calculator' y 'Quick Scripts' en /auditar (post-carga)."
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    },
+    {
+      "provider": "grok",
+      "model": "grok-4.3",
+      "data": {
+        "north_star": "Reducir scroll en Home y /auditar a una experiencia de una mano tipo app, manteniendo claridad, confianza, privacidad visible y conversión hacia la primera subida.",
+        "home_scroll_reduction": {
+          "current_problem": "Home tiene demasiada información antes del primer scroll importante: hero + múltiples bloques de onboarding, ejemplos, social proof y FAQs visibles sin acción principal clara.",
+          "blocks_to_remove": [
+            "FindingsExamplesSection",
+            "CopilotPreviewSection",
+            "MobileOnboardingSection"
+          ],
+          "blocks_to_merge": [
+            "HowItWorksSection",
+            "QuickTrustSection"
+          ],
+          "blocks_to_keep_above_fold": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection"
+          ],
+          "recommended_order": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection",
+            "HowItWorksSection",
+            "FinalCtaSection"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "/auditar muestra demasiados paneles y explicaciones visibles antes de la acción principal de subida, con drawers, comparaciones y monitores que compiten por atención.",
+          "blocks_to_remove": [
+            "HeliosCopilotSheet",
+            "comparison grid",
+            "monitoring panel"
+          ],
+          "blocks_to_merge": [
+            "upload progress + preview card"
+          ],
+          "blocks_to_keep_first": [
+            "upload primary CTA",
+            "legal gate inline",
+            "preview result"
+          ],
+          "recommended_order": [
+            "upload primary",
+            "preview result",
+            "next document suggestion",
+            "digital archive"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "/acceso tiene bloques secundarios de Google/Manús que diluyen la ruta principal de correo + código.",
+          "blocks_to_reduce": [
+            "secondary login options",
+            "CEO panel drawer"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Colapsar hero + primera entrada en un solo bloque con CTA principal arriba del fold",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Elimina scroll innecesario manteniendo conversión y privacidad visible"
+          },
+          {
+            "priority": 2,
+            "surface": "auditar",
+            "action": "Mover comparaciones y monitores a drawer secundario, dejar solo upload + preview",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Reduce paneles antes de la acción principal sin perder claridad"
+          },
+          {
+            "priority": 3,
+            "surface": "home",
+            "action": "Fusionar HowItWorks + QuickTrust en una sola sección compacta",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Elimina duplicación de señales de confianza"
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Hacer legal gate inline y opcional hasta el momento de guardar",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Evita fricción temprana manteniendo cumplimiento"
+          },
+          {
+            "priority": 5,
+            "surface": "access",
+            "action": "Ocultar opciones secundarias de login detrás de un acordeón",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Simplifica ruta principal sin sacrificar alternativas"
+          },
+          {
+            "priority": 6,
+            "surface": "home",
+            "action": "Eliminar FindingsExamplesSection y CopilotPreviewSection del flujo inicial",
+            "expected_scroll_savings": "medium",
+            "risk": "medium",
+            "why": "Son bloques de profundidad que pueden ir después de la primera conversión"
+          },
+          {
+            "priority": 7,
+            "surface": "cross_app",
+            "action": "Unificar sticky CTA móvil con un solo botón de acción principal",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Garantiza experiencia de una mano en ambos flujos"
+          }
+        ],
+        "do_not_cut": [
+          "privacy signals",
+          "primary upload CTA",
+          "legal gate versionado",
+          "conversion buttons",
+          "HeliosFirstEntrySection"
+        ],
+        "quick_win_sequence": [
+          "Colapsar hero Home",
+          "Mover comparaciones de /auditar a drawer",
+          "Fusionar HowItWorks+Trust",
+          "Hacer legal gate inline",
+          "Unificar sticky CTA móvil",
+          "Ocultar opciones secundarias en /acceso"
+        ],
+        "confidence": "high"
+      },
+      "ok": true
+    }
+  ],
+  "consensus": {
+    "provider_count": 3,
+    "ranked_actions": [
+      {
+        "priority": 1,
+        "support": 1,
+        "surface": "home",
+        "action": "Eliminar bloques secundarios y explicativos que no aportan valor inmediato para empezar, como MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection y AppDownloadSection.",
+        "expected_scroll_savings": "high",
+        "risk": "low",
+        "why": "Estos bloques generan mucho scroll y no son críticos para la primera conversión ni para la confianza inicial."
+      },
+      {
+        "priority": 2,
+        "support": 1,
+        "surface": "home",
+        "action": "Fusionar QuickTrustSection y HowItWorksSection en un solo bloque compacto para reducir altura y mejorar foco.",
+        "expected_scroll_savings": "medium",
+        "risk": "low",
+        "why": "Ambos bloques tienen mensajes relacionados sobre confianza y proceso que pueden condensarse sin perder claridad."
+      },
+      {
+        "priority": 3,
+        "support": 1,
+        "surface": "auditar",
+        "action": "Ocultar o mover a detalles el asesor laboral (HeliosCopilotSheet) y las comparaciones avanzadas para que no compitan con la acción principal de subir o confirmar documentos.",
+        "expected_scroll_savings": "high",
+        "risk": "medium",
+        "why": "Estas secciones son valiosas pero no deben saturar la pantalla inicial de auditoría móvil."
+      },
+      {
+        "priority": 4,
+        "support": 1,
+        "surface": "auditar",
+        "action": "Fusionar vista previa estructurada y campos editables en un solo bloque compacto para revisión rápida antes de guardar.",
+        "expected_scroll_savings": "medium",
+        "risk": "low",
+        "why": "Reduce bloques y scrolling sin sacrificar la capacidad de corrección y revisión."
+      },
+      {
+        "priority": 5,
+        "support": 1,
+        "surface": "auditar",
+        "action": "Mantener visible solo la sección de subida, vista previa y siguiente paso sugerido al inicio, relegando historial y bóveda a secciones colapsables o secundarias.",
+        "expected_scroll_savings": "medium",
+        "risk": "low",
+        "why": "Prioriza la acción principal y reduce distracciones."
+      },
+      {
+        "priority": 6,
+        "support": 1,
+        "surface": "access",
+        "action": "Reducir altura de opciones secundarias y mensajes de estado para que el foco sea el formulario principal de correo y código.",
+        "expected_scroll_savings": "low",
+        "risk": "low",
+        "why": "Mejora foco y reduce scroll en pantalla de acceso sin afectar funcionalidad."
+      },
+      {
+        "priority": 7,
+        "support": 1,
+        "surface": "home|auditar",
+        "action": "Eliminar duplicación de señales entre bloques de privacidad y control visible, consolidando mensajes para evitar repetición.",
+        "expected_scroll_savings": "low",
+        "risk": "low",
+        "why": "Duplicación de mensajes de privacidad y control visible aparece en varios bloques, puede condensarse para ahorrar espacio."
+      }
+    ],
+    "representative_views": [
+      {
+        "provider": "chatgpt",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "north_star": "Reducir bloques y scrolling en Home y /auditar para experiencia móvil más directa, priorizando claridad, confianza y conversión al primer documento.",
+        "home_scroll_reduction": {
+          "current_problem": "Home tiene demasiada altura visual con muchos bloques informativos y explicativos antes del primer scroll importante, lo que genera fatiga y dispersión.",
+          "blocks_to_remove": [
+            "MobilePriorityPathSection",
+            "GuidedTourSection",
+            "FindingsExamplesSection",
+            "PrivacySection",
+            "AppDownloadSection"
+          ],
+          "blocks_to_merge": [
+            "QuickTrustSection",
+            "HowItWorksSection"
+          ],
+          "blocks_to_keep_above_fold": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "FinalCtaSection"
+          ],
+          "recommended_order": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection",
+            "HowItWorksSection",
+            "FinalCtaSection",
+            "SiteFooter"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "/auditar tiene demasiados paneles, detalles y explicaciones visibles antes de la acción principal de subir o confirmar un documento, lo que genera mucho scrolling y dispersión en móvil.",
+          "blocks_to_remove": [
+            "HeliosCopilotSheet",
+            "comparisonHighlightCards",
+            "comparisonAlerts",
+            "commercePlans",
+            "commerceOneShots"
+          ],
+          "blocks_to_merge": [
+            "previewStructuredExtraction",
+            "previewEditableFields"
+          ],
+          "blocks_to_keep_first": [
+            "UploadSection",
+            "PreviewSection",
+            "NextStepSuggestion"
+          ],
+          "recommended_order": [
+            "UploadSection",
+            "PreviewSection",
+            "NextStepSuggestion",
+            "DossierSummary",
+            "TimelineEntries",
+            "DigitalArchive",
+            "LegalGateSection"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "/acceso tiene un flujo simple, pero la sección de opciones secundarias (Google, Manus) y mensajes puede extender la altura innecesariamente.",
+          "blocks_to_reduce": [
+            "secondaryOptions",
+            "statusAndErrorMessages"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Eliminar bloques secundarios y explicativos que no aportan valor inmediato para empezar, como MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection y AppDownloadSection.",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Estos bloques generan mucho scroll y no son críticos para la primera conversión ni para la confianza inicial."
+          },
+          {
+            "priority": 2,
+            "surface": "home",
+            "action": "Fusionar QuickTrustSection y HowItWorksSection en un solo bloque compacto para reducir altura y mejorar foco.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Ambos bloques tienen mensajes relacionados sobre confianza y proceso que pueden condensarse sin perder claridad."
+          },
+          {
+            "priority": 3,
+            "surface": "auditar",
+            "action": "Ocultar o mover a detalles el asesor laboral (HeliosCopilotSheet) y las comparaciones avanzadas para que no compitan con la acción principal de subir o confirmar documentos.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Estas secciones son valiosas pero no deben saturar la pantalla inicial de auditoría móvil."
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Fusionar vista previa estructurada y campos editables en un solo bloque compacto para revisión rápida antes de guardar.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce bloques y scrolling sin sacrificar la capacidad de corrección y revisión."
+          },
+          {
+            "priority": 5,
+            "surface": "auditar",
+            "action": "Mantener visible solo la sección de subida, vista previa y siguiente paso sugerido al inicio, relegando historial y bóveda a secciones colapsables o secundarias.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Prioriza la acción principal y reduce distracciones."
+          },
+          {
+            "priority": 6,
+            "surface": "access",
+            "action": "Reducir altura de opciones secundarias y mensajes de estado para que el foco sea el formulario principal de correo y código.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Mejora foco y reduce scroll en pantalla de acceso sin afectar funcionalidad."
+          },
+          {
+            "priority": 7,
+            "surface": "home|auditar",
+            "action": "Eliminar duplicación de señales entre bloques de privacidad y control visible, consolidando mensajes para evitar repetición.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Duplicación de mensajes de privacidad y control visible aparece en varios bloques, puede condensarse para ahorrar espacio."
+          }
+        ],
+        "quick_win_sequence": [
+          "Eliminar bloques secundarios en Home (MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection, AppDownloadSection)",
+          "Fusionar QuickTrustSection y HowItWorksSection en Home",
+          "Ocultar HeliosCopilotSheet y comparaciones avanzadas en /auditar",
+          "Fusionar vista previa estructurada y campos editables en /auditar",
+          "Reducir opciones secundarias en /acceso",
+          "Mantener solo subida, vista previa y siguiente paso arriba en /auditar",
+          "Consolidar mensajes duplicados de privacidad y control"
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-2.5-flash",
+        "north_star": "Convertir la sospecha en acción clara y protegida, con la menor fricción posible en móvil, fomentando la confianza y la conversión hacia la primera subida de documento.",
+        "home_scroll_reduction": {
+          "current_problem": "La página de inicio presenta una altura visual excesiva y demasiados bloques de información, lo que resulta en un scrolling prolongado y una experiencia móvil saturada antes de la acción principal.",
+          "blocks_to_remove": [
+            "AppDownloadSection (información de app en camino)",
+            "QuickTrustSection (detalles interactivos de privacidad)",
+            "MobileOnboardingSection (recorrido móvil)",
+            "GuidedTourSection (recorrido guiado)"
+          ],
+          "blocks_to_merge": [
+            "HeroSection + HeliosFirstEntrySection (consolidar propuesta de valor, carga inicial y demo rápida)"
+          ],
+          "blocks_to_keep_above_fold": [
+            "SiteHeader",
+            "Sección combinada 'Empezar Auditoría y Vista Previa' (titular, CTA principal, señales de confianza, demo simple, input de archivo)",
+            "MobileStickyCta"
+          ],
+          "recommended_order": [
+            "SiteHeader",
+            "Sección combinada 'Empezar Auditoría y Vista Previa'",
+            "FinalCtaSection (como punto de conversión secundario)",
+            "SiteFooter",
+            "MobileStickyCta"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "La experiencia /auditar muestra demasiados paneles y explicaciones detalladas antes de que el usuario pueda realizar la acción principal de subir o confirmar un documento.",
+          "blocks_to_remove": [
+            "Secciones detalladas de 'Ciclo de valor visible' y 'Lo que cuidamos al revisar' (en sidebar/footer de desktop)",
+            "Sección 'Qué suele aclararse mejor' (en sidebar/footer de desktop)",
+            "MobileOnboardingSteps (si estuviera activo)"
+          ],
+          "blocks_to_merge": [
+            "Bloques de carga de documentos (ej. 'Tu recibo o comprobante' y 'Sube tu recibo y empieza en menos de un minuto')",
+            "Detalles de 'Quick Calculator' y 'Mensajes listos para actuar' (ocultar tras un 'details' o botón 'Ver más')"
+          ],
+          "blocks_to_keep_first": [
+            "MobileAppShell (o encabezado equivalente)",
+            "Selectores de Tenant/Caso (si aplica)",
+            "Componente de Carga Principal (botones de cámara/archivo, reglas concisas, progreso)",
+            "Legal Gate (si es requerido)",
+            "Vista Previa del Borrador (si existe)"
+          ],
+          "recommended_order": [
+            "MobileAppShell (o encabezado equivalente)",
+            "Selectores de Tenant/Caso",
+            "Componente de Carga Principal",
+            "Legal Gate (si es requerido)",
+            "Vista Previa del Borrador (si existe)",
+            "Veredicto Post-Carga (si existe)",
+            "MobileStickyCta"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "La página de acceso tiene elementos visuales que añaden altura innecesaria, como la tarjeta de propuesta de valor y el mensaje de reconocimiento de correo.",
+          "blocks_to_reduce": [
+            "Tarjeta 'Tu avance sigue listo' (integrar mensaje principal y 'pills' de forma más compacta)",
+            "Tarjeta 'Te reconocimos en este equipo' (condensar a un mensaje inline menos prominente)"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Fusionar HeroSection y HeliosFirstEntrySection en un único bloque 'Empezar Auditoría y Vista Previa'.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Reduce el scroll inicial, clarifica la acción principal y consolida elementos clave de confianza y conversión."
+          },
+          {
+            "priority": 2,
+            "surface": "home",
+            "action": "Eliminar AppDownloadSection.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "La información sobre la app en camino es una distracción y puede reubicarse en el footer o una página 'Acerca de'."
+          },
+          {
+            "priority": 3,
+            "surface": "home",
+            "action": "Eliminar QuickTrustSection y PrivacySection, integrando las señales de confianza críticas en el bloque principal.",
+            "expected_scroll_savings": "high",
+            "risk": "medium",
+            "why": "Demasiado detalle para la página de inicio. La confianza se puede transmitir de forma más concisa en el flujo de conversión principal."
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Simplificar el componente de carga de documentos, fusionando bloques redundantes y priorizando botones directos de cámara/archivo.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce el desorden visual antes de la acción principal, haciendo el proceso de carga más directo y similar a una app."
+          },
+          {
+            "priority": 5,
+            "surface": "auditar",
+            "action": "Ocultar el selector de workspaceSection para el flujo del primer documento (isFirstDocumentFlow), por defecto en 'Resumen'.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce la carga cognitiva para nuevos usuarios, enfocándolos en la tarea principal de subir y revisar su primer documento."
+          },
+          {
+            "priority": 6,
+            "surface": "access",
+            "action": "Condensar la tarjeta 'Tu avance sigue listo' en un banner más pequeño o texto inline.",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Reduce la altura vertical y el peso visual, haciendo que el campo de correo electrónico sea el foco inmediato."
+          },
+          {
+            "priority": 7,
+            "surface": "auditar",
+            "action": "Presentar una versión compacta de la 'Quick Calculator' y 'Quick Scripts' post-carga, ocultando detalles tras un 'details' o botón 'Ver informe completo'.",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Reduce la sobrecarga visual inmediata después de una carga exitosa, permitiendo al usuario centrarse en el veredicto principal y los siguientes pasos."
+          }
+        ],
+        "quick_win_sequence": [
+          "Eliminar AppDownloadSection de Home.",
+          "Integrar señales de confianza clave de QuickTrustSection en HeroSection y eliminar QuickTrustSection.",
+          "Condensar la tarjeta 'Tu avance sigue listo' en /acceso.",
+          "Simplificar el componente de carga de documentos en /auditar.",
+          "Ocultar el selector de workspaceSection para el flujo del primer documento en /auditar.",
+          "Condensar la 'Quick Calculator' y 'Quick Scripts' en /auditar (post-carga)."
+        ],
+        "confidence": "high"
+      },
+      {
+        "provider": "grok",
+        "model": "grok-4.3",
+        "north_star": "Reducir scroll en Home y /auditar a una experiencia de una mano tipo app, manteniendo claridad, confianza, privacidad visible y conversión hacia la primera subida.",
+        "home_scroll_reduction": {
+          "current_problem": "Home tiene demasiada información antes del primer scroll importante: hero + múltiples bloques de onboarding, ejemplos, social proof y FAQs visibles sin acción principal clara.",
+          "blocks_to_remove": [
+            "FindingsExamplesSection",
+            "CopilotPreviewSection",
+            "MobileOnboardingSection"
+          ],
+          "blocks_to_merge": [
+            "HowItWorksSection",
+            "QuickTrustSection"
+          ],
+          "blocks_to_keep_above_fold": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection"
+          ],
+          "recommended_order": [
+            "HeroSection",
+            "HeliosFirstEntrySection",
+            "QuickTrustSection",
+            "HowItWorksSection",
+            "FinalCtaSection"
+          ]
+        },
+        "auditar_scroll_reduction": {
+          "current_problem": "/auditar muestra demasiados paneles y explicaciones visibles antes de la acción principal de subida, con drawers, comparaciones y monitores que compiten por atención.",
+          "blocks_to_remove": [
+            "HeliosCopilotSheet",
+            "comparison grid",
+            "monitoring panel"
+          ],
+          "blocks_to_merge": [
+            "upload progress + preview card"
+          ],
+          "blocks_to_keep_first": [
+            "upload primary CTA",
+            "legal gate inline",
+            "preview result"
+          ],
+          "recommended_order": [
+            "upload primary",
+            "preview result",
+            "next document suggestion",
+            "digital archive"
+          ]
+        },
+        "access_scroll_reduction": {
+          "current_problem": "/acceso tiene bloques secundarios de Google/Manús que diluyen la ruta principal de correo + código.",
+          "blocks_to_reduce": [
+            "secondary login options",
+            "CEO panel drawer"
+          ]
+        },
+        "top_7_actions": [
+          {
+            "priority": 1,
+            "surface": "home",
+            "action": "Colapsar hero + primera entrada en un solo bloque con CTA principal arriba del fold",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Elimina scroll innecesario manteniendo conversión y privacidad visible"
+          },
+          {
+            "priority": 2,
+            "surface": "auditar",
+            "action": "Mover comparaciones y monitores a drawer secundario, dejar solo upload + preview",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Reduce paneles antes de la acción principal sin perder claridad"
+          },
+          {
+            "priority": 3,
+            "surface": "home",
+            "action": "Fusionar HowItWorks + QuickTrust en una sola sección compacta",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Elimina duplicación de señales de confianza"
+          },
+          {
+            "priority": 4,
+            "surface": "auditar",
+            "action": "Hacer legal gate inline y opcional hasta el momento de guardar",
+            "expected_scroll_savings": "medium",
+            "risk": "low",
+            "why": "Evita fricción temprana manteniendo cumplimiento"
+          },
+          {
+            "priority": 5,
+            "surface": "access",
+            "action": "Ocultar opciones secundarias de login detrás de un acordeón",
+            "expected_scroll_savings": "low",
+            "risk": "low",
+            "why": "Simplifica ruta principal sin sacrificar alternativas"
+          },
+          {
+            "priority": 6,
+            "surface": "home",
+            "action": "Eliminar FindingsExamplesSection y CopilotPreviewSection del flujo inicial",
+            "expected_scroll_savings": "medium",
+            "risk": "medium",
+            "why": "Son bloques de profundidad que pueden ir después de la primera conversión"
+          },
+          {
+            "priority": 7,
+            "surface": "cross_app",
+            "action": "Unificar sticky CTA móvil con un solo botón de acción principal",
+            "expected_scroll_savings": "high",
+            "risk": "low",
+            "why": "Garantiza experiencia de una mano en ambos flujos"
+          }
+        ],
+        "quick_win_sequence": [
+          "Colapsar hero Home",
+          "Mover comparaciones de /auditar a drawer",
+          "Fusionar HowItWorks+Trust",
+          "Hacer legal gate inline",
+          "Unificar sticky CTA móvil",
+          "Ocultar opciones secundarias en /acceso"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "merged_summary": {
+      "home_scroll_reduction": {
+        "current_problem": "Home tiene demasiada altura visual con muchos bloques informativos y explicativos antes del primer scroll importante, lo que genera fatiga y dispersión.",
+        "blocks_to_remove": [
+          "MobilePriorityPathSection",
+          "GuidedTourSection",
+          "FindingsExamplesSection",
+          "PrivacySection",
+          "AppDownloadSection"
+        ],
+        "blocks_to_merge": [
+          "QuickTrustSection",
+          "HowItWorksSection"
+        ],
+        "blocks_to_keep_above_fold": [
+          "HeroSection",
+          "HeliosFirstEntrySection",
+          "FinalCtaSection"
+        ],
+        "recommended_order": [
+          "HeroSection",
+          "HeliosFirstEntrySection",
+          "QuickTrustSection",
+          "HowItWorksSection",
+          "FinalCtaSection",
+          "SiteFooter"
+        ]
+      },
+      "auditar_scroll_reduction": {
+        "current_problem": "/auditar tiene demasiados paneles, detalles y explicaciones visibles antes de la acción principal de subir o confirmar un documento, lo que genera mucho scrolling y dispersión en móvil.",
+        "blocks_to_remove": [
+          "HeliosCopilotSheet",
+          "comparisonHighlightCards",
+          "comparisonAlerts",
+          "commercePlans",
+          "commerceOneShots"
+        ],
+        "blocks_to_merge": [
+          "previewStructuredExtraction",
+          "previewEditableFields"
+        ],
+        "blocks_to_keep_first": [
+          "UploadSection",
+          "PreviewSection",
+          "NextStepSuggestion"
+        ],
+        "recommended_order": [
+          "UploadSection",
+          "PreviewSection",
+          "NextStepSuggestion",
+          "DossierSummary",
+          "TimelineEntries",
+          "DigitalArchive",
+          "LegalGateSection"
+        ]
+      },
+      "access_scroll_reduction": {
+        "current_problem": "/acceso tiene un flujo simple, pero la sección de opciones secundarias (Google, Manus) y mensajes puede extender la altura innecesariamente.",
+        "blocks_to_reduce": [
+          "secondaryOptions",
+          "statusAndErrorMessages"
+        ]
+      },
+      "do_not_cut": [
+        "HeroSection",
+        "HeliosFirstEntrySection",
+        "UploadSection",
+        "PreviewSection",
+        "FinalCtaSection",
+        "LegalGateSection",
+        "Primary CTA buttons",
+        "Privacy visible and control elements",
+        "First document upload flow"
+      ],
+      "quick_win_sequence": [
+        "Eliminar bloques secundarios en Home (MobilePriorityPathSection, GuidedTourSection, FindingsExamplesSection, PrivacySection, AppDownloadSection)",
+        "Fusionar QuickTrustSection y HowItWorksSection en Home",
+        "Ocultar HeliosCopilotSheet y comparaciones avanzadas en /auditar",
+        "Fusionar vista previa estructurada y campos editables en /auditar",
+        "Reducir opciones secundarias en /acceso",
+        "Mantener solo subida, vista previa y siguiente paso arriba en /auditar",
+        "Consolidar mensajes duplicados de privacidad y control"
+      ]
+    }
+  }
+}

@@ -50,7 +50,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("<HeroSection />");
     expect(homeSource).toContain("<HeliosFirstEntrySection />");
     expect(homeSource).toContain("<HowItWorksSection />");
-    expect(homeSource).toContain("<QuickTrustSection />");
+    expect(homeSource).not.toContain("<QuickTrustSection />");
     expect(homeSource).toContain("<FinalCtaSection />");
     expect(homeSource).not.toContain("<ConfidenceMagicSection />");
     expect(homeSource).not.toContain("<FAQSection />");

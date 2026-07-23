@@ -3104,9 +3104,7 @@ export default function Home() {
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
-      <QuickTrustSection />
       <HowItWorksSection />
-      <AppDownloadSection />
       <FinalCtaSection />
       <SiteFooter />
       <MobileStickyCta />

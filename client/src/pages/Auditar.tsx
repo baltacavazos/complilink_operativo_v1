@@ -6167,6 +6167,7 @@ export default function Auditar() {
     documents.length > 0 || Boolean(lastUpload) || Boolean(pendingDraft);
   const showWorkspaceSectionSelector =
     hasDossierActivity &&
+    documents.length > 1 &&
     !selectedFile &&
     !pendingDraft &&
     !shouldCompactPostUploadExperience;

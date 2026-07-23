@@ -1946,3 +1946,6 @@
 - [x] Macro-bloque App shell móvil 1: consolidar navegación, jerarquía y accesos rápidos móviles para que la experiencia se sienta más tipo app.
 - [x] Macro-bloque Cámara/Subida 1: priorizar captura y subida desde celular con un flujo más inmediato, claro y de una sola intención principal.
 - [x] Macro-bloque App shell móvil 2: extender el app shell a la entrada no autenticada de `/auditar` para que el flujo móvil conserve una jerarquía tipo app desde el inicio.
+- [x] Macro-bloque Recorte 1: consensuar con tres IAs cómo reducir scrolling en `Home` y `/auditar`, fusionando o retirando bloques repetitivos sin perder claridad.
+- [x] Macro-bloque Recorte 2: aplicar el recorte estructural de mayor impacto en `Home` para dejar menos altura total arriba del pliegue.
+- [x] Macro-bloque Recorte 3: aplicar el recorte estructural de mayor impacto en `/auditar` para dejar menos scroll y menos bloques compitiendo.
