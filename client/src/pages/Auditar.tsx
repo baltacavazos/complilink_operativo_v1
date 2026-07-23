@@ -9295,23 +9295,23 @@ export default function Auditar() {
                 </p>
               ) : null}
 
-              <div
-                ref={uploadSectionRef}
-                className="mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5"
-              >
-                <div className="flex items-center gap-3 rounded-[1.1rem] border border-slate-200 bg-white px-3 py-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-white">
-                    <FileUp className="h-5 w-5" strokeWidth={1.8} />
+                <div
+                  ref={uploadSectionRef}
+                  className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3.5 sm:p-4"
+                >
+                  <div className="flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
+                      <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="font-semibold leading-5 text-slate-950">
+                        Sube tu recibo o comprobante
+                      </p>
+                      <p className="text-sm leading-5 text-slate-600">
+                        Foto o archivo. Lo revisamos al momento y después decides si se guarda.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-950">
-                      Sube tu recibo o comprobante
-                    </p>
-                    <p className="text-sm leading-5 text-slate-600">
-                      Foto o archivo. Lo revisamos al momento y decides después si se guarda.
-                    </p>
-                  </div>
-                </div>
 
                 <div className="mt-4 hidden">
                   <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
