@@ -8564,12 +8564,12 @@ export default function Auditar() {
                       <p className="text-sm font-semibold text-slate-950">
                         Más opciones si quieres profundizar
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
-                        Dejamos aquí lo secundario para no distraerte del siguiente paso principal ni hacerte perder el hilo del expediente.
+                      <p className="mt-1 text-sm leading-5 text-slate-600">
+                        Aquí queda lo secundario para no distraerte del siguiente paso.
                       </p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                      Abrir detalle
+                      Ver más
                     </span>
                   </summary>
 
