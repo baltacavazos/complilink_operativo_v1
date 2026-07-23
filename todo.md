@@ -1958,3 +1958,4 @@
 - [x] Macro-bloque Recorte 10: fusionar la tarjeta introductoria con la tarjeta de revisión automática en `/auditar` para dejar una sola entrada más corta antes de capturar o subir.
 - [x] Macro-bloque Recorte 11: compactar el selector de estados del ejemplo en el hero de `Home` para reducir altura arriba del pliegue sin perder la lectura comparativa.
 - [x] Macro-bloque Recorte 12: compactar el detalle `Lo primero que verás` dentro del ejemplo del hero en `Home` para reducir altura arriba del pliegue sin perder claridad.
+- [x] Macro-bloque Recorte 13: fusionar las dos ayudas de arranque del hero en `Home` para dejar un solo bloque más corto arriba del pliegue.

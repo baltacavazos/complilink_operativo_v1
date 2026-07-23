@@ -1243,38 +1243,33 @@ function HeroSection() {
               className={
                 isShortPaidCampaignHero
                   ? "hidden"
-                  : "motion-enter-soft order-3 mt-4 hidden w-full max-w-xl rounded-[1.45rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_20px_44px_-36px_rgba(15,23,42,0.24)] sm:order-none sm:block sm:p-4"
+                  : "motion-enter-soft order-3 mt-4 hidden w-full max-w-xl rounded-[1.35rem] border border-teal-100/80 bg-white/96 p-4 shadow-[0_20px_44px_-36px_rgba(15,23,42,0.24)] sm:order-none sm:block"
               }
               style={{ ["--motion-delay" as string]: "250ms" }}
             >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Si no sabes con qué empezar
-                </p>
-                <p className="mt-1 text-sm leading-6 text-slate-700">
-Empieza por el papel que tengas más a la mano: un recibo reciente, una foto clara o el comprobante del mismo mes.
-                </p>
-              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                    Empieza por el documento que ya tengas
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-700">
+                    Un recibo reciente, una foto clara o el comprobante del mismo mes suele bastar para arrancar.
+                  </p>
+                </div>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                  Empieza por un solo recibo
-                </span>
-            </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-                  Documento recomendado para arrancar
+                  Un solo recibo basta
                 </span>
               </div>
-              <p className="mt-3 text-sm font-semibold leading-6 text-slate-950 sm:text-[0.98rem]">{activePrediagnostic.resultTitle}</p>
-              <p className="mt-3 rounded-[1.15rem] border border-white bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-950 shadow-sm">
-                {activePrediagnostic.document}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
-              <p className="mt-3 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
+
+              <div className="mt-3 rounded-[1.15rem] border border-slate-200 bg-slate-50/90 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  Documento recomendado
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{activePrediagnostic.document}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">{activePrediagnostic.reason}</p>
+                <p className="mt-2 text-sm font-medium leading-6 text-teal-800">{activePrediagnostic.nextStep}</p>
+              </div>
             </div>
-          </div>
 
           <div
             className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2.5 max-[359px]:gap-2 sm:order-none sm:mt-6 sm:max-w-none sm:items-start"
