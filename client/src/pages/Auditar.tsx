@@ -9557,10 +9557,10 @@ export default function Auditar() {
                             : uploadPrimaryActionLabel}
                       </Button>
                     )}
-                    <div className="space-y-3">
-                      <p className="mx-auto max-w-[22rem] text-center text-[12px] leading-5 text-slate-500">
+                    <div className="space-y-2.5">
+                      <p className="mx-auto max-w-[22rem] text-center text-[12px] leading-4.5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
-                          ? "Tu documento está siendo analizado."
+                          ? "Tu documento se está analizando."
                           : shouldCompactMobileUploadEntry
                             ? "Foto si está en papel. Archivo si ya lo descargaste."
                             : preferredCaptureMode === "camera"
@@ -9570,19 +9570,19 @@ export default function Auditar() {
                                 : "Abriremos tus archivos primero; aquí puedes cambiarlo."}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
-                        <div className="rounded-[1rem] border border-teal-200 bg-teal-50/80 px-4 py-3 text-teal-950 shadow-sm">
-                          <div className="flex items-start gap-3">
-                            <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
+                        <div className="rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-3.5 py-2.5 text-teal-950 shadow-sm">
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
                               <RefreshCw
-                                className="h-4 w-4 animate-spin"
+                                className="h-3.5 w-3.5 animate-spin"
                                 strokeWidth={1.8}
                               />
                             </span>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold">
+                              <p className="text-sm font-semibold leading-5">
                                 Documento recibido
                               </p>
-                              <p className="mt-1 text-xs leading-5 text-teal-900/90">
+                              <p className="mt-0.5 text-xs leading-4.5 text-teal-900/90">
                                 Lo estamos analizando. En breve verás tu borrador.
                               </p>
                             </div>
