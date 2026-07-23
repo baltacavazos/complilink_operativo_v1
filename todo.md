@@ -1933,13 +1933,15 @@
 - [x] Micro-ronda app-first LVIII: compactar la ayuda del bloque postresultado en `/auditar` para que decidir si sumar otra pieza se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LIX: compactar la ayuda del bloque de borrado visible en `/auditar` para que el control sobre los documentos se entienda con menos lectura secundaria.
 - [x] Micro-ronda app-first LX: compactar la ayuda bajo el CTA de agregar otro documento en `/auditar` para que sumar otra pieza útil se entienda con menos lectura secundaria.
-- [ ] Micro-ronda app-first LXI: compactar la ayuda del bloque `Qué pasa con tu archivo` en `/auditar` para que el manejo del documento se entienda con menos lectura secundaria.
+- [x] Micro-ronda app-first LXI: compactar la ayuda del bloque `Qué pasa con tu archivo` en `/auditar` para que el manejo del documento se entienda con menos lectura secundaria.
 - [x] Macro-pase app-first A: consolidar una sola priorización tri-IA para detectar los cambios de mayor impacto en Home, /auditar y /acceso.
-- [ ] Macro-pase app-first B: simplificar la experiencia móvil por bloques completos para reducir pasos, lectura secundaria y fricción de decisión.
-- [ ] Macro-pase app-first C: dejar la base de navegación, estados y mensajes encaminada a evolución nativa iOS/Android sin romper la web actual.
+- [x] Macro-pase app-first B: simplificar la experiencia móvil por bloques completos para reducir pasos, lectura secundaria y fricción de decisión.
+- [x] Macro-pase app-first C: dejar la base de navegación, estados y mensajes encaminada a evolución nativa iOS/Android sin romper la web actual.
 - [x] Macro-pase app-first A: consolidar una sola priorización tri-IA para detectar los cambios de mayor impacto en Home, /auditar y /acceso.
 - [x] Macro-bloque Home 1: dejar Home con una activación más directa, menos bloques compitiendo arriba y foco en una sola acción principal.
 - [x] Macro-bloque Acceso 1: convertir `/acceso` en continuidad sin ansiedad, con un solo camino y menos estados visibles compitiendo.
 - [x] Macro-bloque Auditar 1: convertir `/auditar` en un veredicto primero con siguiente paso obvio y secundarios progresivos.
 - [x] Macro-bloque App-ready 1: añadir una acción primaria móvil más accesible en Home para reforzar uso con una mano y transición futura a app.
 - [x] Macro-bloque App-ready 2: simplificar la barra fija móvil de `/auditar` para dejar menos altura, menos densidad y un foco más claro en la acción principal.
+- [x] Macro-bloque App shell móvil 1: consolidar navegación, jerarquía y accesos rápidos móviles para que la experiencia se sienta más tipo app.
+- [x] Macro-bloque Cámara/Subida 1: priorizar captura y subida desde celular con un flujo más inmediato, claro y de una sola intención principal.

@@ -11,6 +11,7 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
+import MobileAppShell from "@/components/MobileAppShell";
 import {
   canUseNativeDocumentInput,
   getNativeDocumentSelectionErrorMessage,
@@ -7833,6 +7834,11 @@ export default function Auditar() {
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
       <div className="container mx-auto max-w-6xl">
+        <MobileAppShell
+          current="auditar"
+          title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
+          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión y decide el siguiente paso." : "Sube tu documento y mira primero la señal."}
+        />
         <div
           ref={heroCardRef}
           className={shouldCompactPostUploadExperience
@@ -7843,7 +7849,7 @@ export default function Auditar() {
             {shouldCompactPostUploadExperience ? null : (
               <a
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 <span>Volver al inicio</span>
@@ -9283,7 +9289,7 @@ export default function Auditar() {
 
               {showCompactUploadContextHint ? (
                 <p className="mt-3 text-xs leading-5 text-slate-500 sm:hidden">
-                  Primero elige el documento. Después puedes tomar la foto o subir el archivo.
+                  Si lo tienes en papel, toma la foto. Si ya lo descargaste, súbelo directo.
                 </p>
               ) : null}
 
@@ -9542,30 +9548,49 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                   </div>
 
                   <div className="mt-4 space-y-2.5 sm:hidden">
-                    <Button
-                      className={`mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200 ${
-                        shouldCompactMobileUploadEntry
-                          ? "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"
-                          : "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"
-                      }`}
-                      disabled={isAutoAnalyzingSelectedFile}
-                      onClick={shouldCompactMobileUploadEntry ? () => setUploadSourceOpen(true) : openPreferredPicker}
-                    >
-                      {isAutoAnalyzingSelectedFile
-                        ? "Analizando documento..."
-                        : selectedFile
-                          ? "Cambiar documento"
-                          : shouldCompactMobileUploadEntry
-                            ? "Sube tu recibo"
+                    {shouldCompactMobileUploadEntry ? (
+                      <div className="grid gap-2.5">
+                        <Button
+                          className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-teal-600 px-5 text-[1.02rem] font-semibold text-white shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] transition-all duration-200 hover:bg-teal-700"
+                          disabled={isAutoAnalyzingSelectedFile}
+                          onClick={openCameraPicker}
+                        >
+                          <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                          {selectedFile && preferredCaptureMode === "camera"
+                            ? "Cambiar foto"
+                            : "Tomar foto ahora"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="mx-auto h-[3.15rem] w-full max-w-[22rem] rounded-[1.25rem] border-slate-200 bg-white px-5 text-[0.98rem] font-semibold text-slate-800 hover:bg-slate-50"
+                          disabled={isAutoAnalyzingSelectedFile}
+                          onClick={openFilePicker}
+                        >
+                          <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                          {selectedFile && preferredCaptureMode === "file"
+                            ? "Cambiar archivo"
+                            : "Elegir archivo"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-900 px-5 text-[1.02rem] font-semibold text-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] transition-all duration-200 hover:bg-slate-950"
+                        disabled={isAutoAnalyzingSelectedFile}
+                        onClick={openPreferredPicker}
+                      >
+                        {isAutoAnalyzingSelectedFile
+                          ? "Analizando documento..."
+                          : selectedFile
+                            ? "Cambiar documento"
                             : uploadPrimaryActionLabel}
-                    </Button>
+                      </Button>
+                    )}
                     <div className="space-y-3">
                       <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento está siendo analizado."
                           : shouldCompactMobileUploadEntry
-                                ? "Puedes tomar una foto clara o subir un PDF, XML, DOCX o imagen desde tu celular."
-
+                            ? "Empieza con foto si lo tienes en papel. Si ya lo descargaste, sube el archivo directo."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
@@ -9591,21 +9616,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                             </div>
                           </div>
                         </div>
-                      ) : shouldCompactMobileUploadEntry ? (
-                        <div className="rounded-[1rem] border border-dashed border-teal-200 bg-white/80 px-3 py-3">
-                          <div className="mx-auto flex max-w-[22rem] items-start gap-3 rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3 py-3 text-left text-teal-950 shadow-sm">
-                            <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
-                              <Camera className="h-4 w-4" strokeWidth={1.8} />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold">Elige cómo quieres subirlo</p>
-                              <p className="mt-1 text-xs leading-5 text-teal-900/80">
-                                Si lo tienes en papel, toma una foto. Si ya lo guardaste, elige tu archivo.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
+                      ) : !shouldCompactMobileUploadEntry ? (
                         <div className="flex items-start justify-end">
                           <button
                             type="button"
@@ -9616,7 +9627,7 @@ Lo revisamos en cuanto lo subes y te mostramos una primera lectura sin vueltas.
                             Cambiar método
                           </button>
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 

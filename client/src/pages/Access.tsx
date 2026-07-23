@@ -1,5 +1,6 @@
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
+import MobileAppShell from "@/components/MobileAppShell";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { canUseManusLogin, getManusLoginUrl } from "@/const";
@@ -399,10 +400,17 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
   return (
     <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
+        <div className="mx-auto w-full max-w-md">
+          <MobileAppShell
+            current="acceso"
+            title="Vuelve a tu revisión"
+            subtitle="Entra con tu correo y sigue donde te quedaste."
+          />
+        </div>
         <div className="mx-auto flex w-full max-w-md flex-col gap-3">
           <a
             href="/"
-            className="inline-flex w-fit items-center gap-2 rounded-full px-1 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
+            className="hidden w-fit items-center gap-2 rounded-full px-1 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950 sm:inline-flex"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             <span className="truncate">Volver</span>
