@@ -1982,31 +1982,31 @@ function QuickTrustSection() {
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             {[
               {
                 eyebrow: "Lectura primero",
-                title: "Solo tú decides qué guardar",
-                body: "Primero ves la lectura útil. Solo después decides si ese archivo entra a tu expediente privado.",
+                title: "Tú decides qué guardar",
+                body: "Primero ves la lectura. Después decides si entra a tu expediente.",
               },
               {
                 eyebrow: "Privacidad real",
-                title: "Tu empresa nunca recibe tus archivos",
-                body: "Lo que subes aquí no se comparte con tu empresa y el aviso completo sigue visible cuando lo necesites.",
+                title: "Tu empresa no ve tus archivos",
+                body: "Lo que subes aquí no se comparte con tu empresa.",
               },
               {
                 eyebrow: "Rastro útil",
-                title: "Aceptación legal con versión visible",
-                body: "Cuando corresponda aceptar documentos legales, ves con qué aviso operaste y cuándo lo hiciste.",
+                title: "Aceptación con versión visible",
+                body: "Si aceptas algo legal, ves con qué aviso operaste y cuándo.",
               },
             ].map((item) => (
               <article
                 key={item.title}
-                className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm"
+                className="rounded-[1.05rem] border border-slate-200 bg-slate-50/90 px-3.5 py-3 text-sm text-slate-700 shadow-sm"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.eyebrow}</p>
-                <p className="mt-2 font-semibold text-slate-950">{item.title}</p>
-                <p className="mt-1.5 leading-6">{item.body}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.eyebrow}</p>
+                <p className="mt-1.5 font-semibold leading-5 text-slate-950">{item.title}</p>
+                <p className="mt-1 text-sm leading-5">{item.body}</p>
               </article>
             ))}
           </div>
