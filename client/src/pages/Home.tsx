@@ -1767,31 +1767,33 @@ function HeliosFirstEntrySection() {
             onOpenChange={setPersistedCeoPanelOpen}
             baseLabel="la home privada"
           />
-          <article className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Ejemplo de lectura</p>
-            <h3 className="mt-3 text-[1.5rem] font-semibold leading-8 tracking-[-0.04em] text-slate-950">
+          <article className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-4 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Ejemplo de lectura</p>
+            <h3 className="mt-2 text-[1.28rem] font-semibold leading-7 tracking-[-0.04em] text-slate-950">
               {featuredExample?.title ?? "Así se ve una primera lectura real antes de guardar nada."}
             </h3>
-                          <p className="mt-3 text-sm leading-6 text-slate-700">
-                {featuredExample?.summary ?? "Aquí verás el resumen, la señal principal y el siguiente paso desde el primer documento."}
-              </p>
+            <p className="mt-2 text-sm leading-5 text-slate-700">
+              {featuredExample?.summary ?? "Aquí verás el resumen, la señal principal y el siguiente paso desde el primer documento."}
+            </p>
 
-            <div className="mt-4 rounded-[1.2rem] border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible de ejemplo</p>
-              <p className="mt-2 text-sm leading-6 text-amber-950">
-                {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
-              </p>
-            </div>
-            <div className="mt-4 rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Qué te sugeriría hacer después</p>
-              <p className="mt-2 text-sm leading-6 text-emerald-950">
-                {featuredExample?.nextStep ?? "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
-              </p>
+            <div className="mt-3 grid gap-2">
+              <div className="rounded-[1rem] border border-amber-200 bg-amber-50 px-3.5 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible</p>
+                <p className="mt-1.5 text-sm leading-5 text-amber-950">
+                  {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
+                </p>
+              </div>
+              <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 px-3.5 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Qué sigue</p>
+                <p className="mt-1.5 text-sm leading-5 text-emerald-950">
+                  {featuredExample?.nextStep ?? "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
+                </p>
+              </div>
             </div>
           </article>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
                 {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, podemos retomar tu lectura y guardarla dentro de tu bóveda."}
@@ -1800,7 +1802,7 @@ function HeliosFirstEntrySection() {
                 {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal y la guardamos dentro de tu cuenta sin pedirte volver a subir el archivo."}
               </p>
             </article>
-            <article className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
+            <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Por qué este flujo existe</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
                 Primero recibes valor y después decides si quieres conservarlo en tu bóveda laboral.
@@ -2017,15 +2019,15 @@ function QuickTrustSection() {
                 Antes de abrir expediente
               </span>
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="mt-3 flex flex-col gap-2 text-sm leading-5 text-slate-700 sm:flex-row sm:flex-wrap sm:gap-2.5">
               {[
-                "No necesitas cuenta para ver la primera lectura.",
-                "Tu empresa no ve ni recibe lo que subes aquí.",
-                "Si sí te sirve, luego lo guardas en tu expediente privado.",
+                "Sin cuenta para empezar",
+                "Tu empresa no ve tus archivos",
+                "Lo guardas solo si te sirve",
               ].map((item) => (
-                <div key={item} className="rounded-[1rem] border border-white bg-white px-3 py-3 shadow-sm">
-                  <p className="leading-6 text-slate-700">{item}</p>
-                </div>
+                <span key={item} className="rounded-full border border-white bg-white px-3 py-2 shadow-sm">
+                  {item}
+                </span>
               ))}
             </div>
           </div>
@@ -2988,21 +2990,21 @@ function FinalCtaSection() {
   const pricingExperience = getAuditapatronPricingExperience(0);
 
   return (
-    <section className="bg-muted/35 py-12 sm:py-14">
+    <section className="bg-muted/35 py-8 sm:py-10">
       <div className="container">
-        <div className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-6 py-10 shadow-[0_36px_90px_-64px_rgba(15,23,42,0.38)] max-[359px]:px-4 max-[359px]:py-7 sm:px-10 sm:py-12">
+        <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.16),_transparent_28%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-5 py-7 shadow-[0_30px_80px_-64px_rgba(15,23,42,0.38)] max-[359px]:px-4 max-[359px]:py-6 sm:px-8 sm:py-9">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
               {pricingExperience.landing.eyebrow}
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.8rem] sm:text-5xl">
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.65rem] sm:text-[2.8rem]">
               {pricingExperience.landing.title}
             </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
               {pricingExperience.landing.description}
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button
                 className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
                 onClick={() => goToAuditFlow({ placement: "final_block_cta" })}
@@ -3012,28 +3014,25 @@ function FinalCtaSection() {
               </Button>
               <Button
                 variant="outline"
-                className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto"
+                className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-6 text-sm text-slate-700 hover:bg-slate-50 sm:w-auto"
                 onClick={() => scrollToId("privacidad")}
               >
-                Ver cómo cuidamos tu información
+                Ver privacidad
               </Button>
             </div>
 
-            <div className="mt-6 grid gap-3 lg:grid-cols-2">
-              {pricingExperience.landing.principles.slice(0, 2).map((principle, index) => (
-                <article
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {pricingExperience.landing.principles.slice(0, 2).map((principle) => (
+                <span
                   key={principle}
-                  className="rounded-[1.25rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
+                  className="rounded-full border border-white/80 bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
                 >
-                  <div className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                    0{index + 1}
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-700">{principle}</p>
-                </article>
+                  {principle}
+                </span>
               ))}
             </div>
 
-            <p className="mt-6 max-w-2xl text-sm leading-6 text-slate-600">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
               Si más adelante quieres avanzar, lo activas dentro de tu expediente.
             </p>
           </div>

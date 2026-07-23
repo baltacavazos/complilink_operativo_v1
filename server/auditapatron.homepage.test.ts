@@ -45,7 +45,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Documento recibido, señal preliminar y siguiente paso sugerido.");
     expect(homeSource).toContain("Tus archivos y esta lectura no se comparten con tu empresa.");
     expect(homeSource).toContain("Respuestas rápidas");
-    expect(homeSource).toContain("No necesitas cuenta para ver la primera lectura.");
+    expect(homeSource).toContain("Sin cuenta para empezar");
     expect(homeSource).toContain("Ver controles de privacidad");
     expect(homeSource).toContain("<HeroSection />");
     expect(homeSource).toContain("<HeliosFirstEntrySection />");

@@ -1952,3 +1952,6 @@
 - [x] Macro-bloque Recorte 4: compactar `HowItWorksSection` en `Home` para conservar la explicación de 3 pasos con menos altura total y menos scroll.
 - [x] Macro-bloque Recorte 5: fusionar las dos introducciones consecutivas del bloque de carga en `/auditar` para dejar una sola antes de cámara/archivo y reducir scroll redundante.
 - [x] Macro-bloque Recorte 6: condensar las tarjetas de privacidad y control dentro de `HeliosFirstEntrySection` para dejar menos altura visual en `Home`.
+- [x] Macro-bloque Recorte 7: compactar el bloque de respuestas rápidas en `Home` para mantener las garantías clave con menos altura y menos scroll.
+- [x] Macro-bloque Recorte 8: compactar la columna derecha de `Home` para reducir altura del ejemplo de lectura y de las tarjetas de continuidad sin perder claridad.
+- [x] Macro-bloque Recorte 9: compactar `FinalCtaSection` en `Home` para mantener el cierre de conversión con menos altura y menos duplicación respecto al hero.
