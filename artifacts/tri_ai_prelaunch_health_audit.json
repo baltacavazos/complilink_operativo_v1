@@ -1,0 +1,468 @@
+{
+  "generatedAt": "2026-08-06T18:21:16.635Z",
+  "summary": {
+    "project": "AUDITAPATRON",
+    "objective": "Auditoría exhaustiva de salud pre-lanzamiento para apertura pública y creación de usuarios reales.",
+    "auditFocus": [
+      "Estabilidad técnica y consistencia del entorno",
+      "Cobertura y estado real de pruebas",
+      "Riesgos funcionales en Home, /acceso y /auditar",
+      "Bloqueadores de salida pública",
+      "Preparación operativa para usuarios reales"
+    ],
+    "collectedEvidence": [
+      "webdev_check_status reportó servidor activo, TypeScript sin errores, dependencias OK y LSP sin errores.",
+      "Las rutas públicas /, /auditar y /acceso responden 200.",
+      "La corrida completa de Vitest reportó 10 archivos fallando y 25 pruebas fallando.",
+      "El proyecto muestra avisos de baseline-browser-mapping desactualizado y un warning operativo de infraestructura faltante para CEO Bridge Schedule.",
+      "Se observaron fallos de autenticación/alcance de Dropbox y desalineaciones de tests/regresiones de copy y responsive."
+    ]
+  },
+  "results": {
+    "chatgpt": {
+      "launch_verdict": "not_ready",
+      "executive_summary": "El proyecto AUDITAPATRON presenta fallas críticas en pruebas automatizadas, problemas de autenticación con Dropbox, warnings operativos de infraestructura faltante y desalineaciones en tests funcionales clave. Estas deficiencias representan riesgos significativos para la estabilidad, seguridad y experiencia de usuario en el lanzamiento público.",
+      "critical_blockers": [
+        {
+          "title": "Fallos críticos en pruebas unitarias y de integración",
+          "severity": "critical",
+          "why_it_matters": "25 pruebas fallando, incluyendo 14 fallos en workflows de casos y errores de mocks esenciales, indican que funcionalidades clave no están garantizadas. Esto puede causar errores en producción, pérdida de datos o bloqueos en flujos críticos.",
+          "recommended_action": "Corregir todos los fallos de pruebas, especialmente en workflows de casos y mocks de base, antes de proceder con el lanzamiento."
+        },
+        {
+          "title": "Autenticación fallida contra Dropbox",
+          "severity": "critical",
+          "why_it_matters": "La incapacidad para autenticar y acceder a Dropbox impide la restauración y descarga de respaldos, afectando la integridad y disponibilidad de datos críticos.",
+          "recommended_action": "Restablecer y validar las credenciales de Dropbox, asegurar que las APIs respondan correctamente y que las pruebas de integración pasen."
+        },
+        {
+          "title": "Configuración incorrecta del webhook de AuditaPatron Bridge",
+          "severity": "critical",
+          "why_it_matters": "El endpoint configurado no coincide con el esperado, lo que puede causar fallos en la integración con sistemas externos y pérdida de datos o eventos.",
+          "recommended_action": "Actualizar la URL del webhook a la correcta y validar con pruebas end-to-end que la integración funcione sin errores."
+        },
+        {
+          "title": "Warning operativo de infraestructura faltante para CEO Bridge Schedule",
+          "severity": "critical",
+          "why_it_matters": "La falta de migraciones y configuración para el escaneo automático del CEO Bridge Schedule puede causar fallos en la automatización y monitoreo, afectando la operación y alertas críticas.",
+          "recommended_action": "Implementar las migraciones necesarias y validar la infraestructura para asegurar el correcto funcionamiento del CEO Bridge Schedule."
+        }
+      ],
+      "major_risks": [
+        {
+          "title": "Desalineaciones y regresiones en tests de copy y responsive",
+          "severity": "high",
+          "why_it_matters": "Errores en la interfaz y textos pueden degradar la experiencia de usuario, generar confusión y afectar la percepción de calidad del producto.",
+          "recommended_action": "Corregir los tests de UI y copy para asegurar consistencia visual y textual en todos los dispositivos."
+        },
+        {
+          "title": "Fallas en pruebas de seguridad y acceso CEO",
+          "severity": "high",
+          "why_it_matters": "Errores en la gestión de accesos y roles pueden exponer datos sensibles o bloquear usuarios legítimos, comprometiendo la seguridad y operatividad.",
+          "recommended_action": "Revisar y corregir los tests y lógica de acceso CEO para garantizar controles de seguridad robustos."
+        }
+      ],
+      "strengths": [
+        "Servidor activo sin errores de TypeScript ni dependencias.",
+        "Rutas públicas principales responden correctamente con status 200.",
+        "Pruebas de integración con Helios Bridge muestran manejo correcto de reintentos y fallback.",
+        "Manejo adecuado de persistencia y estado en interfaces clave.",
+        "Cobertura parcial de pruebas en componentes críticos como autenticación y UI."
+      ],
+      "testing_assessment": {
+        "score": 1,
+        "summary": "La cobertura de pruebas existe pero la calidad es insuficiente debido a múltiples fallos críticos y errores de mocks. Esto indica que el código no está suficientemente validado para producción.",
+        "must_fix_before_launch": [
+          "Resolver los 25 fallos de pruebas reportados, especialmente en workflows y mocks.",
+          "Corregir fallos de autenticación y acceso en pruebas de Dropbox.",
+          "Alinear y actualizar tests de UI y copy para evitar regresiones.",
+          "Validar configuración y pruebas del webhook AuditaPatron Bridge.",
+          "Garantizar que las pruebas de seguridad y acceso CEO pasen sin errores."
+        ]
+      },
+      "product_assessment": {
+        "score": 1,
+        "summary": "Existen riesgos funcionales importantes en flujos clave como auditoría, acceso y gestión de documentos. La experiencia de usuario puede verse afectada por fallos en autenticación, carga y revisión de documentos.",
+        "top_user_risks": [
+          "Bloqueos o errores al subir y revisar documentos debido a fallos en workflows.",
+          "Pérdida o exposición indebida de datos por problemas en controles de acceso.",
+          "Confusión o frustración por inconsistencias en textos y diseño responsive."
+        ]
+      },
+      "operations_assessment": {
+        "score": 1,
+        "summary": "La infraestructura operativa presenta alertas críticas y warnings que pueden afectar la automatización y monitoreo. La falta de migraciones y configuración puede impactar la estabilidad y respuesta ante incidentes.",
+        "top_operational_risks": [
+          "Fallas en el escaneo automático del CEO Bridge Schedule por infraestructura incompleta.",
+          "Problemas en restauración y respaldo por fallos en integración con Dropbox."
+        ]
+      },
+      "top_5_actions_before_public_launch": [
+        {
+          "priority": 1,
+          "action": "Corregir todos los fallos de pruebas unitarias e integración, especialmente en workflows y mocks esenciales.",
+          "owner": "qa"
+        },
+        {
+          "priority": 2,
+          "action": "Restablecer y validar la autenticación y acceso a Dropbox para respaldos y restauraciones.",
+          "owner": "backend"
+        },
+        {
+          "priority": 3,
+          "action": "Actualizar la configuración del webhook AuditaPatron Bridge a la URL correcta y validar su funcionamiento.",
+          "owner": "backend"
+        },
+        {
+          "priority": 4,
+          "action": "Implementar migraciones y corregir la infraestructura faltante para el CEO Bridge Schedule.",
+          "owner": "infra"
+        },
+        {
+          "priority": 5,
+          "action": "Corregir regresiones en tests de UI, copy y accesos CEO para asegurar experiencia y seguridad robustas.",
+          "owner": "frontend"
+        }
+      ]
+    },
+    "gemini": {
+      "launch_verdict": "not_ready",
+      "executive_summary": "La plataforma AUDITAPATRON no está lista para su lanzamiento público. Se han identificado bloqueadores críticos técnicos y funcionales, incluyendo fallas generalizadas en los tests de flujos centrales, integraciones externas rotas (Dropbox, Helios, bridge de AuditaPatron) e infraestructura operativa faltante. Estos problemas representan riesgos significativos para la integridad de los datos, la experiencia del usuario y la funcionalidad principal de la plataforma.",
+      "critical_blockers": [
+        {
+          "title": "Fallas Críticas en Flujos Centrales de Backend",
+          "severity": "critical",
+          "why_it_matters": "14 tests en `server/caseWorkflows.test.ts` están fallando debido a un problema de mocking (`getStoredCommerceStatusForUser`). Esto impacta directamente funcionalidades críticas como la subida de documentos, la aplicación de límites de tasa y la confirmación de auditorías, lo que significa que el flujo principal de `/auditar` no es confiable o es inoperable.",
+          "recommended_action": "Investigar y corregir la configuración de mocks o la implementación de `getStoredCommerceStatusForUser` para que los tests de `caseWorkflows` pasen. Esto es fundamental para la estabilidad del backend."
+        },
+        {
+          "title": "Integración con Dropbox Completamente Rota",
+          "severity": "critical",
+          "why_it_matters": "Todos los tests relacionados con Dropbox (`dropbox.restore-cli.test.ts`, `dropbox.restore-scope.test.ts`, `dropbox.auth.test.ts`) están fallando. Esto incluye errores de autenticación (401 en lugar de 200) y la ausencia del módulo `dropbox` para scripts de restauración. Esto es un riesgo existencial para la recuperación de desastres y la integridad de los datos.",
+          "recommended_action": "Instalar la dependencia `dropbox` en el entorno de ejecución y verificar/corregir la `DROPBOX_API_KEY` y la configuración de autenticación para asegurar que los backups y restores funcionen correctamente."
+        },
+        {
+          "title": "Falla de Autenticación en la Integración del Bridge de Helios",
+          "severity": "critical",
+          "why_it_matters": "El test `helios.bridge.secret.test.ts` falla con un error 403 (Forbidden) al intentar autenticarse contra el endpoint del contrato de Helios. Esto indica una configuración incorrecta o un problema con el secreto compartido, bloqueando una integración clave para la funcionalidad del copilot laboral.",
+          "recommended_action": "Verificar y alinear el secreto del bridge de Helios y los headers de autorización para asegurar que la autenticación sea exitosa y la integración funcione como se espera."
+        },
+        {
+          "title": "Configuración Incorrecta del Webhook del Bridge de AuditaPatron",
+          "severity": "critical",
+          "why_it_matters": "Los tests `auditaPatronBridgeSecret.test.ts` y `auditaPatronBridgeConfig.test.ts` revelan que la URL del webhook configurada para el bridge de AuditaPatron es incorrecta (espera `https://complilink.mx/api/auditapatron/webhook` pero obtiene `https://complilink.mx/api/integration…`). Esto impedirá la comunicación adecuada con el motor de AuditaPatron, afectando el procesamiento de auditorías.",
+          "recommended_action": "Corregir la `AUDITAPATRON_ENGINE_WEBHOOK_URL` en la configuración del entorno para que apunte al endpoint correcto y validar la comunicación."
+        },
+        {
+          "title": "Infraestructura Faltante para CEO Bridge Schedule",
+          "severity": "critical",
+          "why_it_matters": "El `devserver tail` reporta `[CEO Bridge Schedule] Infraestructura faltante; se omite el escaneo automático hasta que las migraciones del bridge estén presentes.` Esto significa que un componente operativo crítico para la automatización y el monitoreo a nivel de CEO no está desplegado o configurado, lo que afecta la capacidad de generar informes y alertas programadas.",
+          "recommended_action": "Asegurar que las migraciones de la base de datos para `ceo_bridge_schedules` y `ceo_bridge_presets` estén aplicadas y que la infraestructura de ejecución de tareas programadas esté operativa."
+        }
+      ],
+      "major_risks": [
+        {
+          "title": "Regresiones de UI/UX y Copy en el Cliente",
+          "severity": "high",
+          "why_it_matters": "Múltiples tests del lado del cliente están fallando, incluyendo `client/src/pages/Auditar.alerts.test.ts` (copy y responsive) y `client/src/responsive-layout.test.ts` (diseño responsivo). Esto indica que la experiencia del usuario, especialmente en dispositivos móviles y en el flujo de subida de documentos, será inconsistente, visualmente rota o con mensajes confusos, lo que impactará negativamente la adopción y la confianza.",
+          "recommended_action": "Revisar y corregir todos los fallos de tests de UI/UX y copy para asegurar una experiencia de usuario fluida y consistente en todos los dispositivos y flujos clave."
+        },
+        {
+          "title": "Regresión en el Flujo de Acceso de Usuarios",
+          "severity": "high",
+          "why_it_matters": "El test `server/v1.release.scope.test.ts` falla en `keeps the email access experience ready for returning users, cooldowns and friendly verification errors`. Esto sugiere una regresión en el flujo de autenticación por correo electrónico, lo que podría impedir que los usuarios existentes inicien sesión o generar errores poco amigables, afectando la retención de usuarios.",
+          "recommended_action": "Investigar y corregir la regresión en el flujo de acceso por correo electrónico para garantizar una experiencia de inicio de sesión robusta y amigable."
+        },
+        {
+          "title": "Dependencia de Mapeo de Navegadores Desactualizada",
+          "severity": "medium",
+          "why_it_matters": "El aviso `[baseline-browser-mapping] The data in this module is over two months old` indica que la información de compatibilidad con navegadores está desactualizada. Esto podría llevar a problemas de visualización o funcionalidad en navegadores más recientes o menos comunes, afectando la experiencia de algunos usuarios.",
+          "recommended_action": "Actualizar la dependencia `baseline-browser-mapping` a la última versión para asegurar la compatibilidad y el rendimiento óptimo en una amplia gama de navegadores."
+        }
+      ],
+      "strengths": [
+        "Estabilidad Técnica Básica: El servidor está activo, TypeScript sin errores, dependencias OK y LSP sin errores, lo que indica un entorno de desarrollo funcional.",
+        "Rutas Públicas Accesibles: Las rutas `/`, `/auditar` y `/acceso` responden con 200, confirmando la accesibilidad básica de la plataforma.",
+        "Suite de Pruebas Integral: Existe una gran cantidad de tests (341 en total) que cubren diversas áreas de la aplicación, desde el cliente hasta las integraciones.",
+        "Marco de Autenticación Robusto: La inicialización de OAuth y los tests de autenticación por código de correo electrónico demuestran una base sólida para la gestión de usuarios.",
+        "Scripts de Respaldo de Base de Datos: La existencia de scripts `backup:export` y `backup:validate` muestra una consideración por la recuperación de datos, aunque sus tests estén fallando actualmente."
+      ],
+      "testing_assessment": {
+        "score": 2,
+        "summary": "La evaluación de pruebas revela una falta crítica de preparación. Con 25 tests fallando en 10 archivos, incluyendo rutas críticas de backend, integraciones externas esenciales y flujos clave de usuario, la estabilidad y fiabilidad de la plataforma no pueden garantizarse. Los problemas de mocking en `caseWorkflows` son particularmente preocupantes, ya que podrían ocultar problemas arquitectónicos subyacentes o código no testeable.",
+        "must_fix_before_launch": [
+          "Resolver todos los 25 tests fallidos de Vitest, priorizando `server/caseWorkflows.test.ts`, todos los `server/dropbox.*.test.ts`, `server/helios.bridge.secret.test.ts`, `server/auditaPatronBridgeConfig.test.ts` y `server/v1.release.scope.test.ts`.",
+          "Asegurar que `getStoredCommerceStatusForUser` esté correctamente mockeado o implementado para permitir que los tests de `caseWorkflows` pasen.",
+          "Verificar y corregir la `DROPBOX_API_KEY`, la autenticación y la disponibilidad del módulo para la funcionalidad de backup/restore.",
+          "Alinear el secreto del bridge de Helios y la URL del webhook de AuditaPatron para asegurar una integración exitosa.",
+          "Abordar las regresiones de UI/UX del lado del cliente identificadas en `client/src/pages/Auditar.alerts.test.ts` y `client/src/responsive-layout.test.ts`."
+        ]
+      },
+      "product_assessment": {
+        "score": 3,
+        "summary": "El producto no está listo para el consumo público. Los viajes centrales del usuario, especialmente en torno a la auditoría de documentos (`/auditar`) y el acceso de usuarios (`/acceso`), están comprometidos por fallas críticas de backend y regresiones. Los problemas de UI/UX observados (diseño responsivo, desalineaciones de copy) conducirán a una experiencia frustrante y poco confiable para los usuarios reales, impactando directamente la adopción y retención.",
+        "top_user_risks": [
+          "Incapacidad para subir, procesar o confirmar documentos de auditoría debido a fallas en `caseWorkflows`.",
+          "Experiencia de inicio de sesión/registro bloqueada o confusa para usuarios nuevos y recurrentes.",
+          "Interfaz de usuario degradada o rota en dispositivos móviles, haciendo que la plataforma sea inutilizable para un segmento significativo de la audiencia.",
+          "Copy o mensajes incorrectos/engañosos, lo que lleva a la confusión y desconfianza del usuario."
+        ]
+      },
+      "operations_assessment": {
+        "score": 1,
+        "summary": "La preparación operativa es críticamente baja. La ausencia de infraestructura para el CEO Bridge Schedule significa que los informes automatizados y el monitoreo crítico no son funcionales. La falla completa de la integración de Dropbox para backup y restore representa una amenaza existencial para la integridad de los datos y la recuperación ante desastres. Las integraciones externas mal configuradas conducirán a fallas silenciosas en procesos comerciales críticos.",
+        "top_operational_risks": [
+          "Pérdida/Corrupción de Datos: Incapacidad para realizar backups y restores confiables a través de Dropbox.",
+          "Falta de Monitoreo/Reportes Críticos: La infraestructura del CEO Bridge Schedule está ausente, impidiendo escaneos y alertas automatizadas.",
+          "Fallas de Integración: La comunicación rota con los motores de Helios y AuditaPatron hará que las funciones principales no funcionen como se espera, impactando el procesamiento de auditorías y la obtención de insights.",
+          "Sobrecarga de Intervención Manual: Los equipos operativos se verán abrumados por problemas derivados de integraciones rotas e infraestructura faltante."
+        ]
+      },
+      "top_5_actions_before_public_launch": [
+        {
+          "priority": 1,
+          "action": "Rectificar todas las fallas de los tests de `server/caseWorkflows.test.ts` y `server/dropbox.*.test.ts` para asegurar la funcionalidad central y la integridad de los datos.",
+          "owner": "backend"
+        },
+        {
+          "priority": 2,
+          "action": "Desplegar y configurar la infraestructura faltante para el 'CEO Bridge Schedule' y validar su funcionamiento.",
+          "owner": "infra"
+        },
+        {
+          "priority": 3,
+          "action": "Corregir la URL del webhook de AuditaPatron y la autenticación del bridge de Helios para restablecer las integraciones críticas.",
+          "owner": "backend"
+        },
+        {
+          "priority": 4,
+          "action": "Resolver las regresiones de UI/UX y copy en `client/src/pages/Auditar.alerts.test.ts` y `client/src/responsive-layout.test.ts` para una experiencia de usuario consistente.",
+          "owner": "frontend"
+        },
+        {
+          "priority": 5,
+          "action": "Actualizar la dependencia `baseline-browser-mapping` y revisar el test de `server/v1.release.scope.test.ts` para asegurar la compatibilidad y el flujo de acceso de usuarios.",
+          "owner": "frontend"
+        }
+      ]
+    },
+    "grok": {
+      "launch_verdict": "not_ready",
+      "executive_summary": "25 tests failing across 10 files, including core case workflows, bridge auth, responsive layout and Dropbox integration. Multiple production-critical mocks and contract mismatches present. Public launch blocked until tests pass and integrations verified.",
+      "critical_blockers": [
+        {
+          "title": "caseWorkflows.test.ts: 14 failures due to missing getStoredCommerceStatusForUser mock",
+          "severity": "critical",
+          "why_it_matters": "Core upload, confirmation and identity guardrails cannot be exercised reliably in CI or production.",
+          "recommended_action": "Fix vi.mock in caseWorkflows.test.ts to export getStoredCommerceStatusForUser and re-run full suite."
+        },
+        {
+          "title": "Bridge webhook URL mismatch in auditaPatronBridgeConfig.test.ts and auditaPatronBridgeSecret.test.ts",
+          "severity": "critical",
+          "why_it_matters": "Production bridge points to wrong endpoint; real webhooks will fail or be rejected.",
+          "recommended_action": "Update AUDITAPATRON_ENGINE_WEBHOOK_URL to https://complilink.mx/api/auditapatron/webhook and align all tests."
+        },
+        {
+          "title": "Dropbox auth and restore tests failing with 401 and missing module",
+          "severity": "critical",
+          "why_it_matters": "Backup/restore path for user documents is broken; data loss risk on launch.",
+          "recommended_action": "Install dropbox SDK, fix credentials and make tests pass before any public user data is stored."
+        }
+      ],
+      "major_risks": [
+        {
+          "title": "Responsive layout regressions on Home and mobile upload flows",
+          "severity": "high",
+          "why_it_matters": "Mobile users (primary audience) will see broken CTAs and overflow issues.",
+          "recommended_action": "Update Home.tsx and responsive-layout.test.ts expectations; verify on real devices <360px."
+        },
+        {
+          "title": "Helios bridge secret test failing on production host with 403",
+          "severity": "high",
+          "why_it_matters": "CEO/Helios automation will be blocked in live environment.",
+          "recommended_action": "Align bearer token handling and avoid www redirect; update test assertions."
+        },
+        {
+          "title": "CEO Bridge Schedule infrastructure warning and missing table",
+          "severity": "medium",
+          "why_it_matters": "Automated CEO scans will be silently skipped; operational visibility lost.",
+          "recommended_action": "Run db:push and add migration for ceo_bridge_schedules before launch."
+        }
+      ],
+      "strengths": [
+        "All public routes return 200",
+        "TypeScript clean, no LSP errors",
+        "Core auth and some integration tests passing",
+        "Database locking and smoke scripts functional"
+      ],
+      "testing_assessment": {
+        "score": 2,
+        "summary": "314 passed but 25 failures concentrated in critical paths; mocks incomplete and contract tests broken.",
+        "must_fix_before_launch": [
+          "Fix all caseWorkflows mocks",
+          "Correct bridge webhook URLs",
+          "Resolve Dropbox and Helios auth tests"
+        ]
+      },
+      "product_assessment": {
+        "score": 3,
+        "summary": "Home and Auditar flows have copy and responsive regressions that will affect first-time mobile users.",
+        "top_user_risks": [
+          "Broken mobile upload primary action",
+          "Inconsistent hero CTAs on sub-360px screens",
+          "Potential redirect loops on access returnTo"
+        ]
+      },
+      "operations_assessment": {
+        "score": 2,
+        "summary": "Missing infra for CEO Bridge and Dropbox credentials create silent failure modes for real users.",
+        "top_operational_risks": [
+          "CEO scheduled scans disabled",
+          "Backup restore path non-functional",
+          "Baseline browser mapping warning in production"
+        ]
+      },
+      "top_5_actions_before_public_launch": [
+        {
+          "priority": 1,
+          "action": "Fix caseWorkflows.test.ts mocks and achieve zero failing tests in full Vitest run",
+          "owner": "backend"
+        },
+        {
+          "priority": 2,
+          "action": "Correct AUDITAPATRON_ENGINE_WEBHOOK_URL and pass all bridge config/secret tests",
+          "owner": "backend"
+        },
+        {
+          "priority": 3,
+          "action": "Install Dropbox SDK, fix auth and make restore tests green",
+          "owner": "infra"
+        },
+        {
+          "priority": 4,
+          "action": "Resolve responsive layout test failures and verify mobile Home/Auditar on real devices",
+          "owner": "frontend"
+        },
+        {
+          "priority": 5,
+          "action": "Add ceo_bridge_schedules migration and remove infrastructure warning",
+          "owner": "backend"
+        }
+      ]
+    }
+  },
+  "consensus": {
+    "consensus_verdict": "not_ready",
+    "model_verdicts": {
+      "chatgpt": "not_ready",
+      "gemini": "not_ready",
+      "grok": "not_ready"
+    },
+    "executive_summaries": [
+      {
+        "model": "chatgpt",
+        "summary": "El proyecto AUDITAPATRON presenta fallas críticas en pruebas automatizadas, problemas de autenticación con Dropbox, warnings operativos de infraestructura faltante y desalineaciones en tests funcionales clave. Estas deficiencias representan riesgos significativos para la estabilidad, seguridad y experiencia de usuario en el lanzamiento público."
+      },
+      {
+        "model": "gemini",
+        "summary": "La plataforma AUDITAPATRON no está lista para su lanzamiento público. Se han identificado bloqueadores críticos técnicos y funcionales, incluyendo fallas generalizadas en los tests de flujos centrales, integraciones externas rotas (Dropbox, Helios, bridge de AuditaPatron) e infraestructura operativa faltante. Estos problemas representan riesgos significativos para la integridad de los datos, la experiencia del usuario y la funcionalidad principal de la plataforma."
+      },
+      {
+        "model": "grok",
+        "summary": "25 tests failing across 10 files, including core case workflows, bridge auth, responsive layout and Dropbox integration. Multiple production-critical mocks and contract mismatches present. Public launch blocked until tests pass and integrations verified."
+      }
+    ],
+    "top_actions": [
+      {
+        "model": "chatgpt",
+        "priority": 1,
+        "action": "Corregir todos los fallos de pruebas unitarias e integración, especialmente en workflows y mocks esenciales.",
+        "owner": "qa"
+      },
+      {
+        "model": "chatgpt",
+        "priority": 2,
+        "action": "Restablecer y validar la autenticación y acceso a Dropbox para respaldos y restauraciones.",
+        "owner": "backend"
+      },
+      {
+        "model": "chatgpt",
+        "priority": 3,
+        "action": "Actualizar la configuración del webhook AuditaPatron Bridge a la URL correcta y validar su funcionamiento.",
+        "owner": "backend"
+      },
+      {
+        "model": "chatgpt",
+        "priority": 4,
+        "action": "Implementar migraciones y corregir la infraestructura faltante para el CEO Bridge Schedule.",
+        "owner": "infra"
+      },
+      {
+        "model": "chatgpt",
+        "priority": 5,
+        "action": "Corregir regresiones en tests de UI, copy y accesos CEO para asegurar experiencia y seguridad robustas.",
+        "owner": "frontend"
+      },
+      {
+        "model": "gemini",
+        "priority": 1,
+        "action": "Rectificar todas las fallas de los tests de `server/caseWorkflows.test.ts` y `server/dropbox.*.test.ts` para asegurar la funcionalidad central y la integridad de los datos.",
+        "owner": "backend"
+      },
+      {
+        "model": "gemini",
+        "priority": 2,
+        "action": "Desplegar y configurar la infraestructura faltante para el 'CEO Bridge Schedule' y validar su funcionamiento.",
+        "owner": "infra"
+      },
+      {
+        "model": "gemini",
+        "priority": 3,
+        "action": "Corregir la URL del webhook de AuditaPatron y la autenticación del bridge de Helios para restablecer las integraciones críticas.",
+        "owner": "backend"
+      },
+      {
+        "model": "gemini",
+        "priority": 4,
+        "action": "Resolver las regresiones de UI/UX y copy en `client/src/pages/Auditar.alerts.test.ts` y `client/src/responsive-layout.test.ts` para una experiencia de usuario consistente.",
+        "owner": "frontend"
+      },
+      {
+        "model": "gemini",
+        "priority": 5,
+        "action": "Actualizar la dependencia `baseline-browser-mapping` y revisar el test de `server/v1.release.scope.test.ts` para asegurar la compatibilidad y el flujo de acceso de usuarios.",
+        "owner": "frontend"
+      },
+      {
+        "model": "grok",
+        "priority": 1,
+        "action": "Fix caseWorkflows.test.ts mocks and achieve zero failing tests in full Vitest run",
+        "owner": "backend"
+      },
+      {
+        "model": "grok",
+        "priority": 2,
+        "action": "Correct AUDITAPATRON_ENGINE_WEBHOOK_URL and pass all bridge config/secret tests",
+        "owner": "backend"
+      },
+      {
+        "model": "grok",
+        "priority": 3,
+        "action": "Install Dropbox SDK, fix auth and make restore tests green",
+        "owner": "infra"
+      },
+      {
+        "model": "grok",
+        "priority": 4,
+        "action": "Resolve responsive layout test failures and verify mobile Home/Auditar on real devices",
+        "owner": "frontend"
+      },
+      {
+        "model": "grok",
+        "priority": 5,
+        "action": "Add ceo_bridge_schedules migration and remove infrastructure warning",
+        "owner": "backend"
+      }
+    ]
+  }
+}

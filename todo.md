@@ -1995,4 +1995,8 @@
 - [x] Macro-bloque Recorte 47: compactar el bloque de análisis listo y siguiente paso en `/auditar` para reducir más scrolling móvil tras la vista previa sin perder claridad de decisión.
 - [x] Pase grande final A: consolidar en una sola intervención el recorte pendiente del hero y de los bloques redundantes de Home para bajar scrolling sin perder claridad.
 - [x] Pase grande final B: consolidar en una sola intervención la simplificación pendiente del flujo de /auditar, especialmente estado, revisión, sugerencias y controles previos al guardado.
-- [ ] Pase grande final C: revalidar TypeScript y pruebas focales una sola vez al terminar el lote completo, y guardar un único checkpoint del pase grande.
+- [x] Pase grande final C: revalidar TypeScript y pruebas focales una sola vez al terminar el lote completo, y guardar un único checkpoint del pase grande.
+- [x] Health audit pre-lanzamiento 1: revisar estabilidad técnica, TypeScript, dependencias, logs, rutas críticas y salud general del entorno antes de salida pública.
+- [x] Health audit pre-lanzamiento 2: auditar la experiencia funcional de Home, /acceso y /auditar con foco en alta de usuarios reales, recuperación de flujo y errores visibles.
+- [x] Health audit pre-lanzamiento 3: contrastar hallazgos con una sola ronda tri-IA y consolidar riesgos, severidad y mitigaciones antes de abrir al público.
+- [x] Health audit pre-lanzamiento 4: entregar un informe de salida pública con prioridades de corrección, bloqueadores y recomendaciones operativas.
