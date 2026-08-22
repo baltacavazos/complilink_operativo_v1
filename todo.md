@@ -5,6 +5,10 @@
 - [x] App móvil: auditar el scaffolding existente y fijar el camino mínimo publicable para Android e iOS sin duplicar la plataforma web.
 - [ ] App móvil: completar y probar los flujos críticos de acceso, cámara/archivo, carga documental y continuidad de sesión en runtime nativo.
 - [ ] App móvil: preparar builds de prueba y un protocolo de QA en Android físico antes de enviar a tiendas.
+- [ ] Android físico: generar una build instalable, instalarla en el teléfono disponible y registrar el resultado de acceso, cámara, PDF/XML y continuidad de sesión.
+- [ ] Android físico: ejecutar la automatización de build descargable y verificar que genere el artefacto `auditapatron-android-debug-apk`.
+- [ ] Android físico: documentar la ruta de descarga del APK generado y validar su instalación en el teléfono disponible.
+- [ ] Android físico: si la build remota falla, ajustar GitHub Actions y Android SDK hasta obtener un APK reproducible.
 
 - [x] Ajustar el harness post-upload de /auditar para que la prueba móvil E2E valide el estado compacto real o exponga un modo visible de prueba coherente.
 - [x] Alinear la prueba E2E del gate legal con el copy real del countdown de reintento en /auditar.

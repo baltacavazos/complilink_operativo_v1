@@ -119,3 +119,14 @@ pnpm mobile:ios
 `mobile:android` abre Android Studio después de compilar y sincronizar. `mobile:ios` requiere macOS con Xcode para abrir y firmar el proyecto.
 
 Para la primera prueba en Android físico, sigue `ANDROID_DEVICE_QA.md` en la raíz del proyecto. Ese protocolo cubre instalación, acceso, cámara, PDF/XML, continuidad de sesión y salida segura.
+
+## APK descargable de prueba
+
+El repositorio incluye la automatización manual **Android debug APK**. Genera un APK de prueba con Android SDK y Java 21 en un entorno limpio, luego conserva el archivo descargable durante 14 días.
+
+1. Abre la sección **Actions** del repositorio y ejecuta `Android debug APK` con **Run workflow**.
+2. Cuando termine, descarga el artefacto `auditapatron-android-debug-apk`.
+3. Descomprime el archivo y pasa `app-debug.apk` a tu teléfono.
+4. En Android, permite la instalación desde esa fuente solo para esta prueba y abre el APK.
+
+La build es de validación interna; no sustituye el bundle firmado (`.aab`) requerido para una publicación de Google Play.
