@@ -1,0 +1,30 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Aquí tienes 4 prioridades breves:\n\n1.  **Cookies/Sesión:** Implementar autenticación basada en tokens (JWT) para API, almacenando tokens de forma segura (HTTP-only cookies o SecureStorage de Capacitor).\n2.  **Foto/PDF/XML:** Priorizar la subida de archivos a Express y almacenamiento en el servidor, con validación básica de tipo/tamaño.\n3.  **Pruebas Android:** Realizar pruebas de extremo a extremo en Android físico para flujos críticos de usuario y persistencia de sesión.\n4.  **Modo Activos Locales:** Asegurar que el cambio entre shell remoto y activos locales funcione sin interrupciones en Android."
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 109,
+    "candidatesTokenCount": 148,
+    "totalTokenCount": 257,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 109
+      }
+    ],
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "DqmJate6EeC7g8UP-pXA8As"
+}

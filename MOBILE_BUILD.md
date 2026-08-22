@@ -90,7 +90,7 @@ La ruta más estable en esta primera base móvil sigue siendo el acceso por corr
 | Frente | Trabajo siguiente |
 |---|---|
 | **Autenticación** | Validar en dispositivo real el retorno nativo de Google, la continuidad de sesión y la llegada limpia a la ruta final después del callback. |
-| **Captura documental** | Probar si el `input type=file` actual es suficiente en dispositivos reales o si conviene migrar a `@capacitor/camera` y `@capacitor/filesystem`. |
+| **Captura documental** | La cámara ya usa el plugin nativo. El selector documental conserva el picker del sistema para PDF, XML, DOCX e imágenes; debe validarse en dispositivos reales. |
 | **Publicación** | Generar iconos, splash screens, firma final, política de privacidad móvil y capturas para tiendas. |
 | **Modo local** | Validar API, cookies y sesión cuando el shell use activos locales en vez de URL remota. |
 
@@ -102,6 +102,20 @@ Antes de pensar en publicación, conviene cerrar estos puntos:
 |---|---|
 | En curso | Probar login por correo en dispositivos reales. |
 | En curso | Verificar continuidad de sesión al cerrar y reabrir la app. |
-| Pendiente | Confirmar cámara, PDF, XML y galería en iOS y Android reales. |
+| En curso | Confirmar cámara, PDF, XML y galería en iOS y Android reales. La cámara tiene textos de privacidad para iOS y el selector documental conserva los formatos no fotográficos. |
 | Base lista | Google ya cuenta con retorno nativo por esquema `auditapatron://`; falta validarlo en dispositivos reales y decidir si más adelante conviene complementar con enlaces universales y `.well-known`. |
-| Pendiente | Configurar iconos, splash, firma y política de privacidad móvil. |
+| Pendiente | Configurar firma y política de privacidad móvil; iconos y splash ya cuentan con una base preparada. |
+
+## Comandos de empaquetado
+
+La raíz del proyecto incluye comandos explícitos para mantener sincronizados los proyectos nativos después de cada release web.
+
+```bash
+pnpm mobile:sync
+pnpm mobile:android
+pnpm mobile:ios
+```
+
+`mobile:android` abre Android Studio después de compilar y sincronizar. `mobile:ios` requiere macOS con Xcode para abrir y firmar el proyecto.
+
+Para la primera prueba en Android físico, sigue `ANDROID_DEVICE_QA.md` en la raíz del proyecto. Ese protocolo cubre instalación, acceso, cámara, PDF/XML, continuidad de sesión y salida segura.

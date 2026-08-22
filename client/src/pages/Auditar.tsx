@@ -7308,36 +7308,6 @@ export default function Auditar() {
     setPreferredCaptureMode("file");
     setSelectedCaptureMode("file");
     setMobileRecoveryNoticeShown(false);
-
-    if (canUseNativeDocumentInput()) {
-      setPendingMobileRecoveryMode("file");
-      void selectNativeDocumentForCaptureMode("file")
-        .then(selection => {
-          setPendingMobileRecoveryMode(null);
-          handleSelectedDocumentFile(selection.file ?? null);
-        })
-        .catch(error => {
-          if (isNativeDocumentSelectionCancelled(error)) {
-            setPendingMobileRecoveryMode(null);
-            setSubmitError(null);
-            setUploadSourceOpen(false);
-            return;
-          }
-
-          setPendingMobileRecoveryMode(null);
-          setSelectedFile(null);
-          setAutoAnalyzeRequested(false);
-          setPendingDraft(null);
-          setSubmitError(
-            error instanceof Error
-              ? error.message
-              : getNativeDocumentSelectionErrorMessage("file")
-          );
-          setUploadSourceOpen(false);
-        });
-      return;
-    }
-
     fileInputRef.current?.click();
   };
 

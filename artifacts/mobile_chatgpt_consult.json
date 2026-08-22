@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EFgNoQN6CCJoW7IQ51CageA2YX7ok",
+  "object": "chat.completion",
+  "created": 1787406548,
+  "model": "gpt-4.1-mini-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "1. **Optimizar la carga del shell remoto con fallback local**  \n   - Configurar Capacitor para que en producción cargue el shell remoto auditapatron.com pero con un fallback automático a assets locales si la red falla o la carga es muy lenta. Esto evita bloqueos y mejora la experiencia offline.  \n   - Riesgo: verificar que la autenticación y cookies funcionen igual en ambos modos (remoto y local), especialmente el manejo de tokens en cookies HttpOnly o almacenamiento seguro.\n\n2. **Revisar y adaptar manejo de cookies y autenticación**  \n   - Confirmar que las cookies de sesión o tokens se compartan correctamente entre el webview y el backend Express, considerando CORS y SameSite.  \n   - Para Capacitor, preferir almacenamiento seguro (Preferences o Secure Storage) para tokens sensibles y evitar problemas con cookies HttpOnly que no siempre funcionan bien en webview.  \n   - Riesgo: sesión inválida o pérdida de autenticación al cambiar entre shell remoto y local.\n\n3. **Validar plugins nativos para cámara y filesystem en Android físico**  \n   - Realizar pruebas exhaustivas en dispositivos Android reales para captura de fotos y carga de documentos, asegurando permisos, calidad y almacenamiento correcto.  \n   - Verificar que la integración con el plugin Camera y Filesystem no tenga fugas de memoria ni errores en diferentes versiones Android.  \n   - Riesgo: fallos en captura o carga que afecten UX y funcionalidad clave.\n\n4. **QA focalizado en Android físico y flujos críticos**  \n   - Priorizar pruebas manuales en dispositivos Android reales, cubriendo login, carga de documentos, uso de cámara y navegación con shell remoto/local.  \n   - Automatizar pruebas end-to-end básicas si es posible (ej. con Appium o Detox) para validar estabilidad.  \n   - Revisar logs y manejo de errores para detectar problemas de red, autenticación o plugins.  \n   - Riesgo: bugs no detectados que bloqueen publicación o experiencia usuario.\n\nCon estas 4 acciones se minimizan riesgos y se asegura una app publicable sin duplicar plataforma web ni reescribir código.",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 144,
+    "completion_tokens": 438,
+    "total_tokens": 582,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_d6b600e602"
+}

@@ -16,14 +16,14 @@ describe("Auditar DOCX support markers", () => {
     expect(auditarSource).toContain('return readWebFileAsDataUrl(file);');
   });
 
-  it("connects native camera and gallery triggers through the platform document adapter", () => {
+  it("uses native camera while preserving the system document picker for non-photo formats", () => {
     expect(auditarSource).toContain('canUseNativeDocumentInput');
     expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("camera")');
-    expect(auditarSource).toContain('selectNativeDocumentForCaptureMode("file")');
+    expect(auditarSource).not.toContain('selectNativeDocumentForCaptureMode("file")');
     expect(auditarSource).toContain('handleSelectedDocumentFile(selection.file ?? null);');
     expect(auditarSource).toContain('isNativeDocumentSelectionCancelled(error)');
     expect(auditarSource).toContain('getNativeDocumentSelectionErrorMessage("camera")');
-    expect(auditarSource).toContain('getNativeDocumentSelectionErrorMessage("file")');
+    expect(auditarSource).toContain('fileInputRef.current?.click();');
   });
 
   it("persists a lightweight pending draft snapshot for mobile recovery without reviving binary payloads", () => {
