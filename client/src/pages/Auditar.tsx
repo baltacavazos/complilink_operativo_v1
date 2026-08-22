@@ -1077,6 +1077,11 @@ type MobileOnboardingStep = {
 
 type AuditarCaptureMode = "camera" | "file";
 
+const COMPACT_MOBILE_UPLOAD_PRIMARY_ACTION_CLASS =
+  "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700";
+const COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS =
+  "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950";
+
 type ScanAssistAssessmentView = {
   readiness: "ready" | "retry" | "manual_review";
   documentPresence: "clear" | "partial" | "uncertain";
@@ -9523,7 +9528,7 @@ export default function Auditar() {
                     {shouldCompactMobileUploadEntry ? (
                       <div className="grid gap-2.5">
                         <Button
-                          className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-teal-600 px-5 text-[1.02rem] font-semibold text-white shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] transition-all duration-200 hover:bg-teal-700"
+                          className={`${COMPACT_MOBILE_UPLOAD_PRIMARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
                           disabled={isAutoAnalyzingSelectedFile}
                           onClick={openCameraPicker}
                         >
@@ -9546,7 +9551,7 @@ export default function Auditar() {
                       </div>
                     ) : (
                       <Button
-                        className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-900 px-5 text-[1.02rem] font-semibold text-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] transition-all duration-200 hover:bg-slate-950"
+                        className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
                         disabled={isAutoAnalyzingSelectedFile}
                         onClick={openPreferredPicker}
                       >

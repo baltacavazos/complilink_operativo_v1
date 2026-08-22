@@ -25,7 +25,9 @@ const dbMocks = vi.hoisted(() => ({
   getCaseDetailForUser: vi.fn(),
   getDashboardForUser: vi.fn(),
   getCeoDashboardSnapshot: vi.fn(),
+  getStoredCommerceStatusForUser: vi.fn(),
   getSystemSnapshot: vi.fn(),
+  getUserById: vi.fn(),
   isCeoBypassUser: vi.fn(),
   isDatabaseLockContentionError: vi.fn(),
   getVisibleDocumentForUser: vi.fn(),
@@ -53,11 +55,17 @@ const llmMocks = vi.hoisted(() => ({
   invokeLLM: vi.fn(),
 }));
 
+const engineMocks = vi.hoisted(() => ({
+  sendDocumentToAuditaPatronEngine: vi.fn(),
+}));
+
 vi.mock("./db", () => dbMocks);
 vi.mock("./storage", () => storageMocks);
 vi.mock("./_core/llm", () => llmMocks);
+vi.mock("./auditaPatronIntegrationService", () => engineMocks);
 
 import * as db from "./db";
+import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { invokeLLM } from "./_core/llm";
 import {
   LEGAL_ACCEPTANCE_VERSION,
@@ -196,6 +204,34 @@ describe("appRouter case workflows", () => {
       recentMemberships: [],
       recentDocuments: [],
     } as never);
+    vi.mocked(db.getStoredCommerceStatusForUser).mockResolvedValue({
+      stripeCustomerId: "cus_case_workflow_test",
+      subscriptions: [
+        {
+          stripeSubscriptionId: "sub_case_workflow_test",
+          stripePriceId: null,
+          planKey: "free",
+          status: "active",
+          latestInvoiceId: null,
+          currentPeriodEnd: null,
+          updatedAt: new Date("2026-04-08T09:30:00.000Z"),
+        },
+      ],
+      payments: [
+        {
+          id: 1,
+          productKey: "informe_premium",
+          productType: "one_shot",
+          paymentStatus: "paid",
+          paidAt: new Date("2026-04-08T09:30:00.000Z"),
+          stripeCheckoutSessionId: "cs_case_workflow_test",
+        },
+      ],
+    } as never);
+    vi.mocked(db.getUserById).mockResolvedValue({
+      id: 7,
+      stripeCustomerId: "cus_case_workflow_test",
+    } as never);
     vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValue(false);
     vi.mocked(db.createCaseRecord).mockImplementation(async (input) => ({
       id: 101,
@@ -244,6 +280,14 @@ describe("appRouter case workflows", () => {
           },
         },
       ],
+    } as never);
+    vi.mocked(sendDocumentToAuditaPatronEngine).mockResolvedValue({
+      status: "skipped",
+      dispatchedAt: "2026-04-08T09:30:00.000Z",
+      timestamp: "1775631000",
+      attempts: 0,
+      httpStatus: null,
+      reason: "isolated_vitest_workflow",
     } as never);
   });
 

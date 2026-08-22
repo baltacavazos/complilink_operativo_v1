@@ -78,6 +78,20 @@ function Router() {
   );
 }
 
+function MobileQuickExit() {
+  const [location] = useLocation();
+
+  if (location === "/" || location === "/acceso") {
+    return null;
+  }
+
+  return (
+    <a
+      href="/"
+      className="fixed bottom-3 right-3 z-50 rounded-full bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] transition hover:bg-slate-900 sm:hidden">Salir</a>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -85,6 +99,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <MobileQuickExit />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

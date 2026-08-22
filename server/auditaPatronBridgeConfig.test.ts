@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const configuredWebhookUrl = process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "";
 const configuredSecret = process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "";
+const expectedWebhookUrl = "https://complilink.mx/api/integrations/auditapatron/bridge";
 
 vi.mock("./db", () => ({
   addCaseEvent: vi.fn(),
@@ -50,8 +51,8 @@ afterEach(async () => {
 });
 
 describe("auditaPatron bridge runtime configuration", () => {
-  it("uses the published www webhook URL", () => {
-    expect(configuredWebhookUrl).toBe("https://complilink.mx/api/auditapatron/webhook");
+  it("uses the published canonical bridge URL", () => {
+    expect(configuredWebhookUrl).toBe(expectedWebhookUrl);
   });
 
   it("authenticates the internal Helios contract route with the configured bridge secret", async () => {

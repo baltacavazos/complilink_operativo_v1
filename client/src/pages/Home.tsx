@@ -781,7 +781,7 @@ function SiteHeader() {
           <AuditaPatronLogoWordmark
             surface="dark"
             className="min-w-0"
-            imageClassName="!h-7.5 w-auto max-w-[min(33vw,7.4rem)] object-contain max-[359px]:!h-6.75 max-[359px]:max-w-[min(30vw,6.5rem)] sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
+            imageClassName="!h-7.5 w-auto max-w-[min(34vw,7.8rem)] object-contain max-[359px]:!h-6.75 max-[359px]:max-w-[min(31vw,6.85rem)] sm:!h-10 sm:max-w-[19rem] lg:!h-[3rem] lg:max-w-[23rem]"
           />
         </a>
 
@@ -822,7 +822,7 @@ function SiteHeader() {
 
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
-            className="motion-hover-lift h-10 min-h-10 min-w-[6.45rem] max-w-[7rem] rounded-full bg-teal-400 px-3 text-[0.76rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.45rem] max-[359px]:px-2.5 max-[359px]:text-[0.7rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
+            className="motion-hover-lift h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem] rounded-full bg-teal-400 px-3 text-[0.76rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.75rem] max-[359px]:px-2.5 max-[359px]:text-[0.7rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
             onClick={() => goToAuditFlow({ placement: "header_primary" })}
           >
             <span className="truncate sm:hidden">Empezar</span>
@@ -1210,7 +1210,7 @@ function HeroSection() {
           </div>
 
             <h1
-              className="motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.9rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
+              className="motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
               style={{ ["--motion-delay" as string]: "120ms" }}
             >
               {activeHeroVariant.headline}
@@ -1277,17 +1277,24 @@ function HeroSection() {
             </div>
 
           <div
-            className="motion-enter-soft order-2 mt-3 flex w-full max-w-sm flex-col gap-2 max-[359px]:gap-2 sm:order-none sm:mt-5 sm:max-w-none sm:items-start"
+            className="motion-enter-soft order-2 mt-8 flex flex-col gap-4 sm:flex-row w-full max-w-sm max-[359px]:gap-3 sm:order-none sm:mt-5 sm:max-w-none sm:items-start"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <Button
-              className="motion-hover-lift h-12 w-full rounded-full bg-teal-600 px-7 text-base font-semibold text-white shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99] sm:w-auto"
+              className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
               onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
             >
               {PRIMARY_CTA_LABEL}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
             </Button>
-              <div className="space-y-1 max-[359px]:space-y-1">
+            <Button
+              variant="outline"
+              className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto"
+              onClick={() => scrollToId("lectura-gratis")}
+            >
+              Ver ejemplo
+            </Button>
+              <div className="space-y-1 max-[359px]:hidden max-[359px]:space-y-1">
                 <div className="flex flex-wrap gap-2">
                   {[
                     "Gratis para empezar",

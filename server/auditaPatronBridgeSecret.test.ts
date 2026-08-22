@@ -5,7 +5,7 @@ import { buildAuditaPatronEngineSignature } from "./auditaPatronIntegrationServi
 
 const webhookUrl = process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "";
 const hmacSecret = process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "";
-const expectedWebhookUrl = "https://complilink.mx/api/auditapatron/webhook";
+const expectedWebhookUrl = "https://complilink.mx/api/integrations/auditapatron/bridge";
 const expectedHealthUrl = "https://complilink.mx/api/internal/helios/bridge/contract";
 const allowLiveBridgeSmokeByEnv =
   process.env.ENABLE_LIVE_COMPLILINK_BRIDGE_SMOKE_TEST_IN_DEV_ONLY === "TRUE";

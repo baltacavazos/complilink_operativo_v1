@@ -160,6 +160,15 @@ function getFriendlyAuthMessage(parsed: ParsedAuthMessage) {
   }
 }
 
+function redirectToReturnTo(returnTo: string, setLocation: (path: string) => void) {
+  if (typeof window !== "undefined") {
+    window.location.replace(returnTo);
+    return;
+  }
+
+  setLocation(returnTo);
+}
+
 export default function Access() {
   const returnTo = useMemo(() => getReturnToFromSearch(), []);
   const returnToLabel = useMemo(() => getReturnToLabel(returnTo), [returnTo]);
@@ -227,7 +236,7 @@ export default function Access() {
         setRememberedEmail(normalizedEmail);
       }
 
-      setLocation(returnTo);
+      redirectToReturnTo(returnTo, setLocation);
     },
     onError(error) {
       const parsed = parseStructuredAuthMessage(error.message);
@@ -238,7 +247,7 @@ export default function Access() {
 
   useEffect(() => {
     if (!loading && user && !auth.canToggleUserView) {
-      setLocation(returnTo);
+      redirectToReturnTo(returnTo, setLocation);
     }
   }, [auth.canToggleUserView, loading, returnTo, setLocation, user]);
 

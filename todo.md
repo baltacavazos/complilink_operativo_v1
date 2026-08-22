@@ -1,5 +1,7 @@
 # Project TODO
 
+- [x] Pase de salida acotado: revisar pendientes verificables, cerrar únicamente correcciones puntuales de estabilidad y configuración, y revalidar sin cambios de fondo.
+
 - [x] Ajustar el harness post-upload de /auditar para que la prueba móvil E2E valide el estado compacto real o exponga un modo visible de prueba coherente.
 - [x] Alinear la prueba E2E del gate legal con el copy real del countdown de reintento en /auditar.
 - [x] Actualizar la prueba E2E del acceso CEO por código al formulario simplificado y al aviso actual del buzón de respaldo en /acceso.

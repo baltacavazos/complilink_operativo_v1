@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
-const hosts = [
-  'https://www.complilink.mx',
+const canonicalHosts = [
+  'https://complilink.mx',
   'https://compli-mx-phtbkw9q.manus.space',
 ];
 
@@ -17,9 +17,9 @@ describe('Helios bridge secret alignment', () => {
     expect(secret.length).toBeGreaterThan(0);
   });
 
-  it('returns 200 on contract endpoint with Authorization bearer', async () => {
+  it('returns 200 on canonical contract endpoints with Authorization bearer', async () => {
     const results = await Promise.all(
-      hosts.map(async (host) => {
+      canonicalHosts.map(async (host) => {
         const response = await fetch(`${host}/api/internal/helios/bridge/contract`, {
           headers: {
             Authorization: `Bearer ${secret}`,
@@ -36,15 +36,15 @@ describe('Helios bridge secret alignment', () => {
 
     expect(results, `Bearer failed with secret fingerprint ${fingerprint(secret)}:\n${JSON.stringify(results, null, 2)}`).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ host: 'https://www.complilink.mx', status: 200 }),
+        expect.objectContaining({ host: 'https://complilink.mx', status: 200 }),
         expect.objectContaining({ host: 'https://compli-mx-phtbkw9q.manus.space', status: 200 }),
       ]),
     );
   }, 30000);
 
-  it('returns 200 on contract endpoint with x-auditapatron-token', async () => {
+  it('returns 200 on canonical contract endpoints with x-auditapatron-token', async () => {
     const results = await Promise.all(
-      hosts.map(async (host) => {
+      canonicalHosts.map(async (host) => {
         const response = await fetch(`${host}/api/internal/helios/bridge/contract`, {
           headers: {
             'x-auditapatron-token': secret,
@@ -61,7 +61,7 @@ describe('Helios bridge secret alignment', () => {
 
     expect(results, `x-auditapatron-token failed with secret fingerprint ${fingerprint(secret)}:\n${JSON.stringify(results, null, 2)}`).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ host: 'https://www.complilink.mx', status: 200 }),
+        expect.objectContaining({ host: 'https://complilink.mx', status: 200 }),
         expect.objectContaining({ host: 'https://compli-mx-phtbkw9q.manus.space', status: 200 }),
       ]),
     );
