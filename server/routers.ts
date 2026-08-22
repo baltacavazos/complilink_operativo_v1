@@ -135,7 +135,7 @@ import {
   resolveCommerceStatus,
 } from "./stripeBilling";
 
-async function ingestSynchronousCompliLinkAckEvent(params: {
+export async function ingestSynchronousCompliLinkAckEvent(params: {
   engineDispatch: Awaited<ReturnType<typeof sendDocumentToAuditaPatronEngine>>;
   documentId: string;
   documentNumericId?: number | null;
@@ -146,7 +146,7 @@ async function ingestSynchronousCompliLinkAckEvent(params: {
     ? (responseContract as Record<string, unknown>)
     : null;
   const currentResponseEvent = contractRecord?.currentResponseEvent;
-  if (!currentResponseEvent || typeof currentResponseEvent !== "object") return;
+  if (!currentResponseEvent || typeof currentResponseEvent !== "object") return false;
 
   const eventRecord = currentResponseEvent as Record<string, unknown>;
   const rawEventName = typeof eventRecord.eventName === "string" ? eventRecord.eventName : null;
@@ -156,7 +156,7 @@ async function ingestSynchronousCompliLinkAckEvent(params: {
     rawEventName === "document.retry_requested.v1"
       ? rawEventName
       : null;
-  if (!eventName) return;
+  if (!eventName) return false;
 
   const remoteDocumentId =
     typeof eventRecord.documentId === "number"
@@ -207,6 +207,8 @@ async function ingestSynchronousCompliLinkAckEvent(params: {
     rawBody: JSON.stringify(syntheticPayload),
     timestampHeader: new Date(params.engineDispatch.dispatchedAt).toISOString(),
   });
+
+  return true;
 }
 
 const caseStatusSchema = z.enum(CASE_STATUSES);

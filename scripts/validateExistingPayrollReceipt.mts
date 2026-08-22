@@ -5,6 +5,7 @@ import {
   buildSharedEngineEnvelope,
 } from "../server/caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "../server/auditaPatronIntegrationService";
+import { ingestSynchronousCompliLinkAckEvent } from "../server/routers";
 
 const documentId = (process.env.VALIDATION_DOCUMENT_ID ?? "").trim();
 const explicitAuthorization = process.env.ALLOW_CONTROLLED_EXISTING_DOCUMENT_DISPATCH === "YES";
@@ -82,6 +83,13 @@ const result = await sendDocumentToAuditaPatronEngine({
   },
 });
 
+const syncAckIngested = await ingestSynchronousCompliLinkAckEvent({
+  engineDispatch: result,
+  documentId: document.documentId,
+  documentNumericId: document.id,
+  traceId: detail.case.traceId,
+});
+
 console.log(
   JSON.stringify(
     {
@@ -100,6 +108,7 @@ console.log(
         targetPath: result.observabilityEnvelope.targetPath,
         received: result.responseAck?.received ?? null,
         processingStatus: result.responseAck?.processingStatus ?? null,
+        syncAckIngested,
       },
     },
     null,

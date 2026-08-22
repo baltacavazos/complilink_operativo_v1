@@ -17,6 +17,7 @@ Se reutilizó un recibo de nómina PDF ya almacenado en un expediente existente.
 | Despacho real del recibo existente | `200` |
 | Acuse del bridge | `received: true` |
 | Estado inicial de procesamiento | `pending` |
+| Evento transitorio persistido localmente | `document.retry_requested.v1` con estado `processed` |
 | Host y ruta usados | `complilink.mx` / `/api/integrations/auditapatron/bridge` |
 
 ## Correcciones aplicadas
@@ -31,4 +32,4 @@ La verificación posterior completó TypeScript, Vitest y build de producción c
 
 ## Pendiente controlado
 
-El acuse síncrono fue correcto y el documento quedó aceptado para procesamiento. Esta utilidad de validación se diseñó para no escribir en la base local, por lo que no persiste artificialmente el acuse ni fabrica un callback remoto. La confirmación final pendiente consiste en cargar o confirmar un documento desde el flujo normal de la aplicación, con consentimiento válido, y verificar que el callback asíncrono de Helios se persista en `compliLink_webhook_events`.
+El acuse síncrono fue correcto y el documento quedó aceptado para procesamiento. La validación reutilizó el mismo helper del flujo normal y confirmó que el evento transitorio real `document.retry_requested.v1` se persistió en `compliLink_webhook_events` con estado local `processed`. La confirmación final pendiente consiste en esperar o recibir el callback asíncrono terminal de Helios —por ejemplo, documento procesado o rechazado— sin fabricar resultados remotos.

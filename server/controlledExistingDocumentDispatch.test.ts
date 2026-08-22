@@ -10,11 +10,13 @@ describe("controlled existing-document dispatch", () => {
     expect(source).toContain('ALLOW_CONTROLLED_EXISTING_DOCUMENT_DISPATCH === "YES"');
     expect(source).toContain("getDocumentById(documentId)");
     expect(source).toContain("sendDocumentToAuditaPatronEngine");
+    expect(source).toContain("ingestSynchronousCompliLinkAckEvent");
     expect(source).not.toMatch(/addDocumentRecord|updateDocumentPostProcessing|createAuditLog/);
   });
 
   it("passes the numeric internal identifier required by the canonical Helios bridge", () => {
     expect(source).toContain("documentNumericId: document.id");
     expect(source).toContain("title: document.originalName");
+    expect(source).toContain("syncAckIngested");
   });
 });

@@ -15,6 +15,7 @@
 - [x] Bridge operativo: alinear el payload documental con el contrato canónico de Helios —identificadores numéricos y título obligatorio— antes de reenviar recibos con consentimiento válido.
 - [x] Validación documental controlada: reejecutar el CLI tras el cierre explícito y confirmar salida exitosa sin procesos colgados antes de declararlo concluido.
 - [ ] Validación documental controlada: confirmar en un flujo normal de la app la persistencia local del acuse y del callback asíncrono de Helios, sin fabricar resultados remotos.
+- [x] Validación documental controlada: persistir únicamente el acuse real del bridge mediante el mismo helper síncrono del flujo normal y comprobar la traza local resultante.
 
 - [x] Ajustar el harness post-upload de /auditar para que la prueba móvil E2E valide el estado compacto real o exponga un modo visible de prueba coherente.
 - [x] Alinear la prueba E2E del gate legal con el copy real del countdown de reintento en /auditar.
