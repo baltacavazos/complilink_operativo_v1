@@ -70,7 +70,7 @@ export type AuditaPatronEnginePayload = {
   mimeType: string;
   fileUrl?: string;
   base64Data?: string;
-  documentId?: string;
+  documentId?: string | number;
   category?: string;
   obligation?: string;
   originalFileName?: string;
@@ -602,8 +602,8 @@ export function buildAuditaPatronEnginePayload(params: {
     mimeType: params.documentContract.mime_type,
     fileUrl: params.documentContract.storage_url,
     documentId:
-      toOptionalNumber(params.metadata?.documentNumericId)?.toString() ??
-      toOptionalNumber(params.metadata?.sourceNumericDocumentId)?.toString() ??
+      toOptionalNumber(params.metadata?.documentNumericId) ??
+      toOptionalNumber(params.metadata?.sourceNumericDocumentId) ??
       params.documentContract.document_id,
     category,
     obligation,

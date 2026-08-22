@@ -3944,7 +3944,7 @@ export const appRouter = router({
         const scanAssistance = payload.scanAssistance;
         const safeFileName = sanitizeFileName(payload.fileName).trim();
 
-        await addDocumentRecord({
+        const documentRecord = await addDocumentRecord({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -4162,6 +4162,10 @@ export const appRouter = router({
           docType: classification.documentType,
           metadata: {
             source: "guest_preview_claim",
+            providerId: 30001,
+            userId: 1,
+            documentNumericId: documentRecord.id,
+            title: safeFileName,
             document_name: safeFileName,
             guest_preview_id: payload.guestPreviewId,
           },

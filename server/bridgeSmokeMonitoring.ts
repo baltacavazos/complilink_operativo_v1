@@ -206,8 +206,8 @@ function buildFallbackSnapshot(): BridgeSmokeMonitoringSnapshot {
     contractCheck: {
       passed: false,
       expectedHealthStatus: 200,
-      expectedWebhookStatus: 202,
-      expectedContract: "auditapatron.bridge.ack.v1",
+      expectedWebhookStatus: 200,
+      expectedContract: "helios.bridge.contract.v1",
     },
     history: [],
     summary: {
@@ -277,13 +277,13 @@ function parseLatestSnapshot(raw: string, nowMs: number) {
       event: getPayloadString(webhookBody?.event),
       responseContract: getPayloadString(webhookBody?.responseContract),
       receivedAt: getPayloadString(webhookBody?.receivedAt),
-      ok: getPayloadNumber(webhook?.status) === 202 && getPayloadBoolean(webhookBody?.verified) === true,
+      ok: [200, 202].includes(getPayloadNumber(webhook?.status) ?? -1) && getPayloadBoolean(webhookBody?.verified) === true,
     },
     contractCheck: {
       passed: getPayloadBoolean(contractCheck?.passed) === true,
       expectedHealthStatus: getPayloadNumber(contractCheck?.expectedHealthStatus) ?? 200,
-      expectedWebhookStatus: getPayloadNumber(contractCheck?.expectedWebhookStatus) ?? 202,
-      expectedContract: getPayloadString(contractCheck?.expectedContract) ?? "auditapatron.bridge.ack.v1",
+      expectedWebhookStatus: getPayloadNumber(contractCheck?.expectedWebhookStatus) ?? 200,
+      expectedContract: getPayloadString(contractCheck?.expectedContract) ?? "helios.bridge.contract.v1",
     },
     alerting: {
       ...fallback.alerting,

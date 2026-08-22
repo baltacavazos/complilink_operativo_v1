@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import { readFileSync, rmSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = "/home/ubuntu/complilink_operativo_v1";
@@ -34,17 +34,16 @@ async function runSmoke(baseUrl: string, runMode = "test", extraEnv: Record<stri
 
 function buildHealthyBridgeServer() {
   const server = createServer((req, res) => {
-    if (req.url === "/api/auditapatron/health") {
+    if (req.url === "/api/internal/helios/bridge/contract") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", responseContract: "auditapatron.bridge.ack.v1" }));
+      res.end(JSON.stringify({ status: "ok", service: "complilink-auditapatron-bridge" }));
       return;
     }
 
-    if (req.url === "/api/auditapatron/webhook" && req.method === "POST") {
-      res.writeHead(202, { "Content-Type": "application/json" });
+    if (req.url === "/api/integrations/auditapatron/bridge" && req.method === "POST") {
+      res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          responseContract: "auditapatron.bridge.ack.v1",
           verified: true,
           event: "document.uploaded",
         }),
@@ -89,6 +88,10 @@ function buildNotificationServer(notifications: Array<{ title: string; content: 
 }
 
 describe("bridge_smoke_test.mjs", () => {
+  beforeEach(() => {
+    cleanupSmokeOutputs();
+  });
+
   afterEach(async () => {
     cleanupSmokeOutputs();
     await Promise.all(
@@ -101,7 +104,7 @@ describe("bridge_smoke_test.mjs", () => {
     );
   });
 
-  it("persiste un resultado contractual exitoso con health 200 y webhook 202", async () => {
+  it("persiste un resultado contractual exitoso con el contrato Helios y bridge canónicos", async () => {
     const server = buildHealthyBridgeServer();
     const baseUrl = await listen(server);
 
@@ -114,21 +117,20 @@ describe("bridge_smoke_test.mjs", () => {
       health: {
         status: 200,
         body: {
-          responseContract: "auditapatron.bridge.ack.v1",
+          status: "ok",
         },
       },
       webhook: {
-        status: 202,
+        status: 200,
         body: {
-          responseContract: "auditapatron.bridge.ack.v1",
           verified: true,
           event: "document.uploaded",
         },
       },
       contractCheck: {
         expectedHealthStatus: 200,
-        expectedWebhookStatus: 202,
-        expectedContract: "auditapatron.bridge.ack.v1",
+        expectedWebhookStatus: 200,
+        expectedContract: "helios.bridge.contract.v1",
         passed: true,
       },
       alerting: {

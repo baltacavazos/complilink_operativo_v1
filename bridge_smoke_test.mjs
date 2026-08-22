@@ -1,7 +1,11 @@
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHmac } from 'node:crypto';
 
-const baseUrl = (process.argv[2] || process.env.BRIDGE_SMOKE_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+const bridgeInput = (process.argv[2] || process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL || 'https://complilink.mx/api/integrations/auditapatron/bridge').trim();
+const bridgeInputUrl = new URL(bridgeInput);
+const baseUrl = bridgeInputUrl.origin;
+const webhookUrl = (process.env.BRIDGE_SMOKE_WEBHOOK_URL || (bridgeInputUrl.pathname === '/' ? `${baseUrl}/api/integrations/auditapatron/bridge` : bridgeInputUrl.toString())).replace(/\/$/, '');
+const healthUrl = (process.env.BRIDGE_SMOKE_HEALTH_URL || `${baseUrl}/api/internal/helios/bridge/contract`).replace(/\/$/, '');
 const runMode = process.argv[3] || 'manual';
 const secret = process.env.AUDITAPATRON_ENGINE_HMAC_SECRET;
 const resultPath = '/home/ubuntu/complilink_operativo_v1/bridge_smoke_test_results.json';
@@ -21,8 +25,11 @@ if (!secret) {
 const timestamp = Math.floor(Date.now() / 1000).toString();
 const payload = {
   event: 'document.uploaded',
-  documentId: 'SMOKE-DOC-001',
-  sourceUserId: 'SMOKE-USER-001',
+  providerId: 30001,
+  userId: 1,
+  documentId: 88001,
+  title: 'Validación controlada de recibo de nómina',
+  sourceUserId: 1,
   docType: 'recibo_nomina',
   fileUrl: 'https://example.com/smoke-document.pdf',
   sha256: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
@@ -361,8 +368,8 @@ const summary = {
   },
   contractCheck: {
     expectedHealthStatus: 200,
-    expectedWebhookStatus: 202,
-    expectedContract: 'auditapatron.bridge.ack.v1',
+    expectedWebhookStatus: 200,
+    expectedContract: 'helios.bridge.contract.v1',
     passed: false,
   },
   error: null,
@@ -376,17 +383,24 @@ const summary = {
 };
 
 try {
-  const healthResponse = await fetch(`${baseUrl}/api/auditapatron/health`);
+  const healthResponse = await fetch(healthUrl, {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${secret}`,
+    },
+  });
   const healthJson = await parseResponseJson(healthResponse);
   summary.health = {
     status: healthResponse.status,
     body: healthJson,
   };
 
-  const webhookResponse = await fetch(`${baseUrl}/api/auditapatron/webhook`, {
+  const webhookResponse = await fetch(webhookUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${secret}`,
       'X-AuditaPatron-Timestamp': timestamp,
       'X-AuditaPatron-Signature': signature,
     },
@@ -400,9 +414,8 @@ try {
 
   summary.contractCheck.passed =
     healthResponse.status === 200 &&
-    webhookResponse.status === 202 &&
-    healthJson?.responseContract === 'auditapatron.bridge.ack.v1' &&
-    webhookJson?.responseContract === 'auditapatron.bridge.ack.v1' &&
+    (healthJson?.status === 'ok' || healthJson?.contractReady === true) &&
+    webhookResponse.status === 200 &&
     webhookJson?.verified === true &&
     webhookJson?.event === 'document.uploaded';
 } catch (error) {

@@ -158,7 +158,7 @@ describe("auditaPatronIntegrationService", () => {
       title: "Recibo de nómina abril 2026",
       mimeType: "application/pdf",
       fileUrl: "https://cdn.example.com/paystub.pdf",
-      documentId: "88001",
+      documentId: 88001,
       category: "other",
       obligation: "nomina",
       originalFileName: "paystub.pdf",

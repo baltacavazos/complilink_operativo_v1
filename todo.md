@@ -9,6 +9,12 @@
 - [ ] Android físico: ejecutar la automatización de build descargable y verificar que genere el artefacto `auditapatron-android-debug-apk`.
 - [ ] Android físico: documentar la ruta de descarga del APK generado y validar su instalación en el teléfono disponible.
 - [ ] Android físico: si la build remota falla, ajustar GitHub Actions y Android SDK hasta obtener un APK reproducible.
+- [ ] Android físico: instalar Android SDK en el entorno de compilación y generar directamente el APK descargable, sin depender del permiso de workflows de GitHub.
+- [ ] Validación documental controlada: usar recibos de nómina ya disponibles para comprobar carga, expediente, motor y trazabilidad sin alterar documentos originales.
+- [x] Bridge operativo: actualizar el smoke autenticado a los endpoints canónicos actuales y validar que detecte correctamente una respuesta HTML errónea como fallo.
+- [x] Bridge operativo: alinear el payload documental con el contrato canónico de Helios —identificadores numéricos y título obligatorio— antes de reenviar recibos con consentimiento válido.
+- [x] Validación documental controlada: reejecutar el CLI tras el cierre explícito y confirmar salida exitosa sin procesos colgados antes de declararlo concluido.
+- [ ] Validación documental controlada: confirmar en un flujo normal de la app la persistencia local del acuse y del callback asíncrono de Helios, sin fabricar resultados remotos.
 
 - [x] Ajustar el harness post-upload de /auditar para que la prueba móvil E2E valide el estado compacto real o exponga un modo visible de prueba coherente.
 - [x] Alinear la prueba E2E del gate legal con el copy real del countdown de reintento en /auditar.
