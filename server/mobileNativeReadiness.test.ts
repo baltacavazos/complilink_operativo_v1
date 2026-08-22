@@ -10,10 +10,13 @@ describe("mobile native readiness", () => {
   it("keeps the Capacitor shell aligned with the public app identity", () => {
     const config = readProjectFile("capacitor.config.ts");
     const manifest = readProjectFile("android", "app", "src", "main", "AndroidManifest.xml");
+    const styles = readProjectFile("android", "app", "src", "main", "res", "values", "styles.xml");
 
     expect(config).toContain('appId: "com.auditapatron.mobile"');
     expect(config).toContain('"auditapatron.com"');
+    expect(config).toContain("const useRemoteServer = Boolean(configuredServerUrl) && !useBundledAssetsOnly");
     expect(manifest).toContain('<data android:scheme="auditapatron" />');
+    expect(styles).toContain('<item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>');
   });
 
   it("declares iOS privacy messages required by the native camera flow", () => {

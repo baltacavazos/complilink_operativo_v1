@@ -10,6 +10,12 @@
 - [ ] Android físico: documentar la ruta de descarga del APK generado y validar su instalación en el teléfono disponible.
 - [ ] Android físico: si la build remota falla, ajustar GitHub Actions y Android SDK hasta obtener un APK reproducible.
 - [ ] Android físico: instalar Android SDK en el entorno de compilación y generar directamente el APK descargable, sin depender del permiso de workflows de GitHub.
+- [ ] Bloqueador Android: diagnosticar y corregir la pantalla blanca al arrancar el APK instalado en teléfono físico.
+- [ ] Bloqueador Android: generar e instalar una nueva build tras el arreglo y confirmar que la app muestra Home o el flujo de auditoría.
+- [ ] Autenticación integral: auditar correo con código, Google, Apple, vinculación de cuentas, creación de usuario y continuidad de sesión en web y móvil.
+- [ ] Autenticación integral: completar credenciales y configuración externa pendientes, y verificar cada flujo con pruebas reproducibles.
+- [ ] Autenticación asistida: configurar en las consolas del propietario las credenciales y retornos de Google y Apple, solicitando intervención solo para acceso o confirmaciones de cuenta.
+
 - [ ] Validación documental controlada: usar recibos de nómina ya disponibles para comprobar carga, expediente, motor y trazabilidad sin alterar documentos originales.
 - [x] Bridge operativo: actualizar el smoke autenticado a los endpoints canónicos actuales y validar que detecte correctamente una respuesta HTML errónea como fallo.
 - [x] Bridge operativo: alinear el payload documental con el contrato canónico de Helios —identificadores numéricos y título obligatorio— antes de reenviar recibos con consentimiento válido.
