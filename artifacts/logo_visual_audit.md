@@ -62,3 +62,13 @@ La segunda inspección confirma que los splash de Android e iOS usan un fondo ma
 No se detectan fallos estéticos de logotipo pendientes en las superficies auditadas. Para observar launcher y splash corregidos en un teléfono ya instalado será necesario generar e instalar una nueva build nativa, porque el sistema operativo conserva esos assets dentro del paquete de la app.
 
 No se ha rediseñado la identidad. La corrección necesaria consiste en derivar un icono limpio de la lupa existente, preservando sus colores y forma, sin texto fragmentado.
+
+## Corrección focal del footer
+
+El wordmark inferior izquierdo reportado como pixelado se sustituyó por una copia permanente del asset oficial oscuro, servida desde `/manus-storage/header-dark_a8cbd441.png`. No se usa texto HTML genérico ni un resultado de generación en background. La referencia quedó protegida por `client/src/footerBrand.test.ts` y se revalidó en capturas completas del landing a 1280 × 720 y 375 × 812: el nombre conserva la composición oficial, mantiene contraste sobre el footer oscuro y no presenta desbordes.
+
+La evidencia visual focal y persistente quedó guardada en `artifacts/logo-footer-evidence/footer-desktop-crop.png` (1280 × 520) y `artifacts/logo-footer-evidence/footer-mobile-target-crop.png` (375 × 1600). El contrato focal también exige anchura de 220 px, límite móvil de 70 vw, alineación izquierda y expansión a 250 px en `sm`.
+
+La inspección focal de `footer-desktop-crop.png` confirma que el wordmark oficial se ve nítido, blanco, proporcionado y alineado a la izquierda sobre el fondo oscuro.
+
+La inspección final de `footer-mobile-target-crop.png` confirma el resultado móvil: el wordmark oficial completo se ve nítido, conserva la lupa y el acento turquesa, mantiene margen lateral, no desborda y queda correctamente separado del texto y de los enlaces. Con esta evidencia focal, escritorio y móvil quedan visualmente aprobados.

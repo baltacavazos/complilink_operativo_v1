@@ -3048,15 +3048,17 @@ function MobileStickyCta() {
 function SiteFooter() {
   return (
     <footer className="bg-background py-6">
-      <div className="container flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
-          <AuditaPatronLogoWordmark
-            className="inline-flex min-w-0 items-center"
-            imageClassName="max-w-[220px] sm:max-w-[250px]"
-            subtitleClassName="text-[0.75rem] tracking-[0.14em]"
-          />
-          <p className="max-w-md text-sm leading-5 text-slate-500">
-            Claridad, orden y respaldo en un expediente digital simple y privado.
+	      <div className="container flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+	        <div className="space-y-2">
+	          <img
+	            src="/manus-storage/header-dark_a8cbd441.png"
+	            alt="AuditaPatron"
+	            className="h-auto w-[220px] max-w-[70vw] object-contain object-left sm:w-[250px]"
+	            loading="eager"
+	            decoding="async"
+	          />
+	          <p className="max-w-md text-sm leading-5 text-slate-500">
+	            Claridad, orden y respaldo en un expediente digital simple y privado.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
