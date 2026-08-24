@@ -16,6 +16,9 @@
 - [ ] Autenticación integral: completar credenciales y configuración externa pendientes, y verificar cada flujo con pruebas reproducibles.
 - [ ] Autenticación asistida: configurar en las consolas del propietario las credenciales y retornos de Google y Apple, solicitando intervención solo para acceso o confirmaciones de cuenta.
 
+- [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
+- [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.
+
 - [ ] Validación documental controlada: usar recibos de nómina ya disponibles para comprobar carga, expediente, motor y trazabilidad sin alterar documentos originales.
 - [x] Bridge operativo: actualizar el smoke autenticado a los endpoints canónicos actuales y validar que detecte correctamente una respuesta HTML errónea como fallo.
 - [x] Bridge operativo: alinear el payload documental con el contrato canónico de Helios —identificadores numéricos y título obligatorio— antes de reenviar recibos con consentimiento válido.

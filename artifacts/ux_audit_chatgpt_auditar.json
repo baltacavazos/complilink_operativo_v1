@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EGJTAExf7cSFmFJNK2tlslX2i2prf",
+  "object": "chat.completion",
+  "created": 1787556796,
+  "model": "gpt-4.1-mini-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Como trabajador mexicano no técnico, al revisar esta nueva evidencia móvil para auditar, veo que el proceso está claro y sencillo: \n\n- Paso 1 indica subir el recibo o comprobante, ya sea con foto o archivo.\n- Hay una señal visual que confirma que el recibo está seguro y solo yo puedo verlo.\n- El botón grande “Elegir archivo para continuar” es fácil de identificar y usar.\n\nEsto resuelve dudas previas sobre la seguridad y privacidad de mis datos, y sobre cómo subir el comprobante correctamente.\n\nSin embargo, falta una prueba real que confirme que, una vez subido el archivo, el sistema valida que el recibo es auténtico y que la información fue correctamente registrada o aceptada. Es decir, falta una confirmación final o comprobante de que el recibo fue auditado o aprobado, no solo que fue subido y está seguro.",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 95,
+    "completion_tokens": 178,
+    "total_tokens": 273,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_32362a3520"
+}
