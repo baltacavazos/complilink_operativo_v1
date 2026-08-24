@@ -12,6 +12,9 @@
 - [ ] Android físico: instalar Android SDK en el entorno de compilación y generar directamente el APK descargable, sin depender del permiso de workflows de GitHub.
 - [ ] Bloqueador Android: diagnosticar y corregir la pantalla blanca al arrancar el APK instalado en teléfono físico.
 - [ ] Bloqueador Android: generar e instalar una nueva build tras el arreglo y confirmar que la app muestra Home o el flujo de auditoría.
+- [x] Android actualizado: reconstruir, sincronizar, compilar y verificar una APK que incluya las correcciones vigentes de arranque, branding y funcionalidad móvil.
+- [x] Android actualizado: entregar la APK verificada con instrucciones para sustituir la versión actualmente instalada.
+- [ ] Respaldo GitHub: verificar la sincronización del repositorio y guardar un checkpoint actualizado con las correcciones recientes.
 - [ ] Autenticación integral: auditar correo con código, Google, Apple, vinculación de cuentas, creación de usuario y continuidad de sesión en web y móvil.
 - [ ] Autenticación integral: completar credenciales y configuración externa pendientes, y verificar cada flujo con pruebas reproducibles.
 - [ ] Autenticación asistida: configurar en las consolas del propietario las credenciales y retornos de Google y Apple, solicitando intervención solo para acceso o confirmaciones de cuenta.
