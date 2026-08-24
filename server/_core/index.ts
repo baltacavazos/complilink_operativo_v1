@@ -11,6 +11,7 @@ import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
 import { startCeoBridgeScheduleWorker } from "../ceoBridgeAutomation";
 import { registerStripeWebhook } from "../stripeBilling";
+import { registerStorageProxy } from "./storageProxy";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,6 +44,7 @@ async function startServer() {
     },
   }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  registerStorageProxy(app);
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   registerCompliLinkReturnWebhook(app);

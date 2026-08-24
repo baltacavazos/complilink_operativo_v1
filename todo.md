@@ -18,6 +18,8 @@
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.
+- [ ] Monetización: resumir ofertas y recorridos de conversión existentes, y verificar claridad y preparación operativa sin implementar cambios.
+- [x] Auditoría visual de marca: revisar todos los logotipos en web y app móvil, corregir solo fallos comprobables de legibilidad, proporción, nitidez o contraste y revalidar cada contexto.
 
 - [ ] Validación documental controlada: usar recibos de nómina ya disponibles para comprobar carga, expediente, motor y trazabilidad sin alterar documentos originales.
 - [x] Bridge operativo: actualizar el smoke autenticado a los endpoints canónicos actuales y validar que detecte correctamente una respuesta HTML errónea como fallo.

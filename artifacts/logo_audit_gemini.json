@@ -1,0 +1,31 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n  \"verdict\": \"Se identifican fallos críticos en la implementación de la identidad visual y consistencia de marca, afectando la legibilidad y la experiencia de usuario en puntos clave de interacción. Requiere correcciones inmediatas para establecer una presencia de marca coherente y profesional.\",\n  \"critical_fixes\": [\n    \"Sustituir inmediatamente los iconos genéricos del scaffold en los launchers y splash screens de Android/iOS por el icono oficial y corregido de AuditaPatron.\",\n    \"Revisar y corregir el asset del icono principal para asegurar que todas las letras y el tagline sean completamente visibles y legibles, sin recortes, dentro del espacio designado. Este asset debe ser escalable y optimizado para diferentes tamaños.\",\n    \"Actualizar todas las instancias del 'icono roto' (favicon, PWA, sección Access, y app shell) con el asset del icono corregido y legible.\"\n  ],\n  \"avoid_changes\": [\n    \"No alterar el diseño, la paleta de colores o la tipografía del logo horizontal completo, wordmark o variantes de header, ya que su nitidez es adecuada y no presentan problemas de legibilidad.\",\n    \"No introducir nuevos elementos gráficos o de marca que no estén directamente relacionados con la corrección de los assets existentes y la consistencia de la identidad actual.\"\n  ],\n  \"acceptance_checks\": [\n    \"Confirmar que los iconos de launcher y splash screen en Android e iOS muestran el icono oficial y corregido de AuditaPatron, sin rastro del icono genérico.\",\n    \"Verificar que el icono de AuditaPatron es completamente legible y no presenta recortes en todas sus aplicaciones (favicon, PWA, y dentro de la app en secciones como Access y el app shell).\",\n    \"Asegurar la consistencia visual: el icono corregido se utiliza uniformemente donde se requiere un icono, y el wordmark completo donde es apropiado (Home, hero de Auditar).\",\n    \"Validar que el asset del icono corregido mantiene su nitidez y legibilidad en diferentes tamaños y resoluciones, garantizando su escalabilidad y adaptabilidad.\"\n  ]\n}"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 156,
+    "candidatesTokenCount": 459,
+    "totalTokenCount": 1884,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 156
+      }
+    ],
+    "thoughtsTokenCount": 1269,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "IPmLaoW8KvC1_uMP6uDHkAw"
+}

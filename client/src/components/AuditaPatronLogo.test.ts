@@ -6,7 +6,7 @@ describe("AuditaPatronLogo", () => {
   it("expone los activos finales esperados para logo, wordmark, icono y lockups de header", () => {
     expect(AUDITAPATRON_LOGO_ASSETS.full).toContain("auditapatron-logo-final_");
     expect(AUDITAPATRON_LOGO_ASSETS.wordmark).toContain("auditapatron-wordmark-final_");
-    expect(AUDITAPATRON_LOGO_ASSETS.icon).toContain("auditapatron-icon-base_");
+    expect(AUDITAPATRON_LOGO_ASSETS.icon).toBe("/manus-storage/pwa-512_c25a4918.png");
     expect(AUDITAPATRON_LOGO_ASSETS.headerLight).toContain("header-lockup-light_");
     expect(AUDITAPATRON_LOGO_ASSETS.headerDark).toContain("header-lockup-dark_");
   });

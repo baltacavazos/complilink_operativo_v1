@@ -35,21 +35,21 @@ describe("brand metadata", () => {
       theme_color: string;
       background_color: string;
       display: string;
-      icons: Array<{ src: string; sizes: string; type: string }>;
+      icons: Array<{ src: string; sizes: string; type: string; purpose?: string }>;
     };
 
     expect(manifest.name).toBe("AuditaPatron");
     expect(manifest.short_name).toBe("AuditaPatron");
     expect(manifest.theme_color).toBe("#143c86");
-    expect(manifest.background_color).toBe("#ffffff");
+    expect(manifest.background_color).toBe("#142c52");
     expect(manifest.display).toBe("standalone");
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ sizes: "32x32", type: "image/png" }),
-        expect.objectContaining({ sizes: "192x192", type: "image/png" }),
-        expect.objectContaining({ sizes: "512x512", type: "image/png" }),
+        expect.objectContaining({ sizes: "192x192", type: "image/png", purpose: "any maskable" }),
+        expect.objectContaining({ sizes: "512x512", type: "image/png", purpose: "any maskable" }),
       ]),
     );
-    expect(manifest.icons.every((icon) => icon.src.includes("cloudfront.net"))).toBe(true);
+    expect(manifest.icons.every((icon) => icon.src.startsWith("/manus-storage/"))).toBe(true);
   });
 });

@@ -2,7 +2,7 @@ import * as React from "react";
 
 const FULL_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-logo-final_01c8b00a.png";
 const WORDMARK_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-wordmark-final_059d1915.png";
-const ICON_LOGO_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/auditapatron-icon-base_034a1256.png";
+const ICON_LOGO_SRC = "/manus-storage/pwa-512_c25a4918.png";
 const HEADER_LOCKUP_LIGHT_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/header-lockup-light_3758f303.png";
 const HEADER_LOCKUP_DARK_SRC = "https://d2xsxph8kpxj0f.cloudfront.net/310519663473809458/cGpJC3DAdnBiVVBEKZfqbd/header-lockup-dark_6fe9c4c8.png";
 
@@ -66,8 +66,6 @@ export function AuditaPatronLogo({
           alt="AuditaPatron"
           className={joinClasses(
             "h-12 w-12 object-contain",
-            isDarkSurface && darkSurfaceImageTreatment,
-            isAdaptiveSurface && adaptiveSurfaceImageTreatment,
             imageClassName,
           )}
           loading="eager"

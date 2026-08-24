@@ -33,4 +33,40 @@ describe("mobile native readiness", () => {
     expect(auditar).not.toContain('selectNativeDocumentForCaptureMode("file")');
     expect(auditar).toContain("fileInputRef.current?.click();");
   });
+
+  it("keeps corrected AuditaPatron branding across web and native install surfaces", () => {
+    const logo = readProjectFile("client", "src", "components", "AuditaPatronLogo.tsx");
+    const html = readProjectFile("client", "index.html");
+    const webManifest = readProjectFile("client", "public", "site.webmanifest");
+    const adaptiveBackground = readProjectFile(
+      "android",
+      "app",
+      "src",
+      "main",
+      "res",
+      "values",
+      "ic_launcher_background.xml",
+    );
+
+    expect(logo).toContain('/manus-storage/pwa-512_c25a4918.png');
+    expect(logo).not.toContain("auditapatron-icon-base_034a1256.png");
+    expect(html).toContain('/manus-storage/favicon-32_5a4f6751.png');
+    expect(html).toContain('/manus-storage/apple-touch-icon-180_5f31b507.png');
+    expect(webManifest).toContain('/manus-storage/pwa-192_aca7de64.png');
+    expect(webManifest).toContain('/manus-storage/pwa-512_c25a4918.png');
+    expect(adaptiveBackground).toContain("#142C52");
+
+    const nativeAssets = [
+      "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+      "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+      "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+    ];
+    for (const relativePath of nativeAssets) {
+      const absolutePath = path.join(process.cwd(), relativePath);
+      expect(fs.existsSync(absolutePath), relativePath).toBe(true);
+      expect(fs.statSync(absolutePath).size, relativePath).toBeGreaterThan(1_000);
+    }
+  });
 });
