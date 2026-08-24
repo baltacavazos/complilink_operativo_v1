@@ -29,6 +29,9 @@
 - [x] Landing: corregir el logotipo inferior izquierdo cuyas letras se perciben pixeladas o mal renderizadas, preservando layout e identidad.
 - [x] Landing: servir una copia oficial y determinista del wordmark del footer, sin depender de un asset generado en background.
 - [x] Landing: guardar capturas persistentes del footer final en móvil y escritorio y proteger por prueba la referencia, tamaño y layout del wordmark oficial.
+- [x] Landing: diagnosticar y corregir el wordmark inferior que no aparece en la versión reportada de web o APK, asegurando una ruta de asset fiable.
+- [x] Servicio PROFEDET: evaluar la viabilidad jurídica, comercial y operativa de un escrito de pago orientativo para la persona trabajadora, sin implementarlo aún.
+- [ ] Servicio PROFEDET: implementar únicamente tras aprobación expresa el paquete privado de preparación, con revisión jurídica laboral, privacidad, consentimiento y copy aprobados.
 
 - [ ] Validación documental controlada: usar recibos de nómina ya disponibles para comprobar carga, expediente, motor y trazabilidad sin alterar documentos originales.
 - [x] Bridge operativo: actualizar el smoke autenticado a los endpoints canónicos actuales y validar que detecte correctamente una respuesta HTML errónea como fallo.

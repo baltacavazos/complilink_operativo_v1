@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -3050,8 +3050,8 @@ function SiteFooter() {
     <footer className="bg-background py-6">
 	      <div className="container flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
 	        <div className="space-y-2">
-	          <img
-	            src="/manus-storage/header-dark_a8cbd441.png"
+		          <img
+		            src={AUDITAPATRON_LOGO_ASSETS.headerDark}
 	            alt="AuditaPatron"
 	            className="h-auto w-[220px] max-w-[70vw] object-contain object-left sm:w-[250px]"
 	            loading="eager"

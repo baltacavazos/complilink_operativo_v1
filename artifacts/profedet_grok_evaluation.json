@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "status": 200,
+  "body": {
+    "id": "dbd266f9-5428-971b-a446-200520aa9409",
+    "object": "chat.completion",
+    "created": 1787573110,
+    "model": "grok-4.3",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "**Veredicto de viabilidad: Media.**\n\nLa propuesta es jurídicamente viable siempre que se mantenga estrictamente como herramienta de organización y apoyo documental privado, sin invadir funciones de PROFEDET ni generar expectativas de representación o trámite oficial. La gratuidad y la atención personalizada de PROFEDET (establecidas en la LFT y en la información pública del organismo) impiden cualquier modelo que sugiera intermediación o aceleración del trámite.\n\n### 2. Riesgos jurídicos, de publicidad y de protección de datos\n- **Jurídicos**: Riesgo principal de configuración de ejercicio indebido de la abogacía o de servicios de representación si el borrador se presenta como “listo para presentar” o si se ofrece seguimiento. También existe riesgo de responsabilidad por errores en el resumen de hechos cuando el usuario valide datos incorrectos.\n- **Publicidad**: Prohibido cualquier claim que implique “acceso prioritario”, “mayor probabilidad de aceptación”, “elaboración conforme a requisitos oficiales de PROFEDET” o “sustituto de asesoría”. Estos mensajes pueden considerarse publicidad engañosa.\n- **Protección de datos**: El producto trata datos laborales sensibles (recibos de nómina, NSS, CURP, información del empleador). Se requiere consentimiento expreso, finalidad limitada, medidas de seguridad y política de privacidad clara. La retención debe ser mínima y el usuario debe poder eliminar sus datos.\n\n### 3. Lenguaje comercial permitido y prohibido\n**Permitido**:\n- “Resumen organizado de tus recibos de nómina y datos que tú validas.”\n- “Borrador orientativo para llevar personalmente a PROFEDET.”\n- “Checklist de documentos que usualmente solicita PROFEDET según su información pública.”\n- “Apoyo para organizar tu información antes de acudir.”\n\n**Prohibido**:\n- “Documento oficial para PROFEDET”, “queja lista para presentar”, “representación”, “asesoría PROFEDET”, “acelera tu trámite”, “cumple con todos los requisitos oficiales”, “elaborado por especialistas de PROFEDET”.\n\n### 4. Guardrails mínimos obligatorios\n- Advertencia visible y reiterada: el servicio es privado, no sustituye la atención gratuita de PROFEDET, el usuario debe acudir personalmente y validar toda la información.\n- Descargo de responsabilidad claro: “Este documento no constituye una queja, demanda ni escrito oficial. PROFEDET evaluará y solicitará la información que considere pertinente.”\n- Consentimiento explícito para tratamiento de datos laborales antes de procesar cualquier recibo.\n- Ausencia de cualquier mecanismo de “envío” o “presentación” ante PROFEDET.\n- Revisión final siempre a cargo del usuario.\n\n### 5. Conveniencia comercial para la persona trabajadora\nLimitada. PROFEDET es gratuito y exige comparecencia personal. El valor real del producto radica únicamente en ahorro de tiempo de organización y en reducir errores de forma en un primer borrador. Muchas trabajadoras pueden preferir acudir directamente con sus recibos y la checklist pública de PROFEDET sin costo adicional. El producto solo resulta atractivo si el precio es muy bajo y la interfaz ahorra tiempo real de preparación.\n\n### 6. Recomendación clara de lanzamiento y modelo de cobro\nLanzar es posible, pero solo bajo modelo de bajo costo o freemium (ej. checklist gratuita + resumen y borrador por pago único pequeño). No se recomienda suscripción recurrente. El posicionamiento debe ser explícitamente “herramienta de organización personal” y nunca “servicio de apoyo a PROFEDET”. Antes del lanzamiento se sugiere revisión de la redacción comercial por un abogado laboralista para confirmar que no se cruzan los límites de representación o asesoría.",
+          "reasoning_content": "The user query is in Spanish, and the instruction is: \"Responde en español con análisis preciso, prudente y accionable. No inventes requisitos oficiales ni sustituyas fuentes públicas.\"\nFirst, the response must be in Spanish, as per: \"Responde en español con análisis preciso, prudente y accionable.",
+          "refusal": null
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 578,
+      "completion_tokens": 788,
+      "total_tokens": 1851,
+      "prompt_tokens_details": {
+        "text_tokens": 578,
+        "audio_tokens": 0,
+        "image_tokens": 0,
+        "cached_tokens": 128
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 485,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "num_sources_used": 0,
+      "cost_in_usd_ticks": 37706000
+    },
+    "system_fingerprint": "fp_eb3c003fc66c14ed",
+    "service_tier": "default"
+  }
+}
