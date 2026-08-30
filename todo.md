@@ -34,7 +34,10 @@
 - [x] Copy público: eliminar de la landing menciones a Helios, “valor probatorio” y validación en vivo con SAT/IMSS/Infonavit, permitiendo IMSS/Infonavit solo como documentos que la persona puede cargar.
 - [x] Aviso de privacidad público: servir el mismo documento sin login en `/legal/privacidad`, `/aviso-de-privacidad` y `/privacidad`, y enlazar el footer a `/aviso-de-privacidad`.
 - [x] Aviso de privacidad público: mantener datos del responsable pendientes de publicación comercial, conservar privacidad@auditapatron.com y sustituir cualquier afirmación no verificada de AES-256 por “resguardo con acceso controlado”.
-- [ ] Alcance público aprobado: añadir pruebas, verificar las tres rutas y el dominio público, guardar checkpoint y entregar diffs exactos más URL viva, sin tocar Helios, Stripe, billing, APK ni otras páginas.
+- [x] Alcance público aprobado: añadir pruebas, verificar las tres rutas y el dominio público, guardar checkpoint y entregar diffs exactos más URL viva, sin tocar Helios, Stripe, billing, APK ni otras páginas.
+- [ ] Header landing: cambiar únicamente el href del enlace “Privacidad” de `#privacidad` a `/aviso-de-privacidad`, verificarlo y publicar el sitio existente sin activar share del chat.
+- [ ] Incidente de acceso público: comprobar disponibilidad, DNS, certificado, redirecciones y respuesta de `auditapatron.com`, `www.auditapatron.com` y el dominio alterno publicado para identificar por qué el usuario no puede entrar.
+- [ ] Incidente de acceso público: aplicar únicamente la corrección mínima confirmada tras aprobación y verificar el acceso desde la ruta afectada.
 - [x] Servicio PROFEDET: evaluar la viabilidad jurídica, comercial y operativa de un escrito de pago orientativo para la persona trabajadora, sin implementarlo aún.
 - [ ] Servicio PROFEDET: implementar únicamente tras aprobación expresa el paquete privado de preparación, con revisión jurídica laboral, privacidad, consentimiento y copy aprobados.
 

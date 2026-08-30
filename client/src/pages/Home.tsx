@@ -264,7 +264,7 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 const navLinks = [
   { href: "#lectura-gratis", label: "Empezar" },
   { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#privacidad", label: "Privacidad" },
+  { href: "/aviso-de-privacidad", label: "Privacidad" },
 ];
 
 const tourSteps: TourStep[] = [
