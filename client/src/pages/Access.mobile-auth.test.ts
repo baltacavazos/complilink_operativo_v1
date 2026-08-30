@@ -16,4 +16,13 @@ describe("Access mobile auth markers", () => {
   it("keeps Manus login routed through platform external navigation", () => {
     expect(accessSource).toContain('void openPlatformExternalUrl(manusLoginUrl);');
   });
+
+  it("separates account creation from sign-in and shows branded waiting", () => {
+    expect(accessSource).toContain("getSignupUrl");
+    expect(accessSource).toContain('startPortalAuth(signupUrl, "signup")');
+    expect(accessSource).toContain('startPortalAuth(manusLoginUrl, "signin")');
+    expect(accessSource).toContain("Está cargando, puede tardar unos segundos.");
+    expect(accessSource).toContain("window.location.assign(url)");
+    expect(accessSource).toContain("Google, Microsoft, Apple o correo");
+  });
 });

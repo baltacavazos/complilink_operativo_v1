@@ -3,7 +3,7 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import MobileAppShell from "@/components/MobileAppShell";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { canUseManusLogin, getManusLoginUrl } from "@/const";
+import { canUseManusLogin, getManusLoginUrl, getSignupUrl } from "@/const";
 import {
   openPlatformExternalUrl,
   openPlatformGoogleLogin,
@@ -34,6 +34,30 @@ type ParsedAuthMessage = {
   retryAfterSeconds: number | null;
   code: string | null;
 };
+
+type PortalAuthIntent = "signup" | "signin";
+
+function BrandedAuthTransition({ intent }: { intent: PortalAuthIntent }) {
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm rounded-[2rem] border border-slate-200 bg-white/95 p-7 text-center shadow-[0_28px_80px_-42px_rgba(15,23,42,0.34)]">
+          <div className="flex justify-center">
+            <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-slate-200 bg-white object-contain p-2 shadow-sm" />
+          </div>
+          <AuditaPatronLogoWordmark className="mt-4 justify-center" imageClassName="max-w-[220px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
+          <Loader2 className="mx-auto mt-7 h-6 w-6 animate-spin text-teal-600" aria-hidden="true" />
+          <h1 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+            {intent === "signup" ? "Preparando tu cuenta" : "Preparando tu acceso"}
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Está cargando, puede tardar unos segundos.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 function getReturnToFromSearch() {
   if (typeof window === "undefined") return "/";
@@ -176,6 +200,7 @@ export default function Access() {
   const nativeApp = useMemo(() => isNativeApp(), []);
   const manusLoginAvailable = useMemo(() => !nativeApp && canUseManusLogin(), [nativeApp]);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
+  const signupUrl = useMemo(() => getSignupUrl(returnTo), [returnTo]);
   const auth = useAuth();
   const { loading, user } = auth;
   const [, setLocation] = useLocation();
@@ -191,6 +216,7 @@ export default function Access() {
   const [ceoPanelPreferenceReady, setCeoPanelPreferenceReady] = useState(false);
   const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
   const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
+  const [portalAuthIntent, setPortalAuthIntent] = useState<PortalAuthIntent | null>(null);
   const accessErrorFromSearch = useMemo(() => getAccessErrorFromSearch(), []);
   const stableUserIdentifier = useMemo(
     () => getStableUserIdentifier(auth.realUser ?? auth.user),
@@ -329,10 +355,21 @@ export default function Access() {
   const emailCooldownActive = emailCooldownSecondsRemaining > 0;
   const secondaryOptionsAvailable = Boolean((!nativeApp && manusLoginAvailable && manusLoginUrl) || googleOptionAvailable);
 
+  const startPortalAuth = (url: string, intent: PortalAuthIntent) => {
+    setPortalAuthIntent(intent);
+    window.setTimeout(() => {
+      window.location.assign(url);
+    }, 80);
+  };
+
   const setPersistedCeoPanelOpen = (nextOpen: boolean) => {
     setCeoPanelPreferenceOpen(nextOpen);
     setCeoActionsDrawerOpen(nextOpen);
   };
+
+  if (portalAuthIntent) {
+    return <BrandedAuthTransition intent={portalAuthIntent} />;
+  }
 
   if (auth.canToggleUserView && auth.isAuthenticated) {
     return (
@@ -449,6 +486,36 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                 </p>
               ) : null}
             </div>
+
+            {manusLoginAvailable && manusLoginUrl && signupUrl ? (
+              <div className="mt-5 rounded-[1.45rem] border border-teal-100 bg-teal-50/75 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Elige cómo continuar</p>
+                <p className="mt-2 text-sm leading-6 text-teal-950">
+                  Si es tu primera vez, crea tu cuenta. Si ya tienes una, inicia sesión.
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <Button
+                    type="button"
+                    className="h-12 rounded-2xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
+                    onClick={() => startPortalAuth(signupUrl, "signup")}
+                  >
+                    Crear cuenta
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 rounded-2xl border-slate-200 bg-white text-base font-semibold text-slate-800 hover:bg-slate-50"
+                    onClick={() => startPortalAuth(manusLoginUrl, "signin")}
+                  >
+                    Iniciar sesión
+                  </Button>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-teal-900/80">
+                  En la siguiente pantalla puedes usar Google, Microsoft, Apple o correo.
+                </p>
+              </div>
+            ) : null}
 
             <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
               <div className="flex flex-wrap items-start justify-between gap-3">

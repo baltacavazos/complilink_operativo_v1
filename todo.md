@@ -21,6 +21,12 @@
 - [ ] Autenticación integral: auditar correo con código, Google, Apple, vinculación de cuentas, creación de usuario y continuidad de sesión en web y móvil.
 - [ ] Autenticación integral: completar credenciales y configuración externa pendientes, y verificar cada flujo con pruebas reproducibles.
 - [ ] Autenticación asistida: configurar en las consolas del propietario las credenciales y retornos de Google y Apple, solicitando intervención solo para acceso o confirmaciones de cuenta.
+- [ ] Alta pública web: asegurar que “Crear cuenta” abra el flujo de registro y permita a una persona desconocida terminar dentro del panel con sesión activa en `auditapatron.com`.
+- [ ] Alta pública web: mantener Google, Microsoft, Apple y correo intactos, en español cuando el portal lo permita, dentro de la misma pestaña y sin abrir `manus.im/login` aparte.
+- [ ] Alta pública web: mostrar durante la redirección una espera con logo AuditaPatron y texto claro en español, evitando una pantalla blanca o muerta.
+- [ ] Alta pública web: validar el flujo real publicado de creación de cuenta, callback y sesión; publicar el sitio y registrar el identificador de versión.
+- [ ] Alta pública web versión única: implementar `getSignupUrl` con `/app-auth?type=signUp&locale=es` para “Crear cuenta” y conservar `type=signIn` exclusivamente para “Entrar”.
+- [ ] Alta pública web versión única: confirmar que ambos flujos navegan en la misma pestaña, mantienen Google/Microsoft/Apple/correo y regresan a `auditapatron.com` con sesión.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.
@@ -35,7 +41,7 @@
 - [x] Aviso de privacidad público: servir el mismo documento sin login en `/legal/privacidad`, `/aviso-de-privacidad` y `/privacidad`, y enlazar el footer a `/aviso-de-privacidad`.
 - [x] Aviso de privacidad público: mantener datos del responsable pendientes de publicación comercial, conservar privacidad@auditapatron.com y sustituir cualquier afirmación no verificada de AES-256 por “resguardo con acceso controlado”.
 - [x] Alcance público aprobado: añadir pruebas, verificar las tres rutas y el dominio público, guardar checkpoint y entregar diffs exactos más URL viva, sin tocar Helios, Stripe, billing, APK ni otras páginas.
-- [ ] Header landing: cambiar únicamente el href del enlace “Privacidad” de `#privacidad` a `/aviso-de-privacidad`, verificarlo y publicar el sitio existente sin activar share del chat.
+- [x] Header landing: cambiar únicamente el href del enlace “Privacidad” de `#privacidad` a `/aviso-de-privacidad`, verificarlo y publicar el sitio existente sin activar share del chat.
 - [ ] Incidente de acceso público: comprobar disponibilidad, DNS, certificado, redirecciones y respuesta de `auditapatron.com`, `www.auditapatron.com` y el dominio alterno publicado para identificar por qué el usuario no puede entrar.
 - [ ] Incidente de acceso público: aplicar únicamente la corrección mínima confirmada tras aprobación y verificar el acceso desde la ruta afectada.
 - [x] Servicio PROFEDET: evaluar la viabilidad jurídica, comercial y operativa de un escrito de pago orientativo para la persona trabajadora, sin implementarlo aún.

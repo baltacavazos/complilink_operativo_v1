@@ -42,14 +42,15 @@ export type BuildManusLoginUrlInput = {
   returnPath?: string;
 };
 
-export function buildManusLoginUrl({
+type ManusAuthType = "signIn" | "signUp";
+
+function buildManusAuthUrl({
   origin,
-  hostname,
   oauthPortalUrl,
   appId,
   returnPath,
-}: BuildManusLoginUrlInput) {
-  if (!isHostedManusDomain(hostname) || !oauthPortalUrl || !appId) {
+}: BuildManusLoginUrlInput, type: ManusAuthType) {
+  if (!oauthPortalUrl || !appId) {
     return null;
   }
 
@@ -67,14 +68,22 @@ export function buildManusLoginUrl({
   url.searchParams.set("redirectUri", redirectUri.toString());
   url.searchParams.set("redirect_uri", redirectUri.toString());
   url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
+  url.searchParams.set("type", type);
+  url.searchParams.set("locale", "es");
 
   return url.toString();
 }
 
+export function buildManusLoginUrl(input: BuildManusLoginUrlInput) {
+  return buildManusAuthUrl(input, "signIn");
+}
+
+export function buildManusSignupUrl(input: BuildManusLoginUrlInput) {
+  return buildManusAuthUrl(input, "signUp");
+}
+
 export const canUseManusLogin = () => {
-  if (typeof window === "undefined") return true;
-  return isHostedManusDomain(window.location.hostname);
+  return Boolean(import.meta.env.VITE_OAUTH_PORTAL_URL && import.meta.env.VITE_APP_ID);
 };
 
 export const getAccessUrl = (returnPath = getCurrentReturnPath()) => {
@@ -94,6 +103,18 @@ export const getManusLoginUrl = (returnPath = getCurrentReturnPath()) => {
   if (typeof window === "undefined") return null;
 
   return buildManusLoginUrl({
+    origin: window.location.origin,
+    hostname: window.location.hostname,
+    oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
+    appId: import.meta.env.VITE_APP_ID,
+    returnPath,
+  });
+};
+
+export const getSignupUrl = (returnPath = getCurrentReturnPath()) => {
+  if (typeof window === "undefined") return null;
+
+  return buildManusSignupUrl({
     origin: window.location.origin,
     hostname: window.location.hostname,
     oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
