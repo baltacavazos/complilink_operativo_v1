@@ -18,11 +18,12 @@ describe("Access mobile auth markers", () => {
   });
 
   it("separates account creation from sign-in and shows branded waiting", () => {
-    expect(accessSource).toContain("getSignupUrl");
-    expect(accessSource).toContain('startPortalAuth(signupUrl, "signup")');
-    expect(accessSource).toContain('startPortalAuth(manusLoginUrl, "signin")');
+    expect(accessSource).toContain('type AccessMode = "signup" | "signin"');
+    expect(accessSource).toContain('setAccessMode("signup")');
+    expect(accessSource).toContain('setAccessMode("signin")');
+    expect(accessSource).toContain("Crear cuenta con mi correo");
     expect(accessSource).toContain("Está cargando, puede tardar unos segundos.");
     expect(accessSource).toContain("window.location.assign(url)");
-    expect(accessSource).toContain("Google, Microsoft, Apple o correo");
+    expect(accessSource).toContain("Microsoft y Apple siguen disponibles");
   });
 });

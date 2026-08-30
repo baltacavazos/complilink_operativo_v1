@@ -3,7 +3,7 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import MobileAppShell from "@/components/MobileAppShell";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { canUseManusLogin, getManusLoginUrl, getSignupUrl } from "@/const";
+import { canUseManusLogin, getManusLoginUrl } from "@/const";
 import {
   openPlatformExternalUrl,
   openPlatformGoogleLogin,
@@ -36,6 +36,7 @@ type ParsedAuthMessage = {
 };
 
 type PortalAuthIntent = "signup" | "signin";
+type AccessMode = "signup" | "signin";
 
 function BrandedAuthTransition({ intent }: { intent: PortalAuthIntent }) {
   return (
@@ -114,6 +115,11 @@ function getAccessErrorFromSearch() {
     default:
       return null;
   }
+}
+
+function getAccessModeFromSearch(): AccessMode {
+  if (typeof window === "undefined") return "signin";
+  return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
 }
 
 function parseStructuredAuthMessage(rawMessage: string): ParsedAuthMessage {
@@ -200,7 +206,6 @@ export default function Access() {
   const nativeApp = useMemo(() => isNativeApp(), []);
   const manusLoginAvailable = useMemo(() => !nativeApp && canUseManusLogin(), [nativeApp]);
   const manusLoginUrl = useMemo(() => getManusLoginUrl(returnTo), [returnTo]);
-  const signupUrl = useMemo(() => getSignupUrl(returnTo), [returnTo]);
   const auth = useAuth();
   const { loading, user } = auth;
   const [, setLocation] = useLocation();
@@ -217,6 +222,7 @@ export default function Access() {
   const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
   const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
   const [portalAuthIntent, setPortalAuthIntent] = useState<PortalAuthIntent | null>(null);
+  const [accessMode, setAccessMode] = useState<AccessMode>(() => getAccessModeFromSearch());
   const accessErrorFromSearch = useMemo(() => getAccessErrorFromSearch(), []);
   const stableUserIdentifier = useMemo(
     () => getStableUserIdentifier(auth.realUser ?? auth.user),
@@ -469,16 +475,20 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div className="min-w-0">
                 <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
-                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Iniciar sesión</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  {accessMode === "signup" ? "Crear cuenta" : "Iniciar sesión"}
+                </p>
               </div>
             </div>
 
             <div className="mt-6 space-y-3">
               <h1 className="max-w-[16ch] text-3xl font-semibold leading-tight tracking-[-0.05em] text-slate-950 sm:max-w-none sm:text-[2.2rem]">
-                Vuelve a tu revisión en un paso
+                {accessMode === "signup" ? "Crea tu cuenta y entra" : "Vuelve a tu revisión en un paso"}
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                Escribes tu correo, recibes tu código y vuelves directo a {returnToLabel}.
+                {accessMode === "signup"
+                  ? `Escribe tu correo, confirma el código y entra directo a ${returnToLabel}.`
+                  : `Escribes tu correo, recibes tu código y vuelves directo a ${returnToLabel}.`}
               </p>
               {nativeApp ? (
                 <p className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
@@ -487,17 +497,22 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
               ) : null}
             </div>
 
-            {manusLoginAvailable && manusLoginUrl && signupUrl ? (
+            {manusLoginAvailable && manusLoginUrl ? (
               <div className="mt-5 rounded-[1.45rem] border border-teal-100 bg-teal-50/75 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Elige cómo continuar</p>
                 <p className="mt-2 text-sm leading-6 text-teal-950">
-                  Si es tu primera vez, crea tu cuenta. Si ya tienes una, inicia sesión.
+                  Si es tu primera vez, crea tu cuenta aquí sin salir de AuditaPatron. Si ya tienes una, inicia sesión.
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Button
                     type="button"
                     className="h-12 rounded-2xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
-                    onClick={() => startPortalAuth(signupUrl, "signup")}
+                    onClick={() => {
+                      setAccessMode("signup");
+                      setEmailStep("request");
+                      setErrorMessage(null);
+                      window.setTimeout(() => document.getElementById("access-email")?.focus(), 0);
+                    }}
                   >
                     Crear cuenta
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -506,13 +521,13 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     type="button"
                     variant="outline"
                     className="h-12 rounded-2xl border-slate-200 bg-white text-base font-semibold text-slate-800 hover:bg-slate-50"
-                    onClick={() => startPortalAuth(manusLoginUrl, "signin")}
+                    onClick={() => setAccessMode("signin")}
                   >
                     Iniciar sesión
                   </Button>
                 </div>
                 <p className="mt-3 text-xs leading-5 text-teal-900/80">
-                  En la siguiente pantalla puedes usar Google, Microsoft, Apple o correo.
+                  Correo y Google funcionan directamente aquí. Microsoft y Apple siguen disponibles en las opciones de respaldo.
                 </p>
               </div>
             ) : null}
@@ -592,7 +607,9 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     ? "Enviando código..."
                     : emailCooldownActive
                       ? `Espera ${emailCooldownSecondsRemaining}s`
-                      : "Enviar código"}
+                      : accessMode === "signup"
+                        ? "Crear cuenta con mi correo"
+                        : "Enviar código"}
                 </Button>
 
                 {requestEmailCode.isPending ? (
@@ -653,7 +670,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   disabled={verifyEmailCode.isPending || loading || code.trim().length < 6}
                 >
                   {verifyEmailCode.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Entrar y continuar
+                  {accessMode === "signup" ? "Crear cuenta y continuar" : "Entrar y continuar"}
                 </Button>
 
                 <p className="text-sm leading-6 text-slate-600">Nada cambia hasta confirmarlo. Si falla, pides otro.</p>
@@ -694,7 +711,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                         void openPlatformExternalUrl(manusLoginUrl);
                       }}
                     >
-                      Continuar con Manus
+                      Continuar con Microsoft o Apple
                     </Button>
                   ) : null}
 

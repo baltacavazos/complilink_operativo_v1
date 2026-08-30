@@ -102,7 +102,7 @@ describe("authService email code flow", () => {
 
     const { code, payload } = extractCodeFromEmailPayload(fetchMock);
     expect(payload.subject).toBe("Tu código de acceso a Auditapatron");
-    expect(payload.from).toBe("Auditapatron <onboarding@resend.dev>");
+    expect(payload.from).toBe("Auditapatron <acceso@complilink.mx>");
 
     const verifyRes = makeRes();
     const user = await completeEmailLogin({

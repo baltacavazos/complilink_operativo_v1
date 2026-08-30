@@ -378,6 +378,15 @@ type ResendAttachment = {
   contentType?: string;
 };
 
+export function resolveResendFromEmail(configuredFromEmail: string) {
+  const normalized = configuredFromEmail.trim();
+  if (!normalized || /@resend\.dev>?$/i.test(normalized)) {
+    return `${AUTH_BRAND_NAME} <acceso@complilink.mx>`;
+  }
+
+  return normalized.includes("<") ? normalized : `${AUTH_BRAND_NAME} <${normalized}>`;
+}
+
 export async function sendEmailWithResend(params: {
   to: string[];
   subject: string;
@@ -392,9 +401,7 @@ export async function sendEmailWithResend(params: {
     throw new Error("RESEND_FROM_EMAIL is not configured");
   }
 
-  const fromAddress = ENV.resendFromEmail.includes("<")
-    ? ENV.resendFromEmail
-    : `${AUTH_BRAND_NAME} <${ENV.resendFromEmail}>`;
+  const fromAddress = resolveResendFromEmail(ENV.resendFromEmail);
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",

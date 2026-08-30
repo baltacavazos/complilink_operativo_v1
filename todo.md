@@ -27,6 +27,11 @@
 - [ ] Alta pública web: validar el flujo real publicado de creación de cuenta, callback y sesión; publicar el sitio y registrar el identificador de versión.
 - [ ] Alta pública web versión única: implementar `getSignupUrl` con `/app-auth?type=signUp&locale=es` para “Crear cuenta” y conservar `type=signIn` exclusivamente para “Entrar”.
 - [ ] Alta pública web versión única: confirmar que ambos flujos navegan en la misma pestaña, mantienen Google/Microsoft/Apple/correo y regresan a `auditapatron.com` con sesión.
+- [ ] Regresión alta pública: descubrir y aplicar la ruta o parámetros que el portal Manus realmente respeta para registro, de forma que “Crear cuenta” no muestre “Sign in to AUDITAPATRON”.
+- [ ] Regresión alta pública: probar como persona desconocida el flujo publicado hasta el portal de alta y verificar la URL final, idioma disponible, proveedores y callback a `auditapatron.com` antes de cerrar.
+- [ ] P0 identidad: inspeccionar y retirar allowlists, piloto o bloqueos de usuarios nuevos administrables para la app `cGpJC3DAdnBiVVBEKZfqbd`.
+- [ ] P0 identidad: localizar panel o API de identidades bloqueadas, desbloquear las correspondientes a AuditaPatron si está permitido y documentar cualquier control exclusivo del propietario.
+- [ ] P0 identidad: comprobar que el registro público admite una identidad desconocida y crea sesión de aplicación sin usar más correos del tester.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.
