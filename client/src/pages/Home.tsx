@@ -314,8 +314,8 @@ const dossierSignals: DossierSignal[] = [
     status: "faltante",
   },
   {
-    title: "Soporte IMSS, Infonavit o evidencia adicional",
-    description: "Puede reforzar el contexto cuando quieres revisar con más claridad tu alta, aportaciones o continuidad laboral.",
+    title: "Documentos del IMSS, Infonavit o evidencia adicional",
+    description: "Puedes cargarlos para sumar contexto sobre tu alta, aportaciones o continuidad laboral.",
     status: "faltante",
   },
 ];
@@ -355,8 +355,8 @@ const priorityDocuments: PriorityDocument[] = [
     value: "Sirven para comparar lo acordado frente a lo que realmente ocurrió después.",
   },
   {
-    title: "Alta, baja, semanas cotizadas del IMSS o constancia de Infonavit",
-    description: "Refuerzan la historia laboral con fechas y señales de seguridad social y vivienda laboral.",
+    title: "Documentos que puedes cargar: alta, baja, semanas cotizadas del IMSS o constancia de Infonavit",
+    description: "Estos archivos pueden sumar contexto sobre fechas de seguridad social y vivienda laboral.",
     value: "Suman evidencia útil cuando quieres revisar con más claridad si tu alta y tus registros laborales están en orden dentro del expediente.",
   },
 ];
@@ -438,7 +438,7 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.",
+    supportLine: "Sube tu recibo de nómina y te mostramos qué conviene revisar primero. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.",
     microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
     body: "Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
     ctaPrimary: "Revisar mi recibo gratis",
@@ -451,8 +451,8 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube un solo recibo y detecta rápido si aparece una señal que sí conviene revisar.",
-    microDescription: "Gratis, sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    supportLine: "Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.",
+    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio y sin guardar nada hasta que tú decidas.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -464,7 +464,7 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y entiende rápido qué revisar.",
     headline: "Sube tu recibo y entiende rápido qué revisar.",
-    supportLine: "Empieza con un solo recibo y descubre rápido si tu pago merece una revisión más seria.",
+    supportLine: "Empieza con un solo recibo y recibe una lectura orientativa sobre si tu pago merece una revisión más seria.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir sin enredarte.",
     body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues con más contexto.",
     ctaPrimary: "Revisar mi recibo gratis",
@@ -477,7 +477,7 @@ const heroCopyVariants = {
     titleLead: "Revisa tu pago",
     titleAccent: "con una primera lectura útil.",
     headline: "Revisa tu pago con una primera lectura útil.",
-    supportLine: "Sube un recibo y detecta a tiempo si tu pago tiene algo que sí conviene revisar.",
+    supportLine: "Sube un recibo y recibe una señal inicial sobre lo que conviene revisar en tu pago.",
     microDescription: "Si aparece una señal, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
     body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues o lo guardas.",
     ctaPrimary: "Revisar mi recibo gratis",
@@ -559,7 +559,7 @@ const reportDemoStates: ReportDemoState[] = [
     id: "siguiente-paso",
     label: "Qué revisar",
     badge: "Lo primero que conviene comparar",
-    summary: "Te mostramos el siguiente cruce útil para confirmar si la señal es real o no.",
+    summary: "Te mostramos el siguiente documento útil para revisar si la señal inicial necesita más contexto.",
   },
 ];
 
@@ -638,11 +638,11 @@ const prediagnosticRecommendations: Record<
   }
 > = {
   "para-mi": {
-    badge: "Resultado instantáneo",
+    badge: "Lectura orientativa inicial",
     document: "Tu recibo de nómina más reciente o un CFDI del mismo periodo",
     reason:
       "Suelen dar contexto rápido sobre pagos, deducciones, fechas y conceptos para que veas pronto si AuditaPatron te puede ayudar.",
-    nextStep: "Si después quieres más claridad, suma contrato o soporte IMSS/Infonavit y tu expediente gana contexto sin perder el hilo.",
+    nextStep: "Si después quieres más claridad, puedes cargar tu contrato o documentos del IMSS/Infonavit para sumar contexto.",
     resultTitle: "Empieza con la evidencia que más rápido revela pagos, deducciones y periodos.",
     ctaLabel: "Quiero revisar ese documento",
   },
@@ -677,7 +677,7 @@ const prediagnosticRecommendations: Record<
     document: "Dos o tres recibos de nómina seguidos",
     reason:
       "Ayudan a detectar patrones y diferencias que un solo archivo puede dejar ocultos.",
-    nextStep: "Si además agregas CFDI, contrato o soporte IMSS/Infonavit, tu expediente gana todavía más valor.",
+    nextStep: "Si además cargas CFDI, contrato o documentos del IMSS/Infonavit, tu expediente gana más contexto.",
     resultTitle: "Si ya tienes varios recibos, este paquete te da una lectura con más contexto desde el inicio.",
     ctaLabel: "Subir varios recibos",
   },
@@ -1239,6 +1239,13 @@ function HeroSection() {
               </p>
             ) : null}
 
+            <p
+              className="motion-enter-soft mt-3 max-w-xl rounded-[1rem] border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm font-medium leading-5 text-slate-700 shadow-sm"
+              style={{ ["--motion-delay" as string]: "230ms" }}
+            >
+              Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti.
+            </p>
+
             <div
               className={
                 isShortPaidCampaignHero
@@ -1307,7 +1314,7 @@ function HeroSection() {
                   ))}
                 </div>
                 <p className="text-sm leading-5 text-slate-700">
-                  Empieza con una foto o PDF y en segundos ves si tu pago merece una revisión más a fondo, sin cuenta al inicio.
+                  Empieza con una foto o PDF y ves si tu pago merece una revisión más a fondo, sin cuenta al inicio. No es un cruce en vivo con SAT/IMSS.
                 </p>
               </div>
           </div>
@@ -1633,7 +1640,7 @@ function HeliosFirstEntrySection() {
             Primera lectura sin correo
           </div>
           <h2 className="mt-3 max-w-[14ch] text-[1.9rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:mt-4 sm:text-[2.5rem]">
-            Sube un archivo y mira una señal real antes de decidir.
+            Sube un archivo y mira una señal inicial antes de decidir.
           </h2>
           <p className="mt-3 max-w-2xl text-[0.98rem] leading-7 text-slate-600 sm:text-[1.02rem] sm:leading-7">
             Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si sí te sirve te pedimos tu correo para guardarlo.
@@ -1656,7 +1663,7 @@ function HeliosFirstEntrySection() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-                  Resultado real desde el primer archivo
+                  Lectura orientativa desde el primer archivo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
                   Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu expediente.
@@ -1967,7 +1974,7 @@ function QuickTrustSection() {
                 variant="outline"
                 className="rounded-full border-slate-200 bg-white px-6 text-slate-700 hover:bg-slate-50"
                 onClick={() => {
-                  window.location.href = "/legal/privacidad";
+                  window.location.href = "/aviso-de-privacidad";
                 }}
               >
                 Ver controles de privacidad
@@ -2276,7 +2283,7 @@ function DossierSection() {
           <div className="mt-6 space-y-3">
             {[
               "Más claridad sobre pagos, deducciones y condiciones laborales.",
-              "Más contexto para revisar con claridad señales de IMSS e Infonavit.",
+              "Más contexto al cargar documentos del IMSS o Infonavit.",
               "Mejor respaldo documental disponible 24/7 para futuras revisiones.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
@@ -2395,7 +2402,7 @@ function MobileOnboardingSection() {
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f6f6_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
-              En tu celular se entiende en segundos
+              En tu celular se entiende con facilidad
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
               Un onboarding breve para que sepas qué pasa desde el primer archivo.
@@ -3051,8 +3058,8 @@ function SiteFooter() {
 	      <div className="container flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
 	        <div className="space-y-2">
 		          <img
-		            src={AUDITAPATRON_LOGO_ASSETS.headerDark}
-	            alt="AuditaPatron"
+			            src={AUDITAPATRON_LOGO_ASSETS.headerDark}
+		            alt="AuditaPatron - Conoce tus derechos"
 	            className="h-auto w-[220px] max-w-[70vw] object-contain object-left sm:w-[250px]"
 	            loading="eager"
 	            decoding="async"
@@ -3069,7 +3076,7 @@ function SiteFooter() {
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">
             Cómo funciona
           </a>
-          <a href="#privacidad" className="transition-colors hover:text-slate-900">
+          <a href="/aviso-de-privacidad" className="transition-colors hover:text-slate-900">
             Privacidad
           </a>
           {LEGAL_DOCUMENTS.map((document) => (

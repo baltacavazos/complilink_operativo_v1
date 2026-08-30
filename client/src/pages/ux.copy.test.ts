@@ -101,7 +101,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control")');
-    expect(source).toContain('Sube un solo recibo y detecta rápido si aparece una señal que sí conviene revisar.');
+    expect(source).toContain('Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.');
     expect(source).toContain('id="app"');
     expect(source).toContain('App móvil en camino');
     expect(source).toContain('Empieza hoy aquí. La app viene después.');
@@ -343,6 +343,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("acompañamiento laboral dentro de la plataforma");
     expect(source).toContain("Privacidad visible y pública");
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(source).toContain("Este aviso carga sin login");
+    expect(source).toContain("resguardo con acceso controlado");
+    expect(source).toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(source).not.toContain("cifrado AES-256");
     expect(source).not.toContain("AuditaPatron y Helios");
   });
 
@@ -354,6 +358,8 @@ describe("copy visible de la experiencia", () => {
     expect(appSource).toContain('<AppUrlListener />');
     expect(appSource).toContain('function RouteLoadingFallback()');
     expect(appSource).toContain('path={"/legal/privacidad"}');
+    expect(appSource).toContain('path={"/aviso-de-privacidad"}');
+    expect(appSource).toContain('path={"/privacidad"}');
     expect(appSource).toContain('path={"/legal/terminos"}');
   });
 });

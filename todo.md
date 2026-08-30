@@ -30,6 +30,11 @@
 - [x] Landing: servir una copia oficial y determinista del wordmark del footer, sin depender de un asset generado en background.
 - [x] Landing: guardar capturas persistentes del footer final en móvil y escritorio y proteger por prueba la referencia, tamaño y layout del wordmark oficial.
 - [x] Landing: diagnosticar y corregir el wordmark inferior que no aparece en la versión reportada de web o APK, asegurando una ruta de asset fiable.
+- [x] Copy público: conservar “CONOCE TUS DERECHOS” en logo, OG y alt; añadir el deslinde visible y suavizar promesas de validación oficial o inmediatez únicamente en Home y metadatos.
+- [x] Copy público: eliminar de la landing menciones a Helios, “valor probatorio” y validación en vivo con SAT/IMSS/Infonavit, permitiendo IMSS/Infonavit solo como documentos que la persona puede cargar.
+- [x] Aviso de privacidad público: servir el mismo documento sin login en `/legal/privacidad`, `/aviso-de-privacidad` y `/privacidad`, y enlazar el footer a `/aviso-de-privacidad`.
+- [x] Aviso de privacidad público: mantener datos del responsable pendientes de publicación comercial, conservar privacidad@auditapatron.com y sustituir cualquier afirmación no verificada de AES-256 por “resguardo con acceso controlado”.
+- [ ] Alcance público aprobado: añadir pruebas, verificar las tres rutas y el dominio público, guardar checkpoint y entregar diffs exactos más URL viva, sin tocar Helios, Stripe, billing, APK ni otras páginas.
 - [x] Servicio PROFEDET: evaluar la viabilidad jurídica, comercial y operativa de un escrito de pago orientativo para la persona trabajadora, sin implementarlo aún.
 - [ ] Servicio PROFEDET: implementar únicamente tras aprobación expresa el paquete privado de preparación, con revisión jurídica laboral, privacidad, consentimiento y copy aprobados.
 

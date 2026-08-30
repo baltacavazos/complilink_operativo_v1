@@ -100,7 +100,9 @@ function LegalDocumentArticle({ document }: { document: LegalDocumentDefinition 
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Documento legal vigente</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">{block.content}</h1>
               <p className="mt-4 text-sm leading-7 text-slate-500 sm:text-base">
-                Responsable: {LEGAL_CONTROLLER_NAME}. Si necesitas ejercer derechos ARCO o realizar una consulta de privacidad,
+                {document.slug === "privacidad"
+                  ? "La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo."
+                  : `Responsable: ${LEGAL_CONTROLLER_NAME}.`} Si necesitas ejercer derechos ARCO o realizar una consulta de privacidad,
                 escríbenos a <a className="font-semibold text-slate-900 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>.
               </p>
             </div>
@@ -187,7 +189,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                     Nadie de tu empresa puede ver lo que subes. Tus documentos son tuyos. Puedes borrarlos cuando quieras.
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                    Este aviso carga sin login para que puedas leerlo antes de usar la plataforma. Operamos bajo LFPDPPP y reforzamos el resguardo con cifrado AES-256 para piezas sensibles del servicio.
+                    Este aviso carga sin login para que puedas leerlo antes de usar la plataforma. La información se mantiene bajo resguardo con acceso controlado y medidas razonables de seguridad.
                   </p>
                   <p className="mt-3 inline-flex w-fit rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
                     Revisión vigente visible · sin cambios ocultos
@@ -232,7 +234,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
 
         <div className="mt-6 flex flex-wrap gap-3 text-sm">
           <a
-            href="/legal/privacidad"
+            href="/aviso-de-privacidad"
             className={`rounded-full border px-4 py-2 font-medium transition ${
               slug === "privacidad"
                 ? "border-slate-900 bg-slate-900 text-white"

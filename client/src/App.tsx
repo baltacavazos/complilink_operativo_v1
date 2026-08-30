@@ -68,6 +68,8 @@ function Router() {
           <Route path={"/ceo/alertas"} component={CeoDashboard} />
           <Route path={"/ceo/accesos"} component={CeoDashboard} />
           <Route path={"/ceo/documentos"} component={CeoDashboard} />
+          <Route path={"/aviso-de-privacidad"} component={LegalPrivacyPage} />
+          <Route path={"/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/terminos"} component={LegalTermsPage} />
           <Route path={"/404"} component={NotFound} />

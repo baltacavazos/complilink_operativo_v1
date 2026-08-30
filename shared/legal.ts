@@ -70,15 +70,13 @@ export const HELIOS_CONTEXT_NOTE = HELIOS_CONTEXT_BULLETS.map((item) => `- ${ite
 
 const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 
-**Responsable del tratamiento:** ${LEGAL_CONTROLLER_NAME}
-
-**Domicilio:** ${LEGAL_CONTROLLER_ADDRESS}
+**Responsable y domicilio:** La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.
 
 **Correo de contacto para privacidad:** ${LEGAL_CONTACT_EMAIL}
 
-> Nadie de tu empresa puede ver lo que subes aquí. Tus documentos son tuyos, puedes pedir borrado cuando quieras y reforzamos el resguardo con controles de cifrado AES-256 para piezas sensibles del servicio, conforme a la LFPDPPP.
+> Nadie de tu empresa puede ver lo que subes aquí. Tus documentos son tuyos, puedes pedir borrado cuando quieras y mantenemos un resguardo con acceso controlado y medidas razonables de seguridad, conforme a la LFPDPPP.
 
-${LEGAL_CONTROLLER_NAME}, en su carácter de responsable del tratamiento de datos personales, pone a disposición de las personas usuarias de AuditaPatron el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México.
+AuditaPatron pone a disposición de las personas usuarias el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México. La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.
 
 ## 1. Plataforma y alcance
 
@@ -96,17 +94,17 @@ Tratamos los datos personales para finalidades necesarias para la prestación de
 
 ## 4. Finalidades secundarias y mecanismo de oposición
 
-De manera adicional, podremos usar datos anonimizados y agregados para analítica interna, métricas de producto, benchmarks, informes sectoriales, mejora de servicios, entrenamiento y evaluación de modelos de inteligencia artificial, desarrollo de nuevas funcionalidades, generación de obras derivadas, estudios de mercado, alertas de producto y colaboración con empresas afiliadas del ecosistema CompliLink y Helios.
+De manera adicional, podremos usar datos anonimizados y agregados para analítica interna, métricas de producto, benchmarks, informes sectoriales, mejora de servicios, entrenamiento y evaluación de modelos de inteligencia artificial, desarrollo de nuevas funcionalidades, generación de obras derivadas, estudios de mercado y alertas de producto.
 
 Estas finalidades secundarias operan bajo un esquema de **opt-out**. La persona titular puede oponerse a ellas en cualquier momento escribiendo a ${LEGAL_CONTACT_EMAIL} o mediante los controles disponibles en la sección de privacidad, sin que ello afecte la continuidad de las finalidades primarias indispensables para el servicio, salvo cuando la limitación haga imposible la operación contratada.
 
 ## 5. Datos anonimizados y agregados
 
-La persona usuaria reconoce y acepta que los datos anonimizados y agregados que ya no permitan identificar razonablemente a una persona física no constituyen datos personales para efectos de la LFPDPPP. En consecuencia, ${LEGAL_CONTROLLER_NAME} podrá utilizarlos, explotarlos, compartirlos, licenciarlos, analizarlos, transformarlos y conservarlos sin restricción, de forma perpetua e irrevocable, para fines lícitos, incluyendo entrenamiento de IA, generación de benchmarks, comercialización de insights agregados, obras derivadas y mejora del ecosistema CVZ.
+La persona usuaria reconoce y acepta que los datos anonimizados y agregados que ya no permitan identificar razonablemente a una persona física no constituyen datos personales para efectos de la LFPDPPP. En consecuencia, AuditaPatron podrá utilizarlos, analizarlos, transformarlos y conservarlos para fines lícitos informados en este aviso, incluyendo entrenamiento de IA, generación de benchmarks, análisis agregado y mejora del servicio.
 
 ## 6. Transferencias de datos
 
-Los datos podrán transferirse, sin requerir consentimiento adicional cuando la ley lo permita, a empresas afiliadas o controladas del grupo ${LEGAL_CONTROLLER_NAME}, incluyendo CompliLink MX y Helios; a autoridades competentes cuando exista requerimiento legal; y a proveedores tecnológicos o de infraestructura sujetos a obligaciones de confidencialidad, seguridad y tratamiento conforme a instrucciones del responsable.
+Los datos podrán transferirse, sin requerir consentimiento adicional cuando la ley lo permita, a autoridades competentes cuando exista requerimiento legal y a proveedores tecnológicos o de infraestructura sujetos a obligaciones de confidencialidad, seguridad y tratamiento conforme a instrucciones del responsable.
 
 No se prevén transferencias internacionales fuera de entornos con un nivel adecuado de protección, salvo aquellas necesarias por infraestructura tecnológica, respaldo, continuidad operativa o cumplimiento contractual, siempre bajo medidas razonables de seguridad y gobernanza.
 
@@ -114,7 +112,7 @@ No se prevén transferencias internacionales fuera de entornos con un nivel adec
 
 La persona titular puede ejercer sus derechos de **Acceso, Rectificación, Cancelación y Oposición** mediante solicitud enviada a ${LEGAL_CONTACT_EMAIL}. La solicitud debe incluir nombre del titular, medio para comunicar la respuesta, documentos que acrediten identidad o representación, descripción clara del derecho que desea ejercer y cualquier dato que facilite la localización de la información.
 
-${LEGAL_CONTROLLER_NAME} responderá en un plazo máximo de **20 días hábiles** y, de resultar procedente, ejecutará la determinación en los plazos legalmente aplicables. La cancelación no procederá cuando exista obligación legal, contractual, de seguridad, defensa jurídica, prevención de fraude o conservación de evidencia que exija mantener la información.
+El responsable responderá en un plazo máximo de **20 días hábiles** y, de resultar procedente, ejecutará la determinación en los plazos legalmente aplicables. La cancelación no procederá cuando exista obligación legal, contractual, de seguridad, defensa jurídica, prevención de fraude o conservación de evidencia que exija mantener la información.
 
 ## 8. Revocación del consentimiento
 
@@ -124,11 +122,11 @@ La revocación no tendrá efectos retroactivos sobre tratamientos previamente re
 
 ## 9. Medidas de seguridad
 
-AuditaPatron implementa salvaguardas administrativas, técnicas y físicas razonables para proteger la información, incluyendo controles de acceso, auditoría, segregación de funciones, bitácoras, mecanismos de endurecimiento operativo y referencias de cifrado reforzado, incluyendo **AES-256-GCM** para flujos y artefactos sensibles cuando resulte aplicable dentro de la arquitectura del servicio.
+AuditaPatron implementa salvaguardas administrativas, técnicas y físicas razonables para proteger la información, incluyendo resguardo con acceso controlado, auditoría, segregación de funciones y bitácoras cuando resulten aplicables dentro de la operación del servicio.
 
 ## 10. Cambios al aviso
 
-${LEGAL_CONTROLLER_NAME} podrá modificar o actualizar este aviso para reflejar cambios legales, regulatorios, operativos o tecnológicos. La versión vigente se publicará dentro de la plataforma y, cuando corresponda, se requerirá una nueva aceptación versionada para continuar usando servicios cuya operación dependa de dichos cambios.
+El responsable podrá modificar o actualizar este aviso para reflejar cambios legales, regulatorios, operativos o tecnológicos. La versión vigente se publicará dentro de la plataforma y, cuando corresponda, se requerirá una nueva aceptación versionada para continuar usando servicios cuya operación dependa de dichos cambios.
 `;
 
 const TERMS_MARKDOWN = `# Términos y Condiciones de Uso ${LEGAL_VERSION}
@@ -195,7 +193,7 @@ ${LEGAL_CONTROLLER_NAME} podrá actualizar estos términos por cambios legales, 
 export const LEGAL_DOCUMENTS: LegalDocumentDefinition[] = [
   {
     slug: "privacidad",
-    route: "/legal/privacidad",
+    route: "/aviso-de-privacidad",
     shortTitle: "Aviso de Privacidad",
     fullTitle: `Aviso de Privacidad Integral ${LEGAL_VERSION}`,
     version: LEGAL_VERSION,
