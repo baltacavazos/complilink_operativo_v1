@@ -47,6 +47,10 @@
 - [x] Señal factual PDF/CFDI: presentar una explicación clara de indicios IMSS y retenciones basada solo en los papeles, incluyendo que no sustituye una constancia o consulta oficial.
 - [x] Señal factual PDF/CFDI: eliminar cualquier destello inicial de “Helios”, comillas vacías, metadatos o claves internas y validar/publicar el ajuste único.
 - [x] CFDI PDF imprimible: extraer los campos visibles del recibo Camreflex —empresa, RFC, periodo, neto, deducciones $0.00, NSS y registro patronal— mediante etiquetas nativas y mostrarlos en la señal de `/auditar`.
+- [x] Recorrido real PDF de invitado: conservar el texto nativo del CFDI imprimible hasta `guestAnalyzeDocument` y comprobar que su respuesta pública incluye empresa, periodo completo, neto, deducciones $0.00, NSS y registro patronal.
+- [x] Validación real PDF de invitado: ejecutar `guestAnalyzeDocument` con un CFDI PDF imprimible y comprobar el payload público de empresa, periodo completo, neto, deducciones $0.00, NSS y registro patronal.
+- [x] Validación real PDF de invitado: añadir una regresión de integración PDF→`guestAnalyzeDocument` que falle si el texto nativo no llega a la señal factual.
+- [ ] Validación real PDF de invitado: verificar la señal de `/auditar` con ese payload, sin lectura parcial errónea ni claves técnicas visibles, antes de publicar.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.

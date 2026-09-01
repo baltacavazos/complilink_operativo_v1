@@ -14,6 +14,17 @@ describe("extractPdfPlainText", () => {
     );
   });
 
+  it("reads printable text with the packaged standard PDF fonts configured", async () => {
+    const fixture = readFileSync(
+      resolve(process.cwd(), "bridge_complilink_consulta_fase_siguiente.pdf")
+    );
+
+    const text = await extractPdfPlainText(fixture);
+
+    expect(text).toMatch(/Consulta técnica para el otro chat de/i);
+    expect(text.length).toBeGreaterThan(100);
+  });
+
   it("returns no inferred text for a non-PDF buffer", async () => {
     await expect(extractPdfPlainText(Buffer.from("no es un PDF"))).resolves.toBe("");
   });

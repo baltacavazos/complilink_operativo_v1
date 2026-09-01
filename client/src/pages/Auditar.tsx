@@ -1986,6 +1986,19 @@ const analysisFieldLabels: Record<string, string> = {
   jobTitle: "Puesto visible",
 };
 
+const missingAnalysisFieldLabels: Record<string, string> = {
+  rfctrabajador: "RFC de la persona trabajadora",
+  rfcworker: "RFC de la persona trabajadora",
+  infonavit: "descuento o referencia de Infonavit",
+  imss: "retención o cuota de IMSS",
+  isr: "retención de ISR",
+  empleador: "nombre de la empresa",
+  employername: "nombre de la empresa",
+  payrollperiod: "periodo de pago",
+  payrollnetamount: "pago neto",
+  payrolldeductions: "total de deducciones",
+};
+
 function formatDate(value?: Date | string | null) {
   if (!value) return "Sin fecha visible";
   const date = value instanceof Date ? value : new Date(value);
@@ -2115,6 +2128,23 @@ function plainWorkerCopy(value?: string | null) {
     .trim();
 
   return cleaned.length >= 3 ? cleaned : null;
+}
+
+function toWorkerReviewItem(value?: string | null, kind: "missing" | "note" = "note") {
+  if (!value) return null;
+  const raw = value.trim();
+  if (!raw) return null;
+  if (/\b(?:confirmedData|estimatedData|structuredExtraction|processingProfile|metadata|payload|clasificaci[oó]n actual|metadatos)\b/i.test(raw)) {
+    return null;
+  }
+
+  if (kind === "missing") {
+    const normalizedKey = raw.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (missingAnalysisFieldLabels[normalizedKey]) return missingAnalysisFieldLabels[normalizedKey];
+    if (/^[a-z]+(?:[_-][a-z]+)+$/i.test(raw)) return "un dato que no se pudo identificar con claridad";
+  }
+
+  return plainWorkerCopy(raw.replace(/[_]+/g, " "));
 }
 
 function buildPayrollSignalFallback(documentType?: string | null) {
@@ -7084,7 +7114,15 @@ export default function Auditar() {
       ),
     [displayPreviewStructuredExtraction]
   );
-  const previewGuardrails = pendingDraft?.preliminaryAnalysis?.guardrails ?? [];
+  const previewGuardrails = (pendingDraft?.preliminaryAnalysis?.guardrails ?? [])
+    .map(item => toWorkerReviewItem(item))
+    .filter((item): item is string => Boolean(item));
+  const previewMissingFields = (displayPreviewStructuredExtraction?.missingFields ?? [])
+    .map(item => toWorkerReviewItem(item, "missing"))
+    .filter((item): item is string => Boolean(item));
+  const previewReviewNotes = (displayPreviewStructuredExtraction?.reviewNotes ?? [])
+    .map(item => toWorkerReviewItem(item))
+    .filter((item): item is string => Boolean(item));
   const dossierHistoryEntries = useMemo<DossierHistoryEntry[]>(() => {
     const documentEntries: DossierHistoryEntry[] = documents.map(document => ({
       id: `document-${document.documentId}`,
@@ -10458,15 +10496,15 @@ export default function Auditar() {
                       </details>
                     ) : null}
 
-                    {displayPreviewStructuredExtraction?.reviewNotes?.length ||
+                    {previewReviewNotes.length ||
                     previewGuardrails.length ? (
                       <details className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm">
                         <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900">
                           Qué revisar antes de guardar
                         </summary>
                         <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                          {displayPreviewStructuredExtraction?.reviewNotes
-                            ?.slice(0, 2)
+                          {previewReviewNotes
+                            .slice(0, 2)
                             .map(item => (
                               <p key={`mobile-note-${item}`}>• {item}</p>
                             ))}
@@ -10875,16 +10913,15 @@ export default function Auditar() {
                       </div>
                     </div>
 
-                    {displayPreviewStructuredExtraction?.missingFields
-                      ?.length ||
-                    displayPreviewStructuredExtraction?.reviewNotes?.length ||
+                    {previewMissingFields.length ||
+                    previewReviewNotes.length ||
                     previewGuardrails.length ? (
                       <div className="mt-4 rounded-[1.2rem] border border-white/80 bg-white p-4">
                         <p className="font-semibold text-slate-950">
                           Qué revisar antes de guardar
                         </p>
                         <div className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
-                          {displayPreviewStructuredExtraction?.missingFields?.map(
+                          {previewMissingFields.map(
                             item => (
                               <p key={`missing-${item}`}>
                                 • Todavía no se alcanzó a leer con claridad:{" "}
@@ -10892,7 +10929,7 @@ export default function Auditar() {
                               </p>
                             )
                           )}
-                          {displayPreviewStructuredExtraction?.reviewNotes?.map(
+                          {previewReviewNotes.map(
                             item => (
                               <p key={`note-${item}`}>• {item}</p>
                             )

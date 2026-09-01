@@ -34,6 +34,11 @@ describe("Auditar first visit", () => {
     expect(source).toContain("Esto sale de tus papeles; no es una constancia oficial");
     expect(source).toContain("isTechnicalAnalysisKey");
     expect(source).toContain("Dato visible en el documento");
+    expect(source).toContain("toWorkerReviewItem");
+    expect(source).toContain("missingAnalysisFieldLabels");
+    expect(source).toContain("RFC de la persona trabajadora");
+    expect(source).toContain("previewMissingFields");
+    expect(source).toContain("previewReviewNotes");
     expect(advisorSheetSource).toContain('eyebrow: "Asesor laboral"');
     expect(advisorSheetSource).not.toContain('eyebrow: "Helios · asesor laboral"');
   });

@@ -308,7 +308,8 @@ function extractPayrollAmount(text: string, labels: string[], xmlAttributes: str
     if (value) return value.startsWith("$") ? value : `$${value}`;
   }
 
-  return extractSalaryByLabel(text, labels);
+  const labeledAmount = extractSalaryByLabel(text, labels);
+  return labeledAmount ? (labeledAmount.startsWith("$") ? labeledAmount : `$${labeledAmount}`) : null;
 }
 
 function extractXmlDeductionAmount(text: string, deductionType: string) {
