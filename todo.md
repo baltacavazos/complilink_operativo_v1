@@ -38,6 +38,10 @@
 - [x] Primera visita AuditaPatrón: retirar la identidad de envío CompliLink y ajustar tiempos de lectura de `/auditar` a una promesa honesta.
 - [ ] Primera visita AuditaPatrón: verificar un dominio propio `auditapatron.com` en el proveedor de correo antes de usar `acceso@auditapatron.com` como remitente técnico.
 - [x] Primera visita AuditaPatrón: probar el recorrido completo de desconocido y publicar una sola versión en auditapatron.com.
+- [x] Señal de recibo AuditaPatrón: transformar los datos extraídos de CFDI/nómina en persona pagadora, periodo, percepciones, deducciones y siguiente paso en español claro.
+- [x] Señal de recibo AuditaPatrón: garantizar que “SEÑAL ENCONTRADA” y “Hoy conviene poner atención especial en esto” no se muestren vacíos, cortados ni con comillas de relleno.
+- [x] Señal de recibo AuditaPatrón: ocultar `confirmedData` y cualquier jerga técnica de las superficies visibles sin llamar Helios ni cambiar otros flujos.
+- [x] Señal de recibo AuditaPatrón: validar y publicar este único ajuste en `auditapatron.com`, registrando su versión.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.

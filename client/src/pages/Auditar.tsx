@@ -2107,10 +2107,11 @@ function plainWorkerCopy(value?: string | null) {
   const cleaned = value
     .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
     .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
+    .replace(/["'“”‘’`]+/g, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 
-  return cleaned || null;
+  return cleaned.length >= 3 ? cleaned : null;
 }
 
 function buildPayrollSignalFallback(documentType?: string | null) {
@@ -2120,6 +2121,115 @@ function buildPayrollSignalFallback(documentType?: string | null) {
     why: `Este ${documentLabel} ya permite una lectura inicial, pero un solo archivo no confirma por sí mismo que haya un error. Comparar el periodo, los montos y las deducciones te ayuda a detectar qué conviene aclarar.`,
     nextStep: "Guarda este recibo y compáralo con el CFDI del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
   };
+}
+
+type PayrollFactSignal = {
+  headline: string;
+  facts: string;
+  attention: string;
+  nextStep: string;
+};
+
+export function buildPayrollFactSignal(params: {
+  documentType?: string | null;
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+}): PayrollFactSignal {
+  const fallback = buildPayrollSignalFallback(params.documentType);
+  const confirmedData = params.confirmedData ?? {};
+  const estimatedData = params.estimatedData ?? {};
+  const candidates = [confirmedData, estimatedData];
+
+  const readValue = (keys: string[]) => {
+    for (const source of candidates) {
+      for (const [key, rawValue] of Object.entries(source)) {
+        const normalizedKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+        if (!keys.includes(normalizedKey)) continue;
+        const value = plainWorkerCopy(
+          sanitizePreviewText(rawValue, {
+            maxLength: 120,
+            emptyFallback: "",
+            technicalFallback: "",
+          })
+        );
+        if (value) return value;
+      }
+    }
+    return null;
+  };
+
+  const employer = readValue([
+    "employername",
+    "employerlegalname",
+    "employer",
+    "razonsocial",
+    "issuername",
+    "issuer",
+    "nombreemisor",
+    "nombrepatron",
+  ]);
+  const employerRfc = readValue(["employerrfc", "rfcpayrollissuer", "rfcpayrollpayer", "rfcemisor"]);
+  const period = readValue([
+    "period",
+    "periodo",
+    "paymentperiod",
+    "payperiod",
+    "fechapago",
+    "apparenteffectivedate",
+  ]);
+  const payment = readValue([
+    "neto",
+    "netamount",
+    "totalneto",
+    "apparentamount",
+    "totalpagar",
+    "importe",
+  ]);
+  const deductions = readValue([
+    "deducciones",
+    "totaldeducciones",
+    "deductions",
+    "discounts",
+  ]);
+  const perception = readValue([
+    "percepciones",
+    "totalpercepciones",
+    "perceptions",
+    "grossamount",
+    "bruto",
+  ]);
+
+  const facts = [
+    employer
+      ? `Empresa que aparece: ${employer}.`
+      : employerRfc
+        ? `No se alcanzó a leer con claridad la razón social; sí aparece este RFC: ${employerRfc}.`
+        : "No se alcanzó a leer con claridad la empresa o razón social que aparece en el recibo.",
+    period ? `Periodo identificado: ${period}.` : "El periodo de pago no se alcanzó a leer completo.",
+    payment ? `Pago que se alcanza a leer: ${payment}.` : "El monto pagado no se alcanzó a leer completo.",
+    deductions
+      ? /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions)
+        ? "Deducciones que se alcanzan a leer: no aparecen descuentos."
+        : `Deducciones que se alcanzan a leer: ${deductions}.`
+      : "No se alcanzó a leer con claridad el total de deducciones.",
+    perception ? `Percepciones visibles: ${perception}.` : null,
+  ].filter((item): item is string => Boolean(item));
+
+  const headline = employer || employerRfc || period
+    ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}`
+    : fallback.headline;
+  const attention = deductions
+    ? /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions)
+      ? "No aparecen deducciones legibles. Revisa que el pago neto coincida con lo que realmente recibiste y conserva este recibo para compararlo."
+      : `Aparecen deducciones por ${deductions}. Revisa que cada descuento esté explicado en tu recibo y que el pago neto coincida con lo que recibiste.`
+    : payment
+      ? `Se alcanza a leer un pago de ${payment}, pero faltan datos para confirmar cómo se compone. Revisa el desglose de percepciones y deducciones.`
+      : "El archivo se leyó de forma parcial. Conviene revisar una versión donde se vean completos el periodo, el pago y las deducciones.";
+  const nextStep = period
+    ? `Compara este recibo del periodo ${period} con el CFDI o comprobante del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
+    : "Conserva este recibo y, si puedes, sube el CFDI o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
+
+  return { headline, facts: facts.join(" "), attention, nextStep };
 }
 
 function humanizeSnakeCase(value: string) {
@@ -2798,7 +2908,15 @@ function getReturnEventLabel(value?: string | null) {
 }
 
 function getAnalysisFieldLabel(key: string) {
-  return analysisFieldLabels[key] ?? humanizeSnakeCase(key);
+  if (analysisFieldLabels[key]) return analysisFieldLabels[key];
+
+  return "Dato visible en el documento";
+}
+
+function isTechnicalAnalysisKey(key: string) {
+  return /^(confirmed|estimated|analysis|metadata|processing|structured|internal|raw|debug|payload|profile)/i.test(
+    key.replace(/[^a-z0-9]/gi, "")
+  );
 }
 
 function formatAnalysisValue(key: string, value: unknown) {
@@ -2843,7 +2961,7 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
           }),
         ] as [string, string]
     )
-    .filter(([, value]) => value.length > 0);
+    .filter(([key, value]) => value.length > 0 && !isTechnicalAnalysisKey(key));
 }
 
 export function sanitizeStructuredExtractionView(
@@ -5201,10 +5319,17 @@ export default function Auditar() {
     visibleHeliosOpinion?.summary,
   ]);
   const visibleDiscrepancyItems = useMemo<HeliosSimpleExplanationItemView[]>(() => {
-    const baseItems =
+    const baseItems = (
       lastHeliosOpinion?.resultCard?.discrepancySignals ??
       visibleHeliosOpinion?.resultCard?.discrepancySignals ??
-      [];
+      []
+    )
+      .map(item => ({
+        ...item,
+        label: plainWorkerCopy(item.label) ?? "Punto por revisar",
+        summary: plainWorkerCopy(item.summary) ?? "",
+      }))
+      .filter(item => item.summary.length > 0);
 
     if (baseItems.length) {
       return baseItems.slice(0, 3);
@@ -5239,11 +5364,15 @@ export default function Auditar() {
     }
 
     if (lastUpload) {
-      const fallback = buildPayrollSignalFallback(lastUpload.classification.documentType);
+      const payrollSignal = buildPayrollFactSignal({
+        documentType: lastUpload.classification.documentType,
+        confirmedData: lastUpload.preliminaryAnalysis.confirmedData,
+        estimatedData: lastUpload.preliminaryAnalysis.estimatedData,
+      });
       return [
         {
-          label: "Qué conviene revisar",
-          summary: fallback.why,
+          label: "Hoy conviene poner atención especial en esto",
+          summary: payrollSignal.attention,
           tone: "attention",
         },
       ];
@@ -5534,17 +5663,25 @@ export default function Auditar() {
       )
     : lastUploadShortcuts;
   const lastUploadResultFallback = buildPayrollSignalFallback(lastUpload?.classification.documentType);
+  const lastUploadFactSignal = buildPayrollFactSignal({
+    documentType: lastUpload?.classification.documentType,
+    confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
+    estimatedData: lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined,
+  });
   const lastUploadResultHeadline =
+    (lastUpload ? lastUploadFactSignal.headline : null) ??
     plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
     plainWorkerCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
     lastUploadResultFallback.headline;
   const lastUploadResultLead =
+    (lastUpload ? lastUploadFactSignal.facts : null) ??
     warmVisibleNamingCopy(
       lastHeliosOpinion?.resultCard?.lead ?? lastHeliosOpinion?.summary
     ) ??
     plainWorkerCopy(uploadInsight?.contribution) ??
     lastUploadResultFallback.why;
   const lastUploadNextStepSummary =
+    (lastUpload ? lastUploadFactSignal.nextStep : null) ??
     warmVisibleNamingCopy(
       lastHeliosOpinion?.resultCard?.nextStepSummary ??
         lastHeliosOpinion?.recommendedNextStep
@@ -7889,18 +8026,26 @@ export default function Auditar() {
   const guestSignalFallback = buildPayrollSignalFallback(
     guestReview?.preview.classification.documentType
   );
+  const guestFactSignal = buildPayrollFactSignal({
+    documentType: guestReview?.preview.classification.documentType,
+    confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
+    estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
+  });
   const guestSignalHeadline =
+    (guestReview ? guestFactSignal.headline : null) ??
     plainWorkerCopy(
       guestReview?.heliosOpinion.resultCard?.headline ??
         guestReview?.heliosOpinion.legalHighlights?.primaryConcern
     ) ?? guestSignalFallback.headline;
   const guestSignalWhy =
+    (guestReview ? guestFactSignal.facts : null) ??
     plainWorkerCopy(
       guestReview?.heliosOpinion.resultCard?.lead ??
         guestReview?.heliosOpinion.summary ??
         guestReview?.heliosOpinion.legalHighlights?.primaryConcern
     ) ?? guestSignalFallback.why;
   const guestSignalNextStep =
+    (guestReview ? guestFactSignal.nextStep : null) ??
     plainWorkerCopy(
       guestReview?.heliosOpinion.resultCard?.nextStepSummary ??
         guestReview?.heliosOpinion.recommendedNextStep
@@ -7956,6 +8101,10 @@ export default function Auditar() {
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Qué conviene revisar</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalWhy}</p>
+              </div>
+              <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Hoy conviene poner atención especial en esto</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
               </div>
               <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">Siguiente paso útil</p>
@@ -8577,6 +8726,14 @@ export default function Auditar() {
                               </p>
                               <p className="mt-1 text-sm leading-6 text-slate-900">
                                 {lastUploadNextStepSummary}
+                              </p>
+                            </div>
+                            <div className="mt-3 rounded-[1rem] border border-amber-200 bg-amber-50/80 px-3 py-3 text-left">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                                Hoy conviene poner atención especial en esto
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-900">
+                                {lastUploadFactSignal.attention}
                               </p>
                             </div>
                           </>

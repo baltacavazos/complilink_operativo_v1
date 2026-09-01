@@ -19,6 +19,16 @@ describe("Auditar first visit", () => {
     expect(source).toContain('"/auditar?resume=guest-review"');
   });
 
+  it("renders facts and a non-empty attention point without exposing programmer keys", () => {
+    expect(source).toContain("buildPayrollFactSignal");
+    expect(source).toContain("Empresa que aparece:");
+    expect(source).toContain("Periodo identificado:");
+    expect(source).toContain("Deducciones que se alcanzan a leer:");
+    expect(source).toContain("Hoy conviene poner atención especial en esto");
+    expect(source).toContain("isTechnicalAnalysisKey");
+    expect(source).toContain("Dato visible en el documento");
+  });
+
   it("removes the inaccurate seconds promise from the public Auditar entry", () => {
     expect(source).not.toContain("Recibes una revisión gratis en segundos.");
     expect(source).not.toContain("Sube y revisa en segundos");

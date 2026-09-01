@@ -11,6 +11,7 @@ import {
   buildDossierTypeProgress,
   buildHeliosPriorityAlerts,
   buildInlineLegalConsentState,
+  buildPayrollFactSignal,
   buildReanalyzeDraftActionState,
   buildUploadProgressState,
   formatVisibleFileSize,
@@ -110,6 +111,58 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain('Un solo paso claro primero. Si luego quieres profundizar, abajo puedes abrir el informe completo.');
     expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600"');
     expect(auditarSource).toContain('primaryLastUploadShortcut?.label ?? "Ver qué sigue"');
+  });
+});
+
+describe("señal factual del recibo", () => {
+  it("convierte los datos extraídos de nómina en una lectura concreta para la persona trabajadora", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "cfdi",
+      confirmedData: {
+        razon_social: "Servicios del Centro, S.A. de C.V.",
+        periodo: "Del 1 al 15 de agosto de 2026",
+        neto: "$8,420.00",
+        deducciones: "$1,180.00",
+      },
+    });
+
+    expect(signal.headline).toContain("Servicios del Centro");
+    expect(signal.headline).toContain("Del 1 al 15 de agosto de 2026");
+    expect(signal.facts).toContain("Pago que se alcanza a leer: $8,420.00");
+    expect(signal.facts).toContain("Deducciones que se alcanzan a leer: $1,180.00");
+    expect(signal.attention).toContain("Revisa que cada descuento esté explicado");
+    expect(signal.nextStep).toContain("CFDI o comprobante del mismo periodo");
+  });
+
+  it("explica en español qué pudo leerse y qué falta cuando la extracción es parcial", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "payroll_receipt",
+      confirmedData: { neto: "$5,000.00" },
+      estimatedData: { confirmedData: "" },
+    });
+
+    expect(signal.facts).toContain("Pago que se alcanza a leer: $5,000.00");
+    expect(signal.facts).toContain("El periodo de pago no se alcanzó a leer completo");
+    expect(signal.attention).toContain("faltan datos para confirmar");
+    expect(signal.facts).not.toContain("confirmedData");
+    expect(signal.attention).not.toMatch(/["“”]{2,}/);
+  });
+
+  it("aprovecha el periodo y RFC de un CFDI parcial sin inventar razón social o deducciones", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "cfdi",
+      estimatedData: {
+        employerRfc: "ECC190605VA1",
+        apparentEffectiveDate: "2026-04-30",
+        apparentAmount: null,
+      },
+    });
+
+    expect(signal.headline).toContain("RFC ECC190605VA1");
+    expect(signal.facts).toContain("RFC: ECC190605VA1");
+    expect(signal.facts).toContain("Periodo identificado: 2026-04-30");
+    expect(signal.facts).toContain("El monto pagado no se alcanzó a leer completo");
+    expect(signal.facts).toContain("No se alcanzó a leer con claridad el total de deducciones");
   });
 });
 
