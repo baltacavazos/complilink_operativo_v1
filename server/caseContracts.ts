@@ -293,7 +293,7 @@ function extractCfdiWorkerName(text: string) {
 function extractCfdiEmployerName(text: string) {
   const emitterMatch = text.match(/<[^>]*Emisor\b[^>]*\bNombre\s*=\s*["']([^"']+)["']/i);
   const reasonSocialMatch = text.match(
-    /raz[oó]n\s+social\s*[:\-]\s*([\s\S]*?)(?=\s+(?:periodo(?:\s+de\s+pago)?|neto(?:\s+a\s+pagar)?|total\s+percepciones|total\s+deducciones|nss|registro\s+patronal)\s*[:\-]|$)/i
+    /(?:raz[oó]n\s+social|empresa|empleador)\s*[:\-]?\s*([\s\S]*?)(?=\s+(?:rfc|periodo(?:\s+de\s+pago)?|fecha\s+inicial\s+de\s+pago|neto(?:\s+a\s+pagar)?|salario|total\s+percepciones|total\s+deducciones|nss|registro\s+patronal)\b|$)/i
   );
   return (
     emitterMatch?.[1]?.trim() ??
@@ -325,9 +325,16 @@ function extractPayrollPeriod(text: string) {
   if (start && end) return `${start} al ${end}`;
 
   const dateRange = text.match(
-    /(?:periodo(?:\s+de\s+pago)?|del)\s*[:\-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s*(?:al|a|hasta)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i
+    /(?:periodo(?:\s+de\s+pago)?|del|fecha\s+inicial\s+de\s+pago)\s*[:\-]?\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s*(?:al|a|hasta|[-–—])\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2})/i
   );
-  if (dateRange?.[1] && dateRange[2]) return `${dateRange[1]} al ${dateRange[2]}`;
+  if (dateRange?.[1] && dateRange[2]) {
+    const [startDate, endDate] = [dateRange[1], dateRange[2]];
+    const normalizedEnd =
+      /^\d{4}-\d{2}-\d{2}$/.test(startDate) && /^\d{1,2}$/.test(endDate)
+        ? `${startDate.slice(0, 8)}${endDate.padStart(2, "0")}`
+        : endDate;
+    return `${startDate} al ${normalizedEnd}`;
+  }
 
   const paidOn = extractXmlAttribute(text, "FechaPago") ?? extractNamedField(text, ["periodo de pago", "periodo", "fecha de pago"]);
   return paidOn ?? extractPeriod(text);
@@ -680,7 +687,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     ? extractPayrollAmount(sourceText, ["total deducciones", "deducciones", "descuentos"], ["TotalDeducciones", "Descuento"])
     : null;
   const payrollNetAmount = isPayrollDocument
-    ? extractPayrollAmount(sourceText, ["neto a pagar", "total neto", "importe neto", "total a pagar", "neto"], ["Total"])
+    ? extractPayrollAmount(sourceText, ["neto a pagar", "total neto", "importe neto", "total a pagar", "neto", "salario"], ["Total"])
     : null;
   const payrollNss = isPayrollDocument ? extractPayrollNss(sourceText) : null;
   const payrollEmployerRegistration = isPayrollDocument ? extractPayrollEmployerRegistration(sourceText) : null;
