@@ -170,6 +170,40 @@ describe("caseContracts", () => {
     expect(cfdiAnalysis.estimatedData.integratedDailySalary).toBe("331.45");
   });
 
+  it("keeps factual payroll and IMSS fields found in a printable CFDI PDF text layer", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "RECIBO DE NÓMINA Razón social: Grupo Ejemplo, S.A. de C.V. Periodo: 01/08/2026 al 15/08/2026 Neto a pagar: $4,725.60 Total percepciones: $4,725.60 Total deducciones: $0.00 NSS: 12345678901 Registro patronal: Y1234567890 ISR: $0.00 Cuota IMSS: $0.00",
+    });
+
+    expect(analysis.confirmedData.payrollEmployerName).toBe("Grupo Ejemplo, S.A. de C.V.");
+    expect(analysis.confirmedData.payrollPeriod).toBe("01/08/2026 al 15/08/2026");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4,725.60");
+    expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
+    expect(analysis.confirmedData.payrollNss).toBe("12345678901");
+    expect(analysis.confirmedData.payrollEmployerRegistration).toBe("Y1234567890");
+    expect(analysis.confirmedData.isrWithheld).toBe("$0.00");
+    expect(analysis.confirmedData.imssWithheld).toBe("$0.00");
+  });
+
+  it("uses the CFDI XML when its payroll facts are present", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint:
+        '<cfdi:Comprobante Total="4725.60"><cfdi:Emisor Rfc="GEX010101AAA" Nombre="Grupo Ejemplo, S.A. de C.V." /><nomina12:Nomina FechaPago="2026-08-15" FechaInicialPago="2026-08-01" FechaFinalPago="2026-08-15" TotalPercepciones="4725.60" TotalDeducciones="0.00" NumSeguridadSocial="12345678901" RegistroPatronal="Y1234567890" /></cfdi:Comprobante>',
+    });
+
+    expect(analysis.confirmedData.payrollEmployerName).toBe("Grupo Ejemplo, S.A. de C.V.");
+    expect(analysis.confirmedData.payrollPeriod).toBe("2026-08-01 al 2026-08-15");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4725.60");
+    expect(analysis.confirmedData.payrollPerceptions).toBe("$4725.60");
+    expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
+    expect(analysis.confirmedData.payrollNss).toBe("12345678901");
+  });
+
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {
     expect(
       getHeliosExpedienteStage({

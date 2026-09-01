@@ -42,6 +42,10 @@
 - [x] Señal de recibo AuditaPatrón: garantizar que “SEÑAL ENCONTRADA” y “Hoy conviene poner atención especial en esto” no se muestren vacíos, cortados ni con comillas de relleno.
 - [x] Señal de recibo AuditaPatrón: ocultar `confirmedData` y cualquier jerga técnica de las superficies visibles sin llamar Helios ni cambiar otros flujos.
 - [x] Señal de recibo AuditaPatrón: validar y publicar este único ajuste en `auditapatron.com`, registrando su versión.
+- [x] Señal factual PDF/CFDI: extraer del texto nativo del PDF la razón social, periodo, neto, deducciones, NSS, registro patronal, cuotas y retenciones visibles antes de declarar una lectura parcial.
+- [x] Señal factual PDF/CFDI: preferir los datos del CFDI XML disponible para complementar periodo, RFC, percepciones, deducciones e impuestos sin inventar datos ausentes.
+- [x] Señal factual PDF/CFDI: presentar una explicación clara de indicios IMSS y retenciones basada solo en los papeles, incluyendo que no sustituye una constancia o consulta oficial.
+- [x] Señal factual PDF/CFDI: eliminar cualquier destello inicial de “Helios”, comillas vacías, metadatos o claves internas y validar/publicar el ajuste único.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.

@@ -1118,7 +1118,10 @@ function warmVisibleNamingCopy(value?: string | null) {
     .replaceAll("Tipo Helios", "tipo sugerido")
     .replaceAll("motor Helios", "inteligencia laboral")
     .replaceAll("Motor Helios", "Inteligencia laboral")
-    .replaceAll("Helios", "la inteligencia laboral");
+    .replaceAll("Helios", "la inteligencia laboral")
+    .replace(/\bhelios\b/gi, "la inteligencia laboral")
+    .replace(/["“”‘’`]{2,}/g, "")
+    .trim();
 }
 
 function parseQuickCalculatorAmount(value: unknown) {
@@ -2127,6 +2130,8 @@ type PayrollFactSignal = {
   headline: string;
   facts: string;
   attention: string;
+  imss: string;
+  retentions: string;
   nextStep: string;
 };
 
@@ -2167,6 +2172,7 @@ export function buildPayrollFactSignal(params: {
     "issuer",
     "nombreemisor",
     "nombrepatron",
+    "payrollemployername",
   ]);
   const employerRfc = readValue(["employerrfc", "rfcpayrollissuer", "rfcpayrollpayer", "rfcemisor"]);
   const period = readValue([
@@ -2176,6 +2182,7 @@ export function buildPayrollFactSignal(params: {
     "payperiod",
     "fechapago",
     "apparenteffectivedate",
+    "payrollperiod",
   ]);
   const payment = readValue([
     "neto",
@@ -2184,12 +2191,14 @@ export function buildPayrollFactSignal(params: {
     "apparentamount",
     "totalpagar",
     "importe",
+    "payrollnetamount",
   ]);
   const deductions = readValue([
     "deducciones",
     "totaldeducciones",
     "deductions",
     "discounts",
+    "payrolldeductions",
   ]);
   const perception = readValue([
     "percepciones",
@@ -2197,7 +2206,27 @@ export function buildPayrollFactSignal(params: {
     "perceptions",
     "grossamount",
     "bruto",
+    "payrollperceptions",
   ]);
+  const nss = readValue(["payrollnss", "nss", "numseguridadsocial", "numerodeseguridadsocial"]);
+  const employerRegistration = readValue(["payrollemployerregistration", "registropatronal", "regpatronal"]);
+  const isrWithheld = readValue(["isrwithheld", "isr", "retencionisr"]);
+  const imssWithheld = readValue(["imsswithheld", "cuotaimss", "retencionimss"]);
+  const infonavitWithheld = readValue(["infonavitwithheld", "pagoinfonavit", "retencioninfonavit"]);
+  const deductionsAreZero = Boolean(deductions && /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions));
+  const imss = nss || employerRegistration
+    ? `IMSS: ${nss ? `se ve el NSS ${nss}` : "no se alcanzó a leer el NSS"}${nss && employerRegistration ? " y " : ""}${employerRegistration ? `se ve el registro patronal ${employerRegistration}` : ""}. Por lo que aparece en estos papeles, parece que hay referencia a aseguramiento ante IMSS. Esto sale de tus papeles; no es una constancia oficial.`
+    : "IMSS: en este archivo no se alcanzaron a leer NSS ni registro patronal. Si los necesitas revisar, busca una constancia de semanas cotizadas o un recibo donde esos datos sean visibles.";
+  const listedRetentions = [
+    isrWithheld ? `ISR ${isrWithheld}` : null,
+    imssWithheld ? `IMSS ${imssWithheld}` : null,
+    infonavitWithheld ? `Infonavit ${infonavitWithheld}` : null,
+  ].filter((item): item is string => Boolean(item));
+  const retentions = listedRetentions.length
+    ? `Retenciones visibles: ${listedRetentions.join(", ")}. Compáralas con el total de deducciones de este recibo.`
+    : deductionsAreZero
+      ? "Retenciones: el total de deducciones que se alcanza a leer es $0.00; no se identifican líneas separadas de ISR, IMSS o Infonavit en este archivo."
+      : "Retenciones: no se alcanzaron a leer líneas de ISR, IMSS o Infonavit. Para compararlas, sube el CFDI XML o un recibo del mismo periodo donde aparezcan desglosadas.";
 
   const facts = [
     employer
@@ -2208,18 +2237,20 @@ export function buildPayrollFactSignal(params: {
     period ? `Periodo identificado: ${period}.` : "El periodo de pago no se alcanzó a leer completo.",
     payment ? `Pago que se alcanza a leer: ${payment}.` : "El monto pagado no se alcanzó a leer completo.",
     deductions
-      ? /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions)
+      ? deductionsAreZero
         ? "Deducciones que se alcanzan a leer: no aparecen descuentos."
         : `Deducciones que se alcanzan a leer: ${deductions}.`
       : "No se alcanzó a leer con claridad el total de deducciones.",
     perception ? `Percepciones visibles: ${perception}.` : null,
+    imss,
+    retentions,
   ].filter((item): item is string => Boolean(item));
 
   const headline = employer || employerRfc || period
     ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}`
     : fallback.headline;
   const attention = deductions
-    ? /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions)
+    ? deductionsAreZero
       ? "No aparecen deducciones legibles. Revisa que el pago neto coincida con lo que realmente recibiste y conserva este recibo para compararlo."
       : `Aparecen deducciones por ${deductions}. Revisa que cada descuento esté explicado en tu recibo y que el pago neto coincida con lo que recibiste.`
     : payment
@@ -2229,7 +2260,7 @@ export function buildPayrollFactSignal(params: {
     ? `Compara este recibo del periodo ${period} con el CFDI o comprobante del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
     : "Conserva este recibo y, si puedes, sube el CFDI o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
 
-  return { headline, facts: facts.join(" "), attention, nextStep };
+  return { headline, facts: facts.join(" "), attention, imss, retentions, nextStep };
 }
 
 function humanizeSnakeCase(value: string) {
@@ -8106,6 +8137,14 @@ export default function Auditar() {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Hoy conviene poner atención especial en esto</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
               </div>
+              <div className="rounded-[1.35rem] border border-cyan-200 bg-cyan-50/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-800">IMSS según este documento</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.imss}</p>
+              </div>
+              <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">Impuestos y retenciones</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.retentions}</p>
+              </div>
               <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">Siguiente paso útil</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
@@ -8735,6 +8774,16 @@ export default function Auditar() {
                               <p className="mt-1 text-sm leading-6 text-slate-900">
                                 {lastUploadFactSignal.attention}
                               </p>
+                            </div>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">IMSS según este documento</p>
+                                <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
+                              </div>
+                              <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">Impuestos y retenciones</p>
+                                <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
+                              </div>
                             </div>
                           </>
                         ) : null}

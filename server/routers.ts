@@ -75,6 +75,7 @@ import {
   looksLikeZipContainer,
   normalizeAuditarMimeType,
 } from "./docxSupport";
+import { extractPdfPlainText } from "./pdfTextExtraction";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 import {
@@ -1321,6 +1322,10 @@ async function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Bu
 
   if (params.mimeType === DOCX_MIME_TYPE) {
     return extractDocxPlainText(params.binary);
+  }
+
+  if (params.mimeType === "application/pdf") {
+    return extractPdfPlainText(params.binary);
   }
 
   return "";

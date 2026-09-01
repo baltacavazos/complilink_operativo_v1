@@ -291,9 +291,67 @@ function extractCfdiWorkerName(text: string) {
 }
 
 function extractCfdiEmployerName(text: string) {
+  const emitterMatch = text.match(/<[^>]*Emisor\b[^>]*\bNombre\s*=\s*["']([^"']+)["']/i);
+  const reasonSocialMatch = text.match(
+    /raz[oó]n\s+social\s*[:\-]\s*([\s\S]*?)(?=\s+(?:periodo(?:\s+de\s+pago)?|neto(?:\s+a\s+pagar)?|total\s+percepciones|total\s+deducciones|nss|registro\s+patronal)\s*[:\-]|$)/i
+  );
   return (
-    extractXmlAttribute(text, "RfcPatronOrigen") ??
-    extractNamedField(text, ["patron", "patrón", "empresa", "empleador"])
+    emitterMatch?.[1]?.trim() ??
+    reasonSocialMatch?.[1]?.trim().replace(/[;,]+$/, "") ??
+    extractNamedField(text, ["razón social", "razon social", "patron", "patrón", "empresa", "empleador"])
+  );
+}
+
+function extractPayrollAmount(text: string, labels: string[], xmlAttributes: string[] = []) {
+  for (const attribute of xmlAttributes) {
+    const value = extractXmlAttribute(text, attribute);
+    if (value) return value.startsWith("$") ? value : `$${value}`;
+  }
+
+  return extractSalaryByLabel(text, labels);
+}
+
+function extractXmlDeductionAmount(text: string, deductionType: string) {
+  const deduction = text.match(
+    new RegExp(`<[^>]*Deduccion\\b[^>]*TipoDeduccion\\s*=\\s*["']${deductionType}["'][^>]*>`, "i")
+  )?.[0];
+  const amount = deduction ? extractXmlAttribute(deduction, "Importe") : null;
+  return amount ? (amount.startsWith("$") ? amount : `$${amount}`) : null;
+}
+
+function extractPayrollPeriod(text: string) {
+  const start = extractXmlAttribute(text, "FechaInicialPago");
+  const end = extractXmlAttribute(text, "FechaFinalPago");
+  if (start && end) return `${start} al ${end}`;
+
+  const dateRange = text.match(
+    /(?:periodo(?:\s+de\s+pago)?|del)\s*[:\-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s*(?:al|a|hasta)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i
+  );
+  if (dateRange?.[1] && dateRange[2]) return `${dateRange[1]} al ${dateRange[2]}`;
+
+  const paidOn = extractXmlAttribute(text, "FechaPago") ?? extractNamedField(text, ["periodo de pago", "periodo", "fecha de pago"]);
+  return paidOn ?? extractPeriod(text);
+}
+
+function extractPayrollEmployerRegistration(text: string) {
+  const registrationMatch = text.match(
+    /(?:registro\s+patronal|reg\.\s*patronal)\s*[:\-]?\s*([A-Z][A-Z0-9]{7,14})\b/i
+  );
+  return (
+    extractXmlAttribute(text, "RegistroPatronal") ??
+    registrationMatch?.[1]?.toUpperCase() ??
+    extractNamedField(text, ["registro patronal", "reg. patronal"])
+  );
+}
+
+function extractPayrollNss(text: string) {
+  const nssMatch = text.match(
+    /(?:nss|n[úu]mero\s+de\s+seguridad\s+social)\s*[:\-]?\s*(\d{11})\b/i
+  );
+  return (
+    extractXmlAttribute(text, "NumSeguridadSocial") ??
+    nssMatch?.[1] ??
+    extractNamedField(text, ["nss", "numero de seguridad social", "número de seguridad social"])
   );
 }
 
@@ -440,6 +498,21 @@ export function classifyMexicanLaborDocument(params: {
     "nomina12",
     "nomina 12",
   ) || (isXmlLikeFile && hasAny(haystack, "sat", "factura", "comprobante", "percepciones", "deducciones", "emisor", "receptor"));
+  const hasPayrollSignals = hasAny(
+    haystack,
+    "nomina",
+    "nómina",
+    "recibo",
+    "payroll",
+    "quincena",
+    "semanal",
+    "percepciones",
+    "deducciones",
+    "folio fiscal",
+    "representacion impresa",
+    "representación impresa",
+    "comprobante fiscal"
+  );
 
   if (isXmlLikeFile && hasStrongCfdiSignals) {
     return buildClassification({
@@ -480,7 +553,7 @@ export function classifyMexicanLaborDocument(params: {
     });
   }
 
-  if (hasAny(haystack, "imss", "nss", "alta", "baja", "semanas cotizadas", "sipare", "seguro social")) {
+  if (!hasPayrollSignals && hasAny(haystack, "imss", "nss", "alta", "baja", "semanas cotizadas", "sipare", "seguro social")) {
     return buildClassification({
       documentType: "imss",
       normalizedDocType: "constancia_imss",
@@ -493,10 +566,7 @@ export function classifyMexicanLaborDocument(params: {
     });
   }
 
-  if (
-    hasAny(haystack, "nomina", "nómina", "recibo", "payroll", "quincena", "semanal", "percepciones", "deducciones", "folio fiscal", "representacion impresa", "representación impresa", "comprobante fiscal") ||
-    uuidNamedPdf
-  ) {
+  if (hasPayrollSignals || uuidNamedPdf) {
     return buildClassification({
       documentType: "payroll_receipt",
       normalizedDocType: uuidNamedPdf ? "recibo_nomina_cfdi_pdf" : "recibo_nomina",
@@ -600,13 +670,37 @@ export function buildPreliminaryLaborAnalysis(params: {
     normalizedText.includes("crédito infonavit") ||
     normalizedText.includes("infonavit");
 
+  const isPayrollDocument = classification.documentType === "cfdi" || classification.documentType === "payroll_receipt";
+  const payrollEmployerName = isPayrollDocument ? extractCfdiEmployerName(sourceText) : null;
+  const payrollPeriod = isPayrollDocument ? extractPayrollPeriod(sourceText) : null;
+  const payrollPerceptions = isPayrollDocument
+    ? extractPayrollAmount(sourceText, ["total percepciones", "percepciones"], ["TotalPercepciones"])
+    : null;
+  const payrollDeductions = isPayrollDocument
+    ? extractPayrollAmount(sourceText, ["total deducciones", "deducciones", "descuentos"], ["TotalDeducciones", "Descuento"])
+    : null;
+  const payrollNetAmount = isPayrollDocument
+    ? extractPayrollAmount(sourceText, ["neto a pagar", "total neto", "importe neto", "total a pagar", "neto"], ["Total"])
+    : null;
+  const payrollNss = isPayrollDocument ? extractPayrollNss(sourceText) : null;
+  const payrollEmployerRegistration = isPayrollDocument ? extractPayrollEmployerRegistration(sourceText) : null;
+  const isrWithheld = isPayrollDocument
+    ? extractXmlDeductionAmount(sourceText, "002") ?? extractPayrollAmount(sourceText, ["isr", "impuesto sobre la renta"])
+    : null;
+  const imssWithheld = isPayrollDocument
+    ? extractXmlDeductionAmount(sourceText, "001") ?? extractPayrollAmount(sourceText, ["cuota imss", "imss", "seguridad social"])
+    : null;
+  const infonavitWithheld = isPayrollDocument
+    ? extractXmlDeductionAmount(sourceText, "010") ?? extractPayrollAmount(sourceText, ["pago infonavit", "infonavit"])
+    : null;
+
   const estimatedData: Record<string, AnalysisValue> = {
     employerRfc: extractRfc(sourceText),
-    period: extractPeriod(sourceText),
-    apparentAmount: extractMoney(sourceText),
+    period: payrollPeriod ?? extractPeriod(sourceText),
+    apparentAmount: payrollNetAmount ?? extractMoney(sourceText),
     apparentEffectiveDate: extractDate(sourceText),
     workerName: extractCfdiWorkerName(sourceText),
-    employerName: extractCfdiEmployerName(sourceText),
+    employerName: payrollEmployerName,
     jobTitle: extractNamedField(sourceText, ["puesto", "cargo"]),
     contractDailySalary: classification.documentType === "contract" ? extractContractDailySalary(sourceText) : null,
     socialSecurityBaseSalary:
@@ -629,6 +723,16 @@ export function buildPreliminaryLaborAnalysis(params: {
     benefitEstimationReady: classification.supportsBenefitEstimation,
     hasInfonavitSignal,
     infonavitDeductionType,
+    payrollEmployerName,
+    payrollPeriod,
+    payrollNetAmount,
+    payrollPerceptions,
+    payrollDeductions,
+    payrollNss,
+    payrollEmployerRegistration,
+    isrWithheld,
+    imssWithheld,
+    infonavitWithheld,
   };
 
   const extractionTargets = (() => {

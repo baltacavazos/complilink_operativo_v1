@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const source = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
+const advisorSheetSource = readFileSync(
+  new URL("../components/HeliosCopilotSheet.tsx", import.meta.url),
+  "utf8"
+);
 
 describe("Auditar first visit", () => {
   it("uses the public guest analysis flow from the Auditar upload CTA", () => {
@@ -25,8 +29,13 @@ describe("Auditar first visit", () => {
     expect(source).toContain("Periodo identificado:");
     expect(source).toContain("Deducciones que se alcanzan a leer:");
     expect(source).toContain("Hoy conviene poner atención especial en esto");
+    expect(source).toContain("IMSS según este documento");
+    expect(source).toContain("Impuestos y retenciones");
+    expect(source).toContain("Esto sale de tus papeles; no es una constancia oficial");
     expect(source).toContain("isTechnicalAnalysisKey");
     expect(source).toContain("Dato visible en el documento");
+    expect(advisorSheetSource).toContain('eyebrow: "Asesor laboral"');
+    expect(advisorSheetSource).not.toContain('eyebrow: "Helios · asesor laboral"');
   });
 
   it("removes the inaccurate seconds promise from the public Auditar entry", () => {

@@ -164,6 +164,32 @@ describe("señal factual del recibo", () => {
     expect(signal.facts).toContain("El monto pagado no se alcanzó a leer completo");
     expect(signal.facts).toContain("No se alcanzó a leer con claridad el total de deducciones");
   });
+
+  it("explica los indicios de IMSS y las retenciones solo con los datos presentes en el recibo", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "payroll_receipt",
+      confirmedData: {
+        payrollEmployerName: "Grupo Ejemplo, S.A. de C.V.",
+        payrollPeriod: "01/08/2026 al 15/08/2026",
+        payrollNetAmount: "$4,725.60",
+        payrollDeductions: "$0.00",
+        payrollNss: "12345678901",
+        payrollEmployerRegistration: "Y1234567890",
+        isrWithheld: "$0.00",
+        imssWithheld: "$0.00",
+      },
+    });
+
+    expect(signal.facts).toContain("Empresa que aparece: Grupo Ejemplo, S.A. de C.V.");
+    expect(signal.facts).toContain("Pago que se alcanza a leer: $4,725.60");
+    expect(signal.facts).toContain("Deducciones que se alcanzan a leer: no aparecen descuentos");
+    expect(signal.imss).toContain("NSS 12345678901");
+    expect(signal.imss).toContain("registro patronal Y1234567890");
+    expect(signal.imss).toContain("no es una constancia oficial");
+    expect(signal.retentions).toContain("ISR $0.00");
+    expect(signal.retentions).toContain("IMSS $0.00");
+    expect(signal.imss).not.toContain("Helios");
+  });
 });
 
 describe("single-case blocking alert", () => {

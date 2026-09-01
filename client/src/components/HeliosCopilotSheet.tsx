@@ -102,7 +102,7 @@ export function HeliosCopilotSheet({
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const copy = {
-    eyebrow: "Helios · asesor laboral",
+    eyebrow: "Asesor laboral",
     title: "Tu asesor laboral ya entendió lo visible de tu expediente",
     description:
       "Cuéntale qué te preocupa y te responderá con una orientación clara, lo que ya se puede sostener, lo que falta confirmar y el siguiente paso más útil con base en tus documentos.",
