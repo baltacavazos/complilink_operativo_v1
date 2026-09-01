@@ -50,10 +50,13 @@
 - [x] Recorrido real PDF de invitado: conservar el texto nativo del CFDI imprimible hasta `guestAnalyzeDocument` y comprobar que su respuesta pública incluye empresa, periodo completo, neto, deducciones $0.00, NSS y registro patronal.
 - [x] Validación real PDF de invitado: ejecutar `guestAnalyzeDocument` con un CFDI PDF imprimible y comprobar el payload público de empresa, periodo completo, neto, deducciones $0.00, NSS y registro patronal.
 - [x] Validación real PDF de invitado: añadir una regresión de integración PDF→`guestAnalyzeDocument` que falle si el texto nativo no llega a la señal factual.
-- [ ] Validación real PDF de invitado: verificar la señal de `/auditar` con ese payload, sin lectura parcial errónea ni claves técnicas visibles, antes de publicar.
-- [ ] PDF real Camreflex: extraer y conservar un dump de la capa de texto nativa con coordenadas ordenadas de arriba abajo y de izquierda a derecha.
-- [ ] PDF real Camreflex: detectar Nombre/Emisor, fechas inicial/final, total, deducciones 0.00, NSS y registro patronal desde el dump real y complementar con datos estructurados disponibles.
-- [ ] PDF real Camreflex: reemplazar la prueba sintética de una línea por una regresión basada en el dump real y comprobar la señal visible de `/auditar` antes de publicar.
+- [x] Validación real PDF de invitado: verificar la señal de `/auditar` con ese payload, sin lectura parcial errónea ni claves técnicas visibles, antes de publicar.
+- [x] PDF real Camreflex: extraer y conservar un dump de la capa de texto nativa con coordenadas ordenadas de arriba abajo y de izquierda a derecha.
+- [x] PDF real Camreflex: detectar Nombre/Emisor, fechas inicial/final, total, deducciones 0.00, NSS y registro patronal desde el dump real y complementar con datos estructurados disponibles.
+- [x] PDF real Camreflex: reemplazar la prueba sintética de una línea por una regresión basada en el dump real y comprobar la señal visible de `/auditar` antes de publicar.
+- [x] Capacidades oficiales: determinar qué puede verificar hoy AuditaPatrón sobre alta IMSS, vigencia y aportaciones, y qué requeriría autorización o fuentes oficiales.
+- [x] Capacidades oficiales: determinar qué puede contrastarse documentalmente sobre ISR, IMSS, Infonavit y CFDI, frente a una confirmación fiscal oficial.
+- [ ] Capacidades oficiales: completar el consenso con Grok cuando la credencial `XAI_API_KEY` vuelva a estar disponible; ChatGPT y Gemini ya coincidieron, sin implementar conectores aún.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.

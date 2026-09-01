@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "status": 200,
+  "body": {
+    "id": "chatcmpl-EJOBdUzjEZiOIeJ7ybw79JBnYhGsf",
+    "object": "chat.completion",
+    "created": 1788289913,
+    "model": "gpt-4.1-mini-2025-04-14",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "1. conclusion  \nAuditaPatrón hoy realiza una lectura documental local y no autenticada de recibos y CFDI aportados, que permite mostrar datos visibles pero no constituye una verificación oficial ni garantiza vigencia, autenticidad o cumplimiento fiscal o de seguridad social.\n\n2. matriz  \n\n| Tema                             | Qué puede decir hoy el producto                                                                                   | Qué no puede confirmar                                                                                         | Evidencia oficial que sí resolvería la duda                                                                                      | Riesgo de copy                                                                                   |\n|---------------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|\n| Alta/vigencia IMSS               | NSS y registro patronal visibles en recibos; indicios de patrón y trabajador.                                     | Vigencia actual de derechos, clínica asignada, movimientos afiliatorios, estado actualizado.                   | Constancia de Vigencia de Derechos IMSS emitida con CURP, NSS y correo personal.                                               | Presentar NSS/registro patronal como prueba de vigencia oficial.                               |\n| Semanas cotizadas, salario base, cuotas IMSS | Conceptos y deducciones visibles en recibos; monto de cuotas descontadas.                                         | Semanas cotizadas acumuladas, salario base registrado, cuotas efectivamente enteradas y movimientos reales.    | Reporte oficial de semanas cotizadas y estado de cuenta IMSS.                                                                  | Afirmar que deducciones visibles equivalen a pagos o registros oficiales.                      |\n| Autenticidad de CFDI             | Extracción de datos del XML; lectura de folio fiscal, RFC emisor y receptor.                                     | Confirmación oficial de certificación SAT, validez legal o si fue efectivamente timbrado y registrado.          | Verificador oficial de CFDI SAT mediante folio fiscal o archivo XML con captcha.                                               | Decir que la lectura local es una validación oficial del SAT.                                 |\n| ISR/retenciones                  | Montos de ISR y retenciones visibles en recibos.                                                                 | Que el ISR fue enterado correctamente al SAT o que la declaración anual refleja esos datos.                     | Visor oficial de Retenciones/Deducciones SAT accesible con credenciales del contribuyente.                                     | Afirmar que montos visibles garantizan cumplimiento fiscal.                                  |\n| Aportaciones/crédito Infonavit  | Datos visibles de aportaciones o descuentos en recibos.                                                           | Saldo, movimientos, historial real de aportaciones o estado de crédito Infonavit.                               | Consulta oficial en Mi Cuenta Infonavit con acceso autenticado del trabajador.                                                 | Presentar datos parciales como saldo o estado oficial de crédito.                             |\n\n3. ruta_recomendada  \n\n1. Mantener la extracción local y presentación clara de datos visibles en recibos y CFDI, con disclaimers explícitos sobre su naturaleza documental y no oficial.  \n2. Incluir mensajes educativos que expliquen qué información puede obtenerse oficialmente y cómo el trabajador puede acceder a ella (ej. enlaces a portales IMSS, SAT, Infonavit).  \n3. Ofrecer guías o tutoriales para que el trabajador solicite constancias oficiales (vigencia IMSS, semanas cotizadas, verificación CFDI) por sus propios medios.  \n4. Evaluar en futuro la posibilidad de integrar enlaces o invitaciones a iniciar procesos oficiales externos, sin almacenar ni solicitar credenciales gubernamentales.  \n5. Implementar controles de privacidad y consentimiento claros para el manejo de documentos aportados, evitando cualquier simulación de consulta oficial.  \n\n4. frases_permitidas  \n\n- \"Mostramos los datos que aparecen en tus recibos y CFDI para ayudarte a entender tu nómina, pero esta información no es una constancia oficial.\"  \n- \"Para verificar tu vigencia ante el IMSS o la autenticidad de tu recibo fiscal, te recomendamos consultar directamente los portales oficiales.\"  \n- \"Aquí puedes revisar los conceptos y montos que aparecen en tus documentos, con explicaciones para facilitar su comprensión.\"  \n\n5. frases_prohibidas  \n\n- \"Verificamos oficialmente tu vigencia ante el IMSS y el SAT.\"  \n- \"Garantizamos que tus pagos fiscales y de seguridad social están al día.\"  \n- \"Esta consulta equivale a una constancia oficial emitida por el IMSS o SAT.\"  \n- \"Solicita tu validación oficial directamente desde nuestra app con tus credenciales.\"  \n- \"Confirmamos que tu recibo es válido y fue certificado por el SAT.\"  \n\n6. riesgos  \n\n- Privacidad: manejo de documentos personales sensibles requiere consentimiento informado y almacenamiento seguro.  \n- Consentimiento: debe quedar claro que la información mostrada es solo lectura documental aportada por el usuario, sin consultas externas.  \n- Seguridad: evitar solicitar credenciales o datos que puedan ser usados para suplantación o acceso no autorizado a portales oficiales.  \n- Cumplimiento: no inducir a error ni simular servicios oficiales para evitar responsabilidades legales o regulatorias.  \n\n7. confianza  \n\nMedia. La extracción local es útil para comprensión documental, pero no garantiza autenticidad, vigencia o cumplimiento. La ausencia de integración oficial genera incertidumbre sobre el estado real ante IMSS, SAT o Infonavit.",
+          "refusal": null,
+          "annotations": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 878,
+      "completion_tokens": 1048,
+      "total_tokens": 1926,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "service_tier": "default",
+    "system_fingerprint": "fp_a5c73eb661"
+  }
+}
