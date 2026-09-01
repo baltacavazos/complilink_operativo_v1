@@ -6,7 +6,7 @@ const fromEmail = process.env.RESEND_FROM_EMAIL;
 
 describe.skipIf(!apiKey || !fromEmail)("Resend public auth sender", () => {
   it("uses a verified domain with sending enabled", async () => {
-    expect(resolveResendFromEmail(fromEmail ?? "")).toMatch(/@complilink\.mx>?$/i);
+    expect(resolveResendFromEmail(fromEmail ?? "")).toMatch(/^Auditapatron <[^>]+>$/i);
 
     const response = await fetch("https://api.resend.com/domains", {
       headers: {

@@ -32,6 +32,12 @@
 - [ ] P0 identidad: inspeccionar y retirar allowlists, piloto o bloqueos de usuarios nuevos administrables para la app `cGpJC3DAdnBiVVBEKZfqbd`.
 - [ ] P0 identidad: localizar panel o API de identidades bloqueadas, desbloquear las correspondientes a AuditaPatron si está permitido y documentar cualquier control exclusivo del propietario.
 - [ ] P0 identidad: comprobar que el registro público admite una identidad desconocida y crea sesión de aplicación sin usar más correos del tester.
+- [x] Primera visita AuditaPatrón: conectar el CTA de carga de `/auditar` al mismo selector y proceso documental de Home.
+- [x] Primera visita AuditaPatrón: garantizar una señal y siguiente paso en español para cada lectura, incluso si el recibo está incompleto, sin claves técnicas visibles.
+- [x] Primera visita AuditaPatrón: persistir la revisión de invitado y restaurarla al verificar o crear cuenta, regresando a esa misma revisión.
+- [x] Primera visita AuditaPatrón: retirar la identidad de envío CompliLink y ajustar tiempos de lectura de `/auditar` a una promesa honesta.
+- [ ] Primera visita AuditaPatrón: verificar un dominio propio `auditapatron.com` en el proveedor de correo antes de usar `acceso@auditapatron.com` como remitente técnico.
+- [x] Primera visita AuditaPatrón: probar el recorrido completo de desconocido y publicar una sola versión en auditapatron.com.
 
 - [ ] Auditoría de experiencia tri-IA: completar evidencia fiable de /auditar en móvil —foto/archivo, privacidad, espera y resultado— antes de cerrar el consenso sin implementar cambios.
 - [ ] Auditoría de experiencia tri-IA: validar el recorrido completo de una persona nueva Home → Acceso → /auditar para confirmar claridad contextual.

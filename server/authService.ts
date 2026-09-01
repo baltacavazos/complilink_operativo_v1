@@ -380,8 +380,8 @@ type ResendAttachment = {
 
 export function resolveResendFromEmail(configuredFromEmail: string) {
   const normalized = configuredFromEmail.trim();
-  if (!normalized || /@resend\.dev>?$/i.test(normalized)) {
-    return `${AUTH_BRAND_NAME} <acceso@complilink.mx>`;
+  if (!normalized) {
+    return `${AUTH_BRAND_NAME} <onboarding@resend.dev>`;
   }
 
   return normalized.includes("<") ? normalized : `${AUTH_BRAND_NAME} <${normalized}>`;

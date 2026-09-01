@@ -1265,6 +1265,35 @@ type ConfirmedUploadResultView = {
   } | null;
 };
 
+type StoredGuestReview = {
+  guestPreviewId: string;
+  guestPreviewToken: string;
+  createdAt: string;
+  preview: {
+    previewAsset: { fileName: string; mimeType: string; sizeBytes: number };
+    classification: {
+      documentType: string;
+      normalizedDocType?: string;
+      displayName?: string;
+      classificationConfidence?: number;
+    };
+    preliminaryAnalysis: {
+      summary?: string;
+      confirmedData?: Record<string, unknown>;
+      estimatedData?: Record<string, unknown>;
+      guardrails?: string[];
+    };
+  };
+  heliosOpinion: {
+    summary?: string | null;
+    recommendedNextStep?: string | null;
+    resultCard?: { headline?: string | null; lead?: string | null; nextStepSummary?: string | null };
+    legalHighlights?: { primaryConcern?: string | null };
+  };
+};
+
+const AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY = "auditapatron_guest_review_v1";
+
 const dossierTargets: DossierTarget[] = [
   {
     type: "payroll_receipt",
@@ -2048,6 +2077,49 @@ function matchesArchiveDateFilter(
 
 async function fileToBase64(file: File) {
   return readWebFileAsDataUrl(file);
+}
+
+function readStoredGuestReview(): StoredGuestReview | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredGuestReview) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredGuestReview(review: StoredGuestReview | null) {
+  if (typeof window === "undefined") return;
+
+  if (!review) {
+    window.sessionStorage.removeItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
+    return;
+  }
+
+  window.sessionStorage.setItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY, JSON.stringify(review));
+}
+
+function plainWorkerCopy(value?: string | null) {
+  if (!value) return null;
+
+  const cleaned = value
+    .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
+    .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return cleaned || null;
+}
+
+function buildPayrollSignalFallback(documentType?: string | null) {
+  const documentLabel = getSimpleDocumentTypeLabel(documentType).toLowerCase();
+  return {
+    headline: "Revisa el periodo, el pago neto y las deducciones",
+    why: `Este ${documentLabel} ya permite una lectura inicial, pero un solo archivo no confirma por sí mismo que haya un error. Comparar el periodo, los montos y las deducciones te ayuda a detectar qué conviene aclarar.`,
+    nextStep: "Guarda este recibo y compáralo con el CFDI del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
+  };
 }
 
 function humanizeSnakeCase(value: string) {
@@ -3635,6 +3707,9 @@ export default function Auditar() {
   const bootstrapMutation = trpc.workspace.bootstrap.useMutation();
   const analyzeDraftMutation = trpc.cases.analyzeDocumentDraft.useMutation();
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
+  const guestAnalyzeMutation = trpc.cases.guestAnalyzeDocument.useMutation();
+  const createGuestReviewCaseMutation = trpc.cases.create.useMutation();
+  const claimGuestReviewMutation = trpc.cases.claimGuestPreview.useMutation();
   const persistAuditarViewStateMutation =
     trpc.cases.persistAuditarViewState.useMutation();
   const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
@@ -3685,6 +3760,9 @@ export default function Auditar() {
   const [autoAdvanceFlash, setAutoAdvanceFlash] = useState(false);
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
+  const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
+  const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
+  const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
   const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
     null
   );
@@ -3764,6 +3842,7 @@ export default function Auditar() {
   const [showHeroJumpCta, setShowHeroJumpCta] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const guestFileInputRef = useRef<HTMLInputElement | null>(null);
   const heroCardRef = useRef<HTMLDivElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const digitalArchiveSectionRef = useRef<HTMLDivElement | null>(null);
@@ -4189,6 +4268,79 @@ export default function Auditar() {
     bootstrapMutation,
     bootstrapStarted,
     selectedTenantId,
+  ]);
+
+  useEffect(() => {
+    writeStoredGuestReview(guestReview);
+  }, [guestReview]);
+
+  useEffect(() => {
+    if (
+      !auth.isAuthenticated ||
+      !guestReview ||
+      !selectedTenantId ||
+      guestReviewClaimStarted ||
+      createGuestReviewCaseMutation.isPending ||
+      claimGuestReviewMutation.isPending
+    ) {
+      return;
+    }
+
+    setGuestReviewClaimStarted(true);
+    void (async () => {
+      try {
+        const documentLabel =
+          guestReview.preview.classification.displayName ??
+          getSimpleDocumentTypeLabel(guestReview.preview.classification.documentType);
+        const createdCase = await createGuestReviewCaseMutation.mutateAsync({
+          tenantId: selectedTenantId,
+          title: `Revisión inicial · ${documentLabel}`,
+          summary:
+            plainWorkerCopy(guestReview.heliosOpinion.summary) ??
+            buildPayrollSignalFallback(guestReview.preview.classification.documentType).why,
+          status: "intake",
+          priority: "medium",
+        });
+        const claimed = await claimGuestReviewMutation.mutateAsync({
+          tenantId: selectedTenantId,
+          caseId: createdCase.caseId,
+          guestPreviewToken: guestReview.guestPreviewToken,
+        });
+
+        setSelectedCaseId(createdCase.caseId);
+        setLastUpload({
+          draftId: guestReview.guestPreviewId,
+          classification: claimed.classification,
+          preliminaryAnalysis: claimed.preliminaryAnalysis,
+          scanAssistance: claimed.scanAssistance,
+          heliosOpinion: claimed.heliosOpinion,
+          engineDispatch: claimed.engineDispatch,
+        } as ConfirmedUploadResultView);
+        setGuestReview(null);
+        setGuestReviewError(null);
+        await Promise.all([
+          utils.cases.list.invalidate({ tenantId: selectedTenantId }),
+          utils.cases.detail.invalidate({ tenantId: selectedTenantId, caseId: createdCase.caseId }),
+        ]);
+      } catch (error) {
+        setGuestReviewClaimStarted(false);
+        setGuestReviewError(
+          toFriendlyAuditarRuntimeMessage(
+            error,
+            "No pudimos guardar tu revisión todavía. Tu lectura sigue disponible aquí; intenta de nuevo en un momento."
+          )
+        );
+      }
+    })();
+  }, [
+    auth.isAuthenticated,
+    claimGuestReviewMutation,
+    createGuestReviewCaseMutation,
+    guestReview,
+    guestReviewClaimStarted,
+    selectedTenantId,
+    utils.cases.detail,
+    utils.cases.list,
   ]);
 
   const tenantsQuery = trpc.tenants.list.useQuery(undefined, {
@@ -5076,19 +5228,33 @@ export default function Auditar() {
       lastHeliosOpinion?.legalHighlights?.primaryConcern ??
       null;
 
-    return primaryConcern
-      ? [
-          {
-            label: "Punto por revisar",
-            summary: primaryConcern,
-            tone: "attention",
-          },
-        ]
-      : [];
+    if (primaryConcern) {
+      return [
+        {
+          label: "Punto por revisar",
+          summary: primaryConcern,
+          tone: "attention",
+        },
+      ];
+    }
+
+    if (lastUpload) {
+      const fallback = buildPayrollSignalFallback(lastUpload.classification.documentType);
+      return [
+        {
+          label: "Qué conviene revisar",
+          summary: fallback.why,
+          tone: "attention",
+        },
+      ];
+    }
+
+    return [];
   }, [
     lastHeliosOpinion?.legalHighlights?.primaryConcern,
     lastHeliosOpinion?.resultCard?.discrepancySignals,
     lastHeliosOpinion?.resultCard?.keyFindings,
+    lastUpload,
     visibleHeliosOpinion?.resultCard?.discrepancySignals,
   ]);
   const visiblePendingItems = useMemo<HeliosSimpleExplanationItemView[]>(() => {
@@ -5367,23 +5533,24 @@ export default function Auditar() {
         shortcut => shortcut.id !== primaryLastUploadShortcut.id
       )
     : lastUploadShortcuts;
+  const lastUploadResultFallback = buildPayrollSignalFallback(lastUpload?.classification.documentType);
   const lastUploadResultHeadline =
-    warmVisibleNamingCopy(lastHeliosOpinion?.resultCard?.headline) ??
-    uploadInsight?.label ??
-    "Tu documento ya quedó integrado a tu expediente";
+    plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
+    plainWorkerCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
+    lastUploadResultFallback.headline;
   const lastUploadResultLead =
     warmVisibleNamingCopy(
       lastHeliosOpinion?.resultCard?.lead ?? lastHeliosOpinion?.summary
     ) ??
-    uploadInsight?.contribution ??
-    "Ya hay una primera lectura útil para entender qué aporta este documento y cómo seguir avanzando.";
+    plainWorkerCopy(uploadInsight?.contribution) ??
+    lastUploadResultFallback.why;
   const lastUploadNextStepSummary =
     warmVisibleNamingCopy(
       lastHeliosOpinion?.resultCard?.nextStepSummary ??
         lastHeliosOpinion?.recommendedNextStep
     ) ??
-    uploadInsight?.nextSuggestion ??
-    "Sigue conectando este documento con otros archivos del expediente para fortalecer tu lectura.";
+    plainWorkerCopy(uploadInsight?.nextSuggestion) ??
+    lastUploadResultFallback.nextStep;
   const postReadingWhatsappHref = `https://wa.me/?text=${encodeURIComponent(
     `Hola. Ya revisé mi documento en AuditaPatrón y me salió esto: ${lastUploadResultHeadline}. ${lastUploadNextStepSummary} ¿Me ayudas a entender qué me conviene hacer ahora?`
   )}`;
@@ -7267,6 +7434,48 @@ export default function Auditar() {
     handleSelectedDocumentFile(event.target.files?.[0] ?? null);
   };
 
+  const handleGuestFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validationMessage = validateDocumentUploadFile(file);
+    if (validationMessage) {
+      setGuestReviewError(validationMessage);
+      event.target.value = "";
+      return;
+    }
+
+    setGuestReviewError(null);
+    setGuestReviewClaimStarted(false);
+    try {
+      const dataUrl = await fileToBase64(file);
+      const [, base64Content = ""] = dataUrl.split(",");
+      const result = await guestAnalyzeMutation.mutateAsync({
+        fileName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        base64Content,
+        sourceChannel: "manual",
+      });
+
+      setGuestReview({
+        guestPreviewId: result.guestPreviewId,
+        guestPreviewToken: result.guestPreviewToken,
+        createdAt: result.createdAt,
+        preview: result.preview,
+        heliosOpinion: result.heliosOpinion,
+      } as StoredGuestReview);
+    } catch (error) {
+      setGuestReviewError(
+        toFriendlyAuditarRuntimeMessage(
+          error,
+          "No pudimos leer ese archivo. Intenta otra vez con un PDF o una imagen clara."
+        )
+      );
+    } finally {
+      event.target.value = "";
+    }
+  };
+
   const openCameraPicker = () => {
     setPreferredCaptureMode("camera");
     setSelectedCaptureMode("camera");
@@ -7677,6 +7886,26 @@ export default function Auditar() {
     }
   };
 
+  const guestSignalFallback = buildPayrollSignalFallback(
+    guestReview?.preview.classification.documentType
+  );
+  const guestSignalHeadline =
+    plainWorkerCopy(
+      guestReview?.heliosOpinion.resultCard?.headline ??
+        guestReview?.heliosOpinion.legalHighlights?.primaryConcern
+    ) ?? guestSignalFallback.headline;
+  const guestSignalWhy =
+    plainWorkerCopy(
+      guestReview?.heliosOpinion.resultCard?.lead ??
+        guestReview?.heliosOpinion.summary ??
+        guestReview?.heliosOpinion.legalHighlights?.primaryConcern
+    ) ?? guestSignalFallback.why;
+  const guestSignalNextStep =
+    plainWorkerCopy(
+      guestReview?.heliosOpinion.resultCard?.nextStepSummary ??
+        guestReview?.heliosOpinion.recommendedNextStep
+    ) ?? guestSignalFallback.nextStep;
+
   if (auth.loading) {
     return (
       <main className="audita-auditar min-h-screen bg-slate-50 px-4 py-12 text-slate-950">
@@ -7702,6 +7931,55 @@ export default function Auditar() {
     );
   }
 
+  if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview) {
+    return (
+      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
+        <div className="container mx-auto max-w-3xl">
+          <MobileAppShell current="auditar" title="Tu revisión" subtitle="Una lectura inicial de tu recibo." />
+          <input
+            ref={guestFileInputRef}
+            type="file"
+            accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
+            onChange={handleGuestFileChange}
+            className="hidden"
+          />
+          <section className="mt-5 rounded-[2rem] border border-emerald-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+            <div className="flex items-center gap-3">
+              <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Señal inicial</p>
+                <p className="mt-1 text-sm text-slate-600">Lectura orientativa; no es validación oficial ni asesoría legal.</p>
+              </div>
+            </div>
+            <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
+            <div className="mt-5 grid gap-4">
+              <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Qué conviene revisar</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalWhy}</p>
+              </div>
+              <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">Siguiente paso útil</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
+              </div>
+            </div>
+            <p className="mt-5 text-sm leading-6 text-slate-600">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, esta señal se mantiene como orientación inicial.</p>
+            {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos guardar todavía</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button type="button" className="h-12 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={() => {
+                window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
+              }}>
+                Crear cuenta y guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
+                Cambiar recibo
+              </Button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   if (!auth.isAuthenticated && !auditarHarnessBypass) {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
@@ -7710,6 +7988,13 @@ export default function Auditar() {
             current="auditar"
             title="Empieza tu auditoría"
             subtitle="Sube tu documento y mira primero la señal."
+          />
+          <input
+            ref={guestFileInputRef}
+            type="file"
+            accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
+            onChange={handleGuestFileChange}
+            className="hidden"
           />
           <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -7735,15 +8020,15 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                {isNativeAppExperience ? "Directo desde tu app" : "Sube y revisa en segundos"}
+                {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial del recibo"}
               </div>
               <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
                 {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
-                  ? "Sube foto o archivo. Ves la señal en segundos."
-                  : "Sube foto o archivo. Recibes una revisión gratis en segundos."}
+                  ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
+                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -7753,10 +8038,11 @@ export default function Auditar() {
                     trackFunnelStep("auditar_guest_entry_clicked", {
                       source: "auditar_guard",
                     });
-                    focusRecommendedUpload(effectiveRecommendedTarget?.type ?? null);
+                    guestFileInputRef.current?.click();
                   }}
+                  disabled={guestAnalyzeMutation.isPending}
                 >
-                  {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
+                  {guestAnalyzeMutation.isPending ? "Leyendo tu recibo…" : isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                   <button
@@ -7766,7 +8052,7 @@ export default function Auditar() {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
                     });
-                    window.location.href = getLoginUrl();
+                    window.location.href = `/acceso?returnTo=${encodeURIComponent("/auditar")}`;
                   }}
                 >
                   Entrar si ya empezaste
