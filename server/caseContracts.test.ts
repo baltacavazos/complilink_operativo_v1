@@ -205,18 +205,30 @@ describe("caseContracts", () => {
   });
 
   it("reads the visible facts from the printable Camreflex payroll PDF text", () => {
+    const realPdfTextDump = [
+      "Representación impresa de un CFDI RECIBO:10963 |",
+      "EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V. | RFC: ECC190605VA1 REG FISCAL: 601",
+      "REGISTRO PATRONAL: R1379389106",
+      "NSS 84129214965",
+      "PERIODO 2026-05-01 AL 2026-05-15 DIAS DE PAGO 15.000 FECHA DE PAGO 2026-05-15",
+      "SALARIO DIARIO 315.04 REGIMEN 605 Sueldos y Salarios e Ingresos Asimilados a Salarios",
+      "PERCEPCIONES DEDUCCIONES NO. CONCEPTO GRAVADO EXENTO TOTAL",
+      "001 SALARIO 4,725.60 0.00 4,725.60",
+      "002 SUBSIDIO 0.00 0.00 0.00",
+      "TOTAL PERCEPCIONES 4,725.60 TOTAL DEDUCCIONES 0.00",
+    ].join(" ");
     const analysis = buildPreliminaryLaborAnalysis({
       fileName: "recibo-cfdi.pdf",
       mimeType: "application/pdf",
-      textHint:
-        "REPRESENTACIÓN IMPRESA DE CFDI NÓMINA RAZÓN SOCIAL EVOLUCION CREATIVA CAMREFLEX RFC ECC190605VA1 PERIODO DE PAGO 2026-05-01–15 SALARIO $4,725.60 TOTAL DEDUCCIONES $0.00 NSS 12345678901 REGISTRO PATRONAL R1379389106",
+      textHint: realPdfTextDump,
     });
 
-    expect(analysis.confirmedData.payrollEmployerName).toBe("EVOLUCION CREATIVA CAMREFLEX");
+    expect(analysis.confirmedData.internalDocumentType).toBe("cfdi");
+    expect(analysis.confirmedData.payrollEmployerName).toBe("EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V.");
     expect(analysis.confirmedData.payrollPeriod).toBe("2026-05-01 al 2026-05-15");
     expect(analysis.confirmedData.payrollNetAmount).toBe("$4,725.60");
     expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
-    expect(analysis.confirmedData.payrollNss).toBe("12345678901");
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
     expect(analysis.confirmedData.payrollEmployerRegistration).toBe("R1379389106");
   });
 

@@ -3,6 +3,7 @@ import { dirname, join, sep } from "node:path";
 
 const MAX_PDF_PAGES = 16;
 const MAX_PDF_TEXT_LENGTH = 12000;
+const PDF_TEXT_ROW_TOLERANCE = 3;
 const require = createRequire(import.meta.url);
 
 function getStandardFontDataPath() {
@@ -36,8 +37,27 @@ export async function extractPdfPlainText(binary: Buffer): Promise<string> {
       const page = await document.getPage(pageNumber);
       const content = await page.getTextContent();
       const pageText = content.items
-        .map(item => ("str" in item && typeof item.str === "string" ? item.str : ""))
-        .filter(Boolean)
+        .flatMap((item, index) => {
+          if (!("str" in item) || typeof item.str !== "string") return [];
+          const text = item.str.replace(/\s+/g, " ").trim();
+          if (!text) return [];
+          return [{
+            text,
+            x: Array.isArray(item.transform) ? item.transform[4] ?? 0 : 0,
+            y: Array.isArray(item.transform) ? item.transform[5] ?? 0 : 0,
+            index,
+          }];
+        })
+        // PDF operators are not guaranteed to be emitted in visual reading order.
+        // Payroll CFDIs often place a header and table cells in different operators,
+        // so read top-to-bottom and left-to-right before handing text to the parser.
+        .sort((left, right) => {
+          const verticalDelta = right.y - left.y;
+          if (Math.abs(verticalDelta) > PDF_TEXT_ROW_TOLERANCE) return verticalDelta;
+          const horizontalDelta = left.x - right.x;
+          return horizontalDelta || left.index - right.index;
+        })
+        .map(({ text }) => text)
         .join(" ");
       if (pageText) pages.push(pageText);
       if (pages.join(" ").length >= MAX_PDF_TEXT_LENGTH) break;

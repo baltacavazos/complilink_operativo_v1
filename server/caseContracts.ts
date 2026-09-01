@@ -292,11 +292,17 @@ function extractCfdiWorkerName(text: string) {
 
 function extractCfdiEmployerName(text: string) {
   const emitterMatch = text.match(/<[^>]*Emisor\b[^>]*\bNombre\s*=\s*["']([^"']+)["']/i);
+  const printableEmitterLabelMatch = text.match(/(?:nombre|emisor)\s*[:\-]?\s*([^|\n]+?)(?=\s*(?:\||rfc\b))/i);
+  const printableEmitterMatch = text.match(
+    /(?:recibo\s*[:#]?\s*[\w-]+\s*\|\s*|\bCFDI\s*\|\s*|\|\s*)([A-ZÁÉÍÓÚÜÑ0-9&.,'\- ]{5,}?(?:S\.?(?:\s*A\.?)?\s*DE\s*C\.?\s*V\.?|S\.?(?:\s*DE\s*R\.?\s*L\.?)?))\s*(?:\|\s*)?RFC\s*:/i
+  );
   const reasonSocialMatch = text.match(
     /(?:raz[oó]n\s+social|empresa|empleador)\s*[:\-]?\s*([\s\S]*?)(?=\s+(?:rfc|periodo(?:\s+de\s+pago)?|fecha\s+inicial\s+de\s+pago|neto(?:\s+a\s+pagar)?|salario|total\s+percepciones|total\s+deducciones|nss|registro\s+patronal)\b|$)/i
   );
   return (
     emitterMatch?.[1]?.trim() ??
+    printableEmitterLabelMatch?.[1]?.trim().replace(/[;,]+$/, "") ??
+    printableEmitterMatch?.[1]?.trim().replace(/[;,]+$/, "") ??
     reasonSocialMatch?.[1]?.trim().replace(/[;,]+$/, "") ??
     extractNamedField(text, ["razón social", "razon social", "patron", "patrón", "empresa", "empleador"])
   );
@@ -310,6 +316,19 @@ function extractPayrollAmount(text: string, labels: string[], xmlAttributes: str
 
   const labeledAmount = extractSalaryByLabel(text, labels);
   return labeledAmount ? (labeledAmount.startsWith("$") ? labeledAmount : `$${labeledAmount}`) : null;
+}
+
+function extractPayrollNetAmount(text: string) {
+  const total = extractPayrollAmount(
+    text,
+    ["neto a pagar", "total neto", "importe neto", "total a pagar", "total percepciones"],
+    ["Total"],
+  );
+  if (total) return total;
+
+  const salaryConcept = text.match(/(?:\b001\s+)?salario(?!\s+diario)\s*[:\-]?\s*(\$?\s?\d[\d,]*(?:\.\d{2,4})?)/i);
+  const amount = salaryConcept?.[1]?.replace(/\s+/g, "");
+  return amount ? (amount.startsWith("$") ? amount : `$${amount}`) : null;
 }
 
 function extractXmlDeductionAmount(text: string, deductionType: string) {
@@ -535,19 +554,6 @@ export function classifyMexicanLaborDocument(params: {
     });
   }
 
-  if (hasContractSignals) {
-    return buildClassification({
-      documentType: "contract",
-      normalizedDocType: "contrato_laboral",
-      classificationConfidence: 84,
-      reason: "Se detectaron términos de contratación o relación laboral.",
-      processingProfile: "contract_deep_dive",
-      reviewRecommendation: "legal_review",
-      supportsStructuredExtraction: true,
-      supportsBenefitEstimation: true,
-    });
-  }
-
   if (hasStrongCfdiSignals) {
     return buildClassification({
       documentType: "cfdi",
@@ -556,6 +562,19 @@ export function classifyMexicanLaborDocument(params: {
       reason: "Se detectaron marcadores típicos de CFDI o timbrado fiscal.",
       processingProfile: "standard",
       reviewRecommendation: "auto",
+      supportsStructuredExtraction: true,
+      supportsBenefitEstimation: true,
+    });
+  }
+
+  if (hasContractSignals) {
+    return buildClassification({
+      documentType: "contract",
+      normalizedDocType: "contrato_laboral",
+      classificationConfidence: 84,
+      reason: "Se detectaron términos de contratación o relación laboral.",
+      processingProfile: "contract_deep_dive",
+      reviewRecommendation: "legal_review",
       supportsStructuredExtraction: true,
       supportsBenefitEstimation: true,
     });
@@ -688,7 +707,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     ? extractPayrollAmount(sourceText, ["total deducciones", "deducciones", "descuentos"], ["TotalDeducciones", "Descuento"])
     : null;
   const payrollNetAmount = isPayrollDocument
-    ? extractPayrollAmount(sourceText, ["neto a pagar", "total neto", "importe neto", "total a pagar", "neto", "salario"], ["Total"])
+    ? extractPayrollNetAmount(sourceText)
     : null;
   const payrollNss = isPayrollDocument ? extractPayrollNss(sourceText) : null;
   const payrollEmployerRegistration = isPayrollDocument ? extractPayrollEmployerRegistration(sourceText) : null;

@@ -20,19 +20,31 @@ vi.mock("./_core/llm", () => ({
 
 const { appRouter } = await import("./routers");
 
+function escapePdfLiteral(value: string) {
+  return value.replace(/([\\()])/g, "\\$1");
+}
+
 function buildPrintablePayrollPdf() {
-  const lines = [
-    "REPRESENTACION IMPRESA DE CFDI NOMINA",
-    "RAZON SOCIAL: EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V.",
-    "RFC: ECC190605VA1",
-    "REGISTRO PATRONAL: R1379389106",
-    "NSS 84129214965",
-    "PERIODO 2026-05-01 AL 2026-05-15",
-    "001 SALARIO 4,725.60",
-    "TOTAL PERCEPCIONES 4,725.60",
-    "TOTAL DEDUCCIONES 0.00",
+  // Snapshot of the authorized printable CFDI layout, sanitized to omit the
+  // worker name/CURP. Fragments intentionally arrive out of operator order.
+  const realLayoutFragments = [
+    { text: "TOTAL DEDUCCIONES", x: 320, y: 370 },
+    { text: "0.00", x: 505, y: 370 },
+    { text: "REGISTRO PATRONAL: R1379389106", x: 72, y: 700 },
+    { text: "001 SALARIO", x: 90, y: 408 },
+    { text: "4,725.60", x: 300, y: 408 },
+    { text: "PERIODO 2026-05-01 AL 2026-05-15", x: 72, y: 555 },
+    { text: "RECIBO:10963 |", x: 72, y: 746 },
+    { text: "EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V.", x: 72, y: 746 },
+    { text: "RFC: ECC190605VA1", x: 72, y: 730 },
+    { text: "NSS 84129214965", x: 72, y: 575 },
+    { text: "TOTAL PERCEPCIONES", x: 72, y: 370 },
+    { text: "4,725.60", x: 190, y: 370 },
+    { text: "REPRESENTACION IMPRESA DE CFDI", x: 72, y: 772 },
   ];
-  const stream = ["BT", "/F1 11 Tf", "72 760 Td", ...lines.flatMap((line, index) => [index ? "0 -22 Td" : "", `(${line}) Tj`].filter(Boolean)), "ET"].join("\n");
+  const stream = realLayoutFragments
+    .map(({ text, x, y }) => `BT\n/F1 11 Tf\n${x} ${y} Td\n(${escapePdfLiteral(text)}) Tj\nET`)
+    .join("\n");
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -78,6 +90,7 @@ describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
       payrollNss: "84129214965",
       payrollEmployerRegistration: "R1379389106",
     });
+    expect(result.preview.classification.documentType).toBe("cfdi");
     expect(storageMocks.storagePut).toHaveBeenCalledTimes(1);
   });
 });
