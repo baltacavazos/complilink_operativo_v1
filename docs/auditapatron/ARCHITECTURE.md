@@ -5,7 +5,7 @@
 1. El trabajador entra a la web y sube documentos laborales.
 2. El sistema calcula huella (`SHA-256`), aplica OCR y extracción.
 3. Se notifica al motor **Helios** (evento `document.uploaded`, webhook firmado HMAC — implementación completa aún pendiente).
-4. Helios devuelve indicadores de "fuerza del expediente" y hallazgos.
+4. Helios devuelve indicadores de “fuerza del expediente” y hallazgos.
 5. En la UI pública, Helios se presenta como **Asesor Laboral**.
 
 ## Decisiones estables

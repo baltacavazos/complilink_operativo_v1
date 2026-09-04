@@ -1,5 +1,14 @@
 # AuditaPatron / CompliLink Operativo V1
 
+## AuditaPatrón — docs operativas (Fase 0 · 2026-09-04)
+
+Documentación de independencia / Railway: ver carpeta [`docs/auditapatron/`](./docs/auditapatron/).
+
+- Copia temporal: https://web-production-0391e.up.railway.app
+- Sitio vivo sigue en Manus (`auditapatron.com`) — no tocar DNS sin OK.
+- Acceso propio (correo+contraseña): siguiente bloque técnico; no implementar sin instrucción explícita.
+- Respaldos MySQL Railway: [`docs/auditapatron/BACKUP_RECOVERY.md`](./docs/auditapatron/BACKUP_RECOVERY.md)
+
 **Estado actual:** operativo en entorno de desarrollo, con foco funcional en la experiencia de **AuditaPatron** y el flujo **`/auditar`**.
 
 ## Resumen del estado actual
@@ -109,7 +118,7 @@ A partir de este punto, cada milestone importante debe generar un respaldo con u
 El proyecto ya dispone de dos scripts Python pensados para operación real con Dropbox. `scripts/dropbox_full_backup_upload.py` sube el paquete y su manifiesto a una carpeta remota concreta. `scripts/dropbox_full_backup_restore.py` permite restaurar un respaldo completo o parcial con un flujo más guiado: puede recibir una carpeta remota exacta, una subcarpeta de backup por nombre o, si no se le indica ninguna, tomar automáticamente el respaldo más reciente dentro del root configurado.
 
 | Operación | Comando de ejemplo | Resultado esperado |
-| --- | --- | --- |
+| --- | --- |
 | Subir backup completo | `python3 scripts/dropbox_full_backup_upload.py /AuditaPatron/backups/complilink_operativo_v1/2026-04-18_full /home/ubuntu/project_backups/complilink_operativo_v1_full_backup_20260418_025522.tar.gz /home/ubuntu/project_backups/complilink_operativo_v1_full_backup_20260418_025522_manifest.txt` | Sube paquete y manifiesto, y devuelve JSON con cuenta, carpeta remota y revisiones |
 | Restaurar el backup más reciente | `python3 scripts/dropbox_full_backup_restore.py` | Descarga el respaldo más reciente dentro de `/AuditaPatron/backups/complilink_operativo_v1` hacia `~/dropbox_restores/<backup>` |
 | Restaurar un backup específico con extracción automática | `python3 scripts/dropbox_full_backup_restore.py --backup-name 2026-04-18_full --destination-dir /tmp/restore_audita` | Descarga el respaldo indicado y extrae automáticamente cualquier `.tar.gz` descargado |
