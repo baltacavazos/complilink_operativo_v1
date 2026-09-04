@@ -6,17 +6,23 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 
 | Variable | Notas independencia |
 | --- | --- |
-| `DATABASE_URL` | MySQL Railway cuando el servicio esté cableado |
-| `JWT_SECRET` | Firma de sesión |
-| `NODE_ENV` | Runtime |
+| `DATABASE_URL` | **Ya en** Railway web (2026-09-04) |
+| `JWT_SECRET` | **Ya en** Railway web (firma de sesión) |
+| `NODE_ENV` | **Ya en** Railway web |
+
+## Acceso propio (copia Railway)
+
+| Variable | Notas |
+| --- | --- |
+| `ENABLE_LOCAL_PASSWORD_AUTH` | `1` fuerza correo+contraseña; `0` lo apaga; si ausente, se activa cuando **no** hay `RESEND_API_KEY` (PR #3). **Ya en** panel web = `1`. |
 
 ## Acceso y sesión (grupos README / CONFIGURACION)
 
 | Variable | Notas |
 | --- | --- |
-| `VITE_APP_ID` | Manus OAuth en live; en Railway pendiente auth propia |
-| `OAUTH_SERVER_URL` | Manus-era |
-| `VITE_OAUTH_PORTAL_URL` | Manus-era |
+| `VITE_APP_ID` | Manus OAuth en live; en Railway dejar vacío / no depender |
+| `OAUTH_SERVER_URL` | Manus-era — vacío en copia Railway |
+| `VITE_OAUTH_PORTAL_URL` | Manus-era — vacío en copia Railway |
 | `OWNER_OPEN_ID` | Propietario |
 | `OWNER_NAME` | Propietario |
 
@@ -24,7 +30,7 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 
 | Variable | Notas |
 | --- | --- |
-| `BUILT_IN_FORGE_API_URL` | Dependencia Manus/plataforma |
+| `BUILT_IN_FORGE_API_URL` | Vacío en copia Railway |
 | `BUILT_IN_FORGE_API_KEY` | |
 | `VITE_FRONTEND_FORGE_API_URL` | |
 | `VITE_FRONTEND_FORGE_API_KEY` | |
@@ -47,7 +53,7 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 
 | Variable | Notas |
 | --- | --- |
-| `RESEND_API_KEY` | Notificaciones |
+| `RESEND_API_KEY` | Live OTP; **ausente** en Railway ⇒ modo contraseña |
 | `RESEND_FROM_EMAIL` | Remitente |
 
 ## Respaldo
@@ -79,8 +85,9 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 | --- | --- |
 | Proyecto Railway | `5ff3f64a-542d-4a23-b500-a430c3054daa` |
 | URL temporal | `https://web-production-0391e.up.railway.app` |
-| Auth email/password propia | **No hecha aún** |
+| Auth email/password | PR #3 lista; Chief despliega rama; **no merge** aún |
 | Live DNS | Sigue en Manus (`auditapatron.com`) |
+| Stripe | **PAUSA** |
 
 Marcar en el panel qué vars están presentes vs faltantes; no pegar valores aquí.
 
@@ -88,4 +95,4 @@ Marcar en el panel qué vars están presentes vs faltantes; no pegar valores aqu
 
 1. Secretos solo en Railway / gestor del dueño — **nunca** en el repo.
 2. No cutover DNS sin OK de Baltasar.
-3. Completar auth propia antes de depender del paralelo como primario.
+3. Validar auth propia en paralelo antes de cutover.
