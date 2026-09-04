@@ -1,3 +1,23 @@
+## Independencia 2026-09-04
+
+Paquete de documentación para operar **sin depender de memoria de chat** y sin secretos en el repo.
+
+| Documento | Para qué |
+| --- | --- |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Live Manus vs paralelo Railway |
+| [ENVIRONMENT.md](./ENVIRONMENT.md) | Nombres de variables (sin valores) |
+| [SERVICES.md](./SERVICES.md) | Inventario propio vs dependiente |
+| [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md) | MySQL Railway, dumps y drill |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Resumen + enlace a ARQUITECTURA.md |
+| [CHANGELOG.md](./CHANGELOG.md) | Entrada 2026-09-04 |
+| [docs/INDEPENDENCE_AUDIT_2026-09-04.md](./docs/INDEPENDENCE_AUDIT_2026-09-04.md) | Auditoría de independencia |
+
+**Hechos clave:** `auditapatron.com` sigue en **Manus** (DNS no cortado). Paralelo Railway proyecto `5ff3f64a-542d-4a23-b500-a430c3054daa`, URL temp `https://web-production-0391e.up.railway.app`. Auth email/password propia en Railway **aún no hecha**. Nunca cortar DNS sin OK de Baltasar. Nunca subir secretos al repo.
+
+Docs previos que siguen vigentes: [CONFIGURACION.md](./CONFIGURACION.md) · [ARQUITECTURA.md](./ARQUITECTURA.md).
+
+---
+
 # AuditaPatron / CompliLink Operativo V1
 
 **Estado actual:** operativo en entorno de desarrollo, con foco funcional en la experiencia de **AuditaPatron** y el flujo **`/auditar`**.
