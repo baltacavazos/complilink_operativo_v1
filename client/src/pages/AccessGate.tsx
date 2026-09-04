@@ -85,10 +85,7 @@ export default function AccessGate() {
             imageClassName="max-w-[210px]"
             subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500"
           />
-          <h1 className="mt-6 text-center text-2xl font-semibold tracking-tight text-slate-950">
-            {accessMode === "signup" ? "Crea tu cuenta" : "Entra a tu cuenta"}
-          </h1>
-          <p className="mt-2 text-center text-sm leading-6 text-slate-600">
+          <p className="mt-6 text-center text-sm leading-6 text-slate-600">
             Copia temporal para pruebas. La revisión pública por RFC sigue disponible sin cuenta.
           </p>
           <LocalPasswordForm returnPath={returnTo} accessMode={accessMode} />
