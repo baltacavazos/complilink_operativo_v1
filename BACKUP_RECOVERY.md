@@ -2,13 +2,18 @@
 
 Sin contraseñas ni cadenas de conexión.
 
-## 1) Respaldos gestionados de Railway MySQL
+## 1) Respaldos nativos de volumen en Railway (MySQL)
 
-1. Abrir el proyecto Railway `5ff3f64a-542d-4a23-b500-a430c3054daa`.
-2. Entrar al servicio **MySQL** (si existe en el proyecto).
-3. Revisar la pestaña **Data** (backups del dashboard).
-4. Confirmar si hay backups automáticos / snapshots en el plan.
-5. Anotar frecuencia y retención solo en notas privadas del dueño.
+El MySQL del proyecto `5ff3f64a-542d-4a23-b500-a430c3054daa` **ya existe** y usa volumen en `/var/lib/mysql`.
+
+1. Abrir el proyecto Railway.
+2. Entrar al servicio **mysql**.
+3. Abrir la pestaña **Backups** (no «Data»).
+4. Activar calendario **Daily** (y opcional Weekly).
+5. Confirmar en el panel que el schedule quedó aplicado.
+6. Anotar retención solo en notas privadas del dueño.
+
+Nota: Railway puede crear backups automáticos según el schedule; un disparo manual no siempre está en la API.
 
 ## 2) Dump manual (esquema, sin pegar secretos)
 
@@ -42,7 +47,7 @@ Comprimir y verificar checksum en local.
 
 Los scripts Python de Dropbox del README (`scripts/dropbox_full_backup_*.py`) y la política ZIP periódica son de la **era Manus**. El camino de independencia es:
 
-1. MySQL en Railway + backups dashboard / dumps
+1. MySQL en Railway + pestaña **Backups** / dumps
 2. Código en GitHub
 3. Copias off-platform (Dropbox del dueño / offline)
 
