@@ -10,7 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 const Home = lazy(() => import("./pages/Home"));
-const Access = lazy(() => import("@/pages/Access"));
+const Access = lazy(() => import("@/pages/AccessGate"));
 const Auditar = lazy(() => import("@/pages/Auditar"));
 const Payments = lazy(() => import("@/pages/Payments"));
 const CeoDashboard = lazy(() => import("@/pages/CeoDashboard"));
