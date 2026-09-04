@@ -13,6 +13,8 @@ El MySQL del proyecto `5ff3f64a-542d-4a23-b500-a430c3054daa` **ya existe** y usa
 5. Confirmar en el panel que el schedule quedó aplicado.
 6. Anotar retención solo en notas privadas del dueño.
 
+**Nota 2026-09-04:** el intento de activar Daily quedó **STAGED** pendiente de aprobación humana (tarjeta de revisión o panel mysql → Backups → Daily). En CompliLink el Daily sí quedó aplicado.
+
 Nota: Railway puede crear backups automáticos según el schedule; un disparo manual no siempre está en la API.
 
 ## 2) Dump manual (esquema, sin pegar secretos)
