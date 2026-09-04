@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
+import { bootstrapLocalPasswordAuthOnBoot, registerLocalPasswordRoutes } from "../localPasswordRoutes";
 import { startCeoBridgeScheduleWorker } from "../ceoBridgeAutomation";
 import { registerStripeWebhook } from "../stripeBilling";
 import { registerStorageProxy } from "./storageProxy";
@@ -47,6 +48,7 @@ async function startServer() {
   registerStorageProxy(app);
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  registerLocalPasswordRoutes(app);
   registerCompliLinkReturnWebhook(app);
   registerE2EAuthRoutes(app);
   // tRPC API
@@ -63,6 +65,8 @@ async function startServer() {
   } else {
     serveStatic(app);
   }
+
+  await bootstrapLocalPasswordAuthOnBoot();
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
