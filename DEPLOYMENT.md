@@ -13,10 +13,12 @@ Lenguaje sencillo. Sin secretos. Complementa [CONFIGURACION.md](./CONFIGURACION.
 
 ## Estado de auth en Railway
 
-- Auth propia email/password: **código listo en** [PR #3](https://github.com/baltacavazos/complilink_operativo_v1/pull/3) (rama `railway-local-password`, tip `e645d65d2aa714894cfbe025fde88e40a8433530`).
-- **No fusionar a `main`** sin OK de Chief/Baltasar. Chief despliega la rama en Railway; Tester valida.
+- Auth propia email/password: [PR #3](https://github.com/baltacavazos/complilink_operativo_v1/pull/3) (rama `railway-local-password`, tip `e280a4d1c90eba5a821dfa69b4ca07313225169e`).
+- **Tester PASS** (2026-09-04): alta → entrar → `/auditar` sin OTP en la URL temporal.
+- **No fusionar a `main`** sin OK escrito de Baltasar/Chief.
 - Live sigue con Manus OAuth / correo+código; Access legacy se conserva vía `AccessGate`.
-- Activación en copia: `ENABLE_LOCAL_PASSWORD_AUTH=1` (ya en panel web; o auto si no hay `RESEND_API_KEY`).
+- Activación en copia: `ENABLE_LOCAL_PASSWORD_AUTH=1` (ya en panel web).
+- Nota UX no bloqueante: sin botón Salir visible en `/auditar`.
 
 ## Pasos de despliegue en Railway (resumen)
 
@@ -28,7 +30,8 @@ Lenguaje sencillo. Sin secretos. Complementa [CONFIGURACION.md](./CONFIGURACION.
 
 ## Checklist antes de cutover DNS
 
-- [ ] Auth email/password propia estable en Railway (PR #3 desplegada + Tester OK)
+- [x] Auth email/password propia estable en Railway (PR #3 tip `e280a4d` + Tester PASS)
+- [ ] Merge PR #3 a `main` (OK Baltasar/Chief)
 - [ ] MySQL respaldado (ver [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md))
 - [ ] Integraciones críticas migradas o degradadas a propósito
 - [ ] OK escrito de Baltasar para DNS

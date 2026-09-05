@@ -1,8 +1,16 @@
 # Changelog
 
+## 2026-09-04 — Auth propia: Tester PASS (tip e280a4d)
+
+- Copia Railway en `railway-local-password` tip `e280a4d…`: alta → entrar → `/auditar` **sin OTP** (Tester PASS).
+- Fix previo: FormData/onInput del correo + botón «Crear mi cuenta» cambia a modo registro.
+- [PR #3](https://github.com/baltacavazos/complilink_operativo_v1/pull/3) **sin merge** hasta OK Baltasar/Chief.
+- Nota UX: sin Salir visible en `/auditar` (no bloqueante).
+- Stripe en **pausa**. DNS/Manus intactos.
+
 ## 2026-09-04 — Auth propia (PR #3)
 
-- Código correo+contraseña en [PR #3](https://github.com/baltacavazos/complilink_operativo_v1/pull/3) (`railway-local-password`, tip `e645d65…`).
+- Código correo+contraseña en [PR #3](https://github.com/baltacavazos/complilink_operativo_v1/pull/3) (`railway-local-password`).
 - Documentado en SERVICES / DEPLOYMENT / ENVIRONMENT: `ENABLE_LOCAL_PASSWORD_AUTH`; auto si no hay Resend; ya en panel web = `1`.
 - Chief despliega la rama en Railway; Tester valida. **No merge** sin OK.
 - Stripe en **pausa**. DNS/Manus intactos.
