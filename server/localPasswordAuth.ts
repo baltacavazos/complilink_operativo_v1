@@ -15,8 +15,77 @@ let pool: mysql.Pool | null = null;
 let tablesReady = false;
 
 export const MYSQL_BOOTSTRAP_STATEMENTS = [
-  `CREATE TABLE IF NOT EXISTS \`users\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`openId\` varchar(64) NOT NULL,\n      \`name\` text,\n      \`email\` varchar(320),\n      \`stripeCustomerId\` varchar(64),\n      \`loginMethod\` varchar(64),\n      \`role\` enum('user','admin') NOT NULL DEFAULT 'user',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      \`lastSignedIn\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      UNIQUE KEY \`users_openId_unique\` (\`openId\`),\n      UNIQUE KEY \`users_stripeCustomerId_unique\` (\`stripeCustomerId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-  `CREATE TABLE IF NOT EXISTS \`local_logins\` (\n      \`email\` varchar(320) NOT NULL,\n      \`passwordHash\` varchar(255) NOT NULL,\n      \`openId\` varchar(64) NOT NULL,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`email\`),\n      UNIQUE KEY \`local_logins_openId\` (\`openId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`users\` (
+      \`id\` int NOT NULL AUTO_INCREMENT,
+      \`openId\` varchar(64) NOT NULL,
+      \`name\` text,
+      \`email\` varchar(320),
+      \`stripeCustomerId\` varchar(64),
+      \`loginMethod\` varchar(64),
+      \`role\` enum('user','admin') NOT NULL DEFAULT 'user',
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      \`lastSignedIn\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      UNIQUE KEY \`users_openId_unique\` (\`openId\`),
+      UNIQUE KEY \`users_stripeCustomerId_unique\` (\`stripeCustomerId\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`local_logins\` (
+      \`email\` varchar(320) NOT NULL,
+      \`passwordHash\` varchar(255) NOT NULL,
+      \`openId\` varchar(64) NOT NULL,
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`email\`),
+      UNIQUE KEY \`local_logins_openId\` (\`openId\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  // Soft-boot tenants stack (no FKs) so ensureTenantForUser works on Railway
+  // before drizzle migrations have been applied.
+  `CREATE TABLE IF NOT EXISTS \`tenants\` (
+      \`id\` int NOT NULL AUTO_INCREMENT,
+      \`tenantId\` varchar(64) NOT NULL,
+      \`traceId\` varchar(96) NOT NULL,
+      \`legalName\` varchar(255) NOT NULL,
+      \`displayName\` varchar(255) NOT NULL,
+      \`status\` enum('pilot','active','inactive') NOT NULL DEFAULT 'pilot',
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      UNIQUE KEY \`tenants_tenant_id_uq\` (\`tenantId\`),
+      KEY \`tenants_status_idx\` (\`status\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`tenant_memberships\` (
+      \`id\` int NOT NULL AUTO_INCREMENT,
+      \`tenantId\` varchar(64) NOT NULL,
+      \`caseId\` varchar(64),
+      \`traceId\` varchar(96) NOT NULL,
+      \`userId\` int NOT NULL,
+      \`role\` enum('tenant_admin','manager','reviewer','viewer') NOT NULL DEFAULT 'viewer',
+      \`accessScope\` enum('tenant','case') NOT NULL DEFAULT 'tenant',
+      \`status\` enum('active','revoked') NOT NULL DEFAULT 'active',
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      KEY \`tenant_memberships_user_idx\` (\`userId\`),
+      KEY \`tenant_memberships_tenant_case_idx\` (\`tenantId\`, \`caseId\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`audit_logs\` (
+      \`id\` int NOT NULL AUTO_INCREMENT,
+      \`tenantId\` varchar(64) NOT NULL,
+      \`caseId\` varchar(64),
+      \`traceId\` varchar(96) NOT NULL,
+      \`documentId\` varchar(64),
+      \`actorUserId\` int,
+      \`entityType\` enum('tenant','case','document','consent','policy','access','system') NOT NULL,
+      \`entityId\` varchar(128) NOT NULL,
+      \`action\` varchar(128) NOT NULL,
+      \`beforeState\` text,
+      \`afterState\` text,
+      \`hashChain\` varchar(255),
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      KEY \`audit_logs_trace_idx\` (\`traceId\`),
+      KEY \`audit_logs_entity_idx\` (\`entityType\`, \`entityId\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 ] as const;
 
 export function isLocalPasswordAuthEnabled() {
@@ -76,7 +145,7 @@ export async function ensureLocalAuthTables() {
     await dbPool.query(statement);
   }
   tablesReady = true;
-  console.warn("[LocalAuth] Tablas users y local_logins listas.");
+  console.warn("[LocalAuth] Tablas users, local_logins, tenants, tenant_memberships y audit_logs listas.");
 }
 
 /** Same pattern as workspace.bootstrap / CEO resolveCeoAuditTenantId. */
