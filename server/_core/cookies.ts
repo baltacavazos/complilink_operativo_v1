@@ -1,7 +1,13 @@
 import type { CookieOptions, Request } from "express";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
-const HOST_ONLY_SUFFIXES = [".manus.space", ".manus.computer"];
+/** Hosts where Domain= must NOT be set (public suffixes / platform sandboxes). */
+const HOST_ONLY_SUFFIXES = [
+  ".manus.space",
+  ".manus.computer",
+  ".railway.app",
+  ".up.railway.app",
+];
 
 function isIpAddress(host: string) {
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
@@ -50,6 +56,7 @@ export function getSessionCookieOptions(
   req: Request,
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
   const secure = isSecureRequest(req);
+  // Host-only on Railway: *.railway.app is a public suffix — Domain=railway.app is rejected by browsers.
   const domain = getSharedCookieDomain(req.hostname || "");
 
   return {
