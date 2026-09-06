@@ -32,10 +32,10 @@ function getS3StorageConfig(): S3StorageConfig {
   const region = ENV.s3Region || "auto";
 
   const missing: string[] = [];
-  if (!bucket) missing.push("BUCKET (o AWS_S3_BUCKET_NAME)");
-  if (!accessKeyId) missing.push("ACCESS_KEY_ID (o AWS_ACCESS_KEY_ID)");
-  if (!secretAccessKey) missing.push("SECRET_ACCESS_KEY (o AWS_SECRET_ACCESS_KEY)");
-  if (!endpoint) missing.push("ENDPOINT (o AWS_ENDPOINT_URL)");
+  if (!bucket) missing.push("S3_BUCKET / STORAGE_BUCKET (o BUCKET)");
+  if (!accessKeyId) missing.push("S3_ACCESS_KEY_ID / STORAGE_ACCESS_KEY_ID");
+  if (!secretAccessKey) missing.push("S3_SECRET_ACCESS_KEY / STORAGE_SECRET_ACCESS_KEY");
+  if (!endpoint) missing.push("S3_ENDPOINT / STORAGE_ENDPOINT (o ENDPOINT)");
 
   if (missing.length > 0) {
     throw new Error(
