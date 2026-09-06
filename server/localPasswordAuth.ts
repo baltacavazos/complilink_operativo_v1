@@ -79,6 +79,19 @@ export async function ensureLocalAuthTables() {
   console.warn("[LocalAuth] Tablas users y local_logins listas.");
 }
 
+/** Same pattern as workspace.bootstrap / CEO resolveCeoAuditTenantId. */
+async function ensureActiveTenantMembership(user: {
+  id: number;
+  name: string | null;
+  email: string | null;
+}) {
+  await db.ensureTenantForUser({
+    userId: user.id,
+    userName: user.name ?? user.email ?? "CompliLink",
+    userEmail: user.email,
+  });
+}
+
 export async function registerLocalPasswordAccount(input: {
   req: Request;
   res: Response;
@@ -131,6 +144,8 @@ export async function registerLocalPasswordAccount(input: {
   if (!user) {
     throw new Error("No se pudo crear la cuenta.");
   }
+
+  await ensureActiveTenantMembership(user);
 
   await createAppSessionForUser(input.req, input.res, {
     openId: user.openId,
@@ -185,6 +200,8 @@ export async function loginLocalPasswordAccount(input: {
   if (!user) {
     throw new Error("No se pudo abrir la sesión.");
   }
+
+  await ensureActiveTenantMembership(user);
 
   await createAppSessionForUser(input.req, input.res, {
     openId: user.openId,
