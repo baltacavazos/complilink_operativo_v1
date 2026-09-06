@@ -29,17 +29,18 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 ## Storage propio (Railway bucket S3) — obligatorio para `/auditar` útil
 
 Bucket de proyecto: `auditapatron-docs` (id `b269c793-692d-44e5-b11e-060e15f92052`, región `iad`).  
-Cablear referencias del bucket al servicio web. **No** usar Forge para storage en Railway.
+Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FORGE_*` vacías OK).
 
-| Variable (primaria Railway) | Alias aceptado | Notas |
-| --- | --- | --- |
-| `BUCKET` | `AWS_S3_BUCKET_NAME` / `AWS_BUCKET` | Nombre S3 API del bucket |
-| `ACCESS_KEY_ID` | `AWS_ACCESS_KEY_ID` | Credencial S3 |
-| `SECRET_ACCESS_KEY` | `AWS_SECRET_ACCESS_KEY` | Credencial S3 |
-| `ENDPOINT` | `AWS_ENDPOINT_URL` / `AWS_S3_ENDPOINT` | p. ej. `https://storage.railway.app` |
-| `REGION` | `AWS_REGION` / `AWS_DEFAULT_REGION` | Suele ser `auto` |
+| Oficial (recomendado) | Alias Railway inject | Alias AWS / otros | Notas |
+| --- | --- | --- | --- |
+| `S3_BUCKET` / `STORAGE_BUCKET` | `BUCKET` | `AWS_S3_BUCKET_NAME` / `AWS_BUCKET` | Nombre S3 API |
+| `S3_ACCESS_KEY_ID` / `STORAGE_ACCESS_KEY_ID` | `ACCESS_KEY_ID` | `AWS_ACCESS_KEY_ID` | Credencial |
+| `S3_SECRET_ACCESS_KEY` / `STORAGE_SECRET_ACCESS_KEY` | `SECRET_ACCESS_KEY` | `AWS_SECRET_ACCESS_KEY` | Credencial |
+| `S3_ENDPOINT` / `STORAGE_ENDPOINT` | `ENDPOINT` | `AWS_ENDPOINT_URL` / `AWS_S3_ENDPOINT` | p. ej. storage.railway.app |
+| `S3_REGION` / `STORAGE_REGION` | `REGION` | `AWS_REGION` / `AWS_DEFAULT_REGION` | Suele ser `auto` |
+| `S3_PUBLIC_URL` / `STORAGE_PUBLIC_BASE_URL` | — | — | Opcional; descarga usa URL firmada |
 
-`server/storage.ts` usa `@aws-sdk/client-s3` + URLs firmadas (bucket privado).
+`server/storage.ts` usa `@aws-sdk/client-s3` + URLs firmadas (bucket privado). Degrada con error claro si faltan las 4 vars obligatorias.
 
 ## Plataforma integrada (Forge) — legacy Manus
 
