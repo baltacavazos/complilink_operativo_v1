@@ -2,6 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("S3 storage env resolution", () => {
   const keys = [
+    "S3_BUCKET",
+    "S3_ACCESS_KEY_ID",
+    "S3_SECRET_ACCESS_KEY",
+    "S3_ENDPOINT",
+    "S3_REGION",
+    "STORAGE_BUCKET",
+    "STORAGE_ACCESS_KEY_ID",
+    "STORAGE_SECRET_ACCESS_KEY",
+    "STORAGE_ENDPOINT",
     "BUCKET",
     "ACCESS_KEY_ID",
     "SECRET_ACCESS_KEY",
@@ -21,6 +30,20 @@ describe("S3 storage env resolution", () => {
       delete process.env[key];
     }
     vi.resetModules();
+  });
+
+  it("resuelve nombres oficiales S3_*", async () => {
+    process.env.S3_BUCKET = "official-bucket";
+    process.env.S3_ACCESS_KEY_ID = "s3key";
+    process.env.S3_SECRET_ACCESS_KEY = "s3secret";
+    process.env.S3_ENDPOINT = "https://storage.railway.app";
+    process.env.S3_REGION = "auto";
+
+    const { __resolveS3StorageConfigForTests } = await import("./storage");
+    const cfg = __resolveS3StorageConfigForTests();
+    expect(cfg.bucket).toBe("official-bucket");
+    expect(cfg.accessKeyId).toBe("s3key");
+    expect(cfg.endpoint).toBe("https://storage.railway.app");
   });
 
   it("resuelve vars Railway primarias (BUCKET/ACCESS_KEY_ID/...)", async () => {
@@ -63,7 +86,7 @@ describe("S3 storage env resolution", () => {
       __resolveS3StorageConfigForTests();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      expect(message).toMatch(/BUCKET/);
+      expect(message).toMatch(/S3_BUCKET|BUCKET/);
       expect(message).not.toMatch(/BUILT_IN_FORGE/);
     }
   });
