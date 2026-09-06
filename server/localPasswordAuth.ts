@@ -15,77 +15,18 @@ let pool: mysql.Pool | null = null;
 let tablesReady = false;
 
 export const MYSQL_BOOTSTRAP_STATEMENTS = [
-  `CREATE TABLE IF NOT EXISTS \`users\` (
-      \`id\` int NOT NULL AUTO_INCREMENT,
-      \`openId\` varchar(64) NOT NULL,
-      \`name\` text,
-      \`email\` varchar(320),
-      \`stripeCustomerId\` varchar(64),
-      \`loginMethod\` varchar(64),
-      \`role\` enum('user','admin') NOT NULL DEFAULT 'user',
-      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      \`lastSignedIn\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (\`id\`),
-      UNIQUE KEY \`users_openId_unique\` (\`openId\`),
-      UNIQUE KEY \`users_stripeCustomerId_unique\` (\`stripeCustomerId\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-  `CREATE TABLE IF NOT EXISTS \`local_logins\` (
-      \`email\` varchar(320) NOT NULL,
-      \`passwordHash\` varchar(255) NOT NULL,
-      \`openId\` varchar(64) NOT NULL,
-      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (\`email\`),
-      UNIQUE KEY \`local_logins_openId\` (\`openId\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-  // Soft-boot tenants stack (no FKs) so ensureTenantForUser works on Railway
-  // before drizzle migrations have been applied.
-  `CREATE TABLE IF NOT EXISTS \`tenants\` (
-      \`id\` int NOT NULL AUTO_INCREMENT,
-      \`tenantId\` varchar(64) NOT NULL,
-      \`traceId\` varchar(96) NOT NULL,
-      \`legalName\` varchar(255) NOT NULL,
-      \`displayName\` varchar(255) NOT NULL,
-      \`status\` enum('pilot','active','inactive') NOT NULL DEFAULT 'pilot',
-      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (\`id\`),
-      UNIQUE KEY \`tenants_tenant_id_uq\` (\`tenantId\`),
-      KEY \`tenants_status_idx\` (\`status\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-  `CREATE TABLE IF NOT EXISTS \`tenant_memberships\` (
-      \`id\` int NOT NULL AUTO_INCREMENT,
-      \`tenantId\` varchar(64) NOT NULL,
-      \`caseId\` varchar(64),
-      \`traceId\` varchar(96) NOT NULL,
-      \`userId\` int NOT NULL,
-      \`role\` enum('tenant_admin','manager','reviewer','viewer') NOT NULL DEFAULT 'viewer',
-      \`accessScope\` enum('tenant','case') NOT NULL DEFAULT 'tenant',
-      \`status\` enum('active','revoked') NOT NULL DEFAULT 'active',
-      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (\`id\`),
-      KEY \`tenant_memberships_user_idx\` (\`userId\`),
-      KEY \`tenant_memberships_tenant_case_idx\` (\`tenantId\`, \`caseId\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-  `CREATE TABLE IF NOT EXISTS \`audit_logs\` (
-      \`id\` int NOT NULL AUTO_INCREMENT,
-      \`tenantId\` varchar(64) NOT NULL,
-      \`caseId\` varchar(64),
-      \`traceId\` varchar(96) NOT NULL,
-      \`documentId\` varchar(64),
-      \`actorUserId\` int,
-      \`entityType\` enum('tenant','case','document','consent','policy','access','system') NOT NULL,
-      \`entityId\` varchar(128) NOT NULL,
-      \`action\` varchar(128) NOT NULL,
-      \`beforeState\` text,
-      \`afterState\` text,
-      \`hashChain\` varchar(255),
-      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (\`id\`),
-      KEY \`audit_logs_trace_idx\` (\`traceId\`),
-      KEY \`audit_logs_entity_idx\` (\`entityType\`, \`entityId\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`users\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`openId\` varchar(64) NOT NULL,\n      \`name\` text,\n      \`email\` varchar(320),\n      \`stripeCustomerId\` varchar(64),\n      \`loginMethod\` varchar(64),\n      \`role\` enum('user','admin') NOT NULL DEFAULT 'user',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      \`lastSignedIn\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      UNIQUE KEY \`users_openId_unique\` (\`openId\`),\n      UNIQUE KEY \`users_stripeCustomerId_unique\` (\`stripeCustomerId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`local_logins\` (\n      \`email\` varchar(320) NOT NULL,\n      \`passwordHash\` varchar(255) NOT NULL,\n      \`openId\` varchar(64) NOT NULL,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`email\`),\n      UNIQUE KEY \`local_logins_openId\` (\`openId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`tenants\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`legalName\` varchar(255) NOT NULL,\n      \`displayName\` varchar(255) NOT NULL,\n      \`status\` enum('pilot','active','inactive') NOT NULL DEFAULT 'pilot',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      UNIQUE KEY \`tenants_tenant_id_uq\` (\`tenantId\`),\n      KEY \`tenants_status_idx\` (\`status\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`tenant_memberships\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64),\n      \`traceId\` varchar(96) NOT NULL,\n      \`userId\` int NOT NULL,\n      \`role\` enum('tenant_admin','manager','reviewer','viewer') NOT NULL DEFAULT 'viewer',\n      \`accessScope\` enum('tenant','case') NOT NULL DEFAULT 'tenant',\n      \`status\` enum('active','revoked') NOT NULL DEFAULT 'active',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      KEY \`tenant_memberships_user_idx\` (\`userId\`),\n      KEY \`tenant_memberships_tenant_case_idx\` (\`tenantId\`,\`caseId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`audit_logs\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64),\n      \`traceId\` varchar(96) NOT NULL,\n      \`documentId\` varchar(64),\n      \`actorUserId\` int,\n      \`entityType\` enum('tenant','case','document','consent','policy','access','system') NOT NULL,\n      \`entityId\` varchar(128) NOT NULL,\n      \`action\` varchar(128) NOT NULL,\n      \`beforeState\` text,\n      \`afterState\` text,\n      \`hashChain\` varchar(255),\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      KEY \`audit_logs_trace_idx\` (\`traceId\`),\n      KEY \`audit_logs_entity_idx\` (\`entityType\`,\`entityId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`labor_cases\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`title\` varchar(255) NOT NULL,\n      \`employeeName\` varchar(255),\n      \`employerEntity\` varchar(255),\n      \`jurisdiction\` varchar(128) NOT NULL DEFAULT 'México',\n      \`status\` enum('intake','analysis','conciliation','litigation','resolved','archived') NOT NULL DEFAULT 'intake',\n      \`priority\` enum('low','medium','high','critical') NOT NULL DEFAULT 'medium',\n      \`assignedUserId\` int,\n      \`summary\` text,\n      \`canonicalPayload\` text,\n      \`openedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`dueAt\` timestamp NULL DEFAULT NULL,\n      \`closedAt\` timestamp NULL DEFAULT NULL,\n      \`lastActivityAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      UNIQUE KEY \`labor_cases_case_id_uq\` (\`caseId\`),\n      KEY \`labor_cases_tenant_status_idx\` (\`tenantId\`,\`status\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`case_access\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`userId\` int NOT NULL,\n      \`grantedByUserId\` int,\n      \`accessLevel\` enum('owner','editor','reviewer','viewer') NOT NULL DEFAULT 'viewer',\n      \`status\` enum('active','revoked') NOT NULL DEFAULT 'active',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      KEY \`case_access_case_user_idx\` (\`caseId\`,\`userId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`case_events\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`actorUserId\` int,\n      \`eventType\` enum('case_created','status_changed','document_uploaded','document_classified','consent_updated','policy_updated','note_added','alert_raised') NOT NULL,\n      \`title\` varchar(255) NOT NULL,\n      \`description\` text,\n      \`metadata\` text,\n      \`eventAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`operational_alerts\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64),\n      \`traceId\` varchar(96) NOT NULL,\n      \`severity\` enum('info','warning','critical') NOT NULL DEFAULT 'warning',\n      \`category\` enum('missing_consent','integrity_gap','overdue_case','upload_pending','access_risk') NOT NULL,\n      \`title\` varchar(255) NOT NULL,\n      \`description\` text,\n      \`status\` enum('open','acknowledged','resolved') NOT NULL DEFAULT 'open',\n      \`raisedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`resolvedAt\` timestamp NULL DEFAULT NULL,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`consent_records\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`documentId\` varchar(64),\n      \`subjectName\` varchar(255) NOT NULL,\n      \`subjectRole\` varchar(128),\n      \`legalBasis\` varchar(255),\n      \`status\` enum('pending','granted','revoked','expired','not_required') NOT NULL DEFAULT 'pending',\n      \`notes\` text,\n      \`grantedAt\` timestamp NULL DEFAULT NULL,\n      \`revokedAt\` timestamp NULL DEFAULT NULL,\n      \`expiresAt\` timestamp NULL DEFAULT NULL,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`case_documents\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64) NOT NULL,\n      \`traceId\` varchar(96) NOT NULL,\n      \`documentId\` varchar(64) NOT NULL,\n      \`uploadedByUserId\` int,\n      \`supersedesDocumentId\` varchar(64),\n      \`originalName\` varchar(255) NOT NULL,\n      \`mimeType\` varchar(128) NOT NULL,\n      \`sizeBytes\` bigint NOT NULL,\n      \`storageKey\` varchar(512) NOT NULL,\n      \`storageUrl\` varchar(1024) NOT NULL,\n      \`sha256\` varchar(64) NOT NULL,\n      \`documentType\` enum('payroll_receipt','cfdi','imss','contract','settlement','evidence','other') NOT NULL DEFAULT 'other',\n      \`sourceChannel\` enum('manual','email','api','bulk_import') NOT NULL DEFAULT 'manual',\n      \`integrityStatus\` enum('pending','verified','replaced') NOT NULL DEFAULT 'pending',\n      \`consentStatus\` enum('pending','granted','revoked','not_required') NOT NULL DEFAULT 'pending',\n      \`visibility\` enum('case_team','tenant_legal','tenant_hr','restricted') NOT NULL DEFAULT 'case_team',\n      \`classificationConfidence\` int NOT NULL DEFAULT 0,\n      \`processedAt\` timestamp NULL DEFAULT NULL,\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`),\n      UNIQUE KEY \`case_documents_document_id_uq\` (\`documentId\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS \`canonical_contracts\` (\n      \`id\` int NOT NULL AUTO_INCREMENT,\n      \`tenantId\` varchar(64) NOT NULL,\n      \`caseId\` varchar(64),\n      \`traceId\` varchar(96) NOT NULL,\n      \`contractType\` enum('case','intake','document','classification','consent','audit','shared_engine') NOT NULL,\n      \`schemaVersion\` varchar(32) NOT NULL DEFAULT 'v1',\n      \`payload\` text NOT NULL,\n      \`status\` enum('draft','ready','exported') NOT NULL DEFAULT 'draft',\n      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      \`updatedAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n      PRIMARY KEY (\`id\`)\n    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 ] as const;
 
 export function isLocalPasswordAuthEnabled() {
@@ -145,7 +86,7 @@ export async function ensureLocalAuthTables() {
     await dbPool.query(statement);
   }
   tablesReady = true;
-  console.warn("[LocalAuth] Tablas users, local_logins, tenants, tenant_memberships y audit_logs listas.");
+  console.warn("[LocalAuth] Tablas users, local_logins, tenants, tenant_memberships, audit_logs y expediente (labor_cases…) listas.");
 }
 
 /** Same pattern as workspace.bootstrap / CEO resolveCeoAuditTenantId. */
