@@ -1,14 +1,16 @@
 import type { Express, Request, Response } from "express";
 import {
-  buildAppleAuthorizationUrl,
   buildGoogleAuthorizationUrl,
-  completeAppleLogin,
   completeGoogleLogin,
   createAppSessionForUser,
   syncManusUser,
-  verifyAppleStateToken,
   verifyGoogleStateToken,
 } from "../authService";
+import {
+  buildAppleAuthorizationUrl,
+  completeAppleLogin,
+  verifyAppleStateToken,
+} from "../appleAuth";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {

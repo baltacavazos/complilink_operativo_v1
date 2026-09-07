@@ -1,9 +1,7 @@
 import type { Express, Request, Response } from "express";
 
-import {
-  isAppleOAuthConfigured,
-  isGoogleOAuthConfigured,
-} from "./authService";
+import { isAppleOAuthConfigured } from "./appleAuth";
+import { isGoogleOAuthConfigured } from "./authService";
 import { ENV } from "./_core/env";
 import {
   ensureLocalAuthTables,
