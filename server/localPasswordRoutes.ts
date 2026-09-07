@@ -1,11 +1,21 @@
 import type { Express, Request, Response } from "express";
 
 import {
+  isAppleOAuthConfigured,
+  isGoogleOAuthConfigured,
+} from "./authService";
+import { ENV } from "./_core/env";
+import {
   ensureLocalAuthTables,
   isLocalPasswordAuthEnabled,
   loginLocalPasswordAccount,
   registerLocalPasswordAccount,
 } from "./localPasswordAuth";
+
+function isManusAuthDisabledForOwnAccess() {
+  // No ofrecer Manus si el acceso propio (password) está activo o DISABLE_MANUS_AUTH=1.
+  return isLocalPasswordAuthEnabled() || ENV.disableManusAuth;
+}
 
 function normalizeReturnPath(returnPath?: unknown) {
   if (typeof returnPath !== "string" || !returnPath.startsWith("/") || returnPath.startsWith("//")) {
@@ -41,6 +51,9 @@ export function registerLocalPasswordRoutes(app: Express) {
     res.json({
       enabled: isLocalPasswordAuthEnabled(),
       mode: "password",
+      disableManusAuth: isManusAuthDisabledForOwnAccess(),
+      googleConfigured: isGoogleOAuthConfigured(),
+      appleConfigured: isAppleOAuthConfigured(),
     });
   });
 
