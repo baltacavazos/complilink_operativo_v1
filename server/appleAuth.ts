@@ -40,7 +40,7 @@ function normalizeApplePrivateKey(raw: string) {
   return `-----BEGIN PRIVATE KEY-----\n${lines.join("\n")}\n-----END PRIVATE KEY-----`;
 }
 
-async function ensureTenantMembershipForSignedInUser(user: {
+export async function ensureTenantMembershipForSignedInUser(user: {
   id: number;
   name: string | null;
   email: string | null;

@@ -9,6 +9,7 @@ import {
 import {
   buildAppleAuthorizationUrl,
   completeAppleLogin,
+  ensureTenantMembershipForSignedInUser,
   verifyAppleStateToken,
 } from "../appleAuth";
 import { sdk } from "./sdk";
@@ -106,7 +107,10 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const { returnTo, nativeApp } = await completeGoogleLogin({ req, res, code, state });
+      const { returnTo, nativeApp, user } = await completeGoogleLogin({ req, res, code, state });
+      if (user) {
+        await ensureTenantMembershipForSignedInUser(user);
+      }
       res.redirect(302, buildPostAuthRedirect(returnTo || "/", nativeApp));
     } catch (error) {
       console.error("[OAuth] Google callback failed", error);
