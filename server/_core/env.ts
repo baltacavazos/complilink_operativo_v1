@@ -61,4 +61,17 @@ export const ENV = {
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  /** Sign in with Apple (web Services ID). */
+  appleClientId: process.env.APPLE_CLIENT_ID ?? "",
+  appleTeamId: process.env.APPLE_TEAM_ID ?? "",
+  appleKeyId: process.env.APPLE_KEY_ID ?? "",
+  applePrivateKey: process.env.APPLE_PRIVATE_KEY ?? "",
+  /**
+   * Si es 1/true, /acceso no cae al UI Manus (Access.tsx) aunque
+   * ENABLE_LOCAL_PASSWORD_AUTH esté apagado.
+   */
+  disableManusAuth: (() => {
+    const flag = (process.env.DISABLE_MANUS_AUTH ?? "").trim().toLowerCase();
+    return flag === "1" || flag === "true";
+  })(),
 };
