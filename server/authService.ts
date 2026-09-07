@@ -1,1 +1,20 @@
-PLACEHOLDER
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { createHash, randomInt } from "crypto";
+import type { Request, Response } from "express";
+import { SignJWT, jwtVerify } from "jose";
+import { parse as parseCookieHeader } from "cookie";
+import * as db from "./db";
+import { getSessionCookieOptions } from "./_core/cookies";
+import { ENV } from "./_core/env";
+import { sdk } from "./_core/sdk";
+
+const EMAIL_LOGIN_COOKIE = "complilink_email_login";
+const EMAIL_CODE_TTL_MS = 1000 * 60 * 10;
+const GOOGLE_STATE_TTL_MS = 1000 * 60 * 10;
+const GOOGLE_CALLBACK_PATH = "/api/auth/google/callback";
+const GOOGLE_START_PATH = "/api/auth/google/start";
+const EMAIL_RESEND_COOLDOWN_MS = 1000 * 60;
+const EMAIL_RESEND_WINDOW_MS = 1000 * 60 * 60;
+const EMAIL_RESEND_MAX_REQUESTS = 5;
+const EMAIL_CHALLENGE_CLOCK_TOLERANCE_SECONDS = 30;
+const AUTH_BRAND_NAME = "Auditapatron";
