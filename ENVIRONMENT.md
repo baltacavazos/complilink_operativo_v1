@@ -15,6 +15,7 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 | Variable | Notas |
 | --- | --- |
 | `ENABLE_LOCAL_PASSWORD_AUTH` | `1` fuerza correo+contraseña; `0` lo apaga; si ausente, se activa cuando **no** hay `RESEND_API_KEY` (PR #3). **Ya en** panel web = `1`. |
+| `DISABLE_MANUS_AUTH` | `1`/`true`: `/acceso` **no** cae al UI Manus (`Access.tsx`) aunque el password local esté apagado. También se omite Manus automáticamente si `ENABLE_LOCAL_PASSWORD_AUTH` está activo. |
 
 ## Acceso y sesión (grupos README / CONFIGURACION)
 
@@ -88,12 +89,26 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 | `VITE_ANALYTICS_WEBSITE_ID` |
 | `PORT` |
 
+## Google / Apple (acceso social propio)
+
+Cablear en Railway (nombres solo). Sin valores en Git.
+
+| Variable | Notas |
+| --- | --- |
+| `GOOGLE_CLIENT_ID` | OAuth web Google; reutiliza `/api/auth/google/start|callback` |
+| `GOOGLE_CLIENT_SECRET` | Secreto OAuth Google |
+| `APPLE_CLIENT_ID` | Services ID de Sign in with Apple (web) |
+| `APPLE_TEAM_ID` | Team ID Apple Developer |
+| `APPLE_KEY_ID` | Key ID de la clave .p8 |
+| `APPLE_PRIVATE_KEY` | Contenido PEM de la clave privada (o body con `\\n` escapados) |
+
+Callback Apple web: `/api/auth/apple/callback` (POST form_post y GET).
+
 ## Legacy / opcional
 
 | Variable |
 | --- |
-| `GOOGLE_CLIENT_ID` |
-| `GOOGLE_CLIENT_SECRET` |
+| *(Google movido a sección propia arriba)* |
 
 ## Estado Railway hoy (resumen)
 
