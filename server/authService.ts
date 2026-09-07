@@ -43,6 +43,9 @@ function normalizeReturnToPath(returnTo?: string | null) {
 }
 
 function getBaseUrl(req: Request) {
+  if (ENV.publicAppUrl) {
+    return ENV.publicAppUrl;
+  }
   const forwardedProto = req.get("x-forwarded-proto");
   const protocol = forwardedProto?.split(",")[0]?.trim() || req.protocol || "https";
   const host = req.get("host");
@@ -556,7 +559,33 @@ export async function completeGoogleLogin(params: { req: Request; res: Response;
 
   if (!tokenResponse.ok) {
     const errorText = await tokenResponse.text();
-    throw new Error(`Google token exchange failed: ${tokenResponse.status} ${errorText}`);
+    let googleError = "";
+    let googleErrorDescription = "";
+    try {
+      const parsed = JSON.parse(errorText) as { error?: string; error_description?: string };
+      googleError = typeof parsed.error === "string" ? parsed.error : "";
+      googleErrorDescription =
+        typeof parsed.error_description === "string" ? parsed.error_description : "";
+    } catch {
+      // keep raw text below when body is not JSON
+    }
+
+    const detailParts = [
+      googleError ? `error=${googleError}` : "",
+      googleErrorDescription ? `error_description=${googleErrorDescription}` : "",
+    ].filter(Boolean);
+    const detail = detailParts.length > 0 ? detailParts.join("; ") : errorText.slice(0, 300);
+
+    const message = `Google token exchange failed: ${tokenResponse.status} ${detail}`;
+    const err = new Error(message) as Error & { googleError?: string; redirectErrorCode?: string };
+    err.googleError = googleError || undefined;
+    if (googleError === "invalid_client") {
+      err.redirectErrorCode = "google_invalid_client";
+      err.message =
+        "Google token exchange failed: 401 error=invalid_client; " +
+        "revisa GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (sin espacios) en Railway";
+    }
+    throw err;
   }
 
   const tokenJson = (await tokenResponse.json()) as { access_token?: string };

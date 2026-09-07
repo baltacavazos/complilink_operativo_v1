@@ -6,6 +6,12 @@ import {
   syncManusUser,
   verifyGoogleStateToken,
 } from "../authService";
+import {
+  buildAppleAuthorizationUrl,
+  completeAppleLogin,
+  ensureTenantMembershipForSignedInUser,
+  verifyAppleStateToken,
+} from "../appleAuth";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -101,7 +107,10 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const { returnTo, nativeApp } = await completeGoogleLogin({ req, res, code, state });
+      const { returnTo, nativeApp, user } = await completeGoogleLogin({ req, res, code, state });
+      if (user) {
+        await ensureTenantMembershipForSignedInUser(user);
+      }
       res.redirect(302, buildPostAuthRedirect(returnTo || "/", nativeApp));
     } catch (error) {
       console.error("[OAuth] Google callback failed", error);
@@ -117,7 +126,72 @@ export function registerOAuthRoutes(app: Express) {
         // noop: fallback to the generic access route
       }
 
-      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("google_callback_failed", returnTo), nativeApp));
+      const redirectCode =
+        error &&
+        typeof error === "object" &&
+        "redirectErrorCode" in error &&
+        typeof (error as { redirectErrorCode?: unknown }).redirectErrorCode === "string"
+          ? (error as { redirectErrorCode: string }).redirectErrorCode
+          : "google_callback_failed";
+
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath(redirectCode, returnTo), nativeApp));
     }
   });
+
+  app.get("/api/auth/apple/start", async (req: Request, res: Response) => {
+    const returnTo = getQueryParam(req, "returnTo") || "/";
+    const nativeApp = isTruthyFlag(getQueryParam(req, "native"));
+
+    try {
+      const authorizationUrl = await buildAppleAuthorizationUrl(req, returnTo, { nativeApp });
+      res.redirect(302, authorizationUrl);
+    } catch (error) {
+      console.error("[OAuth] Apple start failed", error);
+      const safeReturnTo = returnTo.startsWith("/") ? returnTo : "/";
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("apple_not_available", safeReturnTo), nativeApp));
+    }
+  });
+
+  const handleAppleCallback = async (req: Request, res: Response) => {
+    const code =
+      (typeof req.body?.code === "string" ? req.body.code : undefined) || getQueryParam(req, "code");
+    const state =
+      (typeof req.body?.state === "string" ? req.body.state : undefined) || getQueryParam(req, "state");
+    const rawUser = req.body?.user ?? getQueryParam(req, "user");
+
+    if (!code || !state) {
+      res.redirect(302, buildAccessErrorPath("apple_callback_failed"));
+      return;
+    }
+
+    try {
+      const { returnTo, nativeApp } = await completeAppleLogin({
+        req,
+        res,
+        code,
+        state,
+        rawUser,
+      });
+      res.redirect(302, buildPostAuthRedirect(returnTo || "/", nativeApp));
+    } catch (error) {
+      console.error("[OAuth] Apple callback failed", error);
+
+      let returnTo = "/";
+      let nativeApp = false;
+
+      try {
+        const parsedState = await verifyAppleStateToken(state);
+        returnTo = parsedState.returnTo;
+        nativeApp = parsedState.nativeApp;
+      } catch {
+        // noop
+      }
+
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("apple_callback_failed", returnTo), nativeApp));
+    }
+  };
+
+  // Apple web suele usar response_mode=form_post (POST); también aceptamos GET.
+  app.post("/api/auth/apple/callback", handleAppleCallback);
+  app.get("/api/auth/apple/callback", handleAppleCallback);
 }
