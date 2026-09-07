@@ -95,12 +95,13 @@ Cablear en Railway (nombres solo). Sin valores en Git.
 
 | Variable | Notas |
 | --- | --- |
-| `GOOGLE_CLIENT_ID` | OAuth web Google; reutiliza `/api/auth/google/start|callback` |
-| `GOOGLE_CLIENT_SECRET` | Secreto OAuth Google |
+| `GOOGLE_CLIENT_ID` | OAuth web Google; reutiliza `/api/auth/google/start\|callback` (trim al leer) |
+| `GOOGLE_CLIENT_SECRET` | Secreto OAuth Google (trim al leer; espacios al pegar ⇒ `invalid_client`) |
+| `PUBLIC_APP_URL` | Origen público para `redirect_uri` OAuth (sin slash final). Aliases: `APP_BASE_URL`, `PUBLIC_BASE_URL` |
 | `APPLE_CLIENT_ID` | Services ID de Sign in with Apple (web) |
 | `APPLE_TEAM_ID` | Team ID Apple Developer |
 | `APPLE_KEY_ID` | Key ID de la clave .p8 |
-| `APPLE_PRIVATE_KEY` | Contenido PEM de la clave privada (o body con `\\n` escapados) |
+| `APPLE_PRIVATE_KEY` | Contenido PEM de la clave privada (o body con `\n` escapados) |
 
 Callback Apple web: `/api/auth/apple/callback` (POST form_post y GET).
 
