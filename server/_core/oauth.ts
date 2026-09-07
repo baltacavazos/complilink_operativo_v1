@@ -126,7 +126,15 @@ export function registerOAuthRoutes(app: Express) {
         // noop: fallback to the generic access route
       }
 
-      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath("google_callback_failed", returnTo), nativeApp));
+      const redirectCode =
+        error &&
+        typeof error === "object" &&
+        "redirectErrorCode" in error &&
+        typeof (error as { redirectErrorCode?: unknown }).redirectErrorCode === "string"
+          ? (error as { redirectErrorCode: string }).redirectErrorCode
+          : "google_callback_failed";
+
+      res.redirect(302, buildPostAuthRedirect(buildAccessErrorPath(redirectCode, returnTo), nativeApp));
     }
   });
 
