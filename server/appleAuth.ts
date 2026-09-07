@@ -20,6 +20,9 @@ function normalizeReturnToPath(returnTo?: string | null) {
 }
 
 function getBaseUrl(req: Request) {
+  if (ENV.publicAppUrl) {
+    return ENV.publicAppUrl;
+  }
   const forwardedProto = req.get("x-forwarded-proto");
   const protocol = forwardedProto?.split(",")[0]?.trim() || req.protocol || "https";
   const host = req.get("host");
