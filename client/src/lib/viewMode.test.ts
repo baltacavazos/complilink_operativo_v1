@@ -1,8 +1,11 @@
 import {
+  VIEW_MODE_SESSION_KEY,
+  VIEW_MODE_SESSION_KEY_LEGACY,
   canToggleUserView,
   getEffectiveRole,
   isCeoRoute,
   isViewingAsUser,
+  readPersistedViewMode,
   shouldRedirectDemoUserFromCeo,
 } from "./viewMode";
 import { describe, expect, it } from "vitest";
@@ -38,5 +41,44 @@ describe("viewMode helpers", () => {
     expect(shouldRedirectDemoUserFromCeo("/ceo", { role: "admin" }, "native")).toBe(false);
     expect(shouldRedirectDemoUserFromCeo("/ceo", { role: "user" }, "demo-user")).toBe(false);
     expect(shouldRedirectDemoUserFromCeo("/auditar", { role: "admin" }, "demo-user")).toBe(false);
+  });
+
+  it("migra la clave legacy a auditapatron-view-mode una sola vez", () => {
+    const store = new Map<string, string>();
+    store.set(VIEW_MODE_SESSION_KEY_LEGACY, "demo-user");
+
+    const mode = readPersistedViewMode({
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => {
+        store.set(key, value);
+      },
+      removeItem: (key) => {
+        store.delete(key);
+      },
+    });
+
+    expect(mode).toBe("demo-user");
+    expect(store.get(VIEW_MODE_SESSION_KEY)).toBe("demo-user");
+    expect(store.has(VIEW_MODE_SESSION_KEY_LEGACY)).toBe(false);
+  });
+
+  it("prefiere la clave nueva si ambas existen", () => {
+    const store = new Map<string, string>([
+      [VIEW_MODE_SESSION_KEY, "native"],
+      [VIEW_MODE_SESSION_KEY_LEGACY, "demo-user"],
+    ]);
+
+    const mode = readPersistedViewMode({
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => {
+        store.set(key, value);
+      },
+      removeItem: (key) => {
+        store.delete(key);
+      },
+    });
+
+    expect(mode).toBe("native");
+    expect(store.get(VIEW_MODE_SESSION_KEY_LEGACY)).toBe("demo-user");
   });
 });

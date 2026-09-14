@@ -5,7 +5,9 @@ export type UserViewCandidate = {
   [key: string]: unknown;
 };
 
-export const VIEW_MODE_SESSION_KEY = "complilink-view-mode";
+export const VIEW_MODE_SESSION_KEY = "auditapatron-view-mode";
+/** Clave legacy (CompliLink); migrar una sola vez a VIEW_MODE_SESSION_KEY. */
+export const VIEW_MODE_SESSION_KEY_LEGACY = "complilink-view-mode";
 export const CEO_PANEL_STORAGE_KEY_PREFIX = "ceo_panel_open";
 
 export function canToggleUserView(user: UserViewCandidate | null | undefined) {
@@ -38,6 +40,30 @@ export function shouldRedirectDemoUserFromCeo(
   viewMode: UserViewMode,
 ) {
   return isCeoRoute(pathname) && isViewingAsUser(user, viewMode);
+}
+
+/**
+ * Lee el modo de vista persistido. Si la clave nueva no existe,
+ * migra desde la clave legacy y elimina la antigua.
+ */
+export function readPersistedViewMode(storage: {
+  getItem: (key: string) => string | null;
+  setItem?: (key: string, value: string) => void;
+  removeItem?: (key: string) => void;
+}): UserViewMode {
+  const current = storage.getItem(VIEW_MODE_SESSION_KEY);
+  if (current === "demo-user" || current === "native") {
+    return current;
+  }
+
+  const legacy = storage.getItem(VIEW_MODE_SESSION_KEY_LEGACY);
+  if (legacy === "demo-user" || legacy === "native") {
+    storage.setItem?.(VIEW_MODE_SESSION_KEY, legacy);
+    storage.removeItem?.(VIEW_MODE_SESSION_KEY_LEGACY);
+    return legacy;
+  }
+
+  return "native";
 }
 
 export function getStableUserIdentifier(

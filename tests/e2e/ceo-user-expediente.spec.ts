@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const E2E_LOGIN_PATH = "/api/testing/login-owner";
-const VIEW_MODE_SESSION_KEY = "complilink-view-mode";
+const VIEW_MODE_SESSION_KEY = "auditapatron-view-mode";
 
 async function loginAsOwner(page: import("@playwright/test").Page) {
   const e2eToken = process.env.JWT_SECRET;
