@@ -140,4 +140,21 @@ export const getGoogleLoginUrl = (returnPath = getCurrentReturnPath()) => {
   return `${url.pathname}${url.search}`;
 };
 
+export const getAppleLoginUrl = (returnPath = getCurrentReturnPath()) => {
+  const safeReturnPath = normalizeReturnPath(returnPath);
+  const nativeApp = isNativeApp();
+  const url = new URL("/api/auth/apple/start", getPublicWebOrigin());
+
+  if (safeReturnPath !== "/") {
+    url.searchParams.set("returnTo", safeReturnPath);
+  }
+
+  if (nativeApp) {
+    url.searchParams.set("native", "1");
+    return url.toString();
+  }
+
+  return `${url.pathname}${url.search}`;
+};
+
 export const getLoginUrl = (returnPath = getCurrentReturnPath()) => getAccessUrl(returnPath);

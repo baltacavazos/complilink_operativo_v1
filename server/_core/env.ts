@@ -59,6 +59,29 @@ export const ENV = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
-  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
-  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  googleClientId: (process.env.GOOGLE_CLIENT_ID ?? "").trim(),
+  googleClientSecret: (process.env.GOOGLE_CLIENT_SECRET ?? "").trim(),
+  /**
+   * Public origin for OAuth redirect_uri builders (trim trailing slash).
+   * Prefer over request Host behind proxies. Aliases: APP_BASE_URL, PUBLIC_BASE_URL.
+   */
+  publicAppUrl: (
+    process.env.PUBLIC_APP_URL?.trim() ||
+    process.env.APP_BASE_URL?.trim() ||
+    process.env.PUBLIC_BASE_URL?.trim() ||
+    ""
+  ).replace(/\/+$/, ""),
+  /** Sign in with Apple (web Services ID). */
+  appleClientId: (process.env.APPLE_CLIENT_ID ?? "").trim(),
+  appleTeamId: process.env.APPLE_TEAM_ID ?? "",
+  appleKeyId: process.env.APPLE_KEY_ID ?? "",
+  applePrivateKey: process.env.APPLE_PRIVATE_KEY ?? "",
+  /**
+   * Si es 1/true, /acceso no cae al UI Manus (Access.tsx) aunque
+   * ENABLE_LOCAL_PASSWORD_AUTH esté apagado.
+   */
+  disableManusAuth: (() => {
+    const flag = (process.env.DISABLE_MANUS_AUTH ?? "").trim().toLowerCase();
+    return flag === "1" || flag === "true";
+  })(),
 };
