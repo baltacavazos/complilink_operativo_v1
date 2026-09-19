@@ -107,7 +107,7 @@ export default function Payments() {
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.85)]">
             <div className="flex items-center gap-3 text-sm text-slate-200">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Cargando historial comercial…
+              Cargando tus pagos…
             </div>
           </div>
         </div>
@@ -129,12 +129,12 @@ export default function Payments() {
                 Volver al expediente
               </a>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-200/80">Cobros y suscripción</p>
+                <p className="text-xs font-semibold tracking-tight text-teal-200/80">Tus pagos</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Historial comercial del expediente
+                  Tu plan y lo que ya pagaste
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                  La primera lectura es gratis. Solo pagas si quieres guardar más documentos o profundizar en tu expediente.
+                  Aquí ves tu suscripción y lo que ya pagaste. La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
                 </p>
               </div>
             </div>
@@ -146,7 +146,7 @@ export default function Payments() {
                 disabled={historyQuery.isFetching}
               >
                 {historyQuery.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ReceiptText className="mr-2 h-4 w-4" />}
-                Actualizar historial
+                Actualizar pagos
               </Button>
               {commerceStatusQuery.data?.canManageBilling ? (
                 <Button
@@ -173,34 +173,38 @@ export default function Payments() {
               {activeSubscription?.planName ?? commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis"}
             </p>
             <p className="mt-2 text-sm text-slate-300">
-              {activeSubscription ? translateSubscriptionStatus(activeSubscription.status) : "Sin suscripción pagada persistida aún."}
+              {activeSubscription ? translateSubscriptionStatus(activeSubscription.status) : "Aún no hay un plan de pago activo."}
             </p>
           </article>
           <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(59,130,246,0.45)]">
-            <p className="text-xs font-semibold tracking-tight text-slate-300">Referencia de cobro</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{maskCustomerId(historyQuery.data?.customerId ?? null)}</p>
+            <p className="text-xs font-semibold tracking-tight text-slate-300">Tu cuenta</p>
+            <p className="mt-3 text-2xl font-semibold text-white">
+              {auth.canToggleUserView
+                ? maskCustomerId(historyQuery.data?.customerId ?? null)
+                : "Lista para tus cobros"}
+            </p>
             <p className="mt-2 text-sm text-slate-300">
-              {commerceStatusQuery.data?.environment?.mode === "sandbox"
-                ? "Modo prueba activo para validar el circuito completo."
-                : "Referencia local lista para conciliación y soporte."}
+              {commerceStatusQuery.data?.environment?.mode === "sandbox" && auth.canToggleUserView
+                ? "Modo prueba activo para validar el cobro."
+                : "Si pagas algo, aquí queda el producto, el importe y la fecha."}
             </p>
           </article>
           <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(168,85,247,0.45)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Compras detectadas</p>
+            <p className="text-xs font-semibold tracking-tight text-slate-300">Pagos registrados</p>
             <p className="mt-3 text-2xl font-semibold text-white">{paidCount}</p>
             <p className="mt-2 text-sm text-slate-300">
-              {lastPayment ? `Último cobro: ${formatDate(lastPayment.paidAt)}` : "Todavía no hay cobros persistidos para esta cuenta."}
+              {lastPayment ? `Último cobro: ${formatDate(lastPayment.paidAt)}` : "Todavía no hay cobros en esta cuenta."}
             </p>
           </article>
         </section>
 
-        {commerceStatusQuery.data?.environment?.recommendedTestCard ? (
+        {auth.canToggleUserView && commerceStatusQuery.data?.environment?.recommendedTestCard ? (
           <section className="rounded-[1.75rem] border border-teal-400/20 bg-teal-400/10 p-5 text-sm text-teal-50">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold">Sandbox de Stripe detectado</p>
+                <p className="font-semibold">Modo de prueba del cobro</p>
                 <p className="mt-1 text-teal-50/85">
-                  Puedes validar checkout y retorno con la tarjeta {commerceStatusQuery.data.environment.recommendedTestCard}.
+                  Puedes validar el cobro de prueba con la tarjeta {commerceStatusQuery.data.environment.recommendedTestCard}.
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-teal-50">
@@ -214,10 +218,10 @@ export default function Payments() {
         <section className="rounded-[2rem] border border-white/10 bg-white p-5 text-slate-950 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.75)] sm:p-6">
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Historial persistido</p>
+              <p className="text-xs font-semibold tracking-tight text-slate-500">Tus cobros</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Pagos y compras registradas</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Cada fila muestra el producto, el importe y el estado del pago registrado en tu cuenta.
+                Cada fila muestra el producto, el importe y la fecha del cobro.
               </p>
             </div>
           </div>
@@ -225,12 +229,11 @@ export default function Payments() {
           {historyQuery.isLoading ? (
             <div className="flex items-center gap-3 py-8 text-sm text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Consultando historial comercial…
+              Consultando tus pagos…
             </div>
           ) : payments.length === 0 ? (
             <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
-              Aún no hay pagos registrados para esta cuenta. Cuando completes un pago, aquí se
-              reflejarán el producto, el importe y la fecha.
+              Aún no hay pagos en esta cuenta. Cuando confirmes un cobro, aquí verás el producto, el importe y la fecha.
             </div>
           ) : (
             <div className="mt-5 overflow-x-auto">
@@ -250,7 +253,9 @@ export default function Payments() {
                     <tr key={payment.id} className="align-top">
                       <td className="px-4 py-4">
                         <p className="font-semibold text-slate-950">{payment.productLabel}</p>
-                        <p className="mt-1 text-xs text-slate-500">Clave interna: {payment.productKey}</p>
+                        {auth.canToggleUserView ? (
+                          <p className="mt-1 text-xs text-slate-500">Clave interna: {payment.productKey}</p>
+                        ) : null}
                       </td>
                       <td className="px-4 py-4 text-slate-600">
                         {payment.productType === "subscription" ? "Suscripción" : "Pago único"}
@@ -261,9 +266,15 @@ export default function Payments() {
                       <td className="px-4 py-4 text-slate-600">{translatePaymentStatus(payment.paymentStatus)}</td>
                       <td className="px-4 py-4 text-slate-600">{formatDate(payment.paidAt)}</td>
                       <td className="px-4 py-4 text-xs leading-5 text-slate-500">
-                        <p>Checkout: {payment.stripeCheckoutSessionId ?? "—"}</p>
-                        <p>Invoice: {payment.stripeInvoiceId ?? "—"}</p>
-                        <p>Payment Intent: {payment.stripePaymentIntentId ?? "—"}</p>
+                        {auth.canToggleUserView ? (
+                          <>
+                            <p>Sesión de cobro: {payment.stripeCheckoutSessionId ?? "—"}</p>
+                            <p>Factura: {payment.stripeInvoiceId ?? "—"}</p>
+                            <p>Referencia de cobro: {payment.stripePaymentIntentId ?? "—"}</p>
+                          </>
+                        ) : (
+                          <p>Cobro registrado el {formatDate(payment.paidAt)}</p>
+                        )}
                       </td>
                     </tr>
                   ))}

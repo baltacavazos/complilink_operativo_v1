@@ -24,13 +24,18 @@ describe("flujo visible de pagos", () => {
   it("muestra el texto principal de la nueva vista protegida de pagos", () => {
     const paymentsSource = readFromPages("Payments");
 
-    expect(paymentsSource).toContain("Historial comercial del expediente");
+    expect(paymentsSource).toContain("Tu plan y lo que ya pagaste");
     expect(paymentsSource).toContain("Gestionar suscripción");
     expect(paymentsSource).toContain("Pagos y compras registradas");
-    expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres guardar más documentos o profundizar en tu expediente.");
-    expect(paymentsSource).toContain("Referencia de cobro");
+    expect(paymentsSource).toContain("Modo de prueba del cobro");
+    expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
+    expect(paymentsSource).not.toContain("Historial comercial");
+    expect(paymentsSource).not.toContain("persistencia local");
     expect(paymentsSource).not.toContain("persistencia local mínima de Stripe");
     expect(paymentsSource).not.toContain("Cliente en Stripe");
-    expect(paymentsSource).toContain("Sandbox de Stripe detectado");
+    expect(paymentsSource).not.toContain("Stripe confirme el pago");
+    expect(paymentsSource).not.toContain("Stripe");
+    expect(paymentsSource).not.toContain("webhook");
+    expect(paymentsSource).not.toContain("Webhook");
   });
 });

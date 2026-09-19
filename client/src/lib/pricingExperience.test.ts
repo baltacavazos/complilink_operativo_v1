@@ -21,7 +21,7 @@ describe("getAuditapatronPricingExperience", () => {
     expect(experience.platform.showPrice).toBe(true);
     expect(experience.platform.priceLabel).toContain("79");
     expect(experience.platform.primaryCtaLabel).toContain("Ver planes");
-    expect(experience.platform.reassurance).toContain("parte gratuita");
+    expect(experience.platform.reassurance).toContain("La primera lectura es gratis");
     expect(experience.platform.plans).toHaveLength(3);
     expect(experience.platform.plans.map(plan => plan.key)).toEqual([
       "free",
@@ -45,5 +45,10 @@ describe("getAuditapatronPricingExperience", () => {
         product.description.toLowerCase().includes("expediente")
       )
     ).toBe(true);
+  });
+
+  it("no deja Helios ni CompliLink en el copy de planes visible", () => {
+    const experience = getAuditapatronPricingExperience(3);
+    expect(JSON.stringify(experience)).not.toMatch(/Helios|CompliLink|complilink/i);
   });
 });

@@ -32,7 +32,11 @@ describe("V1 release scope safeguards", () => {
   it("leaves the CEO console behind authentication and admin-only messaging", () => {
     expect(ceoSource).toContain('useAuth({ redirectOnUnauthenticated: true, redirectPath: "/ceo" })');
     expect(ceoSource).toContain('const isAdmin = user?.role === "admin";');
+    expect(ceoSource).toContain("if (!isAdmin) {\n    return (");
     expect(ceoSource).toContain("Acceso restringido");
     expect(ceoSource).toContain("Este expediente privado sólo está disponible para el owner autorizado.");
+    expect(ceoSource.indexOf("if (!isAdmin) {\n    return (")).toBeLessThan(
+      ceoSource.indexOf("<DashboardLayout"),
+    );
   });
 });

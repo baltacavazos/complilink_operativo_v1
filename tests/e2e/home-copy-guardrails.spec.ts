@@ -23,6 +23,6 @@ test.describe("home pública", () => {
 
     expect(bodyText).toContain("¿Tu recibo de nómina está bien o hay algo raro?");
     expect(bodyText).toContain("Empieza con una foto. No necesitas reunir todo.");
-    expect(bodyText).toContain("Tu jefe nunca se enterará.");
+    expect(bodyText).toContain("No compartimos tu archivo con tu empresa.");
   });
 });

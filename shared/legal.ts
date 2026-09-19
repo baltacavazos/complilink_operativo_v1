@@ -32,7 +32,7 @@ export type LegalDocumentDefinition = {
 export const LEGAL_GATE_COPY = {
   title: "Aceptación de Documentos Legales",
   body:
-    "Para continuar en AuditaPatron, necesitas aceptar el Aviso de Privacidad Integral v2.0 y los Términos y Condiciones de Uso v2.0. Esta aceptación deja constancia versionada de tu consentimiento para operar tu expediente digital y el servicio Helios dentro del ecosistema CompliLink.",
+    "Para continuar en AuditaPatron, necesitas aceptar el Aviso de Privacidad Integral v2.0 y los Términos y Condiciones de Uso v2.0. Esta aceptación deja constancia versionada de tu consentimiento para operar tu expediente digital y el asesor laboral dentro de AuditaPatron.",
   subtext:
     "Tu aceptación se registra con fecha, versión, dirección IP y navegador. Si después deseas ejercer derechos ARCO u oponerte a finalidades secundarias, podrás hacerlo desde tu sección de privacidad o escribiendo a privacidad@auditapatron.com.",
   checkbox:
@@ -56,27 +56,27 @@ export const PRIVACY_CENTER_COPY = {
   responseWindow: "20 días hábiles para responder la solicitud ARCO.",
 } as const;
 
-export const HELIOS_CONTEXT_BULLETS = [
+export const ADVISOR_CONTEXT_BULLETS = [
   "El expediente y los consentimientos se gestionan bajo LFPDPPP v2.0 con trazabilidad versionada.",
   "Las aceptaciones legales deben registrar versión, timestamp, dirección IP y user-agent para auditoría.",
   "Los datos sensibles del expediente se resguardan con controles reforzados y referencia explícita a cifrado AES-256-GCM.",
   "La experiencia debe reconocer derechos ARCO, revocación con gracia de 5 días hábiles y límites cuando exista obligación legal de conservación.",
-  "Helios opera dentro del ecosistema AuditaPatron/CompliLink con enfoque de expediente digital, MFA/TOTP, rate limiting, invalidación JWT y audit trail.",
-  "Las respuestas de Helios son informativas y de apoyo; no sustituyen asesoría profesional vinculante.",
+  "El asesor laboral opera dentro de AuditaPatron con enfoque de expediente digital, MFA/TOTP, rate limiting, invalidación JWT y audit trail.",
+  "Las respuestas del asesor laboral son informativas y de apoyo; no sustituyen asesoría profesional vinculante.",
   "El razonamiento contextual puede apoyarse en doctrina laboral mexicana, incluyendo referencias de Baltasar Cavazos Flores, Mario de la Cueva y Néstor de Buen Lozano, sin presentar esas doctrinas como consejo jurídico definitivo.",
 ] as const;
 
-export const HELIOS_CONTEXT_NOTE = HELIOS_CONTEXT_BULLETS.map((item) => `- ${item}`).join("\n");
+export const ADVISOR_CONTEXT_NOTE = ADVISOR_CONTEXT_BULLETS.map((item) => `- ${item}`).join("\n");
 
 const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 
-**Responsable y domicilio:** ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.
+**Responsable y domicilio:** ${LEGAL_CONTROLLER_NAME}. Domicilio: ${LEGAL_CONTROLLER_ADDRESS}.
 
 **Correo de contacto para privacidad:** ${LEGAL_CONTACT_EMAIL}
 
-> Nadie de tu empresa puede ver lo que subes aquí. Tus documentos son tuyos, puedes pedir borrado cuando quieras y mantenemos un resguardo con acceso controlado y medidas razonables de seguridad, conforme a la LFPDPPP.
+> No compartimos lo que subes con tu empresa. Tus documentos son tuyos, puedes pedir borrado cuando quieras y mantenemos un resguardo con acceso controlado y medidas razonables de seguridad, conforme a la LFPDPPP.
 
-AuditaPatron pone a disposición de las personas usuarias el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México. El responsable del tratamiento es ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.
+AuditaPatron pone a disposición de las personas usuarias el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México. El responsable es ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.
 
 ## 1. Plataforma y alcance
 
@@ -131,11 +131,11 @@ El responsable podrá modificar o actualizar este aviso para reflejar cambios le
 
 const TERMS_MARKDOWN = `# Términos y Condiciones de Uso ${LEGAL_VERSION}
 
-Estos Términos y Condiciones regulan el acceso, navegación y uso de AuditaPatron, así como la interacción con Helios, CompliLink y demás componentes del ecosistema operado por ${LEGAL_CONTROLLER_NAME}.
+Estos Términos y Condiciones regulan el acceso, navegación y uso de AuditaPatron, así como la interacción con el asesor laboral y demás componentes del ecosistema operado por ${LEGAL_CONTROLLER_NAME}.
 
 ## 1. Definiciones
 
-Para efectos de estos términos, se entenderá por **Datos de la Plataforma** toda información, contenido, documentos, metadatos, registros de uso, configuraciones y resultados que se incorporen, generen o procesen dentro de AuditaPatron. **Datos Agregados** son conjuntos estadísticos o analíticos que combinan información y dejan de identificar a una persona concreta. **Datos Anonimizados** son aquellos transformados razonablemente para impedir la identificación del titular. **Obras Derivadas** comprende modelos, taxonomías, anotaciones, embeddings, scores, resúmenes, productos analíticos, mejoras, salidas enriquecidas, reglas y artefactos construidos a partir del funcionamiento del servicio. **Ecosistema CVZ** significa el conjunto de plataformas, servicios, productos, marcas y componentes tecnológicos vinculados con ${LEGAL_CONTROLLER_NAME}, incluyendo CompliLink y Helios.
+Para efectos de estos términos, se entenderá por **Datos de la Plataforma** toda información, contenido, documentos, metadatos, registros de uso, configuraciones y resultados que se incorporen, generen o procesen dentro de AuditaPatron. **Datos Agregados** son conjuntos estadísticos o analíticos que combinan información y dejan de identificar a una persona concreta. **Datos Anonimizados** son aquellos transformados razonablemente para impedir la identificación del titular. **Obras Derivadas** comprende modelos, taxonomías, anotaciones, embeddings, scores, resúmenes, productos analíticos, mejoras, salidas enriquecidas, reglas y artefactos construidos a partir del funcionamiento del servicio. **Ecosistema CVZ** significa el conjunto de plataformas, servicios, productos, marcas y componentes tecnológicos vinculados con ${LEGAL_CONTROLLER_NAME}, incluyendo AuditaPatron y su asesor laboral.
 
 ## 2. Acceso y uso autorizado
 
@@ -143,7 +143,7 @@ La persona usuaria se obliga a utilizar AuditaPatron de manera lícita, diligent
 
 ## 3. Naturaleza del servicio
 
-AuditaPatron facilita organización documental, análisis asistido, resúmenes, comparaciones, alertas y apoyo operativo para la revisión de información laboral. Helios actúa como copiloto contextual de apoyo. Ninguna salida del sistema constituye por sí misma dictamen definitivo, representación legal, asesoría profesional vinculante ni garantía de resultado en sede administrativa o judicial.
+AuditaPatron facilita organización documental, análisis asistido, resúmenes, comparaciones, alertas y apoyo operativo para la revisión de información laboral. El asesor laboral actúa como guía contextual de apoyo. Ninguna salida del sistema constituye por sí misma dictamen definitivo, representación legal, asesoría profesional vinculante ni garantía de resultado en sede administrativa o judicial.
 
 ## 4. Licencia sobre datos y contenidos
 
@@ -165,7 +165,7 @@ La persona usuaria es responsable de la veracidad, licitud y pertinencia del con
 
 ## 8. Exención y limitación de responsabilidad
 
-Las lecturas, resúmenes, clasificaciones, hallazgos y sugerencias generadas por AuditaPatron o Helios son informativas y de apoyo. No garantizan exactitud absoluta, actualidad continua, disponibilidad ininterrumpida ni integridad total de fuentes de terceros, incluidas fuentes gubernamentales, fiscales o de seguridad social.
+Las lecturas, resúmenes, clasificaciones, hallazgos y sugerencias generadas por AuditaPatron o su asesor laboral son informativas y de apoyo. No garantizan exactitud absoluta, actualidad continua, disponibilidad ininterrumpida ni integridad total de fuentes de terceros, incluidas fuentes gubernamentales, fiscales o de seguridad social.
 
 En la máxima medida permitida por la ley, la responsabilidad acumulada de ${LEGAL_CONTROLLER_NAME} frente a la persona usuaria por cualquier reclamación relacionada con la plataforma se limitará al monto efectivamente pagado por dicha persona usuaria durante los **12 meses** previos al evento reclamado o a **$5,000.00 MXN**, lo que resulte menor.
 
@@ -232,7 +232,7 @@ export function getLegalConsentLabel(type: LegalConsentType) {
     case "ai_training":
       return "Uso secundario de datos anonimizados para mejora y entrenamiento de IA";
     case "cross_platform_sharing":
-      return "Compartición permitida dentro del ecosistema AuditaPatron/CompliLink/Helios";
+      return "Compartición permitida dentro del ecosistema AuditaPatron";
     default:
       return type satisfies never;
   }

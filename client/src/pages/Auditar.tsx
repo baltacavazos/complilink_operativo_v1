@@ -20,6 +20,11 @@ import {
   selectNativeDocumentForCaptureMode,
 } from "@/lib/platformDocumentInput";
 import {
+  humanizeWorkerVisibleScalar,
+  sanitizeClientVisibleCopy,
+} from "@/lib/clientVisibleCopy";
+import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
+import {
   platformStorageGetJSON,
   platformStorageRemove,
   platformStorageSetJSON,
@@ -282,7 +287,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
     "Formatos compatibles: PDF, XML, JPG, PNG, WEBP o DOCX. Límite real: 12 MB por archivo.",
   privacyRules:
-    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. Nadie de tu empresa puede ver lo que subes y puedes pedir borrado cuando lo necesites.",
+    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa y puedes pedir borrado cuando lo necesites.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
@@ -531,18 +536,17 @@ export function sanitizePreviewText(
     emptyFallback = "",
     technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
   } = options;
-  if (typeof value === "boolean") {
-    return value ? "Sí" : "No";
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
   }
 
-  const normalized =
+  let normalized =
     typeof value === "number"
       ? String(value)
-      : typeof value === "string"
-        ? value.replace(/\s+/g, " ").trim()
-        : String(value ?? "")
-            .replace(/\s+/g, " ")
-            .trim();
+      : (humanized ?? String(value ?? ""))
+          .replace(/\s+/g, " ")
+          .trim();
 
   if (/^(true|false)$/i.test(normalized)) {
     return normalized.toLowerCase() === "true" ? "Sí" : "No";
@@ -550,6 +554,11 @@ export function sanitizePreviewText(
 
   if (!normalized) {
     return emptyFallback;
+  }
+
+  const withoutLeakedLabel = cleanPayrollExtractedValue(normalized);
+  if (withoutLeakedLabel) {
+    normalized = withoutLeakedLabel;
   }
 
   if (isLikelyTechnicalPreviewBlob(normalized)) {
@@ -714,7 +723,7 @@ function getCommerceTriggerLabel(triggerPoint: CommerceTriggerPoint) {
     case "one_shot_card":
       return "Interés en producto puntual";
     case "checkout_return_success":
-      return "Retorno exitoso desde Stripe";
+      return "Pago confirmado";
     case "plan_card":
       return "Interés directo en un plan";
     default:
@@ -752,7 +761,7 @@ function buildCommercePromptContext(params: {
     };
   }
 
-  if (/Helios con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
+  if (/con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
     const targetPlan = params.activePlanKey === "essential" ? "pro" : "essential";
     const price = targetPlan === "pro" ? 199 : 79;
 
@@ -1164,27 +1173,12 @@ type StructuredExtractionFieldView = {
 };
 
 function warmVisibleNamingCopy(value?: string | null) {
-  if (!value) return value ?? null;
-
-  return value
-    .replaceAll("copiloto Helios", "asesor laboral")
-    .replaceAll("Copiloto Helios", "Asesor laboral")
-    .replaceAll("copiloto laboral", "asesor laboral")
-    .replaceAll("Copiloto laboral", "Asesor laboral")
-    .replaceAll("asistente laboral", "asesor laboral")
-    .replaceAll("Asistente laboral", "Asesor laboral")
-    .replaceAll("Expediente Helios", "expediente laboral")
-    .replaceAll("expediente Helios", "expediente laboral")
-    .replaceAll("HeliosDocumento", "documento")
-    .replaceAll("Estado de Helios", "estado del expediente")
-    .replaceAll("Etapa Helios", "etapa del expediente")
-    .replaceAll("Tipo Helios", "tipo sugerido")
-    .replaceAll("motor Helios", "inteligencia laboral")
-    .replaceAll("Motor Helios", "Inteligencia laboral")
-    .replaceAll("Helios", "la inteligencia laboral")
-    .replace(/\bhelios\b/gi, "la inteligencia laboral")
-    .replace(/["“”‘’`]{2,}/g, "")
-    .trim();
+  if (value == null) return value ?? null;
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
+  }
+  return sanitizeClientVisibleCopy(humanized ?? value);
 }
 
 function parseQuickCalculatorAmount(value: unknown) {
@@ -1372,7 +1366,7 @@ const dossierTargets: DossierTarget[] = [
   },
   {
     type: "cfdi",
-    label: "CFDI",
+    label: "Comprobante fiscal (CFDI)",
     description:
       "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
     benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
@@ -1499,7 +1493,7 @@ function getRecommendedDocumentHint(targetType: DossierTarget["type"]) {
     case "payroll_receipt":
       return "Voy a subir recibos de nómina para comparar periodos, pagos y deducciones.";
     case "cfdi":
-      return "Voy a subir CFDI para contrastar lo timbrado con otros documentos del expediente.";
+      return "Voy a subir el comprobante fiscal (CFDI) para contrastar lo timbrado con otros documentos del expediente.";
     case "contract":
       return "Voy a subir mi contrato o condiciones iniciales para comparar lo pactado con lo ocurrido.";
     case "imss":
@@ -2180,15 +2174,20 @@ function writeStoredGuestReview(review: StoredGuestReview | null) {
 
 function plainWorkerCopy(value?: string | null) {
   if (!value) return null;
+  if (/^(true|false)$/i.test(value.trim())) {
+    return value.trim().toLowerCase() === "true" ? "Sí" : "No";
+  }
 
-  const cleaned = value
-    .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
-    .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
-    .replace(/["'“”‘’`]+/g, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  const cleaned = sanitizeClientVisibleCopy(
+    value
+      .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
+      .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
+      .replace(/["'“”‘’`]+/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 
-  return cleaned.length >= 3 ? cleaned : null;
+  return cleaned && cleaned.length >= 3 ? cleaned : null;
 }
 
 function toWorkerReviewItem(value?: string | null, kind: "missing" | "note" = "note") {
@@ -2213,7 +2212,7 @@ function buildPayrollSignalFallback(documentType?: string | null) {
   return {
     headline: "Revisa el periodo, el pago neto y las deducciones",
     why: `Este ${documentLabel} ya permite una lectura inicial, pero un solo archivo no confirma por sí mismo que haya un error. Comparar el periodo, los montos y las deducciones te ayuda a detectar qué conviene aclarar.`,
-    nextStep: "Guarda este recibo y compáralo con el CFDI del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
+    nextStep: "Guarda este recibo y compáralo con el comprobante fiscal (CFDI) del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
   };
 }
 
@@ -2225,6 +2224,17 @@ type PayrollFactSignal = {
   retentions: string;
   nextStep: string;
 };
+
+const LEAKED_PAYROLL_FIELD_LABEL =
+  /(?:[.…]+\s*|\s+)(?:Importe|Deducciones|Percepciones|Empresa|RFC|Neto|Emisor|Periodo|Pago|NSS|Registro\s+patronal|Retenciones)\s*\.?$/i;
+
+export function cleanPayrollExtractedValue(value?: string | null): string | null {
+  if (!value) return null;
+  let next = value.replace(/\s+/g, " ").trim();
+  next = next.replace(LEAKED_PAYROLL_FIELD_LABEL, "").trim();
+  next = next.replace(/[.…]+\s*$/g, "").trim();
+  return next.length >= 2 ? next : null;
+}
 
 export function buildPayrollFactSignal(params: {
   documentType?: string | null;
@@ -2241,12 +2251,14 @@ export function buildPayrollFactSignal(params: {
       for (const [key, rawValue] of Object.entries(source)) {
         const normalizedKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
         if (!keys.includes(normalizedKey)) continue;
-        const value = plainWorkerCopy(
-          sanitizePreviewText(rawValue, {
-            maxLength: 120,
-            emptyFallback: "",
-            technicalFallback: "",
-          })
+        const value = cleanPayrollExtractedValue(
+          plainWorkerCopy(
+            sanitizePreviewText(rawValue, {
+              maxLength: 120,
+              emptyFallback: "",
+              technicalFallback: "",
+            })
+          )
         );
         if (!value || /^(sí|si|no|true|false)$/i.test(value)) continue;
         if (/^[a-z]+(?:[_-][a-z0-9]+)+$/i.test(value)) continue;
@@ -2319,7 +2331,7 @@ export function buildPayrollFactSignal(params: {
     ? `Retenciones visibles: ${listedRetentions.join(", ")}. Compáralas con el total de deducciones de este recibo.`
     : deductionsAreZero
       ? "Retenciones: el total de deducciones que se alcanza a leer es $0.00; no se identifican líneas separadas de ISR, IMSS o Infonavit en este archivo."
-      : "Retenciones: no se alcanzaron a leer líneas de ISR, IMSS o Infonavit. Para compararlas, sube el CFDI XML o un recibo del mismo periodo donde aparezcan desglosadas.";
+      : "Retenciones: no se alcanzaron a leer líneas de ISR, IMSS o Infonavit. Para compararlas, sube el comprobante fiscal (CFDI) o un recibo del mismo periodo donde aparezcan desglosadas.";
 
   const facts = [
     employer
@@ -2340,7 +2352,7 @@ export function buildPayrollFactSignal(params: {
   ].filter((item): item is string => Boolean(item));
 
   const headline = employer || employerRfc || period
-    ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}`
+    ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}.`
     : fallback.headline;
   const attention = deductions
     ? deductionsAreZero
@@ -2350,8 +2362,8 @@ export function buildPayrollFactSignal(params: {
       ? `Se alcanza a leer un pago de ${payment}, pero faltan datos para confirmar cómo se compone. Revisa el desglose de percepciones y deducciones.`
       : "El archivo se leyó de forma parcial. Conviene revisar una versión donde se vean completos el periodo, el pago y las deducciones.";
   const nextStep = period
-    ? `Compara este recibo del periodo ${period} con el CFDI o comprobante del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
-    : "Conserva este recibo y, si puedes, sube el CFDI o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
+    ? `Compara este recibo del periodo ${period} con el comprobante fiscal (CFDI) del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
+    : "Conserva este recibo y, si puedes, sube el comprobante fiscal (CFDI) o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
 
   return { headline, facts: facts.join(" "), attention, imss, retentions, nextStep };
 }
@@ -2369,7 +2381,7 @@ function getSimpleDocumentTypeLabel(value?: string | null) {
     case "payroll_receipt":
       return "Recibo de nómina";
     case "cfdi":
-      return "CFDI";
+      return "Comprobante fiscal (CFDI)";
     case "imss":
       return "Soporte IMSS";
     case "contract":
@@ -2489,8 +2501,8 @@ function getDocumentVerdictState(confidence?: number | null) {
 
   if ((confidence ?? 0) >= 65) {
     return {
-      label: "Requiere revisión",
-      shortLabel: "Revisar",
+      label: "Atención",
+      shortLabel: "Atención",
       classes: "bg-amber-100 text-amber-900 border border-amber-200",
       panelClasses: "border-amber-100 bg-amber-50",
       description: "Ya aporta contexto, pero conviene revisar detalles antes de tomarlo como base.",
@@ -2512,7 +2524,7 @@ function getResultRevealCopy(documentType?: string | null) {
       case "payroll_receipt":
         return "Recibo de nómina listo para revisar";
       case "cfdi":
-        return "CFDI listo para revisar";
+        return "Comprobante fiscal (CFDI) listo para revisar";
       case "contract":
         return "Contrato listo para revisar";
       case "imss":
@@ -2540,27 +2552,32 @@ function getHeliosRiskCopy(value?: string | null) {
   switch (value) {
     case "critical":
       return {
-        label: "Riesgo crítico",
+        label: "Crítico",
+        action: "Revisa esto primero",
         classes: "bg-rose-100 text-rose-800",
       } as const;
     case "high":
       return {
-        label: "Riesgo alto",
+        label: "Atención",
+        action: "Revisa esto primero",
         classes: "bg-red-100 text-red-800",
       } as const;
     case "medium":
       return {
-        label: "Riesgo medio",
+        label: "Atención",
+        action: "Revisa esto primero",
         classes: "bg-amber-100 text-amber-800",
       } as const;
     case "low":
       return {
-        label: "Riesgo bajo",
+        label: "Bien",
+        action: "Todo en orden por ahora",
         classes: "bg-emerald-100 text-emerald-800",
       } as const;
     default:
       return {
         label: "Revisión inicial",
+        action: "Revisa esto primero",
         classes: "bg-slate-200 text-slate-700",
       } as const;
   }
@@ -2570,7 +2587,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
   switch (value) {
     case "critical":
       return {
-        eyebrow: "Atención inmediata",
+        eyebrow: "Crítico",
         title: "Aquí sí vemos algo que conviene revisar hoy",
         description:
           "Hay señales que no se ven normales y vale la pena actuar rápido para evitar que el caso crezca.",
@@ -2579,7 +2596,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "high":
       return {
-        eyebrow: "Atención alta",
+        eyebrow: "Atención",
         title: "Aquí sí hay algo importante por revisar",
         description:
           "Ya encontramos señales suficientes para tratar este punto como relevante, aunque todavía puede requerir contraste adicional.",
@@ -2588,7 +2605,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "medium":
       return {
-        eyebrow: "Conviene confirmarlo",
+        eyebrow: "Atención",
         title: "Hay algo que vale la pena revisar con calma",
         description:
           "No parece una alerta máxima, pero sí hay indicios que conviene validar antes de cerrar una conclusión.",
@@ -2597,7 +2614,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "low":
       return {
-        eyebrow: "Sin alerta fuerte",
+        eyebrow: "Bien",
         title: "Por ahora no vemos una señal grave",
         description:
           "Con lo que la inteligencia laboral ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
@@ -2705,7 +2722,7 @@ function getHeliosStageCopy(params: {
         "Hace falta reintentar una parte de la revisión, pero tu expediente sigue intacto",
       description:
         params.engineReason === "webhook_rejected"
-          ? "La etapa automática necesita revisión, aunque el documento sí quedó guardado y protegido dentro del expediente."
+          ? "No pudimos recibir el aviso. El documento sí quedó guardado y protegido dentro del expediente."
           : "Hubo una pausa temporal en la etapa automática, pero el documento quedó resguardado y listo para retomar la lectura.",
       detail:
         "La experiencia mantiene el archivo disponible y deja lista la base para reanudar la revisión sin rehacer pasos.",
@@ -2966,7 +2983,7 @@ function getEngineStatusCopy(status?: string, reason?: string | null) {
       title: "Tu documento sí quedó protegido",
       description:
         reason === "webhook_rejected"
-          ? "Tu archivo sí se guardó bien. La siguiente etapa automática necesita revisión, pero tu documento no se perdió."
+          ? "No pudimos recibir el aviso. Tu archivo sí se guardó y no se perdió."
           : "Tu archivo sí se guardó bien. La siguiente etapa automática quedó pendiente por un tema temporal y puede revisarse después.",
       tone: "warning",
     } as const;
@@ -3016,6 +3033,10 @@ function getMonitoringStatusCopy(status?: string | null) {
 }
 
 function getReturnEventLabel(value?: string | null) {
+  if (value && /webhook_rejected|webhook\.rejected/i.test(value)) {
+    return "No pudimos recibir el aviso.";
+  }
+
   switch (value) {
     case "document.processing.started":
       return "Procesamiento iniciado";
@@ -3026,7 +3047,8 @@ function getReturnEventLabel(value?: string | null) {
       return "Análisis profundo recibido";
     default:
       return value
-        ? humanizeSnakeCase(value.replace(/\./g, "_"))
+        ? sanitizeClientVisibleCopy(humanizeSnakeCase(value.replace(/\./g, "_"))) ??
+          "Respuesta recibida"
         : "Respuesta recibida";
   }
 }
@@ -3048,8 +3070,9 @@ function formatAnalysisValue(key: string, value: unknown) {
     return "Sin dato visible";
   }
 
-  if (typeof value === "boolean") {
-    return value ? "Sí" : "No";
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
   }
 
   if (key === "internalDocumentType") {
@@ -3068,7 +3091,11 @@ function formatAnalysisValue(key: string, value: unknown) {
     return formatDate(value);
   }
 
-  return String(value);
+  return sanitizePreviewText(value, {
+    maxLength: 180,
+    emptyFallback: "Sin dato visible",
+    technicalFallback: "Contenido técnico omitido para mantener la lectura clara.",
+  });
 }
 
 function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
@@ -3326,23 +3353,23 @@ function getContextualNextDocumentPreset(
 
   if (nextTarget.type === "cfdi" && has("payroll_receipt")) {
     return {
-      headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina",
+      headline: "Sigue con tu comprobante fiscal (CFDI) para contrastar lo que ya ves en nómina",
       intro:
-        "Como ya subiste recibos de nómina, el CFDI puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
+        "Como ya subiste recibos de nómina, el comprobante fiscal (CFDI) puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
       reasonTitle: "Por qué este paso tiene sentido ahora",
       reasonBody:
         "Conecta pagos, descuentos y periodos desde dos fuentes que suelen revelar diferencias útiles con muy poco esfuerzo.",
       coverage:
         "Esa combinación suele volver el expediente más claro desde el inicio, porque ya no dependes de una sola versión del pago.",
-      cta: "Subir mi CFDI ahora",
+      cta: "Subir mi comprobante fiscal (CFDI)",
     } as const;
   }
 
   if (nextTarget.type === "payroll_receipt" && has("cfdi")) {
     return {
-      headline: "Sigue con tu nómina para darle contexto al CFDI",
+      headline: "Sigue con tu nómina para darle contexto al comprobante fiscal (CFDI)",
       intro:
-        "Si ya tienes CFDI, sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
+        "Si ya tienes el comprobante fiscal (CFDI), sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
       reasonTitle: "Lo que ganas con este cruce",
       reasonBody:
         "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
@@ -4784,7 +4811,10 @@ export default function Auditar() {
       item => item.caseId === selectedCaseId
     );
     if (!selectedCaseId || !stillExists) {
-      setSelectedCaseId(casesQuery.data[0].caseId);
+      const calmCase =
+        casesQuery.data.find(item => !/despido|finiquito|demanda|injustificad/i.test(item.title)) ??
+        casesQuery.data[0];
+      setSelectedCaseId(calmCase.caseId);
     }
   }, [casesQuery.data, selectedCaseId]);
 
@@ -5036,8 +5066,10 @@ export default function Auditar() {
         source: "stripe_return",
       });
       setCommercePromptContext({
-        title: "Pago detectado en sandbox",
-        body: `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`,
+        title: auth.canToggleUserView ? "Pago detectado en sandbox" : "Pago detectado",
+        body: auth.canToggleUserView
+          ? `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`
+          : `${planName} ya quedó registrado. Si el pago se confirmó, tu acceso debería verse en este expediente.`,
         targetPlan: billingReturnState.productKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
@@ -5050,12 +5082,18 @@ export default function Auditar() {
       });
       setCommercePromptContext({
         title: "Pago puntual detectado",
-        body: `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`,
+        body: auth.canToggleUserView
+          ? `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
         targetPlan: activeCommercePlanKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
       });
-      sonnerToast(`${productName} regresó desde Stripe para validación.`);
+      sonnerToast(
+        auth.canToggleUserView
+          ? `${productName} regresó desde Stripe para validación.`
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
+      );
     }
 
     void commerceStatusQuery.refetch();
@@ -5239,14 +5277,14 @@ export default function Auditar() {
       return `Atajos sugeridos con base en tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()} más reciente y en lo que ya está visible en este expediente.`;
     }
 
-    return "Atajos sugeridos con base en lo que Helios ya puede sostener hoy dentro de tu expediente.";
+    return "Atajos sugeridos con base en lo que ya se puede sostener hoy dentro de tu expediente.";
   }, [heliosCopilotPromptContextDocumentType]);
   const heliosCopilotHistoryContext = useMemo(() => {
     if (heliosCopilotMessages.length > 0) {
       return "Retomamos la última conversación guardada en este equipo para este expediente, así no empiezas de cero cuando vuelves.";
     }
 
-    return "Aquí verás la continuidad reciente entre lo que ya hablaste con Helios y los movimientos visibles de tu expediente.";
+    return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
   }, [heliosCopilotMessages.length]);
 
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
@@ -5395,7 +5433,14 @@ export default function Auditar() {
       [];
 
     if (baseExplanation.length) {
-      return baseExplanation.slice(0, 3);
+      return baseExplanation
+        .map(item => ({
+          ...item,
+          label: warmVisibleNamingCopy(item.label) ?? "Qué ya vimos",
+          summary: warmVisibleNamingCopy(item.summary) ?? "",
+        }))
+        .filter(item => item.summary.length > 0 && !/^(true|false)$/i.test(item.summary))
+        .slice(0, 3);
     }
 
     const items: HeliosSimpleExplanationItemView[] = [];
@@ -5463,8 +5508,8 @@ export default function Auditar() {
       lastHeliosOpinion?.resultCard?.keyFindings
         ?.filter(item => item.tone === "attention")
         .map(item => ({
-          label: item.label,
-          summary: warmVisibleNamingCopy(item.value) ?? item.value,
+          label: warmVisibleNamingCopy(item.label) ?? "Punto por revisar",
+          summary: warmVisibleNamingCopy(item.value) ?? "",
           tone: "attention" as const,
         })) ?? [];
 
@@ -5716,7 +5761,7 @@ export default function Auditar() {
       detail:
         "Puedes subir un archivo, revisar la primera señal y decidir después si te conviene guardarlo.",
       company: "Empresa sin acceso",
-      control: "Nada se guarda solo",
+      control: "Tú confirmas si se guarda",
       trace: "Rastro visible al confirmar",
       cardClass: "border-slate-200 bg-white/95",
       badgeClass: "border-slate-200 bg-white text-slate-700",
@@ -5772,6 +5817,9 @@ export default function Auditar() {
   );
   const lastUploadVerdict = getDocumentVerdictState(
     lastUpload?.classification?.classificationConfidence
+  );
+  const lastUploadRiskCopy = getHeliosRiskCopy(
+    lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel
   );
   const primaryLastUploadShortcut = useMemo(
     () =>
@@ -6059,6 +6107,7 @@ export default function Auditar() {
     quickDifferenceAmount === null || quickDifferenceAbsolute === null
       ? {
           badge: "Semáforo en preparación",
+          action: "Revisa esto primero",
           headline: "Faltan dos montos para medir el riesgo visible",
           supportingText:
             "En cuanto tengas nómina y CFDI del mismo periodo, te diremos si el cruce se ve sano, si requiere atención o si ya amerita revisión prioritaria.",
@@ -6074,6 +6123,7 @@ export default function Auditar() {
       : quickDifferenceAmount === 0
         ? {
             badge: "Semáforo laboral: bajo",
+            action: "Todo en orden por ahora",
             headline: "Por monto no se ve una diferencia inmediata",
             supportingText:
               "La lectura inicial luce estable en este periodo, pero todavía conviene revisar conceptos, fechas y deducciones para cerrar bien la comparación.",
@@ -6089,6 +6139,7 @@ export default function Auditar() {
         : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.15
           ? {
               badge: "Semáforo laboral: alto",
+              action: "Revisa esto primero",
               headline: "La diferencia ya merece revisión prioritaria",
               supportingText:
                 "La separación entre nómina y CFDI ya es suficientemente visible como para pedir contexto, conservar evidencia y preparar una aclaración con calma.",
@@ -6104,6 +6155,7 @@ export default function Auditar() {
           : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.05
             ? {
                 badge: "Semáforo laboral: medio",
+                action: "Revisa esto primero",
                 headline: "Hay una diferencia visible que conviene aclarar",
                 supportingText:
                   "No implica por sí sola un incumplimiento definitivo, pero sí una señal suficiente para comparar conceptos y dejar registro de la aclaración.",
@@ -6118,6 +6170,7 @@ export default function Auditar() {
               }
             : {
                 badge: "Semáforo laboral: atención",
+                action: "Revisa esto primero",
                 headline: "La diferencia luce pequeña, pero ya deja una señal útil",
                 supportingText:
                   "Puede bastar una aclaración simple, sobre todo si el concepto o la fecha no coinciden exactamente con el periodo revisado.",
@@ -6418,8 +6471,8 @@ export default function Auditar() {
   const resultRevealCopy = getResultRevealCopy(
     lastUpload?.classification.documentType
   );
-  const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
-  const monitoringDocuments = complilinkMonitoring?.documents ?? [];
+  const expedienteMonitoring = readExpedienteMonitoring(caseDetailQuery.data);
+  const monitoringDocuments = expedienteMonitoring?.documents ?? [];
   const pendingMonitoringDocuments = monitoringDocuments.filter(
     item => item.status === "waiting" || item.status === "attention"
   );
@@ -6433,9 +6486,9 @@ export default function Auditar() {
   );
   const monitoringOverview = getMonitoringOverviewCopy({
     monitoringDocumentsCount: monitoringDocuments.length,
-    waitingCount: complilinkMonitoring?.summary.waitingCount ?? 0,
-    attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
-    receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
+    waitingCount: expedienteMonitoring?.summary.waitingCount ?? 0,
+    attentionCount: expedienteMonitoring?.summary.attentionCount ?? 0,
+    receivedCount: expedienteMonitoring?.summary.receivedCount ?? 0,
   });
   const operationalFunnelSteps = [
     {
@@ -7139,7 +7192,7 @@ export default function Auditar() {
           setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
-              content: response.answer,
+              content: warmVisibleNamingCopy(response.answer) ?? response.answer,
             })
           );
         },
@@ -8229,7 +8282,7 @@ export default function Auditar() {
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
                 <p className="text-sm font-semibold tracking-tight text-emerald-900">Señal inicial</p>
-                <p className="mt-1 text-sm text-slate-600">Lectura orientativa; no es validación oficial ni asesoría legal.</p>
+                <p className="mt-1 text-sm text-slate-600">Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
             <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
@@ -8321,7 +8374,7 @@ export default function Auditar() {
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
                   ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
-                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil."}
+                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil. Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -8426,7 +8479,7 @@ export default function Auditar() {
               </div>
             )}
             {shouldCompactPostUploadExperience ? null : (
-              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
+              <p className="mt-3 text-[11px] font-semibold tracking-tight text-teal-300">
                 Paso 1
               </p>
             )}
@@ -8545,7 +8598,7 @@ export default function Auditar() {
           >
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-900">
+                <p className="text-sm font-semibold tracking-tight text-amber-900">
                   Modo de prueba del gate legal
                 </p>
                 <p className="mt-2 text-sm leading-6 text-amber-950">
@@ -8591,7 +8644,7 @@ export default function Auditar() {
           <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-900">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
@@ -8633,6 +8686,7 @@ export default function Auditar() {
                     principal de este expediente.
                   </p>
                 </div>
+                {legalGateHarnessMode ? (
                 <div
                   className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700"
                   data-testid="legal-gate-lock-metrics"
@@ -8701,6 +8755,7 @@ export default function Auditar() {
                     </p>
                   ) : null}
                 </div>
+                ) : null}
               </div>
             </div>
           </section>
@@ -8781,7 +8836,7 @@ export default function Auditar() {
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-semibold tracking-tight text-slate-500">
                   Ordena la pantalla por capas
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:hidden">
@@ -8843,8 +8898,8 @@ export default function Auditar() {
                     )}
                     {shouldCompactPostUploadExperience ? (
                       <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-900">
-                          Resultado listo
+                        <span className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-tight ${lastUploadRiskCopy.classes}`}>
+                          {lastUploadRiskCopy.label}
                         </span>
                         <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700 shadow-sm">
                           {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
@@ -8859,6 +8914,11 @@ export default function Auditar() {
                             ? lastUploadResultHeadline
                             : lastUploadVerdict.label}
                         </h2>
+                        {shouldCompactPostUploadExperience ? (
+                          <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+                            Estado: {lastUploadRiskCopy.label}. {lastUploadRiskCopy.action}.
+                          </p>
+                        ) : null}
                         {shouldCompactPostUploadExperience ? (
                           <>
                             <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
@@ -8966,7 +9026,7 @@ export default function Auditar() {
                   </div>
                 </details>
               ) : null}
-              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "hidden" : ""}`}>
+              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || isFirstDocumentFlow ? "hidden" : ""}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
@@ -8993,7 +9053,7 @@ export default function Auditar() {
                         Privacidad radical
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tu jefe nunca se enterará de esta revisión inicial y tu empresa no puede ver lo que subes aquí.
+                        Esta revisión es para ti. No compartimos tu archivo con tu empresa.
                       </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -9077,7 +9137,7 @@ export default function Auditar() {
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     {shouldCompactPostUploadExperience
                       ? "Resumen rápido del expediente"
                       : "Así va tu expediente laboral"}
@@ -9251,7 +9311,7 @@ export default function Auditar() {
 
               <div className="mt-4 flex flex-col gap-2.5 rounded-[1.25rem] border border-slate-200 bg-white p-3.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  <p className="text-xs font-semibold tracking-tight text-slate-400">
                     Siguiente paso recomendado
                   </p>
                   <p className="mt-1.5 text-base font-semibold leading-5 text-slate-950">
@@ -9854,7 +9914,9 @@ export default function Auditar() {
                   >
                     {casesQuery.data?.map(item => (
                       <option key={item.caseId} value={item.caseId}>
-                        {item.title} · Folio {item.caseId.slice(-6)}
+                        {/despido y reclamaci[oó]n inicial/i.test(item.title)
+                          ? "Revisión laboral inicial"
+                          : item.title}
                       </option>
                     ))}
                   </select>
@@ -10370,7 +10432,7 @@ export default function Auditar() {
                   strokeWidth={1.8}
                 />
                 <span className="font-semibold">Confidencialidad activa.</span>
-                <span>Nadie de tu empresa ve lo que subes.</span>
+                <span>No lo compartimos con tu empresa.</span>
                 <span className="hidden sm:inline text-teal-400">•</span>
                 <span>Si algo falla, puedes reintentar.</span>
               </div>
@@ -10448,7 +10510,12 @@ export default function Auditar() {
                                 </span>
                               </div>
                               <p className="mt-2 break-words text-sm leading-6 text-slate-900">
-                                {field.value}
+                                {sanitizePreviewText(field.value, {
+                                  maxLength: 160,
+                                  emptyFallback: "Sin dato visible",
+                                  technicalFallback:
+                                    "Contenido técnico omitido para mantener la vista previa clara.",
+                                })}
                               </p>
                             </div>
                           ))}
@@ -10576,7 +10643,7 @@ export default function Auditar() {
                   <div className="mt-6 hidden rounded-[1.45rem] border border-sky-200 bg-sky-50 p-5 sm:block sm:p-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
+                        <p className="text-sm font-semibold tracking-tight text-sky-700">
                           Vista previa antes de guardar
                         </p>
                         <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -10711,7 +10778,7 @@ export default function Auditar() {
                       </div>
 
                       <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
-                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <p className="text-sm font-semibold tracking-tight text-slate-400">
                           Lectura estructurada
                         </p>
                         <h4 className="mt-2 font-semibold text-slate-950">
@@ -10752,7 +10819,12 @@ export default function Auditar() {
                                     </span>
                                   </div>
                                   <p className="mt-1 break-words text-sm leading-6 text-slate-800">
-                                    {field.value}
+                                    {sanitizePreviewText(field.value, {
+                                      maxLength: 160,
+                                      emptyFallback: "Sin dato visible",
+                                      technicalFallback:
+                                        "Contenido técnico omitido para mantener la vista previa clara.",
+                                    })}
                                   </p>
                                 </div>
                               ))}
@@ -10847,7 +10919,7 @@ export default function Auditar() {
                             : "border-emerald-100"
                         }`}
                       >
-                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                        <p className="text-sm font-semibold tracking-tight text-emerald-800">
                           {recommendedStepFlash
                             ? "Siguiente paso sugerido"
                             : "Sugerencia útil para seguir"}
@@ -11039,7 +11111,7 @@ export default function Auditar() {
                             className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500"
                           />
                           <span className="text-sm leading-6 text-slate-700">
-                            {LEGAL_GATE_COPY.checkbox}
+                            {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                           </span>
                         </label>
                       </div>
@@ -11235,7 +11307,7 @@ export default function Auditar() {
                       className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span className="text-sm leading-6 text-slate-700">
-                      {LEGAL_GATE_COPY.checkbox}
+                      {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                     </span>
                   </label>
                 </div>
@@ -11310,7 +11382,7 @@ export default function Auditar() {
             </div>
 
             <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Tu último documento
               </p>
 
@@ -11509,7 +11581,7 @@ export default function Auditar() {
                                   Calculadora guiada
                                 </p>
                                 <p className="mt-2 text-lg font-semibold text-slate-950">
-                                  Compara tu nómina contra tu CFDI
+                                  Compara tu nómina contra tu comprobante fiscal (CFDI)
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-700">
                                   Tomamos los montos visibles del expediente para preparar un cruce por periodo y dejamos la diferencia en una capa determinística y auditable. Puedes ajustar los montos manualmente si quieres validar otro escenario.
@@ -11690,6 +11762,9 @@ export default function Auditar() {
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">
                                     {quickLaborHealthSignal.badge}
                                   </p>
+                                  <p className="mt-1 text-sm font-medium text-slate-800">
+                                    {quickLaborHealthSignal.action}
+                                  </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
                                     {quickLaborHealthSignal.headline}
                                   </p>
@@ -11728,7 +11803,7 @@ export default function Auditar() {
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar y tu empresa no puede ver este material.
+                                Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar; no lo compartimos con tu empresa.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
                                 <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
@@ -11741,7 +11816,7 @@ export default function Auditar() {
                                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                                   <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
                                     <p className="font-semibold text-slate-950">Borrador primero</p>
-                                    <p className="mt-1">Nada se guarda en tu expediente hasta que tú lo confirmas.</p>
+                                    <p className="mt-1">No entra a tu expediente hasta que tú lo confirmas.</p>
                                   </div>
                                   <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
                                     <p className="font-semibold text-slate-950">Rastro legal visible</p>
@@ -12220,7 +12295,7 @@ Reforzar con otro documento
 
                       <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                         <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          <p className="text-sm font-semibold tracking-tight text-slate-400">
                             Resumen sencillo
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -12319,7 +12394,7 @@ Reforzar con otro documento
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">
+                          <p className="text-sm font-semibold tracking-tight text-teal-700">
                             Tu primera lectura
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -12341,6 +12416,9 @@ Reforzar con otro documento
                             className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}
                           >
                             {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
+                          </span>
+                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
                           </span>
                           {typeof lastHeliosOpinion.confidenceScore === "number" ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
@@ -12641,7 +12719,7 @@ Reforzar con otro documento
                                 </div>
                               ) : (
                                 <p className="mt-3 text-sm leading-6 text-slate-700">
-                                  Con lo disponible, Helios ya agotó esta parte y por ahora no dejó pendientes visibles.
+                                  Con lo disponible, tu asesor laboral ya agotó esta parte y por ahora no dejó pendientes visibles.
                                 </p>
                               )}
                             </div>
@@ -12686,7 +12764,7 @@ Reforzar con otro documento
                                             className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3"
                                           >
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                              {item.label}
+                                              {warmVisibleNamingCopy(item.label) ?? item.label}
                                             </p>
                                             <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
                                               {warmVisibleNamingCopy(item.value) ?? item.value}
@@ -12828,7 +12906,7 @@ Reforzar con otro documento
                             </span>
                             {lastHeliosOpinion.disclaimer ? (
                               <span className="max-w-3xl leading-6">
-                                {lastHeliosOpinion.disclaimer}
+                                {warmVisibleNamingCopy(lastHeliosOpinion.disclaimer)}
                               </span>
                             ) : null}
                           </div>
@@ -12863,7 +12941,7 @@ Reforzar con otro documento
             <details className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     Actividad completa del expediente
                   </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
@@ -12883,7 +12961,7 @@ Reforzar con otro documento
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    <p className="text-sm font-semibold tracking-tight text-slate-500">
                       Línea de tiempo del expediente
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13022,7 +13100,7 @@ Reforzar con otro documento
             <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     Seguimiento rápido
                   </p>
                   <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950">
@@ -13030,7 +13108,7 @@ Reforzar con otro documento
                   </h2>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {complilinkMonitoring?.summary.waitingCount ?? 0} en espera
+                  {expedienteMonitoring?.summary.waitingCount ?? 0} en espera
                 </span>
               </div>
 
@@ -13040,15 +13118,15 @@ Reforzar con otro documento
                     En espera
                   </p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">
-                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                    {expedienteMonitoring?.summary.waitingCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
-                    Revisar
+                  <p className="text-[11px] font-semibold tracking-tight text-amber-700">
+                    Atención
                   </p>
                   <p className="mt-2 text-xl font-semibold text-amber-950">
-                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                    {expedienteMonitoring?.summary.attentionCount ?? 0}
                   </p>
                 </div>
                 <div className="col-span-2 rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3 sm:col-span-1">
@@ -13056,7 +13134,7 @@ Reforzar con otro documento
                     Listos
                   </p>
                   <p className="mt-2 text-xl font-semibold text-emerald-950">
-                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                    {expedienteMonitoring?.summary.receivedCount ?? 0}
                   </p>
                 </div>
               </div>
@@ -13077,7 +13155,7 @@ Reforzar con otro documento
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    <p className="text-sm font-semibold tracking-tight text-slate-500">
                       Bóveda Laboral
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13123,7 +13201,7 @@ Reforzar con otro documento
                 <div className="mt-6 rounded-[1.4rem] border border-violet-100 bg-violet-50/70 p-4 sm:p-5">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-800">
+                      <p className="text-sm font-semibold tracking-tight text-violet-800">
                         Resumen visible de tu bóveda
                       </p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -13342,13 +13420,36 @@ Reforzar con otro documento
                 <div className="mt-6 space-y-4">
                   {documents.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      Aún no tienes documentos en tu bóveda laboral. Puedes
-                      empezar con el archivo que tengas más a la mano.
+                      <p>
+                        Aún no tienes documentos en tu bóveda laboral. Empieza con el
+                        archivo que tengas más a la mano: un recibo, CFDI o foto
+                        clara basta para la primera lectura.
+                      </p>
+                      <Button
+                        type="button"
+                        className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                        onClick={() => focusRecommendedUpload()}
+                      >
+                        Subir mi primer documento
+                      </Button>
                     </div>
                   ) : filteredArchiveDocuments.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      No encontramos documentos con este filtro. Cambia el tipo o
-                      la fecha para volver a ver toda tu bóveda laboral.
+                      <p>
+                        No encontramos documentos con este filtro. Cambia el tipo o
+                        la fecha para volver a ver toda tu bóveda laboral.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-4 rounded-full border-slate-200 bg-white"
+                        onClick={() => {
+                          setArchiveTypeFilter("all");
+                          setArchiveDateFilter("all");
+                        }}
+                      >
+                        Ver toda la bóveda
+                      </Button>
                     </div>
                   ) : (
                     filteredArchiveDocuments.map(document => {
@@ -13497,6 +13598,9 @@ Reforzar con otro documento
                                   >
                                     {heliosRisk.label}
                                   </span>
+                                  <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                                    {heliosRisk.action}
+                                  </span>
                                   <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                                     {getHeliosModeLabel(heliosOpinion.mode)}
                                   </span>
@@ -13613,7 +13717,7 @@ Reforzar con otro documento
 
           <aside className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden space-y-6 xl:block"}>
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Expediente laboral seleccionado
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13773,7 +13877,7 @@ Reforzar con otro documento
 
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Historial simple del expediente
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13852,7 +13956,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Privacidad y consentimiento
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13943,7 +14047,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Ciclo de valor visible
               </p>
               <div className="mt-2 flex items-start gap-3">
@@ -14035,7 +14139,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Seguimiento automático
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -14048,7 +14152,7 @@ Reforzar con otro documento
                     En espera
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                    {expedienteMonitoring?.summary.waitingCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4">
@@ -14056,7 +14160,7 @@ Reforzar con otro documento
                     Conviene revisar
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-amber-950">
-                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                    {expedienteMonitoring?.summary.attentionCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4 sm:col-span-2 lg:col-span-1">
@@ -14064,7 +14168,7 @@ Reforzar con otro documento
                     Ya respondidos
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-emerald-950">
-                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                    {expedienteMonitoring?.summary.receivedCount ?? 0}
                   </p>
                 </div>
               </div>
@@ -14197,7 +14301,7 @@ Reforzar con otro documento
             </div>
 
             <div className={isAdvancedWorkspaceSection ? "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm" : "hidden"}>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Comparación guiada
               </p>
               <div className="mt-2 flex items-start gap-3">
@@ -14501,7 +14605,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Siguiente documento recomendado
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -14589,7 +14693,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Lo que cuidamos al revisar
               </p>
               <div className="mt-4 space-y-3">
@@ -14613,7 +14717,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Qué suele aclararse mejor
               </p>
               <div className="mt-4 space-y-3">
@@ -14674,7 +14778,7 @@ Reforzar con otro documento
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
-                  <p className="font-semibold text-slate-950">Modo Helios</p>
+                  <p className="font-semibold text-slate-950">Modo asesor</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"
@@ -14687,7 +14791,7 @@ Reforzar con otro documento
                   <p className="font-semibold text-slate-950">Operación comercial</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.hasStripe
-                      ? commerceStatusQuery.data?.environment?.isSandbox
+                      ? auth.canToggleUserView && commerceStatusQuery.data?.environment?.isSandbox
                         ? "Checkout listo en sandbox para validación."
                         : "Checkout y cobro listos para operar."
                       : "La activación de cobro todavía está pendiente."}
@@ -14715,6 +14819,7 @@ Reforzar con otro documento
                 </div>
               </article>
 
+              {auth.canToggleUserView ? (
               <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Conversión de esta sesión
@@ -14738,8 +14843,10 @@ Reforzar con otro documento
                   </div>
                 </div>
               </article>
+              ) : null}
             </div>
 
+            {auth.canToggleUserView ? (
             <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
@@ -14753,7 +14860,9 @@ Reforzar con otro documento
                       : "Sin Stripe"}
                 </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  Webhook {commerceStatusQuery.data?.environment?.webhookReady ? "listo" : "pendiente"}
+                  {commerceStatusQuery.data?.environment?.webhookReady
+                    ? "Aviso de cobro listo"
+                    : "Aviso de cobro pendiente"}
                 </span>
               </div>
               <p className="mt-3 text-base font-semibold text-slate-950">
@@ -14774,6 +14883,7 @@ Reforzar con otro documento
                 </span>
               </div>
             </article>
+            ) : null}
 
             <div className="space-y-3">
               <div>
@@ -14993,7 +15103,7 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
           <div className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
             <div className="flex items-center justify-between gap-3">
@@ -15077,7 +15187,7 @@ Reforzar con otro documento
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
                 <span className="text-xs leading-5 text-slate-700">
-                  {LEGAL_GATE_COPY.checkbox}
+                  {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                 </span>
               </label>
             </div>

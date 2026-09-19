@@ -22,7 +22,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Control visible desde el primer archivo.");
     expect(homeSource).toContain("Privacidad visible y verificable");
     expect(homeSource).toContain("Transparencia visible");
-    expect(homeSource).toContain("Nada se guarda solo");
+    expect(homeSource).toContain("Tú confirmas si se guarda");
     expect(homeSource).toContain("Rastro legal versionado");
     expect(homeSource).toContain("Privacidad accionable");
     expect(homeSource).toContain("Qué verás en tu primer uso");
@@ -116,7 +116,7 @@ describe("Auditapatron closeout experience", () => {
   });
 
   it("preserves the worker-centered voice and keeps internal engine branding out of public marketing copy", () => {
-    expect(homeSource).toContain("Tu empresa nunca ve lo que subes.");
+    expect(homeSource).toContain("No compartimos tu archivo con tu empresa.");
     expect(homeSource).toContain("Primero revisas la señal y después decides si la guardas.");
     expect(legalSource).toContain("Qué sí se registra");
     expect(legalSource).toContain("Qué no ve tu empresa");

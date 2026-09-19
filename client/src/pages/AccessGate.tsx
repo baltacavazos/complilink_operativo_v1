@@ -86,7 +86,7 @@ export default function AccessGate() {
             subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500"
           />
           <p className="mt-6 text-center text-sm leading-6 text-slate-600">
-            Copia temporal para pruebas. La revisión pública por RFC sigue disponible sin cuenta.
+            Entra con tu correo y contraseña. La revisión pública por RFC sigue disponible sin cuenta.
           </p>
           <LocalPasswordForm returnPath={returnTo} accessMode={accessMode} />
           <div className="mt-6 flex justify-center">

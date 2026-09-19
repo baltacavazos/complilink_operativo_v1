@@ -45,7 +45,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.");
     expect(source).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
     expect(source).toContain("Privacidad visible y humana");
-    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(source).toContain("No compartimos lo que subes con tu empresa.");
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
     expect(source).toContain("Guarda y sigue después");
@@ -128,10 +128,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("function warmVisibleNamingCopy");
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
+    expect(source).not.toContain("Sube y revisa en segundos");
     expect(source).toContain("Sube y revisa");
     expect(source).toContain("Ruta corta dentro de la app");
-    expect(source).toContain("Sube foto o archivo. Ves la señal y decides si lo guardas.");
     expect(source).toContain("La lectura puede tardar un momento");
+    expect(source).toContain("Sube foto o archivo. Ves la señal y decides si lo guardas.");
     expect(source).toContain("Subes foto o archivo desde tu celular.");
     expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
     expect(source).toContain("Sube tu documento");
@@ -163,7 +164,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Elige un archivo o toma una foto para sumar otra pieza útil.');
     expect(source).toContain('Asegura tu recibo de nómina');
     expect(source).toContain('Calculadora guiada');
-    expect(source).toContain('Compara tu nómina contra tu CFDI');
+    expect(source).toContain('Compara tu nómina contra tu comprobante fiscal (CFDI)');
     expect(source).toContain('Comparación rápida entre periodos');
     expect(source).toContain('Periodo a comparar');
     expect(source).toContain('Histórico comparable por periodo');
@@ -311,7 +312,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Modo CEO");
     expect(source).toContain("Prioridades del día en una sola vista.");
     expect(source).toContain("Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda abajo, solo cuando haga falta.");
-    expect(source).toContain("Preguntar a Helios");
+    expect(source).toContain("Preguntar al asesor laboral");
+    expect(source).not.toContain("Preguntar a Helios");
     expect(source).toContain("Qué ver primero");
     expect(source).toContain("Qué queda oculto");
     expect(source).toContain("Qué puedes hacer");
@@ -342,11 +344,12 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Resumen humano antes del texto completo");
     expect(source).toContain("acompañamiento laboral dentro de la plataforma");
     expect(source).toContain("Privacidad visible y pública");
-    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(source).toContain("No compartimos lo que subes con tu empresa.");
     expect(source).toContain("Este aviso carga sin login");
     expect(source).toContain("resguardo con acceso controlado");
-    expect(source).toContain("Responsable: ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.");
-    expect(source).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
+    expect(source).toContain("LEGAL_CONTROLLER_NAME");
+    expect(source).toContain("LEGAL_CONTROLLER_ADDRESS");
+    expect(source).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
     expect(source).not.toContain("cifrado AES-256");
     expect(source).not.toContain("AuditaPatron y Helios");
   });

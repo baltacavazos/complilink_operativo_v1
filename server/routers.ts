@@ -115,7 +115,7 @@ import {
 } from "./heliosPublicExperience";
 import { buildHeliosCalculatorSnapshot } from "./heliosCalculatorService";
 import {
-  HELIOS_CONTEXT_NOTE,
+  ADVISOR_CONTEXT_NOTE,
   LEGAL_ACCEPTANCE_VERSION,
   LEGAL_CONTRACT_SCHEMA_VERSION,
   LEGAL_CONTACT_EMAIL,
@@ -2586,7 +2586,7 @@ export const appRouter = router({
               },
               {
                 role: "user",
-                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${HELIOS_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cinco bloques breves y con esos títulos exactos: 1) Confirmado, 2) Inferido, 3) Pendiente por confirmar, 4) Lectura jurídico-laboral, 5) Instrucción operativa sugerida. Si la instrucción implicaría una acción sensible o no autorizada, en el bloque 5 aclara que requiere confirmación o que Helios baja a modo consulta.`,
+                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${ADVISOR_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cinco bloques breves y con esos títulos exactos: 1) Confirmado, 2) Inferido, 3) Pendiente por confirmar, 4) Lectura jurídico-laboral, 5) Instrucción operativa sugerida. Si la instrucción implicaría una acción sensible o no autorizada, en el bloque 5 aclara que requiere confirmación o que Helios baja a modo consulta.`,
               },
             ],
           });
@@ -3469,7 +3469,7 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nMarco operativo y legal:\n${HELIOS_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nMarco operativo y legal:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`

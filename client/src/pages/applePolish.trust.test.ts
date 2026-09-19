@@ -16,7 +16,7 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
 
     expect(auditar).toContain("toHumanResultTitle");
     expect(auditar).toContain("formatHumanStatusWord");
-    expect(auditar).toContain('return value ? "Sí" : "No"');
+    expect(auditar).toContain("humanizeWorkerVisibleScalar");
     expect(auditar).toContain("text-sm font-semibold tracking-tight text-slate-800");
     expect(auditar).toContain("text-sm font-semibold tracking-tight text-emerald-900");
     expect(auditar).toContain("text-sm font-semibold tracking-tight text-amber-900");
@@ -48,7 +48,7 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
     const legal = readRepo("shared/legal.ts");
     const legalPage = readFromPages("LegalDocuments.tsx");
 
-    expect(legal).toContain("${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}");
+    expect(legal).toContain("${LEGAL_CONTROLLER_NAME}. Domicilio: ${LEGAL_CONTROLLER_ADDRESS}");
     expect(legalPage).toContain("LEGAL_CONTROLLER_ADDRESS");
     expect(legal).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
     expect(legalPage).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
@@ -66,7 +66,7 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
   it("explica gratis frente a de pago en /pagos sin jerga de Stripe en la frase principal", () => {
     const payments = readFromPages("Payments.tsx");
     const primarySentence =
-      "La primera lectura es gratis. Solo pagas si quieres guardar más documentos o profundizar en tu expediente.";
+      "La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.";
 
     expect(payments).toContain(primarySentence);
     expect(primarySentence).not.toMatch(/Stripe|webhook|checkout/i);

@@ -12,6 +12,7 @@ import {
   buildHeliosPriorityAlerts,
   buildInlineLegalConsentState,
   buildPayrollFactSignal,
+  cleanPayrollExtractedValue,
   buildReanalyzeDraftActionState,
   buildUploadProgressState,
   formatVisibleFileSize,
@@ -108,7 +109,9 @@ describe("compact mobile upload entry", () => {
 
   it("equilibra el primer viewport con CTA consistente y una lectura más corta del resultado", () => {
     expect(auditarSource).toContain('"flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5"');
-    expect(auditarSource).toContain('Resultado listo');
+    expect(auditarSource).toContain("lastUploadRiskCopy.label");
+    expect(auditarSource).toContain("Estado: {lastUploadRiskCopy.label}. {lastUploadRiskCopy.action}.");
+    expect(auditarSource).not.toContain("Resultado listo");
     expect(auditarSource).toContain('"flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start"');
     expect(auditarSource).toContain('"text-[1.85rem] leading-[1.02] sm:text-[2.3rem]"');
     expect(auditarSource).toContain('Qué sigue');
@@ -135,7 +138,26 @@ describe("señal factual del recibo", () => {
     expect(signal.facts).toContain("Pago que se alcanza a leer: $8,420.00");
     expect(signal.facts).toContain("Deducciones que se alcanzan a leer: $1,180.00");
     expect(signal.attention).toContain("Revisa que cada descuento esté explicado");
-    expect(signal.nextStep).toContain("CFDI o comprobante del mismo periodo");
+    expect(signal.nextStep).toContain("comprobante fiscal (CFDI) del mismo periodo");
+    expect(signal.headline.endsWith(".")).toBe(true);
+  });
+
+  it("limpia etiquetas de campo pegadas al periodo y no deja un título cortado", () => {
+    expect(cleanPayrollExtractedValue("septiembre 2026. Importe")).toBe("septiembre 2026");
+    expect(cleanPayrollExtractedValue("septiembre 2026 Importe")).toBe("septiembre 2026");
+
+    const signal = buildPayrollFactSignal({
+      documentType: "payroll_receipt",
+      confirmedData: {
+        periodo: "septiembre 2026. Importe",
+        neto: "$9,100.00",
+      },
+    });
+
+    expect(signal.headline).toBe("Revisa el pago del periodo septiembre 2026.");
+    expect(signal.headline).not.toContain("Importe");
+    expect(signal.facts).toContain("Periodo identificado: septiembre 2026.");
+    expect(signal.facts).not.toMatch(/septiembre 2026\. Importe/);
   });
 
   it("explica en español qué pudo leerse y qué falta cuando la extracción es parcial", () => {
@@ -283,8 +305,8 @@ describe("getContextualDossierNextTarget", () => {
 
 describe("next document recommendation copy", () => {
   it("muestra copy contextual para contrastar nómina con CFDI y una CTA más directa", () => {
-    expect(auditarSource).toContain('headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina"');
-    expect(auditarSource).toContain('cta: "Subir mi CFDI ahora"');
+    expect(auditarSource).toContain('headline: "Sigue con tu comprobante fiscal (CFDI) para contrastar lo que ya ves en nómina"');
+    expect(auditarSource).toContain('cta: "Subir mi comprobante fiscal (CFDI)"');
     expect(auditarSource).toContain('Sugerencia automática según tu expediente');
     expect(auditarSource).toContain('El siguiente paso que más puede ayudarte hoy');
   });
@@ -952,6 +974,49 @@ describe("preview sanitization", () => {
     expect(formatHumanStatusWord("true")).toBe("Listo");
     expect(formatHumanStatusWord("false")).toBe("Pendiente");
     expect(formatHumanStatusWord("intake")).toBe("Inicio del caso");
+  });
+
+  it("nunca muestra boolean true/false en el resultado visible", () => {
+    expect(sanitizePreviewText(true)).toBe("Sí");
+    expect(sanitizePreviewText(false)).toBe("No");
+    expect(sanitizePreviewText("true")).toBe("Sí");
+    expect(sanitizePreviewText("false")).toBe("No");
+    expect(sanitizePreviewText(true)).not.toBe("true");
+    expect(sanitizePreviewText("true.")).toBe("Sí");
+    expect(sanitizePreviewText('"true"')).toBe("Sí");
+    expect(sanitizePreviewText("false!")).toBe("No");
+    expect(sanitizePreviewText("septiembre 2026. Importe")).toBe("septiembre 2026");
+    expect(auditarSource).toContain("warmVisibleNamingCopy(item.summary)");
+    expect(auditarSource).toContain("sanitizePreviewText(field.value");
+  });
+
+  it("deja Confirmado con Sí/No y nunca con true/false en la extracción visible", () => {
+    const view = sanitizeStructuredExtractionView({
+      headline: "Lectura inicial",
+      summary: "Ya se alcanzó a leer el recibo.",
+      fields: [
+        {
+          key: "timbrado",
+          label: "Confirmado",
+          value: "true",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "descuento",
+          label: "Dato estimado",
+          value: "false",
+          status: "estimated",
+          confidence: "low",
+        },
+      ],
+      missingFields: [],
+      reviewNotes: [],
+    });
+
+    expect(view?.fields[0]).toMatchObject({ label: "Confirmado", value: "Sí" });
+    expect(view?.fields[1]).toMatchObject({ value: "No" });
+    expect(view?.fields.some(field => /true|false/i.test(field.value))).toBe(false);
   });
 
   it("recorta textos largos pero mantiene visibles los resúmenes normales", () => {

@@ -8,6 +8,7 @@ import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmar
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -47,7 +48,7 @@ Diferencia estimada: $3,240 MXN
 Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.
 Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.
 Privacidad visible y humana
-Nadie de tu empresa puede ver lo que subes.
+No compartimos lo que subes con tu empresa.
 Borrado visible
 Ver ejemplo de resultado
 Guarda y sigue después
@@ -236,16 +237,23 @@ function readStoredHomeGuestPreview() {
 }
 
 function sanitizeHomeVisibleCopy(value?: string | null) {
-  if (!value) {
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (!humanized) {
     return null;
   }
 
-  return value
-    .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
-    .replace(/confirmedData/gi, "datos visibles")
-    .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
+  }
+
+  return sanitizeClientVisibleCopy(
+    humanized
+      .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
+      .replace(/confirmedData/gi, "datos visibles")
+      .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 }
 
 function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
@@ -396,7 +404,7 @@ const faqs = [
     id: "privacidad",
     question: "¿Mi empresa puede ver lo que subo aquí?",
     answer:
-      "No. Lo que subes se queda dentro de tu revisión y bajo tu control. Nadie de tu empresa ve tus archivos desde esta pantalla y puedes borrarlos cuando quieras.",
+      "No. Lo que subes se queda dentro de tu revisión y bajo tu control. No compartimos tus archivos con tu empresa desde esta pantalla y puedes borrarlos cuando quieras.",
   },
   {
     id: "sin-tecnicismos",
@@ -439,7 +447,7 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube tu recibo de nómina y te mostramos qué conviene revisar primero. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.",
-    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
     body: "Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -452,7 +460,7 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.",
-    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -1864,13 +1872,13 @@ function QuickTrustSection() {
               Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa nunca ve lo que subes. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
+              No compartimos tu archivo con tu empresa. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold tracking-tight text-slate-500">Transparencia visible</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
-                  <p className="font-semibold text-slate-950">Nada se guarda solo</p>
+                  <p className="font-semibold text-slate-950">Tú confirmas si se guarda</p>
                   <p className="mt-1.5 leading-6">Tu expediente solo cambia cuando tú confirmas.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
@@ -2738,7 +2746,7 @@ function MobilePriorityPathSection() {
       eyebrow: "Privacidad visible",
       title: "Tus documentos se resguardan para darte claridad, calma y control",
       description:
-        "Tu empresa no ve lo que subes. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
+        "No compartimos lo que subes con tu empresa. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
       bullets: [
         "Puedes volver a tu expediente cuando lo necesites.",
         "Las explicaciones priorizan tranquilidad y control.",

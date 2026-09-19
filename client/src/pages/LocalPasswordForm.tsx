@@ -82,7 +82,7 @@ export default function LocalPasswordForm({
         {mode === "signup" ? "Crea tu cuenta" : "Entra a tu cuenta"}
       </h1>
       <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50/80 px-4 py-3 text-sm leading-6 text-teal-950">
-        <p className="font-medium">En esta copia entras con correo y contraseña. No usamos la otra plataforma de acceso.</p>
+        <p className="font-medium">Entras con correo y contraseña para volver a tu revisión.</p>
         <p className="mt-1 text-teal-900/80">La revisión pública por RFC sigue igual, sin cuenta.</p>
       </div>
 

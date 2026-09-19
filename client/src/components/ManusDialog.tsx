@@ -75,7 +75,7 @@ export function ManusDialog({
             </DialogTitle>
           ) : null}
           <DialogDescription className="max-w-[28ch] text-sm leading-5 tracking-[-0.154px] text-[#858481] dark:text-slate-400">
-            Inicia sesión con Manus para continuar dentro de AuditaPatron.
+            Inicia sesión para continuar dentro de AuditaPatron.
           </DialogDescription>
         </div>
 
@@ -85,7 +85,7 @@ export function ManusDialog({
             onClick={onLogin}
             className="h-10 w-full rounded-[10px] bg-[#1a1a19] text-sm font-medium leading-5 tracking-[-0.154px] text-white transition-colors duration-300 hover:bg-[#1a1a19]/90 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
           >
-            Continuar con Manus
+            Continuar
           </Button>
         </DialogFooter>
       </DialogContent>

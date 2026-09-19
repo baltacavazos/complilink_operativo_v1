@@ -57,7 +57,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     badge: "Freemium",
     ctaLabel: "Empezar gratis",
     description:
-      "Incluye tu primera lectura, expediente básico de hasta 3 documentos y Helios básico sobre el contexto visible inicial.",
+      "Incluye tu primera lectura, expediente básico de hasta 3 documentos y asesor laboral básico sobre el contexto visible inicial.",
     highlighted: false,
     limits: {
       maxDocumentsPerCase: 3,
@@ -68,7 +68,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     featureBullets: [
       "Primera lectura gratis y sin tarjeta.",
       "Expediente básico de hasta 3 documentos por caso.",
-      "Helios básico sobre un documento principal o contexto inicial.",
+      "Asesor laboral básico sobre un documento principal o contexto inicial.",
     ],
   },
   {
@@ -79,7 +79,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     badge: "Más vendido",
     ctaLabel: "Activar Esencial",
     description:
-      "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil de Helios para llevar mejor tu caso.",
+      "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil del asesor laboral para llevar mejor tu caso.",
     highlighted: true,
     limits: {
       maxDocumentsPerCase: 15,
@@ -89,7 +89,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     },
     featureBullets: [
       "Hasta 15 documentos por expediente.",
-      "Helios multi-documento y memoria corta dentro del expediente.",
+      "Lectura de varios documentos y memoria corta dentro del expediente.",
       "Comparativas visibles y continuidad conversacional extendida.",
     ],
   },
@@ -111,7 +111,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     },
     featureBullets: [
       "Hasta 50 documentos por expediente.",
-      "Helios con memoria histórica del expediente.",
+      "Asesor laboral con memoria histórica del expediente.",
       "Revalidaciones IMSS/Infonavit y alertas proactivas.",
     ],
   },
