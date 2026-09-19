@@ -950,6 +950,35 @@ describe("preview sanitization", () => {
     expect(auditarSource).toContain("sanitizePreviewText(field.value");
   });
 
+  it("deja Confirmado con Sí/No y nunca con true/false en la extracción visible", () => {
+    const view = sanitizeStructuredExtractionView({
+      headline: "Lectura inicial",
+      summary: "Ya se alcanzó a leer el recibo.",
+      fields: [
+        {
+          key: "timbrado",
+          label: "Confirmado",
+          value: "true",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "descuento",
+          label: "Dato estimado",
+          value: "false",
+          status: "estimated",
+          confidence: "low",
+        },
+      ],
+      missingFields: [],
+      reviewNotes: [],
+    });
+
+    expect(view?.fields[0]).toMatchObject({ label: "Confirmado", value: "Sí" });
+    expect(view?.fields[1]).toMatchObject({ value: "No" });
+    expect(view?.fields.some(field => /true|false/i.test(field.value))).toBe(false);
+  });
+
   it("recorta textos largos pero mantiene visibles los resúmenes normales", () => {
     const longNarrative =
       "Este resumen mantiene lenguaje humano y claro para la persona usuaria, pero necesita recortarse en móvil para no desbordar la tarjeta de revisión antes de guardar el documento dentro del expediente laboral.";

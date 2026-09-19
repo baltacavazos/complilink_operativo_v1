@@ -19,7 +19,10 @@ import {
   readWebFileAsDataUrl,
   selectNativeDocumentForCaptureMode,
 } from "@/lib/platformDocumentInput";
-import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import {
+  humanizeWorkerVisibleScalar,
+  sanitizeClientVisibleCopy,
+} from "@/lib/clientVisibleCopy";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
   platformStorageGetJSON,
@@ -533,22 +536,17 @@ export function sanitizePreviewText(
     emptyFallback = "",
     technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
   } = options;
-  if (typeof value === "boolean") {
-    return value ? "Sí" : "No";
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
   }
 
   const normalized =
     typeof value === "number"
       ? String(value)
-      : typeof value === "string"
-        ? value.replace(/\s+/g, " ").trim()
-        : String(value ?? "")
-            .replace(/\s+/g, " ")
-            .trim();
-
-  if (/^(true|false)$/i.test(normalized) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(normalized)) {
-    return /true/i.test(normalized) ? "Sí" : "No";
-  }
+      : (humanized ?? String(value ?? ""))
+          .replace(/\s+/g, " ")
+          .trim();
 
   if (!normalized) {
     return emptyFallback;
@@ -1112,12 +1110,11 @@ type StructuredExtractionFieldView = {
 
 function warmVisibleNamingCopy(value?: string | null) {
   if (value == null) return value ?? null;
-  if (typeof value === "boolean") return value ? "Sí" : "No";
-  const trimmed = String(value).trim();
-  if (/^(true|false)$/i.test(trimmed) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(trimmed)) {
-    return /true/i.test(trimmed) ? "Sí" : "No";
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
   }
-  return sanitizeClientVisibleCopy(value);
+  return sanitizeClientVisibleCopy(humanized ?? value);
 }
 
 function parseQuickCalculatorAmount(value: unknown) {
@@ -3009,12 +3006,9 @@ function formatAnalysisValue(key: string, value: unknown) {
     return "Sin dato visible";
   }
 
-  if (typeof value === "boolean") {
-    return value ? "Sí" : "No";
-  }
-
-  if (typeof value === "string" && (/^(true|false)$/i.test(value.trim()) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(value.trim()))) {
-    return /true/i.test(value) ? "Sí" : "No";
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
   }
 
   if (key === "internalDocumentType") {
@@ -5450,8 +5444,8 @@ export default function Auditar() {
       lastHeliosOpinion?.resultCard?.keyFindings
         ?.filter(item => item.tone === "attention")
         .map(item => ({
-          label: item.label,
-          summary: warmVisibleNamingCopy(item.value) ?? item.value,
+          label: warmVisibleNamingCopy(item.label) ?? "Punto por revisar",
+          summary: warmVisibleNamingCopy(item.value) ?? "",
           tone: "attention" as const,
         })) ?? [];
 
@@ -11059,7 +11053,7 @@ export default function Auditar() {
                             className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500"
                           />
                           <span className="text-sm leading-6 text-slate-700">
-                            {LEGAL_GATE_COPY.checkbox}
+                            {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                           </span>
                         </label>
                       </div>
@@ -11255,7 +11249,7 @@ export default function Auditar() {
                       className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span className="text-sm leading-6 text-slate-700">
-                      {LEGAL_GATE_COPY.checkbox}
+                      {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                     </span>
                   </label>
                 </div>
@@ -12712,7 +12706,7 @@ Reforzar con otro documento
                                             className="rounded-[0.9rem] border border-slate-200 bg-slate-50 p-3"
                                           >
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                                              {item.label}
+                                              {warmVisibleNamingCopy(item.label) ?? item.label}
                                             </p>
                                             <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
                                               {warmVisibleNamingCopy(item.value) ?? item.value}
@@ -12854,7 +12848,7 @@ Reforzar con otro documento
                             </span>
                             {lastHeliosOpinion.disclaimer ? (
                               <span className="max-w-3xl leading-6">
-                                {lastHeliosOpinion.disclaimer}
+                                {warmVisibleNamingCopy(lastHeliosOpinion.disclaimer)}
                               </span>
                             ) : null}
                           </div>
@@ -15135,7 +15129,7 @@ Reforzar con otro documento
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
                 <span className="text-xs leading-5 text-slate-700">
-                  {LEGAL_GATE_COPY.checkbox}
+                  {sanitizeClientVisibleCopy(LEGAL_GATE_COPY.checkbox)}
                 </span>
               </label>
             </div>

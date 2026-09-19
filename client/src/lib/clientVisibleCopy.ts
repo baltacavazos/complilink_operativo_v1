@@ -6,6 +6,37 @@
 
 const EMPTY_QUOTES = /["“”‘’`]{2,}/g;
 const EXTRA_SPACE = /\s{2,}/g;
+const RAW_BOOLEAN_VALUE =
+  /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i;
+
+export function humanizeWorkerVisibleScalar(value?: unknown): string | null {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+
+  const text = String(value).replace(/\s+/g, " ").trim();
+  if (!text) {
+    return null;
+  }
+
+  if (RAW_BOOLEAN_VALUE.test(text)) {
+    return /true/i.test(text) ? "Sí" : "No";
+  }
+
+  return text;
+}
+
+export function hasRawBooleanLeak(value?: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+
+  return RAW_BOOLEAN_VALUE.test(value.trim());
+}
 
 function collapseCopy(value: string) {
   return value.replace(EMPTY_QUOTES, "").replace(EXTRA_SPACE, " ").trim();

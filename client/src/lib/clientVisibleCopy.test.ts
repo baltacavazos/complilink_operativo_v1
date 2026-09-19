@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   hasForbiddenClientBrand,
+  hasRawBooleanLeak,
+  humanizeWorkerVisibleScalar,
   sanitizeClientVisibleCopy,
 } from "./clientVisibleCopy";
 
@@ -67,6 +69,19 @@ describe("sanitizeClientVisibleCopy", () => {
         sanitizeClientVisibleCopy("interacción con Helios, CompliLink"),
       ),
     ).toBe(false);
+  });
+
+  it("convierte booleanos crudos a Sí/No y no deja true/false visible", () => {
+    expect(humanizeWorkerVisibleScalar(true)).toBe("Sí");
+    expect(humanizeWorkerVisibleScalar(false)).toBe("No");
+    expect(humanizeWorkerVisibleScalar("true")).toBe("Sí");
+    expect(humanizeWorkerVisibleScalar("false")).toBe("No");
+    expect(humanizeWorkerVisibleScalar("true.")).toBe("Sí");
+    expect(humanizeWorkerVisibleScalar('"true"')).toBe("Sí");
+    expect(humanizeWorkerVisibleScalar("Confirmado")).toBe("Confirmado");
+    expect(hasRawBooleanLeak("true")).toBe(true);
+    expect(hasRawBooleanLeak("Sí")).toBe(false);
+    expect(hasRawBooleanLeak("Confirmado")).toBe(false);
   });
 
   it("oculta Webhook y webhook_rejected con copy humano", () => {

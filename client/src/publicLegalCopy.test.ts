@@ -61,8 +61,17 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalCopy).toContain("LEGAL_CONTROLLER_NAME");
     expect(legalCopy).toContain("LEGAL_CONTROLLER_ADDRESS");
     expect(legalCopy).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
-    expect(legalCopy).not.toMatch(/\bHelios\b/);
-    expect(legalCopy).not.toMatch(/CompliLink|complilink/);
+    expect(legalCopy).not.toMatch(/helios/i);
+    expect(legalCopy).not.toMatch(/complilink/i);
+    for (const document of LEGAL_DOCUMENTS) {
+      const visible = [
+        document.shortTitle,
+        document.fullTitle,
+        sanitizeClientVisibleCopy(document.markdown) ?? "",
+      ].join("\n");
+      expect(visible, document.slug).not.toMatch(/helios/i);
+      expect(visible, document.slug).not.toMatch(/complilink/i);
+    }
     expect(legalPage).toContain("visibleLegalCopy");
     expect(legalPage).toContain("sanitizeClientVisibleCopy");
     expect(app).toContain('path={"/historial"}');

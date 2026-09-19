@@ -56,7 +56,7 @@ export const PRIVACY_CENTER_COPY = {
   responseWindow: "20 días hábiles para responder la solicitud ARCO.",
 } as const;
 
-export const HELIOS_CONTEXT_BULLETS = [
+export const ADVISOR_CONTEXT_BULLETS = [
   "El expediente y los consentimientos se gestionan bajo LFPDPPP v2.0 con trazabilidad versionada.",
   "Las aceptaciones legales deben registrar versión, timestamp, dirección IP y user-agent para auditoría.",
   "Los datos sensibles del expediente se resguardan con controles reforzados y referencia explícita a cifrado AES-256-GCM.",
@@ -66,7 +66,7 @@ export const HELIOS_CONTEXT_BULLETS = [
   "El razonamiento contextual puede apoyarse en doctrina laboral mexicana, incluyendo referencias de Baltasar Cavazos Flores, Mario de la Cueva y Néstor de Buen Lozano, sin presentar esas doctrinas como consejo jurídico definitivo.",
 ] as const;
 
-export const HELIOS_CONTEXT_NOTE = HELIOS_CONTEXT_BULLETS.map((item) => `- ${item}`).join("\n");
+export const ADVISOR_CONTEXT_NOTE = ADVISOR_CONTEXT_BULLETS.map((item) => `- ${item}`).join("\n");
 
 const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 

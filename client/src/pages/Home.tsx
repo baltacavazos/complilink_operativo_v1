@@ -8,7 +8,7 @@ import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmar
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -237,12 +237,17 @@ function readStoredHomeGuestPreview() {
 }
 
 function sanitizeHomeVisibleCopy(value?: string | null) {
-  if (!value) {
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (!humanized) {
     return null;
   }
 
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
+  }
+
   return sanitizeClientVisibleCopy(
-    value
+    humanized
       .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
       .replace(/confirmedData/gi, "datos visibles")
       .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
