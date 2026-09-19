@@ -46,4 +46,9 @@ describe("getAuditapatronPricingExperience", () => {
       )
     ).toBe(true);
   });
+
+  it("no deja Helios ni CompliLink en el copy de planes visible", () => {
+    const experience = getAuditapatronPricingExperience(3);
+    expect(JSON.stringify(experience)).not.toMatch(/Helios|CompliLink|complilink/i);
+  });
 });

@@ -39,6 +39,7 @@ const WORKER_PAGES = [
   "pages/Payments.tsx",
   "pages/LegalDocuments.tsx",
   "components/MobileAppShell.tsx",
+  "lib/pricingExperience.ts",
   "App.tsx",
 ] as const;
 

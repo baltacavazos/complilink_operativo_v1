@@ -14624,7 +14624,7 @@ Reforzar con otro documento
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
-                  <p className="font-semibold text-slate-950">Modo Helios</p>
+                  <p className="font-semibold text-slate-950">Modo del asesor</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"

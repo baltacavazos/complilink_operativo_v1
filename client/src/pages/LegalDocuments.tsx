@@ -1,4 +1,5 @@
 import { AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
+import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import {
   LEGAL_CONTACT_EMAIL,
   LEGAL_CONTROLLER_NAME,
@@ -7,6 +8,10 @@ import {
   type LegalDocumentSlug,
 } from "@shared/legal";
 import { Lock } from "lucide-react";
+
+function visibleLegalCopy(value: string) {
+  return sanitizeClientVisibleCopy(value) ?? value;
+}
 
 type MarkdownBlock =
   | { type: "h1"; content: string }
@@ -89,7 +94,7 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
 }
 
 function LegalDocumentArticle({ document }: { document: LegalDocumentDefinition }) {
-  const blocks = parseMarkdown(document.markdown);
+  const blocks = parseMarkdown(visibleLegalCopy(document.markdown));
 
   return (
     <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.4)] sm:p-8 lg:p-10">
