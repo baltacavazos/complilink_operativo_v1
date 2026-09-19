@@ -1835,9 +1835,7 @@ export function buildInlineLegalConsentState(params: {
       ? legalGateRequired
         ? "Aceptar y analizar documento"
         : "Analizar antes de guardar"
-      : activeCaptureMode === "camera"
-        ? "Tomar foto para continuar"
-        : "Elegir archivo para continuar",
+      : "Sube tu recibo",
   };
 }
 
@@ -8897,7 +8895,7 @@ export default function Auditar() {
                       </div>
                     </div>
                     {shouldCompactPostUploadExperience ? null : (
-                      <p className={`mt-2 font-semibold text-emerald-900 ${shouldCompactPostUploadExperience ? "text-base tracking-[-0.01em]" : "text-[13px] uppercase tracking-[0.16em] text-slate-500 sm:mt-3 sm:text-xs"}`}>
+                      <p className={`mt-2 font-semibold tracking-tight text-slate-950 ${shouldCompactPostUploadExperience ? "text-base" : "text-lg sm:mt-3 sm:text-xl"}`}>
                         {lastUploadResultHeadline}
                       </p>
                     )}

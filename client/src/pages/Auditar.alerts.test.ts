@@ -886,7 +886,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: true,
       confirmPrimaryActionLabel: "Aceptar y guardar con ajustes",
-      uploadPrimaryActionLabel: "Tomar foto para continuar",
+      uploadPrimaryActionLabel: "Sube tu recibo",
     });
   });
 
@@ -906,7 +906,7 @@ describe("buildInlineLegalConsentState", () => {
     });
   });
 
-  it("sugiere elegir archivo para continuar cuando el flujo mobile-first abre directo el picker preferido sin documento previo", () => {
+  it("usa un solo CTA de subida cuando el flujo mobile-first abre el picker sin documento previo", () => {
     expect(
       buildInlineLegalConsentState({
         legalGateRequired: false,
@@ -918,7 +918,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: false,
       confirmPrimaryActionLabel: "Confirmar y guardar documento",
-      uploadPrimaryActionLabel: "Elegir archivo para continuar",
+      uploadPrimaryActionLabel: "Sube tu recibo",
     });
   });
 });

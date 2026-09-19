@@ -26,6 +26,8 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
   it("deja un solo CTA primario de subida y relega foto/archivo a opción secundaria", () => {
     const auditar = readFromPages("Auditar.tsx");
 
+    expect(auditar).toContain('uploadPrimaryActionLabel: hasSelectedFile');
+    expect(auditar).toContain(': "Sube tu recibo"');
     expect(auditar).toContain("Prefiero tomar una foto u otro archivo");
     expect(auditar).toContain("onClick={openPreferredPicker}");
     expect(auditar).not.toContain(": \"Tomar foto ahora\"\n                        </Button>");
@@ -35,10 +37,11 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
   it("no preselecciona un despido en la primera visita", () => {
     const db = readRepo("server/db.ts");
 
-    expect(db).toContain('title: "Primera revisión laboral"');
+    expect(db).toContain('title: "Mi revisión documental"');
     expect(db).toContain('priority: "medium"');
-    expect(db).toContain("No presupone un despido ni un conflicto.");
+    expect(db).toContain("Expediente inicial para revisar tus documentos cuando los subas.");
     expect(db).not.toContain('title: "Despido y reclamación inicial"');
+    expect(db).not.toContain("Despido y reclamación");
   });
 
   it("publica responsable y domicilio reales en las páginas legales", () => {
