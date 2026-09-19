@@ -28,7 +28,9 @@ describe("flujo visible de pagos", () => {
     expect(paymentsSource).toContain("Gestionar suscripción");
     expect(paymentsSource).toContain("Pagos y compras registradas");
     expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres guardar más documentos o profundizar en tu expediente.");
+    expect(paymentsSource).toContain("Referencia de cobro");
     expect(paymentsSource).not.toContain("persistencia local mínima de Stripe");
+    expect(paymentsSource).not.toContain("Cliente en Stripe");
     expect(paymentsSource).toContain("Sandbox de Stripe detectado");
   });
 });

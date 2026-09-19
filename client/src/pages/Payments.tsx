@@ -177,7 +177,7 @@ export default function Payments() {
             </p>
           </article>
           <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(59,130,246,0.45)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Cliente en Stripe</p>
+            <p className="text-xs font-semibold tracking-tight text-slate-300">Referencia de cobro</p>
             <p className="mt-3 text-2xl font-semibold text-white">{maskCustomerId(historyQuery.data?.customerId ?? null)}</p>
             <p className="mt-2 text-sm text-slate-300">
               {commerceStatusQuery.data?.environment?.mode === "sandbox"
@@ -217,7 +217,7 @@ export default function Payments() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Historial persistido</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Pagos y compras registradas</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Cada fila muestra la compra detectada por webhook y las referencias mínimas guardadas localmente para trazabilidad.
+                Cada fila muestra el producto, el importe y el estado del pago registrado en tu cuenta.
               </p>
             </div>
           </div>
@@ -229,8 +229,8 @@ export default function Payments() {
             </div>
           ) : payments.length === 0 ? (
             <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
-              Aún no hay pagos persistidos para esta cuenta. Cuando completes un checkout y Stripe envíe el webhook, aquí se
-              reflejarán el producto, el importe y los identificadores mínimos guardados localmente.
+              Aún no hay pagos registrados para esta cuenta. Cuando completes un pago, aquí se
+              reflejarán el producto, el importe y la fecha.
             </div>
           ) : (
             <div className="mt-5 overflow-x-auto">

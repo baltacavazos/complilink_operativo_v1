@@ -8354,7 +8354,7 @@ export default function Auditar() {
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
+              <p className="text-sm font-semibold tracking-tight text-slate-700">
                 {isNativeAppExperience ? "Ruta corta dentro de la app" : "Qué pasa al subirlo"}
               </p>
               <div className="mt-4 space-y-3">
