@@ -853,7 +853,7 @@ export async function assertTenantAccess(userId: number, tenantId: string) {
     .limit(1);
 
   if (!membership[0]) {
-    throw new Error("Access denied for tenant");
+    throw new Error("No tienes acceso a este espacio.");
   }
 
   return membership[0];
@@ -869,11 +869,11 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
   if (!ceoBypass) {
     const primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
     if (!primaryCaseId) {
-      throw new Error("No personal case assigned to this account");
+      throw new Error("Esta cuenta aún no tiene un expediente personal.");
     }
 
     if (primaryCaseId !== caseId) {
-      throw new Error("This account is limited to a single personal case");
+      throw new Error("Esta cuenta solo puede tener un expediente personal.");
     }
   }
 
@@ -912,7 +912,7 @@ export async function assertCaseAccess(userId: number, tenantId: string, caseId:
       return tenantMembership;
     }
 
-    throw new Error("Access denied for case");
+    throw new Error("No tienes acceso a este expediente.");
   }
 
   return tenantWide[0];
@@ -938,7 +938,7 @@ function hasAdminCapability(membership: { role?: string | null }) {
 export async function assertCaseWriteAccess(userId: number, tenantId: string, caseId: string) {
   const membership = await assertCaseAccess(userId, tenantId, caseId);
   if (!hasWriteCapability(membership)) {
-    throw new Error("Write access denied for case");
+    throw new Error("No puedes modificar este expediente.");
   }
   return membership;
 }
@@ -946,7 +946,7 @@ export async function assertCaseWriteAccess(userId: number, tenantId: string, ca
 export async function assertTenantAdminAccess(userId: number, tenantId: string) {
   const membership = await assertTenantAccess(userId, tenantId);
   if (!hasAdminCapability(membership)) {
-    throw new Error("Admin access denied for tenant");
+    throw new Error("No tienes permiso de administración en este espacio.");
   }
   return membership;
 }

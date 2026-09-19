@@ -152,6 +152,35 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replace(/\bscore\b/gi, "indicador");
   next = next.replace(/\bONLINE\b/g, "en línea");
 
+  next = next.replace(
+    /This account is limited to a single personal case\.?/gi,
+    "Esta cuenta solo puede tener un expediente personal.",
+  );
+  next = next.replace(
+    /No personal case assigned to this account\.?/gi,
+    "Esta cuenta aún no tiene un expediente personal.",
+  );
+  next = next.replace(
+    /Write access denied for case\.?/gi,
+    "No puedes modificar este expediente.",
+  );
+  next = next.replace(
+    /Admin access denied for tenant\.?/gi,
+    "No tienes permiso de administración en este espacio.",
+  );
+  next = next.replace(
+    /Access denied for tenant\.?/gi,
+    "No tienes acceso a este espacio.",
+  );
+  next = next.replace(
+    /Access denied for case\.?/gi,
+    "No tienes acceso a este expediente.",
+  );
+  next = next.replace(
+    /Database not available\.?/gi,
+    "No pudimos guardar esto ahora. Intenta de nuevo en un momento.",
+  );
+
   next = collapseCopy(next);
   return next;
 }
