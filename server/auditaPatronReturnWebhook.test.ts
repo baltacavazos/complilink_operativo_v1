@@ -142,8 +142,11 @@ describe("auditaPatronReturnWebhook", () => {
       responseContract: "auditapatron.bridge.ack.v1",
       completeness: {
         phase: "fase_0",
+        mode: "remote",
+        webhookComplete: true,
         heliosApiKeyRequired: false,
         requiredPresent: {
+          AUDITAPATRON_ENGINE_WEBHOOK_URL: true,
           AUDITAPATRON_ENGINE_HMAC_SECRET: true,
         },
       },

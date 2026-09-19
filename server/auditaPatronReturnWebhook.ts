@@ -488,7 +488,11 @@ async function forwardIncomingUploadToRemote(params: { req: RawBodyRequest; rawB
 }
 
 function handleAuditaPatronHealth(_req: Request, res: Response) {
-  const inventory = inspectAuditaPatronBridgeInventory();
+  const inventory = inspectAuditaPatronBridgeInventory({
+    ...process.env,
+    AUDITAPATRON_ENGINE_WEBHOOK_URL: ENV.auditapatronEngineWebhookUrl,
+    AUDITAPATRON_ENGINE_HMAC_SECRET: ENV.auditapatronEngineHmacSecret,
+  });
   res.status(200).json({
     status: "ok",
     bridge: "auditapatron",
