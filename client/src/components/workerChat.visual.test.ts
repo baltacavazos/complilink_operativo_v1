@@ -90,6 +90,8 @@ describe("worker chat visual polish", () => {
     expect(auditar).toContain("aviso de retención o estado de crédito");
     expect(auditar).toContain("acreditación de pagos y deducciones");
     expect(auditar).toContain("officialTitles");
+    expect(auditar).toContain("grid min-w-0 grid-cols-3 gap-1.5");
+    expect(auditar).toContain("confidenceScore > 0");
     expect(auditar).toContain('legalHarness") === "1"');
     expect(auditar).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032614");
     expect(auditar).toContain("codigo=5786537");

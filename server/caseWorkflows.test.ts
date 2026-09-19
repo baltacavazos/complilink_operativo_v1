@@ -565,7 +565,7 @@ describe("appRouter case workflows", () => {
       lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
       recommendedDocumentKey: null,
       recommendedDocumentTitle: "Cruce base cubierto",
-      recommendedDocumentReason: expect.stringContaining("revisar las señales"),
+      recommendedDocumentReason: expect.stringContaining("revisar las alertas"),
       hasNewClarity: false,
       clarityDelta: 0,
     });
