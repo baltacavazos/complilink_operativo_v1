@@ -76,6 +76,10 @@ import {
 } from "@shared/legal";
 import { appRouter, resetAuditarRuntimeGuardsForTests } from "./routers";
 import { storagePut } from "./storage";
+import { ENV } from "./_core/env";
+
+const expectedHeliosMode = ENV.auditapatronEngineWebhookUrl.trim().length > 0 ? "remote" : "mock";
+const expectedHeliosStatus = expectedHeliosMode === "remote" ? "processing" : "completed";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -1061,13 +1065,13 @@ describe("appRouter case workflows", () => {
       status: "ready",
     });
     expect(result.heliosOpinion).toMatchObject({
-      mode: "remote",
-      status: "processing",
+      mode: expectedHeliosMode,
+      status: expectedHeliosStatus,
     });
     expect(result.heliosOpinionContract).toMatchObject({
       engine: "helios",
-      mode: "remote",
-      status: "processing",
+      mode: expectedHeliosMode,
+      status: expectedHeliosStatus,
     });
 
     expect(db.createAuditLogs).toHaveBeenCalledTimes(1);
@@ -1735,8 +1739,8 @@ describe("appRouter case workflows", () => {
     expect(result.document.originalName).toBe("constancia_imss.pdf");
     expect(result.document.sha256).toHaveLength(64);
     expect(result.heliosOpinion).toMatchObject({
-      status: "processing",
-      mode: "remote",
+      status: expectedHeliosStatus,
+      mode: expectedHeliosMode,
     });
   });
 
