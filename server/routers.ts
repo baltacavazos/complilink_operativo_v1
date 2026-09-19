@@ -1966,6 +1966,7 @@ function buildSocialSecurityValidationSummary(params: {
     infonavitSignalsCount,
     fiscalSignalsCount: laborFiscal.fiscalSignalsCount,
     hasImssSignal: laborFiscal.hasImssSignal,
+    hasFiscalSignal: laborFiscal.hasFiscalSignal,
     hasInfonavitSignal: laborFiscal.hasInfonavitSignal,
     documentsWithOpinion,
     lastRevalidatedAt: lastRevalidation?.recordedAt ?? null,
@@ -2142,16 +2143,20 @@ function buildHeliosCopilotFallbackAnswer(params: {
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
   documentsCount: number;
   missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
+  prompt?: string | null;
 }) {
   const grounding = buildWorkerChatGrounding({
     documents: params.documents,
     opinion: params.opinion,
     missingDocument: params.missingDocuments[0] ?? null,
   });
-  return buildWorkerChatFallbackAnswer({
-    ...grounding,
-    documentsCount: params.documentsCount,
-  });
+  return buildWorkerChatFallbackAnswer(
+    {
+      ...grounding,
+      documentsCount: params.documentsCount,
+    },
+    { prompt: params.prompt },
+  );
 }
 
 function buildHeliosCopilotSupportingDocuments(params: {
@@ -3466,7 +3471,9 @@ export const appRouter = router({
         });
         const disclaimer = WORKER_CHAT_DISCLAIMER;
         const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
-        const fallbackAnswer = buildWorkerChatFallbackAnswer(workerChatGrounding);
+        const fallbackAnswer = buildWorkerChatFallbackAnswer(workerChatGrounding, {
+          prompt: input.prompt,
+        });
         const supportingDocuments = buildHeliosCopilotSupportingDocuments({
           documents: chatDocuments,
           missingDocuments,
@@ -3486,7 +3493,9 @@ export const appRouter = router({
               messages: [
                 {
                   role: "system",
-                  content: buildWorkerChatLlmInstructions(workerChatGrounding),
+                  content: buildWorkerChatLlmInstructions(workerChatGrounding, {
+                    prompt: input.prompt,
+                  }),
                 },
                 {
                   role: "user",
@@ -3502,7 +3511,9 @@ export const appRouter = router({
 
             const candidate = readLlmMessageText(response.choices[0]?.message.content).trim();
             if (candidate) {
-              answer = sanitizeWorkerChatAnswer(candidate, workerChatGrounding);
+              answer = sanitizeWorkerChatAnswer(candidate, workerChatGrounding, {
+                prompt: input.prompt,
+              });
             }
           } catch {
             answer = fallbackAnswer;

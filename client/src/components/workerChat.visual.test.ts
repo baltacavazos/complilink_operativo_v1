@@ -29,6 +29,9 @@ describe("worker chat visual polish", () => {
     expect(chat).toContain("CalmAssistantAnswer");
     expect(chat).toContain("parseWorkerStructuredAnswer");
     expect(chat).toContain("sanitizeVisibleChatHistoryContent");
+    expect(chat).toContain("ap-chat-section-next");
+    expect(chat).toContain('ap-chat-next-step');
+    expect(css).toContain(".ap-worker-chat .ap-chat-section-next");
     expect(sheet).toContain("sanitizeVisibleChatHistoryContent");
     expect(chat).toContain('variant?: "default" | "calm"');
     expect(chat).toContain("ap-chat-bubble-user");
@@ -46,10 +49,13 @@ describe("worker chat visual polish", () => {
     expect(css).toContain("letter-spacing: -0.018em");
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
-    expect(read("../pages/Auditar.tsx")).toContain('chatHarness") === "1"');
-    expect(read("../pages/Auditar.tsx")).toContain('chatHistoryHarness") === "1"');
-    expect(read("../pages/Auditar.tsx")).toContain(
+    const auditar = read("../pages/Auditar.tsx");
+    expect(auditar).toContain('chatHarness") === "1"');
+    expect(auditar).toContain('chatHistoryHarness") === "1"');
+    expect(auditar).toContain(
       "||required_plan=essential||current_plan=free",
     );
+    expect(auditar).toContain("Cruza el descuento IMSS $120.50");
+    expect(auditar).toContain("acreditación de pagos y deducciones");
   });
 });

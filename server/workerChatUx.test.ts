@@ -64,7 +64,7 @@ describe("workerChatUx grounding", () => {
     expect(grounding.legalFoundations[0]?.title).toBe("Acreditación de pagos y deducciones");
     expect(grounding.disclaimer).toBe(WORKER_CHAT_DISCLAIMER);
 
-    const answer = buildWorkerChatFallbackAnswer(grounding);
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué hago ahora?" });
     expect(answer).toMatch(/NSS 12345678901|\$120\.50|periodo/i);
     expect(answer).toMatch(/acreditaci[oó]n de pagos/i);
     expect(answer).toContain("Siguiente paso");
@@ -73,6 +73,52 @@ describe("workerChatUx grounding", () => {
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(answer).not.toMatch(/consulta en vivo|validaci[oó]n en vivo/i);
     expect(answer).not.toMatch(/tesis|jurisprudencia|Helios|CompliLink/i);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("si preguntan por IMSS, el fallback local cita el descuento y niega el alta oficial", () => {
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Me descontaron IMSS?" });
+
+    expect(grounding.prefersRemoteOpinion).toBe(false);
+    expect(answer).toMatch(/IMSS \$120\.50/);
+    expect(answer).toMatch(/no confirma alta/i);
+    expect(answer).toMatch(/acreditaci[oó]n de pagos/i);
+    expect(answer).not.toMatch(/tesis|jurisprudencia|Helios|CompliLink/i);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("si hay opinión remota usable, el asesor la prefiere sobre la plantilla local", () => {
+    const remoteOpinion = {
+      mode: "remote",
+      status: "completed",
+      summary: "Ya hay una lectura consolidada del recibo.",
+      legalOpinion: "Ya hay una lectura consolidada del recibo para contrastar pagos y descuentos.",
+      recommendedNextStep: "Compara este recibo con el CFDI del mismo periodo.",
+      keyFactsUsed: ["Periodo 1 al 15 de mayo"],
+      uncertainties: ["Falta el CFDI para cerrar el cruce."],
+      legalFoundations: payrollDocument.heliosOpinion.legalFoundations,
+      rawPayload: payrollDocument.heliosOpinion.rawPayload,
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [{ ...payrollDocument, heliosOpinion: remoteOpinion }],
+      opinion: remoteOpinion,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Me descontaron IMSS?" });
+    const instructions = buildWorkerChatLlmInstructions(grounding, {
+      prompt: "¿Me descontaron IMSS?",
+    });
+
+    expect(grounding.prefersRemoteOpinion).toBe(true);
+    expect(grounding.reviewSource).toBe("remote");
+    expect(answer).toMatch(/lectura consolidada/i);
+    expect(answer).toMatch(/Compara este recibo con el CFDI del mismo periodo/);
+    expect(answer).not.toMatch(/Cruza el descuento IMSS/i);
+    expect(instructions).toMatch(/revisión avanzada/i);
+    expect(instructions).toMatch(/No los sustituyas por una plantilla local/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
@@ -121,6 +167,9 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/Lo que s[ií] se sabe/);
     expect(instructions).toMatch(/Lo que falta/);
     expect(instructions).toMatch(/Siguiente paso/);
+    expect(instructions).toMatch(/Hechos visibles/);
+    expect(instructions).toMatch(/\$120\.50|12345678901/);
+    expect(instructions).toMatch(/Siguiente paso ya anclado/);
   });
 
   it("en plan gratis recorta a un documento y deja upsell limpio, sin marcadores", () => {

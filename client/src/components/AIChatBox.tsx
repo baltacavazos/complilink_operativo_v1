@@ -3,6 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
+  WORKER_CHAT_NEXT_HEADING,
   parseWorkerStructuredAnswer,
   sanitizeVisibleChatHistoryContent,
 } from "@shared/workerChatUx";
@@ -142,9 +143,15 @@ function CalmAssistantAnswer({ content }: { content: string }) {
             block.kind === "disclaimer"
               ? "ap-chat-disclaimer"
               : block.kind === "section"
-                ? "ap-chat-section"
+                ? cn(
+                    "ap-chat-section",
+                    block.heading === WORKER_CHAT_NEXT_HEADING && "ap-chat-section-next",
+                  )
                 : null,
           )}
+          data-testid={
+            block.heading === WORKER_CHAT_NEXT_HEADING ? "ap-chat-next-step" : undefined
+          }
         >
           {block.heading ? (
             <p className="ap-chat-section-label">{block.heading}</p>

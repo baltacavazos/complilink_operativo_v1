@@ -945,6 +945,19 @@
     border-top: 1px solid var(--ap-chat-line);
   }
 
+  .ap-worker-chat .ap-chat-section + .ap-chat-section-next {
+    border-top: 0;
+    margin-top: 0.15rem;
+    padding-top: 0.7rem;
+  }
+
+  .ap-worker-chat .ap-chat-section-next {
+    padding: 0.7rem 0.85rem 0.8rem;
+    border-radius: 0.95rem;
+    background: rgba(13, 148, 136, 0.06);
+    border: 1px solid rgba(13, 148, 136, 0.12);
+  }
+
   .ap-worker-chat .ap-chat-section-label {
     color: var(--ap-chat-accent);
     font-size: 0.72rem;
@@ -952,6 +965,15 @@
     letter-spacing: -0.01em;
     line-height: 1.2;
     margin-bottom: 0.28rem;
+  }
+
+  .ap-worker-chat .ap-chat-section-next .ap-chat-section-label {
+    color: rgb(15 118 110);
+  }
+
+  .ap-worker-chat .ap-chat-section-next p:last-child {
+    color: var(--ap-chat-ink);
+    font-weight: 450;
   }
 
   .ap-worker-chat .ap-chat-disclaimer {
