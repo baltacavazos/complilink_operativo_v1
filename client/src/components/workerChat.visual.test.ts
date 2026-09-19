@@ -39,6 +39,7 @@ describe("worker chat visual polish", () => {
     expect(sheet).toContain("sanitizeVisibleChatHistoryContent");
     expect(sheet).toContain("ap-chat-official");
     expect(sheet).toContain("ap-chat-source-link");
+    expect(sheet).toContain("line-clamp-3");
     expect(sheet).toContain("officialTitles");
     expect(helpers).toContain('title: WORKER_CHAT_TITLE');
     expect(helpers).toContain("Lectura de tus papeles");

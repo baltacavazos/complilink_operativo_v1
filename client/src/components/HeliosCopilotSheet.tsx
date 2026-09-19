@@ -462,7 +462,10 @@ export function HeliosCopilotSheet({
                             {item.kindLabel}
                           </p>
                         ) : null}
-                        <p className="mt-1 text-sm font-medium leading-6 tracking-[-0.015em] text-slate-950">
+                        <p
+                          className="mt-1 line-clamp-3 text-sm font-medium leading-6 tracking-[-0.015em] text-slate-950"
+                          title={item.title}
+                        >
                           {item.title}
                         </p>
                       </a>
