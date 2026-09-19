@@ -107,10 +107,14 @@ import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationServi
 import { ingestCompliLinkReturnPayload } from "./auditaPatronReturnWebhook";
 import {
   applyEngineDispatchToHeliosOpinionContract,
-  buildHeliosOpinionContract,
+  completeHeliosOpinionContract,
   type HeliosOpinionContract,
 } from "./heliosIntegrationService";
 import { buildSalaryDiscrepancySignal, extractSalarySignalFromClassificationPayload } from "./operationalSignals";
+import {
+  prependNarrativeExplanations,
+  readStoredLaborFiscalNarrative,
+} from "./laborFiscalNarrative";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
   pickPreferredWorkerOpinion,
@@ -1955,7 +1959,10 @@ function buildSocialSecurityValidationSummary(params: {
     recommendedDocumentTitle,
     recommendedDocumentReason,
     facts: laborFiscal.facts,
-    explanations: laborFiscal.explanations,
+    explanations: prependNarrativeExplanations(
+      laborFiscal.explanations,
+      readStoredLaborFiscalNarrative(pickPreferredWorkerOpinion(params.documents.map((item) => item.heliosOpinion))),
+    ),
     reviewSource: laborFiscal.reviewSource,
     reviewSourceLabel: laborFiscal.reviewSourceLabel,
     reviewSourceExplanation: laborFiscal.reviewSourceExplanation,
@@ -3875,7 +3882,7 @@ export const appRouter = router({
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
           });
-        const previewOpinion = buildGuestPreviewOpinion({
+        const previewOpinion = await buildGuestPreviewOpinion({
           guestPreviewId,
           traceId,
           fileName: safeFileName,
@@ -4116,7 +4123,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        let heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = await completeHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -4662,7 +4669,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        let heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = await completeHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -5214,7 +5221,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        let heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = await completeHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,

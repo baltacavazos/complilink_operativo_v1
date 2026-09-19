@@ -7,6 +7,10 @@ import {
   getHeliosDocumentState,
 } from "./caseContracts";
 import { buildHeliosOpinion, type HeliosOpinion } from "./heliosIntegrationService";
+import {
+  applyLaborFiscalNarrativeToOpinion,
+  resolveLaborFiscalNarrative,
+} from "./laborFiscalNarrative";
 
 const GUEST_PREVIEW_TTL_MS = 45 * 60 * 1000;
 const GUEST_PREVIEW_VERSION = 1;
@@ -100,14 +104,14 @@ export function readGuestPreviewToken(token: string) {
   return payload;
 }
 
-export function buildGuestPreviewOpinion(params: {
+export async function buildGuestPreviewOpinion(params: {
   guestPreviewId: string;
   traceId: string;
   fileName: string;
   classification: GuestPreviewClassification;
   preliminaryAnalysis: GuestPreviewPreliminaryAnalysis;
 }) {
-  return buildHeliosOpinion({
+  const opinion = buildHeliosOpinion({
     tenantId: "guest-preview",
     caseId: params.guestPreviewId,
     traceId: params.traceId,
@@ -115,14 +119,26 @@ export function buildGuestPreviewOpinion(params: {
     documentType: params.classification.documentType,
     documentName: params.fileName,
     jurisdiction: "México",
-      caseTitle: "Primera lectura temporal",
-
+    caseTitle: "Primera lectura temporal",
     preliminaryAnalysis: {
       confirmedData: params.preliminaryAnalysis.confirmedData,
       estimatedData: params.preliminaryAnalysis.estimatedData,
       guardrails: params.preliminaryAnalysis.guardrails,
     },
   });
+
+  const narrative = await resolveLaborFiscalNarrative({
+    documentType: params.classification.documentType,
+    document: {
+      documentType: params.classification.documentType,
+      originalName: params.fileName,
+      preliminaryAnalysis: params.preliminaryAnalysis,
+      heliosOpinion: opinion,
+    },
+    preferredOpinion: opinion,
+  });
+
+  return applyLaborFiscalNarrativeToOpinion(opinion, narrative);
 }
 
 export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {

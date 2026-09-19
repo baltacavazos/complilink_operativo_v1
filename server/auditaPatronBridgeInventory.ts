@@ -36,7 +36,7 @@ export function inspectAuditaPatronBridgeInventory(env: NodeJS.ProcessEnv = proc
     notes: [
       "El modo remoto se activa solo con AUDITAPATRON_ENGINE_WEBHOOK_URL.",
       "La firma HMAC exige AUDITAPATRON_ENGINE_HMAC_SECRET.",
-      "OPENAI_API_KEY y GEMINI_API_KEY sirven a la extracción, no al puente Helios.",
+      "OPENAI_API_KEY y GEMINI_API_KEY sirven a la extracción y, si no hay cerebro remoto, a una narrativa local breve del recibo o CFDI.",
       "API_KEY_HELIOS no forma parte del puente y no se usa para decidir mock vs remoto.",
       "Sin URL de webhook el sistema usa plantilla local mock, no el cerebro en vivo.",
     ],

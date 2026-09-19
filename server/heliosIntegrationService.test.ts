@@ -4,6 +4,7 @@ import {
   applyEngineDispatchToHeliosOpinionContract,
   buildHeliosOpinionContract,
   buildRemoteHeliosOpinionContract,
+  completeHeliosOpinionContract,
   getHeliosIntegrationMode,
   hasRemoteHeliosBridgeConfigured,
 } from "./heliosIntegrationService";
@@ -147,5 +148,45 @@ describe("heliosIntegrationService mock vs remote", () => {
     );
     expect(remote.opinion.disclaimer).toMatch(/no consulta IMSS/i);
     expect(remote.opinion.disclaimer).not.toMatch(/Helios|CompliLink/i);
+  });
+
+  it("en la plantilla local enriquece el siguiente paso con hechos del recibo y no finge portal", async () => {
+    ENV.auditapatronEngineWebhookUrl = "";
+
+    const contract = await completeHeliosOpinionContract({
+      ...buildParams(),
+      preliminaryAnalysis: {
+        confirmedData: {
+          payrollPeriod: "2026-05-01 al 2026-05-15",
+          payrollNetAmount: "$4,725.60",
+          employerRfc: "ECC190605VA1",
+          payrollNss: "84129214965",
+          mimeType: "application/pdf",
+        },
+        estimatedData: {},
+        guardrails: [],
+      },
+    });
+
+    expect(contract.mode).toBe("mock");
+    expect(contract.opinion.recommendedNextStep).toMatch(/2026-05-01 al 2026-05-15/);
+    expect(contract.opinion.recommendedNextStep).toMatch(/\$4,725\.60/);
+    expect(contract.opinion.resultCard.nextStepSummary).toMatch(/no confirma alta/i);
+    expect(contract.opinion.rawPayload.localNarrative).toMatchObject({
+      source: "deterministic",
+      liveOfficialValidation: false,
+    });
+    expect(
+      `${contract.opinion.recommendedNextStep} ${JSON.stringify(contract.opinion.rawPayload.localNarrative)}`,
+    ).not.toMatch(/Helios|CompliLink|application\/pdf|consultamos el portal/i);
+  });
+
+  it("no enriquece con IA local cuando el puente remoto ya está configurado", async () => {
+    ENV.auditapatronEngineWebhookUrl = "https://engine.example/api/auditapatron/webhook";
+
+    const contract = await completeHeliosOpinionContract(buildParams());
+    expect(contract.mode).toBe("remote");
+    expect(contract.status).toBe("processing");
+    expect(contract.opinion.rawPayload.localNarrative).toBeUndefined();
   });
 });

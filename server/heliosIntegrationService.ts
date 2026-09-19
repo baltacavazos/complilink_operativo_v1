@@ -1,4 +1,8 @@
 import { ENV } from "./_core/env";
+import {
+  applyLaborFiscalNarrativeToOpinion,
+  resolveLaborFiscalNarrative,
+} from "./laborFiscalNarrative";
 import { DOCUMENT_SIGNAL_DISCLAIMER, LOCAL_REVIEW_LABEL } from "./laborFiscalSignals";
 import {
   humanizeStructuredFieldLabel,
@@ -905,6 +909,31 @@ export function buildHeliosOpinionContract(params: BuildHeliosOpinionParams): He
     requestedOpinionType: "labor_preliminary_opinion",
     status: opinion.status,
     opinion,
+  };
+}
+
+export async function completeHeliosOpinionContract(
+  params: BuildHeliosOpinionParams,
+): Promise<HeliosOpinionContract> {
+  const contract = buildHeliosOpinionContract(params);
+  if (contract.mode !== "mock" || contract.status !== "completed") {
+    return contract;
+  }
+
+  const narrative = await resolveLaborFiscalNarrative({
+    documentType: params.documentType,
+    document: {
+      documentType: params.documentType,
+      originalName: params.documentName,
+      preliminaryAnalysis: params.preliminaryAnalysis,
+      heliosOpinion: contract.opinion,
+    },
+    preferredOpinion: contract.opinion,
+  });
+
+  return {
+    ...contract,
+    opinion: applyLaborFiscalNarrativeToOpinion(contract.opinion, narrative),
   };
 }
 
