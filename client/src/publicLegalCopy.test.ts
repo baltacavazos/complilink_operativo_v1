@@ -32,10 +32,9 @@ describe("copy público y aviso de privacidad", () => {
     expect(home).toContain("Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.");
     expect(home).toContain("No es un cruce en vivo con SAT/IMSS.");
     expect(home).toContain("Lectura orientativa desde el primer archivo");
-    expect(home).toContain("señal inicial");
+    expect(home).toContain("primera lectura");
     expect(home).not.toContain("Resultado instantáneo");
     expect(home).not.toContain("Resultado real desde el primer archivo");
-    expect(home).not.toContain("señal real");
     expect(home).not.toContain("valor probatorio");
     expect(home).toContain('alt="AuditaPatron - Conoce tus derechos"');
     expect(html).toContain("AuditaPatrón · Conoce tus derechos");

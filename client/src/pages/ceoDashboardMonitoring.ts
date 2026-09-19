@@ -146,7 +146,7 @@ export type AuditExecutiveAlert = {
   caseId: string | null;
   count: number;
   rejectionCount: number;
-  countLabel: "rechazos" | "señales";
+  countLabel: "rechazos" | "indicios";
   severity: Exclude<AuditEventSeverity, "all">;
   title: string;
   description: string;
@@ -340,7 +340,7 @@ function buildFirstDossierExecutiveSummary(params: {
     priorityStage = "preview_confirmation";
     priorityLabel = "Se enfría antes de confirmar";
     narrative = `La pérdida visible principal ocurre entre preview y confirmación: ${previewGapCount} expediente(s) no terminan de validarse tras el análisis inicial.`;
-    nextAction = "Revisar claridad del preview, naming del documento y señales de confianza antes del clic de confirmar.";
+    nextAction = "Revisar claridad del preview, naming del documento e indicios de confianza antes del clic de confirmar.";
   } else if (uploadGapCount > 0) {
     priorityStage = "confirmation_upload";
     priorityLabel = "Se cae después de confirmar";
@@ -553,7 +553,7 @@ function buildFirstDossierHistorySummary(params: {
       : dominantStage === "legal_gate"
         ? "La semana más reciente sugiere que la caída visible se explica más por conflictos del gate legal que por el embudo documental puro."
         : dominantStage === "preview_confirmation"
-          ? "La fricción reciente se concentra antes de confirmar: conviene vigilar claridad del preview y señales de confianza en el primer expediente."
+          ? "La fricción reciente se concentra antes de confirmar: conviene vigilar claridad del preview e indicios de confianza en el primer expediente."
           : dominantStage === "confirmation_upload"
             ? "El mayor corte semanal aparece después de confirmar: el cierre de carga todavía compite con pasos secundarios o dudas finales."
             : "La serie reciente no muestra una fricción dominante clara; conviene vigilar si la caída semanal vuelve a crecer antes de intervenir más fuerte.";
@@ -1047,10 +1047,10 @@ function buildAccessRiskExecutiveAlerts(items: AuditFeedItem[]): AuditExecutiveA
     const state = parseAuditState(item.afterState);
     const scope = item.caseId ? "case" : "tenant";
     const scopeId = item.caseId ?? item.tenantId;
-    const title = readString(state?.title) ?? "Señal de acceso inusual";
+    const title = readString(state?.title) ?? "Indicio de acceso inusual";
     const description =
       readString(state?.description) ??
-      "Se detectó una señal reciente de acceso fuera del patrón esperado y conviene revisar el contexto visible.";
+      "Se detectó un indicio reciente de acceso fuera del patrón esperado y conviene revisar el contexto visible.";
     const kind = readString(state?.kind) ?? title.toLowerCase();
     const severity = normalizeAccessRiskSeverity(state?.severity);
     const bucketKey = [item.tenantId, item.caseId ?? "__tenant__", scope, kind, title].join("::");
@@ -1081,12 +1081,12 @@ function buildAccessRiskExecutiveAlerts(items: AuditFeedItem[]): AuditExecutiveA
     caseId: bucket.caseId,
     count: bucket.count,
     rejectionCount: bucket.count,
-    countLabel: "señales",
+    countLabel: "indicios",
     severity: bucket.severity,
     title: bucket.title,
     description:
       bucket.count > 1
-        ? `${bucket.description} Esta señal se repitió ${bucket.count} veces en la ventana visible.`
+        ? `${bucket.description} Este indicio se repitió ${bucket.count} veces en la ventana visible.`
         : bucket.description,
   }));
 }

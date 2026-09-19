@@ -3010,7 +3010,7 @@ export default function CeoDashboard() {
                           </div>
                           <div className="mt-4 grid gap-3 sm:grid-cols-3">
                             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible</p>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Lo que se ve</p>
                               <p className="mt-2 text-xl font-semibold text-slate-950">{formatNumber(auditSummary.firstDossier.visibleStarts)}</p>
                               <p className="mt-1 text-xs leading-5 text-slate-500">Expedientes con preview visible en consola.</p>
                             </div>
@@ -3325,7 +3325,7 @@ export default function CeoDashboard() {
                       ) : (
                         <SectionEmptyState
                           title="No hay tenants que coincidan con el filtro actual"
-                          description="Ajusta la búsqueda o amplía la ventana temporal para recuperar visibilidad de organizaciones, casos y señales operativas."
+                          description="Ajusta la búsqueda o amplía la ventana temporal para recuperar visibilidad de organizaciones, casos e indicios operativos."
                           onClear={clearAllFilters}
                         />
                       )}
@@ -4171,7 +4171,7 @@ export default function CeoDashboard() {
                       <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Fallos contractuales</p>
                         <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatNumber(bridgeSmokeExecutiveSummary.contractualFailures)}</p>
-                        <p className="mt-2">Señal para revisar divergencias entre health, webhook y ack esperado 200/202.</p>
+                        <p className="mt-2">Indicio para revisar divergencias entre health, webhook y ack esperado 200/202.</p>
                       </div>
                       <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Corridas conformes</p>
@@ -4255,7 +4255,7 @@ export default function CeoDashboard() {
                 <article className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Señales operativas</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Indicios operativos</p>
                       <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Lectura rápida del carril bridge</h3>
                     </div>
                     <GitBranch className="h-5 w-5 text-slate-400" />
@@ -4643,7 +4643,7 @@ export default function CeoDashboard() {
           eyebrow: "Asesor laboral · modo CEO activo",
           title: "Dame una instrucción y el asesor laboral te responde separando lo confirmado, lo inferido y lo pendiente.",
           description:
-            "Aquí conservas la misma inteligencia laboral y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola. Si una petición es sensible, el asesor la deja primero como propuesta sujeta a confirmación.",
+            "Aquí conservas la misma inteligencia laboral y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos e indicios del sistema visibles en esta consola. Si una petición es sensible, el asesor la deja primero como propuesta sujeta a confirmación.",
           documentBadge: "Basado en snapshot ejecutivo, alertas, permisos y documentos visibles",
           capabilityBadge: "Puede priorizar riesgos, explicar contexto legal, degradar por permisos y sugerir instrucciones operativas seguras",
           quickHighlights: [

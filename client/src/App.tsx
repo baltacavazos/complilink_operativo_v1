@@ -92,15 +92,28 @@ function Router() {
 
 function MobileQuickExit() {
   const [location] = useLocation();
+  const path = location.split("?")[0];
 
-  if (location === "/" || location === "/acceso") {
+  if (
+    path === "/" ||
+    path === "/acceso" ||
+    path === "/auditar" ||
+    path === "/historial" ||
+    path === "/expediente" ||
+    path === "/pagos"
+  ) {
     return null;
   }
 
   return (
-    <a
-      href="/"
-      className="fixed bottom-3 right-3 z-50 rounded-full bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] transition hover:bg-slate-900 sm:hidden">Salir</a>
+    <div className="sm:hidden border-b border-slate-200 bg-white px-3 py-2">
+      <a
+        href="/"
+        className="inline-flex items-center rounded-full bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white"
+      >
+        Volver
+      </a>
+    </div>
   );
 }
 
@@ -110,8 +123,8 @@ function App() {
       <ThemeProvider defaultTheme="dark" switchable>
         <TooltipProvider>
           <Toaster />
-          <Router />
           <MobileQuickExit />
+          <Router />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

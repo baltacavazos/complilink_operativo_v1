@@ -39,8 +39,12 @@ describe("responsive layout regression guards", () => {
 
   it("keeps the quick exit action compact on mobile", () => {
     const appSource = readProjectFile("client", "src", "App.tsx");
+    const shellSource = readProjectFile("client", "src", "components", "MobileAppShell.tsx");
 
-    expect(appSource).toContain('bottom-3 right-3');
-    expect(appSource).toContain('sm:hidden">Salir<');
+    expect(appSource).not.toContain("fixed bottom-3 right-3");
+    expect(appSource).not.toContain(">Salir<");
+    expect(appSource).toContain("path === \"/auditar\"");
+    expect(appSource).toContain(">Volver<");
+    expect(shellSource).toContain(">Volver<");
   });
 });
