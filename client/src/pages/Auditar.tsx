@@ -3178,7 +3178,8 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
       ([key, value]) =>
         value.length > 0 &&
         isHumanMeaningfulAnalysisKey(key) &&
-        !/^(true|false)$/i.test(value)
+        !/^(true|false)$/i.test(value) &&
+        !/^sin dato visible$/i.test(value)
     )
     .slice(0, 6);
 }
@@ -9185,6 +9186,7 @@ export default function Auditar() {
                 </div>
 
                 <div
+                  data-ap-status-cluster
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
@@ -12872,8 +12874,8 @@ Reforzar con otro documento
                               ) : (
                                 <div className="mt-4 space-y-3">
                                   {confirmedEntries.map(([key, value]) => (
-                                    <div key={key} className="rounded-[1rem] bg-white p-3">
-                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                    <div key={key} className="ap-worker-field rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold tracking-tight text-emerald-700">
                                         {getAnalysisFieldLabel(key)}
                                       </p>
                                       <p className="mt-1 text-sm leading-6 text-slate-800">
@@ -12885,7 +12887,7 @@ Reforzar con otro documento
                               )}
                             </div>
 
-                            <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                            <div data-ap-review-panel className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
                               <div className="flex items-center justify-between gap-4">
                                 <p className="font-semibold text-amber-950">
                                   Datos a revisar
@@ -12932,8 +12934,8 @@ Reforzar con otro documento
                               ) : (
                                 <div className="mt-4 space-y-3">
                                   {estimatedEntries.map(([key, value]) => (
-                                    <div key={key} className="rounded-[1rem] bg-white p-3">
-                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                    <div key={key} className="ap-worker-field rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold tracking-tight text-amber-700">
                                         {getAnalysisFieldLabel(key)}
                                       </p>
                                       <p className="mt-1 text-sm leading-6 text-slate-800">
