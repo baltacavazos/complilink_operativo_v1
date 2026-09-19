@@ -9160,7 +9160,7 @@ export default function Auditar() {
                     data-ap-status-cluster
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                   >
-                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
                         Privacidad radical
                       </p>
@@ -9168,7 +9168,7 @@ export default function Auditar() {
                         Esta revisión es para ti. No compartimos tu archivo con tu empresa.
                       </p>
                     </article>
-                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
                         Control total
                       </p>
@@ -9176,7 +9176,7 @@ export default function Auditar() {
                         Primero ves el borrador y luego decides si lo guardas.
                       </p>
                     </article>
-                    <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
                       <p className="font-semibold text-slate-950">
                         Borrado visible
                       </p>
@@ -9232,7 +9232,7 @@ export default function Auditar() {
                 >
                   <article
                     data-ap-next-step
-                    className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm"
+                    className="ap-next-step-card rounded-[1.25rem] border border-slate-200 p-4 shadow-sm"
                   >
                     <p className="text-sm font-semibold text-slate-950">
                       Qué sigue ahora

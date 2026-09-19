@@ -706,15 +706,14 @@
     color: rgb(51 65 85) !important;
   }
 
-  /* HOTFIX LIVE: «Qué sigue ahora» and other /auditar bodies were navy+slate
-     (dark remap of bg-white beat the white-card rule; article text stayed dark).
-     Keep a light panel with dark body so the card stays readable. */
+  /* HOTFIX LIVE: beat the dark remap
+     `.dark .audita-auditar :is(article)[class*="bg-white"]:not():not()` is 0,5,1.
+     These cards no longer use bg-white, and the selector still out-specifies it. */
   .audita-auditar [data-ap-next-step],
-  .dark .audita-auditar [data-ap-next-step],
-  .audita-auditar [data-ap-status-cluster] article[class*="bg-white"],
-  .dark .audita-auditar [data-ap-status-cluster] article[class*="bg-white"],
-  .audita-auditar [data-ap-upload-copy] [class*="bg-white"],
-  .dark .audita-auditar [data-ap-upload-copy] [class*="bg-white"] {
+  .audita-auditar [data-ap-next-step].ap-next-step-card,
+  .dark .audita-auditar article[data-ap-next-step]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb),
+  .dark .audita-auditar [data-ap-status-cluster] article:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb),
+  .dark .audita-auditar [data-ap-upload-copy] [class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb) {
     background-color: rgb(255 255 255) !important;
     border-color: rgb(226 232 240) !important;
     color: rgb(30 41 59) !important;
