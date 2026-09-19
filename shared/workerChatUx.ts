@@ -28,6 +28,7 @@ export const WORKER_CHAT_SHEET_COPY = {
   quickHighlights: [
     WORKER_CHAT_CLEAR_HEADING,
     WORKER_CHAT_KNOWN_HEADING,
+    WORKER_CHAT_MISSING_HEADING,
     WORKER_CHAT_NEXT_HEADING,
   ],
   promptsHeading: "Empieza por aquí",

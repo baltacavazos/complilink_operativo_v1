@@ -946,9 +946,9 @@
   }
 
   .ap-worker-chat .ap-chat-section-label {
-    color: var(--ap-chat-faint);
-    font-size: 0.68rem;
-    font-weight: 560;
+    color: var(--ap-chat-accent);
+    font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.2;
     margin-bottom: 0.28rem;

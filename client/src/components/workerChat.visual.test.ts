@@ -20,6 +20,7 @@ describe("worker chat visual polish", () => {
     expect(sheet).toContain("ap-chat-chip");
     expect(sheet).toContain("ap-chat-prompt");
     expect(sheet).toContain('variant="calm"');
+    expect(sheet).toContain("sanitizeMultiline");
     expect(sheet).toContain("WORKER_CHAT_SHEET_COPY");
     expect(sheet).not.toContain("uppercase tracking-[0.14em]");
     expect(sheet).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);

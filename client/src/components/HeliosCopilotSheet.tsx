@@ -108,6 +108,13 @@ export function HeliosCopilotSheet({
     quickHighlights: [...WORKER_CHAT_SHEET_COPY.quickHighlights],
     ...uiCopy,
   };
+  const sanitizeMultiline = (value?: string | null) => {
+    if (value == null) return value ?? null;
+    return value
+      .split(/\r?\n/)
+      .map((line) => sanitizeClientVisibleCopy(line) ?? line)
+      .join("\n");
+  };
   const copy = {
     ...mergedCopy,
     eyebrow: sanitizeClientVisibleCopy(mergedCopy.eyebrow) ?? mergedCopy.eyebrow,
@@ -145,15 +152,15 @@ export function HeliosCopilotSheet({
     .map((prompt) => sanitizeClientVisibleCopy(prompt) ?? prompt);
   const visibleMessages = messages.map((message) => ({
     ...message,
-    content: sanitizeClientVisibleCopy(message.content) ?? message.content,
+    content: sanitizeMultiline(message.content) ?? message.content,
   }));
-  const visibleSummary = sanitizeClientVisibleCopy(summary) ?? summary;
-  const visibleDisclaimer = sanitizeClientVisibleCopy(disclaimer) ?? disclaimer;
+  const visibleSummary = sanitizeMultiline(summary) ?? summary;
+  const visibleDisclaimer = sanitizeMultiline(disclaimer) ?? disclaimer;
   const visibleCaseTitle = sanitizeClientVisibleCopy(caseTitle) ?? caseTitle;
   const visiblePromptsContext =
     sanitizeClientVisibleCopy(suggestedPromptsContext) ?? suggestedPromptsContext;
   const visibleHistoryContext = sanitizeClientVisibleCopy(historyContext) ?? historyContext;
-  const quickHighlights = copy.quickHighlights.slice(0, 3);
+  const quickHighlights = copy.quickHighlights.slice(0, 4);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -208,7 +215,7 @@ export function HeliosCopilotSheet({
                   </span>
                 ) : null}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {quickHighlights.map((item) => (
                   <div
                     key={item}

@@ -124,6 +124,7 @@ describe("chat UX helpers", () => {
     expect(WORKER_CHAT_SHEET_COPY.quickHighlights).toEqual([
       "Respuesta clara",
       "Lo que sí se sabe",
+      "Lo que falta",
       "Siguiente paso",
     ]);
     expect(
@@ -160,5 +161,27 @@ describe("chat UX helpers", () => {
       null,
     ]);
     expect(blocks.at(-1)?.kind).toBe("disclaimer");
+  });
+
+  it("conserva las cuatro secciones aunque el sanitizador de UI colapse espacios", () => {
+    const formatted = formatWorkerChatAnswer({
+      answer: "En tu recibo se ve un descuento de IMSS.",
+      known: "Hay un descuento de IMSS de $120.50.",
+      missing: "No hay constancia oficial de pago al IMSS.",
+      nextStep: "Compara con el siguiente recibo.",
+    });
+    const lineSafe = formatted
+      .split(/\r?\n/)
+      .map((line) => sanitizeClientVisibleCopy(line) ?? line)
+      .join("\n");
+
+    expect(lineSafe).toContain("Lo que falta");
+    expect(parseWorkerStructuredAnswer(lineSafe).map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
   });
 });
