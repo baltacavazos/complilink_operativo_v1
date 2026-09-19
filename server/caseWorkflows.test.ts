@@ -466,7 +466,7 @@ describe("appRouter case workflows", () => {
     expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.socialSecurityValidation).toMatchObject({
       statusLabel: "Cruce pendiente",
-      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      actionLabel: "Revisar alertas visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: false,
       hasInfonavitSignal: false,
@@ -1201,7 +1201,7 @@ describe("appRouter case workflows", () => {
 
     expect(result).toMatchObject({
       statusLabel: "Cruce visible listo",
-      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      actionLabel: "Revisar alertas visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: true,
       hasInfonavitSignal: true,
@@ -1209,7 +1209,7 @@ describe("appRouter case workflows", () => {
       infonavitSignalsCount: 1,
       documentsWithOpinion: 2,
       lastRevalidationSummary:
-        "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
+        "Ya hay alertas visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
     });
     expect(result.coverageScore).toBeGreaterThan(60);
     expect(result.lastRevalidatedAt).toMatch(/^2026-/);

@@ -83,7 +83,7 @@ export default function AccessGate() {
           <AuditaPatronLogoWordmark
             className="mt-5 justify-center"
             imageClassName="max-w-[210px]"
-            subtitleClassName="text-[11px] tracking-tight text-slate-500"
+            subtitleClassName="text-[11px] tracking-tight text-slate-700"
           />
           <LocalPasswordForm returnPath={returnTo} accessMode={accessMode} />
           <div className="mt-8 flex justify-center">

@@ -100,7 +100,12 @@ function MobileQuickExit() {
     path === "/auditar" ||
     path === "/historial" ||
     path === "/expediente" ||
-    path === "/pagos"
+    path === "/pagos" ||
+    path === "/404" ||
+    path.startsWith("/ceo") ||
+    path.startsWith("/aviso-de-privacidad") ||
+    path.startsWith("/privacidad") ||
+    path.startsWith("/legal")
   ) {
     return null;
   }
@@ -109,6 +114,8 @@ function MobileQuickExit() {
     <div className="sm:hidden border-b border-slate-200 bg-white px-3 py-2">
       <a
         href="/"
+        aria-label="Volver al inicio"
+        title="Volver al inicio"
         className="inline-flex items-center rounded-full bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white"
       >
         Volver

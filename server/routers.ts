@@ -1911,16 +1911,16 @@ function buildSocialSecurityValidationSummary(params: {
 
   const summary =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
-      ? "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente."
+      ? "Ya hay alertas visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente."
       : imssDocumentsCount > 0
-        ? "Ya hay señales visibles de IMSS en tus documentos, pero todavía conviene reforzar o confirmar el frente de Infonavit. Esto no es una consulta en vivo al IMSS."
+        ? "Ya hay alertas visibles de IMSS en tus documentos, pero todavía conviene reforzar o confirmar el frente de Infonavit. Esto no es una consulta en vivo al IMSS."
         : infonavitSignalsCount > 0
-          ? "Ya hay señales visibles de Infonavit en tus documentos, pero todavía conviene reforzar o confirmar el frente de IMSS. Esto no es una consulta en vivo."
-          : "Todavía faltan señales suficientes de IMSS e Infonavit en tus documentos para darte un cruce más completo. AuditaPatrón no consulta esos institutos en vivo.";
+          ? "Ya hay alertas visibles de Infonavit en tus documentos, pero todavía conviene reforzar o confirmar el frente de IMSS. Esto no es una consulta en vivo."
+          : "Todavía faltan alertas suficientes de IMSS e Infonavit en tus documentos para darte un cruce más completo. AuditaPatrón no consulta esos institutos en vivo.";
 
   const recommendedNextStep =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
-      ? "Si subes un documento nuevo, puedes volver a revisar las señales visibles. Eso no sustituye una consulta oficial ante IMSS o Infonavit."
+      ? "Si subes un documento nuevo, puedes volver a revisar las alertas visibles. Eso no sustituye una consulta oficial ante IMSS o Infonavit."
       : imssDocumentsCount > 0
         ? "Si cuentas con un estado de cuenta o constancia relacionada con Infonavit, súbela para cerrar mejor el cruce visible."
         : infonavitSignalsCount > 0
@@ -1947,12 +1947,12 @@ function buildSocialSecurityValidationSummary(params: {
 
   const recommendedDocumentReason =
     recommendedDocumentKey === null
-      ? "Tu cruce base ya está visible en los documentos; el siguiente mejor paso es volver a revisar las señales cuando subas evidencia nueva."
+      ? "Tu cruce base ya está visible en los documentos; el siguiente mejor paso es volver a revisar las alertas cuando subas evidencia nueva."
       : recommendedDocumentKey === "infonavit"
-        ? "Ya hay señal suficiente del frente IMSS y el mayor salto de claridad ahora viene de reforzar el lado de Infonavit."
+        ? "Ya hay alerta suficiente del frente IMSS y el mayor salto de claridad ahora viene de reforzar el lado de Infonavit."
         : recommendedDocumentKey === "imss"
-          ? "Ya hay señal suficiente del frente Infonavit y el mayor salto de claridad ahora viene de reforzar el lado de IMSS."
-          : "Todavía no hay señales firmes de IMSS e Infonavit, así que cualquiera de esos soportes puede abrir el cruce inicial del expediente.";
+          ? "Ya hay alerta suficiente del frente Infonavit y el mayor salto de claridad ahora viene de reforzar el lado de IMSS."
+          : "Todavía no hay alertas firmes de IMSS e Infonavit, así que cualquiera de esos soportes puede abrir el cruce inicial del expediente.";
 
   const clarityChangeLabel =
     lastRecordedCoverage === null
@@ -1966,7 +1966,7 @@ function buildSocialSecurityValidationSummary(params: {
     statusLabel,
     summary,
     recommendedNextStep,
-    actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+    actionLabel: "Revisar alertas visibles de IMSS e Infonavit",
     disclaimer: DOCUMENT_SIGNAL_DISCLAIMER,
     liveImssValidation: false,
     validationMode: laborFiscal.validationMode,
@@ -2126,7 +2126,7 @@ function buildHeliosCopilotContext(params: {
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
       missingDocuments: params.missingDocuments,
       guidance:
-        "Responde solo con las señales del documento, las bases legales ya listadas y los títulos oficiales del digest. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
+        "Responde solo con las alertas del documento, las bases legales ya listadas y los títulos oficiales del digest. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
       pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
@@ -3606,7 +3606,7 @@ export const appRouter = router({
         const commerceStatus = await getUserCommerceStatus(ctx.user);
         if (!commerceStatus.entitlements.canUseRevalidations) {
           throwUpgradeRequired({
-            featureLabel: "Revisión de señales IMSS e Infonavit",
+            featureLabel: "Revisión de alertas IMSS e Infonavit",
             requiredPlan: "pro",
             currentPlan: commerceStatus.activePlanKey,
           });
