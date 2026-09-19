@@ -20,6 +20,8 @@ import {
   hasInternalControlMarkers,
   hasInventedLegalCitation,
   parseWorkerStructuredAnswer,
+  sanitizeVisibleChatHistoryContent,
+  sanitizeVisibleChatHistoryMessages,
   sanitizeWorkerChatCopy,
   stripInternalControlMarkers,
   toFriendlyWorkerChatError,
@@ -85,6 +87,56 @@ describe("sanitizeWorkerChatCopy", () => {
     expect(friendly).toContain(WORKER_CHAT_MULTI_DOC_UPSELL);
     expect(friendly).not.toMatch(/required_plan|current_plan|\|\|/);
     expect(hasForbiddenWorkerChatClaim(friendly)).toBe(false);
+  });
+});
+
+describe("sanitizeVisibleChatHistoryContent", () => {
+  it("limpia burbujas viejas de localStorage y no deja required_plan/current_plan", () => {
+    const storedLeak =
+      "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial. Puedes seguir usando la parte gratuita o desbloquearlo cuando te haga sentido.||required_plan=essential||current_plan=free";
+    const rendered = sanitizeVisibleChatHistoryContent(storedLeak);
+
+    expect(rendered).toContain("Respuesta clara");
+    expect(rendered).toContain("Lo que sí se sabe");
+    expect(rendered).toContain("Lo que falta");
+    expect(rendered).toContain("Siguiente paso");
+    expect(rendered).toContain(WORKER_CHAT_MULTI_DOC_UPSELL);
+    expect(rendered).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(hasInternalControlMarkers(rendered)).toBe(false);
+    expect(hasForbiddenWorkerChatClaim(rendered)).toBe(false);
+    expect(rendered).not.toMatch(/\bHelios\b/i);
+  });
+
+  it("al renderizar historial sucio conserva las 4 secciones de una respuesta nueva", () => {
+    const cleanAnswer = formatWorkerChatAnswer({
+      answer: "En tu recibo se ve un descuento de IMSS de $120.50.",
+      known: "El recibo muestra periodo, neto y un descuento de IMSS.",
+      missing: "No hay constancia oficial de pago al IMSS.",
+      nextStep: "Compara con el siguiente recibo.",
+    });
+    const dirtyHistory = sanitizeVisibleChatHistoryMessages([
+      {
+        role: "assistant",
+        content:
+          "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial.||required_plan=essential||current_plan=free",
+      },
+      { role: "user", content: "¿Me descontaron IMSS?" },
+      { role: "assistant", content: cleanAnswer },
+    ]);
+
+    expect(dirtyHistory[0]?.content).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(dirtyHistory[0]?.content).toContain("Respuesta clara");
+    expect(dirtyHistory[1]?.content).toBe("¿Me descontaron IMSS?");
+    expect(parseWorkerStructuredAnswer(dirtyHistory[2]?.content ?? "").map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
+    expect(dirtyHistory.map((item) => item.content).join("\n")).not.toMatch(
+      /required_plan|current_plan|\|\||\bHelios\b/i,
+    );
   });
 });
 

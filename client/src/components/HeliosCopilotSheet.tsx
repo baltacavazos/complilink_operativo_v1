@@ -1,6 +1,10 @@
 import { AIChatBox, type Message as AIChatMessage } from "@/components/AIChatBox";
 import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
-import { WORKER_CHAT_DISCLAIMER, WORKER_CHAT_SHEET_COPY } from "@shared/workerChatUx";
+import {
+  WORKER_CHAT_DISCLAIMER,
+  WORKER_CHAT_SHEET_COPY,
+  sanitizeVisibleChatHistoryContent,
+} from "@shared/workerChatUx";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -110,10 +114,7 @@ export function HeliosCopilotSheet({
   };
   const sanitizeMultiline = (value?: string | null) => {
     if (value == null) return value ?? null;
-    return value
-      .split(/\r?\n/)
-      .map((line) => sanitizeClientVisibleCopy(line) ?? line)
-      .join("\n");
+    return sanitizeVisibleChatHistoryContent(value);
   };
   const copy = {
     ...mergedCopy,

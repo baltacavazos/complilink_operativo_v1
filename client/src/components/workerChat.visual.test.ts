@@ -28,6 +28,8 @@ describe("worker chat visual polish", () => {
 
     expect(chat).toContain("CalmAssistantAnswer");
     expect(chat).toContain("parseWorkerStructuredAnswer");
+    expect(chat).toContain("sanitizeVisibleChatHistoryContent");
+    expect(sheet).toContain("sanitizeVisibleChatHistoryContent");
     expect(chat).toContain('variant?: "default" | "calm"');
     expect(chat).toContain("ap-chat-bubble-user");
     expect(chat).toContain("ap-chat-bubble-assistant");
@@ -45,5 +47,9 @@ describe("worker chat visual polish", () => {
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
     expect(read("../pages/Auditar.tsx")).toContain('chatHarness") === "1"');
+    expect(read("../pages/Auditar.tsx")).toContain('chatHistoryHarness") === "1"');
+    expect(read("../pages/Auditar.tsx")).toContain(
+      "||required_plan=essential||current_plan=free",
+    );
   });
 });

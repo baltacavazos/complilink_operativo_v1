@@ -21,6 +21,8 @@ export {
   hasInternalControlMarkers,
   hasInventedLegalCitation,
   parseWorkerStructuredAnswer,
+  sanitizeVisibleChatHistoryContent,
+  sanitizeVisibleChatHistoryMessages,
   sanitizeWorkerChatCopy,
   stripInternalControlMarkers,
   stripInventedLegalCitations,

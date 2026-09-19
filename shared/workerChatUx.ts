@@ -404,6 +404,38 @@ export function toFriendlyWorkerChatError(raw?: string | null, fallback?: string
   return cleaned || fallbackText;
 }
 
+export function sanitizeVisibleChatHistoryContent(value?: string | null): string {
+  if (value == null) return "";
+  const raw = value;
+  if (!raw.trim()) return "";
+
+  const looksLikeUpgradeLeak =
+    hasInternalControlMarkers(raw) ||
+    /está disponible desde Audita (?:Esencial|Pro)/i.test(raw) ||
+    /required_plan|current_plan/i.test(raw);
+
+  if (looksLikeUpgradeLeak) {
+    return toFriendlyWorkerChatError(raw, raw);
+  }
+
+  return raw
+    .split(/\r?\n/)
+    .map((line) => sanitizeWorkerChatCopy(line) ?? line)
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+export function sanitizeVisibleChatHistoryMessages<
+  T extends { role: string; content: string },
+>(messages: T[]): T[] {
+  return messages.flatMap((message) => {
+    const content = sanitizeVisibleChatHistoryContent(message.content);
+    if (!content) return [];
+    return [{ ...message, content }];
+  });
+}
+
 export function ensureWorkerChatDisclaimer(
   content: string,
   disclaimer = WORKER_CHAT_DISCLAIMER,

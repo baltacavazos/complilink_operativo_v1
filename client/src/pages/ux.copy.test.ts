@@ -259,6 +259,7 @@ describe("copy visible de la experiencia", () => {
     expect(componentSource).toContain("nextSuggestedDocument");
     expect(pageSource).toContain("getDocumentContextualShortcuts");
     expect(pageSource).toContain("sanitizePersistedHeliosCopilotMessages");
+    expect(pageSource).toContain("sanitizeVisibleChatHistoryContent");
     expect(pageSource).toContain("heliosCopilotHistoryStorageKey");
     expect(pageSource).toContain("preferredTone");
     expect(pageSource).toContain("responseTone: preferredTone");

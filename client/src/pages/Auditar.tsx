@@ -32,6 +32,7 @@ import {
   buildWorkerStarterQuestions,
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
+  sanitizeVisibleChatHistoryContent,
   sanitizeWorkerChatCopy,
   toFriendlyWorkerChatError,
 } from "@shared/workerChatUx";
@@ -1721,15 +1722,20 @@ export function sanitizePersistedHeliosCopilotMessages(
       const role = record.role;
       const content = record.content;
 
-      if (
-        (role === "user" || role === "assistant") &&
-        typeof content === "string" &&
-        content.trim().length > 0
-      ) {
-        return [
-          { role, content: content.trim() } satisfies HeliosCopilotMessage,
-        ];
+      if (role !== "user" && role !== "assistant") {
+        return [];
       }
+
+      if (typeof content !== "string" || content.trim().length === 0) {
+        return [];
+      }
+
+      const cleaned = sanitizeVisibleChatHistoryContent(content);
+      if (!cleaned) {
+        return [];
+      }
+
+      return [{ role, content: cleaned } satisfies HeliosCopilotMessage];
 
       return [];
     })
@@ -1740,11 +1746,18 @@ function appendHeliosCopilotMessage(
   current: HeliosCopilotMessage[],
   next: HeliosCopilotMessage
 ) {
-  return [...current, next].slice(-6);
+  const content = sanitizeVisibleChatHistoryContent(next.content);
+  if (!content) {
+    return current.slice(-6);
+  }
+
+  return [...current, { ...next, content }].slice(-6);
 }
 
 function summarizeHeliosCopilotSnippet(content: string, maxLength = 120) {
-  const normalized = content.replace(/\s+/g, " ").trim();
+  const normalized = sanitizeVisibleChatHistoryContent(content)
+    .replace(/\s+/g, " ")
+    .trim();
   if (normalized.length <= maxLength) {
     return normalized;
   }
@@ -1776,10 +1789,15 @@ function buildHeliosCopilotConversationHistoryInput(params: {
         typeof message.content === "string" &&
         message.content.trim().length > 0
       ) {
+        const cleaned = sanitizeVisibleChatHistoryContent(message.content);
+        if (!cleaned) {
+          return [];
+        }
+
         return [
           {
             role: message.role,
-            content: message.content.trim(),
+            content: cleaned,
           } as const,
         ];
       }
@@ -4366,7 +4384,14 @@ export default function Auditar() {
     if (typeof window === "undefined") {
       return false;
     }
-    return new URLSearchParams(window.location.search).get("chatHarness") === "1";
+    const params = new URLSearchParams(window.location.search);
+    return params.get("chatHarness") === "1" || params.get("chatHistoryHarness") === "1";
+  }, []);
+  const chatHistoryHarnessMode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return new URLSearchParams(window.location.search).get("chatHistoryHarness") === "1";
   }, []);
   const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode || chatHarnessMode;
   const billingReturnState = useMemo(() => {
@@ -4894,7 +4919,9 @@ export default function Auditar() {
 
     window.localStorage.setItem(
       heliosCopilotHistoryStorageKey,
-      JSON.stringify(heliosCopilotMessages.slice(-6))
+      JSON.stringify(
+        sanitizePersistedHeliosCopilotMessages(heliosCopilotMessages.slice(-6))
+      )
     );
   }, [heliosCopilotHistoryStorageKey, heliosCopilotMessages]);
 
@@ -8483,6 +8510,15 @@ export default function Auditar() {
           onOpenChange={() => undefined}
           onSendMessage={() => undefined}
           messages={[
+            ...(chatHistoryHarnessMode
+              ? ([
+                  {
+                    role: "assistant",
+                    content:
+                      "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial. Puedes seguir usando la parte gratuita o desbloquearlo cuando te haga sentido.||required_plan=essential||current_plan=free",
+                  },
+                ] as const)
+              : []),
             {
               role: "assistant",
               content:
