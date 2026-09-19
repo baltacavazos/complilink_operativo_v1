@@ -537,6 +537,30 @@ describe("sanitizePersistedHeliosCopilotMessages", () => {
     expect(sanitizePersistedHeliosCopilotMessages({ invalid: true })).toEqual([]);
     expect(sanitizePersistedHeliosCopilotMessages(null)).toEqual([]);
   });
+
+  it("al cargar historial viejo quita ||required_plan||/||current_plan|| y reescribe el paywall", () => {
+    const loaded = sanitizePersistedHeliosCopilotMessages([
+      {
+        role: "assistant",
+        content:
+          "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial. Puedes seguir usando la parte gratuita o desbloquearlo cuando te haga sentido.||required_plan=essential||current_plan=free",
+      },
+      { role: "user", content: "¿Qué dice mi recibo?" },
+    ]);
+
+    expect(loaded).toHaveLength(2);
+    expect(loaded[0]?.content).toContain("Respuesta clara");
+    expect(loaded[0]?.content).toContain("Lo que sí se sabe");
+    expect(loaded[0]?.content).toContain("Lo que falta");
+    expect(loaded[0]?.content).toContain("Siguiente paso");
+    expect(loaded[0]?.content).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(loaded[1]?.content).toBe("¿Qué dice mi recibo?");
+    expect(JSON.stringify(loaded)).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(auditarSource).toContain("sanitizeVisibleChatHistoryContent");
+    expect(auditarSource).toContain(
+      "sanitizePersistedHeliosCopilotMessages(heliosCopilotMessages.slice(-6))",
+    );
+  });
 });
 
 describe("formatVisibleFileSize", () => {

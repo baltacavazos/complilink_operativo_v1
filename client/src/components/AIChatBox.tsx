@@ -2,7 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { parseWorkerStructuredAnswer } from "@shared/workerChatUx";
+import {
+  parseWorkerStructuredAnswer,
+  sanitizeVisibleChatHistoryContent,
+} from "@shared/workerChatUx";
 import { Loader2, Send, User, Sparkles } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
@@ -117,7 +120,7 @@ export type AIChatBoxProps = {
  * ```
  */
 function CalmAssistantAnswer({ content }: { content: string }) {
-  const blocks = parseWorkerStructuredAnswer(content);
+  const blocks = parseWorkerStructuredAnswer(sanitizeVisibleChatHistoryContent(content));
   if (blocks.length === 0) {
     return null;
   }
@@ -180,8 +183,14 @@ export function AIChatBox({
   const inputAreaRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Filter out system messages
-  const displayMessages = messages.filter((msg) => msg.role !== "system");
+  // Filter out system messages and strip leftover plan markers from old history
+  const displayMessages = messages
+    .filter((msg) => msg.role !== "system")
+    .map((msg) => ({
+      ...msg,
+      content: sanitizeVisibleChatHistoryContent(msg.content),
+    }))
+    .filter((msg) => msg.content.trim().length > 0);
 
   // Calculate min-height for last assistant message to push user message to top
   const [minHeightForLastMessage, setMinHeightForLastMessage] = useState(0);
