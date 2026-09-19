@@ -541,7 +541,7 @@ export function sanitizePreviewText(
     return humanized;
   }
 
-  const normalized =
+  let normalized =
     typeof value === "number"
       ? String(value)
       : (humanized ?? String(value ?? ""))
@@ -550,6 +550,11 @@ export function sanitizePreviewText(
 
   if (!normalized) {
     return emptyFallback;
+  }
+
+  const withoutLeakedLabel = cleanPayrollExtractedValue(normalized);
+  if (withoutLeakedLabel) {
+    normalized = withoutLeakedLabel;
   }
 
   if (isLikelyTechnicalPreviewBlob(normalized)) {
@@ -1429,7 +1434,7 @@ function getRecommendedDocumentHint(targetType: DossierTarget["type"]) {
     case "payroll_receipt":
       return "Voy a subir recibos de nómina para comparar periodos, pagos y deducciones.";
     case "cfdi":
-      return "Voy a subir CFDI para contrastar lo timbrado con otros documentos del expediente.";
+      return "Voy a subir el comprobante fiscal (CFDI) para contrastar lo timbrado con otros documentos del expediente.";
     case "contract":
       return "Voy a subir mi contrato o condiciones iniciales para comparar lo pactado con lo ocurrido.";
     case "imss":
@@ -2267,7 +2272,7 @@ export function buildPayrollFactSignal(params: {
     ? `Retenciones visibles: ${listedRetentions.join(", ")}. Compáralas con el total de deducciones de este recibo.`
     : deductionsAreZero
       ? "Retenciones: el total de deducciones que se alcanza a leer es $0.00; no se identifican líneas separadas de ISR, IMSS o Infonavit en este archivo."
-      : "Retenciones: no se alcanzaron a leer líneas de ISR, IMSS o Infonavit. Para compararlas, sube el CFDI XML o un recibo del mismo periodo donde aparezcan desglosadas.";
+      : "Retenciones: no se alcanzaron a leer líneas de ISR, IMSS o Infonavit. Para compararlas, sube el comprobante fiscal (CFDI) o un recibo del mismo periodo donde aparezcan desglosadas.";
 
   const facts = [
     employer
@@ -3289,23 +3294,23 @@ function getContextualNextDocumentPreset(
 
   if (nextTarget.type === "cfdi" && has("payroll_receipt")) {
     return {
-      headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina",
+      headline: "Sigue con tu comprobante fiscal (CFDI) para contrastar lo que ya ves en nómina",
       intro:
-        "Como ya subiste recibos de nómina, el CFDI puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
+        "Como ya subiste recibos de nómina, el comprobante fiscal (CFDI) puede ayudarte a comparar lo timbrado con lo que realmente recibiste.",
       reasonTitle: "Por qué este paso tiene sentido ahora",
       reasonBody:
         "Conecta pagos, descuentos y periodos desde dos fuentes que suelen revelar diferencias útiles con muy poco esfuerzo.",
       coverage:
         "Esa combinación suele volver el expediente más claro desde el inicio, porque ya no dependes de una sola versión del pago.",
-      cta: "Subir mi CFDI ahora",
+      cta: "Subir mi comprobante fiscal (CFDI)",
     } as const;
   }
 
   if (nextTarget.type === "payroll_receipt" && has("cfdi")) {
     return {
-      headline: "Sigue con tu nómina para darle contexto al CFDI",
+      headline: "Sigue con tu nómina para darle contexto al comprobante fiscal (CFDI)",
       intro:
-        "Si ya tienes CFDI, sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
+        "Si ya tienes el comprobante fiscal (CFDI), sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
       reasonTitle: "Lo que ganas con este cruce",
       reasonBody:
         "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
@@ -11523,7 +11528,7 @@ export default function Auditar() {
                                   Calculadora guiada
                                 </p>
                                 <p className="mt-2 text-lg font-semibold text-slate-950">
-                                  Compara tu nómina contra tu CFDI
+                                  Compara tu nómina contra tu comprobante fiscal (CFDI)
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-700">
                                   Tomamos los montos visibles del expediente para preparar un cruce por periodo y dejamos la diferencia en una capa determinística y auditable. Puedes ajustar los montos manualmente si quieres validar otro escenario.

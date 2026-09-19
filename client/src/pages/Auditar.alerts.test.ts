@@ -285,8 +285,8 @@ describe("getContextualDossierNextTarget", () => {
 
 describe("next document recommendation copy", () => {
   it("muestra copy contextual para contrastar nómina con CFDI y una CTA más directa", () => {
-    expect(auditarSource).toContain('headline: "Sigue con tu CFDI para contrastar lo que ya ves en nómina"');
-    expect(auditarSource).toContain('cta: "Subir mi CFDI ahora"');
+    expect(auditarSource).toContain('headline: "Sigue con tu comprobante fiscal (CFDI) para contrastar lo que ya ves en nómina"');
+    expect(auditarSource).toContain('cta: "Subir mi comprobante fiscal (CFDI)"');
     expect(auditarSource).toContain('Sugerencia automática según tu expediente');
     expect(auditarSource).toContain('El siguiente paso que más puede ayudarte hoy');
   });
@@ -946,6 +946,7 @@ describe("preview sanitization", () => {
     expect(sanitizePreviewText("true.")).toBe("Sí");
     expect(sanitizePreviewText('"true"')).toBe("Sí");
     expect(sanitizePreviewText("false!")).toBe("No");
+    expect(sanitizePreviewText("septiembre 2026. Importe")).toBe("septiembre 2026");
     expect(auditarSource).toContain("warmVisibleNamingCopy(item.summary)");
     expect(auditarSource).toContain("sanitizePreviewText(field.value");
   });

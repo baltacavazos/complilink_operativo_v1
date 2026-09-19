@@ -163,7 +163,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Elige un archivo o toma una foto para sumar otra pieza útil.');
     expect(source).toContain('Asegura tu recibo de nómina');
     expect(source).toContain('Calculadora guiada');
-    expect(source).toContain('Compara tu nómina contra tu CFDI');
+    expect(source).toContain('Compara tu nómina contra tu comprobante fiscal (CFDI)');
     expect(source).toContain('Comparación rápida entre periodos');
     expect(source).toContain('Periodo a comparar');
     expect(source).toContain('Histórico comparable por periodo');

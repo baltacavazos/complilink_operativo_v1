@@ -215,6 +215,10 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(app).toContain("PapersPlaceholder");
     expect(app).toContain('path={"/expediente"}');
     expect(app).not.toContain('path={"/historial"} component={NotFound}');
+    const vite = readFileSync(resolve(clientSrc, "../../server/_core/vite.ts"), "utf8");
+    expect(vite).toContain('app.get("/historial", sendSpaIndex)');
+    expect(vite).toContain('app.get("/expediente", sendSpaIndex)');
+    expect(vite).toContain("Worker placeholder routes must never fall through to an English host 404.");
     expect(auditar).toContain("lastUploadRiskCopy.label");
     expect(auditar).not.toContain("Resultado listo");
     expect(payments).not.toContain("Historial comercial");
