@@ -500,6 +500,7 @@ type SanitizePreviewTextOptions = {
   maxLength?: number;
   emptyFallback?: string;
   technicalFallback?: string;
+  skipLeakedLabelCleanup?: boolean;
 };
 
 function isLikelyTechnicalPreviewBlob(value: string) {
@@ -535,6 +536,7 @@ export function sanitizePreviewText(
     maxLength = 180,
     emptyFallback = "",
     technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
+    skipLeakedLabelCleanup = false,
   } = options;
   const humanized = humanizeWorkerVisibleScalar(value);
   if (humanized === "Sí" || humanized === "No") {
@@ -556,9 +558,11 @@ export function sanitizePreviewText(
     return emptyFallback;
   }
 
-  const withoutLeakedLabel = cleanPayrollExtractedValue(normalized);
-  if (withoutLeakedLabel) {
-    normalized = withoutLeakedLabel;
+  if (!skipLeakedLabelCleanup) {
+    const withoutLeakedLabel = cleanPayrollExtractedValue(normalized);
+    if (withoutLeakedLabel) {
+      normalized = withoutLeakedLabel;
+    }
   }
 
   if (isLikelyTechnicalPreviewBlob(normalized)) {
@@ -577,6 +581,7 @@ export function toHumanResultTitle(value: unknown, fallback: string) {
     maxLength: 90,
     emptyFallback: "",
     technicalFallback: "",
+    skipLeakedLabelCleanup: true,
   });
 
   if (!raw || /^(true|false|sí|si|no)$/i.test(raw)) {
