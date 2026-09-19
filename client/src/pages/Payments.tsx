@@ -134,8 +134,7 @@ export default function Payments() {
                   Historial comercial del expediente
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                  Aquí ves la persistencia local mínima de Stripe para tu cuenta: suscripción activa, compras detectadas y
-                  referencias útiles para soporte u operación.
+                  La primera lectura es gratis. Solo pagas si quieres guardar más documentos o profundizar en tu expediente.
                 </p>
               </div>
             </div>

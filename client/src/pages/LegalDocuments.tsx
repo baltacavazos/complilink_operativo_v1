@@ -1,6 +1,7 @@
 import { AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
 import {
   LEGAL_CONTACT_EMAIL,
+  LEGAL_CONTROLLER_ADDRESS,
   LEGAL_CONTROLLER_NAME,
   LEGAL_DOCUMENTS_BY_SLUG,
   type LegalDocumentDefinition,
@@ -101,7 +102,7 @@ function LegalDocumentArticle({ document }: { document: LegalDocumentDefinition 
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">{block.content}</h1>
               <p className="mt-4 text-sm leading-7 text-slate-500 sm:text-base">
                 {document.slug === "privacidad"
-                  ? "La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo."
+                  ? `Responsable: ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.`
                   : `Responsable: ${LEGAL_CONTROLLER_NAME}.`} Si necesitas ejercer derechos ARCO o realizar una consulta de privacidad,
                 escríbenos a <a className="font-semibold text-slate-900 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>.
               </p>

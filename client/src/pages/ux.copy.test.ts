@@ -345,7 +345,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(source).toContain("Este aviso carga sin login");
     expect(source).toContain("resguardo con acceso controlado");
-    expect(source).toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(source).toContain("Responsable: ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.");
+    expect(source).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
     expect(source).not.toContain("cifrado AES-256");
     expect(source).not.toContain("AuditaPatron y Helios");
   });

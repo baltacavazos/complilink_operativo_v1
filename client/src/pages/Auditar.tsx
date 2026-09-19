@@ -531,6 +531,10 @@ export function sanitizePreviewText(
     emptyFallback = "",
     technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
   } = options;
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+
   const normalized =
     typeof value === "number"
       ? String(value)
@@ -539,6 +543,10 @@ export function sanitizePreviewText(
         : String(value ?? "")
             .replace(/\s+/g, " ")
             .trim();
+
+  if (/^(true|false)$/i.test(normalized)) {
+    return normalized.toLowerCase() === "true" ? "Sí" : "No";
+  }
 
   if (!normalized) {
     return emptyFallback;
@@ -553,6 +561,61 @@ export function sanitizePreviewText(
   }
 
   return `${normalized.slice(0, Math.max(24, maxLength - 1)).trimEnd()}…`;
+}
+
+export function toHumanResultTitle(value: unknown, fallback: string) {
+  const raw = sanitizePreviewText(value, {
+    maxLength: 90,
+    emptyFallback: "",
+    technicalFallback: "",
+  });
+
+  if (!raw || /^(true|false|sí|si|no)$/i.test(raw)) {
+    return fallback;
+  }
+
+  if (/^[a-z]+(?:[_-][a-z0-9]+)+$/i.test(raw) || /^[A-Z0-9_\-]{8,}$/.test(raw)) {
+    return fallback;
+  }
+
+  if (!/[a-záéíóúüñ]/i.test(raw)) {
+    return fallback;
+  }
+
+  if (raw === raw.toUpperCase() && /[A-ZÁÉÍÓÚÜÑ]{6,}/.test(raw)) {
+    const lowered = raw.toLocaleLowerCase("es-MX");
+    return `${lowered.charAt(0).toLocaleUpperCase("es-MX")}${lowered.slice(1)}`;
+  }
+
+  return raw;
+}
+
+export function formatHumanStatusWord(value?: string | null) {
+  const normalized = (value ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "true":
+    case "yes":
+    case "confirmed":
+    case "ready":
+      return "Listo";
+    case "false":
+    case "no":
+    case "missing":
+      return "Pendiente";
+    case "pending":
+    case "draft":
+      return "En revisión";
+    case "paid":
+      return "Pagado";
+    case "active":
+      return "Activo";
+    case "intake":
+      return "Inicio del caso";
+    case "analysis":
+      return "En análisis";
+    default:
+      return toHumanResultTitle(value, "Sin estado visible");
+  }
 }
 
 function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
@@ -2187,7 +2250,9 @@ export function buildPayrollFactSignal(params: {
             technicalFallback: "",
           })
         );
-        if (value) return value;
+        if (!value || /^(sí|si|no|true|false)$/i.test(value)) continue;
+        if (/^[a-z]+(?:[_-][a-z0-9]+)+$/i.test(value)) continue;
+        return value;
       }
     }
     return null;
@@ -3014,7 +3079,7 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
       ([key, value]) =>
         [
           key,
-          sanitizePreviewText(value, {
+          sanitizePreviewText(formatAnalysisValue(key, value), {
             maxLength: 120,
             emptyFallback: "",
             technicalFallback:
@@ -3022,7 +3087,7 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
           }),
         ] as [string, string]
     )
-    .filter(([key, value]) => value.length > 0 && !isTechnicalAnalysisKey(key));
+    .filter(([key, value]) => value.length > 0 && !isTechnicalAnalysisKey(key) && !/^(true|false)$/i.test(value));
 }
 
 export function sanitizeStructuredExtractionView(
@@ -5729,11 +5794,13 @@ export default function Auditar() {
     confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
     estimatedData: lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined,
   });
-  const lastUploadResultHeadline =
+  const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
-    plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
-    plainWorkerCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
-    lastUploadResultFallback.headline;
+      plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
+      plainWorkerCopy(lastHeliosOpinion?.legalHighlights?.primaryConcern) ??
+      lastUploadResultFallback.headline,
+    lastUploadResultFallback.headline
+  );
   const lastUploadResultLead =
     (lastUpload ? lastUploadFactSignal.facts : null) ??
     warmVisibleNamingCopy(
@@ -8100,12 +8167,14 @@ export default function Auditar() {
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
   });
-  const guestSignalHeadline =
+  const guestSignalHeadline = toHumanResultTitle(
     (guestReview ? guestFactSignal.headline : null) ??
-    plainWorkerCopy(
-      guestReview?.heliosOpinion.resultCard?.headline ??
-        guestReview?.heliosOpinion.legalHighlights?.primaryConcern
-    ) ?? guestSignalFallback.headline;
+      plainWorkerCopy(
+        guestReview?.heliosOpinion.resultCard?.headline ??
+          guestReview?.heliosOpinion.legalHighlights?.primaryConcern
+      ) ?? guestSignalFallback.headline,
+    guestSignalFallback.headline
+  );
   const guestSignalWhy =
     (guestReview ? guestFactSignal.facts : null) ??
     plainWorkerCopy(
@@ -8161,30 +8230,30 @@ export default function Auditar() {
             <div className="flex items-center gap-3">
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Señal inicial</p>
+                <p className="text-sm font-semibold tracking-tight text-emerald-900">Señal inicial</p>
                 <p className="mt-1 text-sm text-slate-600">Lectura orientativa; no es validación oficial ni asesoría legal.</p>
               </div>
             </div>
             <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
             <div className="mt-5 grid gap-4">
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Qué conviene revisar</p>
+                <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalWhy}</p>
               </div>
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Hoy conviene poner atención especial en esto</p>
+                <p className="text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
               </div>
               <div className="rounded-[1.35rem] border border-cyan-200 bg-cyan-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-800">IMSS según este documento</p>
+                <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.imss}</p>
               </div>
               <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">Impuestos y retenciones</p>
+                <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.retentions}</p>
               </div>
               <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">Siguiente paso útil</p>
+                <p className="text-sm font-semibold tracking-tight text-teal-900">Siguiente paso útil</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
               </div>
             </div>
@@ -8776,10 +8845,10 @@ export default function Auditar() {
                     )}
                     {shouldCompactPostUploadExperience ? (
                       <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-900">
                           Resultado listo
                         </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 shadow-sm">
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700 shadow-sm">
                           {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
                         </span>
                       </div>
@@ -8798,7 +8867,7 @@ export default function Auditar() {
                               {lastUploadResultLead}
                             </p>
                             <div className="mt-3 rounded-[1rem] border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-left">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                              <p className="text-sm font-semibold tracking-tight text-emerald-900">
                                 Qué sigue
                               </p>
                               <p className="mt-1 text-sm leading-6 text-slate-900">
@@ -8806,7 +8875,7 @@ export default function Auditar() {
                               </p>
                             </div>
                             <div className="mt-3 rounded-[1rem] border border-amber-200 bg-amber-50/80 px-3 py-3 text-left">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                              <p className="text-sm font-semibold tracking-tight text-amber-900">
                                 Hoy conviene poner atención especial en esto
                               </p>
                               <p className="mt-1 text-sm leading-6 text-slate-900">
@@ -8815,11 +8884,11 @@ export default function Auditar() {
                             </div>
                             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                               <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">IMSS según este documento</p>
+                                <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
                               </div>
                               <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">Impuestos y retenciones</p>
+                                <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
                               </div>
                             </div>
@@ -10030,24 +10099,22 @@ export default function Auditar() {
                         <Button
                           className={`${COMPACT_MOBILE_UPLOAD_PRIMARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
                           disabled={isAutoAnalyzingSelectedFile}
-                          onClick={openCameraPicker}
+                          onClick={openPreferredPicker}
                         >
-                          <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                          {selectedFile && preferredCaptureMode === "camera"
-                            ? "Cambiar foto"
-                            : "Tomar foto ahora"}
+                          {isAutoAnalyzingSelectedFile
+                            ? "Analizando documento..."
+                            : selectedFile
+                              ? "Cambiar documento"
+                              : uploadPrimaryActionLabel}
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="mx-auto h-[3.15rem] w-full max-w-[22rem] rounded-[1.25rem] border-slate-200 bg-white px-5 text-[0.98rem] font-semibold text-slate-800 hover:bg-slate-50"
+                        <button
+                          type="button"
+                          className="mx-auto text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline"
                           disabled={isAutoAnalyzingSelectedFile}
-                          onClick={openFilePicker}
+                          onClick={() => setUploadSourceOpen(true)}
                         >
-                          <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                          {selectedFile && preferredCaptureMode === "file"
-                            ? "Cambiar archivo"
-                            : "Elegir archivo"}
-                        </Button>
+                          Prefiero tomar una foto u otro archivo
+                        </button>
                       </div>
                     ) : (
                       <Button
@@ -10067,7 +10134,7 @@ export default function Auditar() {
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento se está analizando."
                           : shouldCompactMobileUploadEntry
-                            ? "Foto si está en papel. Archivo si ya lo descargaste."
+                            ? "Un solo botón para subir. Si quieres foto u otro origen, usa la opción de abajo."
                             : preferredCaptureMode === "camera"
                               ? "Abriremos la cámara primero."
                               : preferredCaptureMode === "file"
@@ -10108,34 +10175,26 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  <div className="hidden gap-3 sm:grid sm:grid-cols-2">
+                  <div className="hidden gap-2.5 sm:grid">
                     <Button
-                      variant="outline"
-                      className={`h-12 rounded-2xl ${
-                        preferredCaptureMode === "camera"
-                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
-                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
-                      }`}
+                      className="h-12 rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
                       disabled={isAutoAnalyzingSelectedFile}
-                      onClick={openCameraPicker}
+                      onClick={openPreferredPicker}
                     >
-                      <Camera className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                      Tomar foto
+                      {isAutoAnalyzingSelectedFile
+                        ? "Analizando documento..."
+                        : selectedFile
+                          ? "Cambiar documento"
+                          : uploadPrimaryActionLabel}
                     </Button>
-                    <Button
-                      variant="outline"
-                      className={`h-12 rounded-2xl ${
-                        preferredCaptureMode === "file" ||
-                        preferredCaptureMode === null
-                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100"
-                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
-                      }`}
+                    <button
+                      type="button"
+                      className="justify-self-start text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline"
                       disabled={isAutoAnalyzingSelectedFile}
-                      onClick={openFilePicker}
+                      onClick={() => setUploadSourceOpen(true)}
                     >
-                      <FolderOpen className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                      Elegir archivo
-                    </Button>
+                      Prefiero tomar una foto u otro archivo
+                    </button>
                   </div>
 
                   <div

@@ -39,6 +39,8 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalPage).toContain("Este aviso carga sin login");
     expect(legalPage).toContain("resguardo con acceso controlado");
     expect(legalCopy).toContain('route: "/aviso-de-privacidad"');
-    expect(legalCopy).toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(legalCopy).toContain("CVZ Liderazgo en Gestión Laboral, S.A. de C.V., con domicilio en 459 Av. Santa Fe");
+    expect(legalCopy).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
+    expect(legalPage).toContain("Responsable: ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.");
   });
 });

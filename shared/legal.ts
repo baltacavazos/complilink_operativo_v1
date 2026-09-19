@@ -70,13 +70,13 @@ export const HELIOS_CONTEXT_NOTE = HELIOS_CONTEXT_BULLETS.map((item) => `- ${ite
 
 const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 
-**Responsable y domicilio:** La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.
+**Responsable y domicilio:** ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.
 
 **Correo de contacto para privacidad:** ${LEGAL_CONTACT_EMAIL}
 
 > Nadie de tu empresa puede ver lo que subes aquí. Tus documentos son tuyos, puedes pedir borrado cuando quieras y mantenemos un resguardo con acceso controlado y medidas razonables de seguridad, conforme a la LFPDPPP.
 
-AuditaPatron pone a disposición de las personas usuarias el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México. La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.
+AuditaPatron pone a disposición de las personas usuarias el presente Aviso de Privacidad Integral, elaborado conforme a los artículos 15, 16, 17 y 18 de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, su Reglamento y demás normativa aplicable en México. El responsable del tratamiento es ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.
 
 ## 1. Plataforma y alcance
 
