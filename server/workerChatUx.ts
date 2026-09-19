@@ -1,5 +1,6 @@
 import {
   emptyOfficialDigest,
+  shortenOfficialTitle,
   type OfficialDigestResult,
 } from "@shared/officialDigest";
 import {
@@ -217,7 +218,7 @@ export function buildWorkerChatLlmInstructions(
       ? grounding.officialDigest.citations
           .map(
             (item) =>
-              `- ${item.title} (${item.kindLabel}; liga oficial: ${item.url})`,
+              `- ${shortenOfficialTitle(item.title)} (${item.kindLabel}; liga oficial: ${item.url})`,
           )
           .join("\n")
       : grounding.officialDigest.honestyNote
@@ -240,7 +241,7 @@ export function buildWorkerChatLlmInstructions(
     "Si el digest trae lecturas oficiales, puedes citar SOLO esos títulos y ligas, en palabras simples, sin claves de tesis.",
     "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Si es criterio reiterado, dilo así. Nunca etiquetes doctrina como jurisprudencia.",
     `Si el digest está bloqueado o viene de una consulta anterior, di esa honestidad. Frase útil: ${grounding.officialDigest.honestyNote ?? "No pude abrir la fuente oficial ahora. No invento criterios ni números."}`,
-    `Si citas lecturas oficiales, usa el título exacto y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}.`,
+    `Si citas lecturas oficiales, usa el título recortado tal como aparece aquí y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}. No completes el rubro ni inventes IUS.`,
     "Nunca digas que consultaste IMSS, SAT o Infonavit en vivo, ni que confirmaste un alta oficial.",
     `Modo de lectura: ${grounding.validationMode}. Validación IMSS en vivo: no.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
@@ -299,7 +300,7 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
         liveBlocked: grounding.officialDigest.liveBlocked,
         honestyNote: grounding.officialDigest.honestyNote,
         titles: grounding.officialDigest.citations.map((item) => ({
-          title: item.title,
+          title: shortenOfficialTitle(item.title),
           url: item.url,
           kindLabel: item.kindLabel,
         })),

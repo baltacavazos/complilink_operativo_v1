@@ -72,6 +72,11 @@ vi.mock("./auditaPatronIntegrationService", () => engineMocks);
 import * as db from "./db";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { invokeLLM } from "./_core/llm";
+import { listLastGoodOfficialCitations } from "@shared/officialDigest";
+import {
+  formatWorkerChatAnswer,
+  WORKER_CHAT_DISCLAIMER,
+} from "@shared/workerChatUx";
 import {
   LEGAL_ACCEPTANCE_VERSION,
   LEGAL_CONSENT_TYPES,
@@ -1351,6 +1356,103 @@ describe("appRouter case workflows", () => {
     expect(result.answer).toContain("Respuesta clara");
     expect(result.answer).not.toMatch(/No tienes acceso a este espacio/i);
     expect(result.answer).not.toMatch(/labor_cases|SQL|ER_NO_SUCH_TABLE/i);
+  });
+
+  it("acepta historial grande con rubros oficiales y responde IMSS en 4 secciones sin too_big ni portal en vivo", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-PAY-001",
+        originalName: "recibo_mayo.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-05-16T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-PAY-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "El recibo muestra periodo, neto y un descuento de IMSS.",
+          legalOpinion: "Hay señales de descuento IMSS en el papel, no un alta oficial.",
+          riskLevel: "medium",
+          recommendedNextStep: "Compara el descuento con tu siguiente recibo.",
+          recommendedActions: ["Subir CFDI del mismo periodo"],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo 1 al 15 de mayo", "NSS 12345678901"],
+          uncertainties: ["No se ve una constancia oficial de semanas cotizadas."],
+          confidenceScore: 82,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-05-16T10:00:00.000Z",
+          rawPayload: {
+            preliminaryAnalysis: {
+              confirmedData: {
+                payrollPeriod: "2026-05-01 al 2026-05-15",
+                payrollNss: "12345678901",
+                imssWithheld: "$120.50",
+              },
+            },
+          },
+        },
+      },
+    ] as never);
+
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: En tu recibo se ve un descuento de IMSS de $120.50.\nLo que sí se sabe: Hay NSS 12345678901 y periodo visibles.\nLo que falta: No hay constancia oficial de semanas.\nSiguiente paso: Cruza el descuento con tu siguiente recibo o un papel IMSS; eso no confirma el alta oficial.",
+          },
+        },
+      ],
+    } as never);
+
+    const bloatedAssistant = [
+      formatWorkerChatAnswer({
+        answer: "Sobre horas extra solo puedo citar lecturas oficiales del digest.",
+        known: "El recibo no trae horas extra.",
+        missing: "Falta un papel que muestre las horas.",
+        nextStep: "Compara con tu siguiente recibo.",
+        officialSources: listLastGoodOfficialCitations(),
+        officialSourcesNote:
+          "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial.",
+      }),
+      ...listLastGoodOfficialCitations().map((item) => item.title),
+    ].join("\n\n");
+
+    expect(bloatedAssistant.length).toBeGreaterThan(2000);
+
+    const conversationHistory = [
+      { role: "user" as const, content: "¿Qué dice la ley sobre horas extra?" },
+      { role: "assistant" as const, content: bloatedAssistant },
+      { role: "user" as const, content: "¿Y el Diario Oficial?" },
+      { role: "assistant" as const, content: bloatedAssistant },
+      { role: "user" as const, content: "¿Hay jurisprudencia de la Corte?" },
+      { role: "assistant" as const, content: bloatedAssistant },
+      { role: "user" as const, content: "¿Me sirve la doctrina?" },
+      { role: "assistant" as const, content: bloatedAssistant },
+      { role: "user" as const, content: "¿Me descontaron IMSS?" },
+    ];
+
+    const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      prompt: "¿Me descontaron IMSS?",
+      conversationHistory,
+    });
+
+    expect(result.answer).toContain("Respuesta clara");
+    expect(result.answer).toContain("Lo que sí se sabe");
+    expect(result.answer).toContain("Lo que falta");
+    expect(result.answer).toContain("Siguiente paso");
+    expect(result.answer).toMatch(/IMSS \$120\.50|NSS 12345678901|recibo/i);
+    expect(result.answer).toMatch(/no confirma el alta oficial/i);
+    expect(result.answer).not.toMatch(/too_big|ZodError|conversationHistory/i);
+    expect(result.answer).not.toMatch(/consulta en vivo|portal oficial|validamos ante el IMSS/i);
+    expect(result.answer).toContain(WORKER_CHAT_DISCLAIMER);
+    expect(invokeLLM).toHaveBeenCalledTimes(1);
   });
 
   it("creates a case with canonical contracts, access grants and audit trail", async () => {

@@ -272,8 +272,11 @@ describe("workerChatUx grounding", () => {
     expect(answer).toContain("Lecturas oficiales");
     expect(answer).toContain("TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS");
     expect(answer).toContain("consulta anterior");
+    expect(answer).not.toContain(digest.citations[0]!.title);
     expect(answer).not.toMatch(/registro digital 2032611|IUS 2032611|XXI\.2o\.C\.T\.1/);
     expect(instructions).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032611");
+    expect(instructions).toContain("TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS");
+    expect(instructions).not.toContain(digest.citations[0]!.title);
     expect(instructions).toMatch(/Doctrina de la Corte, no jurisprudencia/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });

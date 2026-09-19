@@ -29,7 +29,9 @@ import {
   WORKER_CHAT_ASK_CTA,
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_NEXT_HEADING,
+  WORKER_CHAT_RETRY_ERROR,
   buildWorkerStarterQuestions,
+  capWorkerChatConversationHistory,
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
   sanitizeVisibleChatHistoryContent,
@@ -1787,29 +1789,10 @@ function buildHeliosCopilotConversationHistoryInput(params: {
   current: HeliosCopilotMessage[];
   nextPrompt: string;
 }) {
-  return [...params.current, { role: "user" as const, content: params.nextPrompt.trim() }]
-    .flatMap(message => {
-      if (
-        (message.role === "user" || message.role === "assistant") &&
-        typeof message.content === "string" &&
-        message.content.trim().length > 0
-      ) {
-        const cleaned = sanitizeVisibleChatHistoryContent(message.content);
-        if (!cleaned) {
-          return [];
-        }
-
-        return [
-          {
-            role: message.role,
-            content: cleaned,
-          } as const,
-        ];
-      }
-
-      return [];
-    })
-    .slice(-6);
+  return capWorkerChatConversationHistory([
+    ...params.current,
+    { role: "user" as const, content: params.nextPrompt.trim() },
+  ]);
 }
 
 function buildHeliosCopilotConversationHistoryItems(
@@ -7467,7 +7450,7 @@ export default function Auditar() {
               role: "assistant",
               content: toFriendlyWorkerChatError(
                 error.message,
-                "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí."
+                WORKER_CHAT_RETRY_ERROR
               ),
             })
           );

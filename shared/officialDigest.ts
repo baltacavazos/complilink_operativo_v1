@@ -404,6 +404,50 @@ export function emptyOfficialDigest(liveBlocked = false): OfficialDigestResult {
   };
 }
 
+export const OFFICIAL_TITLE_SHORT_MAX = 140;
+
+function cutSpanishSafe(value: string, maxLength: number): string {
+  const normalized = value.normalize("NFC").replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  if (maxLength <= 1) return "…";
+  const budget = maxLength - 1;
+  let slice = normalized.slice(0, budget);
+  const breakAt = Math.max(
+    slice.lastIndexOf(" "),
+    slice.lastIndexOf(","),
+    slice.lastIndexOf(";"),
+    slice.lastIndexOf(":"),
+  );
+  if (breakAt >= Math.floor(budget * 0.55)) {
+    slice = slice.slice(0, breakAt);
+  }
+  return `${slice.trimEnd()}…`;
+}
+
+export function shortenOfficialTitle(title: string, maxLength = OFFICIAL_TITLE_SHORT_MAX): string {
+  const normalized = title.normalize("NFC").replace(/\s+/g, " ").trim();
+  if (!normalized) return "";
+  if (normalized.length <= maxLength) return normalized;
+  const sentence = normalized.match(/^(.{32,}?[.。])(?:\s|$)/)?.[1];
+  if (sentence && sentence.length <= maxLength) {
+    return sentence;
+  }
+  return cutSpanishSafe(normalized, maxLength);
+}
+
+export function shortenOfficialTitlesInText(
+  value: string,
+  maxLength = OFFICIAL_TITLE_SHORT_MAX,
+): string {
+  let next = value;
+  for (const title of listKnownOfficialTitles()) {
+    if (title && next.includes(title)) {
+      next = next.split(title).join(shortenOfficialTitle(title, maxLength));
+    }
+  }
+  return next;
+}
+
 export function formatOfficialCitationLines(citations: OfficialDigestCitation[]): string[] {
-  return citations.slice(0, 3).map((item) => item.title);
+  return citations.slice(0, 3).map((item) => shortenOfficialTitle(item.title));
 }
