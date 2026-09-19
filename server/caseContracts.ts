@@ -121,7 +121,7 @@ export function getHeliosExpedienteStage(params: {
     return {
       stage: "closed" as const,
       stageLabel: "Cerrado",
-      summary: "Este expediente ya recorrió su ciclo principal dentro de Helios y conserva su trazabilidad documental para futuras consultas.",
+      summary: "Este expediente ya recorrió su ciclo principal y conserva su trazabilidad documental para futuras consultas.",
     };
   }
 
@@ -133,7 +133,7 @@ export function getHeliosExpedienteStage(params: {
     return {
       stage: "recommendations" as const,
       stageLabel: "Con lectura activa",
-      summary: "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+      summary: "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
     };
   }
 
@@ -141,14 +141,14 @@ export function getHeliosExpedienteStage(params: {
     return {
       stage: "analysis" as const,
       stageLabel: "Analizando",
-      summary: "Helios ya recibió documentos del expediente y está ordenando la información para devolverte una lectura más clara.",
+      summary: "El asesor laboral ya recibió documentos del expediente y está ordenando la información para devolverte una lectura más clara.",
     };
   }
 
   return {
     stage: "intake" as const,
     stageLabel: "Listo para iniciar",
-    summary: "Tu expediente Helios ya existe y está listo para empezar a ordenarse en cuanto subas el primer documento laboral útil.",
+    summary: "Tu expediente laboral ya existe y está listo para empezar a ordenarse en cuanto subas el primer documento laboral útil.",
   };
 }
 
@@ -165,7 +165,7 @@ export function getHeliosDocumentState(params: {
       ...descriptor,
       status: "ready" as const,
       statusLabel: "Lectura lista",
-      summary: "Helios ya integró una lectura preliminar para este documento dentro del expediente.",
+      summary: "El asesor laboral ya integró una lectura preliminar para este documento dentro del expediente.",
     };
   }
 
@@ -174,7 +174,7 @@ export function getHeliosDocumentState(params: {
       ...descriptor,
       status: "analyzing" as const,
       statusLabel: "Analizando",
-      summary: "Helios ya clasificó este documento y sigue avanzando con su lectura dentro del expediente.",
+      summary: "El asesor laboral ya clasificó este documento y sigue avanzando con su lectura dentro del expediente.",
     };
   }
 
@@ -182,7 +182,7 @@ export function getHeliosDocumentState(params: {
     ...descriptor,
     status: "pending_ingestion" as const,
     statusLabel: "Pendiente de lectura",
-    summary: "Este documento ya forma parte del expediente Helios y quedará listo conforme avance su lectura automática.",
+    summary: "Este documento ya forma parte del expediente laboral y quedará listo conforme avance su lectura automática.",
   };
 }
 

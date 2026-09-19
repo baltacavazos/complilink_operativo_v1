@@ -305,7 +305,7 @@ describe("ceoHeliosChat", () => {
         messages: expect.arrayContaining([
           expect.objectContaining({
             role: "system",
-            content: expect.stringContaining("misma interfaz central de AuditaPatron"),
+            content: expect.stringContaining("Eres el asesor laboral de AuditaPatron"),
           }),
           expect.objectContaining({
             role: "user",
@@ -325,13 +325,13 @@ describe("ceoHeliosChat", () => {
     );
     expect(result.answer).toContain("Confirmado");
     expect(result.disclaimer).toContain("degradará la respuesta a modo consulta");
-    expect(result.summary).toContain("Helios separa confirmado, inferido y pendiente");
+    expect(result.summary).toContain("El asesor laboral separa confirmado, inferido y pendiente");
     expect(result.suggestedPrompts).toContain("Prioridades del día: dime qué urge mover hoy en alertas, accesos y documentos visibles.");
     expect(result.historyItems[0]).toMatchObject({
       title: "Snapshot ejecutivo activo",
     });
     expect(result.supportingDocuments[0]).toMatchObject({
-      label: "Contexto que Helios sí está leyendo",
+      label: "Contexto que el asesor sí está leyendo",
     });
     expect(result.supportingDocuments[1]).toMatchObject({
       label: "Permisos y carril seguro del modo CEO",

@@ -178,14 +178,21 @@ export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {
       processedAt: opinion.generatedAt,
     });
 
+    const stripInternalName = (value: string) =>
+      value.replace(/\bHelios\b/g, "el asesor laboral").replace(/\bhelios\b/gi, "el asesor laboral");
+
     return {
       id: scenario.id,
       badge: scenario.badge,
       documentLabel: documentState.canonicalLabel,
-      title: opinion.resultCard?.headline ?? opinion.summary,
-      summary: opinion.summary,
-      nextStep: opinion.resultCard?.nextStepSummary ?? opinion.recommendedNextStep ?? "Continúa con el siguiente documento útil sugerido para tu bóveda laboral.",
-      primaryConcern: opinion.legalHighlights?.primaryConcern ?? opinion.summary,
+      title: stripInternalName(opinion.resultCard?.headline ?? opinion.summary),
+      summary: stripInternalName(opinion.summary),
+      nextStep: stripInternalName(
+        opinion.resultCard?.nextStepSummary ??
+          opinion.recommendedNextStep ??
+          "Continúa con el siguiente documento útil sugerido para tu bóveda laboral.",
+      ),
+      primaryConcern: stripInternalName(opinion.legalHighlights?.primaryConcern ?? opinion.summary),
     };
   });
 }

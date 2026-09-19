@@ -1479,14 +1479,32 @@ function HeliosFirstEntrySection() {
   const [ceoPanelPreferenceOpen, setCeoPanelPreferenceOpen] = useState(false);
   const [ceoActionsDrawerOpen, setCeoActionsDrawerOpen] = useState(false);
 
-  const publicExamples = (landingQuery.data?.examples ?? []) as LandingHeliosExample[];
+  const publicExamples = ((landingQuery.data?.examples ?? []) as LandingHeliosExample[]).map((example) => ({
+    ...example,
+    badge: sanitizeHomeVisibleCopy(example.badge) ?? example.badge,
+    documentLabel: sanitizeHomeVisibleCopy(example.documentLabel) ?? example.documentLabel,
+    title: sanitizeHomeVisibleCopy(example.title) ?? example.title,
+    summary: sanitizeHomeVisibleCopy(example.summary) ?? example.summary,
+    nextStep: sanitizeHomeVisibleCopy(example.nextStep) ?? example.nextStep,
+    primaryConcern: sanitizeHomeVisibleCopy(example.primaryConcern) ?? example.primaryConcern,
+  }));
   const stableUserIdentifier = useMemo(
     () => getStableUserIdentifier(auth.realUser ?? auth.user),
     [auth.realUser, auth.user]
   );
   const featuredExample = publicExamples[0] ?? null;
   const publicActivity = landingQuery.data?.publicActivity;
-  const latestCase = homeSnapshotQuery.data?.latestCase ?? null;
+  const latestCase = homeSnapshotQuery.data?.latestCase
+    ? {
+        ...homeSnapshotQuery.data.latestCase,
+        stageLabel:
+          sanitizeHomeVisibleCopy(homeSnapshotQuery.data.latestCase.stageLabel) ??
+          homeSnapshotQuery.data.latestCase.stageLabel,
+        summary:
+          sanitizeHomeVisibleCopy(homeSnapshotQuery.data.latestCase.summary) ??
+          homeSnapshotQuery.data.latestCase.summary,
+      }
+    : null;
   const tenantId = bootstrapMutation.data?.tenant?.tenantId ?? homeSnapshotQuery.data?.tenantId ?? null;
   const isSavingPreview = createCaseMutation.isPending || claimGuestPreviewMutation.isPending;
 

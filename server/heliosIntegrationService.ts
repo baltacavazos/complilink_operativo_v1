@@ -509,7 +509,7 @@ function getLead(params: BuildHeliosOpinionParams, findings: HeliosResultFinding
     ? `Por ahora ya se alcanzan a ver ${joinVisibleLabels(visibleLabels)}.`
     : `Por ahora ya se alcanzan a ver señales útiles sobre ${lowercaseFirst(getPrimaryFocus(params.documentType))}.`;
 
-  return `${evidenceFragment} Antes de pedirte algo más, Helios ya agotó lo visible, las reglas básicas de consistencia y el contexto inmediato del expediente.`;
+  return `${evidenceFragment} Antes de pedirte algo más, el asesor laboral ya agotó lo visible, las reglas básicas de consistencia y el contexto inmediato del expediente.`;
 }
 
 function getSignalsChecked(params: BuildHeliosOpinionParams) {
@@ -557,7 +557,7 @@ function buildSimpleExplanation(
     simpleExplanation: [
       {
         label: "Qué ya revisé por ti",
-        summary: `Antes de pedirte algo más, Helios ya revisó ${joinVisibleLabels(signalsChecked)} dentro de este ${documentLabel}.`,
+        summary: `Antes de pedirte algo más, el asesor laboral ya revisó ${joinVisibleLabels(signalsChecked)} dentro de este ${documentLabel}.`,
         tone: "support",
       },
       {
@@ -697,15 +697,15 @@ function clampConfidenceScore(value: unknown, fallback = 78) {
 function getPendingRemoteSummary(documentType: string) {
   switch (documentType) {
     case "contract":
-      return "Helios ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.";
+      return "El asesor laboral ya recibió tu contrato y está preparando una lectura jurídica más precisa para este expediente.";
     case "payroll_receipt":
-      return "Helios ya recibió tu recibo de nómina y está contrastando pagos, deducciones y periodo con el resto del expediente.";
+      return "El asesor laboral ya recibió tu recibo de nómina y está contrastando pagos, deducciones y periodo con el resto del expediente.";
     case "cfdi":
-      return "Helios ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.";
+      return "El asesor laboral ya recibió tu CFDI laboral y está revisando montos, periodo y consistencia documental.";
     case "imss":
-      return "Helios ya recibió tu soporte de IMSS y está validando continuidad, salario registrado y señales de seguridad social.";
+      return "El asesor laboral ya recibió tu soporte de IMSS y está validando continuidad, salario registrado y señales de seguridad social.";
     default:
-      return "Helios ya recibió tu documento y está preparando una respuesta jurídica más útil para este expediente.";
+      return "El asesor laboral ya recibió tu documento y está preparando una respuesta jurídica más útil para este expediente.";
   }
 }
 
@@ -717,7 +717,7 @@ function buildPendingRemoteResultCard(params: BuildHeliosOpinionParams): HeliosR
     keyFindings: [
       {
         label: "Estado del motor",
-        value: "Helios remoto ya recibió el documento y está procesándolo dentro del expediente.",
+        value: "El asesor laboral ya recibió el documento y está procesándolo dentro del expediente.",
         source: "derived",
         tone: "support",
       },
@@ -729,21 +729,21 @@ function buildPendingRemoteResultCard(params: BuildHeliosOpinionParams): HeliosR
       },
     ],
     nextStepLabel: "Siguiente paso sugerido",
-    nextStepSummary: "Mientras Helios termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
+    nextStepSummary: "Mientras el asesor laboral termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
     dossierUpdateLabel: "Tu expediente ya se actualizó",
     dossierUpdateSummary: getDossierUpdateSummary(params),
-    assistantIntro: "Puedo ayudarte a entender qué está revisando Helios, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
+    assistantIntro: "Puedo ayudarte a entender qué está revisando el asesor laboral, qué ya agotó y qué documento conviene subir después mientras llega la respuesta final.",
     suggestedQuestions,
     signalsChecked: [
       "tipo de documento detectado",
       "campos visibles del archivo",
-      "estado del motor Helios",
+      "estado de la lectura laboral",
       "contexto inmediato del expediente",
     ],
     simpleExplanation: [
       {
         label: "Qué ya revisé por ti",
-        summary: "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado de Helios.",
+        summary: "Tu documento ya fue recibido, clasificado y enviado al flujo avanzado del asesor laboral.",
         tone: "support",
       },
       {
@@ -828,8 +828,8 @@ export function buildRemotePendingHeliosOpinionContract(params: BuildHeliosOpini
     summary,
     legalOpinion:
       mode === "remote"
-        ? "El documento ya fue enviado a Helios y la opinión jurídica final se completará cuando el motor termine de procesarlo dentro del expediente."
-        : "Helios remoto todavía no está configurado. Este expediente necesita la conexión del motor para devolver una opinión final.",
+        ? "El documento ya fue enviado al asesor laboral y la opinión jurídica final se completará cuando termine de procesarlo dentro del expediente."
+        : "La lectura avanzada todavía no está configurada. Este expediente necesita esa conexión para devolver una opinión final.",
     riskLevel: "low",
     recommendedNextStep,
     recommendedActions: getRecommendedActions(params.documentType),
@@ -918,7 +918,7 @@ export function buildRemoteHeliosOpinionContract(params: {
   const legalOpinion =
     toOptionalText(analysisResults?.legalOpinion) ??
     toOptionalText(metadata?.legalOpinion) ??
-    "Helios terminó de procesar este documento y ya devolvió una lectura consolidada basada en el expediente y en el contenido recibido.";
+    "El asesor laboral terminó de procesar este documento y ya devolvió una lectura consolidada basada en el expediente y en el contenido recibido.";
   const recommendedActions = [
     ...asTextList(analysisResults?.recommendedActions),
     ...asTextList(metadata?.recommendedActions),
@@ -1010,7 +1010,7 @@ export function buildRemoteHeliosOpinionContract(params: {
     disclaimer: DEFAULT_DISCLAIMER,
     generatedAt: toOptionalText(payload.timestamp) ?? new Date().toISOString(),
     resultCard: {
-      headline: "Helios ya terminó esta lectura",
+      headline: "El asesor laboral ya terminó esta lectura",
       lead: summary,
       keyFindings: keyFindings.slice(0, 3),
       nextStepLabel: "Siguiente paso sugerido",
@@ -1028,7 +1028,7 @@ export function buildRemoteHeliosOpinionContract(params: {
       simpleExplanation: [
         {
           label: "Qué ya revisé por ti",
-          summary: "Helios ya terminó la lectura remota y priorizó los hallazgos más útiles de este documento.",
+          summary: "El asesor laboral ya terminó la lectura remota y priorizó los hallazgos más útiles de este documento.",
           tone: "support",
         },
         {

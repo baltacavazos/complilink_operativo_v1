@@ -9156,7 +9156,7 @@ export default function Auditar() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                     {shouldCompactPostUploadExperience
                       ? `Ya cargaste ${documents.length} documento${documents.length === 1 ? "" : "s"}. Tu avance ya quedó listo para retomarlo y, si quieres seguir hoy, conviene priorizar ${uploadPrimaryActionLabel.toLowerCase()}.`
-                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${heliosExpediente?.summary ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
+                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${warmVisibleNamingCopy(heliosExpediente?.summary) ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
                   </p>
                 </div>
 
@@ -9560,7 +9560,7 @@ export default function Auditar() {
                           : heliosStage.title}
                       </h3>
                       <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-700">
-                        {heliosExpediente?.summary ?? heliosStage.description}
+                        {warmVisibleNamingCopy(heliosExpediente?.summary) ?? heliosStage.description}
                       </p>
                     </div>
                   </div>
@@ -13726,7 +13726,7 @@ Reforzar con otro documento
                 Expediente laboral seleccionado
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                {heliosExpediente?.displayName ??
+                {warmVisibleNamingCopy(heliosExpediente?.displayName) ??
                   caseDetailQuery.data?.case.title ??
                   "Selecciona un expediente"}
               </h2>
@@ -13771,7 +13771,7 @@ Reforzar con otro documento
                     </p>
 
                     <p className="mt-2 text-sm leading-7 text-teal-900">
-                      {heliosExpediente?.summary ??
+                      {warmVisibleNamingCopy(heliosExpediente?.summary) ??
                         (heliosDocumentsCount === 0
                           ? "Todavía no hay una lectura visible del expediente. En cuanto se interpreten documentos, aquí verás cómo se va armando una explicación más útil para tu caso."
                           : `Ya hay una lectura preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} y esa información se va conectando para construir una explicación cada vez más útil del caso.`)}

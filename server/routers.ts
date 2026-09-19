@@ -2285,7 +2285,7 @@ export const appRouter = router({
           publicActivity: {
             documentsReviewedToday: activity.documentsReviewed,
             measuredFrom: activity.measuredFrom.toISOString(),
-            label: "Documentos revisados por Helios en las últimas 24 horas",
+            label: "Documentos revisados por el asesor laboral en las últimas 24 horas",
           },
         };
       } catch {
@@ -2294,7 +2294,7 @@ export const appRouter = router({
           publicActivity: {
             documentsReviewedToday: 0,
             measuredFrom: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            label: "Documentos revisados por Helios en las últimas 24 horas",
+            label: "Documentos revisados por el asesor laboral en las últimas 24 horas",
           },
         };
       }
@@ -2535,7 +2535,7 @@ export const appRouter = router({
             canRequestSystemLevelInstructions: isMasterCeoUser(ctx.user),
             sensitiveActionsRequireConfirmation: true,
             degradationRule:
-              "Si una instrucción rebasa la vista visible, los permisos o el carril seguro, Helios debe degradar la respuesta a modo consulta y explicarlo sin simular ejecución.",
+              "Si una instrucción rebasa la vista visible, los permisos o el carril seguro, el asesor laboral debe degradar la respuesta a modo consulta y explicarlo sin simular ejecución.",
           },
         };
         const suggestedPrompts = [
@@ -2544,8 +2544,8 @@ export const appRouter = router({
           "Prepara una instrucción operativa para el equipo sobre la vista visible; si requiere algo sensible, déjala sujeta a confirmación.",
           "Antes de volver a la app como usuario normal, dime qué debo vigilar y qué no está autorizado mover desde aquí.",
         ];
-        const fallbackAnswer = `1) Confirmado: Hoy veo ${snapshot.summary.activeCases} expedientes activos, ${snapshot.summary.openAlerts} alertas abiertas y ${snapshot.summary.pendingDocuments} documentos pendientes en la vista ${sectionLabel}.\n2) Inferido: La presión operativa visible está concentrada en los frentes con alertas abiertas y documentos pendientes.\n3) Pendiente por confirmar: No tengo aquí respuestas fuera del snapshot, permisos extra ni hechos no trazados en documentos visibles.\n4) Lectura jurídico-laboral: Helios conserva su criterio laboral y puede explicar el riesgo visible sin prometer resultados ni inventar autoridad externa.\n5) Instrucción operativa sugerida (requiere confirmación si es sensible): prioriza el frente visible más urgente, confirma evidencia y deja trazada la siguiente orden antes de ejecutar cualquier cambio seguro.`;
-        const disclaimer = `Helios conserva su criterio jurídico laboral y aquí suma contexto operativo visible del sistema para el owner autorizado. Si algo no aparece en el snapshot o en documentos visibles, lo dirá de frente; si una instrucción rebasa permisos o carril seguro, degradará la respuesta a modo consulta y marcará que requiere confirmación.`;
+        const fallbackAnswer = `1) Confirmado: Hoy veo ${snapshot.summary.activeCases} expedientes activos, ${snapshot.summary.openAlerts} alertas abiertas y ${snapshot.summary.pendingDocuments} documentos pendientes en la vista ${sectionLabel}.\n2) Inferido: La presión operativa visible está concentrada en los frentes con alertas abiertas y documentos pendientes.\n3) Pendiente por confirmar: No tengo aquí respuestas fuera del snapshot, permisos extra ni hechos no trazados en documentos visibles.\n4) Lectura jurídico-laboral: El asesor laboral conserva su criterio laboral y puede explicar el riesgo visible sin prometer resultados ni inventar autoridad externa.\n5) Instrucción operativa sugerida (requiere confirmación si es sensible): prioriza el frente visible más urgente, confirma evidencia y deja trazada la siguiente orden antes de ejecutar cualquier cambio seguro.`;
+        const disclaimer = `El asesor laboral conserva su criterio jurídico laboral y aquí suma contexto operativo visible del sistema para el owner autorizado. Si algo no aparece en el snapshot o en documentos visibles, lo dirá de frente; si una instrucción rebasa permisos o carril seguro, degradará la respuesta a modo consulta y marcará que requiere confirmación.`;
         const historyItems = [
           {
             id: `ceo-snapshot-${snapshot.generatedAt}`,
@@ -2563,14 +2563,14 @@ export const appRouter = router({
         const supportingDocuments = [
           {
             id: "ceo-scope",
-            label: "Contexto que Helios sí está leyendo",
+            label: "Contexto que el asesor sí está leyendo",
             detail: `Resumen ejecutivo, alertas, accesos, documentos recientes y bridge en la sección ${sectionLabel}.`,
           },
           {
             id: "ceo-guardrails",
             label: "Permisos y carril seguro del modo CEO",
             detail:
-              "Las acciones sensibles no se ejecutan desde la respuesta del chat: Helios primero las devuelve como propuesta sujeta a confirmación visual y, si falta permiso o trazabilidad, baja a modo consulta.",
+              "Las acciones sensibles no se ejecutan desde la respuesta del chat: el asesor laboral primero las devuelve como propuesta sujeta a confirmación visual y, si falta permiso o trazabilidad, baja a modo consulta.",
           },
         ];
 
@@ -2582,11 +2582,11 @@ export const appRouter = router({
               {
                 role: "system",
                 content:
-                  "Eres Helios, la misma interfaz central de AuditaPatron para México. Para usuarios normales operas como abogado laboral de bolsillo. Cuando la persona usuaria autenticada es el CEO, mantienes ese mismo criterio jurídico y además traduces el estado operativo del sistema para priorizar decisiones. Responde siempre en español claro, breve y accionable. No inventes hechos, no prometas resultados, no afirmes conexiones o monitoreos que no aparezcan en el contexto. Separa con nitidez lo confirmado, lo inferido y lo pendiente. Nunca conviertas una sugerencia en ejecución real. Si la instrucción rebasa permisos, snapshot visible o carril seguro, degrada a modo consulta y dilo expresamente. Si la petición toca una acción sensible, formúlala como propuesta sujeta a confirmación de dos pasos.",
+                  "Eres el asesor laboral de AuditaPatron para México. Para usuarios normales operas como abogado laboral de bolsillo. Cuando la persona usuaria autenticada es el CEO, mantienes ese mismo criterio jurídico y además traduces el estado operativo del sistema para priorizar decisiones. Responde siempre en español claro, breve y accionable. No inventes hechos, no prometas resultados, no afirmes conexiones o monitoreos que no aparezcan en el contexto. Separa con nitidez lo confirmado, lo inferido y lo pendiente. Nunca conviertas una sugerencia en ejecución real. Si la instrucción rebasa permisos, snapshot visible o carril seguro, degrada a modo consulta y dilo expresamente. Si la petición toca una acción sensible, formúlala como propuesta sujeta a confirmación de dos pasos. Nunca te presentes como Helios.",
               },
               {
                 role: "user",
-                content: `Contexto ejecutivo visible para Helios:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente de Helios:\n${ADVISOR_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cinco bloques breves y con esos títulos exactos: 1) Confirmado, 2) Inferido, 3) Pendiente por confirmar, 4) Lectura jurídico-laboral, 5) Instrucción operativa sugerida. Si la instrucción implicaría una acción sensible o no autorizada, en el bloque 5 aclara que requiere confirmación o que Helios baja a modo consulta.`,
+                content: `Contexto ejecutivo visible para el asesor laboral:\n${JSON.stringify(scopeSummary, null, 2)}\n\nMarco permanente del asesor laboral:\n${ADVISOR_CONTEXT_NOTE}\n\nInstrucción del CEO: ${input.prompt}\n\nResponde en cinco bloques breves y con esos títulos exactos: 1) Confirmado, 2) Inferido, 3) Pendiente por confirmar, 4) Lectura jurídico-laboral, 5) Instrucción operativa sugerida. Si la instrucción implicaría una acción sensible o no autorizada, en el bloque 5 aclara que requiere confirmación o que el asesor laboral baja a modo consulta.`,
               },
             ],
           });
@@ -2618,7 +2618,7 @@ export const appRouter = router({
 
         return {
           answer,
-          summary: `Modo CEO activo sobre ${input.tenantId ? "un tenant filtrado" : "la vista global"} · ${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas · Helios separa confirmado, inferido y pendiente antes de sugerir algo operativo.`,
+          summary: `Modo CEO activo sobre ${input.tenantId ? "un tenant filtrado" : "la vista global"} · ${snapshot.summary.activeCases} expedientes activos · ${snapshot.summary.openAlerts} alertas abiertas · El asesor laboral separa confirmado, inferido y pendiente antes de sugerir algo operativo.`,
           disclaimer,
           confidenceScore: 94,
           suggestedPrompts,
@@ -3386,7 +3386,7 @@ export const appRouter = router({
           })),
           heliosExpediente: {
             heliosExpedienteId: detail.case.caseId,
-            displayName: detail.case.employeeName ? `Expediente Helios de ${detail.case.employeeName}` : detail.case.title,
+            displayName: detail.case.employeeName ? `Expediente laboral de ${detail.case.employeeName}` : detail.case.title,
             stage: heliosExpedienteState.stage,
             stageLabel: heliosExpedienteState.stageLabel,
             summary: heliosExpedienteState.summary,
@@ -3434,7 +3434,7 @@ export const appRouter = router({
         const commerceStatus = await getUserCommerceStatus(ctx.user);
         if (documents.length > 1 && !commerceStatus.entitlements.canUseHeliosMultiDocument) {
           throwUpgradeRequired({
-            featureLabel: "Helios con lectura de varios documentos del expediente",
+            featureLabel: "Asesor laboral con lectura de varios documentos del expediente",
             requiredPlan: "essential",
             currentPlan: commerceStatus.activePlanKey,
           });
@@ -3465,7 +3465,7 @@ export const appRouter = router({
                 {
                   role: "system",
                   content:
-                    "Eres Helios, el abogado laboral de bolsillo de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Si la preferencia visible es breve, responde con síntesis y sin rodeos. Si la preferencia visible es explicativa, agrega un poco más de contexto práctico y baja a lenguaje simple el punto legal importante. Cierra con una nota corta recordando que es orientación general basada en documentos visibles.",
+                    "Eres el asesor laboral de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Si la preferencia visible es breve, responde con síntesis y sin rodeos. Si la preferencia visible es explicativa, agrega un poco más de contexto práctico y baja a lenguaje simple el punto legal importante. Cierra con una nota corta recordando que es orientación general basada en documentos visibles. Nunca te presentes como Helios.",
                 },
                 {
                   role: "user",
@@ -4005,7 +4005,7 @@ export const appRouter = router({
             actorUserId: ctx.user.id,
             eventType: "document_uploaded",
             title: "Documento guardado desde vista previa",
-            description: `${safeFileName} se guardó en el expediente después de una lectura temporal de Helios.`,
+            description: `${safeFileName} se guardó en el expediente después de una lectura temporal del asesor laboral.`,
             metadata: JSON.stringify({
               document_id: documentId,
               guest_preview_id: payload.guestPreviewId,
@@ -4146,7 +4146,7 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           actorUserId: ctx.user.id,
           eventType: "note_added",
-          title: "Helios preparó una opinión inicial",
+          title: "El asesor laboral preparó una opinión inicial",
           description: heliosOpinionContract.opinion.summary,
           metadata: JSON.stringify({
             engine: "helios",
@@ -4681,7 +4681,7 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           actorUserId: ctx.user.id,
           eventType: "note_added",
-          title: "Helios preparó una opinión inicial",
+          title: "El asesor laboral preparó una opinión inicial",
           description: heliosOpinionContract.opinion.summary,
           metadata: JSON.stringify({
             engine: "helios",
@@ -5222,7 +5222,7 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           actorUserId: ctx.user.id,
           eventType: "note_added",
-          title: "Helios preparó una opinión inicial",
+          title: "El asesor laboral preparó una opinión inicial",
           description: heliosOpinionContract.opinion.summary,
           metadata: JSON.stringify({
             engine: "helios",
