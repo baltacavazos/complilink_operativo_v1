@@ -6,6 +6,7 @@ import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_KNOWN_HEADING,
   WORKER_CHAT_MISSING_HEADING,
+  WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_SHEET_COPY,
   WORKER_CHAT_TITLE,
@@ -16,9 +17,12 @@ import {
   hasForbiddenLiveValidationClaim,
   hasForbiddenWorkerBrand,
   hasForbiddenWorkerChatClaim,
+  hasInternalControlMarkers,
   hasInventedLegalCitation,
   parseWorkerStructuredAnswer,
   sanitizeWorkerChatCopy,
+  stripInternalControlMarkers,
+  toFriendlyWorkerChatError,
 } from "./workerChatUx";
 
 describe("sanitizeWorkerChatCopy", () => {
@@ -60,6 +64,27 @@ describe("sanitizeWorkerChatCopy", () => {
     expect(sanitizeWorkerChatCopy("¿Estoy bien dado de alta?")).toBe(
       "¿Estoy bien dado de alta?",
     );
+  });
+
+  it("nunca deja required_plan, current_plan ni marcadores || visibles", () => {
+    const leaked =
+      "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial. Puedes seguir usando la parte gratuita o desbloquearlo cuando te haga sentido.||required_plan=essential||current_plan=free";
+    const clean = sanitizeWorkerChatCopy(leaked);
+
+    expect(hasInternalControlMarkers(leaked)).toBe(true);
+    expect(hasInternalControlMarkers(clean)).toBe(false);
+    expect(clean).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(stripInternalControlMarkers(leaked)).not.toMatch(/\|\||required_plan=|current_plan=/);
+    expect(hasForbiddenWorkerChatClaim(clean)).toBe(false);
+
+    const friendly = toFriendlyWorkerChatError(leaked);
+    expect(friendly).toContain("Respuesta clara");
+    expect(friendly).toContain("Lo que sí se sabe");
+    expect(friendly).toContain("Lo que falta");
+    expect(friendly).toContain("Siguiente paso");
+    expect(friendly).toContain(WORKER_CHAT_MULTI_DOC_UPSELL);
+    expect(friendly).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(hasForbiddenWorkerChatClaim(friendly)).toBe(false);
   });
 });
 

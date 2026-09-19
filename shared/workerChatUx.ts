@@ -18,6 +18,28 @@ export const WORKER_CHAT_WHAT_NOW_HEADING = WORKER_CHAT_NEXT_HEADING;
 export const WORKER_CHAT_DISCLAIMER =
   "Esto no es asesoría legal. No soy abogado. Solo leo lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.";
 
+export const WORKER_CHAT_MULTI_DOC_UPSELL =
+  "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.";
+
+const PIPE_CONTROL_MARKER_RE = /\|\|\s*[A-Za-z][A-Za-z0-9_]*\s*=\s*[^|\s]*/g;
+const BARE_PLAN_MARKER_RE =
+  /(?:^|[\s,;])(?:required_plan|current_plan|requiredPlan|currentPlan|required_plan_key|current_plan_key)\s*=\s*[A-Za-z0-9_-]+/gi;
+
+export function stripInternalControlMarkers(value: string): string {
+  let next = value.replace(PIPE_CONTROL_MARKER_RE, "");
+  next = next.replace(BARE_PLAN_MARKER_RE, (match) => (/^\s/.test(match) ? " " : ""));
+  next = next.replace(/\|\|/g, " ");
+  return collapseCopy(next);
+}
+
+export function hasInternalControlMarkers(value?: string | null): boolean {
+  if (!value) return false;
+  return (
+    /\|\|\s*[A-Za-z][A-Za-z0-9_]*\s*=/.test(value) ||
+    /(?:required_plan|current_plan|requiredPlan|currentPlan)\s*=/.test(value)
+  );
+}
+
 export const WORKER_CHAT_SHEET_COPY = {
   eyebrow: WORKER_CHAT_TITLE,
   title: WORKER_CHAT_TITLE,
@@ -125,7 +147,8 @@ export function hasForbiddenWorkerChatClaim(value?: string | null): boolean {
   return (
     hasForbiddenWorkerBrand(value) ||
     hasInventedLegalCitation(value) ||
-    hasForbiddenLiveValidationClaim(value)
+    hasForbiddenLiveValidationClaim(value) ||
+    hasInternalControlMarkers(value)
   );
 }
 
@@ -170,7 +193,7 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   if (value == null) return value ?? null;
   if (!value) return value;
 
-  let next = value;
+  let next = stripInternalControlMarkers(value);
   next = next.replace(/CompliLink Operativo/gi, "AuditaPatrón");
   next = next.replace(/CompliLink/gi, "AuditaPatrón");
   next = next.replace(/Modo Helios/gi, "Asesor laboral");
@@ -320,6 +343,7 @@ export function formatWorkerChatAnswer(params: {
   missing?: string | null;
   nextStep?: string | null;
   disclaimer?: string | null;
+  multiDocUpsell?: string | boolean | null;
 }): string {
   const sections = extractWorkerChatSections(params.answer);
   const clearAnswer =
@@ -335,6 +359,10 @@ export function formatWorkerChatAnswer(params: {
     sanitizeWorkerChatCopy(sections.nextStep ?? params.nextStep ?? null) ??
     "Revisa lo que ya se ve en tus papeles y, si puedes, sube el siguiente documento del mismo periodo.";
   const disclaimer = asText(params.disclaimer) ?? WORKER_CHAT_DISCLAIMER;
+  const upsell =
+    params.multiDocUpsell === true
+      ? WORKER_CHAT_MULTI_DOC_UPSELL
+      : asText(typeof params.multiDocUpsell === "string" ? params.multiDocUpsell : null);
 
   return [
     WORKER_CHAT_CLEAR_HEADING,
@@ -350,7 +378,30 @@ export function formatWorkerChatAnswer(params: {
     nextStep,
     "",
     disclaimer,
+    ...(upsell ? ["", upsell] : []),
   ].join("\n");
+}
+
+export function toFriendlyWorkerChatError(raw?: string | null, fallback?: string | null): string {
+  const fallbackText =
+    asText(fallback) ??
+    "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí.";
+  const cleaned = sanitizeWorkerChatCopy(raw) ?? fallbackText;
+
+  const looksLikeUpgradeLeak =
+    hasInternalControlMarkers(raw) ||
+    /está disponible desde Audita (?:Esencial|Pro)/i.test(raw ?? "");
+
+  if (looksLikeUpgradeLeak && /varios documentos/i.test(raw ?? "")) {
+    return formatWorkerChatAnswer({
+      answer: WORKER_CHAT_MULTI_DOC_UPSELL,
+      known: "Con tu plan gratis el asesor puede leer este documento.",
+      missing: "Todavía no puede leer varios documentos juntos.",
+      nextStep: "Pregúntame sobre este documento.",
+    });
+  }
+
+  return cleaned || fallbackText;
 }
 
 export function ensureWorkerChatDisclaimer(

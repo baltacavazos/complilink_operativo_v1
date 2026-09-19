@@ -3,6 +3,7 @@ import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_KNOWN_HEADING,
   WORKER_CHAT_MISSING_HEADING,
+  WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
@@ -44,6 +45,7 @@ export type WorkerChatGrounding = {
   missingDocumentReason: string | null;
   resultCardQuestions: string[];
   disclaimer: string;
+  multiDocUpsell: string | null;
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -96,6 +98,7 @@ export function buildWorkerChatGrounding(params: {
   documents: DocumentLaborFiscalInput[];
   opinion?: unknown;
   missingDocument?: { label?: string | null; reason?: string | null } | null;
+  multiDocUpsell?: string | null;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -128,6 +131,7 @@ export function buildWorkerChatGrounding(params: {
     missingDocumentReason: asText(params.missingDocument?.reason),
     resultCardQuestions: asTextList(resultCard?.suggestedQuestions).slice(0, 4),
     disclaimer: WORKER_CHAT_DISCLAIMER,
+    multiDocUpsell: asText(params.multiDocUpsell),
   };
 }
 
@@ -196,6 +200,7 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
         : "Todavía falta contrastar con más papeles del mismo periodo."),
     nextStep,
     disclaimer: grounding.disclaimer,
+    multiDocUpsell: grounding.multiDocUpsell,
   });
 }
 
@@ -239,6 +244,7 @@ export function sanitizeWorkerChatAnswer(answer: string, grounding: WorkerChatGr
         : null),
     nextStep: grounding.recommendedNextStep,
     disclaimer: grounding.disclaimer,
+    multiDocUpsell: grounding.multiDocUpsell,
   });
 }
 
@@ -265,4 +271,61 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
     null,
     2,
   );
+}
+
+type WorkerChatDocumentLike = {
+  heliosOpinion?: unknown;
+  createdAt?: Date | string | null;
+};
+
+function documentHasUsableOpinion(document: WorkerChatDocumentLike) {
+  const opinion = asRecord(document.heliosOpinion);
+  if (!opinion) return false;
+  return Boolean(asText(opinion.summary) || asText(opinion.legalOpinion) || asRecord(opinion.resultCard));
+}
+
+function documentRecency(document: WorkerChatDocumentLike) {
+  const value = document.createdAt;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+export function pickPrincipalWorkerChatDocument<T extends WorkerChatDocumentLike>(
+  documents: T[],
+): T | null {
+  if (documents.length === 0) return null;
+  return [...documents].sort((left, right) => {
+    const leftOpinion = Number(documentHasUsableOpinion(left));
+    const rightOpinion = Number(documentHasUsableOpinion(right));
+    if (leftOpinion !== rightOpinion) return rightOpinion - leftOpinion;
+    return documentRecency(right) - documentRecency(left);
+  })[0] ?? null;
+}
+
+export function scopeWorkerChatDocumentsForPlan<T extends WorkerChatDocumentLike>(params: {
+  documents: T[];
+  canUseMultiDocument: boolean;
+}): {
+  documents: T[];
+  scopedToSingleDocument: boolean;
+  upsell: string | null;
+} {
+  if (params.canUseMultiDocument || params.documents.length <= 1) {
+    return {
+      documents: params.documents,
+      scopedToSingleDocument: false,
+      upsell: null,
+    };
+  }
+
+  const principal = pickPrincipalWorkerChatDocument(params.documents);
+  return {
+    documents: principal ? [principal] : params.documents.slice(0, 1),
+    scopedToSingleDocument: true,
+    upsell: WORKER_CHAT_MULTI_DOC_UPSELL,
+  };
 }

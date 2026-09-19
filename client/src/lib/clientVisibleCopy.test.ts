@@ -114,6 +114,16 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(isWorkerSystemFieldLabel("Periodo visible")).toBe(false);
   });
 
+  it("quita marcadores internos required_plan/current_plan del copy visible", () => {
+    const leaked =
+      "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial.||required_plan=essential||current_plan=free";
+    const clean = sanitizeClientVisibleCopy(leaked);
+
+    expect(clean).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(clean).toMatch(/Audita Esencial/);
+    expect(hasForbiddenClientBrand(clean)).toBe(false);
+  });
+
   it("el chat del trabajador complementa el sanitizador y no reintroduce Helios", () => {
     const dirty = "Helios y CompliLink ya leyeron tu recibo";
     expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy(dirty))).toBe(false);

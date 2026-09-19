@@ -1032,6 +1032,14 @@ describe("preview sanitization", () => {
     expect(auditarSource).toContain(
       "toFriendlyAuditarRuntimeMessage(\n              error,\n              getNativeDocumentSelectionErrorMessage(\"camera\")",
     );
+    expect(
+      toFriendlyAuditarRuntimeMessage(
+        new Error(
+          "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial.||required_plan=essential||current_plan=free",
+        ),
+        "No fue posible preguntar al asesor.",
+      ),
+    ).not.toMatch(/required_plan|current_plan|\|\|/);
   });
 
   it("traduce booleanos crudos a palabras humanas y no deja true/false a la vista", () => {
