@@ -965,7 +965,7 @@ describe("preview sanitization", () => {
         emptyFallback: "",
         technicalFallback: "omitido",
       }),
-    ).toBe("La lectura ya está lista para continuar.");
+    ).toBe("La lectura ya está lista para continuar");
     expect(auditarSource).toContain("stripWorkerDebugIds");
     expect(auditarSource).toContain("isWorkerDebugId");
     expect(auditarSource).toContain("ap\\.pol");
