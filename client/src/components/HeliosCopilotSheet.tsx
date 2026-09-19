@@ -194,10 +194,10 @@ export function HeliosCopilotSheet({
       <SheetContent
         side="right"
         data-testid="ap-worker-chat"
-        className="ap-worker-chat h-full w-full max-w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
+        className="ap-worker-chat h-dvh max-h-dvh w-full max-w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
       >
-        <div className="flex h-full flex-col">
-          <SheetHeader className="ap-chat-header border-b border-slate-200/80 bg-white/90 px-4 py-4 pr-12 text-left backdrop-blur-md sm:px-6 sm:py-5">
+        <div className="flex h-full min-h-0 flex-col">
+          <SheetHeader className="ap-chat-header shrink-0 border-b border-slate-200/80 bg-white/90 px-4 py-4 pr-12 text-left backdrop-blur-md sm:px-6 sm:py-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
                 <Sparkles className="h-5 w-5" strokeWidth={1.7} />
@@ -215,7 +215,7 @@ export function HeliosCopilotSheet({
               </div>
             </div>
 
-            <div className="mt-5 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
+            <div className="ap-chat-case-card mt-5 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
               <p className="text-sm font-semibold text-slate-950">
                 {visibleCaseTitle ?? "Expediente activo"}
                 {employeeName ? (
@@ -293,7 +293,7 @@ export function HeliosCopilotSheet({
             </div>
 
             {visibleSuggestedPrompts.length ? (
-              <div className="mt-4 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.22)] transition-colors duration-300">
+              <div className="ap-chat-compact-hide mt-4 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.22)] transition-colors duration-300">
                 <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                   {copy.promptsHeading}
                 </p>
@@ -319,7 +319,7 @@ export function HeliosCopilotSheet({
             ) : null}
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4 sm:px-6">
+          <div className="ap-chat-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-3 sm:px-6">
             {visibleHistoryItems.length ? (
               <div className="mb-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
@@ -504,22 +504,23 @@ export function HeliosCopilotSheet({
               </div>
             ) : null}
 
-            <div className="ap-chat-thread min-h-[14rem] sm:min-h-[22rem]">
-              <AIChatBox
-                messages={visibleMessages}
-                onSendMessage={onSendMessage}
-                isLoading={isLoading}
-                variant="calm"
-                className="h-full border-0 bg-transparent shadow-none"
-                height="100%"
-                placeholder={copy.placeholder}
-                emptyStateMessage={copy.emptyStateMessage}
-                suggestedPrompts={[]}
-              />
-            </div>
           </div>
 
-          <div className="border-t border-slate-200/80 bg-white/90 px-5 py-4 backdrop-blur-md transition-colors duration-300 sm:px-6">
+          <div className="ap-chat-thread min-h-0 flex-1 px-3 sm:min-h-[22rem] sm:px-6">
+            <AIChatBox
+              messages={visibleMessages}
+              onSendMessage={onSendMessage}
+              isLoading={isLoading}
+              variant="calm"
+              className="h-full border-0 bg-transparent shadow-none"
+              height="100%"
+              placeholder={copy.placeholder}
+              emptyStateMessage={copy.emptyStateMessage}
+              suggestedPrompts={[]}
+            />
+          </div>
+
+          <div className="ap-chat-footer shrink-0 border-t border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md transition-colors duration-300 sm:px-6 sm:py-4">
             <p className="text-[0.78rem] leading-6 tracking-[-0.01em] text-slate-600">
               {visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER}
             </p>

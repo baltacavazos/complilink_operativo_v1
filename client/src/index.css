@@ -1068,8 +1068,11 @@
 
   @media (max-width: 390px) {
     .ap-worker-chat {
+      inset: 0 !important;
       width: 100% !important;
       max-width: 100% !important;
+      height: 100dvh !important;
+      max-height: 100dvh !important;
     }
 
     .ap-worker-chat .ap-chat-compact-hide {
@@ -1077,16 +1080,27 @@
     }
 
     .ap-worker-chat .ap-chat-header {
-      padding-top: 0.85rem !important;
-      padding-bottom: 0.85rem !important;
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-case-card {
+      margin-top: 0.75rem !important;
+      padding: 0.75rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-scroll {
+      flex: 0 1 auto;
+      max-height: 26%;
+    }
+
+    .ap-worker-chat .ap-chat-thread {
+      flex: 1 1 0 !important;
+      min-height: 11rem !important;
     }
 
     .ap-worker-chat .ap-chat-composer textarea {
       font-size: 16px;
-    }
-
-    .ap-worker-chat .ap-chat-thread {
-      min-height: 12rem;
     }
 
     .audita-home .ap-hero-headline {
