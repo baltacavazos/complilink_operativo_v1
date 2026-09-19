@@ -82,6 +82,48 @@ describe("official digest live + last_good", () => {
     expect(live.citations.find((item) => item.officialId === "5616745")?.title).toMatch(
       /Subcontratación Laboral/,
     );
+    expect(live.citations.every((item) => /^\d+$/.test(item.officialId))).toBe(true);
+  });
+
+  it("si bicentenario responde count/ids, no inventa IUS fuera del harvest o de la nota", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.endsWith("/tesis/count")) {
+          return { ok: true, status: 200, text: async () => JSON.stringify({ count: 5 }) };
+        }
+        if (url.endsWith("/tesis/ids")) {
+          return {
+            ok: true,
+            status: 200,
+            text: async () => JSON.stringify({ ids: ["2032614", "2032611"] }),
+          };
+        }
+        if (url.includes("/tesis/2032614")) {
+          return {
+            ok: true,
+            status: 200,
+            text: async () =>
+              JSON.stringify({
+                registroDigital: "2032614",
+                rubro:
+                  "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL.",
+                tesis: "PR.P.T.CN. J/14 L (12a.)",
+              }),
+          };
+        }
+        return { ok: false, status: 403, text: async () => "<html>_Incapsula_Resource</html>" };
+      }),
+    );
+
+    const live = await collectLiveOfficialCitations();
+    expect(live.liveBlocked).toBe(false);
+    expect(live.citations.some((item) => item.officialId === "2032614" && item.freshness === "live")).toBe(
+      true,
+    );
+    expect(live.citations.some((item) => item.officialId === "9999999")).toBe(false);
+    expect(live.citations.every((item) => /^\d+$/.test(item.officialId))).toBe(true);
   });
 
   it("en una pregunta de IMSS del recibo no consulta ni adjunta el digest oficial", async () => {

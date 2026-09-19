@@ -106,10 +106,10 @@ hidden gap-3 sm:grid sm:grid-cols-3
 hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6
 mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5
 qué documento recibió
-qué señal encontró y qué conviene revisar después.
-Elegir documento
+qué resultado encontró y qué conviene revisar después.
+Recibo, CFDI o PDF del IMSS
 mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700
-max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600
+max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-700
 Empieza con una foto, PDF o XML del documento que ya tengas. No necesitas reunir todo para recibir una primera lectura útil.
 Elegir cámara o archivo
 Sube otro archivo si lo necesitas.
@@ -151,12 +151,12 @@ navigator.clipboard?.writeText(quickRhMessage)
 navigator.clipboard?.writeText(quickWhatsappMessage)
 Si te responden por correo o WhatsApp, guarda también esa respuesta en tu Bóveda Laboral para no perder el contexto del hallazgo.
 Paso 1
-Señal encontrada
+Resultado encontrado
 Qué revisar después
 mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white
 mx-auto inline-flex h-10 w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.2rem]
 El borrador se abre aquí mismo.
-fileRules: "PDF, XML, JPG, PNG o WEBP · máximo 12 MB."
+fileRules: "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX · máximo 12 MB."
 Documento sugerido preparado
 Enfocado en
 tu archivo para aplicar.
@@ -298,16 +298,19 @@ const UPLOAD_PROGRESS_STEPS: Array<{
   { key: "review", label: "Revisar" },
 ];
 
+const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento";
+const UPLOAD_ACCEPTED_DOCUMENTS_HINT = "Recibo, CFDI o PDF del IMSS";
+
 const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
-    "Formatos compatibles: PDF, XML, JPG, PNG, WEBP o DOCX. Límite real: 12 MB por archivo.",
+    "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX. Máximo 12 MB por archivo.",
   privacyRules:
-    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa y puedes pedir borrado cuando lo necesites.",
+    "Tu documento no entra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
-  fileRules: "PDF, XML, JPG, PNG, WEBP o DOCX · máximo 12 MB.",
-  privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue privado, bajo tu control y puedes borrarlo cuando quieras.",
+  fileRules: "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX · máximo 12 MB.",
+  privacyRules: "No se guarda en tu expediente hasta que tú lo confirmes. No lo compartimos con tu empresa.",
 };
 
 const UPLOAD_HELP_DISCLOSURE_SUMMARY =
@@ -463,13 +466,13 @@ function getUploadMomentumCopy(stepKey: UploadProgressStepKey) {
 function getUploadOutcomeCopy(stepKey: UploadProgressStepKey) {
   switch (stepKey) {
     case "analyze":
-      return "Siguiente señal visible: abriremos la vista previa apenas terminemos de leer el documento.";
+      return "Siguiente resultado: abriremos la vista previa apenas terminemos de leer el documento.";
     case "save":
-      return "Siguiente señal visible: el documento aparecerá integrado y con el siguiente paso sugerido.";
+      return "Siguiente resultado: el documento aparecerá integrado y con el siguiente paso sugerido.";
     case "review":
-      return "Siguiente señal visible: podrás confirmar o repetir la carga sin perder claridad del expediente.";
+      return "Siguiente resultado: podrás confirmar o repetir la carga sin perder claridad del expediente.";
     default:
-      return "Siguiente señal visible: aquí mismo verás el avance y la vista previa antes de guardar nada.";
+      return "Siguiente resultado: aquí mismo verás el avance y la vista previa antes de guardar nada.";
   }
 }
 
@@ -1895,7 +1898,7 @@ export function buildInlineLegalConsentState(params: {
       ? legalGateRequired
         ? "Aceptar y analizar documento"
         : "Analizar antes de guardar"
-      : "Sube tu recibo",
+      : UPLOAD_PRIMARY_EMPTY_LABEL,
   };
 }
 
@@ -2807,7 +2810,7 @@ function getHeliosStageCopy(params: {
   ) {
     return {
       badge: "Lectura visible",
-      title: "Ya apareció una señal inicial para revisar",
+      title: "Ya apareció un resultado inicial para revisar",
       description:
         params.documentsWithOpinion > 1
           ? `Ya ves una lectura inicial en ${params.documentsWithOpinion} documentos y eso te da más contexto para decidir qué revisar primero.`
@@ -5189,6 +5192,11 @@ export default function Auditar() {
       });
     }
 
+    if (commerceStatusQuery.data?.environment?.checkoutReady === false) {
+      sonnerToast("Esto es una demostración. No se cobra nada.");
+      return;
+    }
+
     try {
       setSubmitError(null);
       trackCommerceCheckoutStarted(productKey, {
@@ -5456,7 +5464,7 @@ export default function Auditar() {
     }
 
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay un documento para leer. Sube tu recibo, contrato o CFDI y te digo qué se ve, qué falta y el siguiente paso.";
+      return "Todavía no hay un documento para leer. Sube tu documento (recibo, CFDI o PDF del IMSS) y te digo qué se ve, qué falta y el siguiente paso.";
     }
 
     return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"}. Pregúntame qué se ve, qué falta y el siguiente paso.`;
@@ -6004,7 +6012,7 @@ export default function Auditar() {
       badge: "Lista",
       title: "Privacidad activa desde el primer intento",
       detail:
-        "Puedes subir un archivo, revisar la primera señal y decidir después si te conviene guardarlo.",
+        "Puedes subir un archivo, revisar el primer resultado y decidir después si te conviene guardarlo.",
       company: "Empresa sin acceso",
       control: "Tú confirmas si se guarda",
       trace: "Rastro visible al confirmar",
@@ -8557,23 +8565,31 @@ export default function Auditar() {
             reason: "Sirve para comparar lo timbrado con lo que te pagaron.",
             ctaLabel: "Subir este documento ahora",
           }}
-          officialTitles={[
-            {
-              title:
-                "Decreto por el que se reforman, adicionan y derogan diversas disposiciones de la Ley Federal del Trabajo, en materia de reducción de la jornada laboral.",
-              url: "https://www.dof.gob.mx/nota_detalle.php?codigo=5786537&fecha=01/05/2026",
-              kindLabel: "Publicación del Diario Oficial",
-              source: "dof",
-            },
-            {
-              title:
-                "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL.",
-              url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032614",
-              kindLabel: "Criterio reiterado de la Corte",
-              source: "scjn",
-            },
-          ]}
-          officialSourcesNote="Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial."
+          officialTitles={
+            new URLSearchParams(window.location.search).get("legalHarness") === "1"
+              ? [
+                  {
+                    title:
+                      "Decreto por el que se reforman, adicionan y derogan diversas disposiciones de la Ley Federal del Trabajo, en materia de reducción de la jornada laboral.",
+                    url: "https://www.dof.gob.mx/nota_detalle.php?codigo=5786537&fecha=01/05/2026",
+                    kindLabel: "Publicación del Diario Oficial",
+                    source: "dof" as const,
+                  },
+                  {
+                    title:
+                      "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL.",
+                    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032614",
+                    kindLabel: "Criterio reiterado de la Corte",
+                    source: "scjn" as const,
+                  },
+                ]
+              : []
+          }
+          officialSourcesNote={
+            new URLSearchParams(window.location.search).get("legalHarness") === "1"
+              ? "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial."
+              : null
+          }
           responseTone="brief"
         />
       </main>
@@ -8621,8 +8637,8 @@ export default function Auditar() {
             <div className="flex items-center gap-3">
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
-                <p className="text-sm font-semibold tracking-tight text-emerald-900">Señal inicial</p>
-                <p className="mt-1 text-sm text-slate-600">Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
+                <p className="text-sm font-semibold tracking-tight text-emerald-900">Resultado inicial</p>
+                <p className="mt-1 text-sm text-slate-700">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
             <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
@@ -8648,7 +8664,7 @@ export default function Auditar() {
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
               </div>
             </div>
-            <p className="mt-5 text-sm leading-6 text-slate-600">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, esta señal se mantiene como orientación inicial.</p>
+            <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
             {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos guardar todavía</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button type="button" className="h-12 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={() => {
@@ -8673,7 +8689,7 @@ export default function Auditar() {
           <MobileAppShell
             current="auditar"
             title="Empieza tu auditoría"
-            subtitle="Sube tu documento y mira primero la señal."
+            subtitle="Primero ves el resultado."
           />
           <input
             ref={guestFileInputRef}
@@ -8706,15 +8722,15 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial del recibo"}
+                {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial"}
               </div>
-              <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                {isNativeAppExperience ? "Tu documento, en palabras simples" : "Tu recibo, en palabras simples"}
+              <h1 className="mt-5 max-w-[16ch] text-balance text-3xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
+                Tu documento, en palabras simples
               </h1>
-              <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-full text-base leading-7 text-slate-700 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
                   ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
-                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil. Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar."}
+                  : "La lectura puede tardar un momento. Te mostramos el resultado (semáforo) y el siguiente paso útil: qué ya se entiende y qué conviene revisar."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -8728,12 +8744,15 @@ export default function Auditar() {
                   }}
                   disabled={guestAnalyzeMutation.isPending}
                 >
-                  {guestAnalyzeMutation.isPending ? "Leyendo tu recibo…" : isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
+                  {guestAnalyzeMutation.isPending ? "Leyendo tu documento…" : UPLOAD_PRIMARY_EMPTY_LABEL}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
+                <p className="text-sm font-medium leading-5 text-slate-700">
+                  {UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Gratis, sin cuenta.
+                </p>
                   <button
                     type="button"
-                    className="inline-flex w-fit items-center justify-center px-1 py-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
+                    className="inline-flex w-fit items-center justify-center px-1 py-1 text-xs font-medium text-slate-700 transition-colors hover:text-slate-950"
                     onClick={() => {
                     trackFunnelStep("auditar_login_clicked", {
                       source: "auditar_guard_secondary",
@@ -8754,11 +8773,11 @@ export default function Auditar() {
                 {(isNativeAppExperience
                   ? [
                       "Subes foto o archivo desde tu celular.",
-                      "Ves la señal principal y el siguiente paso útil.",
+                      "Ves el resultado (semáforo) y el siguiente paso útil.",
                     ]
                   : [
                       "Subes un solo archivo desde tu celular o computadora.",
-                      "Ves la señal y decides si quieres guardarlo o seguir con otro documento.",
+                      "Ves el resultado y decides si quieres guardarlo o seguir con otro documento.",
                     ]).map(item => (
                   <div
                     key={item}
@@ -8790,7 +8809,7 @@ export default function Auditar() {
         <MobileAppShell
           current="auditar"
           title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
-          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión y decide el siguiente paso." : "Sube tu documento y mira primero la señal."}
+          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión." : "Primero ves el resultado."}
         />
         <div
           ref={heroCardRef}
@@ -8833,22 +8852,20 @@ export default function Auditar() {
               {shouldCompactPostUploadExperience ? null : isNativeAppExperience ? (
                 <>
                   <span className="sm:hidden">
-                    Sube foto o archivo. Revisas la señal y decides si guardas.
+                    Sube foto o archivo. Revisas el resultado y decides si guardas.
                   </span>
                   <span className="hidden sm:inline">
-                                          Sube foto, PDF, XML o DOCX. Revisas la señal y decides si la guardas.
-
+                    Sube foto, PDF, XML o DOCX. Revisas el resultado y decides si lo guardas.
                   </span>
                 </>
               ) : (
                 <>
-                                      <span className="sm:hidden">
-                      Sube foto o archivo. Ves la señal y decides si lo guardas.
-                    </span>
-                    <span className="hidden sm:inline">
-                      Sube foto, PDF, XML o DOCX. Ves la señal y decides si lo guardas.
-                    </span>
-
+                  <span className="sm:hidden">
+                    Sube foto o archivo. Ves el resultado y decides si lo guardas.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Sube foto, PDF, XML o DOCX. Ves el resultado y decides si lo guardas.
+                  </span>
                 </>
               )}
             </p>
@@ -9332,7 +9349,7 @@ export default function Auditar() {
               </div>
             ) : null}
 
-            <div className={shouldCompactPostUploadExperience || (isNativeAppExperience && shouldCompactMobileUploadEntry) ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
+            <div className={shouldCompactPostUploadExperience || isFirstDocumentFlow ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
               {shouldCompactPostUploadExperience ? (
                 <details className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 shadow-sm sm:hidden">
                   <summary className="flex list-none items-center justify-between gap-3 text-left">
@@ -9364,7 +9381,7 @@ export default function Auditar() {
                     >
                       {selectedFile ? "Cambiar documento" : "Agregar otro documento"}
                     </Button>
-                    <p className="text-xs leading-5 text-slate-500">
+                      <p className="text-xs leading-5 text-slate-700">
                       Elige un archivo o toma una foto para sumar otra pieza útil.
                     </p>
                   </div>
@@ -9381,49 +9398,23 @@ export default function Auditar() {
                     {shouldCompactPostUploadExperience
                                               ? "Tu resultado ya está arriba. Puedes sumar otro documento."
 
-                      : "Te diremos qué documento recibimos, qué señal encontramos y qué conviene revisar después."}
+                      : "Te diremos qué documento recibimos, qué resultado encontramos y qué conviene revisar después."}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Úsalo solo si quieres sumar otra pieza."
-                                                : "Empieza con una foto o PDF. Subes, ves la señal y luego decides si sigues."}
+                                                : "Empieza con una foto o PDF. Subes, ves el resultado y luego decides si sigues."}
 
                   </p>
-                  <div
-                    data-ap-status-cluster
-                    className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
-                  >
-                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">
-                        Privacidad radical
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Esta revisión es para ti. No compartimos tu archivo con tu empresa.
-                      </p>
-                    </article>
-                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">
-                        Control total
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Primero ves el borrador y luego decides si lo guardas.
-                      </p>
-                    </article>
-                    <article className="rounded-[1rem] border border-teal-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
-                      <p className="font-semibold text-slate-950">
-                        Borrado visible
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tus documentos son tuyos. Puedes pedir borrado cuando lo necesites.
-                      </p>
-                    </article>
-                  </div>
+                  <p className="sr-only">
+                    Esta revisión es para ti. No compartimos tu archivo con tu empresa.
+                  </p>
 
                   <div
                     className={`mt-4 hidden ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : "sm:block"}`}
                   >
                     <div className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm">
-                      Documento recibido → señal encontrada → qué revisar después.
+                      Documento recibido → resultado encontrado → qué revisar después.
                     </div>
                   </div>
 
@@ -9439,22 +9430,10 @@ export default function Auditar() {
                   ) : null}
 
                   <div className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
-                    <Button
-                      className="mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] bg-slate-950 px-6 text-[1.02rem] font-semibold text-white shadow-[0_18px_36px_-24px_rgba(15,23,42,0.46)] transition hover:bg-slate-900 sm:mx-0 sm:h-12 sm:max-w-none sm:rounded-2xl sm:px-4 sm:text-base sm:shadow-none"
-                      onClick={() => setUploadSourceOpen(true)}
-                    >
-                      {selectedFile
-                        ? "Cambiar documento"
-                        : shouldCompactPostUploadExperience
-                          ? "Agregar otro documento"
-                          : "Elegir documento"}
-                    </Button>
-                    <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-500 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
+                    <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-700 sm:mx-0 sm:max-w-none sm:text-left sm:text-sm">
                       {shouldCompactPostUploadExperience
-                        ? "Foto o archivo para sumar otra pieza."
-                        : isNativeAppExperience
-                          ? "Foto o archivo. Primero revisas y luego decides si lo guardas."
-                          : "Foto o PDF del documento que ya tengas. La primera lectura llega sin pasos extra."}
+                        ? "Foto o archivo para sumar otra pieza, más abajo."
+                        : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Úsalo en el botón de subir, más abajo.`}
                     </p>
                   </div>
                 </div>
@@ -10310,8 +10289,8 @@ export default function Auditar() {
               </div>
 
               {showCompactUploadContextHint ? (
-                <p className="mt-3 text-xs leading-5 text-slate-500 sm:hidden">
-                  Si lo tienes en papel, toma la foto. Si ya lo descargaste, súbelo directo.
+                <p className="mt-3 text-xs leading-5 text-slate-700 sm:hidden">
+                  {UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Si lo tienes en papel, toma la foto. Si ya lo descargaste, súbelo directo.
                 </p>
               ) : null}
 
@@ -10576,16 +10555,10 @@ export default function Auditar() {
                       </Button>
                     )}
                     <div className="space-y-2.5">
-                      <p className="mx-auto max-w-[22rem] text-center text-[12px] leading-4.5 text-slate-500">
+                      <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-700">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento se está analizando."
-                          : shouldCompactMobileUploadEntry
-                            ? "Un solo botón para subir. Si quieres foto u otro origen, usa la opción de abajo."
-                            : preferredCaptureMode === "camera"
-                              ? "Abriremos la cámara primero."
-                              : preferredCaptureMode === "file"
-                                ? "Abriremos tus archivos primero."
-                                : "Abriremos tus archivos primero; aquí puedes cambiarlo."}
+                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Un solo botón para subir.`}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-3.5 py-2.5 text-teal-950 shadow-sm">
@@ -10728,7 +10701,7 @@ export default function Auditar() {
                           ? `${pendingDraft.previewAsset.fileName} · ${formatVisibleFileSize(pendingDraft.previewAsset.sizeBytes)}`
                           : selectedFile
                             ? `${selectedFile.name} · ${formatVisibleFileSize(selectedFile.size)}`
-                            : getUploadCompactGuardrails().fileRules}
+                            : "Elige un documento para empezar."}
                       </span>
                     </div>
                     {isAutoAnalyzingSelectedFile ? (
@@ -10749,14 +10722,14 @@ export default function Auditar() {
 
                   <div
                     id="upload-guardrails-summary"
-                    className={`mt-2.5 ${pendingDraft ? "hidden sm:flex" : "flex"} flex-wrap items-center gap-1.5 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[11px] leading-4.5 text-slate-700`}
+                    className={`mt-2.5 ${pendingDraft ? "hidden sm:block" : "block"} rounded-[1rem] border border-slate-200 bg-white px-3.5 py-3 text-[13px] leading-5 text-slate-700`}
                   >
-                    <span className="font-semibold text-slate-900">
-                      Límites:
-                    </span>
-                    <span>{getUploadCompactGuardrails().fileRules}</span>
-                    <span className="hidden sm:inline text-slate-400">•</span>
-                    <span>{getUploadCompactGuardrails().privacyRules}</span>
+                    <p className="font-semibold text-slate-950">
+                      {getUploadCompactGuardrails().fileRules}
+                    </p>
+                    <p className="mt-1.5">
+                      {getUploadCompactGuardrails().privacyRules}
+                    </p>
                   </div>
                 </div>
 
@@ -15146,6 +15119,10 @@ Reforzar con otro documento
           </DrawerHeader>
           <div className="space-y-4 px-4 pb-2">
             <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50/80 p-4">
+              <div className="mb-3 rounded-[1rem] border border-teal-200 bg-white px-3 py-2.5 text-sm leading-6 text-teal-950">
+                <p className="font-semibold">Esto es una demostración. No se cobra nada.</p>
+                <p className="mt-1 text-teal-900">Puedes ver los planes. Hoy no se abre un cobro real.</p>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
                   Plan actual
@@ -15180,11 +15157,11 @@ Reforzar con otro documento
                 <div className="rounded-2xl bg-white/80 p-3">
                   <p className="font-semibold text-slate-950">Operación comercial</p>
                   <p className="mt-1">
-                    {commerceStatusQuery.data?.hasStripe
+                    {commerceStatusQuery.data?.environment?.checkoutReady
                       ? auth.canToggleUserView && commerceStatusQuery.data?.environment?.isSandbox
                         ? "Checkout listo en sandbox para validación."
                         : "Checkout y cobro listos para operar."
-                      : "La activación de cobro todavía está pendiente."}
+                      : "Esto es una demostración. No se cobra nada."}
                   </p>
                 </div>
               </div>
@@ -15327,10 +15304,18 @@ Reforzar con otro documento
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button
                           className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
-                          disabled={isCurrentPlan || createCommerceCheckoutMutation.isPending}
+                          disabled={
+                            isCurrentPlan ||
+                            createCommerceCheckoutMutation.isPending ||
+                            commerceStatusQuery.data?.environment?.checkoutReady === false
+                          }
                           onClick={() => handleCommerceCheckout(plan.key)}
                         >
-                          {isCurrentPlan ? "Ya estás en este plan" : plan.ctaLabel}
+                          {isCurrentPlan
+                            ? "Ya estás en este plan"
+                            : commerceStatusQuery.data?.environment?.checkoutReady === false
+                              ? "Ver plan (sin cobro)"
+                              : plan.ctaLabel}
                         </Button>
                         {plan.key === "free" ? (
                           <Button
@@ -15389,10 +15374,17 @@ Reforzar con otro documento
                       </ul>
                       <Button
                         className="mt-4 rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
-                        disabled={createCommerceCheckoutMutation.isPending}
+                        disabled={
+                          createCommerceCheckoutMutation.isPending ||
+                          commerceStatusQuery.data?.environment?.checkoutReady === false
+                        }
                         onClick={() => handleCommerceCheckout(product.key)}
                       >
-                        {alreadyPurchased ? "Comprar otra vez" : product.ctaLabel}
+                        {commerceStatusQuery.data?.environment?.checkoutReady === false
+                          ? "Ver producto (sin cobro)"
+                          : alreadyPurchased
+                            ? "Comprar otra vez"
+                            : product.ctaLabel}
                       </Button>
                     </article>
                   );
@@ -15445,7 +15437,7 @@ Reforzar con otro documento
       <Drawer open={uploadSourceOpen} onOpenChange={setUploadSourceOpen}>
           <DrawerContent>
             <DrawerHeader className="text-left">
-              <DrawerTitle>¿Cómo quieres subir tu recibo?</DrawerTitle>
+              <DrawerTitle>¿Cómo quieres subir tu documento?</DrawerTitle>
 
             <DrawerDescription>
               Puedes tomar una foto en ese momento o elegir un archivo que ya

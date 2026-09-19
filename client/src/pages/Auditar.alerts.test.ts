@@ -642,8 +642,8 @@ describe("getUploadStepAriaLabel", () => {
 describe("getUploadCompactGuardrails", () => {
   it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
     expect(getUploadCompactGuardrails()).toEqual({
-      fileRules: "PDF, XML, JPG, PNG, WEBP o DOCX · máximo 12 MB.",
-      privacyRules: "Nada se integra al expediente hasta que revisas y confirmas. Tu archivo sigue privado, bajo tu control y puedes borrarlo cuando quieras.",
+      fileRules: "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX · máximo 12 MB.",
+      privacyRules: "No se guarda en tu expediente hasta que tú lo confirmes. No lo compartimos con tu empresa.",
     });
   });
 });
@@ -991,7 +991,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: true,
       confirmPrimaryActionLabel: "Aceptar y guardar con ajustes",
-      uploadPrimaryActionLabel: "Sube tu recibo",
+      uploadPrimaryActionLabel: "Sube tu documento",
     });
   });
 
@@ -1023,7 +1023,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: false,
       confirmPrimaryActionLabel: "Confirmar y guardar documento",
-      uploadPrimaryActionLabel: "Sube tu recibo",
+      uploadPrimaryActionLabel: "Sube tu documento",
     });
   });
 });

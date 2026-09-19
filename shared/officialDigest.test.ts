@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import harvestFile from "./data/scjn-harvest.v1.json";
 import {
   DOF_LAST_GOOD_SEED,
   OFFICIAL_DIGEST_DOCTRINA_LABEL,
   OFFICIAL_DIGEST_JURISPRUDENCIA_LABEL,
   OFFICIAL_DIGEST_LAST_GOOD_COPY,
   SCJN_HARVEST_SEED,
+  SCJN_HARVEST_SEEDED_AT,
   classifyScjnKind,
   isKnownOfficialUrl,
   isOfficialLegalQuestion,
@@ -23,6 +25,10 @@ import {
 describe("official digest seed", () => {
   it("solo guarda IUS reales del harvest y no inventa registros", () => {
     expect(SCJN_HARVEST_SEED).toHaveLength(5);
+    expect(SCJN_HARVEST_SEEDED_AT).toBe(harvestFile.harvestedAt);
+    expect(SCJN_HARVEST_SEED.map((item) => item.officialId).sort()).toEqual(
+      harvestFile.entries.map((item) => item.officialId).sort(),
+    );
     expect(SCJN_HARVEST_SEED.map((item) => item.officialId).sort()).toEqual([
       "2032611",
       "2032614",

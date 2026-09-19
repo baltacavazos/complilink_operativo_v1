@@ -99,7 +99,7 @@ export default function LocalPasswordForm({
           onChange={(event) => setEmail(event.target.value)}
           onInput={(event) => setEmail((event.target as HTMLInputElement).value)}
           placeholder="nombre@empresa.com"
-          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100/90 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
+          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-500 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
         />
       </div>
 
@@ -118,7 +118,7 @@ export default function LocalPasswordForm({
           onChange={(event) => setPassword(event.target.value)}
           onInput={(event) => setPassword((event.target as HTMLInputElement).value)}
           placeholder="Mínimo 8 caracteres"
-          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100/90 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
+          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-500 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
         />
       </div>
 

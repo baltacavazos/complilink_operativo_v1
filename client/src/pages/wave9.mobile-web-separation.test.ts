@@ -32,9 +32,9 @@ describe("novena ola móvil/web", () => {
     expect(source).toContain("Ruta corta dentro de la app");
     expect(source).toContain("La lectura puede tardar un momento");
     expect(source).toContain("Subes foto o archivo desde tu celular.");
-    expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
+    expect(source).toContain("Ves el resultado (semáforo) y el siguiente paso útil.");
     expect(source).toContain("Sube tu documento");
-    expect(source).toContain("Sube tu recibo gratis");
+    expect(source).toContain("Recibo, CFDI o PDF del IMSS");
     expect(source).toContain("Tu documento sigue privado dentro de la app");
     expect(source).toContain("Primero revisas. Guardas solo si te sirve.");
   });

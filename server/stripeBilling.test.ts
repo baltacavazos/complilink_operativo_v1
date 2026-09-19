@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type Stripe from "stripe";
 import {
+  COMMERCE_DEMO_NO_CHARGE_COPY,
+  LIVE_BILLING_ENABLED,
+  createCommerceBillingPortalSession,
+  createCommerceCheckoutSession,
   derivePaymentRecordFromCheckoutSession,
   derivePaymentRecordFromInvoice,
   deriveSubscriptionRecordFromSubscription,
+  isLiveBillingEnabled,
 } from "./stripeBilling";
 
 describe("stripeBilling projections", () => {
@@ -125,5 +130,21 @@ describe("stripeBilling projections", () => {
     } as unknown as Stripe.Checkout.Session;
 
     expect(derivePaymentRecordFromCheckoutSession(session)).toBeNull();
+  });
+
+  it("deja el cobro en demostración y no abre checkout ni portal en vivo", async () => {
+    expect(LIVE_BILLING_ENABLED).toBe(false);
+    expect(isLiveBillingEnabled()).toBe(false);
+    await expect(
+      createCommerceCheckoutSession({
+        actor: { id: 1, email: "demo@example.com", name: "Demo" },
+        productKey: "essential",
+      }),
+    ).rejects.toThrow(COMMERCE_DEMO_NO_CHARGE_COPY);
+    await expect(
+      createCommerceBillingPortalSession({
+        actor: { id: 1, email: "demo@example.com", name: "Demo" },
+      }),
+    ).rejects.toThrow(COMMERCE_DEMO_NO_CHARGE_COPY);
   });
 });

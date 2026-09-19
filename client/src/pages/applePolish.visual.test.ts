@@ -114,7 +114,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).toContain("isHumanMeaningfulAnalysisKey");
     expect(auditar).toContain("!/^sin dato visible$/i.test(value)");
     expect(auditar).toContain("filename|mimetype|internaldocumenttype");
-    expect(auditar).toContain("Tu recibo, en palabras simples");
+    expect(auditar).toContain("Tu documento, en palabras simples");
     expect(auditar).toContain('data-ap-status-cluster');
     expect(auditar).toContain('cardClass: "border-teal-200 bg-teal-50/90"');
     expect(css).toContain('.audita-auditar [data-ap-privacy-bar]');
@@ -126,17 +126,20 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).not.toContain("CompliLink");
   });
 
-  it("deja un solo CTA primario «Sube tu recibo» en /auditar sin archivo", () => {
+  it("deja un solo CTA primario «Sube tu documento» en /auditar sin archivo", () => {
     const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
 
     expect(auditar).toContain('{(selectedFile || pendingDraft) ? (');
     expect(auditar).toContain("hidden gap-2.5 sm:grid");
-    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
+    expect(auditar).toContain("UPLOAD_ACCEPTED_DOCUMENTS_HINT");
+    expect(auditar).toContain("Recibo, CFDI o PDF del IMSS");
     expect(auditar).toContain("Tu recibo o comprobante");
     expect(auditar).toContain("Revisa lo importante");
     expect(auditar).toContain("Foto o archivo para empezar");
     expect(auditar).not.toContain("Sube tu recibo o comprobante");
     expect(auditar).not.toContain("Sube tu recibo y revisa lo importante");
+    expect(auditar).not.toContain(": \"Elegir documento\"");
     expect(auditar).toContain(
       'className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start"',
     );
@@ -175,7 +178,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).toContain("ap-next-step-card");
     expect(auditar).toContain("isWorkerVisibleAnalysisField");
     expect(auditar).toContain("isWorkerInternalFieldValue");
-    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(auditar).toContain(': UPLOAD_PRIMARY_EMPTY_LABEL,');
     expect(css).toContain(".audita-auditar [data-ap-next-step]");
     expect(css).toContain(".dark .audita-auditar article[data-ap-next-step]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)");
     expect(css).toContain(".dark .audita-auditar [data-ap-status-cluster] article:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)");
@@ -214,5 +217,8 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(css).toContain("text-wrap: balance");
     expect(css).toContain(".audita-home .ap-status-chip");
     expect(css).toContain("text-transform: none");
+    expect(css).toContain(".audita-pagos");
+    expect(css).toContain(".audita-historial");
+    expect(css).toContain("@media (max-width: 390px)");
   });
 });

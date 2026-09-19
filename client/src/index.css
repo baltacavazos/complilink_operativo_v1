@@ -515,7 +515,11 @@
   .audita-auditar [data-testid="auditar-verdict-panel"] [class*="text-slate-500"],
   .audita-auditar [data-testid="auditar-result-reveal"] [class*="text-slate-500"],
   .audita-auditar [data-testid="auditar-severity-summary"] [class*="text-slate-500"],
-  .audita-auditar [data-testid="auditar-simple-explanation"] [class*="text-slate-500"] {
+  .audita-auditar [data-testid="auditar-simple-explanation"] [class*="text-slate-500"],
+  .audita-auditar [class*="text-slate-500"],
+  .audita-auditar [class*="text-slate-400"],
+  .audita-historial [class*="text-slate-500"],
+  .audita-historial [class*="text-slate-400"] {
     color: rgb(51 65 85);
   }
 
@@ -625,7 +629,8 @@
 
   .audita-home .ap-hero-headline {
     overflow: visible;
-    padding-bottom: 0.08em;
+    padding-bottom: 0.12em;
+    line-height: 1.12;
   }
 
   @media (min-width: 640px) {
@@ -1029,5 +1034,87 @@
     background-color: var(--ap-chat-wash) !important;
     color: var(--ap-chat-ink) !important;
     border-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ap-worker-chat .ap-chat-header {
+    overflow: visible;
+  }
+
+  .ap-worker-chat h2,
+  .ap-worker-chat [data-slot="sheet-title"] {
+    overflow: visible;
+    text-wrap: balance;
+    padding-block-end: 0.04em;
+  }
+
+  .audita-pagos,
+  .audita-historial,
+  .audita-access {
+    --ap-radius-card: 1.5rem;
+    color: rgb(15 23 42);
+  }
+
+  .audita-pagos h1,
+  .audita-pagos h2,
+  .audita-historial h1,
+  .audita-access h1 {
+    overflow: visible;
+    text-wrap: balance;
+    padding-block-end: 0.06em;
+  }
+
+  .audita-pagos p,
+  .audita-historial p,
+  .audita-access p {
+    overflow: visible;
+    text-wrap: pretty;
+  }
+
+  .audita-historial [class*="text-slate-600"],
+  .audita-historial [class*="text-slate-500"] {
+    color: rgb(51 65 85);
+  }
+
+  @media (max-width: 390px) {
+    .ap-worker-chat {
+      inset: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100dvh !important;
+      max-height: 100dvh !important;
+    }
+
+    .ap-worker-chat .ap-chat-compact-hide {
+      display: none !important;
+    }
+
+    .ap-worker-chat .ap-chat-header {
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-case-card {
+      margin-top: 0.75rem !important;
+      padding: 0.75rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-scroll {
+      flex: 0 1 auto;
+      max-height: 26%;
+    }
+
+    .ap-worker-chat .ap-chat-thread {
+      flex: 1 1 0 !important;
+      min-height: 11rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-composer textarea {
+      font-size: 16px;
+    }
+
+    .audita-home .ap-hero-headline {
+      line-height: 1.14 !important;
+      overflow: visible;
+    }
   }
 }

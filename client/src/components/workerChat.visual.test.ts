@@ -59,6 +59,11 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-section-label");
     expect(css).toContain(".ap-worker-chat .ap-chat-official");
     expect(css).toContain(".ap-worker-chat .ap-chat-source-link");
+    expect(css).toContain("@media (max-width: 390px)");
+    expect(css).toContain(".ap-worker-chat .ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-header");
+    expect(sheet).toContain("h-dvh max-h-dvh w-full max-w-full");
     expect(css).toContain("letter-spacing: -0.018em");
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
@@ -76,7 +81,10 @@ describe("worker chat visual polish", () => {
     expect(auditar).toContain("aviso de retención o estado de crédito");
     expect(auditar).toContain("acreditación de pagos y deducciones");
     expect(auditar).toContain("officialTitles");
+    expect(auditar).toContain('legalHarness") === "1"');
     expect(auditar).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032614");
     expect(auditar).toContain("codigo=5786537");
+    expect(sheet).toContain("ap-chat-thread");
+    expect(sheet).toContain("ap-chat-footer");
   });
 });

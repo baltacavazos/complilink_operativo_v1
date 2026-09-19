@@ -1218,7 +1218,7 @@ function HeroSection() {
           </div>
 
             <h1
-              className="ap-hero-headline motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
+              className="ap-hero-headline motion-enter-soft mt-2.5 max-w-[16ch] text-balance text-[2.12rem] font-bold leading-[1.12] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[15ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[1.14] sm:mt-4 sm:max-w-[14ch] sm:text-[3.05rem] sm:leading-[1.08] lg:max-w-[13ch] lg:text-[3.75rem]"
               style={{ ["--motion-delay" as string]: "120ms" }}
             >
               {activeHeroVariant.headline}

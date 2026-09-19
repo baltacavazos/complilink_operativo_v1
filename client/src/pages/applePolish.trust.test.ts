@@ -27,7 +27,8 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
     const auditar = readFromPages("Auditar.tsx");
 
     expect(auditar).toContain('uploadPrimaryActionLabel: hasSelectedFile');
-    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(auditar).toContain("UPLOAD_PRIMARY_EMPTY_LABEL");
+    expect(auditar).toContain(': UPLOAD_PRIMARY_EMPTY_LABEL,');
     expect(auditar).toContain("Prefiero tomar una foto u otro archivo");
     expect(auditar).toContain("onClick={openPreferredPicker}");
     expect(auditar).not.toContain(": \"Tomar foto ahora\"\n                        </Button>");
@@ -70,7 +71,8 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
 
     expect(payments).toContain(primarySentence);
     expect(primarySentence).not.toMatch(/Stripe|webhook|checkout/i);
-    expect(payments).toContain("Referencia de cobro");
+    expect(payments).toContain("Esto es una demostración. No se cobra nada.");
+    expect(payments).not.toContain("Referencia de cobro");
     expect(payments).not.toContain("persistencia local mínima de Stripe");
     expect(payments).not.toContain("Cliente en Stripe");
   });
