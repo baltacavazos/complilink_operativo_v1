@@ -105,8 +105,13 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replaceAll("motor Helios", "inteligencia laboral");
   next = next.replaceAll("Motor Helios", "Inteligencia laboral");
   next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor laboral");
-  next = next.replace(/\bHelios\b/g, "la inteligencia laboral");
-  next = next.replace(/\bhelios\b/gi, "la inteligencia laboral");
+  next = next.replace(
+    /Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar[^.]*\.?/gi,
+    "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+  );
+  next = next.replace(/\bHelios ya\b/g, "El asesor laboral ya");
+  next = next.replace(/\bHelios\b/g, "el asesor laboral");
+  next = next.replace(/\bhelios\b/gi, "el asesor laboral");
 
   next = next.replace(/webhook_rejected/gi, "No pudimos recibir el aviso.");
   next = next.replace(/detectada por webhook/gi, "detectada automáticamente");

@@ -26,6 +26,20 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Helios multi-documento")).toBe("lectura de varios documentos");
     expect(sanitizeClientVisibleCopy("motor Helios")).toBe("inteligencia laboral");
     expect(sanitizeClientVisibleCopy("Helios · modo CEO")).toBe("Asesor laboral · modo CEO");
+    expect(
+      sanitizeClientVisibleCopy(
+        "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+      ),
+    ).toBe(
+      "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+    );
+    expect(
+      hasForbiddenClientBrand(
+        sanitizeClientVisibleCopy(
+          "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+        ),
+      ),
+    ).toBe(false);
     expect(sanitizeClientVisibleCopy("El copiloto Helios ya leyó tu expediente")).toBe(
       "El asesor laboral ya leyó tu expediente",
     );

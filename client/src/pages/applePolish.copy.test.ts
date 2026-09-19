@@ -235,4 +235,16 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     );
     expect(readClientSource("lib/clientVisibleCopy.ts")).toContain("sanitizeClientVisibleCopy");
   });
+
+  it("Home no renderiza la frase exacta de Helios del expediente", () => {
+    const home = readClientSource("pages/Home.tsx");
+    const auditar = readClientSource("pages/Auditar.tsx");
+
+    expect(home).not.toContain(
+      "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar",
+    );
+    expect(home).toContain("sanitizeHomeVisibleCopy(example.summary)");
+    expect(home).toContain("sanitizeHomeVisibleCopy(homeSnapshotQuery.data.latestCase.summary)");
+    expect(auditar).toContain("warmVisibleNamingCopy(heliosExpediente?.summary)");
+  });
 });

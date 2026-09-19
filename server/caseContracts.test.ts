@@ -264,7 +264,16 @@ describe("caseContracts", () => {
     ).toMatchObject({
       stage: "recommendations",
       stageLabel: "Con lectura activa",
+      summary:
+        "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
     });
+    expect(
+      getHeliosExpedienteStage({
+        caseStatus: "conciliation",
+        documentsCount: 2,
+        documentsWithOpinion: 1,
+      }).summary,
+    ).not.toContain("Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar");
 
     expect(
       getHeliosDocumentState({

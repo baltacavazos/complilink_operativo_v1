@@ -419,7 +419,7 @@ describe("appRouter case workflows", () => {
     });
     expect(result.heliosExpediente).toMatchObject({
       heliosExpedienteId: "CASE-BALT-1-DEMO001",
-      displayName: "Expediente Helios de María López",
+      displayName: "Expediente laboral de María López",
       stage: "recommendations",
       stageLabel: "Con lectura activa",
       documentsCount: 1,
@@ -1637,7 +1637,7 @@ describe("appRouter case workflows", () => {
         "Documento confirmado y guardado",
         "Documento clasificado",
         "Escaneo asistido evaluó la captura",
-        "Helios preparó una opinión inicial",
+        "El asesor laboral preparó una opinión inicial",
       ]),
     );
 
