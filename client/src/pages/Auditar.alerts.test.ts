@@ -968,7 +968,7 @@ describe("preview sanitization", () => {
     ).toBe("La lectura ya está lista para continuar.");
     expect(auditarSource).toContain("stripWorkerDebugIds");
     expect(auditarSource).toContain("isWorkerDebugId");
-    expect(auditarSource).toContain("ap.pol");
+    expect(auditarSource).toContain("ap\\.pol");
   });
 
   it("reemplaza blobs técnicos por un fallback corto y legible", () => {

@@ -76,7 +76,7 @@ describe("Apple tip #3 — pulido visual", () => {
 
     expect(html).toContain('href="/favicon.svg"');
     expect(manifest).toContain('"/favicon.svg"');
-    expect(favicon).toContain("AuditaPatrón");
+    expect(favicon).toContain("AuditaPatron");
     expect(favicon).toContain("#143c86");
   });
 });
