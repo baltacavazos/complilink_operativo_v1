@@ -454,6 +454,8 @@ function looksLikeApiValidationJargon(value?: string | null): boolean {
     /"code"\s*:\s*"/i.test(value) ||
     /String must contain at most/i.test(value) ||
     /Array must contain at most/i.test(value) ||
+    /Too big:/i.test(value) ||
+    /expected (?:string|array) to have/i.test(value) ||
     /conversationHistory/i.test(value)
   );
 }

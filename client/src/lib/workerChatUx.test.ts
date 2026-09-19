@@ -357,6 +357,9 @@ describe("chat UX helpers", () => {
     expect(toFriendlyWorkerChatError("TRPCClientError: too_big on conversationHistory")).toBe(
       WORKER_CHAT_RETRY_ERROR,
     );
+    expect(
+      toFriendlyWorkerChatError("Too big: expected string to have <=2000 characters"),
+    ).toBe(WORKER_CHAT_RETRY_ERROR);
   });
 
   it("recorta historial largo y rubros oficiales antes de validar", () => {

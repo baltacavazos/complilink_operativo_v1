@@ -7445,11 +7445,19 @@ export default function Auditar() {
           );
         },
         onError: error => {
+          const extra =
+            error && typeof error === "object"
+              ? JSON.stringify(
+                  (error as { data?: unknown; shape?: unknown }).data ??
+                    (error as { shape?: unknown }).shape ??
+                    "",
+                )
+              : "";
           setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
               content: toFriendlyWorkerChatError(
-                error.message,
+                [error.message, extra].filter(Boolean).join("\n"),
                 WORKER_CHAT_RETRY_ERROR
               ),
             })
